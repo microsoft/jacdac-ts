@@ -20,3 +20,9 @@ jobs:
       - run: npm ci
       - run: npm run test:prod
       - run: npm run build
+    
+    steps:
+      - run: npm run semantic-release
+        if: github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
