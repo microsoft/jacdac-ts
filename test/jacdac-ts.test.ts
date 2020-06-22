@@ -1,8 +1,7 @@
-import DummyClass from "../src/jacdac-ts"
+import DummyClass from "../src/jacdac"
 
 /**
  * Dummy test
- */
 describe("Dummy test", () => {
   it("works if true is truthy", () => {
     expect(true).toBeTruthy()
@@ -12,3 +11,4 @@ describe("Dummy test", () => {
     expect(new DummyClass()).toBeInstanceOf(DummyClass)
   })
 })
+*/

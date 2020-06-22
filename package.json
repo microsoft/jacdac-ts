@@ -1,11 +1,11 @@
 {
-  "name": "jacdac-ts",
+  "name": "jacdac",
   "version": "0.0.0",
   "description": "",
   "keywords": [],
-  "main": "dist/jacdac-ts.umd.js",
-  "module": "dist/jacdac-ts.es5.js",
-  "typings": "dist/types/jacdac-ts.d.ts",
+  "main": "dist/jacdac.umd.js",
+  "module": "dist/jacdac.es5.js",
+  "typings": "dist/types/jacdac.d.ts",
   "files": [
     "dist"
   ],
