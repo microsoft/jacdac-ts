@@ -254,7 +254,7 @@ export class Packet {
     }
     set service_number(service_number: number) {
         if (service_number == null)
-            throw "service_number not set"
+            throw new Error("service_number not set")
         this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | service_number;
     }
 

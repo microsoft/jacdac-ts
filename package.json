@@ -92,21 +92,6 @@
       "ts",
       "tsx",
       "js"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/test/"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 90,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
-      }
-    },
-    "collectCoverageFrom": [
-      "src/*.{js,ts}"
     ]
   },
   "devDependencies": {
@@ -121,7 +106,6 @@
     "coveralls": "^3.0.2",
     "cross-env": "^5.2.0",
     "cz-conventional-changelog": "^2.1.0",
-    "husky": "^1.0.1",
     "jest": "^23.6.0",
     "jest-config": "^23.6.0",
     "lint-staged": "^8.0.0",
@@ -140,7 +124,7 @@
     "ts-jest": "^23.10.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
-    "tslint-config-standard": "^8.0.1",
+    "tslint-microsoft-contrib": "^5.0.3",
     "typedoc": "^0.17.7",
     "typescript": "^3.8.3"
   }
