@@ -1,3 +1,3 @@
-require("./pxtutils")
-require("./jd")
-require("./jdpretty")
+require('./pxtutils')
+require('./jd')
+require('./jdpretty')
