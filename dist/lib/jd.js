@@ -243,7 +243,7 @@ var Packet = /** @class */ (function () {
         },
         set: function (service_number) {
             if (service_number == null)
-                throw "service_number not set";
+                throw new Error("service_number not set");
             this._header[13] = (this._header[13] & exports.JD_SERVICE_NUMBER_INV_MASK) | service_number;
         },
         enumerable: false,
@@ -295,7 +295,7 @@ var Packet = /** @class */ (function () {
         },
         set: function (buf) {
             if (buf.length > exports.JD_SERIAL_MAX_PAYLOAD_SIZE)
-                throw "Too big";
+                throw Error("Too big");
             this._header[12] = buf.length;
             this._data = buf;
         },
