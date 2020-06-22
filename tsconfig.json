@@ -1,7 +1,7 @@
 {
   "include": [
-    "lib/**.ts"
-  ],  
+    "src/**.ts"
+  ],
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
