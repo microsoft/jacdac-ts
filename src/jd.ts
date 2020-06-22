@@ -289,7 +289,7 @@ export class Packet {
 
     set data(buf: Uint8Array) {
         if (buf.length > JD_SERIAL_MAX_PAYLOAD_SIZE)
-            throw "Too big"
+            throw Error("Too big")
         this._header[12] = buf.length
         this._data = buf
     }
