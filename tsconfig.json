@@ -5,16 +5,16 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "ES2017",
+    "target": "es5",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "moduleResolution": "node",
+    "preserveConstEnums": true,
+    "removeComments": false,
     "declaration": true,
     "sourceMap": true,
     "newLine": "LF",
-    "outDir": "dist",
-    "rootDir": ".",
-    "incremental": false
+    "outDir": "lib",
   }
 }

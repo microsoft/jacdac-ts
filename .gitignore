@@ -10,3 +10,6 @@ dist/
 .vscode/
 node_modules/
 tmp
+lib/
+lib-esm/
+_bundles/
