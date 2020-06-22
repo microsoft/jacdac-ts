@@ -27,10 +27,16 @@
     "test:watch": "jest --coverage --watch",
     "test:prod": "npm run lint && npm run test -- --no-cache",
     "commit": "git-cz",
-    "semantic-release": "node node_modules/semantic-release/bin/semantic-release.js",
-    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged",
     "travis-deploy-once": "travis-deploy-once"
+  },
+  "release": {
+    "branches": ["master"],
+    "plugins": [
+      "@semantic-release/commit-analyzer", 
+      "@semantic-release/release-notes-generator", 
+      "@semantic-release/github"
+      ]
   },
   "jest": {
     "transform": {
