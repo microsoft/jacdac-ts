@@ -1,0 +1,25 @@
+{
+  "name": "jacdac-ts",
+  "version": "0.0.0",
+  "description": "TypeScript/JavaScript library for JACDAC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microsoft/jacdac-ts.git"
+  },
+  "keywords": [
+    "JACDAC"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/microsoft/jacdac-ts/issues"
+  },
+  "homepage": "https://github.com/microsoft/jacdac-ts#readme",
+  "dependencies": {
+    "typescript": "^3.8.3",
+    "webusb": "^2.0.1"
+  }
+}
