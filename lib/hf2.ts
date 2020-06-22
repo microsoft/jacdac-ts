@@ -10,6 +10,7 @@ const controlTransferInReport = 0x100;
 export const HF2_CMD_BININFO = 0x0001 // no arguments
 export const HF2_MODE_BOOTLOADER = 0x01
 export const HF2_MODE_USERSPACE = 0x02
+
 /*
 struct HF2_BININFO_Result {
     uint32_t mode;

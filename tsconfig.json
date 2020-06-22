@@ -1,6 +1,6 @@
 {
   "include": [
-    "src/**.ts"
+    "lib/**.ts"
   ],  
   "compilerOptions": {
     "module": "commonjs",
@@ -15,6 +15,6 @@
     "newLine": "LF",
     "outDir": "dist",
     "rootDir": ".",
-    "incremental": true
+    "incremental": false
   }
 }
