@@ -1,8 +1,11 @@
 {
+  "include": [
+    "src/**.ts"
+  ],  
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "ES2017",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -10,7 +13,7 @@
     "declaration": true,
     "sourceMap": true,
     "newLine": "LF",
-    "outDir": "built",
+    "outDir": "dist",
     "rootDir": ".",
     "incremental": true
   }
