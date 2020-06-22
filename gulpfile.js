@@ -8,9 +8,6 @@ const fancy_log = require('fancy-log');
 const ts = require('gulp-typescript');
 const tsReporter = ts.reporter.longReporter();
 const merge = require("merge-stream");
-const browserify = require('browserify');
-const source = require('vinyl-source-stream');
-const tsify = require('tsify');
 const _rimraf = require("rimraf")
 const tsProject = ts.createProject("tsconfig.json");
 
@@ -28,26 +25,18 @@ const rimraf = (dirname) => {
 const clean = () => rimraf(DIST)
 const tscNode = () => {
   const tsResult = tsProject.src()
-    .pipe(tsProject());
+    .pipe(tsProject(tsReporter));
 
   return merge(
     tsResult.js.pipe(gulp.dest(DIST)),
     tsResult.dts.pipe(gulp.dest(DIST))
   );
 }
-const tscWeb = () => browserify({
-  basedir: 'dist',
-  debug: false,
-  entries: gulp.src("dist/**.js"),
-  cache: {},
-  packageCache: {}
-}).bundle()
-  .on('error', fancy_log)
-  .pipe(source('bundle.js'))
-  .pipe(gulp.dest(DIST));
-const buildAll = gulp.series(tscNode, tscWeb);
+const buildAll = gulp.series(tscNode);
+
+const ci = gulp.series(clean, buildAll);
 
 exports.clean = clean;
 exports.tscNode = tscNode;
-exports.tscWeb = tscWeb;
 exports.default = buildAll;
+exports.ci = ci;
