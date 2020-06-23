@@ -2,10 +2,16 @@
 
 This repository contains a TypeScript/JavaScript client library for the [JACDAC](https://microsoft.github.io/jacdac) protocol.
 
-## Usage
+## Usage: npm + TypeScript
 
-You can import the generated bundle to use the whole library.
+Add the ``jacdac-ts`` NPM module to your project.
+
+```
+npm install --save jacdac-ts
+```
+
+Import the library.
 
 ```javascript
-import * from 'jacdac'
+import * from 'jacdac-ts'
 ```

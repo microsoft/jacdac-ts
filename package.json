@@ -58,6 +58,10 @@
               "release": "minor"
             },
             {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
               "type": "feature",
               "release": "minor"
             },
