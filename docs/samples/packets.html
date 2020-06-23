@@ -44,7 +44,7 @@
             let bus;
             try {
                 bus = await jacdac.requestUSBBus();
-                bus.on('packet', pkt => log(`packet: ${pkt}`))
+                bus.on('packet', pkt => log(`packet: ${jacdac.printPacket(pkt)}`))
                 bus.on('device', dev => log(`device: ${dev}`))
                 bus.on('advertisement', dev => log(`advertisement: ${dev}`))
                 log('started')

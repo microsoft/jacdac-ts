@@ -8,7 +8,7 @@ const controlTransferOutReport = 0x200;
 const controlTransferInReport = 0x100;
 
 // see https://github.com/microsoft/uf2/blob/master/hf2.md for full spec
-export const HF2_DEVICE_MAJOR = 0x42
+export const HF2_DEVICE_MAJOR = 42
 export const HF2_CMD_BININFO = 0x0001 // no arguments
 export const HF2_MODE_BOOTLOADER = 0x01
 export const HF2_MODE_USERSPACE = 0x02
@@ -231,20 +231,23 @@ export class Transport {
 
 
     async init() {
-        this.dev = await this.requestDevice({ filters: [{}] })
+        this.dev = await this.requestDevice({
+            filters: [{
+                classCode: 255,
+                subclassCode: HF2_DEVICE_MAJOR,
+            }]
+        })
         this.iface = undefined;
         this.altIface = undefined;
         this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName)
 
         // resolve interfaces
-        if (this.dev.deviceVersionMajor == HF2_DEVICE_MAJOR) {
-            for (const iface of this.dev.configuration.interfaces) {
-                const alt = iface.alternates[0]
-                if (alt.interfaceClass == 0xff && alt.interfaceSubclass == 42) {
-                    this.iface = iface;
-                    this.altIface = alt;
-                    break;
-                }
+        for (const iface of this.dev.configuration.interfaces) {
+            const alt = iface.alternates[0]
+            if (alt.interfaceClass == 0xff && alt.interfaceSubclass == HF2_DEVICE_MAJOR) {
+                this.iface = iface;
+                this.altIface = alt;
+                break;
             }
         }
 
