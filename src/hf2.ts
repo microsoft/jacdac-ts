@@ -431,9 +431,8 @@ export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOp
     }
     const transport = new Transport(requestDevice);
     const hf2 = new Proto(transport);
-
     await hf2.init()
-
+    const startTime = Date.now();
     const bus = new Bus({
         sendPacket: p => {
             const buf = p.toBuffer();
@@ -444,8 +443,9 @@ export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOp
         disconnect: () => hf2.disconnectAsync()
     });
     hf2.onJDMessage(buf => {
-        const pkt = Packet.fromBinary(buf)
-        bus.processPacket(pkt);
+        const pkts = Packet.fromFrame(buf, Date.now() - startTime)
+        for (const pkt of pkts)
+            bus.processPacket(pkt);
     });
 
     return bus;
