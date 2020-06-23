@@ -1,5 +1,6 @@
-import * as U from "./pxtutils"
+import * as U from "./jdutils"
 import * as jd from "./jd"
+import { Packet } from "./jdpacket"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -64,8 +65,8 @@ const generic_regs: U.SMap<number> = {
     REG_READING: 0x101
 }
 
-const serv_decoders: U.SMap<(p: jd.Packet) => string> = {
-    LOGGER: (pkt: jd.Packet) => {
+const serv_decoders: U.SMap<(p: Packet) => string> = {
+    LOGGER: (pkt: Packet) => {
         const pri = priority()
         if (!pri) return null
         return `${pri} "${U.bufferToString(pkt.data)}"`
@@ -122,7 +123,7 @@ export interface Options {
     skipRepeatedReading?: boolean;
 }
 
-export function printPkt(pkt: jd.Packet, opts: Options = {}) {
+export function printPkt(pkt: Packet, opts: Options = {}) {
     const frame_flags = pkt._header[3]
 
     let devname = pkt.dev ? pkt.dev.name || pkt.dev.shortId : pkt.device_identifier
