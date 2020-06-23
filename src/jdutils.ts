@@ -1,3 +1,21 @@
+export function error(msg: string) {
+    throw new Error(msg)
+}
+
+export function log(msg: string, v?: any) {
+    if (v === undefined)
+        console.log("JD: " + msg)
+    else
+        console.log("JD: " + msg, v)
+}
+
+export function warn(msg: string, v?: any) {
+    if (v === undefined)
+        console.log("JD-WARN: " + msg)
+    else
+        console.log("JD-WARN: " + msg, v)
+}
+
 export function delay<T>(millis: number, value?: T): Promise<T> {
     return new Promise((resolve) => setTimeout(() => resolve(value), millis))
 }
@@ -21,6 +39,41 @@ export function bufferEq(a: Uint8Array, b: ArrayLike<number>) {
     }
     return true
 }
+
+
+export function hash(buf: Uint8Array, bits: number) {
+    bits |= 0
+    if (bits < 1)
+        return 0
+    const h = fnv1(buf)
+    if (bits >= 32)
+        return h >>> 0
+    else
+        return ((h ^ (h >>> bits)) & ((1 << bits) - 1)) >>> 0
+}
+
+export function idiv(a: number, b: number) { return ((a | 0) / (b | 0)) | 0 }
+export function fnv1(data: Uint8Array) {
+    let h = 0x811c9dc5
+    for (let i = 0; i < data.length; ++i) {
+        h = Math.imul(h, 0x1000193) ^ data[i]
+    }
+    return h
+}
+
+export function crc(p: Uint8Array) {
+    let crc = 0xffff;
+    for (let i = 0; i < p.length; ++i) {
+        const data = p[i];
+        let x = (crc >> 8) ^ data;
+        x ^= x >> 4;
+        crc = (crc << 8) ^ (x << 12) ^ (x << 5) ^ x;
+        crc &= 0xffff;
+    }
+    return crc;
+}
+
+export function ALIGN(n: number) { return (n + 3) & ~3 }
 
 // this will take lower 8 bits from each character
 export function stringToUint8Array(input: string) {
