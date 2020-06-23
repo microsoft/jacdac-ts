@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "declarationDir": "dist/types",
     "outDir": "dist/lib"
