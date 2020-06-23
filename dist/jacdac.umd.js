@@ -66,6 +66,7 @@
     var JD_FRAME_FLAG_ACK_REQUESTED = 0x02;
     // the device_identifier contains target service class number
     var JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04;
+    //# sourceMappingURL=constants.js.map
 
     function error(msg) {
         throw new Error(msg);
@@ -375,78 +376,7 @@
             return null;
         return JSON.parse(JSON.stringify(v));
     }
-
-    var devices_ = [];
-    var deviceNames = {};
-    /**
-     * Gets the current list of known devices on the bus
-     */
-    function getDevices() { return devices_.slice(); }
-    /**
-     * Gets a device on the bus
-     * @param id
-     */
-    function getDevice(id) {
-        var d = devices_.find(function (d) { return d.deviceId == id; });
-        if (!d)
-            d = new Device(id);
-        return d;
-    }
-    var Device = /** @class */ (function () {
-        function Device(deviceId) {
-            this.deviceId = deviceId;
-            devices_.push(this);
-        }
-        Object.defineProperty(Device.prototype, "name", {
-            get: function () {
-                return deviceNames[this.deviceId] || deviceNames[this.shortId];
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(Device.prototype, "shortId", {
-            get: function () {
-                // TODO measure if caching is worth it
-                if (!this._shortId)
-                    this._shortId = shortDeviceId(this.deviceId);
-                return this._shortId;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Device.prototype.toString = function () {
-            return this.shortId + (this.name ? " (" + this.name + ")" : "");
-        };
-        Device.prototype.hasService = function (service_class) {
-            for (var i = 4; i < this.services.length; i += 4)
-                if (getNumber(this.services, 11 /* UInt32LE */, i) == service_class)
-                    return true;
-            return false;
-        };
-        Device.prototype.serviceAt = function (idx) {
-            idx <<= 2;
-            if (!this.services || idx + 4 > this.services.length)
-                return undefined;
-            return read32(this.services, idx);
-        };
-        Device.prototype.sendCtrlCommand = function (cmd, payload) {
-            if (payload === void 0) { payload = null; }
-            var pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload);
-            pkt.service_number = JD_SERVICE_NUMBER_CTRL;
-            pkt.sendCmdAsync(this);
-        };
-        return Device;
-    }());
-    // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
-    // 3 letter ID; 1.1%/2.6%/0.05%
-    // 2 letter ID; 25%/6.4%/1.5%
-    function shortDeviceId(devid) {
-        var h = hash(fromHex(devid), 30);
-        return String.fromCharCode(0x41 + h % 26) +
-            String.fromCharCode(0x41 + idiv(h, 26) % 26) +
-            String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
-            String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26);
-    }
+    //# sourceMappingURL=utils.js.map
 
     var _bus;
     /**
@@ -463,29 +393,7 @@
     function sendPacket(p) {
         return _bus ? _bus.send(p) : Promise.resolve();
     }
-    /**
-     * Ingests and process a packet received from the bus.
-     * @param pkt a jacdac packet
-     */
-    function processPacket(pkt) {
-        if (pkt.multicommand_class) ;
-        else if (pkt.is_command) {
-            pkt.dev = getDevice(pkt.device_identifier);
-        }
-        else {
-            var dev = pkt.dev = getDevice(pkt.device_identifier);
-            dev.lastSeen = pkt.timestamp;
-            if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
-                if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-                    if (!bufferEq(pkt.data, dev.services)) {
-                        dev.services = pkt.data;
-                        dev.lastServiceUpdate = pkt.timestamp;
-                        // reattach(dev)
-                    }
-                }
-            }
-        }
-    }
+    //# sourceMappingURL=bus.js.map
 
     var Packet = /** @class */ (function () {
         function Packet() {
@@ -760,6 +668,103 @@
         }
         return [];
     }
+    //# sourceMappingURL=packet.js.map
+
+    var devices_ = [];
+    var deviceNames = {};
+    /**
+     * Gets the current list of known devices on the bus
+     */
+    function getDevices() { return devices_.slice(); }
+    /**
+     * Gets a device on the bus
+     * @param id
+     */
+    function getDevice(id) {
+        var d = devices_.find(function (d) { return d.deviceId == id; });
+        if (!d)
+            d = new Device(id);
+        return d;
+    }
+    var Device = /** @class */ (function () {
+        function Device(deviceId) {
+            this.deviceId = deviceId;
+            devices_.push(this);
+        }
+        Object.defineProperty(Device.prototype, "name", {
+            get: function () {
+                return deviceNames[this.deviceId] || deviceNames[this.shortId];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Device.prototype, "shortId", {
+            get: function () {
+                // TODO measure if caching is worth it
+                if (!this._shortId)
+                    this._shortId = shortDeviceId(this.deviceId);
+                return this._shortId;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Device.prototype.toString = function () {
+            return this.shortId + (this.name ? " (" + this.name + ")" : "");
+        };
+        Device.prototype.hasService = function (service_class) {
+            for (var i = 4; i < this.services.length; i += 4)
+                if (getNumber(this.services, 11 /* UInt32LE */, i) == service_class)
+                    return true;
+            return false;
+        };
+        Device.prototype.serviceAt = function (idx) {
+            idx <<= 2;
+            if (!this.services || idx + 4 > this.services.length)
+                return undefined;
+            return read32(this.services, idx);
+        };
+        Device.prototype.sendCtrlCommand = function (cmd, payload) {
+            if (payload === void 0) { payload = null; }
+            var pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload);
+            pkt.service_number = JD_SERVICE_NUMBER_CTRL;
+            pkt.sendCmdAsync(this);
+        };
+        return Device;
+    }());
+    // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
+    // 3 letter ID; 1.1%/2.6%/0.05%
+    // 2 letter ID; 25%/6.4%/1.5%
+    function shortDeviceId(devid) {
+        var h = hash(fromHex(devid), 30);
+        return String.fromCharCode(0x41 + h % 26) +
+            String.fromCharCode(0x41 + idiv(h, 26) % 26) +
+            String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
+            String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26);
+    }
+    /**
+     * Ingests and process a packet received from the bus.
+     * @param pkt a jacdac packet
+     */
+    function processPacket(pkt) {
+        if (pkt.multicommand_class) ;
+        else if (pkt.is_command) {
+            pkt.dev = getDevice(pkt.device_identifier);
+        }
+        else {
+            var dev = pkt.dev = getDevice(pkt.device_identifier);
+            dev.lastSeen = pkt.timestamp;
+            if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
+                if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+                    if (!bufferEq(pkt.data, dev.services)) {
+                        dev.services = pkt.data;
+                        dev.lastServiceUpdate = pkt.timestamp;
+                        // reattach(dev)
+                    }
+                }
+            }
+        }
+    }
+    //# sourceMappingURL=device.js.map
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
@@ -1249,6 +1254,7 @@
         };
         return Proto;
     }());
+    //# sourceMappingURL=hf2.js.map
 
     var service_classes = {
         "<disabled>": -1,
@@ -1468,6 +1474,9 @@
         }
         return res;
     }
+    //# sourceMappingURL=pretty.js.map
+
+    //# sourceMappingURL=jacdac.js.map
 
     exports.REG_INTENSITY = REG_INTENSITY;
     exports.REG_VALUE = REG_VALUE;
@@ -1540,9 +1549,9 @@
     exports.getDevice = getDevice;
     exports.Device = Device;
     exports.shortDeviceId = shortDeviceId;
+    exports.processPacket = processPacket;
     exports.setBus = setBus;
     exports.sendPacket = sendPacket;
-    exports.processPacket = processPacket;
     exports.HF2_CMD_BININFO = HF2_CMD_BININFO;
     exports.HF2_MODE_BOOTLOADER = HF2_MODE_BOOTLOADER;
     exports.HF2_MODE_USERSPACE = HF2_MODE_USERSPACE;

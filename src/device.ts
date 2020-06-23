@@ -1,6 +1,6 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL } from "./constants"
-import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap } from "./utils"
+import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
+import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 
 const devices_: Device[] = []
 export const deviceNames: SMap<string> = {}
@@ -78,4 +78,30 @@ export function shortDeviceId(devid: string) {
         String.fromCharCode(0x41 + idiv(h, 26) % 26) +
         String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
         String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26)
+}
+
+
+/**
+ * Ingests and process a packet received from the bus.
+ * @param pkt a jacdac packet
+ */
+export function processPacket(pkt: Packet) {
+    if (pkt.multicommand_class) {
+        //
+    } else if (pkt.is_command) {
+        pkt.dev = getDevice(pkt.device_identifier)
+    } else {
+        const dev = pkt.dev = getDevice(pkt.device_identifier)
+        dev.lastSeen = pkt.timestamp
+
+        if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
+            if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+                if (!bufferEq(pkt.data, dev.services)) {
+                    dev.services = pkt.data
+                    dev.lastServiceUpdate = pkt.timestamp
+                    // reattach(dev)
+                }
+            }
+        }
+    }
 }

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { Packet } from "./packet";
 import { SMap } from "./utils";
 export declare const deviceNames: SMap<string>;
 /**
@@ -26,3 +27,8 @@ export declare class Device {
     sendCtrlCommand(cmd: number, payload?: Buffer): void;
 }
 export declare function shortDeviceId(devid: string): string;
+/**
+ * Ingests and process a packet received from the bus.
+ * @param pkt a jacdac packet
+ */
+export declare function processPacket(pkt: Packet): void;

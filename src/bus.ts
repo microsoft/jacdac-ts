@@ -27,28 +27,3 @@ export function setBus(bus: Bus) {
 export function sendPacket(p: Packet): Promise<void> {
     return _bus ? _bus.send(p) : Promise.resolve();
 }
-
-/**
- * Ingests and process a packet received from the bus.
- * @param pkt a jacdac packet
- */
-export function processPacket(pkt: Packet) {
-    if (pkt.multicommand_class) {
-        //
-    } else if (pkt.is_command) {
-        pkt.dev = getDevice(pkt.device_identifier)
-    } else {
-        const dev = pkt.dev = getDevice(pkt.device_identifier)
-        dev.lastSeen = pkt.timestamp
-
-        if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
-            if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-                if (!bufferEq(pkt.data, dev.services)) {
-                    dev.services = pkt.data
-                    dev.lastServiceUpdate = pkt.timestamp
-                    // reattach(dev)
-                }
-            }
-        }
-    }
-}
