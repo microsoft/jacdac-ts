@@ -1,0 +1,39 @@
+<html>
+    <body>
+        <h1>JACDAC-TS: packet watcher</h1>
+
+        <div>
+            <button id="connect">connect</button>
+        </div>
+        <div id="log">
+
+        </div>
+
+        <script src="/dist/jacdac.umd.js"></script>
+        <script>
+const connect = document.getElementById("connect");
+const log = document.getElementById("log");
+const jacdac = window.jacdac;
+
+async function sniff() {
+    console.log('starting')
+    const transport = new jacdac.Transport(filters => navigator.usb.requestDevice(filters));
+    const hf2 = new jacdac.Proto(transport);
+
+    try {
+        await hf2.init()
+        jacdac.setBus({
+            send: p => hf2.sendJDMessageAsync(p.toBuffer()).then(() => { }, err => console.log(err))
+        })
+        hf2.onJDMessage(buf => console.log(jacdac.printPkt(buf)));
+        console.log('started')
+    } catch (err) {
+        console.error(err)
+        await hf2.io.disconnectAsync()
+    }
+}
+
+connect.onclick = sniff;
+        </script>
+    </body>
+</html>
