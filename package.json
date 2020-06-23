@@ -73,7 +73,6 @@
         {
           "assets": [
             "dist/**/*.{js,css,ts,d.ts,tsx,map}",
-            "docs",
             "package.json"
           ]
         }
