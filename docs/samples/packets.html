@@ -30,7 +30,6 @@
     <script>
         const connect = document.getElementById("connect");
         const logDiv = document.getElementById("log");
-        const jacdac = window.jacdac;
 
         function log(msg) {
             const line = document.createElement("div");
@@ -40,21 +39,13 @@
 
         async function sniff() {
             log('starting')
-            const transport = new jacdac.Transport(filters => navigator.usb.requestDevice(filters));
-            const hf2 = new jacdac.Proto(transport);
-
+            let bus;
             try {
-                await hf2.init()
-                const bus = new jacdac.Bus(p => hf2.sendJDMessageAsync(p.toBuffer()).then(() => { }, err => log(err)));
-                hf2.onJDMessage(buf => {
-                    const pkt = jacdac.Packet.fromBinary(buf)
-                    log(jacdac.printPkt(pkt));
-                    bus.processPacket(pkt);
-                });
+                bus = await jacdac.requestUSBBus();
                 log('started')
             } catch (err) {
                 log(err)
-                await hf2.io.disconnectAsync()
+                await bus.disconnect()
             }
         }
 

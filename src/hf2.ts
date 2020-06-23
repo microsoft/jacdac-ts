@@ -1,4 +1,6 @@
 import * as U from "./utils"
+import { Bus } from "./device";
+import { Packet } from "./packet";
 
 const controlTransferGetReport = 0x01;
 const controlTransferSetReport = 0x09;
@@ -127,7 +129,7 @@ export class Transport {
         }
     }
 
-    disconnectAsync() {
+    disconnectAsync(): Promise<void> {
         this.ready = false
         if (!this.dev) return Promise.resolve()
         this.log("close device")
@@ -413,4 +415,39 @@ export class Proto {
         const buf = await this.talkAsync(HF2_CMD_INFO)
         this.io.log("Connected to: " + U.bufferToString(buf))
     }
+
+    disconnectAsync(): Promise<void> {
+        return this.io.disconnectAsync();
+    }
+}
+
+export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>): Promise<Bus> {
+    if (!requestDevice && typeof navigator !== "undefined" && navigator.usb && navigator.usb.requestDevice) {
+        requestDevice = options => navigator.usb.requestDevice(options);
+    }
+    const transport = new Transport(requestDevice);
+    const hf2 = new Proto(transport);
+
+    await hf2.init()
+
+    const bus = new Bus({ sendPacket, disconnect });
+    hf2.onJDMessage(receivePacket);
+
+    function receivePacket(buf: Uint8Array) {
+        const pkt = Packet.fromBinary(buf)
+        bus.processPacket(pkt);
+    }
+
+    function sendPacket(p: Packet): Promise<void> {
+        const buf = p.toBuffer();
+        return hf2.sendJDMessageAsync(buf)
+            .then(() => { });
+        //.catch(err => log(err)); TODO
+    }
+
+    function disconnect(): Promise<void> {
+        return hf2.disconnectAsync();
+    }
+
+    return bus;
 }

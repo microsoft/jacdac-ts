@@ -2,6 +2,11 @@ import { Packet } from "./packet"
 import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 
+export interface BusOptions {
+    sendPacket: (p: Packet) => Promise<void>;
+    disconnect: () => Promise<void>;
+}
+
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
@@ -13,7 +18,15 @@ export class Bus {
      * Creates the bus with the given transport
      * @param sendPacket 
      */
-    constructor(public sendPacket: (p: Packet) => Promise<void>) {
+    constructor(public options: BusOptions) {
+    }
+
+    sendPacket(p: Packet) {
+        return this.options.sendPacket(p);
+    }
+
+    disconnect() {
+        return this.options.disconnect();
     }
 
     /**
