@@ -12,9 +12,9 @@ The rest of this page is meant
 
 * run ``npm install``
 
-### Just typescript
+### Build watch
 
-You can do ```tsc --watch`` to build typescript.
+You can do ```npm run start`` to watch/build bundles
 
 ### Commits create releases
 
