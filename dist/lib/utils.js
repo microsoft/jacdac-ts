@@ -1,22 +1,29 @@
-export function error(msg) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.clone = exports.flatClone = exports.assert = exports.jsonCopyFrom = exports.bufferConcat = exports.bufferToString = exports.getNumber = exports.decodeU32LE = exports.encodeU32LE = exports.read16 = exports.read32 = exports.write16 = exports.write32 = exports.fromHex = exports.toHex = exports.PromiseQueue = exports.PromiseBuffer = exports.toUTF8 = exports.fromUTF8 = exports.uint8ArrayToString = exports.stringToUint8Array = exports.ALIGN = exports.crc = exports.fnv1 = exports.idiv = exports.hash = exports.bufferEq = exports.memcpy = exports.delay = exports.warn = exports.log = exports.error = void 0;
+function error(msg) {
     throw new Error(msg);
 }
-export function log(msg, v) {
+exports.error = error;
+function log(msg, v) {
     if (v === undefined)
         console.log("JD: " + msg);
     else
         console.log("JD: " + msg, v);
 }
-export function warn(msg, v) {
+exports.log = log;
+function warn(msg, v) {
     if (v === undefined)
         console.log("JD-WARN: " + msg);
     else
         console.log("JD-WARN: " + msg, v);
 }
-export function delay(millis, value) {
+exports.warn = warn;
+function delay(millis, value) {
     return new Promise(function (resolve) { return setTimeout(function () { return resolve(value); }, millis); });
 }
-export function memcpy(trg, trgOff, src, srcOff, len) {
+exports.delay = delay;
+function memcpy(trg, trgOff, src, srcOff, len) {
     if (srcOff === void 0)
         srcOff = 0;
     if (len === void 0)
@@ -24,7 +31,8 @@ export function memcpy(trg, trgOff, src, srcOff, len) {
     for (var i = 0; i < len; ++i)
         trg[trgOff + i] = src[srcOff + i];
 }
-export function bufferEq(a, b) {
+exports.memcpy = memcpy;
+function bufferEq(a, b) {
     if (a == b)
         return true;
     if (!a || !b || a.length != b.length)
@@ -35,7 +43,8 @@ export function bufferEq(a, b) {
     }
     return true;
 }
-export function hash(buf, bits) {
+exports.bufferEq = bufferEq;
+function hash(buf, bits) {
     bits |= 0;
     if (bits < 1)
         return 0;
@@ -45,15 +54,18 @@ export function hash(buf, bits) {
     else
         return ((h ^ (h >>> bits)) & ((1 << bits) - 1)) >>> 0;
 }
-export function idiv(a, b) { return ((a | 0) / (b | 0)) | 0; }
-export function fnv1(data) {
+exports.hash = hash;
+function idiv(a, b) { return ((a | 0) / (b | 0)) | 0; }
+exports.idiv = idiv;
+function fnv1(data) {
     var h = 0x811c9dc5;
     for (var i = 0; i < data.length; ++i) {
         h = Math.imul(h, 0x1000193) ^ data[i];
     }
     return h;
 }
-export function crc(p) {
+exports.fnv1 = fnv1;
+function crc(p) {
     var crc = 0xffff;
     for (var i = 0; i < p.length; ++i) {
         var data = p[i];
@@ -64,23 +76,27 @@ export function crc(p) {
     }
     return crc;
 }
-export function ALIGN(n) { return (n + 3) & ~3; }
+exports.crc = crc;
+function ALIGN(n) { return (n + 3) & ~3; }
+exports.ALIGN = ALIGN;
 // this will take lower 8 bits from each character
-export function stringToUint8Array(input) {
+function stringToUint8Array(input) {
     var len = input.length;
     var res = new Uint8Array(len);
     for (var i = 0; i < len; ++i)
         res[i] = input.charCodeAt(i) & 0xff;
     return res;
 }
-export function uint8ArrayToString(input) {
+exports.stringToUint8Array = stringToUint8Array;
+function uint8ArrayToString(input) {
     var len = input.length;
     var res = "";
     for (var i = 0; i < len; ++i)
         res += String.fromCharCode(input[i]);
     return res;
 }
-export function fromUTF8(binstr) {
+exports.uint8ArrayToString = uint8ArrayToString;
+function fromUTF8(binstr) {
     if (!binstr)
         return "";
     // escape function is deprecated
@@ -97,7 +113,8 @@ export function fromUTF8(binstr) {
     // decodeURIComponent does the actual UTF8 decoding
     return decodeURIComponent(escaped);
 }
-export function toUTF8(str, cesu8) {
+exports.fromUTF8 = fromUTF8;
+function toUTF8(str, cesu8) {
     var res = "";
     if (!str)
         return res;
@@ -122,6 +139,7 @@ export function toUTF8(str, cesu8) {
     }
     return res;
 }
+exports.toUTF8 = toUTF8;
 var PromiseBuffer = /** @class */ (function () {
     function PromiseBuffer() {
         this.waiting = [];
@@ -178,7 +196,7 @@ var PromiseBuffer = /** @class */ (function () {
     };
     return PromiseBuffer;
 }());
-export { PromiseBuffer };
+exports.PromiseBuffer = PromiseBuffer;
 var PromiseQueue = /** @class */ (function () {
     function PromiseQueue() {
         this.promises = {};
@@ -212,48 +230,56 @@ var PromiseQueue = /** @class */ (function () {
     };
     return PromiseQueue;
 }());
-export { PromiseQueue };
-export function toHex(bytes) {
+exports.PromiseQueue = PromiseQueue;
+function toHex(bytes) {
     var r = "";
     for (var i = 0; i < bytes.length; ++i)
         r += ("0" + bytes[i].toString(16)).slice(-2);
     return r;
 }
-export function fromHex(hex) {
+exports.toHex = toHex;
+function fromHex(hex) {
     var r = new Uint8Array(hex.length >> 1);
     for (var i = 0; i < hex.length; i += 2)
         r[i >> 1] = parseInt(hex.slice(i, i + 2), 16);
     return r;
 }
-export function write32(buf, pos, v) {
+exports.fromHex = fromHex;
+function write32(buf, pos, v) {
     buf[pos + 0] = (v >> 0) & 0xff;
     buf[pos + 1] = (v >> 8) & 0xff;
     buf[pos + 2] = (v >> 16) & 0xff;
     buf[pos + 3] = (v >> 24) & 0xff;
 }
-export function write16(buf, pos, v) {
+exports.write32 = write32;
+function write16(buf, pos, v) {
     buf[pos + 0] = (v >> 0) & 0xff;
     buf[pos + 1] = (v >> 8) & 0xff;
 }
-export function read32(buf, pos) {
+exports.write16 = write16;
+function read32(buf, pos) {
     return (buf[pos] | (buf[pos + 1] << 8) | (buf[pos + 2] << 16) | (buf[pos + 3] << 24)) >>> 0;
 }
-export function read16(buf, pos) {
+exports.read32 = read32;
+function read16(buf, pos) {
     return buf[pos] | (buf[pos + 1] << 8);
 }
-export function encodeU32LE(words) {
+exports.read16 = read16;
+function encodeU32LE(words) {
     var r = new Uint8Array(words.length * 4);
     for (var i = 0; i < words.length; ++i)
         write32(r, i * 4, words[i]);
     return r;
 }
-export function decodeU32LE(buf) {
+exports.encodeU32LE = encodeU32LE;
+function decodeU32LE(buf) {
     var res = [];
     for (var i = 0; i < buf.length; i += 4)
         res.push(read32(buf, i));
     return res;
 }
-export function getNumber(buf, fmt, offset) {
+exports.decodeU32LE = decodeU32LE;
+function getNumber(buf, fmt, offset) {
     switch (fmt) {
         case 7 /* UInt8BE */:
         case 2 /* UInt8LE */:
@@ -273,39 +299,46 @@ export function getNumber(buf, fmt, offset) {
             throw new Error("unsupported fmt:" + fmt);
     }
 }
-export function bufferToString(buf) {
+exports.getNumber = getNumber;
+function bufferToString(buf) {
     return fromUTF8(uint8ArrayToString(buf));
 }
-export function bufferConcat(a, b) {
+exports.bufferToString = bufferToString;
+function bufferConcat(a, b) {
     var r = new Uint8Array(a.length + b.length);
     r.set(a, 0);
     r.set(b, a.length);
     return r;
 }
-export function jsonCopyFrom(trg, src) {
+exports.bufferConcat = bufferConcat;
+function jsonCopyFrom(trg, src) {
     var v = clone(src);
     for (var _i = 0, _a = Object.keys(src); _i < _a.length; _i++) {
         var k = _a[_i];
         trg[k] = v[k];
     }
 }
-export function assert(cond, msg) {
+exports.jsonCopyFrom = jsonCopyFrom;
+function assert(cond, msg) {
     if (msg === void 0) { msg = "Assertion failed"; }
     if (!cond) {
         debugger;
         throw new Error(msg);
     }
 }
-export function flatClone(obj) {
+exports.assert = assert;
+function flatClone(obj) {
     if (obj == null)
         return null;
     var r = {};
     Object.keys(obj).forEach(function (k) { r[k] = obj[k]; });
     return r;
 }
-export function clone(v) {
+exports.flatClone = flatClone;
+function clone(v) {
     if (v == null)
         return null;
     return JSON.parse(JSON.stringify(v));
 }
+exports.clone = clone;
 //# sourceMappingURL=utils.js.map
