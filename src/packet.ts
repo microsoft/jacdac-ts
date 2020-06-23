@@ -9,10 +9,7 @@ import {
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
 } from "./constants";
-import {
-    sendPacket
-} from "./bus";
-import { Device } from "./device";
+import { Device, Bus } from "./device";
 
 export class Packet {
     _header: Uint8Array;
@@ -189,17 +186,17 @@ export class Packet {
         return msg
     }
 
-    sendCoreAsync() {
+    sendCoreAsync(bus: Bus) {
         this._header[2] = this.size + 4
         write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)))
-        return sendPacket(this)
+        return bus.sendPacket(this)
     }
 
     sendReportAsync(dev: Device) {
         if (!dev)
             return Promise.resolve()
         this.device_identifier = dev.deviceId
-        return this.sendCoreAsync()
+        return this.sendCoreAsync(dev.bus)
     }
 
     sendCmdAsync(dev: Device) {
@@ -207,14 +204,14 @@ export class Packet {
             return Promise.resolve()
         this.device_identifier = dev.deviceId
         this._header[3] |= JD_FRAME_FLAG_COMMAND
-        return this.sendCoreAsync()
+        return this.sendCoreAsync(dev.bus)
     }
 
-    sendAsMultiCommandAsync(service_class: number) {
+    sendAsMultiCommandAsync(bus: Bus, service_class: number) {
         this._header[3] |= JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS | JD_FRAME_FLAG_COMMAND
         write32(this._header, 4, service_class)
         write32(this._header, 8, 0)
-        return this.sendCoreAsync()
+        return this.sendCoreAsync(bus)
     }
 
     static fromFrame(frame: Uint8Array, timestamp: number) {

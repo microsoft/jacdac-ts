@@ -1,5 +1,5 @@
 import { NumberFormat } from "./utils";
-import { Device } from "./device";
+import { Device, Bus } from "./device";
 export declare class Packet {
     _header: Uint8Array;
     _data: Uint8Array;
@@ -35,9 +35,9 @@ export declare class Packet {
     get is_command(): boolean;
     get is_report(): boolean;
     toString(): string;
-    sendCoreAsync(): Promise<void>;
+    sendCoreAsync(bus: Bus): Promise<void>;
     sendReportAsync(dev: Device): Promise<void>;
     sendCmdAsync(dev: Device): Promise<void>;
-    sendAsMultiCommandAsync(service_class: number): Promise<void>;
+    sendAsMultiCommandAsync(bus: Bus, service_class: number): Promise<void>;
     static fromFrame(frame: Uint8Array, timestamp: number): Packet[];
 }

@@ -372,23 +372,6 @@ function clone(v) {
 }
 //# sourceMappingURL=utils.js.map
 
-var _bus;
-/**
- * Register transport layer function that sends packet.
- * @param f transport function sending packet.
- */
-function setBus(bus) {
-    _bus = bus;
-}
-/**
- * Sends a packet over the bus
- * @param p
- */
-function sendPacket(p) {
-    return _bus ? _bus.send(p) : Promise.resolve();
-}
-//# sourceMappingURL=bus.js.map
-
 var Packet = /** @class */ (function () {
     function Packet() {
     }
@@ -602,29 +585,29 @@ var Packet = /** @class */ (function () {
             msg += ": " + toHex(this.data.slice(0, 20)) + "...";
         return msg;
     };
-    Packet.prototype.sendCoreAsync = function () {
+    Packet.prototype.sendCoreAsync = function (bus) {
         this._header[2] = this.size + 4;
         write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)));
-        return sendPacket(this);
+        return bus.sendPacket(this);
     };
     Packet.prototype.sendReportAsync = function (dev) {
         if (!dev)
             return Promise.resolve();
         this.device_identifier = dev.deviceId;
-        return this.sendCoreAsync();
+        return this.sendCoreAsync(dev.bus);
     };
     Packet.prototype.sendCmdAsync = function (dev) {
         if (!dev)
             return Promise.resolve();
         this.device_identifier = dev.deviceId;
         this._header[3] |= JD_FRAME_FLAG_COMMAND;
-        return this.sendCoreAsync();
+        return this.sendCoreAsync(dev.bus);
     };
-    Packet.prototype.sendAsMultiCommandAsync = function (service_class) {
+    Packet.prototype.sendAsMultiCommandAsync = function (bus, service_class) {
         this._header[3] |= JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS | JD_FRAME_FLAG_COMMAND;
         write32(this._header, 4, service_class);
         write32(this._header, 8, 0);
-        return this.sendCoreAsync();
+        return this.sendCoreAsync(bus);
     };
     Packet.fromFrame = function (frame, timestamp) {
         return frameToPackets(frame, timestamp);
@@ -664,30 +647,75 @@ function frameToPackets(frame, timestamp) {
 }
 //# sourceMappingURL=packet.js.map
 
-var devices_ = [];
-var deviceNames = {};
 /**
- * Gets the current list of known devices on the bus
+ * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-function getDevices() { return devices_.slice(); }
-/**
- * Gets a device on the bus
- * @param id
- */
-function getDevice(id) {
-    var d = devices_.find(function (d) { return d.deviceId == id; });
-    if (!d)
-        d = new Device(id);
-    return d;
-}
+var Bus = /** @class */ (function () {
+    /**
+     * Creates the bus with the given transport
+     * @param sendPacket
+     */
+    function Bus(sendPacket) {
+        this.sendPacket = sendPacket;
+        this.devices_ = [];
+        this.deviceNames = {};
+    }
+    /**
+     * Gets the current list of known devices on the bus
+     */
+    Bus.prototype.getDevices = function () { return this.devices_.slice(); };
+    /**
+     * Gets a device on the bus
+     * @param id
+     */
+    Bus.prototype.getDevice = function (id) {
+        var d = this.devices_.find(function (d) { return d.deviceId == id; });
+        if (!d) {
+            d = new Device(this, id);
+            this.devices_.push(d);
+        }
+        return d;
+    };
+    /**
+     * Ingests and process a packet received from the bus.
+     * @param pkt a jacdac packet
+     */
+    Bus.prototype.processPacket = function (pkt) {
+        if (pkt.multicommand_class) ;
+        else if (pkt.is_command) {
+            pkt.dev = this.getDevice(pkt.device_identifier);
+        }
+        else {
+            var dev = pkt.dev = this.getDevice(pkt.device_identifier);
+            dev.lastSeen = pkt.timestamp;
+            if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
+                if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+                    if (!bufferEq(pkt.data, dev.services)) {
+                        dev.services = pkt.data;
+                        dev.lastServiceUpdate = pkt.timestamp;
+                        // reattach(dev)
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Tries to find the given device by id
+     * @param id
+     */
+    Bus.prototype.lookupName = function (id) {
+        return this.deviceNames[id];
+    };
+    return Bus;
+}());
 var Device = /** @class */ (function () {
-    function Device(deviceId) {
+    function Device(bus, deviceId) {
+        this.bus = bus;
         this.deviceId = deviceId;
-        devices_.push(this);
     }
     Object.defineProperty(Device.prototype, "name", {
         get: function () {
-            return deviceNames[this.deviceId] || deviceNames[this.shortId];
+            return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId);
         },
         enumerable: false,
         configurable: true
@@ -734,29 +762,6 @@ function shortDeviceId(devid) {
         String.fromCharCode(0x41 + idiv(h, 26) % 26) +
         String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
         String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26);
-}
-/**
- * Ingests and process a packet received from the bus.
- * @param pkt a jacdac packet
- */
-function processPacket(pkt) {
-    if (pkt.multicommand_class) ;
-    else if (pkt.is_command) {
-        pkt.dev = getDevice(pkt.device_identifier);
-    }
-    else {
-        var dev = pkt.dev = getDevice(pkt.device_identifier);
-        dev.lastSeen = pkt.timestamp;
-        if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
-            if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-                if (!bufferEq(pkt.data, dev.services)) {
-                    dev.services = pkt.data;
-                    dev.lastServiceUpdate = pkt.timestamp;
-                    // reattach(dev)
-                }
-            }
-        }
-    }
 }
 //# sourceMappingURL=device.js.map
 
@@ -1472,5 +1477,5 @@ function parseLog(logcontents) {
 
 //# sourceMappingURL=jacdac.js.map
 
-export { REG_INTENSITY, REG_VALUE, REG_IS_STREAMING, REG_STREAMING_INTERVAL, REG_LOW_THRESHOLD, REG_HIGH_THRESHOLD, REG_MAX_POWER, REG_READING, CMD_GET_REG, CMD_SET_REG, CMD_TOP_MASK, CMD_REG_MASK, CMD_ADVERTISEMENT_DATA, CMD_EVENT, CMD_CALIBRATE, CMD_GET_DESCRIPTION, CMD_CTRL_NOOP, CMD_CTRL_IDENTIFY, CMD_CTRL_RESET, STREAM_PORT_SHIFT, STREAM_COUNTER_MASK, STREAM_CLOSE_MASK, STREAM_METADATA_MASK, JD_SERIAL_HEADER_SIZE, JD_SERIAL_MAX_PAYLOAD_SIZE, JD_SERVICE_NUMBER_MASK, JD_SERVICE_NUMBER_INV_MASK, JD_SERVICE_NUMBER_CRC_ACK, JD_SERVICE_NUMBER_STREAM, JD_SERVICE_NUMBER_CTRL, JD_FRAME_FLAG_COMMAND, JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, error, log, warn, delay, memcpy, bufferEq, hash, idiv, fnv1, crc, ALIGN, stringToUint8Array, uint8ArrayToString, fromUTF8, toUTF8, PromiseBuffer, PromiseQueue, toHex, fromHex, write32, write16, read32, read16, encodeU32LE, decodeU32LE, getNumber, bufferToString, bufferConcat, jsonCopyFrom, assert, flatClone, clone, Packet, deviceNames, getDevices, getDevice, Device, shortDeviceId, processPacket, setBus, sendPacket, HF2_CMD_BININFO, HF2_MODE_BOOTLOADER, HF2_MODE_USERSPACE, HF2_CMD_INFO, HF2_CMD_RESET_INTO_APP, HF2_CMD_RESET_INTO_BOOTLOADER, HF2_CMD_START_FLASH, HF2_CMD_WRITE_FLASH_PAGE, HF2_CMD_CHKSUM_PAGES, HF2_CMD_READ_WORDS, HF2_CMD_WRITE_WORDS, HF2_CMD_DMESG, HF2_FLAG_SERIAL_OUT, HF2_FLAG_SERIAL_ERR, HF2_FLAG_CMDPKT_LAST, HF2_FLAG_CMDPKT_BODY, HF2_FLAG_MASK, HF2_SIZE_MASK, HF2_STATUS_OK, HF2_STATUS_INVALID_CMD, HF2_STATUS_EXEC_ERR, HF2_STATUS_EVENT, HF2_EV_MASK, HF2_CMD_JDS_CONFIG, HF2_CMD_JDS_SEND, HF2_EV_JDS_PACKET, Transport, Proto, printPacket, parseLog };
+export { REG_INTENSITY, REG_VALUE, REG_IS_STREAMING, REG_STREAMING_INTERVAL, REG_LOW_THRESHOLD, REG_HIGH_THRESHOLD, REG_MAX_POWER, REG_READING, CMD_GET_REG, CMD_SET_REG, CMD_TOP_MASK, CMD_REG_MASK, CMD_ADVERTISEMENT_DATA, CMD_EVENT, CMD_CALIBRATE, CMD_GET_DESCRIPTION, CMD_CTRL_NOOP, CMD_CTRL_IDENTIFY, CMD_CTRL_RESET, STREAM_PORT_SHIFT, STREAM_COUNTER_MASK, STREAM_CLOSE_MASK, STREAM_METADATA_MASK, JD_SERIAL_HEADER_SIZE, JD_SERIAL_MAX_PAYLOAD_SIZE, JD_SERVICE_NUMBER_MASK, JD_SERVICE_NUMBER_INV_MASK, JD_SERVICE_NUMBER_CRC_ACK, JD_SERVICE_NUMBER_STREAM, JD_SERVICE_NUMBER_CTRL, JD_FRAME_FLAG_COMMAND, JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, error, log, warn, delay, memcpy, bufferEq, hash, idiv, fnv1, crc, ALIGN, stringToUint8Array, uint8ArrayToString, fromUTF8, toUTF8, PromiseBuffer, PromiseQueue, toHex, fromHex, write32, write16, read32, read16, encodeU32LE, decodeU32LE, getNumber, bufferToString, bufferConcat, jsonCopyFrom, assert, flatClone, clone, Packet, Bus, Device, shortDeviceId, HF2_CMD_BININFO, HF2_MODE_BOOTLOADER, HF2_MODE_USERSPACE, HF2_CMD_INFO, HF2_CMD_RESET_INTO_APP, HF2_CMD_RESET_INTO_BOOTLOADER, HF2_CMD_START_FLASH, HF2_CMD_WRITE_FLASH_PAGE, HF2_CMD_CHKSUM_PAGES, HF2_CMD_READ_WORDS, HF2_CMD_WRITE_WORDS, HF2_CMD_DMESG, HF2_FLAG_SERIAL_OUT, HF2_FLAG_SERIAL_ERR, HF2_FLAG_CMDPKT_LAST, HF2_FLAG_CMDPKT_BODY, HF2_FLAG_MASK, HF2_SIZE_MASK, HF2_STATUS_OK, HF2_STATUS_INVALID_CMD, HF2_STATUS_EXEC_ERR, HF2_STATUS_EVENT, HF2_EV_MASK, HF2_CMD_JDS_CONFIG, HF2_CMD_JDS_SEND, HF2_EV_JDS_PACKET, Transport, Proto, printPacket, parseLog };
 //# sourceMappingURL=jacdac.es5.js.map

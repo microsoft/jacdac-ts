@@ -1,58 +1,65 @@
 <html>
-    <head>
-        <style>
-body {
-    font-family: monospace;
-}
-#log {
-    margin-top: 1rem;
-}
-#log > div {
-    margin: 0.25rem;        
-}
-        </style>
-    </head>
-    <body>
-        <h1>JACDAC-TS: packet watcher</h1>
 
-        <div>
-            <button id="connect">connect</button>
-        </div>
-        <div id="log">
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
 
-        </div>
+        #log {
+            margin-top: 1rem;
+        }
 
-        <script src="/dist/jacdac.umd.js"></script>
-        <script>
-const connect = document.getElementById("connect");
-const logDiv = document.getElementById("log");
-const jacdac = window.jacdac;
+        #log>div {
+            margin: 0.25rem;
+        }
+    </style>
+</head>
 
-function log(msg) {
-    const line = document.createElement("div");
-    line.innerText = "" + msg;
-    logDiv.append(line)
-}
+<body>
+    <h1>JACDAC-TS: packet watcher</h1>
 
-async function sniff() {
-    log('starting')
-    const transport = new jacdac.Transport(filters => navigator.usb.requestDevice(filters));
-    const hf2 = new jacdac.Proto(transport);
+    <div>
+        <button id="connect">connect</button>
+    </div>
+    <div id="log">
 
-    try {
-        await hf2.init()
-        jacdac.setBus({
-            send: p => hf2.sendJDMessageAsync(p.toBuffer()).then(() => { }, err => console.log(err))
-        })
-        hf2.onJDMessage(buf => console.log(jacdac.printPkt(buf)));
-        log('started')
-    } catch (err) {
-        log(err)
-        await hf2.io.disconnectAsync()
-    }
-}
+    </div>
 
-connect.onclick = sniff;
-        </script>
-    </body>
+    <script src="/dist/jacdac.umd.js"></script>
+    <script>
+        const connect = document.getElementById("connect");
+        const logDiv = document.getElementById("log");
+        const jacdac = window.jacdac;
+
+        function log(msg) {
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            logDiv.append(line)
+        }
+
+        async function sniff() {
+            log('starting')
+            const transport = new jacdac.Transport(filters => navigator.usb.requestDevice(filters));
+            const hf2 = new jacdac.Proto(transport);
+
+            try {
+                await hf2.init()
+                const bus = new jacdac.Bus(p => hf2.sendJDMessageAsync(p.toBuffer()).then(() => { }, err => log(err)));
+                hf2.onJDMessage(buf => {
+                    const pkt = jacdac.Packet.fromBinary(buf)
+                    log(jacdac.printPkt(pkt));
+                    bus.processPacket(pkt);
+                });
+                log('started')
+            } catch (err) {
+                log(err)
+                await hf2.io.disconnectAsync()
+            }
+        }
+
+        connect.onclick = sniff;
+    </script>
+</body>
+
 </html>

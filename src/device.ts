@@ -2,24 +2,73 @@ import { Packet } from "./packet"
 import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 
-const devices_: Device[] = []
-export const deviceNames: SMap<string> = {}
-
 /**
- * Gets the current list of known devices on the bus
+ * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export function getDevices() { return devices_.slice() }
+export class Bus {
+    private devices_: Device[] = []
+    private deviceNames: SMap<string> = {}
 
-/**
- * Gets a device on the bus
- * @param id 
- */
-export function getDevice(id: string) {
-    let d = devices_.find(d => d.deviceId == id)
-    if (!d)
-        d = new Device(id)
-    return d
+    /**
+     * Creates the bus with the given transport
+     * @param sendPacket 
+     */
+    constructor(public sendPacket: (p: Packet) => Promise<void>) {
+    }
+
+    /**
+     * Gets the current list of known devices on the bus
+     */
+    getDevices() { return this.devices_.slice() }
+
+    /**
+     * Gets a device on the bus
+     * @param id 
+     */
+    getDevice(id: string) {
+        let d = this.devices_.find(d => d.deviceId == id)
+        if (!d) {
+            d = new Device(this, id)
+            this.devices_.push(d);
+        }
+        return d
+    }
+
+
+    /**
+     * Ingests and process a packet received from the bus.
+     * @param pkt a jacdac packet
+     */
+    processPacket(pkt: Packet) {
+        if (pkt.multicommand_class) {
+            //
+        } else if (pkt.is_command) {
+            pkt.dev = this.getDevice(pkt.device_identifier)
+        } else {
+            const dev = pkt.dev = this.getDevice(pkt.device_identifier)
+            dev.lastSeen = pkt.timestamp
+
+            if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
+                if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+                    if (!bufferEq(pkt.data, dev.services)) {
+                        dev.services = pkt.data
+                        dev.lastServiceUpdate = pkt.timestamp
+                        // reattach(dev)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Tries to find the given device by id
+     * @param id 
+     */
+    lookupName(id: string) {
+        return this.deviceNames[id];
+    }
 }
+
 
 export class Device {
     services: Uint8Array
@@ -28,12 +77,11 @@ export class Device {
     currentReading: Uint8Array
     private _shortId: string
 
-    constructor(public deviceId: string) {
-        devices_.push(this)
+    constructor(public bus: Bus, public deviceId: string) {
     }
 
     get name() {
-        return deviceNames[this.deviceId] || deviceNames[this.shortId]
+        return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId);
     }
 
     get shortId() {
@@ -78,30 +126,4 @@ export function shortDeviceId(devid: string) {
         String.fromCharCode(0x41 + idiv(h, 26) % 26) +
         String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
         String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26)
-}
-
-
-/**
- * Ingests and process a packet received from the bus.
- * @param pkt a jacdac packet
- */
-export function processPacket(pkt: Packet) {
-    if (pkt.multicommand_class) {
-        //
-    } else if (pkt.is_command) {
-        pkt.dev = getDevice(pkt.device_identifier)
-    } else {
-        const dev = pkt.dev = getDevice(pkt.device_identifier)
-        dev.lastSeen = pkt.timestamp
-
-        if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
-            if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-                if (!bufferEq(pkt.data, dev.services)) {
-                    dev.services = pkt.data
-                    dev.lastServiceUpdate = pkt.timestamp
-                    // reattach(dev)
-                }
-            }
-        }
-    }
 }

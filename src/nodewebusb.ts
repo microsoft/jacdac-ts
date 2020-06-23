@@ -7,9 +7,6 @@ const usb = new webusb.USB({
                 for (const iface of device.configuration.interfaces) {
                     const alt = iface.alternates[0]
                     if (alt.interfaceClass == 0xff && alt.interfaceSubclass == 42) {
-                        this.dev = device
-                        this.iface = iface
-                        this.altIface = alt
                         return device
                     }
                 }

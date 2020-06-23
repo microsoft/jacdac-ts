@@ -93,7 +93,6 @@ export const HF2_CMD_JDS_CONFIG = 0x0020
 export const HF2_CMD_JDS_SEND = 0x0021
 export const HF2_EV_JDS_PACKET = 0x800020
 
-
 export class Transport {
     dev: USBDevice;
     iface: USBInterface;
