@@ -20,6 +20,10 @@ const usb = new webusb.USB({
     }
 })
 
+/**
+ * Node.JS webusb bindings. Make sure to add "webusb" to your package.json config.
+ * @param options 
+ */
 function requestDevice(options: USBDeviceRequestOptions) {
     return usb.requestDevice(options);
 }
