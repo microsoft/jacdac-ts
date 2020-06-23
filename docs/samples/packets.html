@@ -35,6 +35,8 @@
             const line = document.createElement("div");
             line.innerText = "" + msg;
             logDiv.append(line)
+            if (logDiv.childElementCount > 100)
+                logDiv.firstElementChild.remove()
         }
 
         async function sniff() {
@@ -42,6 +44,9 @@
             let bus;
             try {
                 bus = await jacdac.requestUSBBus();
+                bus.on('packet', pkt => log(`packet: ${pkt}`))
+                bus.on('device', dev => log(`device: ${dev}`))
+                bus.on('advertisement', dev => log(`advertisement: ${dev}`))
                 log('started')
             } catch (err) {
                 log(err)

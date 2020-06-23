@@ -1,4 +1,5 @@
 export * from './constants'
+export * from './eventemitter'
 export * from './utils'
 export * from './packet'
 export * from './device'

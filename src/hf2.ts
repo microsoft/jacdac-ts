@@ -236,14 +236,12 @@ export class Transport {
         this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName)
 
         // resolve interfaces
-        if (this.dev.deviceVersionMajor == 42) {
-            for (const iface of this.dev.configuration.interfaces) {
-                const alt = iface.alternates[0]
-                if (alt.interfaceClass == 0xff && alt.interfaceSubclass == 42) {
-                    this.iface = iface;
-                    this.altIface = alt;
-                    break;
-                }
+        for (const iface of this.dev.configuration.interfaces) {
+            const alt = iface.alternates[0]
+            if (alt.interfaceClass == 0xff && alt.interfaceSubclass == 42) {
+                this.iface = iface;
+                this.altIface = alt;
+                break;
             }
         }
 
@@ -430,24 +428,19 @@ export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOp
 
     await hf2.init()
 
-    const bus = new Bus({ sendPacket, disconnect });
-    hf2.onJDMessage(receivePacket);
-
-    function receivePacket(buf: Uint8Array) {
+    const bus = new Bus({
+        sendPacket: p => {
+            const buf = p.toBuffer();
+            return hf2.sendJDMessageAsync(buf)
+                .then(() => { });
+            //.catch(err => log(err)); TODO
+        },
+        disconnect: () => hf2.disconnectAsync()
+    });
+    hf2.onJDMessage(buf => {
         const pkt = Packet.fromBinary(buf)
         bus.processPacket(pkt);
-    }
-
-    function sendPacket(p: Packet): Promise<void> {
-        const buf = p.toBuffer();
-        return hf2.sendJDMessageAsync(buf)
-            .then(() => { });
-        //.catch(err => log(err)); TODO
-    }
-
-    function disconnect(): Promise<void> {
-        return hf2.disconnectAsync();
-    }
+    });
 
     return bus;
 }

@@ -1,16 +1,39 @@
 import { Packet } from "./packet"
 import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
+import { EventEmitter } from "./eventemitter"
 
 export interface BusOptions {
     sendPacket: (p: Packet) => Promise<void>;
     disconnect: () => Promise<void>;
 }
 
+export interface PacketEventEmitter {
+    /**
+     * Event emitted when a packet is received and processed
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'packet', listener: (packet: Packet) => void): boolean;
+    /**
+     * Event emitted when a device is detected on the bus. The information on the device might not be fully populated yet.
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'device', listener: (device: Device) => void): boolean;
+
+    /**
+     * Event emitted device advertisement information for a device has been updated
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'advertisement', listener: (device: Device) => void): boolean;
+}
+
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export class Bus {
+export class Bus extends EventEmitter implements PacketEventEmitter {
     private devices_: Device[] = []
     private deviceNames: SMap<string> = {}
 
@@ -19,14 +42,16 @@ export class Bus {
      * @param sendPacket 
      */
     constructor(public options: BusOptions) {
+        super()
     }
 
     sendPacket(p: Packet) {
         return this.options.sendPacket(p);
     }
 
-    disconnect() {
-        return this.options.disconnect();
+    disconnect(): Promise<void> {
+        return this.options.disconnect()
+            .then(() => { this.emit("disconnect") })
     }
 
     /**
@@ -43,10 +68,10 @@ export class Bus {
         if (!d) {
             d = new Device(this, id)
             this.devices_.push(d);
+            this.emit('device', d);
         }
         return d
     }
-
 
     /**
      * Ingests and process a packet received from the bus.
@@ -66,11 +91,12 @@ export class Bus {
                     if (!bufferEq(pkt.data, dev.services)) {
                         dev.services = pkt.data
                         dev.lastServiceUpdate = pkt.timestamp
-                        // reattach(dev)
+                        this.emit('advertisement', dev);
                     }
                 }
             }
         }
+        this.emit('packet', pkt)
     }
 
     /**
