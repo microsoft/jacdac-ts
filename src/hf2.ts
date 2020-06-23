@@ -230,7 +230,23 @@ export class Transport {
 
     async init() {
         this.dev = await this.requestDevice({ filters: [{}] })
+        this.iface = undefined;
+        this.altIface = undefined;
         this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName)
+
+        // resolve interfaces
+        if (this.dev.deviceVersionMajor == 42) {
+            for (const iface of this.dev.configuration.interfaces) {
+                const alt = iface.alternates[0]
+                if (alt.interfaceClass == 0xff && alt.interfaceSubclass == 42) {
+                    this.iface = iface;
+                    this.altIface = alt;
+                    break;
+                }
+            }
+        }
+
+        if (!this.iface) throw new Error("HF2 interface not found")
 
         await this.dev.open()
         await this.dev.selectConfiguration(1)

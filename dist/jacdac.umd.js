@@ -1030,21 +1030,37 @@
         };
         Transport.prototype.init = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var _a;
-                return __generator(this, function (_b) {
-                    switch (_b.label) {
+                var _a, _i, _b, iface, alt;
+                return __generator(this, function (_c) {
+                    switch (_c.label) {
                         case 0:
                             _a = this;
                             return [4 /*yield*/, this.requestDevice({ filters: [{}] })];
                         case 1:
-                            _a.dev = _b.sent();
+                            _a.dev = _c.sent();
+                            this.iface = undefined;
+                            this.altIface = undefined;
                             this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName);
+                            // resolve interfaces
+                            if (this.dev.deviceVersionMajor == 42) {
+                                for (_i = 0, _b = this.dev.configuration.interfaces; _i < _b.length; _i++) {
+                                    iface = _b[_i];
+                                    alt = iface.alternates[0];
+                                    if (alt.interfaceClass == 0xff && alt.interfaceSubclass == 42) {
+                                        this.iface = iface;
+                                        this.altIface = alt;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!this.iface)
+                                throw new Error("HF2 interface not found");
                             return [4 /*yield*/, this.dev.open()];
                         case 2:
-                            _b.sent();
+                            _c.sent();
                             return [4 /*yield*/, this.dev.selectConfiguration(1)];
                         case 3:
-                            _b.sent();
+                            _c.sent();
                             if (this.altIface.endpoints.length) {
                                 this.epIn = this.altIface.endpoints.filter(function (e) { return e.direction == "in"; })[0];
                                 this.epOut = this.altIface.endpoints.filter(function (e) { return e.direction == "out"; })[0];
@@ -1054,7 +1070,7 @@
                             this.log("claim interface");
                             return [4 /*yield*/, this.dev.claimInterface(this.iface.interfaceNumber)];
                         case 4:
-                            _b.sent();
+                            _c.sent();
                             this.log("all connected");
                             this.ready = true;
                             this.readLoop();

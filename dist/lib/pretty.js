@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseLog = exports.printPacket = void 0;
-var U = require("./utils");
-var jd = require("./constants");
+import * as U from "./utils";
+import * as jd from "./constants";
 var service_classes = {
     "<disabled>": -1,
     CTRL: 0,
@@ -106,7 +103,7 @@ function toHex(n) {
 function num2str(n) {
     return n + " (0x" + n.toString(16) + ")";
 }
-function printPacket(pkt, opts) {
+export function printPacket(pkt, opts) {
     var _a;
     if (opts === void 0) { opts = {}; }
     var frame_flags = pkt._header[3];
@@ -178,8 +175,7 @@ function printPacket(pkt, opts) {
     }
     return Math.round(pkt.timestamp) + "ms: " + pdesc;
 }
-exports.printPacket = printPacket;
-function parseLog(logcontents) {
+export function parseLog(logcontents) {
     var res = [];
     var frameBytes = [];
     var lastTime = 0;
@@ -222,5 +218,4 @@ function parseLog(logcontents) {
     }
     return res;
 }
-exports.parseLog = parseLog;
 //# sourceMappingURL=pretty.js.map
