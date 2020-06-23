@@ -24,7 +24,7 @@
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "predist": "rm -rf dist",
-    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
+    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && npx replace-in-file ./dist/ https://cdn.jsdelivr.net/npm/jacdac-ts/dist/ ./docs/**/*.html --verbose",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
