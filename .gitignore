@@ -7,3 +7,4 @@ node_modules
 compiled
 .awcache
 .rpt2_cache
+dist
