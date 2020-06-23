@@ -123,7 +123,7 @@ export interface Options {
     skipRepeatedReading?: boolean;
 }
 
-export function printPkt(pkt: Packet, opts: Options = {}) {
+export function printPacket(pkt: Packet, opts: Options = {}): string {
     const frame_flags = pkt._header[3]
 
     let devname = pkt.dev ? pkt.dev.name || pkt.dev.shortId : pkt.device_identifier

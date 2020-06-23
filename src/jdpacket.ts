@@ -8,7 +8,7 @@ import {
     JD_SERVICE_NUMBER_MASK,
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
-    sendPacketAsync
+    sendPacket
 } from "./jd";
 import { Device } from "./jddevice";
 
@@ -190,7 +190,7 @@ export class Packet {
     sendCoreAsync() {
         this._header[2] = this.size + 4
         write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)))
-        return sendPacketAsync(this)
+        return sendPacket(this)
     }
 
     sendReportAsync(dev: Device) {

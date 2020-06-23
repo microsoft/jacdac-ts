@@ -75,22 +75,29 @@ export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 // the device_identifier contains target service class number
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
-let sendPacketFn = (p: Packet) => Promise.resolve(undefined)
+/**
+ * A transport layer for the jacdac packets
+ */
+export interface Bus {
+    send: (p: Packet) => Promise<void>;
+}
+
+let _bus: Bus;
 
 /**
  * Register transport layer function that sends packet.
  * @param f transport function sending packet.
  */
-export function setSendPacketFn(f: (p: Packet) => Promise<void>) {
-    sendPacketFn = f
+export function setBus(bus: Bus) {
+    _bus = bus;
 }
 
 /**
  * Sends a packet over the bus
  * @param p 
  */
-export function sendPacketAsync(p: Packet): Promise<void> {
-    return sendPacketFn(p);
+export function sendPacket(p: Packet): Promise<void> {
+    return _bus ? _bus.send(p) : Promise.resolve();
 }
 
 /**
