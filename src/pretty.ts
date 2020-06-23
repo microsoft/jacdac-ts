@@ -131,7 +131,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
     if (frame_flags & jd.JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
         devname = "[mul] " + serviceName(pkt.multicommand_class)
 
-    const serv_id = serviceName(pkt?.dev?.serviceAt(pkt.service_number))
+    const serv_id = serviceName(pkt?.dev?.serviceClassAt(pkt.service_number))
     let service_name = `${serv_id} (${pkt.service_number})`
     const cmd = pkt.service_command
     let cmdname = commandName(cmd)
@@ -167,7 +167,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
         } else {
             const services = []
             for (let i = 0; i < pkt.dev.services.length >> 2; i++) {
-                services.push(serviceName(pkt.dev.serviceAt(i)))
+                services.push(serviceName(pkt.dev.serviceClassAt(i)))
             }
             pdesc += "; " + "Announce services: " + services.join(", ")
         }

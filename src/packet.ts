@@ -83,7 +83,7 @@ export class Packet {
 
     get service_class(): number {
         if (this.dev)
-            return this.dev.serviceAt(this.service_number)
+            return this.dev.serviceClassAt(this.service_number)
         return undefined
     }
 

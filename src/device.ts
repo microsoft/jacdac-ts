@@ -134,14 +134,14 @@ export class Device {
         return this.shortId + (this.name ? ` (${this.name})` : ``)
     }
 
-    hasService(service_class: number) {
+    hasService(service_class: number): boolean {
         for (let i = 4; i < this.services.length; i += 4)
             if (getNumber(this.services, NumberFormat.UInt32LE, i) == service_class)
                 return true
         return false
     }
 
-    serviceAt(idx: number) {
+    serviceClassAt(idx: number): number {
         idx <<= 2
         if (!this.services || idx + 4 > this.services.length)
             return undefined
