@@ -8,8 +8,10 @@ import {
     JD_SERVICE_NUMBER_MASK,
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
+} from "./jdconstants";
+import {
     sendPacket
-} from "./jd";
+} from "./jdbus";
 import { Device } from "./jddevice";
 
 export class Packet {

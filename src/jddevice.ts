@@ -1,11 +1,19 @@
 import { Packet } from "./jdpacket"
-import { JD_SERVICE_NUMBER_CTRL } from "./jd"
+import { JD_SERVICE_NUMBER_CTRL } from "./jdconstants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap } from "./jdutils"
 
 const devices_: Device[] = []
 export const deviceNames: SMap<string> = {}
+
+/**
+ * Gets the current list of known devices on the bus
+ */
 export function getDevices() { return devices_.slice() }
 
+/**
+ * Gets a device on the bus
+ * @param id 
+ */
 export function getDevice(id: string) {
     let d = devices_.find(d => d.deviceId == id)
     if (!d)

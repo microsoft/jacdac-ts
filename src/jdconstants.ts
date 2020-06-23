@@ -1,6 +1,3 @@
-import { Packet } from "./jdpacket"
-import { getDevice } from "./jddevice"
-import { bufferEq } from "./jdutils"
 
 // Registers 0x001-0x07f - r/w common to all services
 // Registers 0x080-0x0ff - r/w defined per-service
@@ -74,53 +71,3 @@ export const JD_FRAME_FLAG_COMMAND = 0x01
 export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 // the device_identifier contains target service class number
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
-
-/**
- * A transport layer for the jacdac packets
- */
-export interface Bus {
-    send: (p: Packet) => Promise<void>;
-}
-
-let _bus: Bus;
-
-/**
- * Register transport layer function that sends packet.
- * @param f transport function sending packet.
- */
-export function setBus(bus: Bus) {
-    _bus = bus;
-}
-
-/**
- * Sends a packet over the bus
- * @param p 
- */
-export function sendPacket(p: Packet): Promise<void> {
-    return _bus ? _bus.send(p) : Promise.resolve();
-}
-
-/**
- * Ingests and process a packet received from the bus.
- * @param pkt a jacdac packet
- */
-export function processPacket(pkt: Packet) {
-    if (pkt.multicommand_class) {
-        //
-    } else if (pkt.is_command) {
-        pkt.dev = getDevice(pkt.device_identifier)
-    } else {
-        const dev = pkt.dev = getDevice(pkt.device_identifier)
-        dev.lastSeen = pkt.timestamp
-
-        if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
-            if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-                if (!bufferEq(pkt.data, dev.services)) {
-                    dev.services = pkt.data
-                    dev.lastServiceUpdate = pkt.timestamp
-                    // reattach(dev)
-                }
-            }
-        }
-    }
-}

@@ -1,5 +1,5 @@
 import * as U from "./jdutils"
-import * as jd from "./jd"
+import * as jd from "./jdconstants"
 import { Packet } from "./jdpacket"
 
 const service_classes: U.SMap<number> = {
