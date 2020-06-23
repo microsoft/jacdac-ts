@@ -1,5 +1,5 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
+import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, ConsolePriority } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 import { EventEmitter } from "./eventemitter"
 
@@ -27,15 +27,16 @@ export interface PacketEventEmitter {
      * @param event 
      * @param listener 
      */
-    on(event: 'advertisement', listener: (device: Device) => void): boolean;
+    on(event: 'announce', listener: (device: Device) => void): boolean;
 }
 
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
 export class Bus extends EventEmitter implements PacketEventEmitter {
-    private devices_: Device[] = []
-    private deviceNames: SMap<string> = {}
+    private _devices: Device[] = []
+    private _deviceNames: SMap<string> = {}
+    consolePriority = ConsolePriority.Log;
 
     /**
      * Creates the bus with the given transport
@@ -57,17 +58,17 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     /**
      * Gets the current list of known devices on the bus
      */
-    getDevices() { return this.devices_.slice() }
+    devices() { return this._devices.slice() }
 
     /**
      * Gets a device on the bus
      * @param id 
      */
-    getDevice(id: string) {
-        let d = this.devices_.find(d => d.deviceId == id)
+    device(id: string) {
+        let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
             d = new Device(this, id)
-            this.devices_.push(d);
+            this._devices.push(d);
             this.emit('device', d);
         }
         return d
@@ -81,9 +82,9 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         if (pkt.multicommand_class) {
             //
         } else if (pkt.is_command) {
-            pkt.dev = this.getDevice(pkt.device_identifier)
+            pkt.dev = this.device(pkt.device_identifier)
         } else {
-            const dev = pkt.dev = this.getDevice(pkt.device_identifier)
+            const dev = pkt.dev = this.device(pkt.device_identifier)
             dev.lastSeen = pkt.timestamp
 
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
@@ -91,7 +92,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                     if (!bufferEq(pkt.data, dev.services)) {
                         dev.services = pkt.data
                         dev.lastServiceUpdate = pkt.timestamp
-                        this.emit('advertisement', dev);
+                        this.emit('announce', dev);
                     }
                 }
             }
@@ -104,7 +105,13 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * @param id 
      */
     lookupName(id: string) {
-        return this.deviceNames[id];
+        return this._deviceNames[id];
+    }
+
+    log(msg: any, ...optionalArgs: any[]) {
+        if (this.consolePriority > ConsolePriority.Log)
+            return
+        console.log(msg, optionalArgs);
     }
 }
 

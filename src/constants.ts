@@ -71,3 +71,11 @@ export const JD_FRAME_FLAG_COMMAND = 0x01
 export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 // the device_identifier contains target service class number
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
+
+export const enum ConsolePriority {
+    Debug = 0,
+    Log = 1,
+    Warning = 2,
+    Error = 3,
+    Silent = 4
+}
