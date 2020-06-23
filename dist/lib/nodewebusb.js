@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,10 +35,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.requestDevice = void 0;
 var webusb = require('webusb');
 var usb = new webusb.USB({
-    devicesFound: function (devices) { return __awaiter(_this, void 0, void 0, function () {
+    devicesFound: function (devices) { return __awaiter(void 0, void 0, void 0, function () {
         var _i, devices_1, device, _a, _b, iface, alt;
         return __generator(this, function (_c) {
             for (_i = 0, devices_1 = devices; _i < devices_1.length; _i++) {
@@ -66,4 +68,5 @@ var usb = new webusb.USB({
 function requestDevice(options) {
     return usb.requestDevice(options);
 }
+exports.requestDevice = requestDevice;
 //# sourceMappingURL=nodewebusb.js.map
