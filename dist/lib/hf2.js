@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,15 +35,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import * as U from "./utils";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Proto = exports.Transport = exports.HF2_EV_JDS_PACKET = exports.HF2_CMD_JDS_SEND = exports.HF2_CMD_JDS_CONFIG = exports.HF2_EV_MASK = exports.HF2_STATUS_EVENT = exports.HF2_STATUS_EXEC_ERR = exports.HF2_STATUS_INVALID_CMD = exports.HF2_STATUS_OK = exports.HF2_SIZE_MASK = exports.HF2_FLAG_MASK = exports.HF2_FLAG_CMDPKT_BODY = exports.HF2_FLAG_CMDPKT_LAST = exports.HF2_FLAG_SERIAL_ERR = exports.HF2_FLAG_SERIAL_OUT = exports.HF2_CMD_DMESG = exports.HF2_CMD_WRITE_WORDS = exports.HF2_CMD_READ_WORDS = exports.HF2_CMD_CHKSUM_PAGES = exports.HF2_CMD_WRITE_FLASH_PAGE = exports.HF2_CMD_START_FLASH = exports.HF2_CMD_RESET_INTO_BOOTLOADER = exports.HF2_CMD_RESET_INTO_APP = exports.HF2_CMD_INFO = exports.HF2_MODE_USERSPACE = exports.HF2_MODE_BOOTLOADER = exports.HF2_CMD_BININFO = void 0;
+var U = require("./utils");
 var controlTransferGetReport = 0x01;
 var controlTransferSetReport = 0x09;
 var controlTransferOutReport = 0x200;
 var controlTransferInReport = 0x100;
 // see https://github.com/microsoft/uf2/blob/master/hf2.md for full spec
-export var HF2_CMD_BININFO = 0x0001; // no arguments
-export var HF2_MODE_BOOTLOADER = 0x01;
-export var HF2_MODE_USERSPACE = 0x02;
+exports.HF2_CMD_BININFO = 0x0001; // no arguments
+exports.HF2_MODE_BOOTLOADER = 0x01;
+exports.HF2_MODE_USERSPACE = 0x02;
 /*
 struct HF2_BININFO_Result {
     uint32_t mode;
@@ -51,13 +54,13 @@ struct HF2_BININFO_Result {
     uint32_t max_message_size;
 };
 */
-export var HF2_CMD_INFO = 0x0002;
+exports.HF2_CMD_INFO = 0x0002;
 // no arguments
 // results is utf8 character array
-export var HF2_CMD_RESET_INTO_APP = 0x0003; // no arguments, no result
-export var HF2_CMD_RESET_INTO_BOOTLOADER = 0x0004; // no arguments, no result
-export var HF2_CMD_START_FLASH = 0x0005; // no arguments, no result
-export var HF2_CMD_WRITE_FLASH_PAGE = 0x0006;
+exports.HF2_CMD_RESET_INTO_APP = 0x0003; // no arguments, no result
+exports.HF2_CMD_RESET_INTO_BOOTLOADER = 0x0004; // no arguments, no result
+exports.HF2_CMD_START_FLASH = 0x0005; // no arguments, no result
+exports.HF2_CMD_WRITE_FLASH_PAGE = 0x0006;
 /*
 struct HF2_WRITE_FLASH_PAGE_Command {
     uint32_t target_addr;
@@ -65,7 +68,7 @@ struct HF2_WRITE_FLASH_PAGE_Command {
 };
 */
 // no result
-export var HF2_CMD_CHKSUM_PAGES = 0x0007;
+exports.HF2_CMD_CHKSUM_PAGES = 0x0007;
 /*
 struct HF2_CHKSUM_PAGES_Command {
     uint32_t target_addr;
@@ -75,7 +78,7 @@ struct HF2_CHKSUM_PAGES_Result {
     uint16_t chksums[num_pages];
 };
 */
-export var HF2_CMD_READ_WORDS = 0x0008;
+exports.HF2_CMD_READ_WORDS = 0x0008;
 /*
 struct HF2_READ_WORDS_Command {
     uint32_t target_addr;
@@ -85,7 +88,7 @@ struct HF2_READ_WORDS_Result {
     uint32_t words[num_words];
 };
 */
-export var HF2_CMD_WRITE_WORDS = 0x0009;
+exports.HF2_CMD_WRITE_WORDS = 0x0009;
 /*
 struct HF2_WRITE_WORDS_Command {
     uint32_t target_addr;
@@ -94,25 +97,25 @@ struct HF2_WRITE_WORDS_Command {
 };
 */
 // no result
-export var HF2_CMD_DMESG = 0x0010;
+exports.HF2_CMD_DMESG = 0x0010;
 // no arguments
 // results is utf8 character array
-export var HF2_FLAG_SERIAL_OUT = 0x80;
-export var HF2_FLAG_SERIAL_ERR = 0xC0;
-export var HF2_FLAG_CMDPKT_LAST = 0x40;
-export var HF2_FLAG_CMDPKT_BODY = 0x00;
-export var HF2_FLAG_MASK = 0xC0;
-export var HF2_SIZE_MASK = 63;
-export var HF2_STATUS_OK = 0x00;
-export var HF2_STATUS_INVALID_CMD = 0x01;
-export var HF2_STATUS_EXEC_ERR = 0x02;
-export var HF2_STATUS_EVENT = 0x80;
+exports.HF2_FLAG_SERIAL_OUT = 0x80;
+exports.HF2_FLAG_SERIAL_ERR = 0xC0;
+exports.HF2_FLAG_CMDPKT_LAST = 0x40;
+exports.HF2_FLAG_CMDPKT_BODY = 0x00;
+exports.HF2_FLAG_MASK = 0xC0;
+exports.HF2_SIZE_MASK = 63;
+exports.HF2_STATUS_OK = 0x00;
+exports.HF2_STATUS_INVALID_CMD = 0x01;
+exports.HF2_STATUS_EXEC_ERR = 0x02;
+exports.HF2_STATUS_EVENT = 0x80;
 // the eventId is overlayed on the tag+status; the mask corresponds
 // to the HF2_STATUS_EVENT above
-export var HF2_EV_MASK = 0x800000;
-export var HF2_CMD_JDS_CONFIG = 0x0020;
-export var HF2_CMD_JDS_SEND = 0x0021;
-export var HF2_EV_JDS_PACKET = 0x800020;
+exports.HF2_EV_MASK = 0x800000;
+exports.HF2_CMD_JDS_CONFIG = 0x0020;
+exports.HF2_CMD_JDS_SEND = 0x0021;
+exports.HF2_EV_JDS_PACKET = 0x800020;
 var Transport = /** @class */ (function () {
     function Transport(requestDevice) {
         this.requestDevice = requestDevice;
@@ -304,7 +307,7 @@ var Transport = /** @class */ (function () {
     };
     return Transport;
 }());
-export { Transport };
+exports.Transport = Transport;
 var Proto = /** @class */ (function () {
     function Proto(io) {
         var _this = this;
@@ -315,21 +318,21 @@ var Proto = /** @class */ (function () {
         this.lock = new U.PromiseQueue();
         var frames = [];
         io.onData = function (buf) {
-            var tp = buf[0] & HF2_FLAG_MASK;
+            var tp = buf[0] & exports.HF2_FLAG_MASK;
             var len = buf[0] & 63;
             //console.log(`msg tp=${tp} len=${len}`)
             var frame = new Uint8Array(len);
             U.memcpy(frame, 0, buf, 1, len);
-            if (tp & HF2_FLAG_SERIAL_OUT) {
-                _this.onSerial(frame, tp == HF2_FLAG_SERIAL_ERR);
+            if (tp & exports.HF2_FLAG_SERIAL_OUT) {
+                _this.onSerial(frame, tp == exports.HF2_FLAG_SERIAL_ERR);
                 return;
             }
             frames.push(frame);
-            if (tp == HF2_FLAG_CMDPKT_BODY) {
+            if (tp == exports.HF2_FLAG_CMDPKT_BODY) {
                 return;
             }
             else {
-                U.assert(tp == HF2_FLAG_CMDPKT_LAST);
+                U.assert(tp == exports.HF2_FLAG_CMDPKT_LAST);
                 var total = 0;
                 for (var _i = 0, frames_1 = frames; _i < frames_1.length; _i++) {
                     var f = frames_1[_i];
@@ -343,7 +346,7 @@ var Proto = /** @class */ (function () {
                     ptr += f.length;
                 }
                 frames = [];
-                if (r[2] & HF2_STATUS_EVENT) {
+                if (r[2] & exports.HF2_STATUS_EVENT) {
                     // asynchronous event
                     _this.handleEvent(r);
                 }
@@ -384,12 +387,12 @@ var Proto = /** @class */ (function () {
                 if (res[3])
                     info = "; info=" + res[3];
                 switch (res[2]) {
-                    case HF2_STATUS_OK:
+                    case exports.HF2_STATUS_OK:
                         return res.slice(4);
-                    case HF2_STATUS_INVALID_CMD:
+                    case exports.HF2_STATUS_INVALID_CMD:
                         _this.error("invalid command" + info);
                         break;
-                    case HF2_STATUS_EXEC_ERR:
+                    case exports.HF2_STATUS_EXEC_ERR:
                         _this.error("execution error" + info);
                         break;
                     default:
@@ -415,13 +418,13 @@ var Proto = /** @class */ (function () {
                 return Promise.resolve();
             if (len > 63) {
                 len = 63;
-                frame[0] = HF2_FLAG_CMDPKT_BODY;
+                frame[0] = exports.HF2_FLAG_CMDPKT_BODY;
             }
             else {
-                frame[0] = HF2_FLAG_CMDPKT_LAST;
+                frame[0] = exports.HF2_FLAG_CMDPKT_LAST;
             }
             if (serial)
-                frame[0] = serial == 1 ? HF2_FLAG_SERIAL_OUT : HF2_FLAG_SERIAL_ERR;
+                frame[0] = serial == 1 ? exports.HF2_FLAG_SERIAL_OUT : exports.HF2_FLAG_SERIAL_ERR;
             frame[0] |= len;
             for (var i = 0; i < len; ++i)
                 frame[i + 1] = buf[pos + i];
@@ -431,15 +434,15 @@ var Proto = /** @class */ (function () {
         return loop(0);
     };
     Proto.prototype.onEvent = function (id, f) {
-        U.assert(!!(id & HF2_EV_MASK));
+        U.assert(!!(id & exports.HF2_EV_MASK));
         this.eventHandlers[id + ""] = f;
     };
     Proto.prototype.onJDMessage = function (f) {
-        this.talkAsync(HF2_CMD_JDS_CONFIG, U.encodeU32LE([1]));
-        this.onEvent(HF2_EV_JDS_PACKET, f);
+        this.talkAsync(exports.HF2_CMD_JDS_CONFIG, U.encodeU32LE([1]));
+        this.onEvent(exports.HF2_EV_JDS_PACKET, f);
     };
     Proto.prototype.sendJDMessageAsync = function (buf) {
-        return this.talkAsync(HF2_CMD_JDS_SEND, buf);
+        return this.talkAsync(exports.HF2_CMD_JDS_SEND, buf);
     };
     Proto.prototype.handleEvent = function (buf) {
         var evid = U.read32(buf, 0);
@@ -462,7 +465,7 @@ var Proto = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.io.init()];
                     case 1:
                         _a.sent();
-                        return [4 /*yield*/, this.talkAsync(HF2_CMD_INFO)];
+                        return [4 /*yield*/, this.talkAsync(exports.HF2_CMD_INFO)];
                     case 2:
                         buf = _a.sent();
                         this.io.log("Connected to: " + U.bufferToString(buf));
@@ -473,5 +476,5 @@ var Proto = /** @class */ (function () {
     };
     return Proto;
 }());
-export { Proto };
+exports.Proto = Proto;
 //# sourceMappingURL=hf2.js.map

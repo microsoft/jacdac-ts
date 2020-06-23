@@ -66,7 +66,6 @@
     var JD_FRAME_FLAG_ACK_REQUESTED = 0x02;
     // the device_identifier contains target service class number
     var JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04;
-    //# sourceMappingURL=constants.js.map
 
     function error(msg) {
         throw new Error(msg);
@@ -376,7 +375,6 @@
             return null;
         return JSON.parse(JSON.stringify(v));
     }
-    //# sourceMappingURL=utils.js.map
 
     var _bus;
     /**
@@ -393,7 +391,6 @@
     function sendPacket(p) {
         return _bus ? _bus.send(p) : Promise.resolve();
     }
-    //# sourceMappingURL=bus.js.map
 
     var Packet = /** @class */ (function () {
         function Packet() {
@@ -668,7 +665,6 @@
         }
         return [];
     }
-    //# sourceMappingURL=packet.js.map
 
     var devices_ = [];
     var deviceNames = {};
@@ -764,7 +760,6 @@
             }
         }
     }
-    //# sourceMappingURL=device.js.map
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
@@ -1254,7 +1249,6 @@
         };
         return Proto;
     }());
-    //# sourceMappingURL=hf2.js.map
 
     var service_classes = {
         "<disabled>": -1,
@@ -1474,9 +1468,6 @@
         }
         return res;
     }
-    //# sourceMappingURL=pretty.js.map
-
-    //# sourceMappingURL=jacdac.js.map
 
     exports.REG_INTENSITY = REG_INTENSITY;
     exports.REG_VALUE = REG_VALUE;

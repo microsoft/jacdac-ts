@@ -60,7 +60,6 @@ var JD_FRAME_FLAG_COMMAND = 0x01;
 var JD_FRAME_FLAG_ACK_REQUESTED = 0x02;
 // the device_identifier contains target service class number
 var JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04;
-//# sourceMappingURL=constants.js.map
 
 function error(msg) {
     throw new Error(msg);
@@ -370,7 +369,6 @@ function clone(v) {
         return null;
     return JSON.parse(JSON.stringify(v));
 }
-//# sourceMappingURL=utils.js.map
 
 var _bus;
 /**
@@ -387,7 +385,6 @@ function setBus(bus) {
 function sendPacket(p) {
     return _bus ? _bus.send(p) : Promise.resolve();
 }
-//# sourceMappingURL=bus.js.map
 
 var Packet = /** @class */ (function () {
     function Packet() {
@@ -662,7 +659,6 @@ function frameToPackets(frame, timestamp) {
     }
     return [];
 }
-//# sourceMappingURL=packet.js.map
 
 var devices_ = [];
 var deviceNames = {};
@@ -758,7 +754,6 @@ function processPacket(pkt) {
         }
     }
 }
-//# sourceMappingURL=device.js.map
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -1248,7 +1243,6 @@ var Proto = /** @class */ (function () {
     };
     return Proto;
 }());
-//# sourceMappingURL=hf2.js.map
 
 var service_classes = {
     "<disabled>": -1,
@@ -1468,9 +1462,6 @@ function parseLog(logcontents) {
     }
     return res;
 }
-//# sourceMappingURL=pretty.js.map
-
-//# sourceMappingURL=jacdac.js.map
 
 export { REG_INTENSITY, REG_VALUE, REG_IS_STREAMING, REG_STREAMING_INTERVAL, REG_LOW_THRESHOLD, REG_HIGH_THRESHOLD, REG_MAX_POWER, REG_READING, CMD_GET_REG, CMD_SET_REG, CMD_TOP_MASK, CMD_REG_MASK, CMD_ADVERTISEMENT_DATA, CMD_EVENT, CMD_CALIBRATE, CMD_GET_DESCRIPTION, CMD_CTRL_NOOP, CMD_CTRL_IDENTIFY, CMD_CTRL_RESET, STREAM_PORT_SHIFT, STREAM_COUNTER_MASK, STREAM_CLOSE_MASK, STREAM_METADATA_MASK, JD_SERIAL_HEADER_SIZE, JD_SERIAL_MAX_PAYLOAD_SIZE, JD_SERVICE_NUMBER_MASK, JD_SERVICE_NUMBER_INV_MASK, JD_SERVICE_NUMBER_CRC_ACK, JD_SERVICE_NUMBER_STREAM, JD_SERVICE_NUMBER_CTRL, JD_FRAME_FLAG_COMMAND, JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, error, log, warn, delay, memcpy, bufferEq, hash, idiv, fnv1, crc, ALIGN, stringToUint8Array, uint8ArrayToString, fromUTF8, toUTF8, PromiseBuffer, PromiseQueue, toHex, fromHex, write32, write16, read32, read16, encodeU32LE, decodeU32LE, getNumber, bufferToString, bufferConcat, jsonCopyFrom, assert, flatClone, clone, Packet, deviceNames, getDevices, getDevice, Device, shortDeviceId, processPacket, setBus, sendPacket, HF2_CMD_BININFO, HF2_MODE_BOOTLOADER, HF2_MODE_USERSPACE, HF2_CMD_INFO, HF2_CMD_RESET_INTO_APP, HF2_CMD_RESET_INTO_BOOTLOADER, HF2_CMD_START_FLASH, HF2_CMD_WRITE_FLASH_PAGE, HF2_CMD_CHKSUM_PAGES, HF2_CMD_READ_WORDS, HF2_CMD_WRITE_WORDS, HF2_CMD_DMESG, HF2_FLAG_SERIAL_OUT, HF2_FLAG_SERIAL_ERR, HF2_FLAG_CMDPKT_LAST, HF2_FLAG_CMDPKT_BODY, HF2_FLAG_MASK, HF2_SIZE_MASK, HF2_STATUS_OK, HF2_STATUS_INVALID_CMD, HF2_STATUS_EXEC_ERR, HF2_STATUS_EVENT, HF2_EV_MASK, HF2_CMD_JDS_CONFIG, HF2_CMD_JDS_SEND, HF2_EV_JDS_PACKET, Transport, Proto, printPacket, parseLog };
 //# sourceMappingURL=jacdac.es5.js.map

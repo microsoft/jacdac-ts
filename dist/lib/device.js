@@ -1,22 +1,27 @@
-import { Packet } from "./packet";
-import { JD_SERVICE_NUMBER_CTRL } from "./constants";
-import { hash, fromHex, idiv, getNumber, read32 } from "./utils";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.processPacket = exports.shortDeviceId = exports.Device = exports.getDevice = exports.getDevices = exports.deviceNames = void 0;
+var packet_1 = require("./packet");
+var constants_1 = require("./constants");
+var utils_1 = require("./utils");
 var devices_ = [];
-export var deviceNames = {};
+exports.deviceNames = {};
 /**
  * Gets the current list of known devices on the bus
  */
-export function getDevices() { return devices_.slice(); }
+function getDevices() { return devices_.slice(); }
+exports.getDevices = getDevices;
 /**
  * Gets a device on the bus
  * @param id
  */
-export function getDevice(id) {
+function getDevice(id) {
     var d = devices_.find(function (d) { return d.deviceId == id; });
     if (!d)
         d = new Device(id);
     return d;
 }
+exports.getDevice = getDevice;
 var Device = /** @class */ (function () {
     function Device(deviceId) {
         this.deviceId = deviceId;
@@ -24,7 +29,7 @@ var Device = /** @class */ (function () {
     }
     Object.defineProperty(Device.prototype, "name", {
         get: function () {
-            return deviceNames[this.deviceId] || deviceNames[this.shortId];
+            return exports.deviceNames[this.deviceId] || exports.deviceNames[this.shortId];
         },
         enumerable: false,
         configurable: true
@@ -44,7 +49,7 @@ var Device = /** @class */ (function () {
     };
     Device.prototype.hasService = function (service_class) {
         for (var i = 4; i < this.services.length; i += 4)
-            if (getNumber(this.services, 11 /* UInt32LE */, i) == service_class)
+            if (utils_1.getNumber(this.services, 11 /* UInt32LE */, i) == service_class)
                 return true;
         return false;
     };
@@ -52,25 +57,52 @@ var Device = /** @class */ (function () {
         idx <<= 2;
         if (!this.services || idx + 4 > this.services.length)
             return undefined;
-        return read32(this.services, idx);
+        return utils_1.read32(this.services, idx);
     };
     Device.prototype.sendCtrlCommand = function (cmd, payload) {
         if (payload === void 0) { payload = null; }
-        var pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload);
-        pkt.service_number = JD_SERVICE_NUMBER_CTRL;
+        var pkt = !payload ? packet_1.Packet.onlyHeader(cmd) : packet_1.Packet.from(cmd, payload);
+        pkt.service_number = constants_1.JD_SERVICE_NUMBER_CTRL;
         pkt.sendCmdAsync(this);
     };
     return Device;
 }());
-export { Device };
+exports.Device = Device;
 // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
 // 3 letter ID; 1.1%/2.6%/0.05%
 // 2 letter ID; 25%/6.4%/1.5%
-export function shortDeviceId(devid) {
-    var h = hash(fromHex(devid), 30);
+function shortDeviceId(devid) {
+    var h = utils_1.hash(utils_1.fromHex(devid), 30);
     return String.fromCharCode(0x41 + h % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26) % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26);
+        String.fromCharCode(0x41 + utils_1.idiv(h, 26) % 26) +
+        String.fromCharCode(0x41 + utils_1.idiv(h, 26 * 26) % 26) +
+        String.fromCharCode(0x41 + utils_1.idiv(h, 26 * 26 * 26) % 26);
 }
+exports.shortDeviceId = shortDeviceId;
+/**
+ * Ingests and process a packet received from the bus.
+ * @param pkt a jacdac packet
+ */
+function processPacket(pkt) {
+    if (pkt.multicommand_class) {
+        //
+    }
+    else if (pkt.is_command) {
+        pkt.dev = getDevice(pkt.device_identifier);
+    }
+    else {
+        var dev = pkt.dev = getDevice(pkt.device_identifier);
+        dev.lastSeen = pkt.timestamp;
+        if (pkt.service_number == constants_1.JD_SERVICE_NUMBER_CTRL) {
+            if (pkt.service_command == constants_1.CMD_ADVERTISEMENT_DATA) {
+                if (!utils_1.bufferEq(pkt.data, dev.services)) {
+                    dev.services = pkt.data;
+                    dev.lastServiceUpdate = pkt.timestamp;
+                    // reattach(dev)
+                }
+            }
+        }
+    }
+}
+exports.processPacket = processPacket;
 //# sourceMappingURL=device.js.map
