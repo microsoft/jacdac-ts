@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "declarationDir": "dist/types",
+    "outDir": "dist/lib"
+  }
+}
