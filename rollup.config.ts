@@ -7,7 +7,7 @@ import json from 'rollup-plugin-json'
 
 const pkg = require('./package.json')
 
-const libraryName = 'jacdac'
+const libraryName = 'jacdac-ts'
 
 export default {
   input: `src/${libraryName}.ts`,
