@@ -26,7 +26,8 @@
     "start": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
-    "test:prod": "npm run lint && npm run test --no-cache"
+    "test:prod": "npm run lint && npm run test --no-cache",
+    "samples": "npx http-server docs/samples -c-1"
   },
   "release": {
     "branches": [
