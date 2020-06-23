@@ -2,5 +2,3 @@
 **/tsconfig.json
 
 node_modules
-src
-docs

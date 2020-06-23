@@ -23,7 +23,6 @@
     "prebuild": "rm -rf dist",
     "build": "tsc --module commonjs",
     "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
-    "docs": "node node_modules/typedoc/bin/typedoc --out docs --target es6 --theme minimal --mode file src --excludeNotExported --excludeExternals --excludePrivate --excludeProtected --stripInternal",
     "start": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
@@ -125,7 +124,6 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-microsoft-contrib": "^5.0.3",
-    "typedoc": "^0.17.7",
     "typescript": "^3.8.3"
   }
 }
