@@ -2,6 +2,7 @@ import { Packet } from "./packet"
 import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, ConsolePriority } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 import { EventEmitter } from "./eventemitter"
+import { Client } from "./client";
 
 export interface BusOptions {
     sendPacket: (p: Packet) => Promise<void>;
@@ -10,17 +11,32 @@ export interface BusOptions {
 
 export interface PacketEventEmitter {
     /**
+     * Event emitted when the bus is disconnected
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'disconnect', listener: () => void): boolean;
+
+    /**
      * Event emitted when a packet is received and processed
      * @param event 
      * @param listener 
      */
     on(event: 'packet', listener: (packet: Packet) => void): boolean;
+
     /**
      * Event emitted when a device is detected on the bus. The information on the device might not be fully populated yet.
      * @param event 
      * @param listener 
      */
-    on(event: 'device', listener: (device: Device) => void): boolean;
+    on(event: 'deviceconnect', listener: (device: Device) => void): boolean;
+
+    /**
+     * Event emitted when a device hasn't been on the bus for a while and is considered disconected.
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'devicedisconnect', listener: (device: Device) => void): boolean;
 
     /**
      * Event emitted device advertisement information for a device has been updated
@@ -34,8 +50,8 @@ export interface PacketEventEmitter {
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
 export class Bus extends EventEmitter implements PacketEventEmitter {
-    private _devices: Device[] = []
-    private _deviceNames: SMap<string> = {}
+    private _devices: Device[] = [];
+    private _deviceNames: SMap<string> = {};
     consolePriority = ConsolePriority.Log;
 
     /**
@@ -69,9 +85,22 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         if (!d) {
             d = new Device(this, id)
             this._devices.push(d);
-            this.emit('device', d);
+            this.emit('deviceconnect', d);
         }
         return d
+    }
+
+    private gcDevices() {
+        const cutoff = Date.now() - 2000
+        for (let i = 0; i < this._devices.length; ++i) {
+            const dev = this._devices[i]
+            if (dev.lastSeen < cutoff) {
+                this._devices.splice(i, 1)
+                i--
+                dev.disconnect();
+                this.emit('devicedisconnect', dev);
+            }
+        }
     }
 
     /**
@@ -98,6 +127,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             }
         }
         this.emit('packet', pkt)
+        this.gcDevices();
     }
 
     /**
@@ -117,6 +147,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
 
 
 export class Device {
+    connected: boolean;
     services: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
@@ -124,6 +155,7 @@ export class Device {
     private _shortId: string
 
     constructor(public bus: Bus, public deviceId: string) {
+        this.connected = true;
     }
 
     get name() {
@@ -159,6 +191,10 @@ export class Device {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL
         pkt.sendCmdAsync(this)
+    }
+
+    disconnect() {
+        this.connected = false;
     }
 }
 
