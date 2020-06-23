@@ -2,11 +2,11 @@
 
 This repository contains a TypeScript/JavaScript client library for the [JACDAC](https://microsoft.github.io/jacdac) protocol.
 
-* [Documentation](https://microsoft.github.io/jacdac-ts/)
+* [User Documentation](https://microsoft.github.io/jacdac-ts/)
 
-The rest of this page is meant 
+The rest of this page is meant developing the jacdac-ts library.
 
-## Dev setup
+## Devevelop setup
 
 ### Setup
 
@@ -14,7 +14,7 @@ The rest of this page is meant
 
 ### Build watch
 
-You can do ```npm run start`` to watch/build bundles
+You can do ``npm run start`` to watch/build bundles
 
 ### Commits create releases
 

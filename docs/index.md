@@ -4,14 +4,16 @@ This repository contains a TypeScript/JavaScript client library for the [JACDAC]
 
 ## Usage: npm + TypeScript
 
-Add the ``jacdac-ts`` NPM module to your project.
+Add the [jacdac-ts npm](https://www.npmjs.com/package/jacdac-ts) module to your project.
 
 ```
 npm install --save jacdac-ts
 ```
 
-Import the library.
+Import the library in your Typescript project.
 
 ```javascript
 import * from 'jacdac-ts'
 ```
+
+## Samples
