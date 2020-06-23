@@ -83,8 +83,7 @@
             "package-lock.json"
           ]
         }
-      ],
-      "@qiwi/semantic-release-gh-pages-plugin"
+      ]
     ]
   },
   "jest": {
@@ -100,7 +99,6 @@
     ]
   },
   "devDependencies": {
-    "@qiwi/semantic-release-gh-pages-plugin": "^3.0.0",
     "@semantic-release/git": "^9.0.0",
     "@types/jest": "^23.3.2",
     "@types/node": "^10.11.0",
