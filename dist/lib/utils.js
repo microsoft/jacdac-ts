@@ -1,6 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clone = exports.flatClone = exports.assert = exports.jsonCopyFrom = exports.bufferConcat = exports.bufferToString = exports.getNumber = exports.decodeU32LE = exports.encodeU32LE = exports.read16 = exports.read32 = exports.write16 = exports.write32 = exports.fromHex = exports.toHex = exports.PromiseQueue = exports.PromiseBuffer = exports.toUTF8 = exports.fromUTF8 = exports.uint8ArrayToString = exports.stringToUint8Array = exports.bufferEq = exports.memcpy = exports.delay = void 0;
+exports.clone = exports.flatClone = exports.assert = exports.jsonCopyFrom = exports.bufferConcat = exports.bufferToString = exports.getNumber = exports.decodeU32LE = exports.encodeU32LE = exports.read16 = exports.read32 = exports.write16 = exports.write32 = exports.fromHex = exports.toHex = exports.PromiseQueue = exports.PromiseBuffer = exports.toUTF8 = exports.fromUTF8 = exports.uint8ArrayToString = exports.stringToUint8Array = exports.ALIGN = exports.crc = exports.fnv1 = exports.idiv = exports.hash = exports.bufferEq = exports.memcpy = exports.delay = exports.warn = exports.log = exports.error = void 0;
+function error(msg) {
+    throw new Error(msg);
+}
+exports.error = error;
+function log(msg, v) {
+    if (v === undefined)
+        console.log("JD: " + msg);
+    else
+        console.log("JD: " + msg, v);
+}
+exports.log = log;
+function warn(msg, v) {
+    if (v === undefined)
+        console.log("JD-WARN: " + msg);
+    else
+        console.log("JD-WARN: " + msg, v);
+}
+exports.warn = warn;
 function delay(millis, value) {
     return new Promise(function (resolve) { return setTimeout(function () { return resolve(value); }, millis); });
 }
@@ -26,6 +44,41 @@ function bufferEq(a, b) {
     return true;
 }
 exports.bufferEq = bufferEq;
+function hash(buf, bits) {
+    bits |= 0;
+    if (bits < 1)
+        return 0;
+    var h = fnv1(buf);
+    if (bits >= 32)
+        return h >>> 0;
+    else
+        return ((h ^ (h >>> bits)) & ((1 << bits) - 1)) >>> 0;
+}
+exports.hash = hash;
+function idiv(a, b) { return ((a | 0) / (b | 0)) | 0; }
+exports.idiv = idiv;
+function fnv1(data) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < data.length; ++i) {
+        h = Math.imul(h, 0x1000193) ^ data[i];
+    }
+    return h;
+}
+exports.fnv1 = fnv1;
+function crc(p) {
+    var crc = 0xffff;
+    for (var i = 0; i < p.length; ++i) {
+        var data = p[i];
+        var x = (crc >> 8) ^ data;
+        x ^= x >> 4;
+        crc = (crc << 8) ^ (x << 12) ^ (x << 5) ^ x;
+        crc &= 0xffff;
+    }
+    return crc;
+}
+exports.crc = crc;
+function ALIGN(n) { return (n + 3) & ~3; }
+exports.ALIGN = ALIGN;
 // this will take lower 8 bits from each character
 function stringToUint8Array(input) {
     var len = input.length;
@@ -288,4 +341,4 @@ function clone(v) {
     return JSON.parse(JSON.stringify(v));
 }
 exports.clone = clone;
-//# sourceMappingURL=pxtutils.js.map
+//# sourceMappingURL=utils.js.map

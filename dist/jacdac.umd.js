@@ -4,9 +4,13 @@
 	(factory());
 }(this, (function () { 'use strict';
 
-	require('./pxtutils');
-	require('./jd');
-	require('./jdpretty');
+	require('./constants');
+	require('./utils');
+	require('./packet');
+	require('./device');
+	require('./bus');
+	require('./hf2');
+	require('./pretty');
 
 })));
 //# sourceMappingURL=jacdac.umd.js.map

@@ -1,9 +1,9 @@
-import * as jd from "./jd";
+import { Packet } from "./packet";
 export interface Options {
     skipRepeatedAnnounce?: boolean;
     skipRepeatedReading?: boolean;
 }
-export declare function printPkt(pkt: jd.Packet, opts?: Options): string;
+export declare function printPacket(pkt: Packet, opts?: Options): string;
 export interface ParsedFrame {
     timestamp: number;
     data: Uint8Array;

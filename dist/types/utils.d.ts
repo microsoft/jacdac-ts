@@ -1,6 +1,14 @@
+export declare function error(msg: string): void;
+export declare function log(msg: string, v?: any): void;
+export declare function warn(msg: string, v?: any): void;
 export declare function delay<T>(millis: number, value?: T): Promise<T>;
 export declare function memcpy(trg: Uint8Array, trgOff: number, src: ArrayLike<number>, srcOff?: number, len?: number): void;
 export declare function bufferEq(a: Uint8Array, b: ArrayLike<number>): boolean;
+export declare function hash(buf: Uint8Array, bits: number): number;
+export declare function idiv(a: number, b: number): number;
+export declare function fnv1(data: Uint8Array): number;
+export declare function crc(p: Uint8Array): number;
+export declare function ALIGN(n: number): number;
 export declare function stringToUint8Array(input: string): Uint8Array;
 export declare function uint8ArrayToString(input: ArrayLike<number>): string;
 export declare function fromUTF8(binstr: string): string;
