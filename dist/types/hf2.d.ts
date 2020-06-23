@@ -1,0 +1,66 @@
+/// <reference types="w3c-web-usb" />
+import * as U from "./utils";
+export declare const HF2_CMD_BININFO = 1;
+export declare const HF2_MODE_BOOTLOADER = 1;
+export declare const HF2_MODE_USERSPACE = 2;
+export declare const HF2_CMD_INFO = 2;
+export declare const HF2_CMD_RESET_INTO_APP = 3;
+export declare const HF2_CMD_RESET_INTO_BOOTLOADER = 4;
+export declare const HF2_CMD_START_FLASH = 5;
+export declare const HF2_CMD_WRITE_FLASH_PAGE = 6;
+export declare const HF2_CMD_CHKSUM_PAGES = 7;
+export declare const HF2_CMD_READ_WORDS = 8;
+export declare const HF2_CMD_WRITE_WORDS = 9;
+export declare const HF2_CMD_DMESG = 16;
+export declare const HF2_FLAG_SERIAL_OUT = 128;
+export declare const HF2_FLAG_SERIAL_ERR = 192;
+export declare const HF2_FLAG_CMDPKT_LAST = 64;
+export declare const HF2_FLAG_CMDPKT_BODY = 0;
+export declare const HF2_FLAG_MASK = 192;
+export declare const HF2_SIZE_MASK = 63;
+export declare const HF2_STATUS_OK = 0;
+export declare const HF2_STATUS_INVALID_CMD = 1;
+export declare const HF2_STATUS_EXEC_ERR = 2;
+export declare const HF2_STATUS_EVENT = 128;
+export declare const HF2_EV_MASK = 8388608;
+export declare const HF2_CMD_JDS_CONFIG = 32;
+export declare const HF2_CMD_JDS_SEND = 33;
+export declare const HF2_EV_JDS_PACKET = 8388640;
+export declare class Transport {
+    private requestDevice;
+    dev: USBDevice;
+    iface: USBInterface;
+    altIface: USBAlternateInterface;
+    epIn: USBEndpoint;
+    epOut: USBEndpoint;
+    readLoopStarted: boolean;
+    ready: boolean;
+    constructor(requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>);
+    onData: (v: Uint8Array) => void;
+    onError: (e: Error) => void;
+    log(msg: string, v?: any): void;
+    private clearDev;
+    disconnectAsync(): Promise<unknown>;
+    private recvPacketAsync;
+    error(msg: string): void;
+    private readLoop;
+    sendPacketAsync(pkt: Uint8Array): Promise<void>;
+    init(): Promise<void>;
+}
+export declare class Proto {
+    io: Transport;
+    eventHandlers: U.SMap<(buf: Uint8Array) => void>;
+    msgs: U.PromiseBuffer<Uint8Array>;
+    cmdSeq: number;
+    private lock;
+    constructor(io: Transport);
+    error(m: string): void;
+    talkAsync(cmd: number, data?: Uint8Array): Promise<Uint8Array>;
+    private sendMsgAsync;
+    onEvent(id: number, f: (buf: Uint8Array) => void): void;
+    onJDMessage(f: (buf: Uint8Array) => void): void;
+    sendJDMessageAsync(buf: Uint8Array): Promise<Uint8Array>;
+    handleEvent(buf: Uint8Array): void;
+    onSerial(data: Uint8Array, iserr: boolean): void;
+    init(): Promise<void>;
+}

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseLog = exports.printPkt = void 0;
-var U = require("./pxtutils");
-var jd = require("./jd");
+exports.parseLog = exports.printPacket = void 0;
+var U = require("./utils");
+var jd = require("./constants");
 var service_classes = {
     "<disabled>": -1,
     CTRL: 0,
@@ -106,7 +106,7 @@ function toHex(n) {
 function num2str(n) {
     return n + " (0x" + n.toString(16) + ")";
 }
-function printPkt(pkt, opts) {
+function printPacket(pkt, opts) {
     var _a;
     if (opts === void 0) { opts = {}; }
     var frame_flags = pkt._header[3];
@@ -178,7 +178,7 @@ function printPkt(pkt, opts) {
     }
     return Math.round(pkt.timestamp) + "ms: " + pdesc;
 }
-exports.printPkt = printPkt;
+exports.printPacket = printPacket;
 function parseLog(logcontents) {
     var res = [];
     var frameBytes = [];
@@ -223,4 +223,4 @@ function parseLog(logcontents) {
     return res;
 }
 exports.parseLog = parseLog;
-//# sourceMappingURL=jdpretty.js.map
+//# sourceMappingURL=pretty.js.map
