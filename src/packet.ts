@@ -1,4 +1,4 @@
-import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, error, read32, read16, NumberFormat, getNumber, write32 } from "./jdutils";
+import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, error, read32, read16, NumberFormat, getNumber, write32 } from "./utils";
 import {
     JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -8,11 +8,11 @@ import {
     JD_SERVICE_NUMBER_MASK,
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
-} from "./jdconstants";
+} from "./constants";
 import {
     sendPacket
-} from "./jdbus";
-import { Device } from "./jddevice";
+} from "./bus";
+import { Device } from "./device";
 
 export class Packet {
     _header: Uint8Array;

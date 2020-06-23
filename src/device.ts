@@ -1,6 +1,6 @@
-import { Packet } from "./jdpacket"
-import { JD_SERVICE_NUMBER_CTRL } from "./jdconstants"
-import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap } from "./jdutils"
+import { Packet } from "./packet"
+import { JD_SERVICE_NUMBER_CTRL } from "./constants"
+import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap } from "./utils"
 
 const devices_: Device[] = []
 export const deviceNames: SMap<string> = {}

@@ -1,6 +1,6 @@
-import * as U from "./jdutils"
-import * as jd from "./jdconstants"
-import { Packet } from "./jdpacket"
+import * as U from "./utils"
+import * as jd from "./constants"
+import { Packet } from "./packet"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,

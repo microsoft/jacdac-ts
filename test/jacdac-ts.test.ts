@@ -1,7 +1,7 @@
-import { setBus } from "../src/jd"
-import { printPacket } from "../src/jdpretty"
-import { Packet } from "../src/jdpacket";
-import { getDevices } from "../src/jddevice";
+import { setBus } from "../src/bus"
+import { printPacket } from "../src/pretty"
+import { Packet } from "../src/packet";
+import { getDevices } from "../src/device";
 
 class TestBus {
   send(p: Packet): Promise<void> {

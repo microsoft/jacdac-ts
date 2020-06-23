@@ -1,7 +1,7 @@
-import { Packet } from "./jdpacket"
-import { getDevice } from "./jddevice"
-import { bufferEq } from "./jdutils"
-import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./jdconstants";
+import { Packet } from "./packet"
+import { getDevice } from "./device"
+import { bufferEq } from "./utils"
+import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants";
 
 /**
  * A transport layer for the jacdac packets
