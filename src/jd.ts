@@ -76,6 +76,11 @@ export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
 let sendPacketFn = (p: Packet) => Promise.resolve(undefined)
+
+/**
+ * Register transport layer function that sends packet.
+ * @param f transport function sending packet.
+ */
 export function setSendPacketFn(f: (p: Packet) => Promise<void>) {
     sendPacketFn = f
 }
