@@ -2,7 +2,6 @@ import { Packet } from "./packet"
 import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, ConsolePriority } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 import { EventEmitter } from "./eventemitter"
-import { Client } from "./client";
 
 export interface BusOptions {
     sendPacket: (p: Packet) => Promise<void>;

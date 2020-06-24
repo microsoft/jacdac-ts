@@ -1,4 +1,4 @@
-import { Client } from "./client";
+import { Client } from "./client.ts.txt";
 import { ConsolePriority } from "./constants";
 import { Device, Bus } from "./device";
 import { Packet } from "./packet";
