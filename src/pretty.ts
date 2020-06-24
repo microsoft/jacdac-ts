@@ -67,6 +67,11 @@ const generic_regs: U.SMap<number> = {
     REG_READING: 0x101
 }
 
+function decodeIntSensorData(pkt: Packet) {
+    const value = intOfBuffer(pkt.data)
+    return value.toString();
+}
+
 const serv_decoders: U.SMap<(p: Packet) => string> = {
     LOGGER: (pkt: Packet) => {
         const pri = priority()
@@ -83,10 +88,7 @@ const serv_decoders: U.SMap<(p: Packet) => string> = {
             }
         }
     },
-    SLIDER: (pkt: Packet) => {
-        const value = intOfBuffer(pkt.data)
-        return value.toString();
-    }
+    SLIDER: decodeIntSensorData,
 }
 
 export function decodePacketData(pkt: Packet): string {
