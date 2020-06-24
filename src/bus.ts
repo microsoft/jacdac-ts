@@ -2,7 +2,7 @@ import { Packet } from "./packet";
 import { Device } from "./device";
 import { EventEmitter } from "./eventemitter";
 import { SMap, bufferEq } from "./utils";
-import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, JD_SERVICE_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants";
+import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, JD_SERVICE_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
 
 export interface BusOptions {
     sendPacketAsync: (p: Packet) => Promise<void>;
@@ -23,6 +23,13 @@ export interface PacketEventEmitter {
      * @param listener 
      */
     on(event: 'packetreceive', listener: (packet: Packet) => void): boolean;
+
+    /**
+     * Event emitted when an event packet is received and processed
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'packetevent', listener: (packet: Packet) => void): boolean;
 
     /**
      * Event emitted before a packet is sent
@@ -170,6 +177,8 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         // don't spam with duplicate advertisement events
         if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {
             this.emit('packetreceive', pkt)
+            if (pkt.service_command === CMD_EVENT)
+                this.emit('packetevent', pkt);
         }
     }
 
