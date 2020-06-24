@@ -23,8 +23,8 @@ export class Client {
 
 export class SensorClient extends Client {
     constructor(
-        public device: Device,
-        public service_number: number) {
+        device: Device,
+        service_number: number) {
         super(device, service_number);
     }
 
