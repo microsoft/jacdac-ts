@@ -18,7 +18,7 @@ import * from 'jacdac-ts'
 
 ## Online tools
 
-A list of small tools to operate on JACDAC devices, built with this library.
+A list of sample tools to operate on JACDAC devices, built with this library.
 
 * [packets](./tools/packets), sniff all packets on the bus
 * [devices](./tools/devices), list of connected devices
