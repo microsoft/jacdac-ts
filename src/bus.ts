@@ -2,7 +2,7 @@ import { Packet } from "./packet";
 import { Device } from "./device";
 import { EventEmitter } from "./eventemitter";
 import { SMap, bufferEq } from "./utils";
-import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, JD_SERVICE_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
+import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
 
 export interface BusOptions {
     sendPacketAsync: (p: Packet) => Promise<void>;
@@ -98,7 +98,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     private pingLoggers() {
         if (this._minConsolePriority < ConsolePriority.Silent) {
             const pkt = Packet.packed(CMD_CONSOLE_SET_MIN_PRIORITY, "i", [this._minConsolePriority]);
-            pkt.sendAsMultiCommandAsync(this, JD_SERVICE_LOGGER);
+            pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
 
