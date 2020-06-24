@@ -1,16 +1,22 @@
 import { Device } from "./device";
 import { Packet } from "./packet";
-import { CMD_SET_REG, REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD } from "./constants";
+import { CMD_SET_REG, REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, CMD_GET_REG } from "./constants";
 
 export class Client {
     constructor(
         public device: Device,
-        public service_class: number) {
-
+        public service_number: number) {
     }
 
-    protected setRegIntAsync(reg: number, value: number): Promise<void> {
+    setRegIntAsync(reg: number, value: number): Promise<void> {
         const pkt = Packet.packed(CMD_SET_REG | reg, "i", [value]);
+        pkt.service_number = this.service_number;
+        return pkt.sendCmdAsync(this.device);
+    }
+
+    sendCmdAsync(cmd: number) {
+        const pkt = Packet.onlyHeader(cmd);
+        pkt.service_number = this.service_number;
         return pkt.sendCmdAsync(this.device);
     }
 }
@@ -18,13 +24,16 @@ export class Client {
 export class SensorClient extends Client {
     constructor(
         public device: Device,
-        public service_class: number) {
-        super(device, service_class);
+        public service_number: number) {
+        super(device, service_number);
     }
 
-    static from(device: Device, service_class: number): SensorClient {
-        if (device && device.hasService(service_class))
-            return new SensorClient(device, service_class);
+    static fromFirstServiceClass(device: Device, service_class: number): SensorClient {
+        const n = device.serviceLength;
+        for (let i = 0; i < n; ++i) {
+            if (device.serviceClassAt(i) == service_class)
+                return new SensorClient(device, i);
+        }
         return undefined;
     }
 
@@ -33,8 +42,7 @@ export class SensorClient extends Client {
     }
 
     public calibrateAsync() {
-        const pkt = Packet.onlyHeader(CMD_CALIBRATE);
-        return pkt.sendCmdAsync(this.device);
+        return this.sendCmdAsync(CMD_CALIBRATE);
     }
 
     public setThresholdAsync(low: boolean, value: number) {

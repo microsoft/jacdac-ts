@@ -41,9 +41,9 @@
                 bus = await jacdac.requestUSBBus();
                 bus.on('deviceannounce', d => {
                     // if the device is a sensor, start streaming
-                    const sensor = jacdac.SensorClient.from(d, jacdac.JD_SERVICE_SLIDER);
+                    const sensor = jacdac.SensorClient.fromFirstServiceClass(d, jacdac.JD_SERVICE_SLIDER);
                     if (sensor) {
-                        log(`start streaming ${d}`)
+                        log(`start streaming ${d}: ${jacdac.printServices(d).toLowerCase()}`)
                         sensor.setStreamingAsync(true);
                     }
                 })
