@@ -50,7 +50,7 @@ export interface PacketEventEmitter {
      * @param event 
      * @param listener 
      */
-    on(event: 'announce', listener: (device: Device) => void): boolean;
+    on(event: 'deviceannounce', listener: (device: Device) => void): boolean;
 }
 
 /**
@@ -71,7 +71,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         super();
         this._startTime = Date.now();
 
-        this.on('announce', () => this.pingLoggers());
+        this.on('deviceannounce', () => this.pingLoggers());
     }
 
     get timestamp() {
@@ -90,7 +90,6 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
 
     private pingLoggers() {
         if (this._minConsolePriority < ConsolePriority.Silent) {
-            this.log(`ping loggers`)
             const pkt = Packet.packed(CMD_CONSOLE_SET_MIN_PRIORITY, "i", [this._minConsolePriority]);
             pkt.sendAsMultiCommandAsync(this, JD_SERVICE_LOGGER);
         }
@@ -162,7 +161,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                     if (!bufferEq(pkt.data, dev.services)) {
                         dev.services = pkt.data
                         dev.lastServiceUpdate = pkt.timestamp
-                        this.emit('announce', dev);
+                        this.emit('deviceannounce', dev);
                     }
                 }
             }

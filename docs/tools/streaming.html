@@ -22,7 +22,7 @@
 </head>
 
 <body>
-    <h1>JACDAC/Console</h1>
+    <h1>JACDAC/Streaming</h1>
     <div>
         <button id="connect">connect to jacdac device</button>
     </div>
@@ -49,14 +49,17 @@
             let bus;
             try {
                 bus = await jacdac.requestUSBBus();
-                bus.minConsolePriority = jacdac.ConsolePriority.Debug;
-                bus.on('deviceconnect', d => {
-                    devicesDiv.innerText = bus.devices().map(d => d.toString()).join(', ')
-                });
+                bus.on('deviceannounce', d => {
+                    // if the device is a sensor, start streaming
+                    const sensor = jacdac.SensorClient.from(d, jacdac.JD_SERVICE_SLIDER);
+                    if (sensor) {
+                        log(`start streaming ${d}`)
+                        sensor.setStreamingAsync(true);
+                    }
+                })
                 bus.on('packet', pkt => {
-                    
+                    console.log(jacdac.printPacket(pkt));
                     const decoded = jacdac.decodePacketData(pkt);
-                    console.debug(jacdac.printPacket(pkt))
                     if (decoded)
                         log(decoded)
                 })
