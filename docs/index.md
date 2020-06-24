@@ -22,3 +22,5 @@ A list of small tools to operate on JACDAC devices, built with this library.
 
 * [packets](./tools/packets), sniff all packets on the bus
 * [devices](./tools/devices), list of connected devices
+* [console](./tools/console), turns on verbose console and display messages
+

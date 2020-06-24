@@ -276,46 +276,6 @@ export function decodeU32LE(buf: Uint8Array) {
     return res
 }
 
-export const enum NumberFormat {
-    Int8LE = 1,
-    UInt8LE = 2,
-    Int16LE = 3,
-    UInt16LE = 4,
-    Int32LE = 5,
-    Int8BE = 6,
-    UInt8BE = 7,
-    Int16BE = 8,
-    UInt16BE = 9,
-    Int32BE = 10,
-    UInt32LE = 11,
-    UInt32BE = 12,
-    Float32LE = 13,
-    Float64LE = 14,
-    Float32BE = 15,
-    Float64BE = 16,
-}
-
-export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: number) {
-    switch (fmt) {
-        case NumberFormat.UInt8BE:
-        case NumberFormat.UInt8LE:
-            return buf[offset]
-        case NumberFormat.Int8BE:
-        case NumberFormat.Int8LE:
-            return (buf[offset] << 24) >> 24
-        case NumberFormat.UInt16LE:
-            return read16(buf, offset)
-        case NumberFormat.Int16LE:
-            return (read16(buf, offset) << 16) >> 16
-        case NumberFormat.UInt32LE:
-            return read32(buf, offset)
-        case NumberFormat.Int32LE:
-            return read32(buf, offset) >> 0
-        default:
-            throw new Error("unsupported fmt:" + fmt)
-    }
-}
-
 export function bufferToString(buf: Uint8Array) {
     return fromUTF8(uint8ArrayToString(buf))
 }

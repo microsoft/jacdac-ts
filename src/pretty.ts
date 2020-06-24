@@ -6,41 +6,41 @@ import { Device } from "./device"
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
     CTRL: 0,
-    LOGGER: 0x12dc1fca,
-    BATTERY: 0x1d2a2acd,
-    ACCELEROMETER: 0x1f140409,
-    BUTTON: 0x1473a263,
-    TOUCHBUTTON: 0x130cf5be,
-    LIGHT_SENSOR: 0x15e7a0ff,
-    MICROPHONE: 0x1a5c5866,
-    THERMOMETER: 0x1421bac7,
-    SWITCH: 0x14218172,
-    PIXEL: 0x1768fbbf,
-    HAPTIC: 0x116b14a3,
-    LIGHT: 0x126f00e0,
-    KEYBOARD: 0x1ae4812d,
-    MOUSE: 0x14bc97bf,
-    GAMEPAD: 0x100527e8,
-    MUSIC: 0x1b57b1d7,
-    SERVO: 0x12fc9103,
-    CONTROLLER: 0x188ae4b8,
-    LCD: 0x18d5284c,
-    MESSAGE_BUS: 0x115cabf5,
-    COLOR_SENSOR: 0x14d6dda2,
-    LIGHT_SPECTRUM_SENSOR: 0x16fa0c0d,
-    PROXIMITY: 0x14c1791b,
-    TOUCH_BUTTONS: 0x1acb49d5,
-    SERVOS: 0x182988d8,
-    ROTARY_ENCODER: 0x10fa29c9,
-    DNS: 0x117729bd,
-    PWM_LIGHT: 0x1fb57453,
-    BOOTLOADER: 0x1ffa9948,
-    ARCADE_CONTROLS: 0x1deaa06e,
-    POWER: 0x1fa4c95a,
-    SLIDER: 0x1f274746,
-    MOTOR: 0x17004cd8,
-    TCP: 0x1b43b70b,
-    WIFI: 0x18aae1fa,
+    LOGGER: jd.JD_SERVICE_LOGGER,
+    BATTERY: jd.JD_SERVICE_BATTERY,
+    ACCELEROMETER: jd.JD_SERVICE_ACCELEROMETER,
+    BUTTON: jd.JD_SERVICE_BUTTON,
+    TOUCHBUTTON: jd.JD_SERVICE_TOUCHBUTTON,
+    LIGHT_SENSOR: jd.JD_SERVICE_LIGHT_SENSOR,
+    MICROPHONE: jd.JD_SERVICE_MICROPHONE,
+    THERMOMETER: jd.JD_SERVICE_THERMOMETER,
+    SWITCH: jd.JD_SERVICE_SWITCH,
+    PIXEL: jd.JD_SERVICE_PIXEL,
+    HAPTIC: jd.JD_SERVICE_HAPTIC,
+    LIGHT: jd.JD_SERVICE_LIGHT,
+    KEYBOARD: jd.JD_SERVICE_KEYBOARD,
+    MOUSE: jd.JD_SERVICE_MOUSE,
+    GAMEPAD: jd.JD_SERVICE_GAMEPAD,
+    MUSIC: jd.JD_SERVICE_MUSIC,
+    SERVO: jd.JD_SERVICE_SERVO,
+    CONTROLLER: jd.JD_SERVICE_CONTROLLER,
+    LCD: jd.JD_SERVICE_LCD,
+    MESSAGE_BUS: jd.JD_SERVICE_MESSAGE_BUS,
+    COLOR_SENSOR: jd.JD_SERVICE_COLOR_SENSOR,
+    LIGHT_SPECTRUM_SENSOR: jd.JD_SERVICE_LIGHT_SPECTRUM_SENSOR,
+    PROXIMITY: jd.JD_SERVICE_PROXIMITY,
+    TOUCH_BUTTONS: jd.JD_SERVICE_TOUCH_BUTTONS,
+    SERVOS: jd.JD_SERVICE_SERVOS,
+    ROTARY_ENCODER: jd.JD_SERVICE_ROTARY_ENCODER,
+    DNS: jd.JD_SERVICE_DNS,
+    PWM_LIGHT: jd.JD_SERVICE_PWM_LIGHT,
+    BOOTLOADER: jd.JD_SERVICE_BOOTLOADER,
+    ARCADE_CONTROLS: jd.JD_SERVICE_ARCADE_CONTROLS,
+    POWER: jd.JD_SERVICE_POWER,
+    SLIDER: jd.JD_SERVICE_SLIDER,
+    MOTOR: jd.JD_SERVICE_MOTOR,
+    TCP: jd.JD_SERVICE_TCP,
+    WIFI: jd.JD_SERVICE_WIFI,
 }
 
 const generic_commands: U.SMap<number> = {
@@ -82,6 +82,13 @@ const serv_decoders: U.SMap<(p: Packet) => string> = {
             }
         }
     }
+}
+
+export function decodePacketData(pkt: Packet): string {
+    const serv_id = serviceName(pkt?.dev?.serviceClassAt(pkt.service_number));
+    const decoder = serv_decoders[serv_id];
+    const decoded = decoder ? decoder(pkt) : null
+    return decoded;
 }
 
 function reverseLookup(map: U.SMap<number>, n: number) {

@@ -1,4 +1,4 @@
-import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, error, read32, read16, NumberFormat, getNumber, write32 } from "./utils";
+import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, error, read32, read16, write32 } from "./utils";
 import {
     JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -10,6 +10,8 @@ import {
     JD_SERIAL_MAX_PAYLOAD_SIZE,
 } from "./constants";
 import { Device, Bus } from "./device";
+import { NumberFormat, getNumber } from "./buffer";
+import { pack } from "./struct";
 
 export class Packet {
     _header: Uint8Array;
@@ -216,6 +218,10 @@ export class Packet {
 
     static fromFrame(frame: Uint8Array, timestamp: number) {
         return frameToPackets(frame, timestamp)
+    }
+
+    static packed(service_command: number, fmt: string, nums: number[]) {
+        return Packet.from(service_command, pack(fmt, nums))
     }
 }
 

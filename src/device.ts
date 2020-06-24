@@ -1,7 +1,8 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, ConsolePriority } from "./constants"
-import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
+import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, JD_SERVICE_LOGGER, CMD_EVENT } from "./constants"
+import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
 import { EventEmitter } from "./eventemitter"
+import { getNumber, NumberFormat } from "./buffer";
 
 export interface BusOptions {
     sendPacket: (p: Packet) => Promise<void>;
@@ -22,6 +23,13 @@ export interface PacketEventEmitter {
      * @param listener 
      */
     on(event: 'packet', listener: (packet: Packet) => void): boolean;
+
+    /**
+     * Event containing an event from a sensor
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'packetevent', listener: (packet: Packet) => void): boolean;
 
     /**
      * Event emitted when a device is detected on the bus. The information on the device might not be fully populated yet.
@@ -53,7 +61,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     private _deviceNames: SMap<string> = {};
     private _startTime: number;
     private _gcInterval: any;
-    consolePriority = ConsolePriority.Log;
+    private _minConsolePriority = ConsolePriority.Log;
 
     /**
      * Creates the bus with the given transport
@@ -62,10 +70,30 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     constructor(public options: BusOptions) {
         super();
         this._startTime = Date.now();
+
+        this.on('announce', () => this.pingLoggers());
     }
 
     get timestamp() {
         return Date.now() - this._startTime;
+    }
+
+    get minConsolePriority(): ConsolePriority {
+        return this._minConsolePriority;
+    }
+
+    set minConsolePriority(priority: ConsolePriority) {
+        if (priority !== this._minConsolePriority) {
+            this._minConsolePriority = priority;
+        }
+    }
+
+    private pingLoggers() {
+        if (this._minConsolePriority < ConsolePriority.Silent) {
+            this.log(`ping loggers`)
+            const pkt = Packet.packed(CMD_CONSOLE_SET_MIN_PRIORITY, "i", [this._minConsolePriority]);
+            pkt.sendAsMultiCommandAsync(this, JD_SERVICE_LOGGER);
+        }
     }
 
     sendPacket(p: Packet) {
@@ -139,7 +167,10 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                 }
             }
         }
-        this.emit('packet', pkt)
+        // don't spam with duplicate advertisement events
+        if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {
+            this.emit('packet', pkt)
+        }
     }
 
     /**
@@ -150,13 +181,12 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         return this._deviceNames[id];
     }
 
-    log(msg: any, ...optionalArgs: any[]) {
-        if (this.consolePriority > ConsolePriority.Log)
+    log(msg: any) {
+        if (this._minConsolePriority > ConsolePriority.Log)
             return
-        console.log(msg, optionalArgs);
+        console.log(msg);
     }
 }
-
 
 export class Device {
     connected: boolean;

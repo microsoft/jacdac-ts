@@ -50,6 +50,10 @@ export const CMD_CTRL_IDENTIFY = 0x81
 // reset device
 export const CMD_CTRL_RESET = 0x82
 
+export const CMD_CONSOLE_REG = 0x80
+export const CMD_CONSOLE_MESSAGE_DBG = 0x80
+export const CMD_CONSOLE_SET_MIN_PRIORITY = 0x2000 | CMD_CONSOLE_REG
+
 export const STREAM_PORT_SHIFT = 7
 export const STREAM_COUNTER_MASK = 0x001f
 export const STREAM_CLOSE_MASK = 0x0020
@@ -72,10 +76,48 @@ export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 // the device_identifier contains target service class number
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
-export const enum ConsolePriority {
+export enum ConsolePriority {
     Debug = 0,
     Log = 1,
     Warning = 2,
     Error = 3,
     Silent = 4
 }
+
+/** known service numbers */
+export const JD_SERVICE_CTRL = 0;
+export const JD_SERVICE_LOGGER = 0x12dc1fca;
+export const JD_SERVICE_BATTERY = 0x1d2a2acd;
+export const JD_SERVICE_ACCELEROMETER = 0x1f140409;
+export const JD_SERVICE_BUTTON = 0x1473a263;
+export const JD_SERVICE_TOUCHBUTTON = 0x130cf5be;
+export const JD_SERVICE_LIGHT_SENSOR = 0x15e7a0ff;
+export const JD_SERVICE_MICROPHONE = 0x1a5c5866;
+export const JD_SERVICE_THERMOMETER = 0x1421bac7;
+export const JD_SERVICE_SWITCH = 0x14218172;
+export const JD_SERVICE_PIXEL = 0x1768fbbf;
+export const JD_SERVICE_HAPTIC = 0x116b14a3;
+export const JD_SERVICE_LIGHT = 0x126f00e0;
+export const JD_SERVICE_KEYBOARD = 0x1ae4812d;
+export const JD_SERVICE_MOUSE = 0x14bc97bf;
+export const JD_SERVICE_GAMEPAD = 0x100527e8;
+export const JD_SERVICE_MUSIC = 0x1b57b1d7;
+export const JD_SERVICE_SERVO = 0x12fc9103;
+export const JD_SERVICE_CONTROLLER = 0x188ae4b8;
+export const JD_SERVICE_LCD = 0x18d5284c;
+export const JD_SERVICE_MESSAGE_BUS = 0x115cabf5;
+export const JD_SERVICE_COLOR_SENSOR = 0x14d6dda2;
+export const JD_SERVICE_LIGHT_SPECTRUM_SENSOR = 0x16fa0c0d;
+export const JD_SERVICE_PROXIMITY = 0x14c1791b;
+export const JD_SERVICE_TOUCH_BUTTONS = 0x1acb49d5;
+export const JD_SERVICE_SERVOS = 0x182988d8;
+export const JD_SERVICE_ROTARY_ENCODER = 0x10fa29c9;
+export const JD_SERVICE_DNS = 0x117729bd;
+export const JD_SERVICE_PWM_LIGHT = 0x1fb57453;
+export const JD_SERVICE_BOOTLOADER = 0x1ffa9948;
+export const JD_SERVICE_ARCADE_CONTROLS = 0x1deaa06e;
+export const JD_SERVICE_POWER = 0x1fa4c95a;
+export const JD_SERVICE_SLIDER = 0x1f274746;
+export const JD_SERVICE_MOTOR = 0x17004cd8;
+export const JD_SERVICE_TCP = 0x1b43b70b;
+export const JD_SERVICE_WIFI = 0x18aae1fa;
