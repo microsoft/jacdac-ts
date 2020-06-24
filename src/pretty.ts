@@ -1,6 +1,7 @@
 import * as U from "./utils"
 import * as jd from "./constants"
 import { Packet } from "./packet"
+import { Device } from "./device"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -91,13 +92,13 @@ function reverseLookup(map: U.SMap<number>, n: number) {
     return toHex(n)
 }
 
-function serviceName(n: number) {
+export function serviceName(n: number) {
     if (n == null)
         return "?"
     return reverseLookup(service_classes, n)
 }
 
-function commandName(n: number) {
+export function commandName(n: number) {
     let pref = ""
     if ((n & jd.CMD_TOP_MASK) == jd.CMD_SET_REG) pref = "SET["
     else if ((n & jd.CMD_TOP_MASK) == jd.CMD_GET_REG) pref = "GET["
@@ -108,11 +109,9 @@ function commandName(n: number) {
     return reverseLookup(generic_commands, n)
 }
 
-
 function toHex(n: number) {
     return "0x" + n.toString(16)
 }
-
 
 function num2str(n: number) {
     return n + " (0x" + n.toString(16) + ")"
@@ -123,6 +122,18 @@ export interface Options {
     skipRepeatedReading?: boolean;
 }
 
+export function printServices(device: Device) {
+    let srv = ""
+    const n = device.serviceLength;
+    for (let i = 0; i < n; ++i) {
+        const id = device.serviceClassAt(i);
+        const name = serviceName(id);
+        if (i) srv += ", "
+        srv += name;
+    }
+    return srv;
+}
+
 export function printPacket(pkt: Packet, opts: Options = {}): string {
     const frame_flags = pkt._header[3]
 
@@ -131,7 +142,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
     if (frame_flags & jd.JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
         devname = "[mul] " + serviceName(pkt.multicommand_class)
 
-    const serv_id = serviceName(pkt?.dev?.serviceAt(pkt.service_number))
+    const serv_id = serviceName(pkt?.dev?.serviceClassAt(pkt.service_number))
     let service_name = `${serv_id} (${pkt.service_number})`
     const cmd = pkt.service_command
     let cmdname = commandName(cmd)
@@ -167,7 +178,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
         } else {
             const services = []
             for (let i = 0; i < pkt.dev.services.length >> 2; i++) {
-                services.push(serviceName(pkt.dev.serviceAt(i)))
+                services.push(serviceName(pkt.dev.serviceClassAt(i)))
             }
             pdesc += "; " + "Announce services: " + services.join(", ")
         }

@@ -443,7 +443,7 @@ export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOp
         disconnect: () => hf2.disconnectAsync()
     });
     hf2.onJDMessage(buf => {
-        const pkts = Packet.fromFrame(buf, Date.now() - startTime)
+        const pkts = Packet.fromFrame(buf, bus.timestamp)
         for (const pkt of pkts)
             bus.processPacket(pkt);
     });

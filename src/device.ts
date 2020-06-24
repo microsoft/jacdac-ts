@@ -1,7 +1,8 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
+import { JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, ConsolePriority } from "./constants"
 import { hash, fromHex, idiv, getNumber, NumberFormat, read32, SMap, bufferEq } from "./utils"
 import { EventEmitter } from "./eventemitter"
+import { Client } from "./client";
 
 export interface BusOptions {
     sendPacket: (p: Packet) => Promise<void>;
@@ -10,39 +11,62 @@ export interface BusOptions {
 
 export interface PacketEventEmitter {
     /**
+     * Event emitted when the bus is disconnected
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'disconnect', listener: () => void): boolean;
+
+    /**
      * Event emitted when a packet is received and processed
      * @param event 
      * @param listener 
      */
     on(event: 'packet', listener: (packet: Packet) => void): boolean;
+
     /**
      * Event emitted when a device is detected on the bus. The information on the device might not be fully populated yet.
      * @param event 
      * @param listener 
      */
-    on(event: 'device', listener: (device: Device) => void): boolean;
+    on(event: 'deviceconnect', listener: (device: Device) => void): boolean;
+
+    /**
+     * Event emitted when a device hasn't been on the bus for a while and is considered disconected.
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'devicedisconnect', listener: (device: Device) => void): boolean;
 
     /**
      * Event emitted device advertisement information for a device has been updated
      * @param event 
      * @param listener 
      */
-    on(event: 'advertisement', listener: (device: Device) => void): boolean;
+    on(event: 'announce', listener: (device: Device) => void): boolean;
 }
 
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
 export class Bus extends EventEmitter implements PacketEventEmitter {
-    private devices_: Device[] = []
-    private deviceNames: SMap<string> = {}
+    private _devices: Device[] = [];
+    private _deviceNames: SMap<string> = {};
+    private _startTime: number;
+    private _gcInterval: any;
+    consolePriority = ConsolePriority.Log;
 
     /**
      * Creates the bus with the given transport
      * @param sendPacket 
      */
     constructor(public options: BusOptions) {
-        super()
+        super();
+        this._startTime = Date.now();
+    }
+
+    get timestamp() {
+        return Date.now() - this._startTime;
     }
 
     sendPacket(p: Packet) {
@@ -50,6 +74,10 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     }
 
     disconnect(): Promise<void> {
+        if (this._gcInterval) {
+            clearInterval(this._gcInterval);
+            this._gcInterval = undefined;
+        }
         return this.options.disconnect()
             .then(() => { this.emit("disconnect") })
     }
@@ -57,20 +85,36 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     /**
      * Gets the current list of known devices on the bus
      */
-    getDevices() { return this.devices_.slice() }
+    devices() { return this._devices.slice() }
 
     /**
      * Gets a device on the bus
      * @param id 
      */
-    getDevice(id: string) {
-        let d = this.devices_.find(d => d.deviceId == id)
+    device(id: string) {
+        let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
             d = new Device(this, id)
-            this.devices_.push(d);
-            this.emit('device', d);
+            this._devices.push(d);
+            this.emit('deviceconnect', d);
+
+            if (!this._gcInterval)
+                this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d
+    }
+
+    private gcDevices() {
+        const cutoff = this.timestamp - 2000;
+        for (let i = 0; i < this._devices.length; ++i) {
+            const dev = this._devices[i]
+            if (dev.lastSeen < cutoff) {
+                this._devices.splice(i, 1)
+                i--
+                dev.disconnect();
+                this.emit('devicedisconnect', dev);
+            }
+        }
     }
 
     /**
@@ -81,9 +125,9 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         if (pkt.multicommand_class) {
             //
         } else if (pkt.is_command) {
-            pkt.dev = this.getDevice(pkt.device_identifier)
+            pkt.dev = this.device(pkt.device_identifier)
         } else {
-            const dev = pkt.dev = this.getDevice(pkt.device_identifier)
+            const dev = pkt.dev = this.device(pkt.device_identifier)
             dev.lastSeen = pkt.timestamp
 
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
@@ -91,7 +135,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                     if (!bufferEq(pkt.data, dev.services)) {
                         dev.services = pkt.data
                         dev.lastServiceUpdate = pkt.timestamp
-                        this.emit('advertisement', dev);
+                        this.emit('announce', dev);
                     }
                 }
             }
@@ -104,12 +148,19 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * @param id 
      */
     lookupName(id: string) {
-        return this.deviceNames[id];
+        return this._deviceNames[id];
+    }
+
+    log(msg: any, ...optionalArgs: any[]) {
+        if (this.consolePriority > ConsolePriority.Log)
+            return
+        console.log(msg, optionalArgs);
     }
 }
 
 
 export class Device {
+    connected: boolean;
     services: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
@@ -117,6 +168,7 @@ export class Device {
     private _shortId: string
 
     constructor(public bus: Bus, public deviceId: string) {
+        this.connected = true;
     }
 
     get name() {
@@ -134,14 +186,20 @@ export class Device {
         return this.shortId + (this.name ? ` (${this.name})` : ``)
     }
 
-    hasService(service_class: number) {
+    hasService(service_class: number): boolean {
+        if (!this.services) return false;
         for (let i = 4; i < this.services.length; i += 4)
             if (getNumber(this.services, NumberFormat.UInt32LE, i) == service_class)
                 return true
         return false
     }
 
-    serviceAt(idx: number) {
+    get serviceLength() {
+        if (!this.services) return 0;
+        return this.services.length >> 2;
+    }
+
+    serviceClassAt(idx: number): number {
         idx <<= 2
         if (!this.services || idx + 4 > this.services.length)
             return undefined
@@ -152,6 +210,10 @@ export class Device {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL
         pkt.sendCmdAsync(this)
+    }
+
+    disconnect() {
+        this.connected = false;
     }
 }
 

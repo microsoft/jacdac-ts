@@ -17,26 +17,24 @@
 </head>
 
 <body>
-    <h1>JACDAC-TS: packet watcher</h1>
-
+    <h1>JACDAC/Packets</h1>
     <div>
-        <button id="connect">connect</button>
+        <button id="connect">connect to jacdac device</button>
     </div>
     <div id="log">
-
+        <div>waiting for message...</div>
     </div>
 
-    <script src="./dist/jacdac.umd.js"></script>
+    <script src='/dist/jacdac.umd.js'></script>
     <script>
-        const connect = document.getElementById("connect");
-        const logDiv = document.getElementById("log");
 
         function log(msg) {
+            const logDiv = document.getElementById("log");
             const line = document.createElement("div");
             line.innerText = "" + msg;
-            logDiv.append(line)
+            logDiv.insertBefore(line, logDiv.firstElementChild);
             if (logDiv.childElementCount > 100)
-                logDiv.firstElementChild.remove()
+                logDiv.lastElementChild.remove();
         }
 
         async function sniff() {
@@ -44,9 +42,7 @@
             let bus;
             try {
                 bus = await jacdac.requestUSBBus();
-                bus.on('packet', pkt => log(`packet: ${jacdac.printPacket(pkt)}`))
-                bus.on('device', dev => log(`device: ${dev}`))
-                bus.on('advertisement', dev => log(`advertisement: ${dev}`))
+                bus.on('packet', pkt => log(jacdac.printPacket(pkt)))
                 log('started')
             } catch (err) {
                 log(err)
@@ -54,6 +50,7 @@
             }
         }
 
+        const connect = document.getElementById("connect");
         connect.onclick = sniff;
     </script>
 </body>
