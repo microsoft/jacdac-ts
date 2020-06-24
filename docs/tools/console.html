@@ -33,16 +33,7 @@
 
     <script src="/dist/jacdac.umd.js"></script>
     <script>
-        const logDiv = document.getElementById("log");
         const devicesDiv = document.getElementById("devices");
-
-        function log(msg) {
-            const line = document.createElement("div");
-            line.innerText = "" + msg;
-            logDiv.insertBefore(line, logDiv.firstElementChild);
-            if (logDiv.childElementCount > 100)
-                logDiv.lastElementChild.remove();
-        }
 
         async function sniff() {
             log('starting')
@@ -53,8 +44,7 @@
                 bus.on('deviceconnect', d => {
                     devicesDiv.innerText = bus.devices().map(d => d.toString()).join(', ')
                 });
-                bus.on('packetreceive', pkt => {
-                    
+                bus.on('packetreceive', pkt => {                    
                     const decoded = jacdac.decodePacketData(pkt);
                     console.debug(jacdac.printPacket(pkt))
                     if (decoded)
@@ -69,6 +59,15 @@
 
         const connect = document.getElementById("connect");
         connect.onclick = sniff;
+
+        function log(msg) {
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            logDiv.insertBefore(line, logDiv.firstElementChild);
+            if (logDiv.childElementCount > 100)
+                logDiv.lastElementChild.remove();
+        }
     </script>
 </body>
 

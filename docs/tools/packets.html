@@ -27,16 +27,6 @@
 
     <script src="/dist/jacdac.umd.js"></script>
     <script>
-
-        function log(msg) {
-            const logDiv = document.getElementById("log");
-            const line = document.createElement("div");
-            line.innerText = "" + msg;
-            logDiv.insertBefore(line, logDiv.firstElementChild);
-            if (logDiv.childElementCount > 100)
-                logDiv.lastElementChild.remove();
-        }
-
         async function sniff() {
             log('starting')
             let bus;
@@ -52,6 +42,15 @@
 
         const connect = document.getElementById("connect");
         connect.onclick = sniff;
+
+        function log(msg) {
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            logDiv.insertBefore(line, logDiv.firstElementChild);
+            if (logDiv.childElementCount > 100)
+                logDiv.lastElementChild.remove();
+        }
     </script>
 </body>
 
