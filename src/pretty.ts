@@ -2,6 +2,7 @@ import * as U from "./utils"
 import * as jd from "./constants"
 import { Packet } from "./packet"
 import { Device } from "./device"
+import { intOfBuffer } from "./buffer"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -81,11 +82,16 @@ const serv_decoders: U.SMap<(p: Packet) => string> = {
                 default: return null
             }
         }
+    },
+    SLIDER: (pkt: Packet) => {
+        const value = intOfBuffer(pkt.data)
+        return value.toString();
     }
 }
 
 export function decodePacketData(pkt: Packet): string {
-    const serv_id = serviceName(pkt?.dev?.serviceClassAt(pkt.service_number));
+    const srv_class = pkt?.dev?.serviceClassAt(pkt.service_number);
+    const serv_id = serviceName(srv_class);
     const decoder = serv_decoders[serv_id];
     const decoded = decoder ? decoder(pkt) : null
     return decoded;

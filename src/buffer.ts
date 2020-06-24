@@ -130,3 +130,21 @@ export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r:
         r >>= 8
     }
 }
+
+export function intOfBuffer(data: Uint8Array) {
+    let fmt: NumberFormat
+    switch (data.length) {
+        case 0:
+        case 1:
+            fmt = NumberFormat.Int8LE
+            break
+        case 2:
+        case 3:
+            fmt = NumberFormat.Int16LE
+            break
+        default:
+            fmt = NumberFormat.Int32LE
+            break
+    }
+    return getNumber(data, fmt, 0)
+}

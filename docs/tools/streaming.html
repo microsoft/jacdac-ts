@@ -51,10 +51,9 @@
                     console.log(jacdac.printPacket(pkt));
                 })
                 bus.on('packetreceive', pkt => {
-                    //console.log(jacdac.printPacket(pkt));
                     const decoded = jacdac.decodePacketData(pkt);
                     if (decoded)
-                        log(decoded)
+                        log(`${pkt.dev} (${jacdac.serviceName(pkt.service_class)}): ${decoded}`)
                 })
                 log('started')
             } catch (err) {
