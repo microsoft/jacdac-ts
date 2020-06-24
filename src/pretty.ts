@@ -125,7 +125,7 @@ export interface Options {
 export function printServices(device: Device) {
     let srv = ""
     const n = device.serviceLength;
-    for(let i = 0; i < n; ++i) {
+    for (let i = 0; i < n; ++i) {
         const id = device.serviceClassAt(i);
         const name = serviceName(id);
         if (i) srv += ", "
