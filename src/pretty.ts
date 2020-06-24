@@ -134,7 +134,7 @@ export function printServices(device: Device) {
     const n = device.serviceLength;
     for (let i = 0; i < n; ++i) {
         const id = device.serviceClassAt(i);
-        const name = serviceName(id);
+        const name = `${i}:${serviceName(id)}`;
         if (i) srv += ", "
         srv += name;
     }

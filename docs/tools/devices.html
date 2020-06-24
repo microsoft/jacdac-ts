@@ -50,7 +50,7 @@
                 div.className = "device";
                 devicesDiv.append(div);
             }
-            div.innerText = `${device.toString()} - ${device.deviceId}: ${jacdac.printServices(device).toLowerCase()}`;
+            div.innerText = `${device.toString()} - ${device.deviceId}: ${jacdac.printServices(device)}`;
         }
 
         function disconnect(device) {
