@@ -52,10 +52,8 @@
                 })
                 bus.on('packetreceive', pkt => {
                     const decoded = jacdac.decodePacketData(pkt);
-                    if (decoded) {
-                        console.log(`${pkt.dev} (${jacdac.serviceName(pkt.service_class)}): ${decoded}`)
+                    if (decoded)
                         slider(pkt)
-                    }
                 })
                 console.log('started')
             } catch (err) {
