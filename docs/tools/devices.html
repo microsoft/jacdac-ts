@@ -1,0 +1,73 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+        .device {
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>JACDAC/Events</h1>
+    <div>
+        <button id="connect">connect to jacdac device</button>
+    </div>
+    <div id="devices">
+    </div>
+
+    <script src='/dist/jacdac.umd.js'></script>
+    <script>        
+        const devicesDiv = document.getElementById("devices");
+        const log = console.log;
+        let bus;
+
+        async function scan() {
+            log('starting')
+            try {
+                bus = await jacdac.requestUSBBus();
+                bus.on('deviceconnect', dev => {
+                    console.log(`connect ${dev}`)
+                    connect(dev)
+                })
+                bus.on('devicedisconnect', dev => disconnect(dev))
+                bus.on('announce', render)
+                render()
+                log('started')
+            } catch (err) {
+                log(err)
+                await bus.disconnect()
+            }
+        }
+
+        function connect(device) {
+            let div = document.getElementById(device.deviceId);
+            if (!div) {
+                div = document.createElement("div");
+                div.id = device.deviceId;
+                div.className = "device";
+                devicesDiv.append(div);
+            }
+            div.innerText = `${device.toString()} - ${device.deviceId}: ${jacdac.printServices(device).toLowerCase()}`;
+        }
+
+        function disconnect(device) {
+            console.log(`disconnect ${device}`)
+            let div = document.getElementById(device.deviceId);
+            if (div)
+                div.remove();
+        }
+
+        function render() {
+            const devices = bus.devices();
+            devices.forEach(device => connect(device));
+        }
+
+        const btn = document.getElementById("connect");
+        btn.onclick = scan;
+    </script>
+</body>
+
+</html>

@@ -52,6 +52,8 @@ export interface PacketEventEmitter {
 export class Bus extends EventEmitter implements PacketEventEmitter {
     private _devices: Device[] = [];
     private _deviceNames: SMap<string> = {};
+    private _startTime: number;
+    private _gcInterval: any;
     consolePriority = ConsolePriority.Log;
 
     /**
@@ -59,7 +61,12 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * @param sendPacket 
      */
     constructor(public options: BusOptions) {
-        super()
+        super();
+        this._startTime = Date.now();
+    }
+
+    get timestamp() {
+        return Date.now() - this._startTime;
     }
 
     sendPacket(p: Packet) {
@@ -67,6 +74,10 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     }
 
     disconnect(): Promise<void> {
+        if (this._gcInterval) {
+            clearInterval(this._gcInterval);
+            this._gcInterval = undefined;
+        }
         return this.options.disconnect()
             .then(() => { this.emit("disconnect") })
     }
@@ -86,12 +97,15 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             d = new Device(this, id)
             this._devices.push(d);
             this.emit('deviceconnect', d);
+
+            if (!this._gcInterval)
+                this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d
     }
 
     private gcDevices() {
-        const cutoff = Date.now() - 2000
+        const cutoff = this.timestamp - 2000;
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
             if (dev.lastSeen < cutoff) {
@@ -127,7 +141,6 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             }
         }
         this.emit('packet', pkt)
-        this.gcDevices();
     }
 
     /**
@@ -174,10 +187,16 @@ export class Device {
     }
 
     hasService(service_class: number): boolean {
+        if (!this.services) return false;
         for (let i = 4; i < this.services.length; i += 4)
             if (getNumber(this.services, NumberFormat.UInt32LE, i) == service_class)
                 return true
         return false
+    }
+
+    get serviceLength() {
+        if (!this.services) return 0;
+        return this.services.length >> 2;
     }
 
     serviceClassAt(idx: number): number {
