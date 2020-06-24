@@ -191,7 +191,7 @@ export class Packet {
     sendCoreAsync(bus: Bus) {
         this._header[2] = this.size + 4
         write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)))
-        return bus.sendPacket(this)
+        return bus.sendPacketAsync(this)
     }
 
     sendReportAsync(dev: Device) {

@@ -1,7 +1,6 @@
 import { Device } from "./device";
 import { Packet } from "./packet";
 import { CMD_SET_REG, REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD } from "./constants";
-import { SMap } from "./utils";
 
 export class Client {
     constructor(

@@ -432,15 +432,13 @@ export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOp
     const transport = new Transport(requestDevice);
     const hf2 = new Proto(transport);
     await hf2.init()
-    const startTime = Date.now();
     const bus = new Bus({
-        sendPacket: p => {
+        sendPacketAsync: p => {
             const buf = p.toBuffer();
             return hf2.sendJDMessageAsync(buf)
-                .then(() => { });
-            //.catch(err => log(err)); TODO
+                .then(() => { }, err => console.log(err));
         },
-        disconnect: () => hf2.disconnectAsync()
+        disconnectAsync: () => hf2.disconnectAsync()
     });
     hf2.onJDMessage(buf => {
         const pkts = Packet.fromFrame(buf, bus.timestamp)

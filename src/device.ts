@@ -5,8 +5,8 @@ import { EventEmitter } from "./eventemitter"
 import { getNumber, NumberFormat } from "./buffer";
 
 export interface BusOptions {
-    sendPacket: (p: Packet) => Promise<void>;
-    disconnect: () => Promise<void>;
+    sendPacketAsync: (p: Packet) => Promise<void>;
+    disconnectAsync: () => Promise<void>;
 }
 
 export interface PacketEventEmitter {
@@ -95,8 +95,8 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         }
     }
 
-    sendPacket(p: Packet) {
-        return this.options.sendPacket(p);
+    sendPacketAsync(p: Packet) {
+        return this.options.sendPacketAsync(p);
     }
 
     disconnect(): Promise<void> {
@@ -104,7 +104,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             clearInterval(this._gcInterval);
             this._gcInterval = undefined;
         }
-        return this.options.disconnect()
+        return this.options.disconnectAsync()
             .then(() => { this.emit("disconnect") })
     }
 
