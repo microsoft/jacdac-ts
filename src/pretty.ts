@@ -212,7 +212,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
         }
     }
 
-    return Math.round(pkt.timestamp) + "ms: " + pdesc
+    return (!isNaN(pkt.timestamp) ? Math.round(pkt.timestamp) + "ms: " : "") + pdesc
 }
 
 export interface ParsedFrame {

@@ -53,7 +53,7 @@
                 bus.on('deviceconnect', d => {
                     devicesDiv.innerText = bus.devices().map(d => d.toString()).join(', ')
                 });
-                bus.on('packet', pkt => {
+                bus.on('packetreceive', pkt => {
                     
                     const decoded = jacdac.decodePacketData(pkt);
                     console.debug(jacdac.printPacket(pkt))

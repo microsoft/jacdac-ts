@@ -33,7 +33,7 @@
                     connect(dev)
                 })
                 bus.on('devicedisconnect', dev => disconnect(dev))
-                bus.on('announce', render)
+                bus.on('deviceannounce', render)
                 render()
                 log('started')
             } catch (err) {

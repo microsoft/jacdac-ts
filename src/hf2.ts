@@ -1,5 +1,5 @@
 import * as U from "./utils"
-import { Bus } from "./device";
+import { Bus } from "./bus";
 import { Packet } from "./packet";
 
 const controlTransferGetReport = 0x01;

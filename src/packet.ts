@@ -9,9 +9,10 @@ import {
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
 } from "./constants";
-import { Device, Bus } from "./device";
+import { Device } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
+import { Bus } from "./bus";
 
 export class Packet {
     _header: Uint8Array;

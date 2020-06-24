@@ -57,8 +57,11 @@
                         sensor.setStreamingAsync(true);
                     }
                 })
-                bus.on('packet', pkt => {
+                bus.on('packetsend', pkt => {
                     console.log(jacdac.printPacket(pkt));
+                })
+                bus.on('packetreceive', pkt => {
+                    //console.log(jacdac.printPacket(pkt));
                     const decoded = jacdac.decodePacketData(pkt);
                     if (decoded)
                         log(decoded)

@@ -42,7 +42,7 @@
             let bus;
             try {
                 bus = await jacdac.requestUSBBus();
-                bus.on('packet', pkt => log(jacdac.printPacket(pkt)))
+                bus.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
                 log('started')
             } catch (err) {
                 log(err)
