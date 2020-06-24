@@ -4,9 +4,9 @@ This repository contains a TypeScript/JavaScript client library for the [JACDAC]
 
 * [User Documentation](https://microsoft.github.io/jacdac-ts/)
 
-The rest of this page is meant developing the jacdac-ts library.
+The rest of this page is for developers of the jacdac-ts library.
 
-## Devevelop setup
+## Developer setup
 
 ### Setup
 
