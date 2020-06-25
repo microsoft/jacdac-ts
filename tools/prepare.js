@@ -1,17 +1,18 @@
 const replace = require('replace-in-file');
-const pkg = require('../package.json')
-const version = pkg.version;
+const myArgs = process.argv.slice(2);
+const version = process.argv[0];
 
+console.log(`patching version: ${version}`)
 
 async function patchDocs() {
-  console.log(`patching docs to ${version}`)
-
-  const options = {
+  await patch({
     files: './docs/**/*.html',
     from: "/dist/jacdac.umd.js",
     to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}`
-  };
+  })
+}
 
+async function patch(options) {
   try {
     const results = await replace(options)
     console.log('Replacement results:', results);

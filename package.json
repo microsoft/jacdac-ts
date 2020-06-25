@@ -76,7 +76,7 @@
       [
         "@semantic-release/exec",
         {
-          "publishCmd": "node ./tools/prepare.js"
+          "prepareCmd": "node ./tools/prepare.js ${nextRelease.version}"
         }
       ],
       "@semantic-release/github",
