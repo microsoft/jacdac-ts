@@ -76,7 +76,7 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "node .tools/prepare.js"
+          "prepareCmd": "node ./tools/prepare.js"
         }
       ],
       "@semantic-release/github",
@@ -119,7 +119,7 @@
     "lint-staged": "^8.0.0",
     "lodash.camelcase": "^4.3.0",
     "prompt": "^1.0.0",
-    "replace-in-file": "^3.4.4",
+    "replace-in-file": "^4.0.0",
     "rollup": "^0.67.0",
     "rollup-plugin-commonjs": "^9.1.8",
     "rollup-plugin-json": "^3.1.0",
