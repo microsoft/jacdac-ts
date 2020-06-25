@@ -6,7 +6,7 @@ import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_N
 
 export interface BusOptions {
     sendPacketAsync: (p: Packet) => Promise<void>;
-    disconnectAsync: () => Promise<void>;
+    disconnectAsync?: () => Promise<void>;
 }
 
 export interface PacketEventEmitter {
@@ -107,12 +107,13 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         return this.options.sendPacketAsync(p)
     }
 
-    disconnect(): Promise<void> {
+    disconnectAsync(): Promise<void> {
         if (this._gcInterval) {
             clearInterval(this._gcInterval);
             this._gcInterval = undefined;
         }
-        return this.options.disconnectAsync()
+
+        return (this.options?.disconnectAsync() || Promise.resolve())
             .then(() => { this.emit("disconnect") })
     }
 

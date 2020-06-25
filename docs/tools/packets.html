@@ -6,6 +6,10 @@
             font-family: monospace;
         }
 
+        .hint {
+            font-size: 80%;
+        }
+
         #log {
             margin-top: 1rem;
         }
@@ -21,28 +25,68 @@
     <div>
         <button id="connect">connect to jacdac device</button>
     </div>
+    <div class="hint">
+        Drag and drop an exported data from your Saleae. Add an Async Serial protocol analyser, 1Mbit, export to
+        CSV/hex.
+    </div>
     <div id="log">
         <div>waiting for message...</div>
     </div>
 
     <script src="/dist/jacdac.umd.js"></script>
     <script>
-        async function sniff() {
+        // webusb
+        let bus;
+        async function listenWebUsb() {
             log('starting')
-            let bus;
             try {
+                if (bus) {
+                    await bus.disconnectAsync();
+                    bus = undefined;
+                }
                 bus = await jacdac.requestUSBBus();
                 bus.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
                 log('started')
             } catch (err) {
                 log(err)
-                await bus.disconnect()
+                if (bus) {
+                    await bus.disconnectAsync()
+                    bus = undefined;
+                }
             }
         }
 
-        const connect = document.getElementById("connect");
-        connect.onclick = sniff;
+        // replace
+        async function importLog(file) {
+            if (bus) {
+                await bus.disconnectAsync();
+                bus = undefined;
+            }
+            bus = new jacdac.Bus({ sendPacketAsync: p => { } })
+            bus.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
 
+            const logDiv = document.getElementById("log");
+            logDiv.innerHTML = ''
+            const text = await file.text();
+            jacdac.replayLog(bus, text);
+        }
+
+        // binding ui
+        const connect = document.getElementById("connect");
+        connect.onclick = listenWebUsb;
+        document.body.ondragover = ev => ev.preventDefault();
+        document.body.ondrop = drop;
+
+        async function drop(ev) {
+            ev.preventDefault();
+            const items = ev.dataTransfer.items;
+            if (!items) return;
+            const item = items[0];
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                importLog(file);
+            }
+        }        
         function log(msg) {
             const logDiv = document.getElementById("log");
             const line = document.createElement("div");
