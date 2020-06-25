@@ -1,6 +1,6 @@
 const replace = require('replace-in-file');
 const myArgs = process.argv.slice(2);
-const version = process.argv[0];
+const version = process.myArgs[0];
 
 console.log(`patching version: ${version}`)
 
