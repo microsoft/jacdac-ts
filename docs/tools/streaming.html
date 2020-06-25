@@ -37,18 +37,18 @@
         const devicesDiv = document.getElementById("devices");
         async function sniff() {
             console.log('starting')
-            let bus = await jacdac.requestUSBBus();
-            bus.on('deviceannounce', d => {
+            let jd = await jacdac.requestUSBBus();
+            jd.on('deviceannounce', d => {
                 // tell all services to start streaming, ignored if not supported
                 for (let i = 1; i < d.serviceLength; ++i) {
                     const sensor = new jacdac.SensorClient(d, i)
                     sensor.setStreamingAsync(true);
                 }
             })
-            bus.on('packetsend', pkt => {
+            jd.on('packetsend', pkt => {
                 console.log(jacdac.printPacket(pkt));
             })
-            bus.on('packetreceive', pkt => {
+            jd.on('packetreceive', pkt => {
                 const decoded = jacdac.decodePacketData(pkt);
                 if (decoded)
                     slider(pkt)
@@ -85,8 +85,7 @@
             el.value = v;
 
             const lbl = document.getElementById(el.id + ":label");
-            const serviceClass = pkt.dev.serviceClassAt(pkt.service_number);
-            lbl.innerText = `${pkt.dev.shortId}/${jacdac.serviceName(serviceClass)}: ${v}`;
+            lbl.innerText = `${jacdac.deviceServiceName(pkt)}: ${v}`;
         }
     </script>
 </body>

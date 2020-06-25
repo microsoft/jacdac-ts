@@ -118,6 +118,12 @@ export function serviceName(n: number) {
     return reverseLookup(service_classes, n)
 }
 
+export function deviceServiceName(pkt: Packet): string {
+    const srv_class = pkt?.dev?.serviceClassAt(pkt.service_number);
+    const serv_id = serviceName(srv_class);
+    return `${pkt?.dev?.shortId || "?"}/${serv_id}:${pkt.service_number}`
+}
+
 export function commandName(n: number) {
     let pref = ""
     if ((n & jd.CMD_TOP_MASK) == jd.CMD_SET_REG) pref = "SET["

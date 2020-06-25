@@ -24,17 +24,17 @@
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
-        let bus;
+        let jd;
 
         async function scan() {
             log('starting')
-            bus = await jacdac.requestUSBBus();
-            bus.on('deviceconnect', dev => {
+            jd = await jacdac.requestUSBBus();
+            jd.on('deviceconnect', dev => {
                 console.log(`connect ${dev}`)
                 connect(dev)
             })
-            bus.on('devicedisconnect', dev => disconnect(dev))
-            bus.on('deviceannounce', render)
+            jd.on('devicedisconnect', dev => disconnect(dev))
+            jd.on('deviceannounce', render)
             render()
             log('started')
         }
@@ -58,7 +58,7 @@
         }
 
         function render() {
-            const devices = bus.devices();
+            const devices = jd.devices();
             devices.forEach(device => connect(device));
         }
 

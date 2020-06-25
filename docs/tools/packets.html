@@ -36,34 +36,34 @@
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         // webusb
-        let bus;
+        let jd;
         async function listenWebUsb() {
             log('starting')
             try {
-                if (bus) {
-                    await bus.disconnectAsync();
-                    bus = undefined;
+                if (jd) {
+                    await jd.disconnectAsync();
+                    jd = undefined;
                 }
-                bus = await jacdac.requestUSBBus();
-                bus.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
+                jd = await jacdac.requestUSBBus();
+                jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
                 log('started')
             } catch (err) {
                 log(err)
-                if (bus) {
-                    await bus.disconnectAsync()
-                    bus = undefined;
+                if (jd) {
+                    await jd.disconnectAsync()
+                    jd = undefined;
                 }
             }
         }
 
         // replace
         async function importLog(file) {
-            if (bus) {
-                await bus.disconnectAsync();
-                bus = undefined;
+            if (jd) {
+                await jd.disconnectAsync();
+                jd = undefined;
             }
-            bus = new jacdac.Bus({ sendPacketAsync: p => { } })
-            bus.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
+            jd = new jacdac.Bus({ sendPacketAsync: p => { } })
+            jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
 
             const logDiv = document.getElementById("log");
             logDiv.innerHTML = ''

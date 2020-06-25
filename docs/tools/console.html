@@ -37,16 +37,16 @@
 
         async function sniff() {
             log('starting')
-            let bus = await jacdac.requestUSBBus();
-            bus.minConsolePriority = jacdac.ConsolePriority.Debug;
-            bus.on('deviceconnect', d => {
-                devicesDiv.innerText = bus.devices().map(d => d.toString()).join(', ')
+            let jd = await jacdac.requestUSBBus();
+            jd.minConsolePriority = jacdac.ConsolePriority.Debug;
+            jd.on('deviceconnect', d => {
+                devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
             });
-            bus.on('packetreceive', pkt => {
+            jd.on('packetreceive', pkt => {
                 const decoded = jacdac.decodePacketData(pkt);
                 console.debug(jacdac.printPacket(pkt))
                 if (decoded)
-                    log(decoded)
+                    log(`${jacdac.deviceServiceName(pkt)}: ${decoded}`)
             })
             log('started')
         }
