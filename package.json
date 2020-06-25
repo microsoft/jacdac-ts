@@ -73,9 +73,12 @@
         }
       ],
       "@semantic-release/release-notes-generator",
-      ["@semantic-release/exec", {
-        "prepareCmd": "node .tools/prepare.js"
-      }],
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "node .tools/prepare.js"
+        }
+      ],
       "@semantic-release/github",
       "@semantic-release/npm",
       [
