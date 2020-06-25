@@ -40,10 +40,10 @@
             let bus = await jacdac.requestUSBBus();
             bus.on('deviceannounce', d => {
                 // if the device is a sensor, start streaming
-                const sensor = jacdac.SensorClient.fromFirstServiceClass(d, jacdac.JD_SERVICE_SLIDER);
-                if (sensor) {
-                    console.log(`start streaming ${d}: ${jacdac.printServices(d)}`)
-                    sensor.setStreamingAsync(true);
+                const sensors = jacdac.sensorsFromDevice(d, jacdac.SRV_SLIDER);
+                if (sensors.length) {
+                    console.log(`start streaming ${d} (${sensors.length}): ${jacdac.printServices(d)}`)
+                    sensors.forEach(sensor => sensor.setStreamingAsync(true));
                 }
             })
             bus.on('packetsend', pkt => {
@@ -61,12 +61,13 @@
         connect.onclick = sniff;
 
         function slider(pkt) {
-            let el = document.getElementById(pkt.device_identifier);
+            const id = pkt.device_identifier + ":" + pkt.service_number;
+            let el = document.getElementById(id);
             if (!el) {
                 const div = document.createElement("div")
                 div.className = "stream"
                 el = document.createElement("input");
-                el.id = pkt.device_identifier
+                el.id = id
                 el.type = "range"
                 el.min = 0
                 el.max = 1
