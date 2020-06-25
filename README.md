@@ -16,6 +16,22 @@ The rest of this page is for developers of the jacdac-ts library.
 
 You can do ``npm run start`` to watch/build bundles
 
+### Gatsby build
+
+Launch the gatsbdy develop mode and navigate to http://localhost:8000
+
+```
+npm run docs
+```
+
+### HTML tools
+
+Launch a small web server and try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/
+
+```
+npm run tools
+```
+
 ### Commits create releases
 
 The releases are automatically created by the build system based on the title of the commit:
