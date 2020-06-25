@@ -51,6 +51,14 @@ export class Device {
         return read32(this.services, idx)
     }
 
+    get serviceClasses(): number[] {
+        const r = [];
+        const n = this.serviceLength;
+        for (let i = 0; i < n; ++i)
+            r.push(this.serviceClassAt(i))
+        return r;
+    }
+
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL

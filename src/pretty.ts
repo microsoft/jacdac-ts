@@ -89,6 +89,11 @@ const serv_decoders: U.SMap<(p: Packet) => string> = {
         }
     },
     SLIDER: decodeIntSensorData,
+    THERMOMETER: decodeIntSensorData,
+    POWER: decodeIntSensorData,
+    BUTTON: decodeIntSensorData,
+    ROTARY_ENCODER: decodeIntSensorData,
+    BATTERY: decodeIntSensorData,
 }
 
 export function decodePacketData(pkt: Packet): string {

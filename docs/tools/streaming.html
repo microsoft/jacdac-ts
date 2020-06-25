@@ -39,11 +39,10 @@
             console.log('starting')
             let bus = await jacdac.requestUSBBus();
             bus.on('deviceannounce', d => {
-                // if the device is a sensor, start streaming
-                const sensors = jacdac.sensorsFromDevice(d, jacdac.SRV_SLIDER);
-                if (sensors.length) {
-                    console.log(`start streaming ${d} (${sensors.length}): ${jacdac.printServices(d)}`)
-                    sensors.forEach(sensor => sensor.setStreamingAsync(true));
+                // tell all services to start streaming, ignored if not supported
+                for (let i = 1; i < d.serviceLength; ++i) {
+                    const sensor = new jacdac.SensorClient(d, i)
+                    sensor.setStreamingAsync(true);
                 }
             })
             bus.on('packetsend', pkt => {
@@ -86,7 +85,8 @@
             el.value = v;
 
             const lbl = document.getElementById(el.id + ":label");
-            lbl.innerText = `${pkt.dev.shortId}: ${v}`;
+            const serviceClass = pkt.dev.serviceClassAt(pkt.service_number);
+            lbl.innerText = `${pkt.dev.shortId}/${jacdac.serviceName(serviceClass)}: ${v}`;
         }
     </script>
 </body>
