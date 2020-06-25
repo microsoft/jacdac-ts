@@ -6,6 +6,7 @@ module.exports = {
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
+    `gatsby-theme-material-ui`,
     `gatsby-plugin-react-helmet`,
     {
       resolve: `gatsby-source-filesystem`,
