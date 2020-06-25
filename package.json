@@ -24,12 +24,12 @@
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "predist": "rm -rf dist",
-    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && npx replace-in-file \\\"/dist/jacdac.umd.js\\\" \\\"https://cdn.jsdelivr.net/npm/jacdac-ts\\\" ./docs/**/*.html --verbose",
+    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
     "test:prod": "npm run lint && npm run test --no-cache",
-    "samples": "npx http-server . -c-1"
+    "docs": "npx http-server . -c-1"
   },
   "release": {
     "branches": [
@@ -73,6 +73,9 @@
         }
       ],
       "@semantic-release/release-notes-generator",
+      ["@semantic-release/exec", {
+        "prepareCmd": "node .tools/prepare.js"
+      }],
       "@semantic-release/github",
       "@semantic-release/npm",
       [
@@ -112,7 +115,7 @@
     "lint-staged": "^8.0.0",
     "lodash.camelcase": "^4.3.0",
     "prompt": "^1.0.0",
-    "replace-in-file": "^3.4.2",
+    "replace-in-file": "^3.4.4",
     "rollup": "^0.67.0",
     "rollup-plugin-commonjs": "^9.1.8",
     "rollup-plugin-json": "^3.1.0",

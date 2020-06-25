@@ -25,12 +25,9 @@ The releases are automatically created by the build system based on the title of
 
 ### NPM scripts
 
- - `npm t`: Run test suite
- - `npm start`: Run `npm run build` in watch mode
- - `npm run test:watch`: Run test suite in [interactive watch mode](http://facebook.github.io/jest/docs/cli.html#watch)
- - `npm run test:prod`: Run linting and generate coverage
- - `npm run build`: Generate bundles and typings, create docs
+ - `npm run watch`: Run `npm run build` in watch mode
  - `npm run lint`: Lints code
+ - `npm run docs`: Launch docs web service
 
 # Contributing
 
