@@ -95,6 +95,7 @@
                     yFormatter: function (y) { return y }
                 });
                 graphs.append(container)
+                resize();
             }
 
             // create serie
@@ -117,6 +118,18 @@
             if (data.length > 40) data.shift()
 
             div.graph.render();
+        }
+
+        function resize() {
+            const graphs = document.getElementsByClassName("graph")
+            for (let i = 0; i < graphs.length; ++i) {
+                const graph = graphs[i].graph;
+                graph.configure({
+                    width: window.innerWidth * 0.9,
+                });
+                graph.render();
+            }
+            window.addEventListener('resize', resize);
         }
     </script>
 </body>
