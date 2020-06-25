@@ -23,5 +23,6 @@ A list of sample tools to operate on JACDAC devices, built with this library.
 * [packets](./tools/packets), sniff all packets on the bus
 * [devices](./tools/devices), list of connected devices
 * [console](./tools/console), turns on verbose console and display messages
-* [streaming](./tools/streaming), notify sensors to stream sensor data
+* [streaming](./tools/streaming), live streaming of sensor data into range widgets
+* [streaming](./tools/streaming-rickshaw), live streaming of sensor data into graphs
 
