@@ -25,12 +25,12 @@
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "predist": "rm -rf dist",
-    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && cd docs && gatsby build --prefix-paths",
+    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && cd docs && node node_modules/gatsby/cli.js build --prefix-paths",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
     "test:prod": "npm run lint && npm run test --no-cache",
-    "docs": "cd docs && gatsby develop"
+    "docs": "cd docs && node node_modules/gatsby/cli.js develop"
   },
   "release": {
     "branches": [

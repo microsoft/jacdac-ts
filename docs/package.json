@@ -21,6 +21,7 @@
   "devDependencies": {
     "@mdx-js/mdx": "^1.6.6",
     "@mdx-js/react": "^1.6.6",
+    "gatsby": "^2.23.11",
     "gatsby-plugin-mdx": "^1.2.18",
     "gatsby-prismjs-dracula": "^0.1.15",
     "gatsby-remark-external-links": "0.0.4",
