@@ -6,7 +6,7 @@ console.log(`patching version: ${version}`)
 
 async function patchDocs() {
   await patch({
-    files: './docs/**/*.html',
+    files: './docs/public/tools/*.html',
     from: "/dist/jacdac.umd.js",
     to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}`
   })

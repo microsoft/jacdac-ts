@@ -20,16 +20,17 @@
     "node": ">=10.0.0"
   },
   "scripts": {
+    "postinstall": "cd docs && npm install",
     "lint": "node node_modules/tslint/bin/tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "predist": "rm -rf dist",
-    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
+    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && cd docs && gatsby build --prefix-paths",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
     "test:prod": "npm run lint && npm run test --no-cache",
-    "docs": "npx http-server . -c-1"
+    "docs": "cd docs && gatsby develop"
   },
   "release": {
     "branches": [
