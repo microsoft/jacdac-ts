@@ -1,15 +1,11 @@
 import React, { useState } from "react"
-import { Typography } from "@material-ui/core";
-import { Link, Button } from "gatsby-theme-material-ui";
+import JacdacContext, { ConnectButton } from "../jacdac/context"
+import { requestUSBBus } from "../../../src/hf2";
 
 const Page = () => {
-  const [counter, setCounter] = useState(0);
-  return <div>
-    <Typography>
-      Check out my <Link to="/blog">blog</Link>!
-      <Button onClick={() => setCounter(counter + 1)}>Counter {counter}</Button>
-    </Typography>
-  </div>
+  return <JacdacContext.Provider value={ { bus: undefined, connectAsync: () => requestUSBBus() }}>
+    <ConnectButton />
+  </JacdacContext.Provider>
 }
 
 export default Page;

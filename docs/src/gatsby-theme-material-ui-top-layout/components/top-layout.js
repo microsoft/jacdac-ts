@@ -1,15 +1,17 @@
 import React from "react";
-//import { Provider } from "react-redux";
+import { Helmet } from "react-helmet"
+import { Typography } from "@material-ui/core";
 import ThemeTopLayout from "gatsby-theme-material-ui-top-layout/src/components/top-layout";
 
-//import createStore from "../../state/createStore";
-
 export default function TopLayout({ children, theme }) {
-//  const store = createStore();
-
-  return (
- //   <Provider store={store}>
-      <ThemeTopLayout theme={theme}>{children}</ThemeTopLayout>
-   // </Provider>
-  );
+  return (<React.Fragment>
+    <Helmet>
+      <script src="https://cdn.jsdelivr.net/npm/jacdac-ts" />
+    </Helmet>
+    <ThemeTopLayout theme={theme}>
+      <Typography>
+        {children}
+      </Typography>
+    </ThemeTopLayout>
+  </React.Fragment>)
 }

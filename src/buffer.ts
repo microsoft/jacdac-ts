@@ -1,6 +1,6 @@
 import { read16, read32 } from "./utils";
 
-export const enum NumberFormat {
+export enum NumberFormat {
     Int8LE = 1,
     UInt8LE = 2,
     Int16LE = 3,
