@@ -9,8 +9,9 @@
         #streams {
             margin-top: 1rem;
         }
+
         .stream input {
-            margin-left: 1rem;            
+            margin-left: 1rem;
         }
 
         #log {
@@ -36,30 +37,24 @@
         const devicesDiv = document.getElementById("devices");
         async function sniff() {
             console.log('starting')
-            let bus;
-            try {
-                bus = await jacdac.requestUSBBus();
-                bus.on('deviceannounce', d => {
-                    // if the device is a sensor, start streaming
-                    const sensor = jacdac.SensorClient.fromFirstServiceClass(d, jacdac.JD_SERVICE_SLIDER);
-                    if (sensor) {
-                        console.log(`start streaming ${d}: ${jacdac.printServices(d)}`)
-                        sensor.setStreamingAsync(true);
-                    }
-                })
-                bus.on('packetsend', pkt => {
-                    console.log(jacdac.printPacket(pkt));
-                })
-                bus.on('packetreceive', pkt => {
-                    const decoded = jacdac.decodePacketData(pkt);
-                    if (decoded)
-                        slider(pkt)
-                })
-                console.log('started')
-            } catch (err) {
-                console.log(err)
-                await bus.disconnect()
-            }
+            let bus = await jacdac.requestUSBBus();
+            bus.on('deviceannounce', d => {
+                // if the device is a sensor, start streaming
+                const sensor = jacdac.SensorClient.fromFirstServiceClass(d, jacdac.JD_SERVICE_SLIDER);
+                if (sensor) {
+                    console.log(`start streaming ${d}: ${jacdac.printServices(d)}`)
+                    sensor.setStreamingAsync(true);
+                }
+            })
+            bus.on('packetsend', pkt => {
+                console.log(jacdac.printPacket(pkt));
+            })
+            bus.on('packetreceive', pkt => {
+                const decoded = jacdac.decodePacketData(pkt);
+                if (decoded)
+                    slider(pkt)
+            })
+            console.log('started')
         }
 
         const connect = document.getElementById("connect");

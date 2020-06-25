@@ -1,9 +1,11 @@
 <html>
+
 <head>
     <style>
         body {
             font-family: monospace;
         }
+
         .device {
             margin: 0.5rem;
         }
@@ -19,27 +21,22 @@
     </div>
 
     <script src="/dist/jacdac.umd.js"></script>
-    <script>        
+    <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
         let bus;
 
         async function scan() {
             log('starting')
-            try {
-                bus = await jacdac.requestUSBBus();
-                bus.on('deviceconnect', dev => {
-                    console.log(`connect ${dev}`)
-                    connect(dev)
-                })
-                bus.on('devicedisconnect', dev => disconnect(dev))
-                bus.on('deviceannounce', render)
-                render()
-                log('started')
-            } catch (err) {
-                log(err)
-                await bus.disconnect()
-            }
+            bus = await jacdac.requestUSBBus();
+            bus.on('deviceconnect', dev => {
+                console.log(`connect ${dev}`)
+                connect(dev)
+            })
+            bus.on('devicedisconnect', dev => disconnect(dev))
+            bus.on('deviceannounce', render)
+            render()
+            log('started')
         }
 
         function connect(device) {
