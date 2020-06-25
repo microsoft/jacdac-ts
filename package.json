@@ -25,7 +25,7 @@
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "predist": "rm -rf dist",
-    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && cd docs && node node_modules/gatsby/cli.js build --prefix-paths",
+    "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts && cd docs && node node_modules/gatsby/cli.js build --prefix-paths && npx copyfiles ./static/tools/*.html ./public/static/tools",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
