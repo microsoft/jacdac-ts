@@ -10,3 +10,6 @@ type Device {
     name: String!
     services: [Int!]!
 }
+schema {
+  query: Bus
+}
