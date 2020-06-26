@@ -1,10 +1,9 @@
 import { Packet } from "./packet";
 import { Device } from "./device";
 import { EventEmitter } from "./eventemitter";
-import { SMap, bufferEq } from "./utils";
+import { SMap } from "./utils";
 import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
-import { createGraphQLQuery, Query } from "./graphql";
-import { ExecutionResult } from "graphql";
+import { queryAsync, subscribeAsync } from "./graphql";
 import { serviceClass } from "./pretty";
 
 export interface BusOptions {
@@ -96,7 +95,6 @@ export interface PacketEventEmitter {
 export class Bus extends EventEmitter implements PacketEventEmitter {
     private _connected = false;
     private _connectPromise: Promise<void>;
-    private _queryAsync: (query: string | Query) => Promise<ExecutionResult>;
 
     private _devices: Device[] = [];
     private _deviceNames: SMap<string> = {};
@@ -282,10 +280,12 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * Executes a JACDAC GraphQL query against the current state of the bus
      * @param query 
      */
-    queryAsync(query: string | Query) {
-        if (!this._queryAsync)
-            this._queryAsync = createGraphQLQuery(this);
-        return this._queryAsync(query);
+    queryAsync(query: string) {
+        return queryAsync(this, query);
+    }
+
+    subscribeAsync(query: string) {
+        return subscribeAsync(this, query);
     }
 
     /**

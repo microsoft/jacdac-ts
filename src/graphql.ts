@@ -1,4 +1,4 @@
-import { graphql, buildSchema, parse, validate, DocumentNode, ExecutionResult, printSchema, GraphQLSchema, createSourceEventStream } from "graphql"
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode } from "graphql"
 import { Bus } from "./bus";
 
 
@@ -41,18 +41,25 @@ schema {
     }
 }
 
-export function createGraphQLQuery(bus: Bus): (query: string | Query) => Promise<ExecutionResult> {
+export function queryAsync(bus: Bus, query: string | Query): Promise<ExecutionResult> {
     initSchema();
+    let source: string;
+    const q = query as Query;
+    if (q.source)
+        source = q.source;
+    else
+        source = query as string;
+    return graphql(schema, source, bus);
+}
 
-    return (query: string | Query) => {
-        let source: string;
-        const q = query as Query;
-        if (q.source)
-            source = q.source;
-        else
-            source = query as string;
-        return graphql(schema, source, bus);
-    }
+export async function subscribeAsync(bus: Bus, query: string) {
+    initSchema();
+    const subscription = await graphQLSubscribe({
+        schema,
+        document: parse(query),
+        rootValue: bus
+    });
+    return subscription;
 }
 
 export interface Query {
@@ -60,10 +67,7 @@ export interface Query {
     document: DocumentNode;
 }
 
-/**
- * Parses and validates a JACDAC GraphQL query into a document node
- * @param strings 
- */
+/*
 export function jdql(strings): Query {
     // Parse
     const document = parse(strings);
@@ -78,3 +82,4 @@ export function jdql(strings): Query {
         document
     }
 }
+*/
