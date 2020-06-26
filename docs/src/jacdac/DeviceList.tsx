@@ -7,7 +7,7 @@ import { useQuery } from './Query';
 import { jdql } from '../../../src/graphql';
 
 const DeviceList = () => {
-    const { loading, error, data } = useQuery<Device[]>(`{
+    const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
         devices {
             deviceId
             shortId
@@ -17,7 +17,7 @@ const DeviceList = () => {
         <List component="nav" aria-label="devices">
             {loading && <ListItem><ListItemText primary="loading..." /></ListItem>}
             {error && <ListItem><ListItemText primary="error!" /></ListItem>}
-            {data && data.map(device => <DeviceListItem device={device} />)}
+            {data && data.devices.map(device => <DeviceListItem device={device} />)}
         </List>
     )
 }

@@ -23,8 +23,12 @@ export interface PromiseState<T> {
     exception?: any;
 }
 
-//https://usehooks.com/useAsync/
-export function useAsync<T>(asyncFunction: () => Promise<T>, immediate = true) {
+// https://usehooks.com/useAsync/
+export function useQuery<TData = any, TVariables = OperationVariables>(
+    query: string | Query,
+    options?: QueryHookOptions<TData, TVariables>,
+): QueryResult<TData, TVariables> {
+    const ctx = useContext(JacdacContext);
     const [pending, setPending] = useState(false);
     const [value, setValue] = useState(null);
     const [error, setError] = useState(null);
@@ -37,38 +41,25 @@ export function useAsync<T>(asyncFunction: () => Promise<T>, immediate = true) {
         setPending(true);
         setValue(null);
         setError(null);
-        return asyncFunction()
+        return ctx.bus.queryAsync(query)
             .then(response => setValue(response))
             .catch(error => setError(error))
             .finally(() => setPending(false));
-    }, [asyncFunction]);
+    }, [query]);
 
     // Call execute if we want to fire it right away.
     // Otherwise execute can be called later, such as
     // in an onClick handler.
     useEffect(() => {
-        if (immediate) {
-            execute();
-        }
-    }, [execute, immediate]);
+        execute();
+    }, [execute]);
 
-    return { execute, pending, value, error };
-};
-
-export function useQuery<TData = any, TVariables = OperationVariables>(
-    query: string | Query,
-    options?: QueryHookOptions<TData, TVariables>,
-): QueryResult<TData, TVariables> {
-    const ctx = useContext(JacdacContext);
-    const { pending, value, error } = useAsync(() => {
-        console.log(`jdql query`)
-        return ctx.bus.queryAsync(query)
-    }, true);
-    console.log(pending, value, error)
-    return {
+    const r = {
         data: value?.data,
         loading: pending,
         error: error,
         variables: options?.variables
     }
-}
+    console.log(r)
+    return r;
+};
