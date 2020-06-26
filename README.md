@@ -14,22 +14,22 @@ The rest of this page is for developers of the jacdac-ts library.
 
 ### Build watch
 
-You can do ``npm run start`` to watch/build bundles
-
-### Gatsby build
-
-Launch the gatsbdy develop mode and navigate to http://localhost:8000
-
-```
-npm run docs
-```
+You can do ``npm run watch`` to watch/build bundles. Bundles are placed under the ``dist`` folder.
 
 ### HTML tools
 
-Launch a small web server and try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/
+Launch a small web server and try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/console.html . These tools load the files under ``dist`` so you'll want to also run watch on the side.
 
 ```
 npm run tools
+```
+
+### Gatsby build
+
+Launch the gatsbdy develop mode and navigate to http://localhost:8000 . This build does not require to load dist as the library is compiled directly into the web site.
+
+```
+npm run docs
 ```
 
 ### Commits create releases
