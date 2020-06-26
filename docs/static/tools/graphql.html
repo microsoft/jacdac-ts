@@ -40,19 +40,18 @@
     </div>
     <div class="field">
         <textarea id="queryinput" rows="10">
-            { 
-                devices { 
-                   deviceId
-                   services(name: "SLIDER")  {
-                      serviceClass
-                      name
-                      register(address: 257) {
-                         intValue
-                      }
-                   }
-                } 
-             }
-                    
+{ 
+    devices(serviceName: "SLIDER") { 
+        deviceId
+        services(serviceName: "SLIDER")  {
+            serviceClass
+            name
+            register(address: 257) {
+                intValue
+            }
+        }
+    } 
+}   
         </textarea>
         <button id="querybtn">query</button>
     </div>

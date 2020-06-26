@@ -112,6 +112,10 @@ function reverseLookup(map: U.SMap<number>, n: number) {
     return toHex(n)
 }
 
+export function serviceClass(name: string) {
+    return service_classes[name];
+}
+
 export function serviceName(n: number) {
     if (n == null)
         return "?"

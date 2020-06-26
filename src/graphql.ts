@@ -12,7 +12,7 @@ function initSchema() {
         type Query {
             connected: Boolean!
             connecting: Boolean!
-            devices: [Device!]!
+            devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
             device(deviceId: String): Device
         }
         
@@ -20,7 +20,7 @@ function initSchema() {
             deviceId: ID
             shortId: String!
             name: String!
-            services(name: String = "", serviceClass: Int = -1): [Service!]!
+            services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
         }
         
         type Service {
@@ -44,12 +44,6 @@ function initSchema() {
 
 export function createGraphQLQuery(bus: Bus): (query: string | Query) => Promise<ExecutionResult> {
     initSchema();
-    const root = {
-        connected: () => bus.connected,
-        connecting: () => bus.connecting,
-        devices: () => bus.devices(),
-        device: (deviceId: string) => bus.device(deviceId)
-    };
 
     return (query: string | Query) => {
         let source: string;
@@ -58,7 +52,7 @@ export function createGraphQLQuery(bus: Bus): (query: string | Query) => Promise
             source = q.source;
         else
             source = query as string;
-        return graphql(schema, source, root);
+        return graphql(schema, source, bus);
     }
 }
 

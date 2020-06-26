@@ -5,6 +5,7 @@ import { SMap, bufferEq } from "./utils";
 import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
 import { createGraphQLQuery, Query } from "./graphql";
 import { ExecutionResult } from "graphql";
+import { serviceClass } from "./pretty";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -205,7 +206,18 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     /**
      * Gets the current list of known devices on the bus
      */
-    devices() { return this._devices.slice() }
+    devices(options?: { serviceName?: string, serviceClass?: number }) {
+        if (options?.serviceName && options?.serviceClass > -1)
+            throw Error("serviceClass and serviceName cannot be used together")
+        let sc = serviceClass(options?.serviceName);
+        if (sc === undefined) sc = options?.serviceClass;
+        if (sc === undefined) sc = -1;
+
+
+        let r = this._devices.slice();
+        if (sc > -1) r = r.filter(s => s.hasService(sc))
+        return r;
+    }
 
     /**
      * Gets a device on the bus
@@ -222,7 +234,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d
-    }
+    }   
 
     private gcDevices() {
         const cutoff = this.timestamp - 2000;

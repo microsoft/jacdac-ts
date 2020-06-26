@@ -1,7 +1,7 @@
 type Query {
     connected: Boolean!
     connecting: Boolean!
-    devices: [Device!]!
+    devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
     device(deviceId: String): Device
 }
 
@@ -9,7 +9,7 @@ type Device {
     deviceId: ID
     shortId: String!
     name: String!
-    services(name: String = "", serviceClass: Int = -1): [Service!]!
+    services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
 }
 
 type Service {

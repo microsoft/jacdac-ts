@@ -4,6 +4,7 @@ import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
 import { Service } from "./service";
+import { serviceClass, serviceName } from "./pretty";
 
 export class Device {
     connected: boolean;
@@ -61,7 +62,13 @@ export class Device {
         return r;
     }
 
-    services(options?: { name?: string, serviceClass?: number}): Service[] {
+    services(options?: { serviceName?: string, serviceClass?: number }): Service[] {
+        if (options?.serviceName && options?.serviceClass > -1)
+            throw Error("serviceClass and serviceName cannot be used together")
+        let sc = serviceClass(options?.serviceName);
+        if (sc === undefined) sc = options?.serviceClass;
+        if (sc === undefined) sc = -1;
+
         if (!this._services) {
             const n = this.serviceLength;
             let s = [];
@@ -70,11 +77,8 @@ export class Device {
             this._services = s;
         }
 
-        const name = options?.name;
-        const serviceClass = options?.serviceClass;
         let r = this._services.slice();
-        if (name) r = r.filter(s => s.name == name)
-        if (serviceClass && serviceClass >= 0) r = r.filter(s => s.serviceClass == serviceClass)
+        if (sc > -1) r = r.filter(s => s.serviceClass == sc)
         return r;
     }
 
