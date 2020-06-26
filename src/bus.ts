@@ -5,11 +5,31 @@ import { SMap, bufferEq } from "./utils";
 import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
 
 export interface BusOptions {
-    sendPacketAsync: (p: Packet) => Promise<void>;
+    sendPacketAsync?: (p: Packet) => Promise<void>;
+    connectAsync?: () => Promise<void>;
     disconnectAsync?: () => Promise<void>;
 }
 
+export interface Error {
+    context: string;
+    exception: any;
+}
+
 export interface PacketEventEmitter {
+    /**
+     * Event emitted when the bus is connected
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'connect', listener: () => void): boolean;
+
+    /**
+     * Event emitted when the bus is connecting
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'connecting', listener: () => void): boolean;
+
     /**
      * Event emitted when the bus is disconnected
      * @param event 
@@ -58,12 +78,22 @@ export interface PacketEventEmitter {
      * @param listener 
      */
     on(event: 'deviceannounce', listener: (device: Device) => void): boolean;
+
+    /**
+     * Event emitted when an exception occurs
+     * @param event 
+     * @param listener 
+     */
+    on(event: 'error', listener: (error: Error) => void): void;
 }
 
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
 export class Bus extends EventEmitter implements PacketEventEmitter {
+    private _connected = false;
+    private _connectPromise: Promise<void>;
+
     private _devices: Device[] = [];
     private _deviceNames: SMap<string> = {};
     private _startTime: number;
@@ -74,11 +104,15 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * Creates the bus with the given transport
      * @param sendPacket 
      */
-    constructor(public options: BusOptions) {
+    constructor(public options?: BusOptions) {
         super();
-        this._startTime = Date.now();
-
+        this.options = this.options || {};
+        this.resetTime();
         this.on('deviceannounce', () => this.pingLoggers());
+    }
+
+    private resetTime() {
+        this._startTime = Date.now();
     }
 
     get timestamp() {
@@ -104,17 +138,65 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
 
     sendPacketAsync(p: Packet) {
         this.emit('packetsend', p);
-        return this.options.sendPacketAsync(p)
+        return this.options?.sendPacketAsync(p) || Promise.resolve();
     }
 
-    disconnectAsync(): Promise<void> {
+    get connecting() {
+        return !!this._connectPromise;
+    }
+
+    get connected() {
+        return this._connected;
+    }
+
+    errorHandler(context: string, exception: any) {
+        this.emit("error", { context, exception })
+    }
+
+    connectAsync(): Promise<void> {
+        // already connected
+        if (this._connected)
+            return Promise.resolve();
+        // connecting
+        if (!this._connectPromise) {
+            this._connected = false;
+            this._connectPromise = Promise.resolve();
+            this.emit("connecting");
+            const connectAsyncPromise = this.options?.connectAsync() || Promise.resolve();
+            this._connectPromise = connectAsyncPromise
+                .then(() => {
+                    this._connectPromise = undefined;
+                    this._connected = true;
+                    this.emit("connect");
+                })
+                .catch(e => {
+                    this.errorHandler("connect", e);
+                    this._connected = false;
+                    this._connectPromise = undefined;
+                    this.emit("disconnect");
+                })
+        }
+        return this._connectPromise;
+    }
+
+    async disconnectAsync(): Promise<void> {
+        if (!this._connected) return Promise.resolve();
+
+        if (this._connectPromise)
+            throw new Error("trying to disconnect while connecting");
+        this._connected = false;
         if (this._gcInterval) {
             clearInterval(this._gcInterval);
             this._gcInterval = undefined;
         }
-
-        return (this.options?.disconnectAsync() || Promise.resolve())
-            .then(() => { this.emit("disconnect") })
+        try {
+            this.options?.disconnectAsync();
+        } catch (e) {
+            this.errorHandler("disconnect", e)
+        }
+        finally {
+            this.emit("disconnet");
+        }
     }
 
     /**
@@ -133,7 +215,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             this._devices.push(d);
             this.emit('deviceconnect', d);
 
-            if (!this._gcInterval)
+            if (!this._gcInterval && this.connected)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d

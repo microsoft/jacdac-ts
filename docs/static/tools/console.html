@@ -24,7 +24,8 @@
 <body>
     <h1>JACDAC/Console</h1>
     <div>
-        <button id="connect">connect to jacdac device</button>
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
     </div>
     <div id="devices" class="segment"></div>
     <div id="log" class="segment">
@@ -34,10 +35,13 @@
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
+        const jd = jacdac.createUSBBus()
+        jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function sniff() {
             log('starting')
-            let jd = await jacdac.requestUSBBus();
+            await jd.disconnectAsync();
+            await jd.connectAsync();
             jd.minConsolePriority = jacdac.ConsolePriority.Debug;
             jd.on('deviceconnect', d => {
                 devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
@@ -53,6 +57,8 @@
 
         const connect = document.getElementById("connect");
         connect.onclick = sniff;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnectAsync()
 
         function log(msg) {
             const logDiv = document.getElementById("log");

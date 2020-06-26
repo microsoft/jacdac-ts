@@ -12,7 +12,8 @@ You will need to connect to the JACDAC bus via WebUSB. This needs to be done fro
 for security reasons.
 
 ```javascript
-const jd = await jacdac.requestUSBBus();
+const jd = jacdac.createUSBBus();
+await jd.connectAsync();
 ```
 
 ### Devices

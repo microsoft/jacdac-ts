@@ -23,7 +23,8 @@
 <body>
     <h1>JACDAC/Packets</h1>
     <div>
-        <button id="connect">connect to jacdac device</button>
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
     </div>
     <div class="hint">
         Drag and drop an exported data from your Saleae. Add an Async Serial protocol analyser, 1Mbit, export to
@@ -36,35 +37,22 @@
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         // webusb
-        let jd;
+        const jd = jacdac.createUSBBus()
+        jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
+
         async function listenWebUsb() {
             log('starting')
-            try {
-                if (jd) {
-                    await jd.disconnectAsync();
-                    jd = undefined;
-                }
-                jd = await jacdac.requestUSBBus();
-                jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
-                log('started')
-            } catch (err) {
-                log(err)
-                if (jd) {
-                    await jd.disconnectAsync()
-                    jd = undefined;
-                }
-            }
+            await jd.disconnectAsync();
+            await jd.connectAsync();
+            jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
+            log('started')
         }
 
         // replace
         async function importLog(file) {
-            if (jd) {
-                await jd.disconnectAsync();
-                jd = undefined;
-            }
-            jd = new jacdac.Bus({ sendPacketAsync: p => { } })
+            await jd.disconnectAsync();
+            jd = new jacdac.Bus()
             jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
-
             const logDiv = document.getElementById("log");
             logDiv.innerHTML = ''
             const text = await file.text();
@@ -74,6 +62,8 @@
         // binding ui
         const connect = document.getElementById("connect");
         connect.onclick = listenWebUsb;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnectAsync()
         document.body.ondragover = ev => ev.preventDefault();
         document.body.ondrop = drop;
 
@@ -86,7 +76,7 @@
                 const file = item.getAsFile();
                 importLog(file);
             }
-        }        
+        }
         function log(msg) {
             const logDiv = document.getElementById("log");
             const line = document.createElement("div");

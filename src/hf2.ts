@@ -424,27 +424,3 @@ export class Proto {
         return this.io.disconnectAsync();
     }
 }
-
-export async function requestUSBBus(requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>): Promise<Bus> {
-    if (!requestDevice && typeof navigator !== "undefined" && navigator.usb && navigator.usb.requestDevice) {
-        requestDevice = options => navigator.usb.requestDevice(options);
-    }
-    const transport = new Transport(requestDevice);
-    const hf2 = new Proto(transport);
-    await hf2.init()
-    const bus = new Bus({
-        sendPacketAsync: p => {
-            const buf = p.toBuffer();
-            return hf2.sendJDMessageAsync(buf)
-                .then(() => { }, err => console.log(err));
-        },
-        disconnectAsync: () => hf2.disconnectAsync()
-    });
-    hf2.onJDMessage(buf => {
-        const pkts = Packet.fromFrame(buf, bus.timestamp)
-        for (const pkt of pkts)
-            bus.processPacket(pkt);
-    });
-
-    return bus;
-}
