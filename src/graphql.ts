@@ -9,36 +9,32 @@ function initSchema() {
     if (!schema) {
         // keep in sync with schema.graphql
         schema = buildSchema(`
-        type Query {
-            connected: Boolean!
-            connecting: Boolean!
-            devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
-            device(deviceId: String): Device
-        }
-        
-        type Device {
-            deviceId: ID
-            shortId: String!
-            name: String!
-            services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
-        }
-        
-        type Service {
-          serviceClass: Int!
-          name: String
-          register(address: Int): Register
-        }
+type Query {
+    connected: Boolean!
+    connecting: Boolean!
+    devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
+    device(deviceId: String): Device
+}
+type Device {
+    deviceId: ID
+    shortId: String!
+    name: String!
+    services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
+}
+type Service {
+    serviceClass: Int!
+    name: String
+    register(address: Int): Register
+}
 
-        type Register {
-            address: Int!
-            data: [Int!]
-            intValue: Int
-        }        
-        
-        schema {
-          query: Query
-        }               
-        `);
+type Register {
+    address: Int!
+    data: [Int!]
+    intValue: Int
+}
+schema {
+    query: Query
+}`);
     }
 }
 
