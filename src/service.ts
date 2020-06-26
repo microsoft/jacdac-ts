@@ -2,6 +2,7 @@ import { Device } from "./device";
 import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { Register } from "./register";
+import { CMD_SET_REG, CMD_REG_MASK } from "./constants";
 
 export class Service {
     private _registers: Register[];
@@ -13,8 +14,8 @@ export class Service {
 
     }
 
-    public register(address: number): Register {
-        address = address | 0;
+    public register(options?: { address: number }): Register {
+        const address = options?.address | 0;
         if (!this._registers)
             this._registers = [];
         let register = this._registers[address];
@@ -35,5 +36,14 @@ export class Service {
         pkt.dev = this.device;
         pkt.service_number = this.service_number;
         return pkt.sendCmdAsync(this.device);
+    }
+
+    processPacket(pkt: Packet) {
+        if (pkt.is_report) {
+            const address = pkt.service_command & CMD_REG_MASK
+            const reg = this.register({ address })
+            if (reg)
+                reg.processReport(pkt);
+        }
     }
 }

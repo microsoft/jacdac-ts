@@ -234,7 +234,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d
-    }   
+    }
 
     private gcDevices() {
         const cutoff = this.timestamp - 2000;
@@ -258,7 +258,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             //
         } else if (pkt.is_command) {
             pkt.dev = this.device(pkt.device_identifier)
-            pkt.dev.processCommand(pkt);
+            pkt.dev.processPacket(pkt);
         } else {
             const dev = pkt.dev = this.device(pkt.device_identifier)
             dev.lastSeen = pkt.timestamp
@@ -267,7 +267,8 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     dev.processAnnouncement(pkt)
                 }
-            }
+            } else
+                pkt.dev.processPacket(pkt);
         }
         // don't spam with duplicate advertisement events
         if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {

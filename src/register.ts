@@ -4,7 +4,7 @@ import { Service } from "./service";
 import { intOfBuffer } from "./buffer";
 
 export class Register {
-    data: Uint8Array;
+    private _data: Uint8Array;
 
     constructor(
         public service: Service,
@@ -16,6 +16,14 @@ export class Register {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
         return this.service.sendCmdAsync(pkt);
+    }
+
+    get data() {
+        return this._data;
+    }
+
+    processReport(pkt: Packet) {
+        this._data = pkt.data;
     }
 
     get intValue(): number {

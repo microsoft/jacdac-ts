@@ -62,13 +62,7 @@ export class Device {
         return r;
     }
 
-    services(options?: { serviceName?: string, serviceClass?: number }): Service[] {
-        if (options?.serviceName && options?.serviceClass > -1)
-            throw Error("serviceClass and serviceName cannot be used together")
-        let sc = serviceClass(options?.serviceName);
-        if (sc === undefined) sc = options?.serviceClass;
-        if (sc === undefined) sc = -1;
-
+    private initServices() {
         if (!this._services) {
             const n = this.serviceLength;
             let s = [];
@@ -76,7 +70,16 @@ export class Device {
                 s.push(new Service(this, i));
             this._services = s;
         }
+    }
 
+    services(options?: { serviceName?: string, serviceClass?: number }): Service[] {
+        if (options?.serviceName && options?.serviceClass > -1)
+            throw Error("serviceClass and serviceName cannot be used together")
+        let sc = serviceClass(options?.serviceName);
+        if (sc === undefined) sc = options?.serviceClass;
+        if (sc === undefined) sc = -1;
+
+        this.initServices();
         let r = this._services.slice();
         if (sc > -1) r = r.filter(s => s.serviceClass == sc)
         return r;
@@ -92,12 +95,21 @@ export class Device {
         if (!bufferEq(pkt.data, this.servicesData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
+            // todo better patching
+            this._services = undefined;
             this.bus.emit('deviceannounce', this);
         }
     }
 
-    processCommand(pkt: Packet) {
+    service(service_number: number) {
+        this.initServices();
+        return this._services[service_number];
+    }
 
+    processPacket(pkt: Packet) {
+        const service = this.service(pkt.service_number)
+        if (service)
+            service.processPacket(pkt);
     }
 
     disconnect() {
