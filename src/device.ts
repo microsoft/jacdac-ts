@@ -3,14 +3,17 @@ import { JD_SERVICE_NUMBER_CTRL } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
+import { Service } from "./service";
+import { serviceClass, serviceName } from "./pretty";
 
 export class Device {
     connected: boolean;
-    services: Uint8Array
+    private servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
     currentReading: Uint8Array
     private _shortId: string
+    private _services: Service[]
 
     constructor(public bus: Bus, public deviceId: string) {
         this.connected = true;
@@ -32,23 +35,23 @@ export class Device {
     }
 
     hasService(service_class: number): boolean {
-        if (!this.services) return false;
-        for (let i = 4; i < this.services.length; i += 4)
-            if (getNumber(this.services, NumberFormat.UInt32LE, i) == service_class)
+        if (!this.servicesData) return false;
+        for (let i = 4; i < this.servicesData.length; i += 4)
+            if (getNumber(this.servicesData, NumberFormat.UInt32LE, i) == service_class)
                 return true
         return false
     }
 
     get serviceLength() {
-        if (!this.services) return 0;
-        return this.services.length >> 2;
+        if (!this.servicesData) return 0;
+        return this.servicesData.length >> 2;
     }
 
     serviceClassAt(idx: number): number {
         idx <<= 2
-        if (!this.services || idx + 4 > this.services.length)
+        if (!this.servicesData || idx + 4 > this.servicesData.length)
             return undefined
-        return read32(this.services, idx)
+        return read32(this.servicesData, idx)
     }
 
     get serviceClasses(): number[] {
@@ -59,10 +62,54 @@ export class Device {
         return r;
     }
 
+    private initServices() {
+        if (!this._services) {
+            const n = this.serviceLength;
+            let s = [];
+            for (let i = 0; i < n; ++i)
+                s.push(new Service(this, i));
+            this._services = s;
+        }
+    }
+
+    services(options?: { serviceName?: string, serviceClass?: number }): Service[] {
+        if (options?.serviceName && options?.serviceClass > -1)
+            throw Error("serviceClass and serviceName cannot be used together")
+        let sc = serviceClass(options?.serviceName);
+        if (sc === undefined) sc = options?.serviceClass;
+        if (sc === undefined) sc = -1;
+
+        this.initServices();
+        let r = this._services.slice();
+        if (sc > -1) r = r.filter(s => s.serviceClass == sc)
+        return r;
+    }
+
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL
         pkt.sendCmdAsync(this)
+    }
+
+    processAnnouncement(pkt: Packet) {
+        if (!bufferEq(pkt.data, this.servicesData)) {
+            this.servicesData = pkt.data
+            this.lastServiceUpdate = pkt.timestamp
+            // todo better patching
+            this._services = undefined;
+            this.bus.emit('deviceannounce', this);
+        }
+    }
+
+    service(service_number: number) {
+        this.initServices();
+        return this._services[service_number];
+    }
+
+    processPacket(pkt: Packet) {
+        const service = this.service(pkt.service_number)
+        if (service)
+            service.processPacket(pkt);
     }
 
     disconnect() {

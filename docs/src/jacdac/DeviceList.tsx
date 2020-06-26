@@ -1,29 +1,31 @@
 
-import React, { useState, useContext, useEffect } from 'react';
-import { List } from '@material-ui/core';
-import JacdacContext from "./Context";
+import React, { useEffect, useState } from 'react';
+import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
 import { Device } from "../../../src/device";
+import { useQuery } from './Query';
 
 const DeviceList = () => {
-    const ctx = useContext(JacdacContext);
-    const [devices, setDevices] = useState<Device[]>(ctx.bus.devices());
+    let [, setState] = useState({});
+    const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
+        devices {
+            deviceId
+            shortId
+        }
+    }`)
+    // force refresh
     useEffect(() => {
-        console.log("devicelist useeffect")
-        const update = () => setDevices(ctx.bus.devices());
-        ctx.bus.on("deviceannouce", update)
-        return () => ctx.bus.off("deviceannouce", update);
-    });
-    useEffect(() => {
-        console.log("devicelist useeffect")
-        const update = () => setDevices(ctx.bus.devices());
-        ctx.bus.on("devicedisconnect", update)
-        return () => ctx.bus.off("devicedisconnect", update);
-    });
+        const id = setInterval(() => setState({}), 1000)
+        return () => clearInterval(id)
+    })
 
-    return <List component="nav" aria-label="devices">
-        {devices.map(device => <DeviceListItem device={device} />)}
-    </List>
+    return (
+        <List component="nav" aria-label="devices">
+            {loading && <ListItem><ListItemText primary="loading..." /></ListItem>}
+            {error && <ListItem><ListItemText primary="error!" /></ListItem>}
+            {data && data.devices.map(device => <DeviceListItem device={device} />)}
+        </List>
+    )
 }
 
 export default DeviceList

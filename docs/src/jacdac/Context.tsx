@@ -7,7 +7,13 @@ const JacdacContext = React.createContext<{
     connecting: boolean,
     connectAsync: () => Promise<void>,
     disconnectAsync: () => Promise<void>
-}>({ bus: undefined, connected: false, connecting: false, connectAsync: undefined, disconnectAsync: undefined });
+}>({
+    bus: undefined,
+    connected: false,
+    connecting: false,
+    connectAsync: undefined,
+    disconnectAsync: undefined
+});
 JacdacContext.displayName = "jacdac";
 
 export default JacdacContext;

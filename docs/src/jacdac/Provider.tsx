@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Bus } from "../../../src/bus";
 import { createUSBBus } from "../../../src/webusb";
 import JacdacContext from "./Context";
 
 const JacdacProvider = ({ children }) => {
-    const [bus, setBus] = useState<Bus>(createUSBBus());
+    const [bus] = useState<Bus>(createUSBBus());
     const [connected, setConnected] = useState(bus.connected);
     const [connecting, setConnecting] = useState(bus.connecting);
     bus.on("connect", () => setConnected(bus.connected))
@@ -19,4 +19,5 @@ const JacdacProvider = ({ children }) => {
         </JacdacContext.Provider>
     )
 }
+
 export default JacdacProvider;
