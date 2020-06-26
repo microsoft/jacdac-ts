@@ -15,7 +15,7 @@ type Device {
 type Service {
   serviceClass: Int!
   name: String
-  registers: [Register!]!
+  register(address: Int): Register
 }
 
 type Register {
