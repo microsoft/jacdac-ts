@@ -25,6 +25,7 @@ function initSchema() {
         
         type Service {
           serviceClass: Int!
+          name: String
         }
         
         schema {
