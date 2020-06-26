@@ -4,7 +4,7 @@ import JacdacContext from "./Context";
 
 function ConnectButton() {
     return <JacdacContext.Consumer>
-        {({ bus, connectAsync, disconnectAsync }) => <Button onClick={bus ? connectAsync : disconnectAsync}>{!!bus ? "disconnect" : "connect"}</Button>}
+        {({ bus, connectAsync, disconnectAsync }) => <Button onClick={!bus ? connectAsync : disconnectAsync}>{!!bus ? "disconnect jacdac" : "connect jacdac"}</Button>}
     </JacdacContext.Consumer>
 }
 
