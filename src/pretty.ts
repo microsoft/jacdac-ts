@@ -203,9 +203,8 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
                 pdesc = " ====== " + pdesc
         } else {
             const services = []
-            for (let i = 0; i < pkt.dev.services.length >> 2; i++) {
-                services.push(serviceName(pkt.dev.serviceClassAt(i)))
-            }
+            for (const sc of pkt.dev.serviceClasses)
+                services.push(serviceName(sc))
             pdesc += "; " + "Announce services: " + services.join(", ")
         }
     } else {

@@ -246,17 +246,14 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
             //
         } else if (pkt.is_command) {
             pkt.dev = this.device(pkt.device_identifier)
+            pkt.dev.processCommand(pkt);
         } else {
             const dev = pkt.dev = this.device(pkt.device_identifier)
             dev.lastSeen = pkt.timestamp
 
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-                    if (!bufferEq(pkt.data, dev.services)) {
-                        dev.services = pkt.data
-                        dev.lastServiceUpdate = pkt.timestamp
-                        this.emit('deviceannounce', dev);
-                    }
+                    dev.processAnnouncement(pkt)
                 }
             }
         }

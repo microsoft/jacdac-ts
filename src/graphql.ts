@@ -9,21 +9,34 @@ function initSchema() {
     if (!schema) {
         // keep in sync with schema.graphql
         schema = buildSchema(`
-        type Bus {
+        type Query {
             connected: Boolean!
             connecting: Boolean!
             devices: [Device!]!
             device(deviceId: String): Device
         }
+        
         type Device {
             deviceId: ID
             shortId: String!
             name: String!
-            services: [Int!]!
+            services: [Service!]!
         }
+        
+        type Service {
+          serviceClass: Int!
+          registers: [Register!]!
+        }
+        
+        type Register {
+          address: Int!
+          data: [Int!]
+          intValue: Int
+        }
+        
         schema {
-          query: Bus
-        }
+          query: Query
+        }               
         `);
     }
 }

@@ -3,14 +3,16 @@ import { JD_SERVICE_NUMBER_CTRL } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
+import { Service } from "./service";
 
 export class Device {
     connected: boolean;
-    services: Uint8Array
+    private servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
     currentReading: Uint8Array
     private _shortId: string
+    private _services: Service[]
 
     constructor(public bus: Bus, public deviceId: string) {
         this.connected = true;
@@ -32,23 +34,23 @@ export class Device {
     }
 
     hasService(service_class: number): boolean {
-        if (!this.services) return false;
-        for (let i = 4; i < this.services.length; i += 4)
-            if (getNumber(this.services, NumberFormat.UInt32LE, i) == service_class)
+        if (!this.servicesData) return false;
+        for (let i = 4; i < this.servicesData.length; i += 4)
+            if (getNumber(this.servicesData, NumberFormat.UInt32LE, i) == service_class)
                 return true
         return false
     }
 
     get serviceLength() {
-        if (!this.services) return 0;
-        return this.services.length >> 2;
+        if (!this.servicesData) return 0;
+        return this.servicesData.length >> 2;
     }
 
     serviceClassAt(idx: number): number {
         idx <<= 2
-        if (!this.services || idx + 4 > this.services.length)
+        if (!this.servicesData || idx + 4 > this.servicesData.length)
             return undefined
-        return read32(this.services, idx)
+        return read32(this.servicesData, idx)
     }
 
     get serviceClasses(): number[] {
@@ -59,10 +61,33 @@ export class Device {
         return r;
     }
 
+    services(): Service[] {
+        if (!this._services) {
+            const n = this.serviceLength;
+            let s = [];
+            for (let i = 0; i < n; ++i)
+                s.push(new Service(this, i));
+            this._services = s;
+        }
+        return this._services.slice();
+    }
+
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL
         pkt.sendCmdAsync(this)
+    }
+
+    processAnnouncement(pkt: Packet) {
+        if (!bufferEq(pkt.data, this.servicesData)) {
+            this.servicesData = pkt.data
+            this.lastServiceUpdate = pkt.timestamp
+            this.bus.emit('deviceannounce', this);
+        }
+    }
+
+    processCommand(pkt: Packet) {
+        
     }
 
     disconnect() {
