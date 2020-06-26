@@ -1,18 +1,24 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
 import { Device } from "../../../src/device";
 import { useQuery } from './Query';
-import { jdql } from '../../../src/graphql';
 
 const DeviceList = () => {
+    let [, setState] = useState({});
     const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
         devices {
             deviceId
             shortId
         }
     }`)
+    // force refresh
+    useEffect(() => {
+        const id = setInterval(() => setState({}), 1000)
+        return () => clearInterval(id)
+    })
+
     return (
         <List component="nav" aria-label="devices">
             {loading && <ListItem><ListItemText primary="loading..." /></ListItem>}

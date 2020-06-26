@@ -60,6 +60,5 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
         error: error,
         variables: options?.variables
     }
-    console.log(r)
     return r;
 };
