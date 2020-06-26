@@ -18,6 +18,11 @@
             margin: 0.25rem;
         }
     </style>
+    <script>
+        var process = {
+            env: {}
+        }   
+    </script>
 </head>
 
 <body>
@@ -27,17 +32,21 @@
         <button id="disconnect">disconnect</button>
     </div>
     <div class="field">
-        <input id="queryinput" type="text" value="{ devices }" />
-        <button id="querybtn">query</button>    
+        <input id="queryinput" type="text" value="{ devices { deviceId } }" />
+        <button id="querybtn">query</button>
     </div>
-<div id="devices" class="segment"></div>
+    <pre id="result">
+    </pre>
     <div id="log" class="segment">
-        <div>waiting for message...</div>
+        <div>...</div>
     </div>
+
 
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
+        const logDiv = document.getElementById("log");
+        const resultDiv = document.getElementById("result")
         const jd = jacdac.createUSBBus()
         jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
 
@@ -45,23 +54,13 @@
             log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.minConsolePriority = jacdac.ConsolePriority.Debug;
-            jd.on('deviceconnect', d => {
-                devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
-            });
-            jd.on('packetreceive', pkt => {
-                const decoded = jacdac.decodePacketData(pkt);
-                console.debug(jacdac.printPacket(pkt))
-                if (decoded)
-                    log(`${jacdac.deviceServiceName(pkt)}: ${decoded}`)
-            })
             log('started')
         }
 
         async function query(source) {
             const res = await jd.queryAsync(source)
             console.log(res)
-            log(res?.data.map(d => d.shortId).join(' ') || res?.errors.join(' ') || "?")
+            result.innerHTML = JSON.stringify(res, null, 2);
         }
 
         const connectel = document.getElementById("connect");
@@ -73,7 +72,6 @@
         querybtn.onclick = () => query(queryinput.value)
 
         function log(msg) {
-            const logDiv = document.getElementById("log");
             const line = document.createElement("div");
             line.innerText = "" + msg;
             logDiv.insertBefore(line, logDiv.firstElementChild);
