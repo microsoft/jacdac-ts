@@ -61,7 +61,7 @@ export class Device {
         return r;
     }
 
-    services(): Service[] {
+    services(options?: { name?: string, serviceClass?: number}): Service[] {
         if (!this._services) {
             const n = this.serviceLength;
             let s = [];
@@ -69,7 +69,13 @@ export class Device {
                 s.push(new Service(this, i));
             this._services = s;
         }
-        return this._services.slice();
+
+        const name = options?.name;
+        const serviceClass = options?.serviceClass;
+        let r = this._services.slice();
+        if (name) r = r.filter(s => s.name == name)
+        if (serviceClass && serviceClass >= 0) r = r.filter(s => s.serviceClass == serviceClass)
+        return r;
     }
 
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
@@ -87,7 +93,7 @@ export class Device {
     }
 
     processCommand(pkt: Packet) {
-        
+
     }
 
     disconnect() {

@@ -13,7 +13,6 @@ export class Service {
 
     }
 
-
     public register(address: number): Register {
         address = address | 0;
         if (!this._registers)

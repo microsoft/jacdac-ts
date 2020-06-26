@@ -9,7 +9,7 @@ type Device {
     deviceId: ID
     shortId: String!
     name: String!
-    services: [Service!]!
+    services(name: String = "", serviceClass: Int = -1): [Service!]!
 }
 
 type Service {

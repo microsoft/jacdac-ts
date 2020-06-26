@@ -20,13 +20,20 @@ function initSchema() {
             deviceId: ID
             shortId: String!
             name: String!
-            services: [Service!]!
+            services(name: String = "", serviceClass: Int = -1): [Service!]!
         }
         
         type Service {
           serviceClass: Int!
           name: String
+          register(address: Int): Register
         }
+
+        type Register {
+            address: Int!
+            data: [Int!]
+            intValue: Int
+        }        
         
         schema {
           query: Query
