@@ -1,4 +1,4 @@
-import { graphql, buildSchema, parse, validate, DocumentNode, ExecutionResult, printSchema, GraphQLSchema } from "graphql"
+import { graphql, buildSchema, parse, validate, DocumentNode, ExecutionResult, printSchema, GraphQLSchema, createSourceEventStream } from "graphql"
 import { Bus } from "./bus";
 
 
@@ -26,14 +26,17 @@ type Service {
     name: String
     register(address: Int): Register
 }
-
 type Register {
     address: Int!
     data: [Int!]
     intValue: Int
 }
+type Subscription {
+    deviceConnect: Int!
+}
 schema {
     query: Query
+    subscription: Subscription
 }`);
     }
 }
