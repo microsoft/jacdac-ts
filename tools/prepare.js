@@ -1,6 +1,11 @@
 const replace = require('replace-in-file');
 const myArgs = process.argv.slice(2);
-const version = myArgs[0];
+let version = myArgs[0];
+
+if (!version) {
+  const pkg = require('../package.json')
+  version = pkg.version;
+}
 
 console.log(`patching version: ${version}`)
 
