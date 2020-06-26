@@ -22,6 +22,17 @@ export class EventEmitter {
         return true;
     }
 
+    off(type: string, handler: EventHandler) {
+        if (!type || !handler) return false;
+
+        const hs = this.handlers[type];
+        const index = hs.indexOf(handler);
+        if (index > -1) return false;
+
+        hs.splice(index, -1);
+        return true;
+    }
+
     emit(type: string, evt?: any) {
         const hs = this.handlers[type];
         if (hs)

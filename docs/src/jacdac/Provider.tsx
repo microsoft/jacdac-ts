@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bus } from "../../../src/bus";
 import { requestUSBBus } from "../../../src/hf2";
 import JacdacContext from "./Context";
