@@ -25,13 +25,6 @@ function initSchema() {
         
         type Service {
           serviceClass: Int!
-          registers: [Register!]!
-        }
-        
-        type Register {
-          address: Int!
-          data: [Int!]
-          intValue: Int
         }
         
         schema {
