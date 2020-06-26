@@ -4,6 +4,7 @@ const version = myArgs[0];
 
 console.log(`patching version: ${version}`)
 
+// patch with cdn files
 async function patchDocs() {
   await patch({
     files: './docs/public/tools/*.html',
