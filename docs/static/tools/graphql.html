@@ -1,0 +1,86 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .field {
+            margin-top: 0.5rem;
+        }
+
+        #log {
+            margin-top: 1rem;
+        }
+
+        #log>div {
+            margin: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>JACDAC/GraphQL</h1>
+    <div class="field">
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+    <div class="field">
+        <input id="queryinput" type="text" value="{ devices }" />
+        <button id="querybtn">query</button>    
+    </div>
+<div id="devices" class="segment"></div>
+    <div id="log" class="segment">
+        <div>waiting for message...</div>
+    </div>
+
+    <script src="/dist/jacdac.umd.js"></script>
+    <script>
+        const devicesDiv = document.getElementById("devices");
+        const jd = jacdac.createUSBBus()
+        jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
+
+        async function connect() {
+            log('starting')
+            await jd.disconnectAsync();
+            await jd.connectAsync();
+            jd.minConsolePriority = jacdac.ConsolePriority.Debug;
+            jd.on('deviceconnect', d => {
+                devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
+            });
+            jd.on('packetreceive', pkt => {
+                const decoded = jacdac.decodePacketData(pkt);
+                console.debug(jacdac.printPacket(pkt))
+                if (decoded)
+                    log(`${jacdac.deviceServiceName(pkt)}: ${decoded}`)
+            })
+            log('started')
+        }
+
+        async function query(source) {
+            const res = await jd.queryAsync(source)
+            console.log(res)
+            log(res?.data.map(d => d.shortId).join(' ') || res?.errors.join(' ') || "?")
+        }
+
+        const connectel = document.getElementById("connect");
+        connectel.onclick = connect;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnectAsync()
+        const queryinput = document.getElementById("queryinput")
+        const querybtn = document.getElementById("querybtn");
+        querybtn.onclick = () => query(queryinput.value)
+
+        function log(msg) {
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            logDiv.insertBefore(line, logDiv.firstElementChild);
+            if (logDiv.childElementCount > 100)
+                logDiv.lastElementChild.remove();
+        }
+    </script>
+</body>
+
+</html>
