@@ -4,7 +4,7 @@ import { Bus } from "./bus";
 
 let schema: GraphQLSchema = undefined;
 
-export function createGraphQLQuery(bus: Bus): (query: string | Query) => Promise<ExecutionResult> {
+function initSchema() {
     // lazy allocated schema
     if (!schema) {
         // keep in sync with schema.graphql
@@ -26,7 +26,10 @@ export function createGraphQLQuery(bus: Bus): (query: string | Query) => Promise
         }
         `);
     }
+}
 
+export function createGraphQLQuery(bus: Bus): (query: string | Query) => Promise<ExecutionResult> {
+    initSchema();
     const root = {
         connected: () => bus.connected,
         connecting: () => bus.connecting,
@@ -59,6 +62,7 @@ export function jdql(strings): Query {
     const document = parse(strings);
 
     // Validate
+    initSchema();
     const validationErrors = validate(schema, document);
     if (validationErrors.length > 0)
         throw new Error(validationErrors.map(e => e.message).join(', '));

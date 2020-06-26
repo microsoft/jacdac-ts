@@ -7,7 +7,12 @@ import { useQuery } from './Query';
 import { jdql } from '../../../src/graphql';
 
 const DeviceList = () => {
-    const { loading, error, data } = useQuery<Device[]>(jdql`{ devices }`)
+    const { loading, error, data } = useQuery<Device[]>(`{
+        devices {
+            deviceId
+            shortId
+        }
+    }`)
     return (
         <List component="nav" aria-label="devices">
             {loading && <ListItem><ListItemText primary="loading..." /></ListItem>}

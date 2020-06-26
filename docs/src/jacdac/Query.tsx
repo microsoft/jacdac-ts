@@ -1,4 +1,4 @@
-import { useContext, useRef, useState, useEffect } from "react";
+import { useContext, useRef, useState, useEffect, useCallback } from "react";
 import JacdacContext from "./Context";
 import { Query } from "../../../src/graphql";
 
@@ -17,39 +17,58 @@ export interface QueryResult<TData = any, TVariTVariables = OperationVariables> 
     variables?: { [name: string]: any; };
 }
 
+export interface PromiseState<T> {
+    promise?: Promise<T>;
+    result?: T;
+    exception?: any;
+}
+
+//https://usehooks.com/useAsync/
+export function useAsync<T>(asyncFunction: () => Promise<T>, immediate = true) {
+    const [pending, setPending] = useState(false);
+    const [value, setValue] = useState(null);
+    const [error, setError] = useState(null);
+
+    // The execute function wraps asyncFunction and
+    // handles setting state for pending, value, and error.
+    // useCallback ensures the below useEffect is not called
+    // on every render, but only if asyncFunction changes.
+    const execute = useCallback(() => {
+        setPending(true);
+        setValue(null);
+        setError(null);
+        return asyncFunction()
+            .then(response => setValue(response))
+            .catch(error => setError(error))
+            .finally(() => setPending(false));
+    }, [asyncFunction]);
+
+    // Call execute if we want to fire it right away.
+    // Otherwise execute can be called later, such as
+    // in an onClick handler.
+    useEffect(() => {
+        if (immediate) {
+            execute();
+        }
+    }, [execute, immediate]);
+
+    return { execute, pending, value, error };
+};
+
 export function useQuery<TData = any, TVariables = OperationVariables>(
     query: string | Query,
     options?: QueryHookOptions<TData, TVariables>,
 ): QueryResult<TData, TVariables> {
     const ctx = useContext(JacdacContext);
-    const [data, setData] = useState(undefined);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(undefined);
-
-    useEffect(() => {
-        const fetch = async () => {
-            try {
-                console.log(`jdql: ${query}`)
-                const res = await ctx.bus.queryAsync(query);
-                console.log(`jdql res:`, res)
-                if (res.errors)
-                    setError(res.errors.map(er => er.message).join(', '))
-                else
-                    setData(data.data);
-            } catch (e) {
-                setError(e)
-            }
-            finally {
-                setLoading(false);
-            }
-        }
-        fetch()
-    })
-
+    const { pending, value, error } = useAsync(() => {
+        console.log(`jdql query`)
+        return ctx.bus.queryAsync(query)
+    }, true);
+    console.log(pending, value, error)
     return {
-        data,
-        loading,
-        error,
+        data: value?.data,
+        loading: pending,
+        error: error,
         variables: options?.variables
     }
 }
