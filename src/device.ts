@@ -1,12 +1,13 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE } from "./constants"
+import { JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, ANNOUNCE, DISCONNECT, CONNECT } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
 import { Service } from "./service";
-import { serviceClass, serviceName } from "./pretty";
+import { serviceClass } from "./pretty";
+import { PubSubComponent } from "./pubsub";
 
-export class Device {
+export class Device extends PubSubComponent {
     connected: boolean;
     private servicesData: Uint8Array
     lastSeen: number
@@ -16,6 +17,7 @@ export class Device {
     private _services: Service[]
 
     constructor(public bus: Bus, public deviceId: string) {
+        super();
         this.connected = true;
     }
 
@@ -98,6 +100,7 @@ export class Device {
             // todo better patching
             this._services = undefined;
             this.bus.emit(DEVICE_ANNOUNCE, this);
+            this.emit(ANNOUNCE)
         }
     }
 
@@ -114,6 +117,7 @@ export class Device {
 
     disconnect() {
         this.connected = false;
+        this.emit(DISCONNECT)
     }
 }
 

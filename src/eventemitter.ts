@@ -31,6 +31,8 @@ export class EventEmitter {
         if (index > -1) return;
 
         hs.splice(index, -1);
+        if (!hs.length)
+            delete this.listeners[eventName];
         this.emit(REMOVE_LISTENER)
         return true;
     }

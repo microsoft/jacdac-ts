@@ -1,14 +1,17 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE } from "./constants";
 import { Service } from "./service";
 import { intOfBuffer } from "./buffer";
+import { PubSubComponent } from "./pubsub";
+import { bufferEq } from "./utils";
 
-export class Register {
+export class Register extends PubSubComponent {
     private _data: Uint8Array;
 
     constructor(
         public service: Service,
         public address: number) {
+        super()
     }
 
     // send a message to set the register value
@@ -23,7 +26,11 @@ export class Register {
     }
 
     processReport(pkt: Packet) {
+        const updated = !bufferEq(this._data, pkt.data)
         this._data = pkt.data;
+        this.emit(REPORT_RECEIVE)
+        if (updated)
+            this.emit(REPORT_UPDATE)
     }
 
     get intValue(): number {

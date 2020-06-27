@@ -7,24 +7,24 @@ export interface PubSubOptions {
 }
 
 export class PubSub extends PubSubEngine {
-    protected ee: EventEmitter;
+    protected eventEmitter: EventEmitter;
     private subscriptions: { [key: string]: [string, (...args: any[]) => void] };
     private subIdCounter: number;
 
     constructor(options: PubSubOptions = {}) {
         super();
-        this.ee = options.eventEmitter || new EventEmitter();
+        this.eventEmitter = options.eventEmitter || new EventEmitter();
         this.subscriptions = {};
         this.subIdCounter = 0;
     }
 
     public publish(triggerName: string, payload: any): Promise<void> {
-        this.ee.emit(triggerName, payload);
+        this.eventEmitter.emit(triggerName, payload);
         return Promise.resolve();
     }
 
     public subscribe(triggerName: string, onMessage: EventHandler): Promise<number> {
-        this.ee.addListener(triggerName, onMessage);
+        this.eventEmitter.addListener(triggerName, onMessage);
         this.subIdCounter = this.subIdCounter + 1;
         this.subscriptions[this.subIdCounter] = [triggerName, onMessage];
 
@@ -37,6 +37,28 @@ export class PubSub extends PubSubEngine {
 
         const [triggerName, onMessage] = subs;
         delete this.subscriptions[subId];
-        this.ee.removeListener(triggerName, onMessage);
+        this.eventEmitter.removeListener(triggerName, onMessage);
+    }
+}
+
+export class PubSubComponent {
+    private _pubSub: PubSub;
+
+    constructor() {
+
+    }
+
+    get pubSub() {
+        if (!this._pubSub)
+            this._pubSub = new PubSub();
+        return this._pubSub
+    }
+
+    on(eventName: string, listener: EventHandler) {
+        this.pubSub.subscribe(eventName, listener);
+    }
+
+    emit(eventName: string, payload?: any) {
+        this.pubSub.publish(eventName, payload);
     }
 }
