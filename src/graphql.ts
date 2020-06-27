@@ -1,5 +1,9 @@
 import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode } from "graphql"
 import { Bus } from "./bus";
+// tslint:disable-next-line: no-submodule-imports
+import { withFilter } from "graphql-subscriptions/dist/with-filter";
+import { Device } from "./device";
+import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "./constants";
 
 
 let schema: GraphQLSchema = undefined;
@@ -32,7 +36,7 @@ type Register {
     intValue: Int
 }
 type Subscription {
-    deviceChanged: Device!
+    deviceChanged(deviceId: ID = ""): Device!
 }
 schema {
     query: Query
@@ -52,12 +56,29 @@ export function queryAsync(bus: Bus, query: string | Query): Promise<ExecutionRe
     return graphql(schema, source, bus);
 }
 
+class Subscription {
+    constructor(public bus: Bus) {
+
+    }
+    deviceChanged(options?: { deviceId?: string }): AsyncIterable<Device> {
+        let subscribe = () => this.bus.pubSub.asyncIterator<Device>([
+            DEVICE_CONNECT,
+            DEVICE_ANNOUNCE,
+            DEVICE_DISCONNECT]);
+        const deviceId = options?.deviceId;
+        if (deviceId)
+            subscribe = withFilter(subscribe, (payload) => payload?.deviceId == deviceId);
+
+        return toAsyncIterable(subscribe);
+    }
+}
+
 export async function subscribeAsync(bus: Bus, query: string) {
     initSchema();
     const subscription = await graphQLSubscribe({
         schema,
         document: parse(query),
-        rootValue: bus
+        rootValue: new Subscription(bus)
     });
     return subscription;
 }
@@ -83,3 +104,8 @@ export function jdql(strings): Query {
     }
 }
 */
+
+
+export function toAsyncIterable<T>(iterator: () => AsyncIterator<T>) {
+    return { [Symbol.asyncIterator]: iterator }
+}

@@ -121,3 +121,19 @@ export const SRV_SLIDER = 0x1f274746;
 export const SRV_MOTOR = 0x17004cd8;
 export const SRV_TCP = 0x1b43b70b;
 export const SRV_WIFI = 0x18aae1fa;
+
+export const NEW_LISTENER = 'newListener'
+export const REMOVE_LISTENER = 'removeListener'
+
+export const CONNECT = 'connect';
+export const CONNECTING = 'connecting';
+export const DISCONNECT = 'disconnect';
+
+export const DEVICE_CONNECT = 'deviceConnect'
+export const DEVICE_DISCONNECT = 'deviceDisconnect'
+export const DEVICE_ANNOUNCE = 'deviceAnnounce'
+
+export const PACKET_SEND = 'packetSend'
+export const PACKET_RECEIVE = 'packetReceive'
+export const PACKET_EVENT = 'packetEvent'
+export const ERROR = 'error'

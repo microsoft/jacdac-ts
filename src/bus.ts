@@ -1,36 +1,24 @@
 import { Packet } from "./packet";
 import { Device } from "./device";
-import { PubSub, EventHandler } from "./eventemitter";
+import { EventHandler } from "./eventemitter";
 import { SMap } from "./utils";
-import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
+import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT, DEVICE_ANNOUNCE, PACKET_SEND, ERROR, CONNECTING, CONNECT, DISCONNECT, DEVICE_CONNECT, DEVICE_DISCONNECT, PACKET_RECEIVE, PACKET_EVENT } from "./constants";
 import { queryAsync, subscribeAsync } from "./graphql";
 import { serviceClass } from "./pretty";
-import { PubSubEngine } from "graphql-subscriptions";
+import { PubSub } from "./pubsub";
+// tslint:disable-next-line: no-submodule-imports
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
     connectAsync?: () => Promise<void>;
     disconnectAsync?: () => Promise<void>;
-    pubSub?: PubSubEngine;
+    pubSub?: PubSub;
 }
 
 export interface Error {
     context: string;
     exception: any;
 }
-
-export const CONNECT = 'connect';
-export const CONNECTING = 'connecting';
-export const DISCONNECT = 'disconnect';
-
-export const DEVICE_CONNECT = 'deviceConnect'
-export const DEVICE_DISCONNECT = 'deviceDisconnect'
-export const DEVICE_ANNOUNCE = 'deviceAnnounce'
-
-export const PACKET_SEND = 'packetSend'
-export const PACKET_RECEIVE = 'packetReceive'
-export const PACKET_EVENT = 'packetEvent'
-export const ERROR = 'error'
 
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
@@ -53,18 +41,18 @@ export class Bus {
         this.options = this.options || {};
         this.options.pubSub = this.options.pubSub || new PubSub();
         this.resetTime();
-        this.pubSub.subscribe(DEVICE_ANNOUNCE, () => this.pingLoggers(), undefined);
+        this.pubSub.subscribe(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
 
     on(eventName: string, listener: EventHandler) {
-        this.pubSub.subscribe(eventName, listener, undefined);
+        this.pubSub.subscribe(eventName, listener);
     }
 
     emit(eventName: string, payload?: any) {
         this.pubSub.publish(eventName, payload);
     }
 
-    private get pubSub() {
+    get pubSub() {
         return this.options.pubSub;
     }
 
@@ -241,13 +229,6 @@ export class Bus {
 
     subscribeAsync(query: string) {
         return subscribeAsync(this, query);
-    }
-
-    deviceChanged() {
-        return this.pubSub.asyncIterator([
-            DEVICE_CONNECT,
-            DEVICE_ANNOUNCE,
-            DEVICE_DISCONNECT]);
     }
 
     /**
