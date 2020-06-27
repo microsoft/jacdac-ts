@@ -1,5 +1,5 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL } from "./constants"
+import { JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
@@ -97,7 +97,7 @@ export class Device {
             this.lastServiceUpdate = pkt.timestamp
             // todo better patching
             this._services = undefined;
-            this.bus.emit('deviceannounce', this);
+            this.bus.emit(DEVICE_ANNOUNCE, this);
         }
     }
 

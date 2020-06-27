@@ -56,20 +56,45 @@ export function queryAsync(bus: Bus, query: string | Query): Promise<ExecutionRe
     return graphql(schema, source, bus);
 }
 
+export function wrapIterator<T, U>(asyncIterator: () => AsyncIterator<T>, wrap: (T) => U): () => AsyncIterator<U> {
+    return () => {
+        const iterator = asyncIterator();
+        return ({
+            next() {
+                return iterator.next().then(({ value, done }) => {
+                    return { value: wrap(value), done };
+                });
+            },
+            return() {
+                return Promise.resolve({ value: undefined, done: true });
+            },
+            throw(error) {
+                return Promise.reject(error);
+            },
+            [Symbol.asyncIterator]() {
+                return this;
+            }
+        } as any)
+    }
+}
+
 class Subscription {
     constructor(public bus: Bus) {
 
     }
-    deviceChanged(options?: { deviceId?: string }): AsyncIterable<Device> {
+    deviceChanged(options?: { deviceId?: string }) {
         let subscribe = () => this.bus.pubSub.asyncIterator<Device>([
             DEVICE_CONNECT,
             DEVICE_ANNOUNCE,
             DEVICE_DISCONNECT]);
         const deviceId = options?.deviceId;
-        if (deviceId)
-            subscribe = withFilter(subscribe, (payload) => payload?.deviceId == deviceId);
+        //        if (deviceId)
+        subscribe = withFilter(subscribe, (payload) => {
+            return !deviceId || payload?.deviceId == deviceId
+        });
 
-        return toAsyncIterable(subscribe);
+        const wrapped = wrapIterator<Device, { deviceChanged: Device }>(subscribe, deviceChanged => { return { deviceChanged } });
+        return toAsyncIterable(wrapped);
     }
 }
 
