@@ -4,26 +4,26 @@ type Query {
     devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
     device(deviceId: String): Device
 }
-
 type Device {
     deviceId: ID
     shortId: String!
     name: String!
     services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
 }
-
 type Service {
-  serviceClass: Int!
-  name: String
-  register(address: Int): Register
+    serviceClass: Int!
+    name: String
+    register(address: Int): Register
 }
-
 type Register {
-  address: Int!
-  data: [Int!]
-  intValue: Int
+    address: Int!
+    data: [Int!]
+    intValue: Int
 }
-
+type Subscription {
+    deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
+}
 schema {
-  query: Query
+    query: Query
+    subscription: Subscription
 }

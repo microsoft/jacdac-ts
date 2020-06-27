@@ -1,42 +1,45 @@
 import { SMap } from "./utils";
-
+import { NEW_LISTENER, REMOVE_LISTENER } from "./constants";
 export type EventHandler = (evt: any) => void;
+
 export class EventEmitter {
-    readonly handlers: SMap<EventHandler[]> = {};
+    readonly listeners: SMap<EventHandler[]> = {};
 
     constructor() {
     }
 
     /**
      * Registers an event handler
-     * @param type 
-     * @param handler 
+     * @param eventName 
+     * @param listener 
      */
-    on(type: string, handler: EventHandler): boolean {
-        if (!type || !handler) return false;
+    addListener(eventName: string, listener: EventHandler) {
+        if (!eventName || !listener) return;
 
-        const hs = this.handlers[type] || (this.handlers[type] = []);
-        if (hs.indexOf(handler) > -1) return false;
+        const hs = this.listeners[eventName] || (this.listeners[eventName] = []);
+        if (hs.indexOf(listener) > -1) return;
 
-        hs.push(handler);
-        return true;
+        hs.push(listener);
+        this.emit(NEW_LISTENER)
     }
 
-    off(type: string, handler: EventHandler) {
-        if (!type || !handler) return false;
+    removeListener(eventName: string, listener: EventHandler) {
+        if (!eventName || !listener) return;
 
-        const hs = this.handlers[type];
-        const index = hs.indexOf(handler);
-        if (index > -1) return false;
+        const hs = this.listeners[eventName];
+        const index = hs.indexOf(listener);
+        if (index > -1) return;
 
         hs.splice(index, -1);
+        this.emit(REMOVE_LISTENER)
         return true;
     }
 
-    emit(type: string, evt?: any) {
-        const hs = this.handlers[type];
+    emit(eventName: string, evt?: any) {
+        const hs = this.listeners[eventName];
         if (hs)
             for (const h of hs)
                 h(evt);
     }
 }
+

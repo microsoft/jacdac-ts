@@ -79,9 +79,19 @@
 
         async function query(source) {
             console.log(source)
-            const res = await jd.queryAsync(source)
-            console.log(res)
-            result.innerHTML = JSON.stringify(res, null, 2);
+            if (/subscription/.test(source)) {
+                const res = await jd.subscribeAsync(source)
+                console.log(res)
+                result.innerHTML = "waiting for events..."
+                for await (const d of res) {
+                    console.log(d)
+                    result.innerHTML = JSON.stringify(d, null, 2);
+                }
+            } else {
+                const res = await jd.queryAsync(source)
+                console.log(res)
+                result.innerHTML = JSON.stringify(res, null, 2);
+            }
         }
 
         const connectel = document.getElementById("connect");

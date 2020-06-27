@@ -113,7 +113,7 @@ function reverseLookup(map: U.SMap<number>, n: number) {
 }
 
 export function serviceClass(name: string) {
-    return service_classes[name];
+    return service_classes[(name || "").toUpperCase()];
 }
 
 export function serviceName(n: number) {

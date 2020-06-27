@@ -1,16 +1,18 @@
 import { Packet } from "./packet";
 import { Device } from "./device";
-import { EventEmitter } from "./eventemitter";
-import { SMap, bufferEq } from "./utils";
-import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT } from "./constants";
-import { createGraphQLQuery, Query } from "./graphql";
-import { ExecutionResult } from "graphql";
+import { EventHandler } from "./eventemitter";
+import { SMap } from "./utils";
+import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT, DEVICE_ANNOUNCE, PACKET_SEND, ERROR, CONNECTING, CONNECT, DISCONNECT, DEVICE_CONNECT, DEVICE_DISCONNECT, PACKET_RECEIVE, PACKET_EVENT } from "./constants";
+import { queryAsync, subscribeAsync } from "./graphql";
 import { serviceClass } from "./pretty";
+import { PubSub } from "./pubsub";
+// tslint:disable-next-line: no-submodule-imports
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
     connectAsync?: () => Promise<void>;
     disconnectAsync?: () => Promise<void>;
+    pubSub?: PubSub;
 }
 
 export interface Error {
@@ -18,85 +20,12 @@ export interface Error {
     exception: any;
 }
 
-export interface PacketEventEmitter {
-    /**
-     * Event emitted when the bus is connected
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'connect', listener: () => void): boolean;
-
-    /**
-     * Event emitted when the bus is connecting
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'connecting', listener: () => void): boolean;
-
-    /**
-     * Event emitted when the bus is disconnected
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'disconnect', listener: () => void): boolean;
-
-    /**
-     * Event emitted when a packet is received and processed
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'packetreceive', listener: (packet: Packet) => void): boolean;
-
-    /**
-     * Event emitted when an event packet is received and processed
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'packetevent', listener: (packet: Packet) => void): boolean;
-
-    /**
-     * Event emitted before a packet is sent
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'packetsend', listener: (packet: Packet) => void): boolean;
-
-    /**
-     * Event emitted when a device is detected on the bus. The information on the device might not be fully populated yet.
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'deviceconnect', listener: (device: Device) => void): boolean;
-
-    /**
-     * Event emitted when a device hasn't been on the bus for a while and is considered disconected.
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'devicedisconnect', listener: (device: Device) => void): boolean;
-
-    /**
-     * Event emitted device advertisement information for a device has been updated
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'deviceannounce', listener: (device: Device) => void): boolean;
-
-    /**
-     * Event emitted when an exception occurs
-     * @param event 
-     * @param listener 
-     */
-    on(event: 'error', listener: (error: Error) => void): void;
-}
-
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export class Bus extends EventEmitter implements PacketEventEmitter {
+export class Bus {
     private _connected = false;
     private _connectPromise: Promise<void>;
-    private _queryAsync: (query: string | Query) => Promise<ExecutionResult>;
 
     private _devices: Device[] = [];
     private _deviceNames: SMap<string> = {};
@@ -109,10 +38,22 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * @param sendPacket 
      */
     constructor(public options?: BusOptions) {
-        super();
         this.options = this.options || {};
+        this.options.pubSub = this.options.pubSub || new PubSub();
         this.resetTime();
-        this.on('deviceannounce', () => this.pingLoggers());
+        this.pubSub.subscribe(DEVICE_ANNOUNCE, () => this.pingLoggers());
+    }
+
+    on(eventName: string, listener: EventHandler) {
+        this.pubSub.subscribe(eventName, listener);
+    }
+
+    emit(eventName: string, payload?: any) {
+        this.pubSub.publish(eventName, payload);
+    }
+
+    get pubSub() {
+        return this.options.pubSub;
     }
 
     private resetTime() {
@@ -141,7 +82,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     }
 
     sendPacketAsync(p: Packet) {
-        this.emit('packetsend', p);
+        this.emit(PACKET_SEND, p);
         return this.options?.sendPacketAsync(p) || Promise.resolve();
     }
 
@@ -154,7 +95,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
     }
 
     errorHandler(context: string, exception: any) {
-        this.emit("error", { context, exception })
+        this.emit(ERROR, { context, exception })
     }
 
     connectAsync(): Promise<void> {
@@ -165,19 +106,19 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         if (!this._connectPromise) {
             this._connected = false;
             this._connectPromise = Promise.resolve();
-            this.emit("connecting");
+            this.emit(CONNECTING);
             const connectAsyncPromise = this.options?.connectAsync() || Promise.resolve();
             this._connectPromise = connectAsyncPromise
                 .then(() => {
                     this._connectPromise = undefined;
                     this._connected = true;
-                    this.emit("connect");
+                    this.emit(CONNECT);
                 })
                 .catch(e => {
-                    this.errorHandler("connect", e);
+                    this.errorHandler(CONNECT, e);
                     this._connected = false;
                     this._connectPromise = undefined;
-                    this.emit("disconnect");
+                    this.emit(DISCONNECT);
                 })
         }
         return this._connectPromise;
@@ -196,10 +137,10 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         try {
             this.options?.disconnectAsync();
         } catch (e) {
-            this.errorHandler("disconnect", e)
+            this.errorHandler(DISCONNECT, e)
         }
         finally {
-            this.emit("disconnet");
+            this.emit(DISCONNECT);
         }
     }
 
@@ -228,7 +169,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         if (!d) {
             d = new Device(this, id)
             this._devices.push(d);
-            this.emit('deviceconnect', d);
+            this.emit(DEVICE_CONNECT, d);
 
             if (!this._gcInterval && this.connected)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
@@ -244,7 +185,7 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
                 this._devices.splice(i, 1)
                 i--
                 dev.disconnect();
-                this.emit('devicedisconnect', dev);
+                this.emit(DEVICE_DISCONNECT, dev);
             }
         }
     }
@@ -272,9 +213,9 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
         }
         // don't spam with duplicate advertisement events
         if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {
-            this.emit('packetreceive', pkt)
+            this.emit(PACKET_RECEIVE, pkt)
             if (pkt.service_command === CMD_EVENT)
-                this.emit('packetevent', pkt);
+                this.emit(PACKET_EVENT, pkt);
         }
     }
 
@@ -282,10 +223,12 @@ export class Bus extends EventEmitter implements PacketEventEmitter {
      * Executes a JACDAC GraphQL query against the current state of the bus
      * @param query 
      */
-    queryAsync(query: string | Query) {
-        if (!this._queryAsync)
-            this._queryAsync = createGraphQLQuery(this);
-        return this._queryAsync(query);
+    queryAsync(query: string) {
+        return queryAsync(this, query);
+    }
+
+    subscribeAsync(query: string) {
+        return subscribeAsync(this, query);
     }
 
     /**
