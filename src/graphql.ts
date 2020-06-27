@@ -4,6 +4,7 @@ import { Bus } from "./bus";
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
 import { Device } from "./device";
 import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "./constants";
+import { serviceClass } from "./pretty"
 
 
 let schema: GraphQLSchema = undefined;
@@ -36,7 +37,7 @@ type Register {
     intValue: Int
 }
 type Subscription {
-    deviceChanged(deviceId: ID = ""): Device!
+    deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
 }
 schema {
     query: Query
@@ -82,16 +83,25 @@ class Subscription {
     constructor(public bus: Bus) {
 
     }
-    deviceChanged(options?: { deviceId?: string }) {
+    deviceChanged(options?: { deviceId?: string, serviceClass?: number, serviceName?: string }) {
+        if (options?.serviceName && options?.serviceClass > -1)
+            throw Error("serviceClass and serviceName cannot be used together")
+        const deviceId = options?.deviceId;
+        let sc = serviceClass(options?.serviceName);
+        if (sc === undefined) sc = options?.serviceClass;
+        if (sc === undefined) sc = -1;
+
+
         let subscribe = () => this.bus.pubSub.asyncIterator<Device>([
             DEVICE_CONNECT,
             DEVICE_ANNOUNCE,
             DEVICE_DISCONNECT]);
-        const deviceId = options?.deviceId;
-        //        if (deviceId)
-        subscribe = withFilter(subscribe, (payload) => {
-            return !deviceId || payload?.deviceId == deviceId
-        });
+
+        if (deviceId || sc > -1)
+            subscribe = withFilter(subscribe, (payload) => {
+                return (!deviceId || payload?.deviceId == deviceId)
+                    && (sc < 0 || payload?.hasService(sc));
+            });
 
         const wrapped = wrapIterator<Device, { deviceChanged: Device }>(subscribe, deviceChanged => { return { deviceChanged } });
         return toAsyncIterable(wrapped);
