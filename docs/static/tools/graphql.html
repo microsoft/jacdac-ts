@@ -80,15 +80,15 @@
         async function query(source) {
             console.log(source)
             if (/subscription/.test(source)) {
-                const res = await jd.subscribeAsync(source)
+                const res = await jacdac.subscribeAsync(jd, source)
                 console.log(res)
                 result.innerHTML = "waiting for events..."
                 for await (const d of res) {
                     console.log(d)
-                    result.innerHTML = JSON.stringify(d, null, 2);
+                    log(JSON.stringify(d, null, 2));
                 }
             } else {
-                const res = await jd.queryAsync(source)
+                const res = await jacdac.queryAsync(jd, source)
                 console.log(res)
                 result.innerHTML = JSON.stringify(res, null, 2);
             }
