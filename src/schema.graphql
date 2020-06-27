@@ -1,29 +1,29 @@
-type Query {
+ype Query {
     connected: Boolean!
     connecting: Boolean!
     devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
     device(deviceId: String): Device
 }
-
 type Device {
     deviceId: ID
     shortId: String!
     name: String!
     services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
 }
-
 type Service {
-  serviceClass: Int!
-  name: String
-  register(address: Int): Register
+    serviceClass: Int!
+    name: String
+    register(address: Int): Register
 }
-
 type Register {
-  address: Int!
-  data: [Int!]
-  intValue: Int
+    address: Int!
+    data: [Int!]
+    intValue: Int
 }
-
+type Subscription {
+    deviceChanged: Int!
+}
 schema {
-  query: Query
+    query: Query
+    subscription: Subscription
 }

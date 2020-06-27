@@ -32,7 +32,7 @@ type Register {
     intValue: Int
 }
 type Subscription {
-    deviceConnect: Int!
+    deviceChanged: Device!
 }
 schema {
     query: Query
