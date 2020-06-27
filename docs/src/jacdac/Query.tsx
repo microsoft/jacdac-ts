@@ -25,7 +25,7 @@ export interface PromiseState<T> {
 
 // https://usehooks.com/useAsync/
 export function useQuery<TData = any, TVariables = OperationVariables>(
-    query: string | Query,
+    query: string,
     options?: QueryHookOptions<TData, TVariables>,
 ): QueryResult<TData, TVariables> {
     const ctx = useContext(JacdacContext);
