@@ -6,6 +6,7 @@ import { Device } from "./device";
 import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, REPORT_UPDATE, REPORT_RECEIVE } from "./constants";
 import { serviceClass } from "./pretty"
 import { PubSub } from "./pubsub";
+import { Register } from "./register";
 
 
 let schema: GraphQLSchema = undefined;
@@ -41,7 +42,7 @@ type Register {
 }
 type Subscription {
     deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
-    reportReceived(deviceId: ID!, serviceNumber: Int = -1, serviceName: String = "", serviceClass: Int! = -1, address: Int!, updatesOnly: Boolean = false): Register
+    reportReceived(deviceId: ID!, serviceNumber: Int = -1, serviceName: String = "", serviceClass: Int! = -1, address: Int!, updatesOnly: Boolean = false): Register!
 }
 schema {
     query: Query
@@ -89,14 +90,13 @@ class Subscription {
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
 
+        const pubSub = new PubSub(this.bus)
         let subscribe = () => {
-            const pubSub = new PubSub(this.bus)
             return pubSub.asyncIterator<Device>([
                 DEVICE_CONNECT,
                 DEVICE_ANNOUNCE,
                 DEVICE_DISCONNECT]);
         }
-
         if (deviceId || sc > -1)
             subscribe = withFilter(subscribe, (payload) => {
                 return (!deviceId || payload?.deviceId == deviceId)
@@ -117,10 +117,10 @@ class Subscription {
         if (!register)
             throw new Error("register not found")
 
+        const pubSub = new PubSub(register)
         const subscribe = () => {
-            const pubSub = new PubSub(register)
             const events = [options.updatesOnly ? REPORT_UPDATE : REPORT_RECEIVE]
-            return pubSub.asyncIterator<Uint8Array>(events);
+            return pubSub.asyncIterator<Register>(events);
         }
         return toAsyncIterable(subscribe);
     }

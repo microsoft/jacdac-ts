@@ -26,6 +26,10 @@
         #log>div {
             margin: 0.25rem;
         }
+
+        .stream input {
+            margin-left: 1rem;
+        }
     </style>
     <script>
         var process = {
@@ -40,8 +44,7 @@
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
     </div>
-    <pre id="result">
-    </pre>
+    <div id="streams" class="segment"></div>
     <div id="log" class="segment">
         <div>...</div>
     </div>
@@ -50,13 +53,12 @@
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         const logDiv = document.getElementById("log");
-        const resultDiv = document.getElementById("result")
         const connectel = document.getElementById("connect");
         const disconnect = document.getElementById("disconnect");
 
         const jd = jacdac.createUSBBus()
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
-        jd.on(jacdac.PACKET_REPORT, pkt => console.log(pkt))
+        //     jd.on(jacdac.PACKET_REPORT, pkt => console.log(pkt))
 
         const devicesSubscription = jacdac.jdql(`
         subscription {
@@ -81,17 +83,26 @@
         }
 
         async function subscribeReports(deviceId) {
+            let el = document.getElementById(deviceId)
+            if (el) return ; // already subscribed
+
+            const slider = createSlider(deviceId)
             const sub = await jacdac.jdql(`
 subscription {
-    reportReceived(deviceId: "${deviceId}", serviceName: "SLIDER", address: 255) {
+    reportReceived(deviceId: "${deviceId}", serviceName: "SLIDER", address: 257, updatesOnly: true) {
         intValue
     }
 }
 `).subscribeAsync(jd)
             log(`subscribed to ${deviceId} slider updates`)
-            for await (const value of sub) {
-                console.log(value)
-                query()
+            for await (const ev of sub) {
+                console.log(ev)
+                const v = ev.data.reportReceived.intValue;
+                el.max = Math.max(parseInt(el.max), v)
+                el.value = v;
+
+                const lbl = document.getElementById(el.id + ":label");
+                lbl.innerText = `${deviceId}: ${v}`;
             }
         }
 
@@ -120,6 +131,27 @@ subscription {
             await jd.disconnectAsync();
             await jd.connectAsync();
             log('started')
+        }
+
+        function createSlider(deviceId) {
+            const id = deviceId;
+            const div = document.createElement("div")
+            div.className = "stream"
+            el = document.createElement("input");
+            el.id = id
+            el.type = "range"
+            el.min = 0
+            el.max = 1
+            el.readonly = true
+            const label = document.createElement("label")
+            label.id = el.id + ":label"
+            label.for = el.id
+            div.append(label)
+            div.append(el)
+            const streams = document.getElementById("streams")
+            streams.append(div)
+
+            return el;
         }
 
         connectel.onclick = connect;
