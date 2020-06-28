@@ -2,7 +2,23 @@ import { Packet } from "./packet";
 import { Device } from "./device";
 import { EventEmitter } from "./eventemitter";
 import { SMap } from "./utils";
-import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT, DEVICE_ANNOUNCE, PACKET_SEND, ERROR, CONNECTING, CONNECT, DISCONNECT, DEVICE_CONNECT, DEVICE_DISCONNECT, PACKET_RECEIVE, PACKET_EVENT } from "./constants";
+import {
+    ConsolePriority,
+    CMD_CONSOLE_SET_MIN_PRIORITY,
+    SRV_LOGGER, JD_SERVICE_NUMBER_CTRL,
+    CMD_ADVERTISEMENT_DATA,
+    CMD_EVENT, DEVICE_ANNOUNCE,
+    PACKET_SEND,
+    ERROR,
+    CONNECTING,
+    CONNECT,
+    DISCONNECT,
+    DEVICE_CONNECT,
+    DEVICE_DISCONNECT,
+    PACKET_RECEIVE,
+    PACKET_EVENT,
+    PACKET_REPORT
+} from "./constants";
 import { serviceClass } from "./pretty";
 
 export interface BusOptions {
@@ -198,7 +214,9 @@ export class Bus extends EventEmitter {
         // don't spam with duplicate advertisement events
         if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {
             this.emit(PACKET_RECEIVE, pkt)
-            if (pkt.service_command === CMD_EVENT)
+            if (pkt.is_report)
+                this.emit(PACKET_REPORT, pkt)
+            if (pkt.is_command && pkt.service_command === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
     }

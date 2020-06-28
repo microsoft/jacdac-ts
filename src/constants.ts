@@ -137,6 +137,7 @@ export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const PACKET_SEND = 'packetSend'
 export const PACKET_RECEIVE = 'packetReceive'
 export const PACKET_EVENT = 'packetEvent'
+export const PACKET_REPORT = 'packetReport'
 
 export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'
