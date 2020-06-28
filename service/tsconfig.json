@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es6",
-    "module":"commonjs",
-    "lib": ["es2015", "es2016", "es2017", "es2020", "dom"],
-    "strict": false,
+    "module": "commonjs",
+    "removeComments": true,
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "preserveConstEnums": true,
+    "target": "es2018",
     "outDir": "dist",
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "esModuleInterop": true
   },
+  "include": [
+    "*.ts",
+    "../src/**.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
