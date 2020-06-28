@@ -5,9 +5,9 @@ import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
 import { Service } from "./service";
 import { serviceClass } from "./pretty";
-import { EventEmitter } from "./eventemitter";
+import { Node } from "./node";
 
-export class Device extends EventEmitter {
+export class Device extends Node {
     connected: boolean;
     private servicesData: Uint8Array
     lastSeen: number
@@ -19,6 +19,10 @@ export class Device extends EventEmitter {
     constructor(public readonly bus: Bus, public readonly deviceId: string) {
         super();
         this.connected = true;
+    }
+
+    get id() {
+        return `dev:${this.deviceId}`
     }
 
     get name() {

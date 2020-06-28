@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { Device } from "./device";
-import { EventEmitter } from "./eventemitter";
+import { Node } from "./node";
 import { SMap } from "./utils";
 import {
     ConsolePriority,
@@ -35,7 +35,7 @@ export interface Error {
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export class Bus extends EventEmitter {
+export class Bus extends Node {
     private _connected = false;
     private _connectPromise: Promise<void>;
 
@@ -54,6 +54,25 @@ export class Bus extends EventEmitter {
         this.options = this.options || {};
         this.resetTime();
         this.addListener(DEVICE_ANNOUNCE, () => this.pingLoggers());
+    }
+
+    get id() {
+        return "bus";
+    }
+
+    node(id: string) {
+        const m = /^(?<type>bus|dev|srv|reg)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
+        if (!m) return undefined;
+        switch(m.groups["type"]) {
+            case "bus": return this;
+            case "dev": return this.device(m.groups["dev"])
+            case "srv": return this.device(m.groups["dev"])
+                ?.service(parseInt(m.groups["dev"]))
+            case "reg": return this.device(m.groups["dev"])
+                ?.service(parseInt(m.groups["dev"]))
+                ?.registerAt(parseInt(m.groups["reg"]));
+        }
+        return undefined;
     }
 
     private resetTime() {

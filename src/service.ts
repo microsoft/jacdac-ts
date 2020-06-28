@@ -3,10 +3,9 @@ import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { Register } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, REG_IS_STREAMING } from "./constants";
-import { EventEmitter } from "./eventemitter";
-import { bufferOfInt } from "./buffer";
+import { Node } from "./node";
 
-export class Service extends EventEmitter {
+export class Service extends Node {
     private _registers: Register[];
 
     constructor(
@@ -14,6 +13,10 @@ export class Service extends EventEmitter {
         public readonly service_number: number
     ) {
         super()
+    }
+
+    get id() {
+        return `srv:${this.device.id}:${this.service_number.toString(16)}`
     }
 
     get serviceClass() {

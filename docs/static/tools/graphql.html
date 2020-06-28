@@ -44,6 +44,7 @@
         <textarea id="queryinput" rows="10">
 { 
     devices(serviceName: "SLIDER") { 
+        id
         deviceId
         services(serviceName: "SLIDER")  {
             serviceClass
@@ -97,6 +98,11 @@ subscription {
             console.log(source)
             const res = await jacdac.jdql(source).queryAsync(jd)
             console.log(res)
+            for(const device of res.data.devices) {
+                const id = device.id
+                const dd = jd.node(id)
+                console.log(`${id} => ${dd}`)
+            }
             result.innerHTML = JSON.stringify(res, null, 2);
         }
 

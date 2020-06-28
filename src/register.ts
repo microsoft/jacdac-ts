@@ -1,11 +1,11 @@
 import { Packet } from "./packet";
 import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE } from "./constants";
 import { Service } from "./service";
-import { intOfBuffer, bufferOfInt } from "./buffer";
-import { EventEmitter } from "./eventemitter";
-import { bufferEq } from "./utils";
+import { intOfBuffer } from "./buffer";
+import { Node } from "./node";
+import { bufferEq, bufferOfInt } from "./utils";
 
-export class Register extends EventEmitter {
+export class Register extends Node {
     private _data: Uint8Array;
     public lastData: number;
 
@@ -13,6 +13,10 @@ export class Register extends EventEmitter {
         public readonly service: Service,
         public readonly address: number) {
         super()
+    }
+
+    get id() {
+        return `reg:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
     }
 
     // send a message to set the register value

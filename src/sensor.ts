@@ -1,6 +1,6 @@
 import { Service } from "./service";
 import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD } from "./constants";
-import { bufferOfInt } from "./buffer";
+import { bufferOfInt } from "./utils";
 
 export function setStreamingAsync(service: Service, on: boolean) {
     const register = service.registerAt(REG_IS_STREAMING);
