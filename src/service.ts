@@ -2,8 +2,9 @@ import { Device } from "./device";
 import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { Register } from "./register";
-import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND } from "./constants";
+import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, REG_IS_STREAMING } from "./constants";
 import { EventEmitter } from "./eventemitter";
+import { bufferOfInt } from "./buffer";
 
 export class Service extends EventEmitter {
     private _registers: Register[];
@@ -23,8 +24,8 @@ export class Service extends EventEmitter {
         return serviceName(this.serviceClass)
     }
 
-    register(options?: { address: number }): Register {
-        const address = options?.address | 0;
+    registerAt(address: number) {
+        address = address | 0;
         if (!this._registers)
             this._registers = [];
         let register = this._registers[address];
@@ -33,11 +34,21 @@ export class Service extends EventEmitter {
         return register;
     }
 
-    sendCmdAsync(pkt: Packet) {
+    register(options: { address: number }): Register {
+        const address = options.address;
+        return this.registerAt(address);
+    }
+
+    sendPacketAsync(pkt: Packet) {
         pkt.dev = this.device;
         pkt.service_number = this.service_number;
         this.emit(PACKET_SEND, pkt)
         return pkt.sendCmdAsync(this.device);
+    }
+
+    sendCmdAsync(cmd: number) {
+        const pkt = Packet.onlyHeader(cmd);
+        return this.sendPacketAsync(pkt)
     }
 
     processPacket(pkt: Packet) {

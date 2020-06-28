@@ -1,4 +1,5 @@
 import { read16, read32 } from "./utils";
+import { pack } from "./struct";
 
 export enum NumberFormat {
     Int8LE = 1,
@@ -147,4 +148,8 @@ export function intOfBuffer(data: Uint8Array) {
             break
     }
     return getNumber(data, fmt, 0)
+}
+
+export function bufferOfInt(value: number): Uint8Array {
+    return pack("i", [value | 0])
 }

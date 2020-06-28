@@ -1,12 +1,14 @@
 import { EventEmitter, EventHandler } from "./eventemitter";
 // tslint:disable-next-line: no-submodule-imports
 import { PubSubEngine } from "graphql-subscriptions/dist/pubsub-engine";
+import { Register } from "./register";
+import { setStreamingAsync } from "./sensor";
 
-export class PubSub extends PubSubEngine {
-    private subscriptions: { [key: string]: [string, (...args: any[]) => void] };
+export class EventEmitterPubSub extends PubSubEngine {
+    private readonly subscriptions: { [key: string]: [string, (...args: any[]) => void] };
     private subIdCounter: number;
 
-    constructor(public eventEmitter: EventEmitter) {
+    constructor(public readonly eventEmitter: EventEmitter) {
         super();
         this.subscriptions = {};
         this.subIdCounter = 0;
@@ -32,5 +34,20 @@ export class PubSub extends PubSubEngine {
         const [triggerName, onMessage] = subs;
         delete this.subscriptions[subId];
         this.eventEmitter.removeListener(triggerName, onMessage);
+    }
+}
+
+export class StreamingRegisterPubSub extends EventEmitterPubSub {
+    constructor(public readonly register: Register) {
+        super(register)
+    }
+
+    public subscribe(triggerName: string, onMessage: EventHandler): Promise<number> {
+        return super.subscribe(triggerName, onMessage)
+            .then(id => {
+                // send a command to start streaming
+                return setStreamingAsync(this.register.service, true)
+                    .then(() => id);
+            })
     }
 }

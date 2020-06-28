@@ -5,7 +5,7 @@ import { withFilter } from "graphql-subscriptions/dist/with-filter";
 import { Device } from "./device";
 import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, REPORT_UPDATE, REPORT_RECEIVE } from "./constants";
 import { serviceClass } from "./pretty"
-import { PubSub } from "./pubsub";
+import { EventEmitterPubSub, StreamingRegisterPubSub } from "./pubsub";
 import { Register } from "./register";
 
 
@@ -90,7 +90,7 @@ class Subscription {
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
 
-        const pubSub = new PubSub(this.bus)
+        const pubSub = new EventEmitterPubSub(this.bus)
         let subscribe = () => {
             return pubSub.asyncIterator<Device>([
                 DEVICE_CONNECT,
@@ -117,7 +117,7 @@ class Subscription {
         if (!register)
             throw new Error("register not found")
 
-        const pubSub = new PubSub(register)
+        const pubSub = new StreamingRegisterPubSub(register)
         let subscribe = () => {
             const events = [options.updatesOnly ? REPORT_UPDATE : REPORT_RECEIVE]
             return pubSub.asyncIterator<Register>(events);

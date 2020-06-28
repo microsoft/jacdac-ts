@@ -1,7 +1,7 @@
 import { Packet } from "./packet";
 import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE } from "./constants";
 import { Service } from "./service";
-import { intOfBuffer } from "./buffer";
+import { intOfBuffer, bufferOfInt } from "./buffer";
 import { EventEmitter } from "./eventemitter";
 import { bufferEq } from "./utils";
 
@@ -18,7 +18,11 @@ export class Register extends EventEmitter {
     setAsync(data: Uint8Array): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
-        return this.service.sendCmdAsync(pkt);
+        return this.service.sendPacketAsync(pkt);
+    }
+
+    setIntAsync(value: number): Promise<void> {
+        return this.setAsync(bufferOfInt(value))
     }
 
     get data() {
