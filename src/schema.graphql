@@ -23,6 +23,7 @@ type Register {
     intValue: Int
 }
 type Subscription {
+    # notifies when a device is connnected, announced or disconnected
     deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
     reportReceived(deviceId: ID!, serviceNumber: Int = -1, serviceName: String = "", serviceClass: Int! = -1, address: Int!, updatesOnly: Boolean = false): Register
 }
