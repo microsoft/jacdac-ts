@@ -62,12 +62,7 @@ export class StreamingRegisterPubSub extends EventEmitterPubSub {
             this.ensureStreaming = debouncedPollAsync(this.startStreaming, 1000, 2000)
             this.register.addListener(REPORT_RECEIVE, this.ensureStreaming.execute)
         }
-        return super.subscribe(triggerName, onMessage)
-            .then(id => {
-                // send a command to start streaming
-                return setStreamingAsync(this.register.service, true)
-                    .then(() => id);
-            })
+        return super.subscribe(triggerName, onMessage);
     }
     public unsubscribe(subId: number) {
         if (!this.length) {
