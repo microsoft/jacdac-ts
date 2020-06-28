@@ -311,3 +311,51 @@ export function clone<T>(v: T): T {
     if (v == null) return null
     return JSON.parse(JSON.stringify(v))
 }
+
+export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
+    let timeOutId: any;
+    return function () {
+        if (timeOutId) {
+            clearTimeout(timeOutId);
+        }
+        timeOutId = setTimeout(async () => {
+            await handler();
+        }, delay);
+    }
+}
+
+export interface DebouncedPoll {
+    execute: () => void;
+    stop: () => void;
+}
+
+/**
+ * Creates a debounced polls the handler, use stop to any polling interval
+ * @param handler 
+ * @param delay 
+ * @param pollDelay 
+ */
+export function debouncedPollAsync(handler: () => Promise<void>, delay: number, pollDelay: number): DebouncedPoll {
+    const debounced = debounceAsync(handler, delay);
+    let interval
+
+    const poll = () => {
+        if (!interval)
+            interval = setInterval(() => debounced(), pollDelay)
+    }
+
+    const execute = () => {
+        poll()
+        debounced()
+    }
+
+    const stop = () => {
+        if (interval) {
+            clearInterval(interval);
+            interval = undefined;
+        }
+    }
+
+    poll()
+    return { execute, stop }
+}

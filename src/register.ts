@@ -7,6 +7,7 @@ import { bufferEq } from "./utils";
 
 export class Register extends EventEmitter {
     private _data: Uint8Array;
+    public lastData: number;
 
     constructor(
         public readonly service: Service,
@@ -36,6 +37,7 @@ export class Register extends EventEmitter {
     processReport(pkt: Packet) {
         const updated = !bufferEq(this._data, pkt.data)
         this._data = pkt.data;
+        this.lastData = pkt.timestamp;
         this.emit(REPORT_RECEIVE, this)
         if (updated)
             this.emit(REPORT_UPDATE, this)

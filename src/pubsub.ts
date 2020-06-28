@@ -3,6 +3,8 @@ import { EventEmitter, EventHandler } from "./eventemitter";
 import { PubSubEngine } from "graphql-subscriptions/dist/pubsub-engine";
 import { Register } from "./register";
 import { setStreamingAsync } from "./sensor";
+import { REPORT_RECEIVE } from "./constants";
+import { debounceAsync, DebouncedPoll, debouncedPollAsync } from "./utils";
 
 export class EventEmitterPubSub extends PubSubEngine {
     private readonly subscriptions: { [key: string]: [string, (...args: any[]) => void] };
@@ -12,6 +14,10 @@ export class EventEmitterPubSub extends PubSubEngine {
         super();
         this.subscriptions = {};
         this.subIdCounter = 0;
+    }
+
+    public get length() {
+        return Object.keys(this.subscriptions).length
     }
 
     public publish(triggerName: string, payload: any): Promise<void> {
@@ -38,16 +44,39 @@ export class EventEmitterPubSub extends PubSubEngine {
 }
 
 export class StreamingRegisterPubSub extends EventEmitterPubSub {
+    private ensureStreaming: DebouncedPoll;
+
     constructor(public readonly register: Register) {
         super(register)
+        this.startStreaming = this.startStreaming.bind(this)
+    }
+
+    private async startStreaming() {
+        console.log("start streaming")
+        await setStreamingAsync(this.register.service, true)
     }
 
     public subscribe(triggerName: string, onMessage: EventHandler): Promise<number> {
+        if (!this.ensureStreaming) {
+            console.log(`start poll streamer`)
+            this.ensureStreaming = debouncedPollAsync(this.startStreaming, 1000, 2000)
+            this.register.addListener(REPORT_RECEIVE, this.ensureStreaming.execute)
+        }
         return super.subscribe(triggerName, onMessage)
             .then(id => {
                 // send a command to start streaming
                 return setStreamingAsync(this.register.service, true)
                     .then(() => id);
             })
+    }
+    public unsubscribe(subId: number) {
+        if (!this.length) {
+            this.register.removeListener(REPORT_RECEIVE, this.ensureStreaming.execute)
+            this.ensureStreaming.stop();
+            this.ensureStreaming = undefined;
+            // don't wait
+            setStreamingAsync(this.register.service, false)
+        }
+        super.unsubscribe(subId)
     }
 }
