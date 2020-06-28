@@ -28,9 +28,9 @@ export class Register extends EventEmitter {
     processReport(pkt: Packet) {
         const updated = !bufferEq(this._data, pkt.data)
         this._data = pkt.data;
-        this.emit(REPORT_RECEIVE)
+        this.emit(REPORT_RECEIVE, pkt.data)
         if (updated)
-            this.emit(REPORT_UPDATE)
+            this.emit(REPORT_UPDATE, pkt.data)
     }
 
     get intValue(): number {

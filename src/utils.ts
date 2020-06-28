@@ -311,4 +311,3 @@ export function clone<T>(v: T): T {
     if (v == null) return null
     return JSON.parse(JSON.stringify(v))
 }
-

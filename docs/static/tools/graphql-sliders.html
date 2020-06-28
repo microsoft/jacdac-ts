@@ -40,31 +40,6 @@
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
     </div>
-    <div class="field">
-        <textarea id="queryinput" rows="10">
-{ 
-    devices(serviceName: "SLIDER") { 
-        deviceId
-        services(serviceName: "SLIDER")  {
-            serviceClass
-            name
-            register(address: 257) {
-                intValue
-            }
-        }
-    } 
-}   
-        </textarea>
-        <button id="querybtn">query</button>
-        <textarea id="subscriptioninput" rows="10">
-{
-    devices {
-        deviceId
-    }
-}
-        </textarea>
-        <button id="subscriptionbtn">subscribe</button>
-    </div>
     <pre id="result">
     </pre>
     <div id="log" class="segment">
@@ -76,15 +51,69 @@
     <script>
         const logDiv = document.getElementById("log");
         const resultDiv = document.getElementById("result")
-        const subscriptioninput = document.getElementById("subscriptioninput")
-        const subscriptionbtn = document.getElementById("subscriptionbtn");
-        const queryinput = document.getElementById("queryinput")
-        const querybtn = document.getElementById("querybtn");
         const connectel = document.getElementById("connect");
         const disconnect = document.getElementById("disconnect");
 
         const jd = jacdac.createUSBBus()
         jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
+
+        const devicesSubscription = jacdac.jdql(`
+        subscription {
+    deviceChanged(serviceName: "SLIDER") {
+        deviceId
+        connected
+        announced
+    }
+}
+`)
+
+        // subscribe to devices with slider that connect
+        async function subscribeDevices() {
+            const sub = await devicesSubscription.subscribeAsync(jd)
+            log(`subscribed to device changes`)
+            for await (const ev of sub) {
+                console.log(ev)
+                if (ev.data.deviceChanged.connected &&
+                    ev.data.deviceChanged.announced)
+                    subscribeReports(ev.data.deviceChanged.deviceId)
+                query()
+            }
+        }
+
+        async function subscribeReports(deviceId) {
+            const sub = await jacdac.jdql(`
+subscription {
+    reportReceived(deviceId: "${deviceId}", serviceName: "SLIDER", address: 255) {
+        intValue
+    }
+}
+`).subscribeAsync(jd)
+            log(`subscribed to ${deviceId} slider updates`)
+            for await (const value of sub) {
+                console.log(value)
+                query()
+            }
+        }
+
+        async function query() {
+            const res = await jacdac.jdql(`
+        { 
+    devices(serviceName: "SLIDER") { 
+        deviceId
+        services(serviceName: "SLIDER")  {
+            serviceClass
+            name
+            register(address: 257) {
+                intValue
+            }
+        }
+    } 
+}   
+        `).queryAsync(jd);
+
+            console.log(res)
+            result.innerHTML = JSON.stringify(res, null, 2);
+        }
 
         async function connect() {
             log('starting')
@@ -93,29 +122,8 @@
             log('started')
         }
 
-        async function query(source) {
-            console.log(source)
-            const res = await jacdac.jdql(source).queryAsync(jd)
-            console.log(res)
-            result.innerHTML = JSON.stringify(res, null, 2);
-        }
-
-        async function subscribe(source) {
-            console.log(source)
-            const res = await jacdac.jdql(source).subscribeAsync(jd)
-            console.log(res)
-            result.innerHTML = "waiting for events..."
-            for await (const d of res) {
-                console.log(d)
-                result.innerHTML += "."
-                query(queryinput.value)
-            }
-        }
-
         connectel.onclick = connect;
         disconnect.onclick = () => jd.disconnectAsync()
-        querybtn.onclick = () => query(queryinput.value)
-        subscriptionbtn.onclick = () => subscribe(subscriptioninput.value)
 
         function log(msg) {
             const line = document.createElement("div");
@@ -124,6 +132,8 @@
             if (logDiv.childElementCount > 100)
                 logDiv.lastElementChild.remove();
         }
+
+        subscribeDevices()
     </script>
 </body>
 

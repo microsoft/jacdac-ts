@@ -3,7 +3,7 @@ import { Bus } from "./bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
 import { Device } from "./device";
-import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "./constants";
+import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, REPORT_UPDATE, REPORT_RECEIVE } from "./constants";
 import { serviceClass } from "./pretty"
 import { PubSub } from "./pubsub";
 
@@ -25,6 +25,8 @@ type Device {
     deviceId: ID
     shortId: String!
     name: String!
+    connected: Boolean!
+    announced: Boolean!
     services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
 }
 type Service {
@@ -39,6 +41,7 @@ type Register {
 }
 type Subscription {
     deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
+    reportReceived(deviceId: ID!, serviceNumber: Int = -1, serviceName: String = "", serviceClass: Int! = -1, address: Int!, updatesOnly: Boolean = false): Register
 }
 schema {
     query: Query
@@ -102,6 +105,24 @@ class Subscription {
 
         const wrapped = wrapIterator<Device, { deviceChanged: Device }>(subscribe, deviceChanged => { return { deviceChanged } });
         return toAsyncIterable(wrapped);
+    }
+    reportReceived(options: { deviceId: string, serviceName?: string, serviceClass?: number, serviceNumber?: number, address: number, updatesOnly?: boolean }) {
+        const device = this.bus.device(options.deviceId);
+        if (!device)
+            throw new Error("device not found");
+        const service = device.services(options)[0];
+        if (!service)
+            throw new Error("service not found")
+        const register = service.register(options)
+        if (!register)
+            throw new Error("register not found")
+
+        const subscribe = () => {
+            const pubSub = new PubSub(register)
+            const events = [options.updatesOnly ? REPORT_UPDATE : REPORT_RECEIVE]
+            return pubSub.asyncIterator<Uint8Array>(events);
+        }
+        return toAsyncIterable(subscribe);
     }
 }
 
