@@ -16,14 +16,14 @@ export class Register extends EventEmitter {
     }
 
     // send a message to set the register value
-    setAsync(data: Uint8Array): Promise<void> {
+    sendSetAsync(data: Uint8Array): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
         return this.service.sendPacketAsync(pkt);
     }
 
-    setIntAsync(value: number): Promise<void> {
-        return this.setAsync(bufferOfInt(value))
+    sendSetIntAsync(value: number): Promise<void> {
+        return this.sendSetAsync(bufferOfInt(value))
     }
 
     get data() {

@@ -4,7 +4,7 @@ import { bufferOfInt } from "./buffer";
 
 export function setStreamingAsync(service: Service, on: boolean) {
     const register = service.registerAt(REG_IS_STREAMING);
-    return register.setAsync(bufferOfInt(on ? 1 : 0))
+    return register.sendSetAsync(bufferOfInt(on ? 1 : 0))
 }
 
 export function calibrateAsync(service: Service) {
@@ -13,5 +13,5 @@ export function calibrateAsync(service: Service) {
 
 export function setThresholdAsync(service: Service, low: boolean, value: number) {
     const register = service.registerAt(low ? REG_LOW_THRESHOLD : REG_LOW_THRESHOLD)
-    return register.setAsync(bufferOfInt(value))
+    return register.sendSetAsync(bufferOfInt(value))
 }
