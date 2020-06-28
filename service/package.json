@@ -1,0 +1,16 @@
+{
+  "name": "jacdac-service",
+  "version": "1.0.0",
+  "description": "GraphQL client for JACDAC",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc index.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
+    "webusb": "^2.0.2"
+  }
+}

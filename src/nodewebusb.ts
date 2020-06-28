@@ -26,3 +26,5 @@ const usb = new webusb.USB({
 export function requestDevice(options: USBDeviceRequestOptions) {
     return usb.requestDevice(options);
 }
+
+export default requestDevice;
