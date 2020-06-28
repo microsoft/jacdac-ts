@@ -1,4 +1,4 @@
-import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode } from "graphql"
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode, validate } from "graphql"
 import { Bus } from "./bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
@@ -47,14 +47,8 @@ schema {
     }
 }
 
-export function queryAsync(bus: Bus, query: string | Query): Promise<ExecutionResult> {
+export function queryAsync(bus: Bus, source: string): Promise<ExecutionResult> {
     initSchema();
-    let source: string;
-    const q = query as Query;
-    if (q.source)
-        source = q.source;
-    else
-        source = query as string;
     return graphql(schema, source, bus);
 }
 
@@ -121,28 +115,38 @@ export async function subscribeAsync(bus: Bus, query: string) {
     return subscription;
 }
 
-export interface Query {
-    source: string;
-    document: DocumentNode;
-}
+export class Query {
+    constructor(public readonly source: string) { }
 
-/*
-export function jdql(strings): Query {
-    // Parse
-    const document = parse(strings);
+    queryAsync(bus: Bus) {
+        return queryAsync(bus, this.source);
+    }
 
-    // Validate
-    initSchema();
-    const validationErrors = validate(schema, document);
-    if (validationErrors.length > 0)
-        throw new Error(validationErrors.map(e => e.message).join(', '));
-    return {
-        source: strings,
-        document
+    subscribeAsync(bus: Bus) {
+        return subscribeAsync(bus, this.source);
     }
 }
-*/
 
+let queryCache = {}
+export function jdql(strings): Query {
+    let source = strings[0]
+    source = source.trim();
+
+    let query = queryCache[source]
+    if (!query) {
+        const document = parse(strings[0]);
+        if (!document || document.kind !== 'Document')
+            throw new Error('Not a valid GraphQL document.');
+
+        // Validate
+        initSchema();
+        const validationErrors = validate(schema, document);
+        if (validationErrors.length > 0)
+            throw new Error(validationErrors.map(e => e.message).join(', '));
+        query = jdql[source] = new Query(source)
+    }
+    return query;
+}
 
 export function toAsyncIterable<T>(iterator: () => AsyncIterator<T>) {
     return { [Symbol.asyncIterator]: iterator }

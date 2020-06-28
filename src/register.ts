@@ -9,8 +9,8 @@ export class Register extends EventEmitter {
     private _data: Uint8Array;
 
     constructor(
-        public service: Service,
-        public address: number) {
+        public readonly service: Service,
+        public readonly address: number) {
         super()
     }
 

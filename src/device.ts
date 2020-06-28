@@ -16,7 +16,7 @@ export class Device extends EventEmitter {
     private _shortId: string
     private _services: Service[]
 
-    constructor(public bus: Bus, public deviceId: string) {
+    constructor(public readonly bus: Bus, public readonly deviceId: string) {
         super();
         this.connected = true;
     }

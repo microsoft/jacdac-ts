@@ -9,8 +9,8 @@ export class Service extends EventEmitter {
     private _registers: Register[];
 
     constructor(
-        public device: Device,
-        public service_number: number
+        public readonly device: Device,
+        public readonly service_number: number
     ) {
         super()
     }
@@ -28,6 +28,7 @@ export class Service extends EventEmitter {
         if (!this._registers)
             this._registers = [];
         let register = this._registers[address];
+        if (!register)
             register = this._registers[address] = new Register(this, address);
         return register;
     }
