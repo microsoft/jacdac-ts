@@ -1,10 +1,9 @@
 import { Packet } from "./packet";
 import { Device } from "./device";
-import { EventHandler } from "./eventemitter";
+import { EventEmitter } from "./eventemitter";
 import { SMap } from "./utils";
 import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT, DEVICE_ANNOUNCE, PACKET_SEND, ERROR, CONNECTING, CONNECT, DISCONNECT, DEVICE_CONNECT, DEVICE_DISCONNECT, PACKET_RECEIVE, PACKET_EVENT } from "./constants";
 import { serviceClass } from "./pretty";
-import { PubSubComponent } from "./pubsub";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -20,7 +19,7 @@ export interface Error {
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export class Bus extends PubSubComponent {
+export class Bus extends EventEmitter {
     private _connected = false;
     private _connectPromise: Promise<void>;
 
@@ -38,7 +37,7 @@ export class Bus extends PubSubComponent {
         super();
         this.options = this.options || {};
         this.resetTime();
-        this.pubSub.subscribe(DEVICE_ANNOUNCE, () => this.pingLoggers());
+        this.addListener(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
 
     private resetTime() {

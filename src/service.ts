@@ -3,9 +3,9 @@ import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { Register } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND } from "./constants";
-import { PubSubComponent } from "./pubsub";
+import { EventEmitter } from "./eventemitter";
 
-export class Service extends PubSubComponent {
+export class Service extends EventEmitter {
     private _registers: Register[];
 
     constructor(

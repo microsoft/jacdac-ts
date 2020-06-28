@@ -5,9 +5,9 @@ import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
 import { Service } from "./service";
 import { serviceClass } from "./pretty";
-import { PubSubComponent } from "./pubsub";
+import { EventEmitter } from "./eventemitter";
 
-export class Device extends PubSubComponent {
+export class Device extends EventEmitter {
     connected: boolean;
     private servicesData: Uint8Array
     lastSeen: number

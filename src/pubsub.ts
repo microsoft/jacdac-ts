@@ -2,18 +2,12 @@ import { EventEmitter, EventHandler } from "./eventemitter";
 // tslint:disable-next-line: no-submodule-imports
 import { PubSubEngine } from "graphql-subscriptions/dist/pubsub-engine";
 
-export interface PubSubOptions {
-    eventEmitter?: EventEmitter;
-}
-
 export class PubSub extends PubSubEngine {
-    protected eventEmitter: EventEmitter;
     private subscriptions: { [key: string]: [string, (...args: any[]) => void] };
     private subIdCounter: number;
 
-    constructor(options: PubSubOptions = {}) {
+    constructor(public eventEmitter: EventEmitter) {
         super();
-        this.eventEmitter = options.eventEmitter || new EventEmitter();
         this.subscriptions = {};
         this.subIdCounter = 0;
     }
@@ -38,27 +32,5 @@ export class PubSub extends PubSubEngine {
         const [triggerName, onMessage] = subs;
         delete this.subscriptions[subId];
         this.eventEmitter.removeListener(triggerName, onMessage);
-    }
-}
-
-export class PubSubComponent {
-    private _pubSub: PubSub;
-
-    constructor() {
-
-    }
-
-    get pubSub() {
-        if (!this._pubSub)
-            this._pubSub = new PubSub();
-        return this._pubSub
-    }
-
-    on(eventName: string, listener: EventHandler) {
-        this.pubSub.subscribe(eventName, listener);
-    }
-
-    emit(eventName: string, payload?: any) {
-        this.pubSub.publish(eventName, payload);
     }
 }

@@ -2,10 +2,10 @@ import { Packet } from "./packet";
 import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE } from "./constants";
 import { Service } from "./service";
 import { intOfBuffer } from "./buffer";
-import { PubSubComponent } from "./pubsub";
+import { EventEmitter } from "./eventemitter";
 import { bufferEq } from "./utils";
 
-export class Register extends PubSubComponent {
+export class Register extends EventEmitter {
     private _data: Uint8Array;
 
     constructor(

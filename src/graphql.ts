@@ -5,6 +5,7 @@ import { withFilter } from "graphql-subscriptions/dist/with-filter";
 import { Device } from "./device";
 import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "./constants";
 import { serviceClass } from "./pretty"
+import { PubSub } from "./pubsub";
 
 
 let schema: GraphQLSchema = undefined;
@@ -91,11 +92,13 @@ class Subscription {
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
 
-
-        let subscribe = () => this.bus.pubSub.asyncIterator<Device>([
-            DEVICE_CONNECT,
-            DEVICE_ANNOUNCE,
-            DEVICE_DISCONNECT]);
+        let subscribe = () => {
+            const pubSub = new PubSub(this.bus)
+            return pubSub.asyncIterator<Device>([
+                DEVICE_CONNECT,
+                DEVICE_ANNOUNCE,
+                DEVICE_DISCONNECT]);
+        }
 
         if (deviceId || sc > -1)
             subscribe = withFilter(subscribe, (payload) => {
