@@ -10,7 +10,8 @@ async function start() {
     const bus = createUSBBus({ requestDevice })
 
     console.log(`connecting bus`)
-    await bus.connectAsync()
+    // not working on windows
+    //  await bus.connectAsync()
 
     console.log(`setting up express`)
     app.use(
