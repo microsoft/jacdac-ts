@@ -3,7 +3,8 @@ import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE } from "./constants";
 import { Service } from "./service";
 import { intOfBuffer } from "./buffer";
 import { Node } from "./node";
-import { bufferEq, bufferOfInt } from "./utils";
+import { bufferEq } from "./utils";
+import { bufferOfInt } from "./struct";
 
 export class Register extends Node {
     private _data: Uint8Array;

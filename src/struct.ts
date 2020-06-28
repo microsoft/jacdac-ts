@@ -86,3 +86,7 @@ function packUnpackCore(format: string, nums: number[], buf: Uint8Array, isPack:
     }
     return off
 }
+
+export function bufferOfInt(value: number): Uint8Array {
+    return pack("i", [value | 0])
+}

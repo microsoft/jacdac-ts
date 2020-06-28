@@ -1,4 +1,3 @@
-import { pack } from "./struct"
 
 export function error(msg: string) {
     throw new Error(msg)
@@ -40,10 +39,6 @@ export function bufferEq(a: Uint8Array, b: ArrayLike<number>) {
         if (a[i] != b[i]) return false
     }
     return true
-}
-
-export function bufferOfInt(value: number): Uint8Array {
-    return pack("i", [value | 0])
 }
 
 export function hash(buf: Uint8Array, bits: number) {
