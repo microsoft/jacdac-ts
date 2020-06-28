@@ -1,11 +1,11 @@
 import express from "express"
 import graphqlHTTP from "express-graphql"
-import { Bus } from "../src/bus"
-import requestDevice from "../src/nodewebusb"
+import requestDevice from "../src/nodeusb"
+import { createUSBBus } from "../src/usb"
 import { getSchema, rootValue } from "../src/graphql"
 
 const app = express();
-const bus = new Bus({ requestDevice })
+const bus = createUSBBus({ requestDevice })
 bus.connectAsync()
 
 app.use(
