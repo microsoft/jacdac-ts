@@ -1,4 +1,4 @@
-import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode, validate, __Schema } from "graphql"
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate } from "graphql"
 import { Bus } from "./bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
