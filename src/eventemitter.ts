@@ -8,6 +8,10 @@ export class EventEmitter {
     constructor() {
     }
 
+    on(eventName: string, listener: EventHandler) {
+        this.addListener(eventName, listener);
+    }
+
     /**
      * Registers an event handler
      * @param eventName 
@@ -31,6 +35,8 @@ export class EventEmitter {
         if (index > -1) return;
 
         hs.splice(index, -1);
+        if (!hs.length)
+            delete this.listeners[eventName];
         this.emit(REMOVE_LISTENER)
         return true;
     }
@@ -42,4 +48,3 @@ export class EventEmitter {
                 h(evt);
     }
 }
-

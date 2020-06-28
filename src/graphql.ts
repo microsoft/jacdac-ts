@@ -1,10 +1,12 @@
-import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode } from "graphql"
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode, validate } from "graphql"
 import { Bus } from "./bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
 import { Device } from "./device";
-import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "./constants";
+import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, REPORT_UPDATE, REPORT_RECEIVE } from "./constants";
 import { serviceClass } from "./pretty"
+import { PubSub } from "./pubsub";
+import { Register } from "./register";
 
 
 let schema: GraphQLSchema = undefined;
@@ -24,6 +26,8 @@ type Device {
     deviceId: ID
     shortId: String!
     name: String!
+    connected: Boolean!
+    announced: Boolean!
     services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
 }
 type Service {
@@ -38,6 +42,7 @@ type Register {
 }
 type Subscription {
     deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
+    reportReceived(deviceId: ID!, serviceNumber: Int = -1, serviceName: String = "", serviceClass: Int! = -1, address: Int!, updatesOnly: Boolean = false): Register!
 }
 schema {
     query: Query
@@ -46,14 +51,8 @@ schema {
     }
 }
 
-export function queryAsync(bus: Bus, query: string | Query): Promise<ExecutionResult> {
+export function queryAsync(bus: Bus, source: string): Promise<ExecutionResult> {
     initSchema();
-    let source: string;
-    const q = query as Query;
-    if (q.source)
-        source = q.source;
-    else
-        source = query as string;
     return graphql(schema, source, bus);
 }
 
@@ -91,12 +90,13 @@ class Subscription {
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
 
-
-        let subscribe = () => this.bus.pubSub.asyncIterator<Device>([
-            DEVICE_CONNECT,
-            DEVICE_ANNOUNCE,
-            DEVICE_DISCONNECT]);
-
+        const pubSub = new PubSub(this.bus)
+        let subscribe = () => {
+            return pubSub.asyncIterator<Device>([
+                DEVICE_CONNECT,
+                DEVICE_ANNOUNCE,
+                DEVICE_DISCONNECT]);
+        }
         if (deviceId || sc > -1)
             subscribe = withFilter(subscribe, (payload) => {
                 return (!deviceId || payload?.deviceId == deviceId)
@@ -104,6 +104,25 @@ class Subscription {
             });
 
         const wrapped = wrapIterator<Device, { deviceChanged: Device }>(subscribe, deviceChanged => { return { deviceChanged } });
+        return toAsyncIterable(wrapped);
+    }
+    reportReceived(options: { deviceId: string, serviceName?: string, serviceClass?: number, serviceNumber?: number, address: number, updatesOnly?: boolean }) {
+        const device = this.bus.device(options.deviceId);
+        if (!device)
+            throw new Error("device not found");
+        const service = device.services(options)[0];
+        if (!service)
+            throw new Error("service not found")
+        const register = service.register(options)
+        if (!register)
+            throw new Error("register not found")
+
+        const pubSub = new PubSub(register)
+        let subscribe = () => {
+            const events = [options.updatesOnly ? REPORT_UPDATE : REPORT_RECEIVE]
+            return pubSub.asyncIterator<Register>(events);
+        }
+        const wrapped = wrapIterator<Register, { reportReceived: Register }>(subscribe, reportReceived => { return { reportReceived } });
         return toAsyncIterable(wrapped);
     }
 }
@@ -118,28 +137,38 @@ export async function subscribeAsync(bus: Bus, query: string) {
     return subscription;
 }
 
-export interface Query {
-    source: string;
-    document: DocumentNode;
-}
+export class Query {
+    constructor(public readonly source: string) { }
 
-/*
-export function jdql(strings): Query {
-    // Parse
-    const document = parse(strings);
+    queryAsync(bus: Bus) {
+        return queryAsync(bus, this.source);
+    }
 
-    // Validate
-    initSchema();
-    const validationErrors = validate(schema, document);
-    if (validationErrors.length > 0)
-        throw new Error(validationErrors.map(e => e.message).join(', '));
-    return {
-        source: strings,
-        document
+    subscribeAsync(bus: Bus) {
+        return subscribeAsync(bus, this.source);
     }
 }
-*/
 
+let queryCache = {}
+export function jdql(strings): Query {
+    let source: string = typeof strings === "string" ? strings : strings[0]
+    source = source.trim();
+
+    let query = queryCache[source]
+    if (!query) {
+        const document = parse(source);
+        if (!document || document.kind !== 'Document')
+            throw new Error('Not a valid GraphQL document.');
+
+        // Validate
+        initSchema();
+        const validationErrors = validate(schema, document);
+        if (validationErrors.length > 0)
+            throw new Error(validationErrors.map(e => e.message).join(', '));
+        query = jdql[source] = new Query(source)
+    }
+    return query;
+}
 
 export function toAsyncIterable<T>(iterator: () => AsyncIterator<T>) {
     return { [Symbol.asyncIterator]: iterator }

@@ -1,18 +1,30 @@
 import { Packet } from "./packet";
 import { Device } from "./device";
-import { EventHandler } from "./eventemitter";
+import { EventEmitter } from "./eventemitter";
 import { SMap } from "./utils";
-import { ConsolePriority, CMD_CONSOLE_SET_MIN_PRIORITY, SRV_LOGGER, JD_SERVICE_NUMBER_CTRL, CMD_ADVERTISEMENT_DATA, CMD_EVENT, DEVICE_ANNOUNCE, PACKET_SEND, ERROR, CONNECTING, CONNECT, DISCONNECT, DEVICE_CONNECT, DEVICE_DISCONNECT, PACKET_RECEIVE, PACKET_EVENT } from "./constants";
-import { queryAsync, subscribeAsync } from "./graphql";
+import {
+    ConsolePriority,
+    CMD_CONSOLE_SET_MIN_PRIORITY,
+    SRV_LOGGER, JD_SERVICE_NUMBER_CTRL,
+    CMD_ADVERTISEMENT_DATA,
+    CMD_EVENT, DEVICE_ANNOUNCE,
+    PACKET_SEND,
+    ERROR,
+    CONNECTING,
+    CONNECT,
+    DISCONNECT,
+    DEVICE_CONNECT,
+    DEVICE_DISCONNECT,
+    PACKET_RECEIVE,
+    PACKET_EVENT,
+    PACKET_REPORT
+} from "./constants";
 import { serviceClass } from "./pretty";
-import { PubSub } from "./pubsub";
-// tslint:disable-next-line: no-submodule-imports
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
     connectAsync?: () => Promise<void>;
     disconnectAsync?: () => Promise<void>;
-    pubSub?: PubSub;
 }
 
 export interface Error {
@@ -23,7 +35,7 @@ export interface Error {
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export class Bus {
+export class Bus extends EventEmitter {
     private _connected = false;
     private _connectPromise: Promise<void>;
 
@@ -38,22 +50,10 @@ export class Bus {
      * @param sendPacket 
      */
     constructor(public options?: BusOptions) {
+        super();
         this.options = this.options || {};
-        this.options.pubSub = this.options.pubSub || new PubSub();
         this.resetTime();
-        this.pubSub.subscribe(DEVICE_ANNOUNCE, () => this.pingLoggers());
-    }
-
-    on(eventName: string, listener: EventHandler) {
-        this.pubSub.subscribe(eventName, listener);
-    }
-
-    emit(eventName: string, payload?: any) {
-        this.pubSub.publish(eventName, payload);
-    }
-
-    get pubSub() {
-        return this.options.pubSub;
+        this.addListener(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
 
     private resetTime() {
@@ -214,21 +214,11 @@ export class Bus {
         // don't spam with duplicate advertisement events
         if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {
             this.emit(PACKET_RECEIVE, pkt)
-            if (pkt.service_command === CMD_EVENT)
+            if (pkt.is_report)
+                this.emit(PACKET_REPORT, pkt)
+            if (pkt.is_command && pkt.service_command === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
-    }
-
-    /**
-     * Executes a JACDAC GraphQL query against the current state of the bus
-     * @param query 
-     */
-    queryAsync(query: string) {
-        return queryAsync(this, query);
-    }
-
-    subscribeAsync(query: string) {
-        return subscribeAsync(this, query);
     }
 
     /**

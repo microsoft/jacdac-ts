@@ -1,12 +1,13 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE } from "./constants"
-import { hash, fromHex, idiv, read32, SMap, bufferEq } from "./utils"
+import { JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, ANNOUNCE, DISCONNECT, CONNECT } from "./constants"
+import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
 import { Service } from "./service";
-import { serviceClass, serviceName } from "./pretty";
+import { serviceClass } from "./pretty";
+import { EventEmitter } from "./eventemitter";
 
-export class Device {
+export class Device extends EventEmitter {
     connected: boolean;
     private servicesData: Uint8Array
     lastSeen: number
@@ -15,12 +16,17 @@ export class Device {
     private _shortId: string
     private _services: Service[]
 
-    constructor(public bus: Bus, public deviceId: string) {
+    constructor(public readonly bus: Bus, public readonly deviceId: string) {
+        super();
         this.connected = true;
     }
 
     get name() {
         return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId);
+    }
+
+    get announced(): boolean {
+        return !!this.servicesData && !!this.servicesData.length;
     }
 
     get shortId() {
@@ -35,7 +41,7 @@ export class Device {
     }
 
     hasService(service_class: number): boolean {
-        if (!this.servicesData) return false;
+        if (!this.announced) return false;
         for (let i = 4; i < this.servicesData.length; i += 4)
             if (getNumber(this.servicesData, NumberFormat.UInt32LE, i) == service_class)
                 return true
@@ -43,13 +49,13 @@ export class Device {
     }
 
     get serviceLength() {
-        if (!this.servicesData) return 0;
+        if (!this.announced) return 0;
         return this.servicesData.length >> 2;
     }
 
     serviceClassAt(idx: number): number {
         idx <<= 2
-        if (!this.servicesData || idx + 4 > this.servicesData.length)
+        if (!this.announced || idx + 4 > this.servicesData.length)
             return undefined
         return read32(this.servicesData, idx)
     }
@@ -63,6 +69,7 @@ export class Device {
     }
 
     private initServices() {
+        assert(this.announced)
         if (!this._services) {
             const n = this.serviceLength;
             let s = [];
@@ -72,7 +79,20 @@ export class Device {
         }
     }
 
-    services(options?: { serviceName?: string, serviceClass?: number }): Service[] {
+    service(service_number: number) {
+        if (!this.announced) return undefined;
+        this.initServices();
+        service_number = service_number | 0;
+        return this._services && this._services[service_number];
+    }
+
+
+    services(options?: { serviceNumber?: number, serviceName?: string, serviceClass?: number }): Service[] {
+        if (!this.announced) return [];
+
+        if (options?.serviceNumber >= 0)
+            return [this.service(options?.serviceNumber)]
+
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
         let sc = serviceClass(options?.serviceName);
@@ -95,15 +115,13 @@ export class Device {
         if (!bufferEq(pkt.data, this.servicesData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
-            // todo better patching
-            this._services = undefined;
+            if (this._services) {
+                // patch services
+                throw new Error("need to patch vervices")
+            }
             this.bus.emit(DEVICE_ANNOUNCE, this);
+            this.emit(ANNOUNCE)
         }
-    }
-
-    service(service_number: number) {
-        this.initServices();
-        return this._services[service_number];
     }
 
     processPacket(pkt: Packet) {
@@ -114,6 +132,7 @@ export class Device {
 
     disconnect() {
         this.connected = false;
+        this.emit(DISCONNECT)
     }
 }
 

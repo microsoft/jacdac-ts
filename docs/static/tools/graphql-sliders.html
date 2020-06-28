@@ -1,0 +1,168 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .field {
+            margin-top: 0.5rem;
+        }
+
+        button,
+        textarea {
+            margin: 0.5rem
+        }
+
+        textarea {
+            width: calc(100% - 1rem)
+        }
+
+        #log {
+            margin-top: 1rem;
+        }
+
+        #log>div {
+            margin: 0.25rem;
+        }
+
+        .stream input {
+            margin-left: 1rem;
+        }
+    </style>
+    <script>
+        var process = {
+            env: {}
+        }   
+    </script>
+</head>
+
+<body>
+    <h1>JACDAC/GraphQL</h1>
+    <div class="field">
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+    <div id="streams" class="segment"></div>
+    <div id="log" class="segment">
+        <div>...</div>
+    </div>
+
+
+    <script src="/dist/jacdac.umd.js"></script>
+    <script>
+        const logDiv = document.getElementById("log");
+        const connectel = document.getElementById("connect");
+        const disconnect = document.getElementById("disconnect");
+
+        const jd = jacdac.createUSBBus()
+        jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
+        //     jd.on(jacdac.PACKET_REPORT, pkt => console.log(pkt))
+
+        const devicesSubscription = jacdac.jdql(`
+        subscription {
+    deviceChanged(serviceName: "SLIDER") {
+        deviceId
+    }
+}
+`)
+
+        // subscribe to devices with slider that connect
+        async function subscribeDevices() {
+            const sub = await devicesSubscription.subscribeAsync(jd)
+            log(`subscribed to device changes`)
+            for await (const ev of sub) {
+                console.log(ev)
+                subscribeReports(ev.data.deviceChanged.deviceId)
+            }
+        }
+
+        async function subscribeReports(deviceId) {
+            let el = document.getElementById(deviceId)
+            if (el) return ; // already subscribed
+
+            el = createSlider(deviceId)
+            const sub = await jacdac.jdql(`
+subscription {
+    reportReceived(deviceId: "${deviceId}", serviceName: "SLIDER", address: 257, updatesOnly: true) {
+        intValue
+    }
+}
+`).subscribeAsync(jd)
+            log(`subscribed to ${deviceId} slider updates`)
+            for await (const ev of sub) {
+                console.log(ev)
+                const v = ev.data.reportReceived.intValue;
+                el.max = Math.max(parseInt(el.max), v)
+                el.value = v;
+
+                const lbl = document.getElementById(el.id + ":label");
+                lbl.innerText = `${deviceId}: ${v}`;
+            }
+        }
+
+        async function query() {
+            const res = await jacdac.jdql(`
+        { 
+    devices(serviceName: "SLIDER") { 
+        deviceId
+        services(serviceName: "SLIDER")  {
+            serviceClass
+            name
+            register(address: 257) {
+                intValue
+            }
+        }
+    } 
+}   
+        `).queryAsync(jd);
+
+            console.log(res)
+            result.innerHTML = JSON.stringify(res, null, 2);
+        }
+
+        async function connect() {
+            log('starting')
+            await jd.disconnectAsync();
+            await jd.connectAsync();
+            log('started')
+        }
+
+        function createSlider(deviceId) {
+            const id = deviceId;
+            const div = document.createElement("div")
+            div.className = "stream"
+            el = document.createElement("input");
+            el.id = id
+            el.type = "range"
+            el.min = 0
+            el.max = 1
+            el.readonly = true
+            const label = document.createElement("label")
+            label.id = el.id + ":label"
+            label.for = el.id
+            div.append(label)
+            div.append(el)
+            const streams = document.getElementById("streams")
+            streams.append(div)
+
+            return el;
+        }
+
+        connectel.onclick = connect;
+        disconnect.onclick = () => jd.disconnectAsync()
+
+        function log(msg) {
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            logDiv.insertBefore(line, logDiv.firstElementChild);
+            if (logDiv.childElementCount > 100)
+                logDiv.lastElementChild.remove();
+        }
+
+        subscribeDevices()
+    </script>
+</body>
+
+</html>

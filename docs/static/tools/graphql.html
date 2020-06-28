@@ -9,12 +9,14 @@
         .field {
             margin-top: 0.5rem;
         }
-        button, textarea {
+
+        button,
+        textarea {
             margin: 0.5rem
         }
+
         textarea {
             width: calc(100% - 1rem)
-
         }
 
         #log {
@@ -54,6 +56,14 @@
 }   
         </textarea>
         <button id="querybtn">query</button>
+        <textarea id="subscriptioninput" rows="10">
+subscription {
+    deviceChanged(serviceName: "SLIDER") {
+        deviceId
+    }
+}                    
+        </textarea>
+        <button id="subscriptionbtn">subscribe</button>
     </div>
     <pre id="result">
     </pre>
@@ -64,9 +74,15 @@
 
     <script src="/dist/jacdac.umd.js"></script>
     <script>
-        const devicesDiv = document.getElementById("devices");
         const logDiv = document.getElementById("log");
         const resultDiv = document.getElementById("result")
+        const subscriptioninput = document.getElementById("subscriptioninput")
+        const subscriptionbtn = document.getElementById("subscriptionbtn");
+        const queryinput = document.getElementById("queryinput")
+        const querybtn = document.getElementById("querybtn");
+        const connectel = document.getElementById("connect");
+        const disconnect = document.getElementById("disconnect");
+
         const jd = jacdac.createUSBBus()
         jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
 
@@ -79,28 +95,26 @@
 
         async function query(source) {
             console.log(source)
-            if (/subscription/.test(source)) {
-                const res = await jd.subscribeAsync(source)
-                console.log(res)
-                result.innerHTML = "waiting for events..."
-                for await (const d of res) {
-                    console.log(d)
-                    result.innerHTML = JSON.stringify(d, null, 2);
-                }
-            } else {
-                const res = await jd.queryAsync(source)
-                console.log(res)
-                result.innerHTML = JSON.stringify(res, null, 2);
+            const res = await jacdac.jdql(source).queryAsync(jd)
+            console.log(res)
+            result.innerHTML = JSON.stringify(res, null, 2);
+        }
+
+        async function subscribe(source) {
+            console.log(source)
+            const res = await jacdac.jdql(source).subscribeAsync(jd)
+            console.log(res)
+            result.innerHTML = "waiting for events..."
+            for await (const d of res) {
+                console.log(d)
+                log(`event ${d.data.deviceChanged.deviceId}`)
             }
         }
 
-        const connectel = document.getElementById("connect");
         connectel.onclick = connect;
-        const disconnect = document.getElementById("disconnect");
         disconnect.onclick = () => jd.disconnectAsync()
-        const queryinput = document.getElementById("queryinput")
-        const querybtn = document.getElementById("querybtn");
         querybtn.onclick = () => query(queryinput.value)
+        subscriptionbtn.onclick = () => subscribe(subscriptioninput.value)
 
         function log(msg) {
             const line = document.createElement("div");
