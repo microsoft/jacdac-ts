@@ -6,7 +6,8 @@
   "scripts": {
     "clean": "rm -Rf dist",
     "build": "tsc",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "serve": "node dist/service/server.js"
   },
   "author": "",
   "license": "MIT",
