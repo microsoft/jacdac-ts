@@ -129,12 +129,12 @@ export class Query {
 
 let queryCache = {}
 export function jdql(strings): Query {
-    let source = strings[0]
+    let source: string = typeof strings === "string" ? strings : strings[0]
     source = source.trim();
 
     let query = queryCache[source]
     if (!query) {
-        const document = parse(strings[0]);
+        const document = parse(source);
         if (!document || document.kind !== 'Document')
             throw new Error('Not a valid GraphQL document.');
 
