@@ -15,25 +15,24 @@ export class Service extends EventEmitter {
         super()
     }
 
-    public register(options?: { address: number }): Register {
+    get serviceClass() {
+        return this.device.serviceClassAt(this.service_number);
+    }
+
+    get name() {
+        return serviceName(this.serviceClass)
+    }
+
+    register(options?: { address: number }): Register {
         const address = options?.address | 0;
         if (!this._registers)
             this._registers = [];
         let register = this._registers[address];
-        if (!register)
             register = this._registers[address] = new Register(this, address);
         return register;
     }
 
-    public get serviceClass() {
-        return this.device.serviceClassAt(this.service_number);
-    }
-
-    public get name() {
-        return serviceName(this.serviceClass)
-    }
-
-    public sendCmdAsync(pkt: Packet) {
+    sendCmdAsync(pkt: Packet) {
         pkt.dev = this.device;
         pkt.service_number = this.service_number;
         this.emit(PACKET_SEND, pkt)
