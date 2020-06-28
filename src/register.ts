@@ -25,16 +25,15 @@ export class Register extends EventEmitter {
         return this._data;
     }
 
+    get intValue(): number {
+        return this.data && intOfBuffer(this.data);
+    }
+
     processReport(pkt: Packet) {
         const updated = !bufferEq(this._data, pkt.data)
         this._data = pkt.data;
         this.emit(REPORT_RECEIVE, this)
         if (updated)
             this.emit(REPORT_UPDATE, this)
-    }
-
-    get intValue(): number {
-        // TODO unpack
-        return this.data && intOfBuffer(this.data);
     }
 }

@@ -57,11 +57,11 @@
         </textarea>
         <button id="querybtn">query</button>
         <textarea id="subscriptioninput" rows="10">
-{
-    devices {
+subscription {
+    deviceChanged(serviceName: "SLIDER") {
         deviceId
     }
-}
+}                    
         </textarea>
         <button id="subscriptionbtn">subscribe</button>
     </div>
@@ -107,8 +107,7 @@
             result.innerHTML = "waiting for events..."
             for await (const d of res) {
                 console.log(d)
-                result.innerHTML += "."
-                query(queryinput.value)
+                log(`event ${d.data.deviceChanged.deviceId}`)
             }
         }
 

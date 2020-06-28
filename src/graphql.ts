@@ -118,10 +118,14 @@ class Subscription {
             throw new Error("register not found")
 
         const pubSub = new PubSub(register)
-        const subscribe = () => {
+        let subscribe = () => {
             const events = [options.updatesOnly ? REPORT_UPDATE : REPORT_RECEIVE]
             return pubSub.asyncIterator<Register>(events);
         }
+        subscribe = withFilter(subscribe, payload => {
+            console.log(payload)
+            return true;
+        })
         return toAsyncIterable(subscribe);
     }
 }
