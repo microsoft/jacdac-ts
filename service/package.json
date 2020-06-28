@@ -4,7 +4,7 @@
   "description": "GraphQL client for JACDAC",
   "main": "index.js",
   "scripts": {
-    "build": "tsc index.ts"
+    "build": "tsc"
   },
   "author": "",
   "license": "MIT",
