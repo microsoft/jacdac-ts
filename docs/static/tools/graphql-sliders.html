@@ -64,8 +64,6 @@
         subscription {
     deviceChanged(serviceName: "SLIDER") {
         deviceId
-        connected
-        announced
     }
 }
 `)
@@ -76,9 +74,7 @@
             log(`subscribed to device changes`)
             for await (const ev of sub) {
                 console.log(ev)
-                if (ev.data.deviceChanged.connected &&
-                    ev.data.deviceChanged.announced)
-                    subscribeReports(ev.data.deviceChanged.deviceId)
+                subscribeReports(ev.data.deviceChanged.deviceId)
             }
         }
 
@@ -86,7 +82,7 @@
             let el = document.getElementById(deviceId)
             if (el) return ; // already subscribed
 
-            const slider = createSlider(deviceId)
+            el = createSlider(deviceId)
             const sub = await jacdac.jdql(`
 subscription {
     reportReceived(deviceId: "${deviceId}", serviceName: "SLIDER", address: 257, updatesOnly: true) {

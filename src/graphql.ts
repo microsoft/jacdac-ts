@@ -122,11 +122,8 @@ class Subscription {
             const events = [options.updatesOnly ? REPORT_UPDATE : REPORT_RECEIVE]
             return pubSub.asyncIterator<Register>(events);
         }
-        subscribe = withFilter(subscribe, payload => {
-            console.log(payload)
-            return true;
-        })
-        return toAsyncIterable(subscribe);
+        const wrapped = wrapIterator<Register, { reportReceived: Register }>(subscribe, reportReceived => { return { reportReceived } });
+        return toAsyncIterable(wrapped);
     }
 }
 
