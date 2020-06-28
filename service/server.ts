@@ -5,9 +5,13 @@ import { createUSBBus } from "../src/usb"
 import { getSchema, rootValue } from "../src/graphql"
 
 const app = express();
+console.log(`creating jacdac bus`)
 const bus = createUSBBus({ requestDevice })
+
+console.log(`connecting bus`)
 bus.connectAsync()
 
+console.log(`setting up express`)
 app.use(
     '/graphql',
     graphqlHTTP({
@@ -18,4 +22,6 @@ app.use(
     }),
 );
 
+console.log(`starting server at http://localhost:4000/graphql`)
 app.listen(4000);
+console.log(`closing`)
