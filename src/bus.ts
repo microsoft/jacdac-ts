@@ -63,7 +63,7 @@ export class Bus extends Node {
     node(id: string) {
         const m = /^(?<type>bus|dev|srv|reg)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
         if (!m) return undefined;
-        switch(m.groups["type"]) {
+        switch (m.groups["type"]) {
             case "bus": return this;
             case "dev": return this.device(m.groups["dev"])
             case "srv": return this.device(m.groups["dev"])

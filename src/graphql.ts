@@ -1,4 +1,4 @@
-import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, DocumentNode, validate } from "graphql"
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate } from "graphql"
 import { Bus } from "./bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
@@ -9,13 +9,13 @@ import { EventEmitterPubSub, StreamingRegisterPubSub } from "./pubsub";
 import { Register } from "./register";
 
 
-let schema: GraphQLSchema = undefined;
+let _schema: GraphQLSchema = undefined;
 
-function initSchema() {
+export function getSchema() {
     // lazy allocated schema
-    if (!schema) {
+    if (!_schema) {
         // keep in sync with schema.graphql
-        schema = buildSchema(`
+        _schema = buildSchema(`
 interface Node {
     id: ID!
 }
@@ -56,11 +56,15 @@ schema {
     subscription: Subscription
 }`);
     }
+    return _schema
 }
 
 export function queryAsync(bus: Bus, source: string): Promise<ExecutionResult> {
-    initSchema();
-    return graphql(schema, source, bus);
+    const rv = rootValue(bus)
+    return graphql(getSchema(),
+        source,
+        rv.query
+    );
 }
 
 export function wrapIterator<T, U>(asyncIterator: () => AsyncIterator<T>, wrap: (T) => U): () => AsyncIterator<U> {
@@ -82,6 +86,13 @@ export function wrapIterator<T, U>(asyncIterator: () => AsyncIterator<T>, wrap: 
                 return this;
             }
         } as any)
+    }
+}
+
+export function rootValue(bus: Bus) {
+    return {
+        query: bus,
+        subscription: new Subscription(bus)
     }
 }
 
@@ -135,9 +146,8 @@ class Subscription {
 }
 
 export async function subscribeAsync(bus: Bus, query: string) {
-    initSchema();
     const subscription = await graphQLSubscribe({
-        schema,
+        schema: getSchema(),
         document: parse(query),
         rootValue: new Subscription(bus)
     });
@@ -168,8 +178,8 @@ export function jdql(strings): Query {
             throw new Error('Not a valid GraphQL document.');
 
         // Validate
-        initSchema();
-        const validationErrors = validate(schema, document);
+        getSchema();
+        const validationErrors = validate(_schema, document);
         if (validationErrors.length > 0)
             throw new Error(validationErrors.map(e => e.message).join(', '));
         query = jdql[source] = new Query(source)
