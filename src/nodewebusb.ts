@@ -23,8 +23,9 @@ const usb = new USB({ devicesFound })
  * Node.JS webusb bindings. Make sure to add "webusb" to your package.json config.
  * @param options 
  */
-export function requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice> {
-    return usb.requestDevice(options);
+export async function requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice> {
+    const device = await usb.requestDevice(options);
+    return device;
 }
 
 export default requestDevice;
