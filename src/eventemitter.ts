@@ -86,7 +86,7 @@ export class EventEmitter {
                 --i;
             }
             try {
-                handler(args);
+                handler.apply(null, args);
             }
             catch (e) {
                 // avoid recursive errors in error handler
