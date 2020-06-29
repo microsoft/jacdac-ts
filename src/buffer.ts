@@ -148,3 +148,23 @@ export function intOfBuffer(data: Uint8Array) {
     }
     return getNumber(data, fmt, 0)
 }
+
+export function bufferToArray(data: Uint8Array, fmt: NumberFormat) {
+    const res: number[] = []
+    const sz = sizeOfNumberFormat(fmt)
+    for (let off = 0; off <= data.length - sz; off += sz)
+        res.push(getNumber(data, fmt, off))
+    return res
+}
+
+export function concatBufferArray(chunks: Uint8Array[]) {
+    let sz = 0
+    for (const ch of chunks) sz += ch.length
+    const r = new Uint8Array(sz)
+    sz = 0
+    for (const ch of chunks) {
+        r.set(ch, sz)
+        sz += ch.length
+    }
+    return r
+}

@@ -13,6 +13,13 @@ export function pack(format: string, nums: number[]) {
 }
 
 
+export function unpack(buf: Uint8Array, format: string, offset?: number) {
+    if (!offset) offset = 0
+    const res: number[] = []
+    packUnpackCore(format, res, buf, false, offset)
+    return res
+}
+
 function getFormat(pychar: string, isBig: boolean) {
     switch (pychar) {
         case 'B':
