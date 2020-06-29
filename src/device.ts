@@ -1,5 +1,8 @@
 import { Packet } from "./packet"
-import { JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, ANNOUNCE, DISCONNECT, CONNECT } from "./constants"
+import {
+    JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, ANNOUNCE, DISCONNECT, CONNECT,
+    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART
+} from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { Bus } from "./bus";
@@ -61,6 +64,8 @@ export class Device extends Node {
         idx <<= 2
         if (!this.announced || idx + 4 > this.servicesData.length)
             return undefined
+        if (idx == 0)
+            return 0
         return read32(this.servicesData, idx)
     }
 
@@ -116,7 +121,16 @@ export class Device extends Node {
     }
 
     processAnnouncement(pkt: Packet) {
-        if (!bufferEq(pkt.data, this.servicesData)) {
+        const w0 = this.servicesData ? getNumber(this.servicesData, NumberFormat.UInt32LE, 0) : 0
+        const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
+
+        if (w1 && (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) < (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)) {
+            this.bus.emit(DEVICE_RESTART, this);
+            this.emit(RESTART)
+        }
+
+        const servData = this.servicesData ? this.servicesData.slice(4) : null
+        if (!bufferEq(pkt.data.slice(4), servData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
             if (this._services) {
