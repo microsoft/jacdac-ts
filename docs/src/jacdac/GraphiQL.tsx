@@ -1,14 +1,14 @@
 import React from 'react'
 import { useContext } from "react";
 import JacdacContext from "./Context"
-import { queryAsync } from "../../../src/graphql"
+import { queryAsync, getSchema } from "../../../src/graphql"
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "graphiql/graphiql.min.css";
 import GraphiQL from 'graphiql';
 // tslint:disable-next-line: no-submodule-imports
 import { FetcherParams, FetcherOpts, Fetcher } from 'graphiql/dist/components/GraphiQL';
 
-const JacDaciQL = () => {
+export function useFetcher() {
     const ctx = useContext(JacdacContext)
     const fetcher: Fetcher = async function (args: FetcherParams, opts?: FetcherOpts) {
         const bus = ctx.bus;
@@ -23,7 +23,40 @@ const JacDaciQL = () => {
                 }
             })
     }
-    return <GraphiQL fetcher={fetcher} />
+    return fetcher;
+}
+
+const defaultQuery = `
+{
+    devices {
+        id
+        connected
+        services {
+            id
+            name
+        }
+    }
+}
+`
+
+const JacDaciQL = (props: { query?: string }) => {
+    const fetcher = useFetcher();
+    console.log(props)
+    return <JacdacContext.Consumer>
+        {({ connected, connecting, connectAsync, disconnectAsync }) => (
+            <div style={{ width: "100%", height: "18rem" }}>
+                <GraphiQL fetcher={fetcher} query={props.query} defaultQuery={defaultQuery} defaultVariableEditorOpen={false}>
+                    <GraphiQL.Toolbar>
+                        <GraphiQL.ToolbarButton label={connected ? "Disconnect" : connecting ? "..." : "Connect"} title="Connect or disconnect to JACDAC bus" onClick={connected ? disconnectAsync : connectAsync} />
+                    </GraphiQL.Toolbar>
+                    <GraphiQL.Logo>JacDacQL</GraphiQL.Logo>
+                    <GraphiQL.Footer></GraphiQL.Footer>
+                </GraphiQL>
+            </div>
+        )}
+    </JacdacContext.Consumer >
+
+
 }
 
 export default JacDaciQL
