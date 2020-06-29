@@ -1,4 +1,4 @@
-import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate } from "graphql"
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate, GraphQLArgs } from "graphql"
 import { Bus } from "./bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
@@ -59,11 +59,22 @@ schema {
     return _schema
 }
 
-export function queryAsync(bus: Bus, source: string): Promise<ExecutionResult> {
+export interface QueryOptions {
+    contextValue?: any;
+    variableValues?: { [key: string]: any };
+    operationName?: string;
+}
+
+export function queryAsync(bus: Bus, source: string, options?: QueryOptions): Promise<ExecutionResult> {
+    options = options || {};
     const rv = rootValue(bus)
-    return graphql(getSchema(),
+    return graphql(
+        getSchema(),
         source,
-        rv.query
+        rv,
+        options.contextValue,
+        options.variableValues,
+        options.operationName
     );
 }
 
