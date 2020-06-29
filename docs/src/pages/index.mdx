@@ -1,24 +1,45 @@
-import JacDaciQL from "../jacdac/GraphiQL"
-
 ---
 title: JACDAC
 path: /
 ---
 
-# JACDAC
+# [JACDAC](https://microsoft.github.io/jacdac-ts)
 
-This repository contains the specification of [JACDAC](https://microsoft.github.io/jacdac) protocol, 
-and javascript libraries to build JACDAC tools for the web.
+USB for the tiny edge.
 
-## GraphQL
-
-The device, services and registers are exposed through a GraphQL service.
-
-<JacDaciQL />
-
-
-## Using JacDac TypeScript
-
-* [import](/docs/import): loading JACDAC into your project
-* [JavaScript](/docs/javascript)
-* [Developer docs on GitHub](https://github.com/microsoft/jacdac-ts)
+* [Overview](/overview)
+* Specification
+    * Devices, services, registers, packets
+    * Data structures
+        * Packets
+        * Registers
+        * Commands
+        * Streams
+        * Acks
+    * Transports
+        * Single wire serial
+        * WebUSB
+        * ...
+    * Services
+* [Building JACDAC devices](/servers)
+    * Firmware SDK
+        * C SDK
+        * STM32-F0
+        * ...
+    * Hardware
+        * Single wire serial
+        * Power supply
+        * Connectors
+        * ...
+* [Talking to JACDAC devices](/clients)
+    * Micro-controller clients
+        * C SDK
+        * MakeCode
+        * MicroPython
+    * [Web](/clients/web)
+        * [Setup](/clients/web/setup)
+        * [JavaScript/TypeScript](/clients/web/javascript)
+        * [React](/clients/web/react)
+        * [GraphQL](/clients/web/graphql)
+* [Tools](/tools)
+    * [Debugger](/debugger)
