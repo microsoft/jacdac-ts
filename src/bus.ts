@@ -214,6 +214,7 @@ export class Bus extends Node {
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
+        let isAnnounce = false
         if (pkt.multicommand_class) {
             //
         } else if (pkt.is_command) {
@@ -225,13 +226,14 @@ export class Bus extends Node {
 
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+                    isAnnounce = true
                     dev.processAnnouncement(pkt)
                 }
             } else
                 pkt.dev.processPacket(pkt);
         }
         // don't spam with duplicate advertisement events
-        if (pkt.service_command !== CMD_ADVERTISEMENT_DATA) {
+        if (!isAnnounce) {
             this.emit(PACKET_RECEIVE, pkt)
             if (pkt.is_report)
                 this.emit(PACKET_REPORT, pkt)
