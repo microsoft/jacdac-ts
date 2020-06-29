@@ -67,11 +67,10 @@ export interface QueryOptions {
 
 export function queryAsync(bus: Bus, source: string, options?: QueryOptions): Promise<ExecutionResult> {
     options = options || {};
-    const rv = rootValue(bus)
     return graphql(
         getSchema(),
         source,
-        rv,
+        bus,
         options.contextValue,
         options.variableValues,
         options.operationName
