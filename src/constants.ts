@@ -76,6 +76,9 @@ export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 // the device_identifier contains target service class number
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
+export const JD_ADVERTISEMENT_0_COUNTER_MASK = 0x0000000F
+export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 0x00000100
+
 export enum ConsolePriority {
     Debug = 0,
     Log = 1,
@@ -129,10 +132,12 @@ export const CONNECT = 'connect';
 export const CONNECTING = 'connecting';
 export const DISCONNECT = 'disconnect';
 export const ANNOUNCE = 'announce'
+export const RESTART = 'restart'
 
 export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'
 export const DEVICE_ANNOUNCE = 'deviceAnnounce'
+export const DEVICE_RESTART = 'deviceRestart'
 
 export const PACKET_SEND = 'packetSend'
 export const PACKET_RECEIVE = 'packetReceive'

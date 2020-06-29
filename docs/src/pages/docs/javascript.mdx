@@ -21,9 +21,9 @@ await jd.connectAsync();
 Once you have the bus connected, you can register to events when device get connected or disconnected.
 
 ```javascript
-jd.on('deviceconnect', dev => console.log(`connect ${dev}`)
-jd.on('devicedisconnect', dev => console.log(`disconnect ${dev}`)
-jd.on('deviceannounce', dev => console.log(`announce ${dev}`)
+jd.on('deviceConnect', dev => console.log(`connect ${dev}`)
+jd.on('deviceDisconnect', dev => console.log(`disconnect ${dev}`)
+jd.on('deviceAnnounce', dev => console.log(`announce ${dev}`)
 ```
 
 Remember that when a device is first connected, it's list of services might not yet be populated. 
