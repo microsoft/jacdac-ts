@@ -38,12 +38,12 @@
             log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.on('deviceconnect', dev => {
+            jd.on('deviceConnect', dev => {
                 console.log(`connect ${dev}`)
                 connect(dev)
             })
-            jd.on('devicedisconnect', dev => disconnect(dev))
-            jd.on('deviceannounce', render)
+            jd.on('deviceDisconnect', dev => disconnect(dev))
+            jd.on('deviceAnnounce', render)
             render()
             log('started')
         }
@@ -73,8 +73,8 @@
 
         const btn = document.getElementById("connect");
         btn.onclick = scan;
-        const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        const disconnectElt = document.getElementById("disconnect");
+        disconnectElt.onclick = () => jd.disconnectAsync()
     </script>
 </body>
 

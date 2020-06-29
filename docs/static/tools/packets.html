@@ -49,7 +49,7 @@
             log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
+            jd.on('packetReceive', pkt => log(jacdac.printPacket(pkt)))
             log('started')
         }
 
@@ -57,7 +57,7 @@
         async function importLog(file) {
             await jd.disconnectAsync();
             jd = new jacdac.Bus()
-            jd.on('packetreceive', pkt => log(jacdac.printPacket(pkt)))
+            jd.on('packetReceive', pkt => log(jacdac.printPacket(pkt)))
             const logDiv = document.getElementById("log");
             logDiv.innerHTML = ''
             const text = await file.text();

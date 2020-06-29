@@ -48,17 +48,17 @@
             console.log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.on('deviceannounce', d => {
+            jd.on('deviceAnnounce', d => {
                 // tell all services to start streaming, ignored if not supported
                 for (let i = 1; i < d.serviceLength; ++i) {
                     const sensor = new jacdac.SensorClient(d, i)
                     sensor.setStreamingAsync(true);
                 }
             })
-            jd.on('packetsend', pkt => {
+            jd.on('packetSend', pkt => {
                 console.log(jacdac.printPacket(pkt));
             })
-            jd.on('packetreceive', pkt => {
+            jd.on('packetReceive', pkt => {
                 const decoded = jacdac.decodePacketData(pkt);
                 if (decoded)
                     slider(pkt)
