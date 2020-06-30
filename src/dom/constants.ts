@@ -140,6 +140,8 @@ export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const DEVICE_RESTART = 'deviceRestart'
 
 export const PACKET_SEND = 'packetSend'
+
+export const PACKET_PROCESS = 'packetProcess'
 export const PACKET_RECEIVE = 'packetReceive'
 export const PACKET_EVENT = 'packetEvent'
 export const PACKET_REPORT = 'packetReport'

@@ -17,7 +17,8 @@ import {
     DEVICE_DISCONNECT,
     PACKET_RECEIVE,
     PACKET_EVENT,
-    PACKET_REPORT
+    PACKET_REPORT,
+    PACKET_PROCESS
 } from "./constants";
 import { serviceClass } from "./pretty";
 
@@ -214,6 +215,7 @@ export class Bus extends Node {
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
+        this.emit(PACKET_PROCESS, pkt)
         let isAnnounce = false
         if (pkt.multicommand_class) {
             //
