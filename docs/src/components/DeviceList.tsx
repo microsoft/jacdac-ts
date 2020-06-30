@@ -3,14 +3,15 @@ import React, { useState, useContext, useEffect } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
 import { Device } from "../../../src/dom/device";
-import { useQuery } from '../jacdac/useQuery';
+import { useQuery, useEventSubscription } from '../jacdac/useQuery';
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from '../../../src/dom/bus';
 import { DEVICE_CHANGE } from '../../../src/dom/constants';
 
 const DeviceList = () => {
     const { bus, connectionState } = useContext(JacdacContext)
-    const { loading, error, data, refresh } = useQuery<{ devices: Device[] }>(`{
+    const value = useEventSubscription(bus, DEVICE_CHANGE)
+    const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
         devices {
             id
             deviceId
@@ -19,8 +20,7 @@ const DeviceList = () => {
                 name
             }
         }
-    }`)
-    useEffect(() => bus.subscribe(DEVICE_CHANGE, refresh), [loading, error]);
+    }`, { deps: [value] })
 
     return (
         <List component="nav" aria-label="devices">
