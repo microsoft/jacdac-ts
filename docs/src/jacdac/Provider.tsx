@@ -15,17 +15,10 @@ const JacdacProvider = ({ children }) => {
             bus.connectAsync();
         }
         return () => { }
-    } , [bus])
-    useEffect(() => {
-        // connect in background
-        if (firstConnect && bus.connectionState == BusState.Disconnected) {
-            setFirstConnect(true)
-            bus.connectAsync();
-        }
-        const update = () => setConnectionState(bus.connectionState)
-        bus.on(CONNECTION_STATE, update)
-        return () => bus.off(CONNECTION_STATE, update)
     }, [bus])
+    useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE,
+        (connectionState) => setConnectionState(connectionState))
+        , [bus])
     const connectAsync = () => bus.connectAsync(true);
     const disconnectAsync = () => bus.disconnectAsync();
     return (

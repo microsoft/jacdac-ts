@@ -8,5 +8,5 @@ export interface Observer<T> {
 export interface Observable<T> {
     subscribe(observer: Observer<T>): {
         unsubscribe: () => void;
-    };
+    }
 }

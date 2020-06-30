@@ -120,6 +120,16 @@ export class EventEmitter {
     observe<T>(eventName: string): Observable<T> {
         return fromEvent<T>(this, eventName);
     }
+
+    /**
+     * Subscribbes to an event and returns the unsubscription handler
+     * @param eventName 
+     * @param next 
+     */
+    subscribe<T>(eventName: string, next: (value: T) => void): () => void {
+        const observer = this.observe<T>(eventName);
+        return observer.subscribe({ next }).unsubscribe
+    }
 }
 
 class EventObservable<T> implements Observable<T> {
@@ -130,11 +140,9 @@ class EventObservable<T> implements Observable<T> {
         this.eventEmitter.on(this.eventName, observer.next)
         this.eventEmitter.on(ERROR, observer.error)
         // never completes
-        return {
-            unsubscribe: () => {
-                this.eventEmitter.off(this.eventName, observer.next);
-                this.eventEmitter.off(ERROR, observer.error)
-            }
+        return () => {
+            this.eventEmitter.off(this.eventName, observer.next);
+            this.eventEmitter.off(ERROR, observer.error)
         }
     }
 }
