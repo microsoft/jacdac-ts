@@ -1,5 +1,6 @@
 import { SMap } from "./utils";
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR } from "./constants";
+import { Observable, Observer } from "./observable";
 export type EventHandler = (...args) => void;
 
 interface Listener {
@@ -111,4 +112,33 @@ export class EventEmitter {
     eventNames(): string[] {
         return Object.keys(this.listeners)
     }
+
+    /**
+     * Creates an observable from the given event
+     * @param eventName 
+     */
+    observe<T>(eventName: string): Observable<T> {
+        return fromEvent<T>(this, eventName);
+    }
+}
+
+class EventObservable<T> implements Observable<T> {
+    constructor(public eventEmitter: EventEmitter, public eventName: string) {
+    }
+
+    subscribe(observer: Observer<T>) {
+        this.eventEmitter.on(this.eventName, observer.next)
+        this.eventEmitter.on(ERROR, observer.error)
+        // never completes
+        return {
+            unsubscribe: () => {
+                this.eventEmitter.off(this.eventName, observer.next);
+                this.eventEmitter.off(ERROR, observer.error)
+            }
+        }
+    }
+}
+
+export function fromEvent<T>(eventEmitter: EventEmitter, eventName: string): Observable<T> {
+    return new EventObservable<T>(eventEmitter, eventName)
 }
