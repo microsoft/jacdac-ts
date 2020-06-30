@@ -193,10 +193,6 @@ export class Bus extends Node {
             else {
                 this._disconnectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Disconnecting)
-                if (this._gcInterval) {
-                    clearInterval(this._gcInterval);
-                    this._gcInterval = undefined;
-                }
                 this._disconnectPromise = this._disconnectPromise
                     .then(() => this.options?.disconnectAsync() || Promise.resolve())
                     .catch(e => this.errorHandler(DISCONNECT, e))
@@ -252,6 +248,13 @@ export class Bus extends Node {
                 this._devices.splice(i, 1)
                 i--
                 this.disconnectDevice(dev)
+            }
+        }
+        // stop cleanup if all gone
+        if (!this._devices.length) {
+            if (this._gcInterval) {
+                clearInterval(this._gcInterval)
+                this._gcInterval = undefined;
             }
         }
     }
