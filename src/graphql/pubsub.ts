@@ -1,10 +1,10 @@
-import { EventEmitter, EventHandler } from "../eventemitter";
+import { EventEmitter, EventHandler } from "../dom/eventemitter";
 // tslint:disable-next-line: no-submodule-imports
 import { PubSubEngine } from "graphql-subscriptions/dist/pubsub-engine";
-import { Register } from "../register";
-import { setStreamingAsync } from "../sensor";
-import { REPORT_RECEIVE } from "../constants";
-import { DebouncedPoll, debouncedPollAsync } from "../utils";
+import { Register } from "../dom/register";
+import { setStreamingAsync } from "../dom/sensor";
+import { REPORT_RECEIVE } from "../dom/constants";
+import { DebouncedPoll, debouncedPollAsync } from "../dom/utils";
 
 export class EventEmitterPubSub extends PubSubEngine {
     private readonly subscriptions: { [key: string]: [string, (...args: any[]) => void] };
