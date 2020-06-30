@@ -7,6 +7,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import ConnectButton from '../jacdac/ConnectButton';
+import { Link } from 'gatsby-theme-material-ui';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,7 +29,7 @@ export default function ButtonAppBar({ title }) {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            {title}
+            <Link className={classes.menuButton} href="/" color="inherit">{title}</Link>
           </Typography>
           <ConnectButton />
         </Toolbar>
