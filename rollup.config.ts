@@ -9,7 +9,7 @@ const pkg = require('./package.json')
 
 export default [
   { libraryName: 'jacdac', dir: 'dom' },
-  { libraryName: 'jacdac-graphql', dir: 'graphql', external: ["jacdac", "graphql", "graphql-subscriptions"] },
+  { libraryName: 'jacdac-graphql', dir: 'graphql', external: ["jacdac"] }, // include graphqljs
   { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac", "webusb"] },
   { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac", "react"] },
 ].map(({ libraryName, dir, external }) => {
