@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { useContext } from "react";
+import React, { useState, useContext } from 'react'
 import JacdacContext from "../../../src/react/Context";
 import { queryAsync } from "../../../src/graphql/graphql"
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports

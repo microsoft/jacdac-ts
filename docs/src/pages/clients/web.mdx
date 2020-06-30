@@ -3,6 +3,17 @@
 JACDAC provides a modern JavaScript interface to interact with the bus.
 
 * [Setup](/clients/web/setup)
-* [JavaScript/TypeScript](/clients/web/javascript)
-* [React](/clients/web/react)
-* [GraphQL](/clients/web/graphql)
+
+The JACDAC libraries are separate in modules per dependencies:
+
+## [DOM](/clients/web/dom)
+
+This module contains the JACDAC DOM: Device, Service, Register, Packet. It has **no** dependencies.
+
+## [GraphQL](/clients/web/graphql)
+
+Mounts an in-browser GraphQL server that allows querying the state of the JACDAC via GraphQL queries. Implemented on top of [GraphQL-js](https://github.com/graphql/graphql-js)
+
+## [React](/clients/web/react)
+
+Hooks and helpers to integrate JACDAC components into React 16+.
