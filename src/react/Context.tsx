@@ -1,5 +1,5 @@
 import React from "react";
-import { Bus } from "../../../src/dom/bus";
+import { Bus } from "../dom/bus";
 
 const JacdacContext = React.createContext<{
     bus: Bus,
