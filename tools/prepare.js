@@ -11,11 +11,14 @@ console.log(`patching version: ${version}`)
 
 // patch with cdn files
 async function patchDocs() {
-  await patch({
-    files: './docs/public/tools/*.html',
-    from: "/dist/jacdac.umd.js",
-    to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}`
-  })
+  for (const suffix of ["", "-graphql", "-react"]) {
+    const fn = `jacdac${suffix}.umd.js`
+    await patch({
+      files: './docs/public/tools/*.html',
+      from: `/dist/${fn}`,
+      to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}/dist/${fn}`
+    })
+  }
 }
 
 async function patch(options) {

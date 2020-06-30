@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ListItem, ListItemText } from '@material-ui/core';
-import { Device } from '../../../src/device';
+import { Device } from '../../../src/dom/device';
 
 
 const DeviceListItem = (props: { device: Device }) => <ListItem>

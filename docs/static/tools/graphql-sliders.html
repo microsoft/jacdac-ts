@@ -51,6 +51,7 @@
 
 
     <script src="/dist/jacdac.umd.js"></script>
+    <script src="/dist/jacdac-graphql.umd.js"></script>
     <script>
         const logDiv = document.getElementById("log");
         const connectel = document.getElementById("connect");
@@ -60,7 +61,7 @@
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
         //     jd.on(jacdac.PACKET_REPORT, pkt => console.log(pkt))
 
-        const devicesSubscription = jacdac.jdql(`
+        const devicesSubscription = jacdacGraphql.jdql(`
         subscription {
     deviceChanged(serviceName: "SLIDER") {
         deviceId
@@ -83,7 +84,7 @@
             if (el) return ; // already subscribed
 
             el = createSlider(deviceId)
-            const sub = await jacdac.jdql(`
+            const sub = await jacdacGraphql.jdql(`
 subscription {
     reportReceived(deviceId: "${deviceId}", serviceName: "SLIDER", address: 257, updatesOnly: true) {
         intValue

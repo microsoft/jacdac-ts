@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Bus } from "../../../src/bus";
-import { createUSBBus } from "../../../src/webusb";
+import React, { useState } from "react";
 import JacdacContext from "./Context";
+import { Bus } from "../../../src/dom/bus";
+import { createUSBBus } from "../../../src/dom/usb";
+import { DISCONNECT, CONNECTING, CONNECT } from "../../../src/dom/constants";
 
 const JacdacProvider = ({ children }) => {
     const [bus] = useState<Bus>(createUSBBus());
     const [connected, setConnected] = useState(bus.connected);
     const [connecting, setConnecting] = useState(bus.connecting);
-    bus.on("connect", () => setConnected(bus.connected))
-    bus.on("connecting", () => setConnected(bus.connecting))
-    bus.on("disconnect", () => setConnected(bus.connected))
+    bus.on(CONNECT, () => setConnected(bus.connected))
+    bus.on(CONNECTING, () => setConnecting(bus.connecting))
+    bus.on(DISCONNECT, () => setConnected(bus.connected))
 
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();

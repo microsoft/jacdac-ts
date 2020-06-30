@@ -74,6 +74,7 @@ subscription {
 
 
     <script src="/dist/jacdac.umd.js"></script>
+    <script src="/dist/jacdac-graphql.umd.js"></script>
     <script>
         const logDiv = document.getElementById("log");
         const resultDiv = document.getElementById("result")
@@ -96,7 +97,7 @@ subscription {
 
         async function query(source) {
             console.log(source)
-            const res = await jacdac.jdql(source).queryAsync(jd)
+            const res = await jacdacGraphql.jdql(source).queryAsync(jd)
             console.log(res)
             for(const device of res.data.devices) {
                 const id = device.id
@@ -108,7 +109,7 @@ subscription {
 
         async function subscribe(source) {
             console.log(source)
-            const res = await jacdac.jdql(source).subscribeAsync(jd)
+            const res = await jacdacGraphql.jdql(source).subscribeAsync(jd)
             console.log(res)
             result.innerHTML = "waiting for events..."
             for await (const d of res) {
