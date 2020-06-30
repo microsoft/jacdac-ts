@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
-import { Device } from "../../../src/device";
+import { Device } from "../../../src/dom/device";
 import { useQuery } from './Query';
 
 const DeviceList = () => {

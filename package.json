@@ -22,8 +22,6 @@
   "scripts": {
     "postinstall": "cd docs && npm install",
     "lint": "node node_modules/tslint/bin/tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
-    "prebuild": "rm -rf dist",
-    "build": "tsc",
     "predist": "rm -rf dist",
     "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
     "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean",

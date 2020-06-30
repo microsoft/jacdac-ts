@@ -1,5 +1,5 @@
 import React from "react";
-import JacdacContext from "./Context";
+import JacdacContext from "../../../src/react/Context";
 import ConnectButton from "./ConnectButton"
 
 const JacdacComponent = ({ children }) => {

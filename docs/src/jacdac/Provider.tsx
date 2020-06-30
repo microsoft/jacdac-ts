@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Bus } from "../../../src/bus";
-import { createUSBBus } from "../../../src/webusb";
-import JacdacContext from "./Context";
+import { Bus } from "../../../src/dom/bus";
+import { createUSBBus } from "../../../src/dom/webusb";
+import JacdacContext from "../../../src/react/Context";
 
 const JacdacProvider = ({ children }) => {
     const [bus] = useState<Bus>(createUSBBus());

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useContext } from "react";
-import JacdacContext from "./Context"
-import { queryAsync, getSchema } from "../../../src/graphql"
+import JacdacContext from "../../../src/react/Context";
+import { queryAsync, getSchema } from "../../../src/graphql/graphql"
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "graphiql/graphiql.min.css";
 import GraphiQL from 'graphiql';
