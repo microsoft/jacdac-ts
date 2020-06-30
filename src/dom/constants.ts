@@ -140,6 +140,7 @@ export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'
 export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const DEVICE_RESTART = 'deviceRestart'
+export const DEVICE_CHANGE = 'deviceChange'
 
 export const PACKET_SEND = 'packetSend'
 

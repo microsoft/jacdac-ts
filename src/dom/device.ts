@@ -1,6 +1,6 @@
 import { Packet } from "./packet"
 import {
-    JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, ANNOUNCE, DISCONNECT, CONNECT,
+    JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
@@ -126,6 +126,7 @@ export class Device extends Node {
         if (w1 && (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) < (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)) {
             this.bus.emit(DEVICE_RESTART, this);
             this.emit(RESTART)
+            this.bus.emit(DEVICE_CHANGE, this);
         }
 
         const servData = this.servicesData?.slice(4)
@@ -138,6 +139,7 @@ export class Device extends Node {
             }
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
+            this.bus.emit(DEVICE_CHANGE, this);
         }
     }
 

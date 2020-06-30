@@ -20,7 +20,8 @@ import {
     PACKET_REPORT,
     PACKET_PROCESS,
     CONNECTION_STATE,
-    DISCONNECTING
+    DISCONNECTING,
+    DEVICE_CHANGE
 } from "./constants";
 import { serviceClass } from "./pretty";
 
@@ -235,6 +236,7 @@ export class Bus extends Node {
             d = new Device(this, id)
             this._devices.push(d);
             this.emit(DEVICE_CONNECT, d);
+            this.emit(DEVICE_CHANGE, d);
 
             if (!this._gcInterval && this.connected)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
@@ -257,6 +259,7 @@ export class Bus extends Node {
     private disconnectDevice(dev: Device) {
         dev.disconnect();
         this.emit(DEVICE_DISCONNECT, dev);
+        this.emit(DEVICE_CHANGE, dev)
     }
 
     /**

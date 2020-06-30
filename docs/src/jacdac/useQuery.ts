@@ -54,11 +54,9 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
         execute();
     }, [execute]);
 
-    const invalidateCacheKey = () => {
-        console.log(cacheKey)
+    const refresh = () => {
         setCacheKey(cacheKey + 1);
     }
-    const refresh: () => void = useMemo<() => void>(() => invalidateCacheKey, [cacheKey])
     const r = {
         data: value?.data,
         loading: pending,
