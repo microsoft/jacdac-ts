@@ -26,14 +26,13 @@
 </head>
 
 <body>
-    <h1>JACDAC/Packets</h1>
+    <h1>JACDAC/Flashing</h1>
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
     </div>
     <div class="hint">
-        Drag and drop an exported data from your Saleae. Add an Async Serial protocol analyser, 1Mbit, export to
-        CSV/hex.
+        Drag and drop a UF2 file with firmware.
     </div>
     <div id="log">
         <div>waiting for message...</div>
@@ -42,26 +41,23 @@
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         // webusb
-        let jd = jacdac.createUSBBus()
+        const jd = jacdac.createUSBBus()
         jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function listenWebUsb() {
             log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
+            jd.on('packetReceive', pkt => log(jacdac.printPacket(pkt)))
             log('started')
         }
 
         // replace
-        async function importLog(file) {
-            await jd.disconnectAsync();
-            jd = new jacdac.Bus()
-            jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
-            const logDiv = document.getElementById("log");
-            logDiv.innerHTML = ''
-            const text = await file.text();
-            jacdac.replayLog(jd, text);
+        async function importUF2(file) {
+            const buf = new Uint8Array(await file.arrayBuffer())
+            const blobs = jacdac.parseUF2(buf)
+            console.log(blobs)
+            await jacdac.flashFirmwareBlobs(jd, blobs)
         }
 
         // binding ui
@@ -79,7 +75,7 @@
             const item = items[0];
             if (item.kind === 'file') {
                 const file = item.getAsFile();
-                importLog(file);
+                importUF2(file);
             }
         }
 
@@ -87,9 +83,9 @@
             const logDiv = document.getElementById("log");
             const line = document.createElement("div");
             line.innerText = "" + msg;
-            logDiv.appendChild(line);
-            while (logDiv.childElementCount > 500)
-                logDiv.firstChild.remove();
+            logDiv.insertBefore(line, logDiv.firstElementChild);
+            if (logDiv.childElementCount > 100)
+                logDiv.lastElementChild.remove();
         }
     </script>
 </body>

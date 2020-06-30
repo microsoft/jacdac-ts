@@ -3,6 +3,7 @@ import * as jd from "./constants"
 import { Packet } from "./packet"
 import { Device } from "./device"
 import { intOfBuffer } from "./buffer"
+import { unpack } from "./struct"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -72,6 +73,27 @@ function decodeIntSensorData(pkt: Packet) {
     return value.toString();
 }
 
+function decodeBootloader(pkt: Packet) {
+    if (pkt.service_command == 0x80) {
+        if (pkt.is_command) {
+            const [pageAddr, suboff, currsubpage, maxSubpage, session] = unpack(pkt.data, "IHBBI")
+            const hdsize = 4 * 7
+            return `write page=${toHex(pageAddr)}+${suboff} ${currsubpage}/${maxSubpage} session=${toHex(session)} data=` +
+                U.toHex(pkt.data.slice(hdsize, hdsize + 10)) + "..."
+        } else {
+            const [sess, berr, pageAddr] = unpack(pkt.data, "III")
+            return `status page=${toHex(pageAddr)} session=${toHex(sess)} err=${toHex(berr)}`
+        }
+    } else if (pkt.service_command == 0x81) {
+        return `set session ${toHex(pkt.uintData)}`
+    } else if (pkt.service_command == 0x00) {
+        const [magic, pageSize, flashSize, devClass] = unpack(pkt.data, "4I")
+        return `magic:${toHex(magic)} pageSize:${pageSize} flashSize:${flashSize} devClass:${toHex(devClass)}`
+    } else {
+        return null
+    }
+}
+
 const serv_decoders: U.SMap<(p: Packet) => string> = {
     LOGGER: (pkt: Packet) => {
         const pri = priority()
@@ -94,10 +116,11 @@ const serv_decoders: U.SMap<(p: Packet) => string> = {
     BUTTON: decodeIntSensorData,
     ROTARY_ENCODER: decodeIntSensorData,
     BATTERY: decodeIntSensorData,
+    BOOTLOADER: decodeBootloader,
 }
 
 export function decodePacketData(pkt: Packet): string {
-    const srv_class = pkt?.dev?.serviceClassAt(pkt.service_number);
+    const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
     const serv_id = serviceName(srv_class);
     const decoder = serv_decoders[serv_id];
     const decoded = decoder ? decoder(pkt) : null
@@ -170,9 +193,9 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
     let devname = pkt.dev ? pkt.dev.name || pkt.dev.shortId : pkt.device_identifier
 
     if (frame_flags & jd.JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
-        devname = "[mul] " + serviceName(pkt.multicommand_class)
+        devname = "[multicmd]"
 
-    const serv_id = serviceName(pkt?.dev?.serviceClassAt(pkt.service_number))
+    const serv_id = serviceName(pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number))
     let service_name = `${serv_id} (${pkt.service_number})`
     const cmd = pkt.service_command
     let cmdname = commandName(cmd)
