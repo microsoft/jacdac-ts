@@ -5,7 +5,7 @@ import { BusState } from "../../../src/dom/bus";
 
 function ConnectButton() {
     return <JacdacContext.Consumer>
-        {({ connectionState, connectAsync, disconnectAsync }) => <Button
+        {({ connectionState, connectAsync, disconnectAsync }) => <Button color="inherit"
             disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
             onClick={connectionState == BusState.Connected ? disconnectAsync : connectAsync}>
             {connectionState == BusState.Connected ? "disconnect jacdac" : connectionState == BusState.Disconnected ? "connect jacdac" : "..."}

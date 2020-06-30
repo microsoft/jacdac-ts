@@ -1,7 +1,7 @@
 module.exports = {
   siteMetadata: {
-    title: `JACDAC TypeScript Documentation`,
-    description: `Documentation for the JACDAC TypeScript library.`,
+    title: `JACDAC`,
+    description: `Documentation for the JACDAC protocol and libraries.`,
     author: `@msmakecode`,
   },
   pathPrefix: "/jacdac-ts",
@@ -66,14 +66,6 @@ module.exports = {
               // A suggested value for English speakers is the non-ascii
               // character '›'.
               inlineCodeMarker: null,
-              // This lets you set up language aliases.  For example,
-              // setting this to '{ sh: "bash" }' will let you use
-              // the language "sh" which will highlight using the
-              // bash highlighter.
-              aliases: {
-                "ts": "typescript",
-                "js": "javascript"
-              },
               // This toggles the display of line numbers globally alongside the code.
               // To use it, add the following line in gatsby-browser.js
               // right after importing the prism color scheme:
@@ -90,18 +82,7 @@ module.exports = {
               // found under the header "Add new language definition or extend an
               // existing language" below.
               languageExtensions: [
-              ],
-              // Customize the prompt used in shell output
-              // Values below are default
-              prompt: {
-                user: "root",
-                host: "localhost",
-                global: false,
-              },
-              // By default the HTML entities <>&'" are escaped.
-              // Add additional HTML escapes by providing a mapping
-              // of HTML entities and their escape value IE: { '}': '&#123;' }
-              escapeEntities: {},
+              ]
             },
           },
         ],
