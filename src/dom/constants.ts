@@ -128,9 +128,11 @@ export const SRV_WIFI = 0x18aae1fa;
 export const NEW_LISTENER = 'newListener'
 export const REMOVE_LISTENER = 'removeListener'
 
+export const CONNECTION_STATE = 'connectionState'
 export const CONNECT = 'connect';
 export const CONNECTING = 'connecting';
 export const DISCONNECT = 'disconnect';
+export const DISCONNECTING = 'disconnecting'
 export const ANNOUNCE = 'announce'
 export const RESTART = 'restart'
 

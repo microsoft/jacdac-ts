@@ -48,7 +48,7 @@ const JacDaciQL = (props: { query?: string }) => {
                     headerEditorEnabled={false}
                     shouldPersistHeaders={false}>
                     <GraphiQL.Toolbar>
-                        <GraphiQL.ToolbarButton label={connected ? "Disconnect" : connecting ? "..." : "Connect"} title="Connect or disconnect to JACDAC bus" onClick={connected ? disconnectAsync : connectAsync} />
+                        <GraphiQL.ToolbarButton label={connecting ? "..." : connected ? "Disconnect" : "Connect"} title="Connect or disconnect to JACDAC bus" onClick={connected ? disconnectAsync : connectAsync} />
                         <GraphiQL.ToolbarButton label={"Reset"} title="Reset example" onClick={() => setq(props.query || defaultQuery)} />
                     </GraphiQL.Toolbar>
                     <GraphiQL.Logo>JacDacQL</GraphiQL.Logo>

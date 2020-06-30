@@ -1,6 +1,11 @@
-import * as jd from "./jacdac"
 import * as U from "./utils"
-import { bufferToArray, NumberFormat, getNumber, concatBufferArray } from "./buffer"
+import { bufferToArray, NumberFormat, getNumber } from "./buffer"
+import { Bus } from "./bus"
+import { Packet } from "./packet"
+import { Device } from "./device"
+import { CMD_CTRL_RESET, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
+import { unpack, pack } from "./struct"
+import { assert } from "./utils"
 
 const BL_CMD_PAGE_DATA = 0x80
 const BL_CMD_SET_SESSION = 0x81
@@ -37,13 +42,13 @@ class FlashClient {
     private flashSize: number
     private sessionId: number
     private classClients: FlashClient[]
-    private lastStatus: jd.Packet
+    private lastStatus: Packet
     private pending: boolean
     public dev_class: number
-    public device: jd.Device
+    public device: Device
     private didReset = false
 
-    constructor(private bus: jd.Bus, adpkt: jd.Packet) {
+    constructor(private bus: Bus, adpkt: Packet) {
         const d = bufferToArray(adpkt.data, NumberFormat.UInt32LE)
         this.pageSize = d[1]
         this.flashSize = d[2]
@@ -51,14 +56,14 @@ class FlashClient {
         this.device = adpkt.dev
     }
 
-    handlePacket(pkt: jd.Packet) {
+    handlePacket(pkt: Packet) {
         if (pkt.service_command == BL_CMD_PAGE_DATA)
             this.lastStatus = pkt
     }
 
     start() { }
 
-    async sendCommandAsync(p: jd.Packet) {
+    async sendCommandAsync(p: Packet) {
         p.service_number = 1
         await p.sendCmdAsync(this.device)
     }
@@ -70,7 +75,7 @@ class FlashClient {
             log(`flashing ${d.device.shortId}; available flash=${d.flashSize / 1024}kb; page=${d.pageSize}b`)
         }
 
-        const setsession = jd.Packet.packed(BL_CMD_SET_SESSION, "I", [this.sessionId])
+        const setsession = Packet.packed(BL_CMD_SET_SESSION, "I", [this.sessionId])
 
         this.allPending()
 
@@ -98,7 +103,7 @@ class FlashClient {
 
     async maybeReset() {
         if (!this.didReset) {
-            const rst = jd.Packet.onlyHeader(jd.CMD_CTRL_RESET)
+            const rst = Packet.onlyHeader(CMD_CTRL_RESET)
             rst.service_number = 0
             await rst.sendCmdAsync(this.device)
             this.didReset = true
@@ -153,14 +158,14 @@ class FlashClient {
                 let sz = BL_SUBPAGE_SIZE
                 if (suboff + sz > pageSize)
                     sz = pageSize - suboff
-                const hd = jd.pack("IHBB5I", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
-                jd.assert(hd.length == 4 * 7)
-                const p = jd.Packet.from(BL_CMD_PAGE_DATA, U.bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
+                const hd = pack("IHBB5I", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
+                assert(hd.length == 4 * 7)
+                const p = Packet.from(BL_CMD_PAGE_DATA, U.bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
 
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
                 if (i == 0 || currSubpage < numSubpage)
-                    await p.sendAsMultiCommandAsync(this.bus, jd.SRV_BOOTLOADER)
+                    await p.sendAsMultiCommandAsync(this.bus, SRV_BOOTLOADER)
                 else {
                     for (let f of this.classClients)
                         if (f.pending) {
@@ -177,7 +182,7 @@ class FlashClient {
                 if (f.pending) {
                     let err = ""
                     if (f.lastStatus) {
-                        const [sess, berr, pageAddrR] = jd.unpack(f.lastStatus.data, "III")
+                        const [sess, berr, pageAddrR] = unpack(f.lastStatus.data, "III")
                         if (sess != this.sessionId)
                             err = "invalid session_id"
                         else if (pageAddrR != pageAddr)
@@ -218,7 +223,7 @@ class FlashClient {
     }
 
 
-    public static async forDeviceClass(bus: jd.Bus, dev_class: number) {
+    public static async forDeviceClass(bus: Bus, dev_class: number) {
         if (!flashers)
             await makeBootloaderList(bus)
         const all = flashers.filter(f => f.dev_class == dev_class)
@@ -228,23 +233,23 @@ class FlashClient {
     }
 }
 
-async function makeBootloaderList(bus: jd.Bus) {
+async function makeBootloaderList(bus: Bus) {
     log("resetting all devices")
 
-    const rst = jd.Packet.onlyHeader(jd.CMD_CTRL_RESET)
-    await rst.sendAsMultiCommandAsync(bus, jd.SRV_CTRL)
+    const rst = Packet.onlyHeader(CMD_CTRL_RESET)
+    await rst.sendAsMultiCommandAsync(bus, SRV_CTRL)
 
     log("asking for bootloaders")
 
     if (flashers === undefined) {
-        bus.on('packetReceive', (p: jd.Packet) => {
+        bus.on('packetReceive', (p: Packet) => {
             if (!flashers)
                 return
 
             if (!p.is_command &&
                 p.service_number == 1 &&
-                p.service_command == jd.CMD_ADVERTISEMENT_DATA &&
-                p.getNumber(NumberFormat.UInt32LE, 0) == jd.SRV_BOOTLOADER
+                p.service_command == CMD_ADVERTISEMENT_DATA &&
+                p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
             ) {
                 if (!flashers.find(f => f.device.deviceId == p.device_identifier)) {
                     log(`new flasher`)
@@ -261,10 +266,10 @@ async function makeBootloaderList(bus: jd.Bus) {
     }
     flashers = []
 
-    const bl_announce = jd.Packet.onlyHeader(jd.CMD_ADVERTISEMENT_DATA)
+    const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
     // collect everyone for 1s
     for (let i = 0; i < 10; ++i) {
-        await bl_announce.sendAsMultiCommandAsync(bus, jd.SRV_BOOTLOADER)
+        await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
         await U.delay(100)
     }
 
@@ -273,7 +278,7 @@ async function makeBootloaderList(bus: jd.Bus) {
 
         // the user is meant to connect their device now
         for (let i = 0; i < 100; ++i) {
-            await bl_announce.sendAsMultiCommandAsync(bus, jd.SRV_BOOTLOADER)
+            await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
             await U.delay(100)
             // but we stop on the first encountered device
             if (flashers.length > 0)
@@ -332,7 +337,7 @@ export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
     return blobs
 }
 
-export async function flashFirmwareBlobs(bus: jd.Bus, blobs: FirmwareBlob[]) {
+export async function flashFirmwareBlobs(bus: Bus, blobs: FirmwareBlob[]) {
     try {
         _startTime = Date.now()
         let numok = 0

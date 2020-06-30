@@ -18,7 +18,9 @@ import {
     PACKET_RECEIVE,
     PACKET_EVENT,
     PACKET_REPORT,
-    PACKET_PROCESS
+    PACKET_PROCESS,
+    CONNECTION_STATE,
+    DISCONNECTING
 } from "./constants";
 import { serviceClass } from "./pretty";
 
@@ -33,12 +35,20 @@ export interface Error {
     exception: any;
 }
 
+export enum BusState {
+    Connected,
+    Connecting,
+    Disconnecting,
+    Disconnected
+}
+
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
 export class Bus extends Node {
-    private _connected = false;
+    private _connectionState = BusState.Disconnected;
     private _connectPromise: Promise<void>;
+    private _disconnectPromise: Promise<void>;
 
     private _devices: Device[] = [];
     private _deviceNames: SMap<string> = {};
@@ -55,6 +65,23 @@ export class Bus extends Node {
         this.options = this.options || {};
         this.resetTime();
         this.addListener(DEVICE_ANNOUNCE, () => this.pingLoggers());
+    }
+
+    get connectionState() {
+        return this._connectionState;
+    }
+
+    private setConnectionState(state: BusState) {
+        if (this._connectionState !== state) {
+            this._connectionState = state;
+            this.emit(CONNECTION_STATE, this._connectionState);
+            switch (this._connectionState) {
+                case BusState.Connected: this.emit(CONNECT); break;
+                case BusState.Connecting: this.emit(CONNECTING); break;
+                case BusState.Disconnecting: this.emit(DISCONNECTING); break;
+                case BusState.Disconnected: this.emit(DISCONNECT); break;
+            }
+        }
     }
 
     get id() {
@@ -107,11 +134,15 @@ export class Bus extends Node {
     }
 
     get connecting() {
-        return !!this._connectPromise;
+        return this.connectionState == BusState.Connecting
+    }
+
+    get disconnecting() {
+        return this.connectionState == BusState.Disconnecting
     }
 
     get connected() {
-        return this._connected;
+        return this._connectionState == BusState.Connected
     }
 
     errorHandler(context: string, exception: any) {
@@ -120,48 +151,60 @@ export class Bus extends Node {
 
     connectAsync(): Promise<void> {
         // already connected
-        if (this._connected)
+        if (this.connectionState == BusState.Connected)
             return Promise.resolve();
+
         // connecting
         if (!this._connectPromise) {
-            this._connected = false;
-            this._connectPromise = Promise.resolve();
-            this.emit(CONNECTING);
-            const connectAsyncPromise = this.options?.connectAsync() || Promise.resolve();
-            this._connectPromise = connectAsyncPromise
-                .then(() => {
-                    this._connectPromise = undefined;
-                    this._connected = true;
-                    this.emit(CONNECT);
-                })
-                .catch(e => {
-                    this.errorHandler(CONNECT, e);
-                    this._connected = false;
-                    this._connectPromise = undefined;
-                    this.emit(DISCONNECT);
-                })
+            // already disconnecting, retry when disconnected
+            if (this._disconnectPromise)
+                this._connectPromise = this._disconnectPromise.then(() => this.connectAsync())
+            else {
+                // starting a fresh connection
+                this._connectPromise = Promise.resolve();
+                this.setConnectionState(BusState.Connecting)
+                const connectAsyncPromise = this.options?.connectAsync() || Promise.resolve();
+                this._connectPromise = connectAsyncPromise
+                    .then(() => {
+                        this._connectPromise = undefined;
+                        this.setConnectionState(BusState.Connected)
+                    })
+                    .catch(e => {
+                        this._connectPromise = undefined;
+                        this.setConnectionState(BusState.Disconnected)
+                        this.errorHandler(CONNECT, e);
+                    })
+            }
         }
         return this._connectPromise;
     }
 
-    async disconnectAsync(): Promise<void> {
-        if (!this._connected) return Promise.resolve();
+    disconnectAsync(): Promise<void> {
+        // already disconnected
+        if (this.connectionState == BusState.Disconnected)
+            return Promise.resolve();
 
-        if (this._connectPromise)
-            throw new Error("trying to disconnect while connecting");
-        this._connected = false;
-        if (this._gcInterval) {
-            clearInterval(this._gcInterval);
-            this._gcInterval = undefined;
+        if (!this._disconnectPromise) {
+            // connection in progress, wait and disconnect when done
+            if (this._connectPromise)
+                this._disconnectPromise = this._connectPromise.then(() => this.disconnectAsync())
+            else {
+                this._disconnectPromise = Promise.resolve();
+                this.setConnectionState(BusState.Disconnecting)
+                if (this._gcInterval) {
+                    clearInterval(this._gcInterval);
+                    this._gcInterval = undefined;
+                }
+                this._disconnectPromise = this._disconnectPromise
+                    .then(() => this.options?.disconnectAsync() || Promise.resolve())
+                    .catch(e => this.errorHandler(DISCONNECT, e))
+                    .finally(() => {
+                        this._disconnectPromise = undefined;
+                        this.setConnectionState(BusState.Disconnected);
+                    });
+            }
         }
-        try {
-            this.options?.disconnectAsync();
-        } catch (e) {
-            this.errorHandler(DISCONNECT, e)
-        }
-        finally {
-            this.emit(DISCONNECT);
-        }
+        return this._disconnectPromise;
     }
 
     /**
