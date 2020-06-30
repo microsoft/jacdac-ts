@@ -62,9 +62,3 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
     }
     return r;
 }
-
-export function useEventSubscription<T>(eventEmitter: EventEmitter, eventName: string): T {
-    const [value, setValue] = useState<T>(undefined)
-    useEffect(() => eventEmitter.subscribe<T>(eventName, value => setValue(value)))
-    return value;
-}

@@ -3,10 +3,11 @@ import React, { useState, useContext, useEffect } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
 import { Device } from "../../../src/dom/device";
-import { useQuery, useEventSubscription } from '../jacdac/useQuery';
+import { useQuery } from '../jacdac/useQuery';
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from '../../../src/dom/bus';
 import { DEVICE_CHANGE } from '../../../src/dom/constants';
+import { useEventSubscription } from '../jacdac/useEventSubscription';
 
 const DeviceList = () => {
     const { bus, connectionState } = useContext(JacdacContext)
