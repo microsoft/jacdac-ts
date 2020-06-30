@@ -1,6 +1,6 @@
-import { useContext, useState, useEffect, useCallback } from "react";
+import { useContext, useState, useEffect, useCallback, useMemo } from "react";
 import JacdacContext from "../../../src/react/Context";
-import { queryAsync} from "../../../src/graphql/graphql"
+import { queryAsync } from "../../../src/graphql/graphql"
 
 export type OperationVariables = { [name: string]: any; };
 
@@ -13,6 +13,7 @@ export interface QueryResult<TData = any, TVariTVariables = OperationVariables> 
     loading?: boolean;
     error?: any;
     variables?: { [name: string]: any; };
+    refresh: () => void
 }
 
 export interface PromiseState<T> {
@@ -24,13 +25,13 @@ export interface PromiseState<T> {
 // https://usehooks.com/useAsync/
 export function useQuery<TData = any, TVariables = OperationVariables>(
     query: string,
-    cacheKey: string,
     options?: QueryHookOptions<TData, TVariables>,
 ): QueryResult<TData, TVariables> {
     const { bus } = useContext(JacdacContext);
     const [pending, setPending] = useState(false);
     const [value, setValue] = useState(null);
     const [error, setError] = useState(null);
+    const [cacheKey, setCacheKey] = useState(0)
 
     // The execute function wraps asyncFunction and
     // handles setting state for pending, value, and error.
@@ -53,11 +54,15 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
         execute();
     }, [execute]);
 
+    const refresh = () => {
+        setCacheKey(cacheKey + 1);
+    }
     const r = {
         data: value?.data,
         loading: pending,
         error: error,
-        variables: options?.variables
+        variables: options?.variables,
+        refresh
     }
     return r;
 };

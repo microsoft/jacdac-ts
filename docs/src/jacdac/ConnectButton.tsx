@@ -5,19 +5,15 @@ import { BusState } from "../../../src/dom/bus";
 // tslint:disable-next-line: no-submodule-imports
 import UsbIcon from '@material-ui/icons/Usb';
 import { CircularProgress } from "@material-ui/core";
-import { DEVICE_CONNECT, DEVICE_DISCONNECT } from "../../../src/dom/constants";
+import { DEVICE_CHANGE } from "../../../src/dom/constants";
 
 function ConnectButton() {
     const { bus } = useContext(JacdacContext)
     const [count, setCount] = useState(0)
     useEffect(() => {
         const update = () => setCount(bus.devices().length)
-        bus.on(DEVICE_CONNECT, update)
-        bus.on(DEVICE_DISCONNECT, update)
-        return () => {
-            bus.off(DEVICE_CONNECT, update)
-            bus.off(DEVICE_DISCONNECT, update)
-        }
+        bus.on(DEVICE_CHANGE, update)
+        return () => bus.off(DEVICE_CHANGE, update)
     })
     return <JacdacContext.Consumer>
         {({ connectionState, connectAsync, disconnectAsync }) => <Button

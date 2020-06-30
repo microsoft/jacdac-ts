@@ -33,6 +33,7 @@ import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "jacdac"
 jd.on(DEVICE_CONNECT, dev => console.log(`connect ${dev}`)
 jd.on(DEVICE_ANNOUNCE, dev => console.log(`disconnect ${dev}`)
 jd.on(DEVICE_DISCONNECT, dev => console.log(`announce ${dev}`)
+jd.on(DEVICE_CHANGE, dev => console.log(`change ${dev}`)
 ```
 
 Remember that when a device is first connected, it's list of services might not yet be populated. 

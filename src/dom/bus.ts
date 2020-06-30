@@ -20,7 +20,8 @@ import {
     PACKET_REPORT,
     PACKET_PROCESS,
     CONNECTION_STATE,
-    DISCONNECTING
+    DISCONNECTING,
+    DEVICE_CHANGE
 } from "./constants";
 import { serviceClass } from "./pretty";
 
@@ -192,10 +193,6 @@ export class Bus extends Node {
             else {
                 this._disconnectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Disconnecting)
-                if (this._gcInterval) {
-                    clearInterval(this._gcInterval);
-                    this._gcInterval = undefined;
-                }
                 this._disconnectPromise = this._disconnectPromise
                     .then(() => this.options?.disconnectAsync() || Promise.resolve())
                     .catch(e => this.errorHandler(DISCONNECT, e))
@@ -235,6 +232,7 @@ export class Bus extends Node {
             d = new Device(this, id)
             this._devices.push(d);
             this.emit(DEVICE_CONNECT, d);
+            this.emit(DEVICE_CHANGE, d);
 
             if (!this._gcInterval && this.connected)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
@@ -252,11 +250,19 @@ export class Bus extends Node {
                 this.disconnectDevice(dev)
             }
         }
+        // stop cleanup if all gone
+        if (!this._devices.length) {
+            if (this._gcInterval) {
+                clearInterval(this._gcInterval)
+                this._gcInterval = undefined;
+            }
+        }
     }
 
     private disconnectDevice(dev: Device) {
         dev.disconnect();
         this.emit(DEVICE_DISCONNECT, dev);
+        this.emit(DEVICE_CHANGE, dev)
     }
 
     /**

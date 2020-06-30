@@ -6,12 +6,11 @@ import { Device } from "../../../src/dom/device";
 import { useQuery } from '../jacdac/useQuery';
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from '../../../src/dom/bus';
-import { DEVICE_ANNOUNCE } from '../../../src/dom/constants';
+import { DEVICE_CHANGE } from '../../../src/dom/constants';
 
 const DeviceList = () => {
-    let [state, setState] = useState(0);
     const { bus, connectionState } = useContext(JacdacContext)
-    const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
+    const { loading, error, data, refresh } = useQuery<{ devices: Device[] }>(`{
         devices {
             id
             deviceId
@@ -20,11 +19,10 @@ const DeviceList = () => {
                 name
             }
         }
-    }`, state.toString())
+    }`)
     useEffect(() => {
-        const update = () => setState(state + 1)
-        bus.on(DEVICE_ANNOUNCE, update)
-        return () => bus.off(DEVICE_ANNOUNCE, update)
+        bus.on(DEVICE_CHANGE, refresh)
+        return () => bus.off(DEVICE_CHANGE, refresh)
     }, [loading, error])
 
     return (
