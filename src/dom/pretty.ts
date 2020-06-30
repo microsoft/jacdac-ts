@@ -172,7 +172,6 @@ function num2str(n: number) {
 
 export interface Options {
     skipRepeatedAnnounce?: boolean;
-    skipRepeatedReading?: boolean;
 }
 
 export function printServices(device: Device) {
@@ -235,12 +234,6 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
             pdesc += "; " + "Announce services: " + services.join(", ")
         }
     } else {
-        if (pkt.dev && !pkt.is_command && pkt.service_command == (jd.CMD_GET_REG | jd.REG_READING)) {
-            if (opts.skipRepeatedReading && pkt.dev.currentReading && U.bufferEq(pkt.dev.currentReading, pkt.data))
-                return ""
-            pkt.dev.currentReading = pkt.data
-        }
-
         const decoder = serv_decoders[serv_id]
         const decoded = decoder ? decoder(pkt) : null
         if (decoded) {

@@ -15,7 +15,6 @@ export class Device extends Node {
     private servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
-    currentReading: Uint8Array
     private _shortId: string
     private _services: Service[]
 

@@ -16,9 +16,15 @@ export function getSchema() {
     if (!_schema) {
         // keep in sync with schema.graphql
         _schema = buildSchema(`
+"""
+A identifiable node in the JacDac DOM
+"""
 interface Node {
     id: ID!
 }
+"""
+A device made of services
+"""
 type Device implements Node {
     id: ID!
     deviceId: ID!
@@ -26,25 +32,63 @@ type Device implements Node {
     name: String!
     connected: Boolean!
     announced: Boolean!
+    lastSeen: Int!
+    lastServiceUpdate: Int!
     services(serviceName: String = "", serviceClass: Int = -1): [Service!]!
 }
+"""
+A service node contains register and can send commands
+"""
 type Service implements Node {
     id: ID!
+    device: Device!
     serviceClass: Int!
     name: String
     register(address: Int): Register
 }
+"""
+A register on a device, can be set, get
+"""
 type Register implements Node {
     id: ID!
+    service: Service!
     address: Int!
     data: [Int!]
     intValue: Int
 }
+
+"""
+A bus of devices, service and register using the JacDac protocol
+"""
 type Query {
+    """
+    indicates if the bus is connected
+    """
     connected: Boolean!
+
+    """
+    indicates if the bus is connection
+    """
     connecting: Boolean!
+
+    """
+    current time for the bus (ms)
+    """
+    timestamp: Int!
+
+    """
+    queries a node from its id
+    """
     node(id: ID): Node
+
+    """
+    queries devices on the bus that match the criteria
+    """
     devices(serviceName: String = "", serviceClass: Int = -1): [Device!]!
+
+    """
+    queries a device by it's device id
+    """
     device(deviceId: String): Device
 }
 type Subscription {
