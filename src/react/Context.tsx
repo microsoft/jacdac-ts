@@ -1,18 +1,16 @@
 import { createContext } from "react";
-import { Bus } from "../dom/bus";
+import { Bus, BusState } from "../dom/bus";
 
 export interface JacDacContextProps {
     bus: Bus,
-    connected: boolean,
-    connecting: boolean,
+    connectionState: BusState,
     connectAsync: () => Promise<void>,
     disconnectAsync: () => Promise<void>
 }
 
 const JacdacContext = createContext<JacDacContextProps>({
     bus: undefined,
-    connected: false,
-    connecting: false,
+    connectionState: BusState.Disconnected,
     connectAsync: undefined,
     disconnectAsync: undefined
 });

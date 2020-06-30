@@ -1,13 +1,15 @@
 import React from "react";
 import { Button } from "gatsby-theme-material-ui";
 import JacdacContext from "../../../src/react/Context";
+import { BusState } from "../../../src/dom/bus";
 
 function ConnectButton() {
     return <JacdacContext.Consumer>
-        {({ connected, connecting, connectAsync, disconnectAsync }) => <Button disabled={connecting}
-            onClick={connected ? disconnectAsync : connectAsync}>
-                {connected ? "disconnect jacdac" : "connect jacdac"}
-            </Button>}
+        {({ connectionState, connectAsync, disconnectAsync }) => <Button
+            disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
+            onClick={connectionState == BusState.Connected ? disconnectAsync : connectAsync}>
+            {connectionState == BusState.Connected ? "disconnect jacdac" : connectionState == BusState.Disconnected ? "connect jacdac" : "..."}
+        </Button>}
     </JacdacContext.Consumer>
 }
 

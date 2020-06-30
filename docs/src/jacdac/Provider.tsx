@@ -6,20 +6,16 @@ import { CONNECTION_STATE } from "../../../src/dom/constants";
 
 const JacdacProvider = ({ children }) => {
     const [bus] = useState<Bus>(createUSBBus());
-    const [connected, setConnected] = useState(bus.connected);
-    const [connecting, setConnecting] = useState(bus.connecting);
+    const [connectionState, setConnectionState] = useState(bus.connectionState);
     useEffect(() => {
-        const update = () => {
-            setConnecting(bus.connecting)
-            setConnected(bus.connected)
-        }
+        const update = () => setConnectionState(bus.connectionState)
         bus.on(CONNECTION_STATE, update)
         return () => bus.off(CONNECTION_STATE, update)
     })
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
-        <JacdacContext.Provider value={{ bus, connected, connecting, connectAsync, disconnectAsync }}>
+        <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
             {children}
         </JacdacContext.Provider>
     )
