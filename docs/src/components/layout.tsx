@@ -13,8 +13,7 @@ import JacdacProvider from "../jacdac/Provider"
 import Header from "./header"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import { Typography, Breadcrumbs } from "@material-ui/core"
-import { Link } from "gatsby-theme-material-ui"
+import { Typography } from "@material-ui/core"
 
 const Layout = ({ children }) => {
   const data = useStaticQuery(graphql`
@@ -26,10 +25,6 @@ const Layout = ({ children }) => {
       }
     }
   `)
-
-  const location = window.location.pathname;
-  const parts = location.split("/")
-  parts.pop();
 
   return (
     <JacdacProvider>
@@ -43,11 +38,6 @@ const Layout = ({ children }) => {
           }}
         >
           <main>
-            <Breadcrumbs maxItems={5} aria-label="breadcrumb">
-              {parts.map((part, i) => <Link color="inherit" href={parts.slice(0, i + 1).join('/')}>
-                {part}
-              </Link>)}
-            </Breadcrumbs>
             {children}
           </main>
           <footer>
