@@ -201,7 +201,7 @@ export class Bus extends Node {
                     .catch(e => this.errorHandler(DISCONNECT, e))
                     .finally(() => {
                         this._disconnectPromise = undefined;
-                        this._devices.forEach(device => device.disconnect())
+                        this._devices.forEach(device => this.disconnectDevice(device))
                         this._devices = []
                         this.setConnectionState(BusState.Disconnected);
                     });
@@ -249,10 +249,14 @@ export class Bus extends Node {
             if (dev.lastSeen < cutoff) {
                 this._devices.splice(i, 1)
                 i--
-                dev.disconnect();
-                this.emit(DEVICE_DISCONNECT, dev);
+                this.disconnectDevice(dev)
             }
         }
+    }
+
+    private disconnectDevice(dev: Device) {
+        dev.disconnect();
+        this.emit(DEVICE_DISCONNECT, dev);
     }
 
     /**

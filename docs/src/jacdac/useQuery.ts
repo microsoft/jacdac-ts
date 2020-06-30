@@ -24,9 +24,10 @@ export interface PromiseState<T> {
 // https://usehooks.com/useAsync/
 export function useQuery<TData = any, TVariables = OperationVariables>(
     query: string,
+    cacheKey: string,
     options?: QueryHookOptions<TData, TVariables>,
 ): QueryResult<TData, TVariables> {
-    const ctx = useContext(JacdacContext);
+    const { bus } = useContext(JacdacContext);
     const [pending, setPending] = useState(false);
     const [value, setValue] = useState(null);
     const [error, setError] = useState(null);
@@ -39,11 +40,11 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
         setPending(true);
         setValue(null);
         setError(null);
-        return queryAsync(ctx.bus, query)
+        return queryAsync(bus, query)
             .then(response => setValue(response))
             .catch(error => setError(error))
             .finally(() => setPending(false));
-    }, [query]);
+    }, [cacheKey]);
 
     // Call execute if we want to fire it right away.
     // Otherwise execute can be called later, such as
