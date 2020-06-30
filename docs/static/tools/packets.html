@@ -21,7 +21,7 @@
     <script>
         var process = {
             env: {}
-        }   
+        }
     </script>
 </head>
 
@@ -42,7 +42,7 @@
     <script src="/dist/jacdac.umd.js"></script>
     <script>
         // webusb
-        const jd = jacdac.createUSBBus()
+        let jd = jacdac.createUSBBus()
         jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function listenWebUsb() {
@@ -82,13 +82,14 @@
                 importLog(file);
             }
         }
+
         function log(msg) {
             const logDiv = document.getElementById("log");
             const line = document.createElement("div");
             line.innerText = "" + msg;
-            logDiv.insertBefore(line, logDiv.firstElementChild);
-            if (logDiv.childElementCount > 100)
-                logDiv.lastElementChild.remove();
+            logDiv.appendChild(line);
+            while (logDiv.childElementCount > 500)
+                logDiv.firstChild.remove();
         }
     </script>
 </body>
