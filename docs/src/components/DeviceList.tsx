@@ -1,9 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
 import { Device } from "../../../src/dom/device";
-import { useQuery } from '../../../src/react/useQuery';
+import { useQuery } from '../jacdac/useQuery';
 
 const DeviceList = () => {
     let [, setState] = useState({});
@@ -13,11 +13,6 @@ const DeviceList = () => {
             shortId
         }
     }`)
-    // force refresh
-    useEffect(() => {
-        const id = setInterval(() => setState({}), 1000)
-        return () => clearInterval(id)
-    })
 
     return (
         <List component="nav" aria-label="devices">
