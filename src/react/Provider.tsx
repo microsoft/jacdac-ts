@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import JacdacContext from "./Context";
 import { Bus } from "../dom/bus";
 import { createUSBBus } from "../dom/usb";
-import JacdacContext from "./Context";
 import { DISCONNECT, CONNECTING, CONNECT } from "../dom/constants";
 
 const JacdacProvider = ({ children }) => {

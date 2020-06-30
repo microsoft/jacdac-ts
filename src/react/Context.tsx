@@ -1,7 +1,7 @@
-import React from "react";
+import { createContext } from "react";
 import { Bus } from "../dom/bus";
 
-const JacdacContext = React.createContext<{
+const JacdacContext = createContext<{
     bus: Bus,
     connected: boolean,
     connecting: boolean,
