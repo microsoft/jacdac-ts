@@ -29,7 +29,7 @@ export default function ButtonAppBar({ title }) {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            <Link className={classes.menuButton} href="/" color="inherit">{title}</Link>
+            <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
           </Typography>
           <ConnectButton />
         </Toolbar>
