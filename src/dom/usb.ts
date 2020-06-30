@@ -4,25 +4,31 @@ import { Packet } from "./packet";
 import { assert } from "./utils";
 
 export interface USBOptions {
-    getDevices(): Promise<USBDevice[]>;
-    requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice>
-    addEventListener(type: "connect" | "disconnect", listener: (this: this, ev: USBConnectionEvent) => any, useCapture?: boolean): void;
-    removeEventListener(type: "connect" | "disconnect", callback: (this: this, ev: USBConnectionEvent) => any, useCapture?: boolean): void;
+    getDevices: () => Promise<USBDevice[]>;
+    requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
 }
 
-export function isWebUSBSupported() {
-    return typeof navigator !== "undefined" && navigator.usb
-        && !!navigator.usb.requestDevice
-        && !!navigator.usb.getDevices;
+export function isWebUSBSupported(): boolean {
+    return typeof navigator !== "undefined"
+        && !!navigator.usb
+        && !!navigator.usb.requestDevice;
 }
 
 export function createUSBBus(options?: USBOptions): Bus {
     if (!options) {
         if (isWebUSBSupported())
-            options = navigator.usb
+            options = {
+                getDevices: () => navigator.usb.getDevices(),
+                requestDevice: (filters) => navigator.usb.requestDevice(filters)
+            }
     }
-    assert(!!options)
-
+    // dummy impl
+    if (!options) {
+        options = {
+            getDevices: () => Promise.resolve([]),
+            requestDevice: (filters) => Promise.resolve(undefined)
+        }
+    }
     let hf2: Proto;
     const bus = new Bus({
         connectAsync: (userRequest) => {
