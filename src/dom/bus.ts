@@ -198,8 +198,6 @@ export class Bus extends Node {
                     .catch(e => this.errorHandler(DISCONNECT, e))
                     .finally(() => {
                         this._disconnectPromise = undefined;
-                        this._devices.forEach(device => this.disconnectDevice(device))
-                        this._devices = []
                         this.setConnectionState(BusState.Disconnected);
                     });
             }
@@ -241,6 +239,7 @@ export class Bus extends Node {
     }
 
     private gcDevices() {
+        console.log(`gc devices (${this._devices.length})`)
         const cutoff = this.timestamp - 2000;
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
