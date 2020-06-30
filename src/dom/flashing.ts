@@ -93,7 +93,7 @@ class FlashClient {
         }
 
         if (this.numPending())
-            throw "Can't set session id"
+            throw new Error("Can't set session id")
     }
 
     async maybeReset() {
@@ -200,7 +200,7 @@ class FlashClient {
                 return
         }
 
-        throw "too many retries"
+        throw new Error("too many retries")
     }
 
     public destroy() { }
@@ -210,7 +210,7 @@ class FlashClient {
 
         for (const page of fw.pages) {
             if (page.data.length != this.pageSize)
-                throw "invalid page size"
+                throw new Error("invalid page size")
             await this.flashPage(page)
         }
 
@@ -282,7 +282,7 @@ async function makeBootloaderList(bus: jd.Bus) {
     }
 
     if (flashers.length == 0)
-        throw "no devices to flash"
+        throw new Error("no devices to flash")
 
     log(`${flashers.length} bootloader(s) found; [0]:${flashers[0].dev_class.toString(16)}`)
 }
