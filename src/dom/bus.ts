@@ -201,6 +201,8 @@ export class Bus extends Node {
                     .catch(e => this.errorHandler(DISCONNECT, e))
                     .finally(() => {
                         this._disconnectPromise = undefined;
+                        this._devices.forEach(device => device.disconnect())
+                        this._devices = []
                         this.setConnectionState(BusState.Disconnected);
                     });
             }
@@ -217,7 +219,6 @@ export class Bus extends Node {
         let sc = serviceClass(options?.serviceName);
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
-
 
         let r = this._devices.slice();
         if (sc > -1) r = r.filter(s => s.hasService(sc))
