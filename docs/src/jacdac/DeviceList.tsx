@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
 import { Device } from "../../../src/dom/device";
-import { useQuery } from './Query';
+import { useQuery } from '../../../src/react/useQuery';
 
 const DeviceList = () => {
     let [, setState] = useState({});

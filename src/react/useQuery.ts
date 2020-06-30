@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect, useCallback } from "react";
-import JacdacContext from "../../../src/react/Context";
-import { queryAsync} from "../../../src/graphql/graphql"
+import JacdacContext from "./Context";
+import { queryAsync} from "../graphql/graphql"
 
 export type OperationVariables = { [name: string]: any; };
 
