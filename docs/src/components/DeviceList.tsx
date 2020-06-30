@@ -20,10 +20,7 @@ const DeviceList = () => {
             }
         }
     }`)
-    useEffect(() => {
-        bus.on(DEVICE_CHANGE, refresh)
-        return () => bus.off(DEVICE_CHANGE, refresh)
-    }, [loading, error])
+    useEffect(() => bus.subscribe(DEVICE_CHANGE, refresh), [loading, error]);
 
     return (
         <List component="nav" aria-label="devices">
