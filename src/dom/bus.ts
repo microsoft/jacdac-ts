@@ -286,8 +286,8 @@ export class Bus extends Node {
                     isAnnounce = true
                     dev.processAnnouncement(pkt)
                 }
-            } else
-                pkt.dev.processPacket(pkt);
+            }
+            pkt.dev.processPacket(pkt);
         }
         // don't spam with duplicate advertisement events
         if (!isAnnounce) {
