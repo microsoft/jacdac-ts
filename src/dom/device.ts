@@ -128,7 +128,7 @@ export class Device extends Node {
             this.emit(RESTART)
         }
 
-        const servData = this.servicesData ? this.servicesData.slice(4) : null
+        const servData = this.servicesData?.slice(4)
         if (!bufferEq(pkt.data.slice(4), servData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
