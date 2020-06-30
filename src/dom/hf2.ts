@@ -1,6 +1,5 @@
 import * as U from "./utils"
-import { Bus } from "./bus";
-import { Packet } from "./packet";
+import { USBOptions } from "./usb";
 
 const controlTransferGetReport = 0x01;
 const controlTransferSetReport = 0x09;
@@ -105,7 +104,7 @@ export class Transport {
     readLoopStarted = false;
     ready = false;
 
-    constructor(private requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>) {
+    constructor(private usb: USBOptions) {
 
     }
 
@@ -229,18 +228,12 @@ export class Transport {
             })
     }
 
-
-    async init() {
-        this.dev = await this.requestDevice({
-            filters: [{
-                classCode: 255,
-                subclassCode: HF2_DEVICE_MAJOR,
-            }]
-        })
+    private checkDevice() {
         this.iface = undefined;
         this.altIface = undefined;
+        if (!this.dev)
+            return false;
         this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName)
-
         // resolve interfaces
         for (const iface of this.dev.configuration.interfaces) {
             const alt = iface.alternates[0]
@@ -250,12 +243,48 @@ export class Transport {
                 break;
             }
         }
+        return !!this.iface;
+    }
 
-        if (!this.iface) throw new Error("HF2 interface not found")
+    private async tryReconnectAsync() {
+        try {
+            const devices = await this.usb.getDevices();
+            this.dev = devices[0];
+        } catch (e) {
+            console.log(e)
+            this.dev = undefined;
+        }
+    }
+
+    private async requestDeviceAsync() {
+        try {
+            this.dev = await this.usb.requestDevice({
+                filters: [{
+                    classCode: 255,
+                    subclassCode: HF2_DEVICE_MAJOR,
+                }]
+            })
+        } catch (e) {
+            console.log(e)
+            this.dev = undefined;
+        }
+    }
+
+    async connectAsync(userInteraction: boolean) {
+        await this.tryReconnectAsync();
+        if (!this.dev && userInteraction)
+            await this.requestDeviceAsync();
+        await this.openDeviceAsync();
+    }
+
+    private async openDeviceAsync() {
+        if (!this.dev)
+            throw new Error("device not found")
+        if (!this.checkDevice())
+            throw new Error("device does not support HF2")
 
         await this.dev.open()
         await this.dev.selectConfiguration(1)
-
         if (this.altIface.endpoints.length) {
             this.epIn = this.altIface.endpoints.filter(e => e.direction == "in")[0]
             this.epOut = this.altIface.endpoints.filter(e => e.direction == "out")[0]
@@ -414,8 +443,8 @@ export class Proto {
         console.log("SERIAL:", U.bufferToString(data))
     }
 
-    async init() {
-        await this.io.init()
+    async connectAsync(userRequest?: boolean) {
+        await this.io.connectAsync(userRequest)
         const buf = await this.talkAsync(HF2_CMD_INFO)
         this.io.log("Connected to: " + U.bufferToString(buf))
     }

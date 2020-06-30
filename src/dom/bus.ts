@@ -26,7 +26,7 @@ import { serviceClass } from "./pretty";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
-    connectAsync?: () => Promise<void>;
+    connectAsync?: (userRequest?: boolean) => Promise<void>;
     disconnectAsync?: () => Promise<void>;
 }
 
@@ -62,6 +62,7 @@ export class Bus extends Node {
      */
     constructor(public options?: BusOptions) {
         super();
+        console.log(`new bus...`)
         this.options = this.options || {};
         this.resetTime();
         this.addListener(DEVICE_ANNOUNCE, () => this.pingLoggers());
@@ -149,7 +150,7 @@ export class Bus extends Node {
         this.emit(ERROR, { context, exception })
     }
 
-    connectAsync(): Promise<void> {
+    connectAsync(userRequest?: boolean): Promise<void> {
         // already connected
         if (this.connectionState == BusState.Connected)
             return Promise.resolve();
@@ -163,7 +164,7 @@ export class Bus extends Node {
                 // starting a fresh connection
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
-                const connectAsyncPromise = this.options?.connectAsync() || Promise.resolve();
+                const connectAsyncPromise = this.options?.connectAsync(userRequest) || Promise.resolve();
                 this._connectPromise = connectAsyncPromise
                     .then(() => {
                         this._connectPromise = undefined;

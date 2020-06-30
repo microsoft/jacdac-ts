@@ -12,7 +12,7 @@ const JacdacProvider = ({ children }) => {
         bus.on(CONNECTION_STATE, update)
         return () => bus.off(CONNECTION_STATE, update)
     })
-    const connectAsync = () => bus.connectAsync();
+    const connectAsync = () => bus.connectAsync(true);
     const disconnectAsync = () => bus.disconnectAsync();
     return (
         <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>

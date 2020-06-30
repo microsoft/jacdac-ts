@@ -1,29 +1,41 @@
 import { Transport, Proto } from "./hf2";
 import { Bus } from "./bus";
 import { Packet } from "./packet";
+import { assert } from "./utils";
 
-export interface UsbBusOptions {
-    requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
+export interface USBOptions {
+    getDevices(): Promise<USBDevice[]>;
+    requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice>
+    addEventListener(type: "connect" | "disconnect", listener: (this: this, ev: USBConnectionEvent) => any, useCapture?: boolean): void;
+    removeEventListener(type: "connect" | "disconnect", callback: (this: this, ev: USBConnectionEvent) => any, useCapture?: boolean): void;
 }
 
-export function createUSBBus(options?: UsbBusOptions): Bus {
-    let requestDevice = options?.requestDevice;
-    if (!requestDevice && typeof navigator !== "undefined" && navigator.usb && navigator.usb.requestDevice) {
-        requestDevice = options => navigator.usb.requestDevice(options);
+export function isWebUSBSupported() {
+    return typeof navigator !== "undefined" && navigator.usb
+        && !!navigator.usb.requestDevice
+        && !!navigator.usb.getDevices;
+}
+
+export function createUSBBus(options?: USBOptions): Bus {
+    if (!options) {
+        if (isWebUSBSupported())
+            options = navigator.usb
     }
+    assert(!!options)
 
     let hf2: Proto;
     const bus = new Bus({
-        connectAsync: () => {
+        connectAsync: (userRequest) => {
             if (hf2) return Promise.resolve();
-            const transport = new Transport(requestDevice);
+            const transport = new Transport(options);
             hf2 = new Proto(transport);
             const onJDMessage = (buf: Uint8Array) => {
                 const pkts = Packet.fromFrame(buf, bus.timestamp)
                 for (const pkt of pkts)
                     bus.processPacket(pkt);
             }
-            return hf2.init().then(() => hf2.onJDMessage(onJDMessage))
+            return hf2.connectAsync(userRequest)
+                .then(() => hf2.onJDMessage(onJDMessage))
         },
         sendPacketAsync: p => {
             const buf = p.toBuffer();
