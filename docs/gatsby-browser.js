@@ -1,1 +1,1 @@
-require("prismjs/themes/prism-solarizedlight.css")
+require("prism-themes/themes/prism-dracula.css")

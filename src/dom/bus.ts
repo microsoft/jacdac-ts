@@ -198,8 +198,6 @@ export class Bus extends Node {
                     .catch(e => this.errorHandler(DISCONNECT, e))
                     .finally(() => {
                         this._disconnectPromise = undefined;
-                        this._devices.forEach(device => this.disconnectDevice(device))
-                        this._devices = []
                         this.setConnectionState(BusState.Disconnected);
                     });
             }
@@ -234,7 +232,7 @@ export class Bus extends Node {
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
 
-            if (!this._gcInterval && this.connected)
+            if (!this._gcInterval)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d

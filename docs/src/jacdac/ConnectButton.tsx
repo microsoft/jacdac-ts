@@ -10,11 +10,7 @@ import { DEVICE_CHANGE } from "../../../src/dom/constants";
 function ConnectButton() {
     const { bus } = useContext(JacdacContext)
     const [count, setCount] = useState(0)
-    useEffect(() => {
-        const update = () => setCount(bus.devices().length)
-        bus.on(DEVICE_CHANGE, update)
-        return () => bus.off(DEVICE_CHANGE, update)
-    })
+    useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)), [bus])
     return <JacdacContext.Consumer>
         {({ connectionState, connectAsync, disconnectAsync }) => <Button
             variant="contained"

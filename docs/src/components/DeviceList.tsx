@@ -7,10 +7,12 @@ import { useQuery } from '../jacdac/useQuery';
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from '../../../src/dom/bus';
 import { DEVICE_CHANGE } from '../../../src/dom/constants';
+import { useEventSubscription } from '../jacdac/useEventSubscription';
 
 const DeviceList = () => {
     const { bus, connectionState } = useContext(JacdacContext)
-    const { loading, error, data, refresh } = useQuery<{ devices: Device[] }>(`{
+    const value = useEventSubscription(bus, DEVICE_CHANGE)
+    const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
         devices {
             id
             deviceId
@@ -19,11 +21,7 @@ const DeviceList = () => {
                 name
             }
         }
-    }`)
-    useEffect(() => {
-        bus.on(DEVICE_CHANGE, refresh)
-        return () => bus.off(DEVICE_CHANGE, refresh)
-    }, [loading, error])
+    }`, { deps: [value] })
 
     return (
         <List component="nav" aria-label="devices">
