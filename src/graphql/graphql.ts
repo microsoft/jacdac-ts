@@ -1,12 +1,12 @@
-import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate, GraphQLArgs } from "graphql"
-import { Bus } from "./bus";
+import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate } from "graphql"
+import { Bus } from "../bus";
 // tslint:disable-next-line: no-submodule-imports
 import { withFilter } from "graphql-subscriptions/dist/with-filter";
-import { Device } from "./device";
-import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, REPORT_UPDATE, REPORT_RECEIVE } from "./constants";
-import { serviceClass } from "./pretty"
+import { Device } from "../device";
+import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, REPORT_UPDATE, REPORT_RECEIVE } from "../constants";
+import { serviceClass } from "../pretty"
 import { EventEmitterPubSub, StreamingRegisterPubSub } from "./pubsub";
-import { Register } from "./register";
+import { Register } from "../register";
 
 
 let _schema: GraphQLSchema = undefined;
