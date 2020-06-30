@@ -13,7 +13,8 @@ import JacdacProvider from "../jacdac/Provider"
 import Header from "./header"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import { Typography } from "@material-ui/core"
+import { Typography, Breadcrumbs } from "@material-ui/core"
+import { Link } from "gatsby-theme-material-ui"
 
 const Layout = ({ children }) => {
   const data = useStaticQuery(graphql`
@@ -25,6 +26,11 @@ const Layout = ({ children }) => {
       }
     }
   `)
+
+  const location = window.location.pathname;
+  const parts = location.split("/")
+  parts.pop();
+
   return (
     <JacdacProvider>
       <Typography>
@@ -32,11 +38,18 @@ const Layout = ({ children }) => {
         <div
           style={{
             margin: `0 auto`,
-            maxWidth: 960,
+            maxWidth: 1280,
             padding: `0 1.0875rem 1.45rem`,
           }}
         >
-          <main>{children}</main>
+          <main>
+            <Breadcrumbs maxItems={5} aria-label="breadcrumb">
+              {parts.map((part, i) => <Link color="inherit" href={parts.slice(0, i + 1).join('/')}>
+                {part}
+              </Link>)}
+            </Breadcrumbs>
+            {children}
+          </main>
           <footer>
             © {new Date().getFullYear()} Microsoft Corporation
         </footer>
