@@ -5,10 +5,10 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React, { useState } from "react"
+import React from "react"
 import PropTypes from "prop-types"
 import { useStaticQuery, graphql } from "gatsby"
-import JacdacProvider from "../jacdac/Provider"
+import JacdacProvider from "../../../src/react/Provider"
 
 import Header from "./header"
 // tslint:disable-next-line: no-import-side-effect
