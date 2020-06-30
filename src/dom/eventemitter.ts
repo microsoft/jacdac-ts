@@ -140,9 +140,11 @@ class EventObservable<T> implements Observable<T> {
         this.eventEmitter.on(this.eventName, observer.next)
         this.eventEmitter.on(ERROR, observer.error)
         // never completes
-        return () => {
-            this.eventEmitter.off(this.eventName, observer.next);
-            this.eventEmitter.off(ERROR, observer.error)
+        return {
+            unsubscribe: () => {
+                this.eventEmitter.off(this.eventName, observer.next);
+                this.eventEmitter.off(ERROR, observer.error)
+            }
         }
     }
 }
