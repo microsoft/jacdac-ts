@@ -234,7 +234,7 @@ export class Bus extends Node {
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
 
-            if (!this._gcInterval && this.connected)
+            if (!this._gcInterval)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d
