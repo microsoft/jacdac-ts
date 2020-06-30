@@ -13,7 +13,7 @@
     <script>
         var process = {
             env: {}
-        }   
+        }
     </script>
 
 </head>
@@ -32,6 +32,7 @@
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
         const jd = jacdac.createUSBBus()
+        let speedTest = /speed/.test(document.location.search)
         jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function scan() {
@@ -57,6 +58,18 @@
                 devicesDiv.append(div);
             }
             div.innerText = `${device.toString()} - ${device.deviceId}: ${jacdac.printServices(device)}`;
+            if (speedTest) {
+                const speedRes = document.createElement("div")
+                const speedBtn = document.createElement("button")
+                speedBtn.innerText = "Speed test"
+                speedBtn.onclick = async () => {
+                    speedRes.innerText = "Testing..."
+                    const res = await jacdac.packetSpeedTest(device)
+                    speedRes.innerText += res.msg
+                }
+                div.appendChild(speedRes)
+                div.appendChild(speedBtn)
+            }
         }
 
         function disconnect(device) {
