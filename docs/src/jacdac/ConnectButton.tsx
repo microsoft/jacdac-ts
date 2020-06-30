@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "gatsby-theme-material-ui";
-import JacdacContext from "./Context";
+import JacdacContext from "../../../src/react/Context";
 
 function ConnectButton() {
     return <JacdacContext.Consumer>

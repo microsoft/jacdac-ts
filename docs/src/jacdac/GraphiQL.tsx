@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react'
-import JacdacContext from "./Context";
+import JacdacContext from "../../../src/react/Context";
 import { queryAsync } from "../../../src/graphql/graphql"
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "graphiql/graphiql.min.css";
