@@ -620,7 +620,10 @@ pre tt:after {
     font-size: 100%;
   }
 }
-
+footer {
+  margin-top: 1rem;
+  font-size: 80%
+}
 .gatsby-highlight {
   margin-bottom: 1rem;
 }
