@@ -124,6 +124,7 @@ export const SRV_SLIDER = 0x1f274746;
 export const SRV_MOTOR = 0x17004cd8;
 export const SRV_TCP = 0x1b43b70b;
 export const SRV_WIFI = 0x18aae1fa;
+export const SRV_MULTITOUCH = 0x18d55e2b;
 
 export const NEW_LISTENER = 'newListener'
 export const REMOVE_LISTENER = 'removeListener'
@@ -147,6 +148,7 @@ export const PACKET_SEND = 'packetSend'
 
 export const PACKET_PROCESS = 'packetProcess'
 export const PACKET_RECEIVE = 'packetReceive'
+export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
 export const PACKET_EVENT = 'packetEvent'
 export const PACKET_REPORT = 'packetReport'
 
