@@ -1,10 +1,12 @@
-import { useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { useContext, useState, useEffect, useCallback, DependencyList } from "react";
 import JacdacContext from "../../../src/react/Context";
 import { queryAsync } from "../../../src/graphql/graphql"
+import { EventEmitter } from "../../../src/dom/eventemitter";
 
 export type OperationVariables = { [name: string]: any; };
 
 export interface QueryHookOptions<TData = any, TVariables = OperationVariables> {
+    deps?: DependencyList,
     variables?: { [name: string]: any; };
 }
 
@@ -13,7 +15,6 @@ export interface QueryResult<TData = any, TVariTVariables = OperationVariables> 
     loading?: boolean;
     error?: any;
     variables?: { [name: string]: any; };
-    refresh: () => void
 }
 
 export interface PromiseState<T> {
@@ -31,7 +32,6 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
     const [pending, setPending] = useState(false);
     const [value, setValue] = useState(null);
     const [error, setError] = useState(null);
-    const [cacheKey, setCacheKey] = useState(0)
 
     // The execute function wraps asyncFunction and
     // handles setting state for pending, value, and error.
@@ -45,7 +45,7 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
             .then(response => setValue(response))
             .catch(error => setError(error))
             .finally(() => setPending(false));
-    }, [cacheKey]);
+    }, options?.deps || []);
 
     // Call execute if we want to fire it right away.
     // Otherwise execute can be called later, such as
@@ -54,15 +54,11 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
         execute();
     }, [execute]);
 
-    const refresh = () => {
-        setCacheKey(cacheKey + 1);
-    }
     const r = {
         data: value?.data,
         loading: pending,
         error: error,
-        variables: options?.variables,
-        refresh
+        variables: options?.variables
     }
     return r;
-};
+}

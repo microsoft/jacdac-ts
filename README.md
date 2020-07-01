@@ -1,4 +1,4 @@
-# JACDAC TypeScript
+# JACDAC ![Build](https://github.com/microsoft/jacdac-ts/workflows/Build/badge.svg)
 
 This repository contains a TypeScript/JavaScript client library for the [JACDAC](https://microsoft.github.io/jacdac) protocol.
 

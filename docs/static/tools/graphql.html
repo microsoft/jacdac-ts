@@ -86,7 +86,7 @@ subscription {
         const disconnect = document.getElementById("disconnect");
 
         const jd = jacdac.createUSBBus()
-        jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
+        jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function connect() {
             log('starting')

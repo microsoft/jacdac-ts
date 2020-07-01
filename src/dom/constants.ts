@@ -135,6 +135,7 @@ export const DISCONNECT = 'disconnect';
 export const DISCONNECTING = 'disconnecting'
 export const ANNOUNCE = 'announce'
 export const RESTART = 'restart'
+export const CHANGE = 'change'
 
 export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'

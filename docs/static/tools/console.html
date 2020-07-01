@@ -42,22 +42,22 @@
     <script>
         const devicesDiv = document.getElementById("devices");
         const jd = jacdac.createUSBBus()
-        jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
+        jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
+        jd.minConsolePriority = jacdac.ConsolePriority.Debug;
+        jd.on(jacdac.DEVICE_CHANGE, d => {
+            devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
+        });
+        jd.on(jacdac.PACKET_RECEIVE, pkt => {
+            const decoded = jacdac.decodePacketData(pkt);
+            console.debug(jacdac.printPacket(pkt))
+            if (decoded)
+                log(`${jacdac.deviceServiceName(pkt)}: ${decoded}`)
+        })
 
         async function sniff() {
             log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.minConsolePriority = jacdac.ConsolePriority.Debug;
-            jd.on('deviceConnect', d => {
-                devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
-            });
-            jd.on('packetReceive', pkt => {
-                const decoded = jacdac.decodePacketData(pkt);
-                console.debug(jacdac.printPacket(pkt))
-                if (decoded)
-                    log(`${jacdac.deviceServiceName(pkt)}: ${decoded}`)
-            })
             log('started')
         }
 

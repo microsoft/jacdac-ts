@@ -8,25 +8,20 @@ const JacdacProvider = ({ children }) => {
     const bus = useMemo<Bus>(createUSBBus, [createUSBBus]);
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
+
+    // connect in background on first load
     useEffect(() => {
-        // connect in background
         if (!firstConnect && bus.connectionState == BusState.Disconnected) {
             setFirstConnect(true)
-            bus.connectAsync();
+            bus.connectAsync(true);
         }
         return () => { }
-    } , [bus])
-    useEffect(() => {
-        // connect in background
-        if (firstConnect && bus.connectionState == BusState.Disconnected) {
-            setFirstConnect(true)
-            bus.connectAsync();
-        }
-        const update = () => setConnectionState(bus.connectionState)
-        bus.on(CONNECTION_STATE, update)
-        return () => bus.off(CONNECTION_STATE, update)
     }, [bus])
-    const connectAsync = () => bus.connectAsync(true);
+
+    // subscribe to connection state changes
+    useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)),[bus])
+
+    const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
         <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>

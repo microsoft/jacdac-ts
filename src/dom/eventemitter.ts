@@ -1,5 +1,6 @@
 import { SMap } from "./utils";
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR } from "./constants";
+import { Observable, Observer } from "./observable";
 export type EventHandler = (...args) => void;
 
 interface Listener {
@@ -44,6 +45,7 @@ export class EventEmitter {
             handler,
             once: !!once
         })
+        //console.log(`${eventName}->${listeners.length}`)
         return this;
     }
 
@@ -54,9 +56,8 @@ export class EventEmitter {
         if (listeners) {
             for (let i = 0; i < listeners.length; ++i) {
                 const listener = listeners[i];
-                const handler = listener.handler
-                if (handler === handler) {
-                    listeners.splice(i, -1);
+                if (handler ===  listener.handler) {
+                    listeners.splice(i, 1);
                     --i;
                     if (listeners.length == 0)
                         delete this.listeners[eventName];
@@ -82,7 +83,7 @@ export class EventEmitter {
             const listener = listeners[i];
             const handler = listener.handler;
             if (listener.once) {
-                listeners.splice(i, -1);
+                listeners.splice(i, 1);
                 --i;
             }
             try {
@@ -111,4 +112,45 @@ export class EventEmitter {
     eventNames(): string[] {
         return Object.keys(this.listeners)
     }
+
+    /**
+     * Creates an observable from the given event
+     * @param eventName 
+     */
+    observe<T>(eventName: string): Observable<T> {
+        return fromEvent<T>(this, eventName);
+    }
+
+    /**
+     * Subscribbes to an event and returns the unsubscription handler
+     * @param eventName 
+     * @param next 
+     */
+    subscribe<T>(eventName: string, next: (value: T) => void): () => void {
+        const observer = this.observe<T>(eventName);
+        return observer.subscribe({ next }).unsubscribe
+    }
+}
+
+class EventObservable<T> implements Observable<T> {
+    constructor(public eventEmitter: EventEmitter, public eventName: string) {
+    }
+
+    subscribe(observer: Observer<T>) {
+        //console.log(`on ${this.eventName}`)
+        this.eventEmitter.on(this.eventName, observer.next)
+        this.eventEmitter.on(ERROR, observer.error)
+        // never completes
+        return {
+            unsubscribe: () => {
+                //console.log(`off ${this.eventName}`)
+                this.eventEmitter.off(this.eventName, observer.next);
+                this.eventEmitter.off(ERROR, observer.error)
+            }
+        }
+    }
+}
+
+export function fromEvent<T>(eventEmitter: EventEmitter, eventName: string): Observable<T> {
+    return new EventObservable<T>(eventEmitter, eventName)
 }

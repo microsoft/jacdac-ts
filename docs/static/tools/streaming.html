@@ -42,27 +42,30 @@
     <script>
         const devicesDiv = document.getElementById("devices");
         const jd = jacdac.createUSBBus()
-        jd.on("error", (evt) => log(`${evt.context} ${evt.exception.message}`))
+        jd.on(jacdac.DEVICE_ANNOUNCE, d => {
+            for (let i = 1; i < d.serviceLength; ++i) {
+                const service = d.service(i)
+                console.log(`start streaming ${service}`)
+                jacdac.setStreamingAsync(service, true);
+            }
+        })
+        jd.on(jacdac.PACKET_SEND, pkt => {
+            console.log(jacdac.printPacket(pkt));
+        })
+        jd.on(jacdac.PACKET_RECEIVE, pkt => {
+            const decoded = jacdac.decodePacketData(pkt);
+            if (decoded)
+                slider(pkt)
+        })
+        jd.on(jacdac.ERROR, (evt) => {
+            console.error(evt)
+            log(`${evt.context} ${evt.exception.message}`)
+        })
 
         async function sniff() {
             console.log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            jd.on(jacdac.DEVICE_ANNOUNCE, d => {
-                // tell all services to start streaming, ignored if not supported
-                for (let i = 1; i < d.serviceLength; ++i) {
-                    const sensor = new jacdac.SensorClient(d, i)
-                    sensor.setStreamingAsync(true);
-                }
-            })
-            jd.on(jacdac.PACKET_SEND, pkt => {
-                console.log(jacdac.printPacket(pkt));
-            })
-            jd.on(jacdac.PACKET_RECEIVE, pkt => {
-                const decoded = jacdac.decodePacketData(pkt);
-                if (decoded)
-                    slider(pkt)
-            })
             console.log('started')
         }
 

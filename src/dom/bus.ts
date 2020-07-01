@@ -21,13 +21,14 @@ import {
     PACKET_PROCESS,
     CONNECTION_STATE,
     DISCONNECTING,
-    DEVICE_CHANGE
+    DEVICE_CHANGE,
+    CHANGE
 } from "./constants";
 import { serviceClass } from "./pretty";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
-    connectAsync?: (userRequest?: boolean) => Promise<void>;
+    connectAsync?: (background?: boolean) => Promise<void>;
     disconnectAsync?: () => Promise<void>;
 }
 
@@ -83,11 +84,16 @@ export class Bus extends Node {
                 case BusState.Disconnecting: this.emit(DISCONNECTING); break;
                 case BusState.Disconnected: this.emit(DISCONNECT); break;
             }
+            this.emit(CHANGE)
         }
     }
 
     get id() {
-        return "bus";
+        return `bus`;
+    }
+
+    toString() {
+        return this.id;
     }
 
     node(id: string) {
@@ -107,6 +113,7 @@ export class Bus extends Node {
 
     private resetTime() {
         this._startTime = Date.now();
+        this.emit(CHANGE)
     }
 
     get timestamp() {
@@ -120,6 +127,7 @@ export class Bus extends Node {
     set minConsolePriority(priority: ConsolePriority) {
         if (priority !== this._minConsolePriority) {
             this._minConsolePriority = priority;
+            this.emit(CHANGE)
         }
     }
 
@@ -132,7 +140,8 @@ export class Bus extends Node {
 
     sendPacketAsync(p: Packet) {
         this.emit(PACKET_SEND, p);
-        return this.options?.sendPacketAsync(p) || Promise.resolve();
+        const spa = this.options.sendPacketAsync;
+        return spa ? spa(p) : Promise.resolve();
     }
 
     get connecting() {
@@ -149,9 +158,10 @@ export class Bus extends Node {
 
     errorHandler(context: string, exception: any) {
         this.emit(ERROR, { context, exception })
+        this.emit(CHANGE)
     }
 
-    connectAsync(userRequest?: boolean): Promise<void> {
+    connectAsync(background?: boolean): Promise<void> {
         // already connected
         if (this.connectionState == BusState.Connected)
             return Promise.resolve();
@@ -165,7 +175,7 @@ export class Bus extends Node {
                 // starting a fresh connection
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
-                const connectAsyncPromise = this.options?.connectAsync(userRequest) || Promise.resolve();
+                const connectAsyncPromise = this.options.connectAsync ? this.options.connectAsync(background) : Promise.resolve();
                 this._connectPromise = connectAsyncPromise
                     .then(() => {
                         this._connectPromise = undefined;
@@ -194,12 +204,10 @@ export class Bus extends Node {
                 this._disconnectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Disconnecting)
                 this._disconnectPromise = this._disconnectPromise
-                    .then(() => this.options?.disconnectAsync() || Promise.resolve())
+                    .then(() => this.options.disconnectAsync ? this.options.disconnectAsync() : Promise.resolve())
                     .catch(e => this.errorHandler(DISCONNECT, e))
                     .finally(() => {
                         this._disconnectPromise = undefined;
-                        this._devices.forEach(device => this.disconnectDevice(device))
-                        this._devices = []
                         this.setConnectionState(BusState.Disconnected);
                     });
             }
@@ -216,7 +224,6 @@ export class Bus extends Node {
         let sc = serviceClass(options?.serviceName);
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
-
         let r = this._devices.slice();
         if (sc > -1) r = r.filter(s => s.hasService(sc))
         return r;
@@ -233,8 +240,9 @@ export class Bus extends Node {
             this._devices.push(d);
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
+            this.emit(CHANGE)
 
-            if (!this._gcInterval && this.connected)
+            if (!this._gcInterval)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
         }
         return d
@@ -263,6 +271,7 @@ export class Bus extends Node {
         dev.disconnect();
         this.emit(DEVICE_DISCONNECT, dev);
         this.emit(DEVICE_CHANGE, dev)
+        this.emit(CHANGE)
     }
 
     /**
@@ -280,14 +289,13 @@ export class Bus extends Node {
         } else {
             const dev = pkt.dev = this.device(pkt.device_identifier)
             dev.lastSeen = pkt.timestamp
-
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     dev.processAnnouncement(pkt)
                 }
             }
-            pkt.dev.processPacket(pkt);
+            pkt.dev.processPacket(pkt)
         }
         // don't spam with duplicate advertisement events
         if (!isAnnounce) {

@@ -1,7 +1,7 @@
 import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
-    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART,
+    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
@@ -128,6 +128,7 @@ export class Device extends Node {
             this.bus.emit(DEVICE_RESTART, this);
             this.emit(RESTART)
             this.bus.emit(DEVICE_CHANGE, this);
+            this.emit(CHANGE)
         }
 
         const servData = this.servicesData?.slice(4)
@@ -141,6 +142,7 @@ export class Device extends Node {
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
             this.bus.emit(DEVICE_CHANGE, this);
+            this.emit(CHANGE)
         }
     }
 
@@ -162,14 +164,11 @@ export class Device extends Node {
     }
 }
 
-
-// 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
-// 3 letter ID; 1.1%/2.6%/0.05%
-// 2 letter ID; 25%/6.4%/1.5%
+// 2 letter + 2 digit ID; 1.8%/0.3%/0.07%/0.015% collision probability among 50/20/10/5 devices
 export function shortDeviceId(devid: string) {
     const h = hash(fromHex(devid), 30)
     return String.fromCharCode(0x41 + h % 26) +
         String.fromCharCode(0x41 + idiv(h, 26) % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26)
+        String.fromCharCode(0x30 + idiv(h, 26 * 26) % 10) +
+        String.fromCharCode(0x30 + idiv(h, 26 * 26 * 10) % 10)
 }

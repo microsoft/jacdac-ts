@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
-import { ListItem, ListItemText } from '@material-ui/core';
+import React from 'react';
+import { ListItem } from '@material-ui/core';
 import { Device } from '../../../src/dom/device';
+import DeviceCard from './DeviceCard';
 
 
 const DeviceListItem = (props: { device: Device }) => {
     return <ListItem key={props.device.id}>
-        <ListItemText primary={props.device.shortId} />
+        <DeviceCard device={props.device} />
     </ListItem>
 }
 
