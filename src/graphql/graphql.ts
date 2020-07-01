@@ -11,12 +11,18 @@ export function getSchema() {
 A identifiable node in the JacDac DOM
 """
 interface Node {
+    """
+    Global node identifier
+    """
     id: ID!
 }
 """
 A device made of services
 """
 type Device implements Node {
+    """
+    Global node identifier
+    """
     id: ID!
     deviceId: ID!
     shortId: String!
@@ -31,6 +37,9 @@ type Device implements Node {
 A service node contains register and can send commands
 """
 type Service implements Node {
+    """
+    Global node identifier
+    """
     id: ID!
     device: Device!
     serviceClass: Int!
@@ -41,6 +50,9 @@ type Service implements Node {
 A register on a device, can be set, get
 """
 type Register implements Node {
+    """
+    Global node identifier
+    """
     id: ID!
     service: Service!
     address: Int!
