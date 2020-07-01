@@ -9,6 +9,7 @@ function useChange<TNode extends Node, TValue>(node: TNode, query: (n: TNode) =>
     const value = useMemo(() => query(node), [node, version, bus])
 
     useEffect(() => node.subscribe(CHANGE, () => {
+        //console.log(`change ${node} ${version}`)
         setVersion(version + 1)
     }), [node, version])
 

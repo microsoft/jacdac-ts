@@ -1,7 +1,7 @@
 import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
-    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART
+    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -127,6 +127,7 @@ export class Device extends Node {
             this.bus.emit(DEVICE_RESTART, this);
             this.emit(RESTART)
             this.bus.emit(DEVICE_CHANGE, this);
+            this.emit(CHANGE)
         }
 
         const servData = this.servicesData?.slice(4)
@@ -140,6 +141,7 @@ export class Device extends Node {
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
             this.bus.emit(DEVICE_CHANGE, this);
+            this.emit(CHANGE)
         }
     }
 

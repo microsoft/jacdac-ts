@@ -92,6 +92,10 @@ export class Bus extends Node {
         return `bus`;
     }
 
+    toString() {
+        return this.id;
+    }
+
     node(id: string) {
         const m = /^(?<type>bus|dev|srv|reg)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
         if (!m) return undefined;

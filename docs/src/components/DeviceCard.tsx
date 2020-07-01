@@ -5,9 +5,7 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import { Device } from '../../../src/dom/device';
-import { Packet } from '../../../src/dom/packet';
 import { SRV_CTRL, SRV_LOGGER, ANNOUNCE } from '../../../src/dom/constants';
-import useEventSubscription from '../jacdac/useEventSubscription';
 import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 
@@ -31,8 +29,9 @@ const useStyles = makeStyles({
 const DeviceCard = (props: { device: Device, children?: any }) => {
     const { device, children } = props;
     const classes = useStyles();
-    const services = device.services()
-        .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER);
+    const services = useChange(device, () => device.services()
+        .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
+    console.log(services)
     return (
         <Card className={classes.root}>
             <CardContent>
@@ -43,9 +42,7 @@ const DeviceCard = (props: { device: Device, children?: any }) => {
                     {device.shortId}
                 </Typography>
                 <Typography variant="body2" component="p">
-                    {device.services()
-                        .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER)
-                        .map(service => service.name)
+                    {services.map(service => service.name)
                         .join(', ')}
                 </Typography>
             </CardContent>
