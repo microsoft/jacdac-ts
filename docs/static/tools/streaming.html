@@ -51,8 +51,7 @@
             jd.on(jacdac.DEVICE_ANNOUNCE, d => {
                 // tell all services to start streaming, ignored if not supported
                 for (let i = 1; i < d.serviceLength; ++i) {
-                    const sensor = new jacdac.SensorClient(d, i)
-                    sensor.setStreamingAsync(true);
+                    jacdac.setStreamingAsync(true);
                 }
             })
             jd.on(jacdac.PACKET_SEND, pkt => {

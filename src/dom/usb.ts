@@ -31,7 +31,7 @@ export function createUSBBus(options?: USBOptions): Bus {
     }
     let hf2: Proto;
     const bus = new Bus({
-        connectAsync: (userRequest) => {
+        connectAsync: (background) => {
             if (hf2) return Promise.resolve();
             const transport = new Transport(options);
             hf2 = new Proto(transport);
@@ -40,7 +40,7 @@ export function createUSBBus(options?: USBOptions): Bus {
                 for (const pkt of pkts)
                     bus.processPacket(pkt);
             }
-            return hf2.connectAsync(userRequest)
+            return hf2.connectAsync(background)
                 .then(() => hf2.onJDMessage(onJDMessage))
         },
         sendPacketAsync: p => {

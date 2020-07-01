@@ -28,7 +28,7 @@ import { serviceClass } from "./pretty";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
-    connectAsync?: (userRequest?: boolean) => Promise<void>;
+    connectAsync?: (background?: boolean) => Promise<void>;
     disconnectAsync?: () => Promise<void>;
 }
 
@@ -136,7 +136,8 @@ export class Bus extends Node {
 
     sendPacketAsync(p: Packet) {
         this.emit(PACKET_SEND, p);
-        return this.options?.sendPacketAsync(p) || Promise.resolve();
+        const spa = this.options.sendPacketAsync;
+        return spa ? spa(p) : Promise.resolve();
     }
 
     get connecting() {
@@ -156,7 +157,7 @@ export class Bus extends Node {
         this.emit(CHANGE)
     }
 
-    connectAsync(userRequest?: boolean): Promise<void> {
+    connectAsync(background?: boolean): Promise<void> {
         // already connected
         if (this.connectionState == BusState.Connected)
             return Promise.resolve();
@@ -170,7 +171,7 @@ export class Bus extends Node {
                 // starting a fresh connection
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
-                const connectAsyncPromise = this.options?.connectAsync(userRequest) || Promise.resolve();
+                const connectAsyncPromise = this.options.connectAsync ? this.options.connectAsync(background) : Promise.resolve();
                 this._connectPromise = connectAsyncPromise
                     .then(() => {
                         this._connectPromise = undefined;
@@ -199,7 +200,7 @@ export class Bus extends Node {
                 this._disconnectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Disconnecting)
                 this._disconnectPromise = this._disconnectPromise
-                    .then(() => this.options?.disconnectAsync() || Promise.resolve())
+                    .then(() => this.options.disconnectAsync ? this.options.disconnectAsync() : Promise.resolve())
                     .catch(e => this.errorHandler(DISCONNECT, e))
                     .finally(() => {
                         this._disconnectPromise = undefined;

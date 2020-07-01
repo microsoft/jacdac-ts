@@ -270,9 +270,9 @@ export class Transport {
         }
     }
 
-    async connectAsync(userInteraction: boolean) {
+    async connectAsync(background: boolean) {
         await this.tryReconnectAsync();
-        if (!this.dev && userInteraction)
+        if (!this.dev && !background)
             await this.requestDeviceAsync();
         await this.openDeviceAsync();
     }
@@ -443,8 +443,8 @@ export class Proto {
         console.log("SERIAL:", U.bufferToString(data))
     }
 
-    async connectAsync(userRequest?: boolean) {
-        await this.io.connectAsync(userRequest)
+    async connectAsync(background?: boolean) {
+        await this.io.connectAsync(background)
         const buf = await this.talkAsync(HF2_CMD_INFO)
         this.io.log("Connected to: " + U.bufferToString(buf))
     }
