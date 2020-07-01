@@ -5,7 +5,7 @@ let _schema: GraphQLSchema = undefined;
 export function getSchema() {
     // lazy allocated schema
     if (!_schema) {
-        // keep in sync with schema.graphql
+        // keep in sync with /clients/web/graphql        
         _schema = buildSchema(`
 """
 A identifiable node in the JacDac DOM
