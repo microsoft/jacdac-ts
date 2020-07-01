@@ -120,7 +120,6 @@
     "cross-env": "^5.2.0",
     "graphiql": "^1.0.3",
     "graphql": "^15.1.0",
-    "graphql-subscriptions": "^1.1.0",
     "jest": "^23.6.0",
     "jest-config": "^23.6.0",
     "lint-staged": "^8.0.0",
