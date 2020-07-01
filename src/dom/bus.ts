@@ -15,6 +15,7 @@ import {
     DEVICE_CONNECT,
     DEVICE_DISCONNECT,
     PACKET_RECEIVE,
+    PACKET_RECEIVE_ANNOUNCE,
     PACKET_EVENT,
     PACKET_REPORT,
     PACKET_PROCESS,
@@ -280,25 +281,29 @@ export class JDBus extends JDNode {
      */
     processPacket(pkt: Packet) {
         this.emit(PACKET_PROCESS, pkt)
-        let isAnnounce = false
-        if (pkt.multicommand_class) {
-            //
-        } else if (pkt.is_command) {
+
+        if (!pkt.multicommand_class)
             pkt.dev = this.device(pkt.device_identifier)
+
+        let isAnnounce = false
+        if (!pkt.dev) {
+            // skip
+        } else if (pkt.is_command) {
             pkt.dev.processPacket(pkt);
         } else {
-            const dev = pkt.dev = this.device(pkt.device_identifier)
-            dev.lastSeen = pkt.timestamp
+            pkt.dev.lastSeen = pkt.timestamp
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
-                    dev.processAnnouncement(pkt)
+                    pkt.dev.processAnnouncement(pkt)
                 }
             }
             pkt.dev.processPacket(pkt)
         }
         // don't spam with duplicate advertisement events
-        if (!isAnnounce) {
+        if (isAnnounce) {
+            this.emit(PACKET_RECEIVE_ANNOUNCE, pkt)
+        } else {
             this.emit(PACKET_RECEIVE, pkt)
             if (pkt.is_report)
                 this.emit(PACKET_REPORT, pkt)
