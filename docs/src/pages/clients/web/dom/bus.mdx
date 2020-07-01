@@ -1,0 +1,74 @@
+import Widget from "../../../../jacdac/Widget"
+import ConnectButton from "../../../../jacdac/ConnectButton"
+
+# JDBus
+
+The **bus** is the top-level [DOM](/clients/web/dom) element.
+It processes the incoming and outcoming packets, 
+handles the connection to the underlying communiction transport
+and maintains a set of active [devices](/clients/web/device) nodes.
+
+## WebUSB bus
+
+The most common use is to create a bus that uses WebUSB to
+communicate to a physical JACDAC device. This is done with ``createUSBBus``.
+
+```javascript
+import { createUSBBus } from "jacdac"
+
+const bus = createUSBBus();
+```
+
+## Connection and disconnection
+
+By default, the WebUSB bus will try to reconnect 
+to any known connected physical device. The JACDAC physical device hasn't been paired yet,
+you can initiate the connection from a user interaction handler (security measure as the user must manually pick the device).
+
+```javascript
+await bus.connectAsync();
+```
+
+The bus will detect that the physical device is disconnected automatically. If you wish to disconnect manually, use
+
+```javascript
+await bus.disconnectAsync();
+```
+
+You can query the status of the connection using ``bus.connectionState``. The connection has 4 states:
+
+* connected: connected to a physical device over WebUSB and receiving packets
+* connection: connection in progress (for example, user is selecting the device)
+* disconnected: no active connection to a physical device
+* disconnecting: closing the connection to the physical device
+
+Using the ``CONNECTION_STATE`` event, you can track changes of the state.
+
+```javascript
+import { CONNECTION_STATE } from "jacdac"
+
+// am i in connected state?
+const connected = bus.connected
+bus.on(CONNECTION_STATE, state => console.log(state))
+```
+
+<Widget>
+<ConnectButton />
+</Widget>
+
+## Devices
+
+You can query the bus at any to receive a snapshot of the devices DOM.
+
+```javascript
+const devices = bus.devices()
+for(const device of devices)
+    console.log(device)
+```
+
+## Events
+
+All bus state mutation are advertised by events. You can listen or subscribe to those events.
+
+TODO
+

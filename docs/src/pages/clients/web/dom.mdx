@@ -1,6 +1,16 @@
 ## DOM
 
-The DOM module is a depenency-free JavaScript library that implements Device, Service, Register and Packet data-structures.
+The DOM module is a depenency-free JavaScript object module 
+that reflects the state of the JACDAC elements:
+
+> A JACDAC **[bus](/clients/web/dom/bus)** is made of connected devices.
+A **[device](/clients/web/dom/device)** hosts **services**.
+A **[service](/clients/web/dom/service)** has **registers**, accept **commands**
+and may return **acks**. A **[register](/clients/web/dom/register)** is an addressed data location
+on a service, that may be get, set or streamed.
+
+All element implement a event emitter and observable pattern to
+easily data-bind them in a variety of UI frameworks.
 
 ### Setup
 
