@@ -33,18 +33,35 @@ const defaultQuery = `{
 }
 `
 
+class MemStorage {
+    data: { [index: string]: string } = {};
+    getItem = (key: string) => this.data[key];
+    removeItem = (key: string) => {
+        delete this.data[key];
+    }
+    setItem = (key: string, value: string) => {
+        this.data[key] = value
+    }
+    get length(): number {
+        return Object.keys(this.data).length
+    }
+
+}
+
 const JacDaciQL = (props: { query?: string }) => {
     const fetcher = useFetcher();
     const [q, setq] = useState(props.query)
-    console.log(props)
-    return <div style={{ width: "100%", height: "18rem" }}>
+    const storage = new MemStorage()
+
+    return <div style={{ width: "100%", height: "36rem" }}>
         <GraphiQL
             fetcher={fetcher}
             query={q}
             defaultQuery={defaultQuery}
             defaultVariableEditorOpen={false}
             headerEditorEnabled={false}
-            shouldPersistHeaders={false}>
+            shouldPersistHeaders={false}
+            storage={storage}>
             <GraphiQL.Toolbar>
                 <GraphiQL.ToolbarButton label={"Reset"} title="Reset example" onClick={() => setq(props.query || defaultQuery)} />
             </GraphiQL.Toolbar>
