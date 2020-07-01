@@ -74,10 +74,6 @@ type Query {
     """
     device(deviceId: String): Device
 }
-type Subscription {
-    deviceChanged(deviceId: ID = "", serviceClass: Int = -1, serviceName: String = ""): Device!
-    reportReceived(deviceId: ID!, serviceNumber: Int = -1, serviceName: String = "", serviceClass: Int! = -1, address: Int!, updatesOnly: Boolean = false): Register!
-}
 schema {
     query: Query
     subscription: Subscription
