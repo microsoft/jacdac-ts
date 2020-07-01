@@ -1,7 +1,8 @@
 import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
-    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE
+    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -116,7 +117,7 @@ export class Device extends Node {
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL
-        pkt.sendCmdAsync(this)
+        return pkt.sendCmdAsync(this)
     }
 
     processAnnouncement(pkt: Packet) {
@@ -146,6 +147,12 @@ export class Device extends Node {
     }
 
     processPacket(pkt: Packet) {
+        this.emit(PACKET_RECEIVE, pkt)
+        if (pkt.is_report)
+            this.emit(PACKET_REPORT, pkt)
+        else if (pkt.service_command == CMD_EVENT)
+            this.emit(PACKET_EVENT, pkt)
+
         const service = this.service(pkt.service_number)
         if (service)
             service.processPacket(pkt);
