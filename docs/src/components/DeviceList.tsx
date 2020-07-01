@@ -1,7 +1,7 @@
 
-import React, { useState, useContext, useEffect, useMemo } from 'react';
-import { ListItem, ListItemText, GridList } from '@material-ui/core';
-import DeviceListItem from './DeviceListItem';
+import React, { useContext } from 'react';
+import { ListItem, ListItemText, Grid } from '@material-ui/core';
+import DeviceCard from './DeviceCard';
 import useChange from '../jacdac/useChange';
 import { BusState } from '../../../src/dom/bus';
 import JacdacContext from '../../../src/react/Context';
@@ -12,11 +12,14 @@ const DeviceList = () => {
 
     console.log(devices)
     return (
-        <GridList aria-label="devices">
+        <Grid
+  container
+  spacing={2}
+>
             {connectionState == BusState.Connected && !devices.length && <ListItem><ListItemText primary="No device detected..." /></ListItem>}
-            {devices.map(device => <DeviceListItem device={device} />)}
+            {devices.map(device => <Grid item xs={4}><DeviceCard device={device} /></Grid>)}
             {connectionState == BusState.Disconnected && <ListItem><ListItemText primary="Connect to see devices" /></ListItem>}
-        </GridList>
+        </Grid>
     )
 
 }
