@@ -17,7 +17,7 @@ easily data-bind them in a variety of UI frameworks.
 Install the ``jacdac-ts`` npm package (see full [setup instructions](/clients/web/setup)).
 
 ```
-npm install --save-dev jacdac-ts
+npm install --save jacdac-ts
 ```
 
 ## JacaScript/TypeScript ES6
@@ -33,5 +33,10 @@ bus.on(CHANGE, () => bus.devices()
     .map(device => device.toString())
     .join(", "))
 ```
+
+## Vanilla JavaScript
+
+If you wish to use the library from a CDN or directly from a test web page, you can use the precompiled
+``jacdac.umd.ts`` file. All exported symbols are imported into the ``jacdac`` name.
 
 See [tools](/tools) for example of vanilla HTML/JavaScript pages using the library.
