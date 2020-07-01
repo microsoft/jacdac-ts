@@ -1,17 +1,15 @@
 
 import React, { useState, useContext, useEffect, useMemo } from 'react';
-import { List, ListItem, ListItemText, GridList } from '@material-ui/core';
+import { ListItem, ListItemText, GridList } from '@material-ui/core';
 import DeviceListItem from './DeviceListItem';
-import { Device } from "../../../src/dom/device";
-import { useQuery } from '../jacdac/useQuery';
-import JacdacContext from "../../../src/react/Context";
-import { BusState } from '../../../src/dom/bus';
-import { DEVICE_CHANGE } from '../../../src/dom/constants';
 import useChange from '../jacdac/useChange';
+import { BusState } from '../../../src/dom/bus';
+import JacdacContext from '../../../src/react/Context';
 
 const DeviceList = () => {
     const { bus, connectionState } = useContext(JacdacContext)
-    const devices = useChange(bus, e => e.devices());
+    const devices = useChange(bus, n => n.devices())
+
     console.log(devices)
     return (
         <GridList aria-label="devices">

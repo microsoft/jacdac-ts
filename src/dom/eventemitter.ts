@@ -45,6 +45,7 @@ export class EventEmitter {
             handler,
             once: !!once
         })
+        //console.log(`${eventName}->${listeners.length}`)
         return this;
     }
 
@@ -55,9 +56,8 @@ export class EventEmitter {
         if (listeners) {
             for (let i = 0; i < listeners.length; ++i) {
                 const listener = listeners[i];
-                const handler = listener.handler
-                if (handler === handler) {
-                    listeners.splice(i, -1);
+                if (handler ===  listener.handler) {
+                    listeners.splice(i, 1);
                     --i;
                     if (listeners.length == 0)
                         delete this.listeners[eventName];
@@ -83,7 +83,7 @@ export class EventEmitter {
             const listener = listeners[i];
             const handler = listener.handler;
             if (listener.once) {
-                listeners.splice(i, -1);
+                listeners.splice(i, 1);
                 --i;
             }
             try {
@@ -137,11 +137,13 @@ class EventObservable<T> implements Observable<T> {
     }
 
     subscribe(observer: Observer<T>) {
+        //console.log(`on ${this.eventName}`)
         this.eventEmitter.on(this.eventName, observer.next)
         this.eventEmitter.on(ERROR, observer.error)
         // never completes
         return {
             unsubscribe: () => {
+                //console.log(`off ${this.eventName}`)
                 this.eventEmitter.off(this.eventName, observer.next);
                 this.eventEmitter.off(ERROR, observer.error)
             }

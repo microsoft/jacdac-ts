@@ -89,7 +89,7 @@ export class Bus extends Node {
     }
 
     get id() {
-        return "bus";
+        return `bus`;
     }
 
     node(id: string) {
