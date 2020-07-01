@@ -219,7 +219,6 @@ export class Bus extends Node {
         let sc = serviceClass(options?.serviceName);
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
-
         let r = this._devices.slice();
         if (sc > -1) r = r.filter(s => s.hasService(sc))
         return r;
@@ -292,7 +291,6 @@ export class Bus extends Node {
                 }
             } else
                 pkt.dev.processPacket(pkt)
-            this.emit(CHANGE)
         }
         // don't spam with duplicate advertisement events
         if (!isAnnounce) {

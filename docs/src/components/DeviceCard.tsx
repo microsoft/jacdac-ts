@@ -30,7 +30,6 @@ const useStyles = makeStyles({
 
 const DeviceCard = (props: { device: Device, children?: any }) => {
     const { device, children } = props;
-    useChange(device);
     const classes = useStyles();
     const services = device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER);
