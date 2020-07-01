@@ -7,28 +7,16 @@ import { useQuery } from '../jacdac/useQuery';
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from '../../../src/dom/bus';
 import { DEVICE_CHANGE } from '../../../src/dom/constants';
-import { useEventSubscription } from '../jacdac/useEventSubscription';
+import useChange from '../jacdac/useChange';
 
 const DeviceList = () => {
     const { bus, connectionState } = useContext(JacdacContext)
-    const value = useEventSubscription(bus, DEVICE_CHANGE)
-    const { loading, error, data } = useQuery<{ devices: Device[] }>(`{
-        devices {
-            id
-            deviceId
-            shortId
-            services {
-                name
-            }
-        }
-    }`, { deps: [value] })
-
+    useChange(bus)
+    const devices = bus.devices();
     return (
         <List component="nav" aria-label="devices">
-            {loading && <ListItem><ListItemText primary="loading..." /></ListItem>}
-            {error && <ListItem><ListItemText primary="error!" /></ListItem>}
-            {data && !data.devices.length && <ListItem><ListItemText primary="No device detected..." /></ListItem>}
-            {data && data.devices.map(device => <DeviceListItem device={device} />)}
+            {connectionState == BusState.Connected && !devices.length && <ListItem><ListItemText primary="No device detected..." /></ListItem>}
+            {devices.map(device => <DeviceListItem device={device} />)}
             {connectionState == BusState.Disconnected && <ListItem><ListItemText primary="Connect to see devices" /></ListItem>}
         </List>
     )

@@ -1,5 +1,5 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE } from "./constants";
 import { Service } from "./service";
 import { intOfBuffer } from "./buffer";
 import { Node } from "./node";
@@ -44,7 +44,9 @@ export class Register extends Node {
         this._data = pkt.data;
         this.lastData = pkt.timestamp;
         this.emit(REPORT_RECEIVE, this)
-        if (updated)
+        if (updated) {
             this.emit(REPORT_UPDATE, this)
+            this.emit(CHANGE)
+        }
     }
 }
