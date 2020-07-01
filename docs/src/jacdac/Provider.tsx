@@ -13,7 +13,7 @@ const JacdacProvider = ({ children }) => {
     useEffect(() => {
         if (!firstConnect && bus.connectionState == BusState.Disconnected) {
             setFirstConnect(true)
-            bus.connectAsync();
+            bus.connectAsync(true);
         }
         return () => { }
     }, [bus])
@@ -21,7 +21,7 @@ const JacdacProvider = ({ children }) => {
     // subscribe to connection state changes
     useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)),[bus])
 
-    const connectAsync = () => bus.connectAsync(true);
+    const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
         <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
