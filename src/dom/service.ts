@@ -27,6 +27,10 @@ export class Service extends Node {
         return serviceName(this.serviceClass)
     }
 
+    toString() {
+        return `${this.name} ${this.id}`;
+    }
+
     registerAt(address: number) {
         address = address | 0;
         if (!this._registers)
