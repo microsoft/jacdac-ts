@@ -2,7 +2,7 @@ import * as U from "./utils"
 import * as jd from "./constants"
 import { Packet } from "./packet"
 import { Device } from "./device"
-import { intOfBuffer } from "./buffer"
+import { intOfBuffer, bufferToArray, NumberFormat } from "./buffer"
 import { unpack } from "./struct"
 
 const service_classes: U.SMap<number> = {
@@ -43,6 +43,7 @@ const service_classes: U.SMap<number> = {
     MOTOR: jd.SRV_MOTOR,
     TCP: jd.SRV_TCP,
     WIFI: jd.SRV_WIFI,
+    MULTITOUCH: jd.SRV_MULTITOUCH,
 }
 
 const generic_commands: U.SMap<number> = {
@@ -94,6 +95,113 @@ function decodeBootloader(pkt: Packet) {
     }
 }
 
+export enum RegisterType {
+    UInt, // default
+    UIntHex,
+    Int,
+    IntArray,
+    String,
+}
+
+export interface RegisterInfo {
+    addr: number;
+    name: string;
+    type?: RegisterType;
+    unit?: string;
+    div?: number;
+}
+
+export function lookupRegisterInfo(regs: RegisterInfo[], pkt: Packet) {
+    if (pkt.service_command & (jd.CMD_GET_REG | jd.CMD_SET_REG)) {
+        const addr = pkt.service_command & jd.CMD_REG_MASK
+        return regs.find(r => r.addr == addr) || undefined
+    } else {
+        return null
+    }
+}
+
+const common_regs: RegisterInfo[] = [
+    { addr: 0x01, name: "intensity" },
+    { addr: 0x02, name: "value" },
+    { addr: 0x03, name: "is_streaming" },
+    { addr: 0x04, name: "streaming_interval", unit: "us" },
+    { addr: 0x05, name: "low_threshold" },
+    { addr: 0x05, name: "high_threshold" },
+    { addr: 0x01, name: "max_power", unit: "mA" },
+]
+
+export function decodeRegister(regs: RegisterInfo[], pkt: Packet) {
+    const regInfo = lookupRegisterInfo(regs, pkt) || lookupRegisterInfo(common_regs, pkt)
+    if (!regInfo) return null
+    let value = undefined
+    const isGet = !!(pkt.service_command & jd.CMD_GET_REG)
+    let useHex = false
+    if (pkt.data.length) {
+        let tp = regInfo.type
+        if (tp == null)
+            tp = pkt.data.length > 4 ? RegisterType.IntArray : RegisterType.UInt
+        switch (tp) {
+            case RegisterType.UInt:
+                value = pkt.uintData
+                break
+            case RegisterType.UIntHex:
+                value = pkt.uintData
+                useHex = true
+                break
+            case RegisterType.Int:
+                value = pkt.intData
+                break
+            case RegisterType.String:
+                value = U.bufferToString(pkt.data)
+                break
+            case RegisterType.IntArray:
+                value = bufferToArray(pkt.data, NumberFormat.Int32LE)
+                break
+        }
+    }
+    const scaledValue =
+        Array.isArray(value) ? value.map(v => v / (regInfo.div || 1)) :
+            typeof value == "number" ? value / (regInfo.div || 1) : undefined
+    let humanValue = ""
+    if (useHex)
+        humanValue = "0x" + scaledValue.toString(16)
+    else if (Array.isArray(scaledValue))
+        humanValue = scaledValue.join(", ")
+    else if (scaledValue !== undefined)
+        humanValue = scaledValue + ""
+    else if (value !== undefined)
+        humanValue = value + ""
+    if (humanValue && regInfo.unit) humanValue += regInfo.unit
+    let description = isGet ? "GET " : "SET "
+    description += regInfo.name
+    if (humanValue)
+        description += ": " + humanValue
+
+    return {
+        regInfo,
+        value,
+        scaledValue,
+        humanValue,
+        description,
+    }
+}
+
+const ctrl_regs: RegisterInfo[] = [
+    { addr: 0x180, name: "device_description", type: RegisterType.String },
+    { addr: 0x181, name: "device_class", type: RegisterType.UIntHex },
+    { addr: 0x182, name: "temperture", type: RegisterType.Int, unit: "°C" },
+    { addr: 0x184, name: "device_class_bl", type: RegisterType.UIntHex },
+    { addr: 0x185, name: "firmware_version", type: RegisterType.String },
+    { addr: 0x186, name: "uptime", unit: "ms", div: 1000, type: RegisterType.UInt },
+]
+
+function decodeCtrlData(pkt: Packet) {
+    const reg = decodeRegister(ctrl_regs, pkt)
+    if (reg)
+        return reg.description
+    return null
+}
+
 const serv_decoders: U.SMap<(p: Packet) => string> = {
     LOGGER: (pkt: Packet) => {
         const pri = priority()
@@ -117,6 +225,7 @@ const serv_decoders: U.SMap<(p: Packet) => string> = {
     ROTARY_ENCODER: decodeIntSensorData,
     BATTERY: decodeIntSensorData,
     BOOTLOADER: decodeBootloader,
+    CTRL: decodeCtrlData,
 }
 
 export function decodePacketData(pkt: Packet): string {

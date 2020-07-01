@@ -126,6 +126,8 @@ export class Packet {
             return undefined
         if (buf.length < 4)
             buf = bufferConcat(buf, new Uint8Array(4))
+        if (buf.length == 8)
+            return read32(buf,0) + read32(buf,4) * 0x100000000
         return read32(buf, 0)
     }
 
