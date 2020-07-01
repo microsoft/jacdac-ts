@@ -21,7 +21,8 @@ import {
     PACKET_PROCESS,
     CONNECTION_STATE,
     DISCONNECTING,
-    DEVICE_CHANGE
+    DEVICE_CHANGE,
+    CHANGE
 } from "./constants";
 import { serviceClass } from "./pretty";
 
@@ -83,11 +84,12 @@ export class Bus extends Node {
                 case BusState.Disconnecting: this.emit(DISCONNECTING); break;
                 case BusState.Disconnected: this.emit(DISCONNECT); break;
             }
+            this.emit(CHANGE)
         }
     }
 
     get id() {
-        return "bus";
+        return `bus`;
     }
 
     node(id: string) {
@@ -107,6 +109,7 @@ export class Bus extends Node {
 
     private resetTime() {
         this._startTime = Date.now();
+        this.emit(CHANGE)
     }
 
     get timestamp() {
@@ -120,6 +123,7 @@ export class Bus extends Node {
     set minConsolePriority(priority: ConsolePriority) {
         if (priority !== this._minConsolePriority) {
             this._minConsolePriority = priority;
+            this.emit(CHANGE)
         }
     }
 
@@ -149,6 +153,7 @@ export class Bus extends Node {
 
     errorHandler(context: string, exception: any) {
         this.emit(ERROR, { context, exception })
+        this.emit(CHANGE)
     }
 
     connectAsync(userRequest?: boolean): Promise<void> {
@@ -214,7 +219,6 @@ export class Bus extends Node {
         let sc = serviceClass(options?.serviceName);
         if (sc === undefined) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
-
         let r = this._devices.slice();
         if (sc > -1) r = r.filter(s => s.hasService(sc))
         return r;
@@ -231,6 +235,7 @@ export class Bus extends Node {
             this._devices.push(d);
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
+            this.emit(CHANGE)
 
             if (!this._gcInterval)
                 this._gcInterval = setInterval(() => this.gcDevices(), 2000);
@@ -261,6 +266,7 @@ export class Bus extends Node {
         dev.disconnect();
         this.emit(DEVICE_DISCONNECT, dev);
         this.emit(DEVICE_CHANGE, dev)
+        this.emit(CHANGE)
     }
 
     /**
@@ -278,14 +284,13 @@ export class Bus extends Node {
         } else {
             const dev = pkt.dev = this.device(pkt.device_identifier)
             dev.lastSeen = pkt.timestamp
-
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     dev.processAnnouncement(pkt)
                 }
             } else
-                pkt.dev.processPacket(pkt);
+                pkt.dev.processPacket(pkt)
         }
         // don't spam with duplicate advertisement events
         if (!isAnnounce) {
