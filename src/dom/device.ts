@@ -157,14 +157,11 @@ export class Device extends Node {
     }
 }
 
-
-// 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
-// 3 letter ID; 1.1%/2.6%/0.05%
-// 2 letter ID; 25%/6.4%/1.5%
+// 2 letter + 2 digit ID; 1.8%/0.3%/0.07%/0.015% collision probability among 50/20/10/5 devices
 export function shortDeviceId(devid: string) {
     const h = hash(fromHex(devid), 30)
     return String.fromCharCode(0x41 + h % 26) +
         String.fromCharCode(0x41 + idiv(h, 26) % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26 * 26) % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26)
+        String.fromCharCode(0x30 + idiv(h, 26 * 26) % 10) +
+        String.fromCharCode(0x30 + idiv(h, 26 * 26 * 10) % 10)
 }
