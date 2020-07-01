@@ -29,7 +29,9 @@ import { createUSBBus } from "jacdac"
 
 const bus = createUSBBus();
 await bus.connectAsync();
-bus.on(CHANGE, () => bus.devices().map(device => device.toString()).join(", "))
+bus.on(CHANGE, () => bus.devices()
+    .map(device => device.toString())
+    .join(", "))
 ```
 
 See [tools](/tools) for example of vanilla HTML/JavaScript pages using the library.
