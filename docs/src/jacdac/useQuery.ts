@@ -1,7 +1,6 @@
 import { useContext, useState, useEffect, useCallback, DependencyList } from "react";
 import JacdacContext from "../../../src/react/Context";
 import { queryAsync } from "../../../src/graphql/graphql"
-import { EventEmitter } from "../../../src/dom/eventemitter";
 
 export type OperationVariables = { [name: string]: any; };
 

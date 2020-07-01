@@ -8,21 +8,19 @@ import { CircularProgress } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
 
 function ConnectButton() {
-    const { bus } = useContext(JacdacContext)
+    const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
     const [count, setCount] = useState(0)
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)), [bus])
-    return <JacdacContext.Consumer>
-        {({ connectionState, connectAsync, disconnectAsync }) => <Button
-            variant="contained"
-            color="primary"
-            startIcon={<UsbIcon />}
-            disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
-            onClick={connectionState == BusState.Connected ? disconnectAsync : connectAsync}>
-            {(connectionState == BusState.Connected || connectionState == BusState.Disconnecting) ? "disconnect" : "connect"}
-            {count > 0 && ` (${count})`}
-            {(connectionState == BusState.Connecting || connectionState == BusState.Disconnecting) && <CircularProgress />}
-        </Button>}
-    </JacdacContext.Consumer>
+    return <Button
+        variant="contained"
+        color="primary"
+        startIcon={<UsbIcon />}
+        disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
+        onClick={connectionState == BusState.Connected ? disconnectAsync : connectAsync}>
+        {(connectionState == BusState.Connected || connectionState == BusState.Disconnecting) ? "disconnect" : "connect"}
+        {count > 0 && ` (${count})`}
+        {(connectionState == BusState.Connecting || connectionState == BusState.Disconnecting) && <CircularProgress />}
+    </Button>
 }
 
 export default ConnectButton;
