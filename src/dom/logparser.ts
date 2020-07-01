@@ -1,5 +1,5 @@
 import { fromHex } from "./utils"
-import { Bus } from "./bus"
+import { JDBus } from "./bus"
 import { Packet } from "./packet"
 
 export interface ParsedFrame {
@@ -87,7 +87,7 @@ Time [s],Value,Parity Error,Framing Error
     return res
 }
 
-export function replayLog(bus: Bus, text: string): void {
+export function replayLog(bus: JDBus, text: string): void {
     const frames = parseLog(text);
     frames.forEach((frame) => {
         if (frame.info)

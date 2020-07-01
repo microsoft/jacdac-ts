@@ -1,18 +1,18 @@
-import { Service } from "./service";
+import { JDService } from "./service";
 import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, REPORT_RECEIVE } from "./constants";
 import { bufferOfInt } from "./struct";
 import { DebouncedPoll, debouncedPollAsync } from "./utils";
 
-export function setStreamingAsync(service: Service, on: boolean) {
+export function setStreamingAsync(service: JDService, on: boolean) {
     const register = service.registerAt(REG_IS_STREAMING);
     return register.sendSetAsync(bufferOfInt(on ? 1 : 0))
 }
 
-export function calibrateAsync(service: Service) {
+export function calibrateAsync(service: JDService) {
     return service.sendCmdAsync(CMD_CALIBRATE);
 }
 
-export function setThresholdAsync(service: Service, low: boolean, value: number) {
+export function setThresholdAsync(service: JDService, low: boolean, value: number) {
     const register = service.registerAt(low ? REG_LOW_THRESHOLD : REG_LOW_THRESHOLD)
     return register.sendSetAsync(bufferOfInt(value))
 }
@@ -21,7 +21,7 @@ export function setThresholdAsync(service: Service, low: boolean, value: number)
  * Starts a debounced task to check that a device is streaming. Return unsubscribe function.
  * @param service 
  */
-export function ensureStreamingSubscription(service: Service): () => void {
+export function ensureStreamingSubscription(service: JDService): () => void {
     const register = service.registerAt(REG_IS_STREAMING)
     const startStreaming = async () => {
         console.log("start streaming")

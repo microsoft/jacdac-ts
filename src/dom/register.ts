@@ -1,17 +1,17 @@
 import { Packet } from "./packet";
 import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE } from "./constants";
-import { Service } from "./service";
+import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
-import { Node } from "./node";
+import { JDNode } from "./node";
 import { bufferEq, toHex } from "./utils";
 import { bufferOfInt } from "./struct";
 
-export class Register extends Node {
+export class JDRegister extends JDNode {
     private _data: Uint8Array;
     public lastData: number;
 
     constructor(
-        public readonly service: Service,
+        public readonly service: JDService,
         public readonly address: number) {
         super()
     }

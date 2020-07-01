@@ -6,20 +6,20 @@ import {
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
-import { Bus } from "./bus";
-import { Service } from "./service";
+import { JDBus } from "./bus";
+import { JDService } from "./service";
 import { serviceClass } from "./pretty";
-import { Node } from "./node";
+import { JDNode } from "./node";
 
-export class Device extends Node {
+export class JDDevice extends JDNode {
     connected: boolean;
     private servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
     private _shortId: string
-    private _services: Service[]
+    private _services: JDService[]
 
-    constructor(public readonly bus: Bus, public readonly deviceId: string) {
+    constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
         this.connected = true;
     }
@@ -83,7 +83,7 @@ export class Device extends Node {
             const n = this.serviceLength;
             let s = [];
             for (let i = 0; i < n; ++i)
-                s.push(new Service(this, i));
+                s.push(new JDService(this, i));
             this._services = s;
         }
     }
@@ -96,7 +96,7 @@ export class Device extends Node {
     }
 
 
-    services(options?: { serviceNumber?: number, serviceName?: string, serviceClass?: number }): Service[] {
+    services(options?: { serviceNumber?: number, serviceName?: string, serviceClass?: number }): JDService[] {
         if (!this.announced) return [];
 
         if (options?.serviceNumber >= 0)

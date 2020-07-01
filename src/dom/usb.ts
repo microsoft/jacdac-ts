@@ -1,5 +1,5 @@
 import { Transport, Proto } from "./hf2";
-import { Bus } from "./bus";
+import { JDBus } from "./bus";
 import { Packet } from "./packet";
 import { assert } from "./utils";
 
@@ -14,7 +14,7 @@ export function isWebUSBSupported(): boolean {
         && !!navigator.usb.requestDevice;
 }
 
-export function createUSBBus(options?: USBOptions): Bus {
+export function createUSBBus(options?: USBOptions): JDBus {
     if (!options) {
         if (isWebUSBSupported())
             options = {
@@ -30,7 +30,7 @@ export function createUSBBus(options?: USBOptions): Bus {
         }
     }
     let hf2: Proto;
-    const bus = new Bus({
+    const bus = new JDBus({
         connectAsync: (background) => {
             if (hf2) return Promise.resolve();
             const transport = new Transport(options);

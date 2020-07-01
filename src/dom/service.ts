@@ -1,15 +1,15 @@
-import { Device } from "./device";
+import { JDDevice } from "./device";
 import { Packet } from "./packet";
 import { serviceName } from "./pretty";
-import { Register } from "./register";
+import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, REG_IS_STREAMING } from "./constants";
-import { Node } from "./node";
+import { JDNode } from "./node";
 
-export class Service extends Node {
-    private _registers: Register[];
+export class JDService extends JDNode {
+    private _registers: JDRegister[];
 
     constructor(
-        public readonly device: Device,
+        public readonly device: JDDevice,
         public readonly service_number: number
     ) {
         super()
@@ -37,11 +37,11 @@ export class Service extends Node {
             this._registers = [];
         let register = this._registers[address];
         if (!register)
-            register = this._registers[address] = new Register(this, address);
+            register = this._registers[address] = new JDRegister(this, address);
         return register;
     }
 
-    register(options: { address: number }): Register {
+    register(options: { address: number }): JDRegister {
         const address = options.address;
         return this.registerAt(address);
     }
