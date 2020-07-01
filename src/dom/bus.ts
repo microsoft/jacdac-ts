@@ -1,6 +1,5 @@
 import { Packet } from "./packet";
-import { Device } from "./device";
-import { Node } from "./node";
+import { JDDevice } from "./device";
 import { SMap } from "./utils";
 import {
     ConsolePriority,
@@ -26,6 +25,7 @@ import {
     CHANGE
 } from "./constants";
 import { serviceClass } from "./pretty";
+import { JDNode } from "./node";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -48,12 +48,12 @@ export enum BusState {
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
-export class Bus extends Node {
+export class JDBus extends JDNode {
     private _connectionState = BusState.Disconnected;
     private _connectPromise: Promise<void>;
     private _disconnectPromise: Promise<void>;
 
-    private _devices: Device[] = [];
+    private _devices: JDDevice[] = [];
     private _deviceNames: SMap<string> = {};
     private _startTime: number;
     private _gcInterval: any;
@@ -237,7 +237,7 @@ export class Bus extends Node {
     device(id: string) {
         let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
-            d = new Device(this, id)
+            d = new JDDevice(this, id)
             this._devices.push(d);
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
@@ -268,7 +268,7 @@ export class Bus extends Node {
         }
     }
 
-    private disconnectDevice(dev: Device) {
+    private disconnectDevice(dev: JDDevice) {
         dev.disconnect();
         this.emit(DEVICE_DISCONNECT, dev);
         this.emit(DEVICE_CHANGE, dev)

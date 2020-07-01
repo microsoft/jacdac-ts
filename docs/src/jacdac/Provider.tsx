@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import JacdacContext from "../../../src/react/Context";
-import { Bus, BusState } from "../../../src/dom/bus";
+import { JDBus, BusState } from "../../../src/dom/bus";
 import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 
 const JacdacProvider = ({ children }) => {
-    const bus = useMemo<Bus>(createUSBBus, [createUSBBus]);
+    const bus = useMemo<JDBus>(createUSBBus, [createUSBBus]);
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
 

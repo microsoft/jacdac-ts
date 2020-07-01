@@ -1,12 +1,12 @@
 import * as U from "./utils"
-import { Bus } from "./bus"
+import { JDBus } from "./bus"
 import { Packet } from "./packet"
-import { Device } from "./device"
+import { JDDevice } from "./device"
 import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE } from "./constants"
 
 const REG_CTRL_DEVICE_CLASS = 0x181
 
-export async function packetSpeedTest(dev: Device) {
+export async function packetSpeedTest(dev: JDDevice) {
     const pingCmd = CMD_GET_REG | REG_CTRL_DEVICE_CLASS
 
     dev.on(PACKET_REPORT, onPacket)

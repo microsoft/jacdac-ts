@@ -1,11 +1,11 @@
 import { graphql, buildSchema, parse, ExecutionResult, GraphQLSchema, subscribe as graphQLSubscribe, validate } from "graphql"
-import { Bus } from "../dom/bus";
+import { JDBus } from "../dom/bus";
 
 let _schema: GraphQLSchema = undefined;
 export function getSchema() {
     // lazy allocated schema
     if (!_schema) {
-        // keep in sync with schema.graphql
+        // keep in sync with /clients/web/graphql        
         _schema = buildSchema(`
 """
 A identifiable node in the JacDac DOM
@@ -107,7 +107,7 @@ export interface QueryOptions {
     operationName?: string;
 }
 
-export function queryAsync(bus: Bus, source: string, options?: QueryOptions): Promise<ExecutionResult> {
+export function queryAsync(bus: JDBus, source: string, options?: QueryOptions): Promise<ExecutionResult> {
     options = options || {};
     return graphql(
         getSchema(),
@@ -122,7 +122,7 @@ export function queryAsync(bus: Bus, source: string, options?: QueryOptions): Pr
 export class Query {
     constructor(public readonly source: string) { }
 
-    queryAsync(bus: Bus) {
+    queryAsync(bus: JDBus) {
         return queryAsync(bus, this.source);
     }
 }

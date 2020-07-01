@@ -1,48 +1,42 @@
-## DOM
+# DOM
 
-The DOM module is a depenency-free JavaScript library that implements Device, Service, Register and Packet data-structures.
+The DOM module is a depenency-free JavaScript object module 
+that reflects the state of the JACDAC elements:
 
-### Setup
+> A JACDAC **[bus](/clients/web/dom/bus)** is made of connected devices.
+A **[device](/clients/web/dom/device)** hosts **services**.
+A **[service](/clients/web/dom/service)** has **registers**, accept **commands**
+and may return **acks**. A **[register](/clients/web/dom/register)** is an addressed data location
+on a service, that may be get, set or streamed. All these elements are [nodes](/clients/web/dom/node) in the [DOM](/clients/web/dom).
+
+All element implement a event emitter and observable pattern to
+easily data-bind them in a variety of UI frameworks.
+
+## Setup
 
 Install the ``jacdac-ts`` npm package (see full [setup instructions](/clients/web/setup)).
 
 ```
-npm install --save-dev jacdac-ts
+npm install --save jacdac-ts
 ```
 
-### Connect to the bus
+## JacaScript/TypeScript ES6
 
-You will need to connect to the JACDAC bus via WebUSB. 
-This needs to be done from a user action, like a click,
-for security reasons.
+If you are using JavaScript/TypeScript ES6, import all APIs 
 
 ```javascript
-import { createUSBBus } from "jacdac"
+import { createUSBBus, CHANGE } from "jacdac"
 
-const jd = createUSBBus();
-await jd.connectAsync();
+const bus = createUSBBus();
+await bus.connectAsync();
+bus.on(CHANGE, () => bus.devices()
+    .map(device => device.toString())
+    .join(", "))
 ```
 
-### Devices
+## Vanilla JavaScript
 
-Once you have the bus connected, you can register to events when device get connected or disconnected.
-
-```javascript
-import { DEVICE_CONNECT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "jacdac"
-
-jd.on(DEVICE_CONNECT, dev => console.log(`connect ${dev}`)
-jd.on(DEVICE_ANNOUNCE, dev => console.log(`disconnect ${dev}`)
-jd.on(DEVICE_DISCONNECT, dev => console.log(`announce ${dev}`)
-jd.on(DEVICE_CHANGE, dev => console.log(`change ${dev}`)
-```
-
-Remember that when a device is first connected, it's list of services might not yet be populated. 
-This happens later on the ``deviceannounce`` event.
-
-You can get a snapshot of the list of devices from the bus.
-
-```javascript
-const devices = jd.devices()
-```
+If you wish to use the library from a CDN or directly from a test web page, you can use the precompiled
+``jacdac.umd.ts`` file. All exported symbols are imported into the ``jacdac`` name.
 
 See [tools](/tools) for example of vanilla HTML/JavaScript pages using the library.

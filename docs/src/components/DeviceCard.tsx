@@ -4,7 +4,7 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
-import { Device } from '../../../src/dom/device';
+import { JDDevice } from '../../../src/dom/device';
 import { SRV_CTRL, SRV_LOGGER, ANNOUNCE } from '../../../src/dom/constants';
 import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';

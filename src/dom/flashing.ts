@@ -1,8 +1,8 @@
 import * as U from "./utils"
 import { bufferToArray, NumberFormat, getNumber } from "./buffer"
-import { Bus } from "./bus"
+import { JDBus } from "./bus"
 import { Packet } from "./packet"
-import { Device } from "./device"
+import { JDDevice } from "./device"
 import { CMD_CTRL_RESET, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
 import { unpack, pack } from "./struct"
 import { assert } from "./utils"
@@ -45,10 +45,10 @@ class FlashClient {
     private lastStatus: Packet
     private pending: boolean
     public dev_class: number
-    public device: Device
+    public device: JDDevice
     private didReset = false
 
-    constructor(private bus: Bus, adpkt: Packet) {
+    constructor(private bus: JDBus, adpkt: Packet) {
         const d = bufferToArray(adpkt.data, NumberFormat.UInt32LE)
         this.pageSize = d[1]
         this.flashSize = d[2]
@@ -223,7 +223,7 @@ class FlashClient {
     }
 
 
-    public static async forDeviceClass(bus: Bus, dev_class: number) {
+    public static async forDeviceClass(bus: JDBus, dev_class: number) {
         if (!flashers)
             await makeBootloaderList(bus)
         const all = flashers.filter(f => f.dev_class == dev_class)
@@ -233,7 +233,7 @@ class FlashClient {
     }
 }
 
-async function makeBootloaderList(bus: Bus) {
+async function makeBootloaderList(bus: JDBus) {
     log("resetting all devices")
 
     const rst = Packet.onlyHeader(CMD_CTRL_RESET)
@@ -337,7 +337,7 @@ export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
     return blobs
 }
 
-export async function flashFirmwareBlobs(bus: Bus, blobs: FirmwareBlob[]) {
+export async function flashFirmwareBlobs(bus: JDBus, blobs: FirmwareBlob[]) {
     try {
         _startTime = Date.now()
         let numok = 0

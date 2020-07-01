@@ -9,16 +9,16 @@ import {
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
 } from "./constants";
-import { Device } from "./device";
+import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
-import { Bus } from "./bus";
+import { JDBus } from "./bus";
 
 export class Packet {
     _header: Uint8Array;
     _data: Uint8Array;
     timestamp: number
-    dev: Device
+    dev: JDDevice
 
     private constructor() { }
 
@@ -191,20 +191,20 @@ export class Packet {
         return msg
     }
 
-    sendCoreAsync(bus: Bus) {
+    sendCoreAsync(bus: JDBus) {
         this._header[2] = this.size + 4
         write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)))
         return bus.sendPacketAsync(this)
     }
 
-    sendReportAsync(dev: Device) {
+    sendReportAsync(dev: JDDevice) {
         if (!dev)
             return Promise.resolve()
         this.device_identifier = dev.deviceId
         return this.sendCoreAsync(dev.bus)
     }
 
-    sendCmdAsync(dev: Device) {
+    sendCmdAsync(dev: JDDevice) {
         if (!dev)
             return Promise.resolve()
         this.device_identifier = dev.deviceId
@@ -212,7 +212,7 @@ export class Packet {
         return this.sendCoreAsync(dev.bus)
     }
 
-    sendAsMultiCommandAsync(bus: Bus, service_class: number) {
+    sendAsMultiCommandAsync(bus: JDBus, service_class: number) {
         this._header[3] |= JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS | JD_FRAME_FLAG_COMMAND
         write32(this._header, 4, service_class)
         write32(this._header, 8, 0)

@@ -1,6 +1,6 @@
 import { Button } from "gatsby-theme-material-ui";
 import React from 'react';
-import { Service } from "../../../src/dom/service";
+import { JDService } from "../../../src/dom/service";
 import useChange from "../jacdac/useChange";
 
 const ServiceButton = (props: { service: Service, onClick?: () => void}) => {

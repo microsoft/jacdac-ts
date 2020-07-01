@@ -1,7 +1,7 @@
 import * as U from "./utils"
 import * as jd from "./constants"
 import { Packet } from "./packet"
-import { Device } from "./device"
+import { JDDevice } from "./device"
 import { intOfBuffer, bufferToArray, NumberFormat } from "./buffer"
 import { unpack } from "./struct"
 
@@ -283,7 +283,7 @@ export interface Options {
     skipRepeatedAnnounce?: boolean;
 }
 
-export function printServices(device: Device) {
+export function printServices(device: JDDevice) {
     let srv = ""
     const n = device.serviceLength;
     for (let i = 0; i < n; ++i) {
