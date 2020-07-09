@@ -69,6 +69,8 @@
         function log(msg) {
             const logDiv = document.getElementById("log");
             const line = document.createElement("div");
+            if (/LOGGER:.: warn /.test(msg))
+                line.style = "background-color: yellow";
             line.innerText = "" + msg;
             logDiv.insertBefore(line, logDiv.firstElementChild);
             if (logDiv.childElementCount > 100)
