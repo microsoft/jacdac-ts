@@ -46,8 +46,7 @@
             console.log(jacdac.printPacket(pkt));
         })
         jd.on(jacdac.PACKET_RECEIVE, pkt => {
-            const decoded = jacdac.decodePacketData(pkt);
-            if (decoded)
+            if (pkt.service_command == (jacdac.CMD_GET_REG | jacdac.REG_READING))
                 graph(pkt)
         })
         jd.on(jacdac.ERROR, (evt) => {
@@ -86,6 +85,7 @@
                     element: div,
                     renderer: 'line',
                     width: 1080,
+                    min: "auto",
                     interpolation: "step-after",
                     series: [
                     ]
@@ -99,7 +99,7 @@
                 });
                 xAxis.render();
                 const yAxis = new Rickshaw.Graph.Axis.Y({
-                    graph: div.graph
+                    graph: div.graph,
                 });
                 yAxis.render();
 
@@ -129,7 +129,9 @@
             const v = jacdac.intOfBuffer(pkt.data);
             const data = serie.data;
             data.push({ x: pkt.timestamp / 1000.0, y: v })
-            if (data.length > 40) data.shift()
+            const limit = pkt.timestamp / 1000 - 10
+            while (data[0].x < limit)
+                data.shift();
 
             div.graph.render();
         }
