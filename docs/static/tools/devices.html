@@ -9,6 +9,13 @@
         .device {
             margin: 0.5rem;
         }
+        button:not(.active) {
+            opacity: 0.7;
+        }
+        button.active {
+            font-weight: bold;
+        }
+
     </style>
     <script>
         var process = {
@@ -35,9 +42,9 @@
         const speedTest = /speed/.test(document.location.search)
         jd.on(jacdac.DEVICE_CONNECT, dev => {
             console.log(`connect ${dev}`)
-            connect(dev)
+            connectDevice(dev)
         })
-        jd.on(jacdac.DEVICE_DISCONNECT, dev => disconnect(dev))
+        jd.on(jacdac.DEVICE_DISCONNECT, dev => disconnectDevice(dev))
         jd.on(jacdac.DEVICE_ANNOUNCE, render)
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
@@ -49,7 +56,7 @@
             log('started')
         }
 
-        function connect(device) {
+        function connectDevice(device) {
             let div = document.getElementById(device.deviceId);
             if (!div) {
                 div = document.createElement("div");
@@ -72,7 +79,7 @@
             }
         }
 
-        function disconnect(device) {
+        function disconnectDevice(device) {
             console.log(`disconnect ${device}`)
             let div = document.getElementById(device.deviceId);
             if (div)
@@ -84,10 +91,23 @@
             devices.forEach(device => connect(device));
         }
 
-        const btn = document.getElementById("connect");
-        btn.onclick = scan;
-        const disconnectElt = document.getElementById("disconnect");
-        disconnectElt.onclick = () => jd.disconnectAsync()
+        const connect = document.getElementById("connect");
+        connect.onclick = scan;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnectAsync()
+
+        function updateConnectionState() {
+            connect.classList.remove('active');
+            disconnect.classList.remove('active');
+            switch (jd.connectionState) {
+                case jacdac.BusState.Connected:
+                    disconnect.classList.add('active'); break;
+                case jacdac.BusState.Disconnected:
+                    connect.classList.add('active'); break;
+            }
+        }        
+        jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
+        updateConnectionState()
     </script>
 </body>
 

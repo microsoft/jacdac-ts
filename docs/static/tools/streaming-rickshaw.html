@@ -9,6 +9,13 @@
         .graph {
             margin: 0.25rem;
         }
+        button:not(.active) {
+            opacity: 0.7;
+        }
+        button.active {
+            font-weight: bold;
+        }
+
     </style>
     <script>
         var process = {
@@ -147,6 +154,19 @@
             }
             window.addEventListener('resize', resize);
         }
+
+        function updateConnectionState() {
+            connect.classList.remove('active');
+            disconnect.classList.remove('active');
+            switch (jd.connectionState) {
+                case jacdac.BusState.Connected:
+                    disconnect.classList.add('active'); break;
+                case jacdac.BusState.Disconnected:
+                    connect.classList.add('active'); break;
+            }
+        }        
+        jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
+        updateConnectionState()
     </script>
 </body>
 
