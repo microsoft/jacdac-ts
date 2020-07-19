@@ -8,6 +8,7 @@ import { serviceSpecificationFromClassIdentifier } from "./spec";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
+    private _specification: jdspec.ServiceSpec = null;
 
     constructor(
         public readonly device: JDDevice,
@@ -28,8 +29,13 @@ export class JDService extends JDNode {
         return serviceName(this.serviceClass)
     }
 
+    /**
+     * Gets the specification of the service. Undefined if unknown
+     */
     get specification() {
-        return serviceSpecificationFromClassIdentifier(this.serviceClass);
+        if (this._specification === null)
+            this._specification = serviceSpecificationFromClassIdentifier(this.serviceClass)
+        return this._specification;
     }
 
     toString() {
