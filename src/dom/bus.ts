@@ -68,7 +68,7 @@ export class JDBus extends JDNode {
         console.log(`new bus...`)
         this.options = this.options || {};
         this.resetTime();
-        this.addListener(DEVICE_ANNOUNCE, () => this.pingLoggers());
+        this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
 
     get connectionState() {

@@ -1,2 +1,34 @@
+
+import DeviceList from "../../../../components/DeviceList"
+
 # JDDevice
 
+A **[device](/clients/web/dom/device)** is a [node](/clients/web/dom/node)
+that hosts **services**. A device is hosted in a [bus](/clients/web/dom/bus).
+
+<DeviceList />
+
+## Methods
+
+### ```announced```
+
+This flag indicates with annoucement data has been received for the device.
+It is possible to receive a packet from an unknown device before an announcement packet has been received.
+
+```javascript
+if(!device.annonced) {
+    // let's wait
+}
+```
+
+### ```services```
+
+Gets the list of [services](/clients/web/dom/service) hosted in the device.
+
+```javascript
+for(const service in device.services()) {
+    console.log(service)
+}
+```
+
+## Events

@@ -3,7 +3,7 @@ import ConnectButton from "../../../../jacdac/ConnectButton"
 
 # JDBus
 
-The **bus** is the top-level [DOM](/clients/web/dom) element.
+The **bus** is the top-level [DOM](/clients/web/dom) [node](/clients/web/dom/node).
 It processes the incoming and outcoming packets, 
 handles the connection to the underlying communiction transport
 and maintains a set of active [devices](/clients/web/device) nodes.
@@ -14,8 +14,6 @@ The most common use is to create a bus that uses WebUSB to
 communicate to a physical JACDAC device. This is done with ``createUSBBus``.
 
 ```javascript
-import { createUSBBus } from "jacdac"
-
 const bus = createUSBBus();
 ```
 
@@ -45,8 +43,6 @@ You can query the status of the connection using ``bus.connectionState``. The co
 Using the ``CONNECTION_STATE`` event, you can track changes of the state.
 
 ```javascript
-import { CONNECTION_STATE } from "jacdac"
-
 // am i in connected state?
 const connected = bus.connected
 bus.on(CONNECTION_STATE, state => console.log(state))
@@ -56,7 +52,9 @@ bus.on(CONNECTION_STATE, state => console.log(state))
 <ConnectButton />
 </Widget>
 
-## Devices
+## Methods
+
+### Devices
 
 You can query the bus at any to receive a snapshot of the devices DOM.
 
@@ -70,5 +68,38 @@ for(const device of devices)
 
 All bus state mutation are advertised by events. You can listen or subscribe to those events.
 
-TODO
+### ``CHANGE``
 
+Catch all event raised when some change happened to the bus, whether it is a connection change or a change in the list of services
+or the error state changed.
+
+```javascript
+bus.on(CHANGE, () => console.log('bus changed!'))
+```
+
+### ``CONNECTION_STATE``
+
+Raised when the connection state of the bus has changed.
+
+```javascript
+bus.on(CONNECTION_STATE, state => console.log(`bus connection state: ${state}`))
+```
+
+### ``CONNECT``, ``CONNECTING``, ``DISCONNECTING``, ``DISCONNECT``
+
+Raised on each connection state changes.
+
+```javascript
+bus.on(CONNECT, state => console.log(`bus connected`))
+bus.on(CONNECTING, state => console.log(`bus connecting`))
+bus.on(DISCONNECTING, state => console.log(`bus disconnecting`))
+bus.on(DISCONNECT, state => console.log(`bus disconnected`))
+```
+
+### ``ERROR``
+
+An error occured.
+
+```javascript
+bus.on(ERROR, { context, exception } => console.error(`bus error: ${context}`, exception))
+```

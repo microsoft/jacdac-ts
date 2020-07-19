@@ -4,6 +4,7 @@ import { Packet } from "./packet"
 import { JDDevice } from "./device"
 import { intOfBuffer, bufferToArray, NumberFormat } from "./buffer"
 import { unpack } from "./struct"
+import { serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -244,14 +245,16 @@ function reverseLookup(map: U.SMap<number>, n: number) {
     return toHex(n)
 }
 
-export function serviceClass(name: string) {
-    return service_classes[(name || "").toUpperCase()];
+export function serviceClass(name: string): number {
+    const spec = serviceSpecificationFromName(name);
+    return spec ? spec.classIdentifier : service_classes[(name || "").toUpperCase()];
 }
 
-export function serviceName(n: number) {
+export function serviceName(n: number): string {
     if (n == null)
         return "?"
-    return reverseLookup(service_classes, n)
+    const spec = serviceSpecificationFromClassIdentifier(n);
+    return spec ? spec.name : reverseLookup(service_classes, n)
 }
 
 export function deviceServiceName(pkt: Packet): string {

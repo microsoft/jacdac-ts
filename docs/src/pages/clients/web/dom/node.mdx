@@ -1,13 +1,68 @@
 # JDNode
 
-The base class of all elements in the [dom](/clients/web/node).
+The base class of all elements in the [dom](/clients/web/dom).
+
+> A JACDAC **[bus](/clients/web/dom/bus)** is made of connected devices.
+A **[device](/clients/web/dom/device)** hosts **services**.
+A **[service](/clients/web/dom/service)** has **registers**, accept **commands**
+and may return **acks**. A **[register](/clients/web/dom/register)** is an addressed data location
+on a service, that may be get, set or streamed. All these elements are [nodes](/clients/web/dom/node) in the [DOM](/clients/web/dom).
+
 
 The node is globally uniquely identifiable in the dom,
-implement an event emitter pattern is obserable.
+implement an event emitter pattern is observable.
 
-## ID
+### ``id``
 
-## Event emitter
+The ``id`` identifier can be used to lookup any node within a single bus.
 
-## Observable and subscriptions
+```javascript
+const node = bus.node(id)
+```
 
+### ``on``
+
+Registers a handler for a given event.
+
+```javascript
+node.on("connect", () => console.log('connect!'))
+```
+
+### ``off``
+
+Unregisters a handler for a given event. Noop if the handler is not registered.
+
+```javascript
+const handler = () => console.log('connect!')
+node.off("connect", handler)
+```
+
+### ``once``
+
+Registers a handler to be run once and unregistered immediately.
+
+```javascript
+node.once("connect", () => console.log('connect!'))
+```
+
+### ``observe``
+
+Returns an **observable** stream for the given event. 
+
+```javascript
+const observer = node.observe("connect")
+observer.subscribe({
+    next: () => console.log('connect!')
+})
+```
+
+## ``subscribe``
+
+This function subscribes to the event and returns a handler to unregister.
+It is a small wrapper for the ``observe`` function.
+
+```javascript
+const unregister = node.subscribe("connect", () => console.log('connect!'))
+...
+unregister()
+```

@@ -24,15 +24,11 @@ export abstract class JDNode {
     }
 
     off(eventName: string, handler: EventHandler) {
-        return this.removeListener(eventName, handler);
+        return this.removeListenerInternval(eventName, handler);
     }
 
     once(eventName: string, handler: EventHandler) {
         return this.addListenerInternal(eventName, handler, true);
-    }
-
-    addListener(eventName: string, handler: EventHandler) {
-        return this.addListenerInternal(eventName, handler, false);
     }
 
     private addListenerInternal(eventName: string, handler: EventHandler, once: boolean): JDNode {
@@ -54,7 +50,7 @@ export abstract class JDNode {
         return this;
     }
 
-    removeListener(eventName: string, handler: EventHandler): JDNode {
+    private removeListenerInternval(eventName: string, handler: EventHandler): JDNode {
         if (!eventName || !handler) return this;
 
         const listeners = this.listeners[eventName]
