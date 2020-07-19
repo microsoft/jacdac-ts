@@ -122,13 +122,13 @@ declare namespace jdspec {
          * Name in lower case snake case.
          */
         name: string;
-        
+
         /**
          * This either a command/report number, an identifier for event, or a register number, which is combined
          * with 0x1000/0x2000 to get command for reading/writing.
          */
         identifier: number;
-        
+
         /**
          * Text that follows the definition in markdown.
          */
