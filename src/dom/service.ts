@@ -4,6 +4,7 @@ import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, REG_IS_STREAMING } from "./constants";
 import { JDNode } from "./node";
+import { serviceSpecificationFromClassIdentifier } from "./spec";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -25,6 +26,10 @@ export class JDService extends JDNode {
 
     get name() {
         return serviceName(this.serviceClass)
+    }
+
+    get specification() {
+        return serviceSpecificationFromClassIdentifier(this.serviceClass);
     }
 
     toString() {
