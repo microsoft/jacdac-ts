@@ -1286,7 +1286,20 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
     }
 }
 
-export function specificationFromClassIdentifier(classIdentifier: number): jdspec.ServiceSpec {
+/**
+ * Looks up a service specification by name
+ * @param name 
+ */
+export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
+    const k = (name || "").toLowerCase().trim()
+    return serviceSpecifications[name];
+}
+
+/**
+ * Looks up a service specification by class
+ * @param classIdentifier 
+ */
+export function serviceSpecificationFromClassIdentifier(classIdentifier: number): jdspec.ServiceSpec {
     if (classIdentifier === null || classIdentifier === undefined)
         return undefined;
     for (const name of Object.keys(serviceSpecifications)) {
