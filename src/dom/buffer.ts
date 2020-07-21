@@ -17,6 +17,10 @@ export enum NumberFormat {
     Float64LE = 14,
     Float32BE = 15,
     Float64BE = 16,
+    UInt64LE = 17,
+    UInt64BE = 18,
+    Int64LE = 19,
+    Int64BE = 20,
 }
 
 function fmtInfoCore(fmt: NumberFormat) {
@@ -27,12 +31,16 @@ function fmtInfoCore(fmt: NumberFormat) {
         case NumberFormat.UInt16LE: return 2;
         case NumberFormat.Int32LE: return -4;
         case NumberFormat.UInt32LE: return 4;
+        case NumberFormat.Int64LE: return -8;
+        case NumberFormat.UInt64LE: return 8;
         case NumberFormat.Int8BE: return -10;
         case NumberFormat.UInt8BE: return 10;
         case NumberFormat.Int16BE: return -20;
         case NumberFormat.UInt16BE: return 20;
         case NumberFormat.Int32BE: return -40;
         case NumberFormat.UInt32BE: return 40;
+        case NumberFormat.Int64BE: return -80;
+        case NumberFormat.UInt64BE: return 80;
 
         case NumberFormat.Float32LE: return 4;
         case NumberFormat.Float32BE: return 40;
@@ -80,6 +88,10 @@ export function sizeOfNumberFormat(format: NumberFormat) {
         case NumberFormat.Float32BE:
         case NumberFormat.Float32LE:
             return 4;
+        case NumberFormat.UInt64BE:
+        case NumberFormat.Int64BE:
+        case NumberFormat.UInt64LE:
+        case NumberFormat.Int64LE:
         case NumberFormat.Float64BE:
         case NumberFormat.Float64LE:
             return 8;
@@ -103,6 +115,10 @@ export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: num
             return read32(buf, offset)
         case NumberFormat.Int32LE:
             return read32(buf, offset) >> 0
+        case NumberFormat.UInt64LE:
+            return read32(buf, offset) + read32(buf, offset + 4) * 0x100000000
+        case NumberFormat.Int64LE:
+            return read32(buf, offset) + (read32(buf, offset + 4) >> 0) * 0x100000000
         default:
             throw new Error("unsupported fmt:" + fmt)
     }
