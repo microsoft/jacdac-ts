@@ -2,9 +2,9 @@ import * as U from "./utils"
 import * as jd from "./constants"
 import { Packet } from "./packet"
 import { JDDevice } from "./device"
-import { intOfBuffer, bufferToArray, NumberFormat } from "./buffer"
+import { sizeOfNumberFormat } from "./buffer"
 import { unpack } from "./struct"
-import { serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
+import * as spec from "./spec"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -70,32 +70,6 @@ const generic_regs: U.SMap<number> = {
     REG_READING: 0x101
 }
 
-function decodeIntSensorData(pkt: Packet) {
-    const value = intOfBuffer(pkt.data)
-    return value.toString();
-}
-
-function decodeBootloader(pkt: Packet) {
-    if (pkt.service_command == 0x80) {
-        if (pkt.is_command) {
-            const [pageAddr, suboff, currsubpage, maxSubpage, session] = unpack(pkt.data, "IHBBI")
-            const hdsize = 4 * 7
-            return `write page=${toHex(pageAddr)}+${suboff} ${currsubpage}/${maxSubpage} session=${toHex(session)} data=` +
-                U.toHex(pkt.data.slice(hdsize, hdsize + 10)) + "..."
-        } else {
-            const [sess, berr, pageAddr] = unpack(pkt.data, "III")
-            return `status page=${toHex(pageAddr)} session=${toHex(sess)} err=${toHex(berr)}`
-        }
-    } else if (pkt.service_command == 0x81) {
-        return `set session ${toHex(pkt.uintData)}`
-    } else if (pkt.service_command == 0x00) {
-        const [magic, pageSize, flashSize, devClass] = unpack(pkt.data, "4I")
-        return `magic:${toHex(magic)} pageSize:${pageSize} flashSize:${flashSize} devClass:${toHex(devClass)}`
-    } else {
-        return null
-    }
-}
-
 export enum RegisterType {
     UInt, // default
     UIntHex,
@@ -104,137 +78,170 @@ export enum RegisterType {
     String,
 }
 
-export interface RegisterInfo {
-    addr: number;
-    name: string;
-    type?: RegisterType;
-    unit?: string;
-    div?: number;
-}
-
-export function lookupRegisterInfo(regs: RegisterInfo[], pkt: Packet) {
-    if (pkt.service_command & (jd.CMD_GET_REG | jd.CMD_SET_REG)) {
-        const addr = pkt.service_command & jd.CMD_REG_MASK
-        return regs.find(r => r.addr == addr) || undefined
-    } else {
+export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketMember, pkt: Packet, offset: number) {
+    if (!member)
         return null
-    }
-}
 
-const common_regs: RegisterInfo[] = [
-    { addr: 0x01, name: "intensity" },
-    { addr: 0x02, name: "value" },
-    { addr: 0x03, name: "is_streaming" },
-    { addr: 0x04, name: "streaming_interval", unit: "us" },
-    { addr: 0x05, name: "low_threshold" },
-    { addr: 0x05, name: "high_threshold" },
-    { addr: 0x01, name: "max_power", unit: "mA" },
-]
+    if (pkt.data.length <= offset)
+        return null
 
-export function decodeRegister(regs: RegisterInfo[], pkt: Packet) {
-    const regInfo = lookupRegisterInfo(regs, pkt) || lookupRegisterInfo(common_regs, pkt)
-    if (!regInfo) return null
+    let numValue: number = undefined
+    let scaledValue: number = undefined
     let value = undefined
-    const isGet = !!(pkt.service_command & jd.CMD_GET_REG)
-    let useHex = false
-    if (pkt.data.length) {
-        let tp = regInfo.type
-        if (tp == null)
-            tp = pkt.data.length > 4 ? RegisterType.IntArray : RegisterType.UInt
-        switch (tp) {
-            case RegisterType.UInt:
-                value = pkt.uintData
-                break
-            case RegisterType.UIntHex:
-                value = pkt.uintData
-                useHex = true
-                break
-            case RegisterType.Int:
-                value = pkt.intData
-                break
-            case RegisterType.String:
-                value = U.bufferToString(pkt.data)
-                break
-            case RegisterType.IntArray:
-                value = bufferToArray(pkt.data, NumberFormat.Int32LE)
-                break
+    let humanValue: string = undefined
+    let size = 0
+
+    const fmt = spec.numberFormatFromStorageType(member.storage)
+    if (fmt == null) {
+        const buf = pkt.data.slice(offset)
+        if (member.type == "string")
+            humanValue = value = U.fromUTF8(U.uint8ArrayToString(buf))
+        else {
+            value = buf
+            humanValue = U.toHex(buf)
         }
+        size = buf.length
+    } else {
+        numValue = pkt.getNumber(fmt, offset)
+        value = scaledValue = spec.scaleValue(numValue, member.type)
+        size = sizeOfNumberFormat(fmt)
+        const en = service.enums[member.type]
+        if (en)
+            humanValue = reverseLookup(en.members, numValue)
+        else if (member.unit || scaledValue != numValue)
+            humanValue = scaledValue + member.unit
+        else
+            humanValue = toHex(scaledValue) + " (" + scaledValue + ")"
     }
-    const scaledValue =
-        Array.isArray(value) ? value.map(v => v / (regInfo.div || 1)) :
-            typeof value == "number" ? value / (regInfo.div || 1) : undefined
-    let humanValue = ""
-    if (useHex)
-        humanValue = "0x" + scaledValue.toString(16)
-    else if (Array.isArray(scaledValue))
-        humanValue = scaledValue.join(", ")
-    else if (scaledValue !== undefined)
-        humanValue = scaledValue + ""
-    else if (value !== undefined)
-        humanValue = value + ""
-    if (humanValue && regInfo.unit) humanValue += regInfo.unit
-    let description = isGet ? "GET " : "SET "
-    description += regInfo.name
-    if (humanValue)
-        description += ": " + humanValue
 
     return {
-        regInfo,
         value,
+        numValue,
         scaledValue,
         humanValue,
+        description: member.name + ": " + humanValue,
+        size
+    }
+}
+
+export function decodeMembers(service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, pkt: Packet, off = 0) {
+    return pktInfo.fields.map(mem => {
+        const info = decodeMember(service, mem, pkt, off)
+        off += info.size
+        return info
+    }).filter(info => !!info)
+}
+
+function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketInfo {
+    return {
+        kind,
+        identifier: addr,
+        name: toHex(addr),
+        description: "",
+        fields: [
+            {
+                name: "_",
+                type: "string",
+                unit: "",
+                storage: "bytes"
+            }
+        ]
+    }
+}
+
+function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet) {
+    const isSet = !!(pkt.service_command & jd.CMD_SET_REG)
+    const isGet = !!(pkt.service_command & jd.CMD_GET_REG)
+
+    if (isSet == isGet)
+        return null
+
+    const addr = pkt.service_command & jd.CMD_REG_MASK
+    const regInfo =
+        U.values(service.packets)
+            .find(p => spec.isRegister(p) && p.identifier == addr)
+        || syntheticPktInfo("rw", addr)
+
+    const decoded = decodeMembers(service, regInfo, pkt)
+
+    let description = ""
+    if (decoded.length == 0)
+        description = regInfo.name
+    else if (decoded.length == 1)
+        description = regInfo.name + ": " + decoded[0].humanValue
+    else
+        description = "{ " + decoded.map(i => i.description).join(", ") + " }"
+
+    if (isGet)
+        description = "GET " + description
+    else
+        description = "SET " + description
+
+    return {
+        info: regInfo,
+        decoded,
         description,
     }
 }
 
-const ctrl_regs: RegisterInfo[] = [
-    { addr: 0x180, name: "device_description", type: RegisterType.String },
-    { addr: 0x181, name: "device_class", type: RegisterType.UIntHex },
-    { addr: 0x182, name: "temperture", type: RegisterType.Int, unit: "°C" },
-    { addr: 0x184, name: "device_class_bl", type: RegisterType.UIntHex },
-    { addr: 0x185, name: "firmware_version", type: RegisterType.String },
-    { addr: 0x186, name: "uptime", unit: "ms", div: 1000, type: RegisterType.UInt },
-]
+function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
+    if (pkt.is_command || pkt.service_command != jd.CMD_EVENT)
+        return null
 
-function decodeCtrlData(pkt: Packet) {
-    const reg = decodeRegister(ctrl_regs, pkt)
-    if (reg)
-        return reg.description
-    return null
+    const addr = pkt.uintData
+    const evInfo = U.values(service.packets).find(p => p.kind == "event" && p.identifier == addr)
+        || syntheticPktInfo("event", addr)
+
+    const decoded = decodeMembers(service, evInfo, pkt, 4)
+
+    let description = decoded.length ? " { " + decoded.map(i => i.description).join(", ") + " }" : ""
+    description = "EVENT " + evInfo.name + description
+
+    return {
+        info: evInfo,
+        decoded,
+        description,
+    }
+}
+
+function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet) {
+    const kind = pkt.is_command ? "command" : "report"
+    const cmdInfo = U.values(service.packets).find(p => p.kind == kind && p.identifier == pkt.service_command)
+        || syntheticPktInfo(kind, pkt.service_command)
+
+    const decoded = decodeMembers(service, cmdInfo, pkt)
+    const payload = " { " + decoded.map(i => i.description).join(", ") + " }"
+    const description = (pkt.is_command ? "CMD " : "REPORT ") + cmdInfo.name + payload
+
+    return {
+        info: cmdInfo,
+        decoded,
+        description,
+    }
+}
+
+function decodePacket(service: jdspec.ServiceSpec, pkt: Packet) {
+    return decodeRegister(service, pkt)
+        || decodeEvent(service, pkt)
+        || decodeCommand(service, pkt)
 }
 
 const serv_decoders: U.SMap<(p: Packet) => string> = {
-    LOGGER: (pkt: Packet) => {
-        const pri = priority()
-        if (!pri) return null
-        return `${pri} "${U.bufferToString(pkt.data)}"`
-
-        function priority() {
-            switch (pkt.service_command) {
-                case 0x80: return "dbg"
-                case 0x81: return "log"
-                case 0x82: return "warn"
-                case 0x83: return "err"
-                default: return null
-            }
-        }
-    },
-    SLIDER: decodeIntSensorData,
-    THERMOMETER: decodeIntSensorData,
-    POWER: decodeIntSensorData,
-    BUTTON: decodeIntSensorData,
-    ROTARY_ENCODER: decodeIntSensorData,
-    BATTERY: decodeIntSensorData,
-    BOOTLOADER: decodeBootloader,
-    CTRL: decodeCtrlData,
 }
 
 export function decodePacketData(pkt: Packet): string {
     const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
     const serv_id = serviceName(srv_class);
     const decoder = serv_decoders[serv_id];
-    const decoded = decoder ? decoder(pkt) : null
-    return decoded;
+
+    if (decoder)
+        return decoder(pkt)
+
+    const service = spec.serviceSpecificationFromClassIdentifier(srv_class)
+    if (!service)
+        return null
+
+    return decodePacket(service, pkt).description
 }
 
 function reverseLookup(map: U.SMap<number>, n: number) {
@@ -246,15 +253,15 @@ function reverseLookup(map: U.SMap<number>, n: number) {
 }
 
 export function serviceClass(name: string): number {
-    const spec = serviceSpecificationFromName(name);
-    return spec ? spec.classIdentifier : service_classes[(name || "").toUpperCase()];
+    const serv = spec.serviceSpecificationFromName(name);
+    return serv ? serv.classIdentifier : service_classes[(name || "").toUpperCase()];
 }
 
 export function serviceName(n: number): string {
     if (n == null)
         return "?"
-    const spec = serviceSpecificationFromClassIdentifier(n);
-    return spec ? spec.name : reverseLookup(service_classes, n)
+    const serv = spec.serviceSpecificationFromClassIdentifier(n);
+    return serv ? serv.name.toUpperCase() : reverseLookup(service_classes, n)
 }
 
 export function deviceServiceName(pkt: Packet): string {

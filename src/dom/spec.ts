@@ -1,5 +1,6 @@
 /// <reference path="spec.d.ts" />
 
+import { NumberFormat } from "./buffer";
 
 export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
     "_base": {
@@ -1308,4 +1309,30 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
             return spec;
     }
     return undefined;
+}
+
+export function isRegister(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw"
+}
+
+export function numberFormatFromStorageType(tp: jdspec.StorageType) {
+    switch (tp) {
+        case "i8": return NumberFormat.Int8LE
+        case "u8": return NumberFormat.UInt8LE
+        case "i16": return NumberFormat.Int16LE
+        case "u16": return NumberFormat.UInt16LE
+        case "i32": return NumberFormat.Int32LE
+        case "u32": return NumberFormat.UInt32LE
+        case "i64": return NumberFormat.Int64LE
+        case "u64": return NumberFormat.UInt64LE
+        case "bytes": return null
+        default: return null
+    }
+}
+
+export function scaleValue(v: number, tp: string) {
+    const m = /^[ui](\d+)\.(\d+)$/.exec(tp)
+    if (m)
+        return v / (1 << parseInt(m[2]))
+    return v
 }
