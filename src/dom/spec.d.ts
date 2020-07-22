@@ -2,9 +2,10 @@ declare namespace jdspec {
     type SMap<T> = { [v: string]: T; }
 
     /**
-     * How a type is stored in memory. 'bytes' has unspecified length, as therefore usually comes at the end of packet.
+     * How a type is stored in memory. Negative values signify signed integers, positive unsigned.
+     * Magnitude is size in bytes. 0 means unspecified length (usually 'the rest of the packet').
      */
-    type StorageType = "i8" | "u8" | "i16" | "u16" | "i32" | "u32" | "i64" | "u64" | "bytes"
+    type StorageType = number
 
     /**
      * Unit for a field.
@@ -13,7 +14,7 @@ declare namespace jdspec {
      * 
      * Many fields have no unit (eg. because they represent counts); in that case empty string is used.
      */
-    type Unit = "" | "frac" | "s" | "ms" | "us" | "mV" | "mA" | "mWh" | "C" | "K" | "g" | "perc"
+    type Unit = "" | "frac" | "s" | "ms" | "us" | "mV" | "mA" | "mWh" | "C" | "K" | "g" | "%RH" | "bytes"
 
     /**
      * Service specification.
@@ -23,6 +24,17 @@ declare namespace jdspec {
          * Name of the service, extracted from first H1 in markdown
          */
         name: string;
+
+        /**
+         * Name of the service, in CamelCase.
+         */
+        camelName: string;
+
+        /**
+         * Short name of the service, to use in name prefixes.
+         */
+        shortName: string;
+
 
         /**
          * When written in hex, it has the form 0x1xxxxxxx (except for control service).
@@ -83,6 +95,11 @@ declare namespace jdspec {
         name: string;
 
         /**
+         * Member can be combined as bit-fields.
+         */
+        isFlags?: boolean;
+
+        /**
          * How is this enum to be stored.
          */
         storage: StorageType;
@@ -108,6 +125,7 @@ declare namespace jdspec {
      * events are passed inside of event report, and can be also piped via streams. 
      */
     type PacketKind = "report" | "command" | "const" | "ro" | "rw" | "event"
+        | "pipe_command" | "pipe_report" | "meta_pipe_command" | "meta_pipe_report"
 
     /**
      * Spec for a report/command/register or event.
@@ -124,10 +142,20 @@ declare namespace jdspec {
         name: string;
 
         /**
+         * Kind of pipe this packet establishes or is valid on. 
+         */
+        pipeType?: string;
+
+        /**
          * This either a command/report number, an identifier for event, or a register number, which is combined
          * with 0x1000/0x2000 to get command for reading/writing.
          */
         identifier: number;
+
+        /**
+         * If present, this packet has identifier named after base class.
+         */
+        identifierName?: string;
 
         /**
          * Text that follows the definition in markdown.
@@ -152,6 +180,11 @@ declare namespace jdspec {
          * If present and true, the handling of given packet is optional and can be left out by implementation.
          */
         optional?: boolean;
+
+        /**
+         * If present and true, this packet was derived from base class.
+         */
+        derived?: boolean;
     }
 
     /**
@@ -167,12 +200,17 @@ declare namespace jdspec {
          * Type specifying how to interpret data. All values are little endian.
          * 
          * This can be one of:
-         *   - a StorageType
+         *   - u8, u16, u32, u64, i8, i16, i32, i64, bytes
          *   - name of an enum defined in the current service
          *   - string - UTF-8 encoded string
          *   - i32[] - an array of signed 32 bit values
          */
         type: string;
+
+        /**
+         * Type is one of u8, u16, u32, u64, i8, i16, i32, i64, bytes.
+         */
+        isSimpleType?: boolean;
 
         /**
          * If present, specifies the raw value should be divided by (1 << shift) before usage.
