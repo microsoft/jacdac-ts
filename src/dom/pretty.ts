@@ -1,9 +1,7 @@
 import * as U from "./utils"
 import * as jd from "./constants"
 import { Packet } from "./packet"
-import { JDDevice } from "./device"
-import { sizeOfNumberFormat } from "./buffer"
-import { unpack } from "./struct"
+import { JDDevice, shortDeviceId } from "./device"
 import * as spec from "./spec"
 
 const service_classes: U.SMap<number> = {
@@ -94,10 +92,12 @@ export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketM
     if (!spec.isIntegerType(member.type)) {
         const buf = size ? pkt.data.slice(offset, offset + size) : pkt.data.slice(offset)
         if (member.type == "string") {
-            humanValue = value = U.fromUTF8(U.uint8ArrayToString(buf))
+            humanValue = value = JSON.stringify(U.fromUTF8(U.uint8ArrayToString(buf)))
         } else if (member.type == "pipe") {
             value = buf
-            humanValue = U.toHex(buf.slice(0, 8)) + ":" + U.read16(buf, 8) + " [" + U.toHex(buf.slice(10)) + "]"
+            const devid = U.toHex(buf.slice(0, 8))
+            humanValue = "pipe to " + shortDeviceId(devid) + " port:" + U.read16(buf, 8)
+            // + " [" + U.toHex(buf.slice(10)) + "]"
         } else {
             value = buf
             humanValue = U.toHex(buf)
@@ -228,17 +228,8 @@ function decodePacket(service: jdspec.ServiceSpec, pkt: Packet) {
         || decodeCommand(service, pkt)
 }
 
-const serv_decoders: U.SMap<(p: Packet) => string> = {
-}
-
 export function decodePacketData(pkt: Packet): string {
     const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
-    const serv_id = serviceName(srv_class);
-    const decoder = serv_decoders[serv_id];
-
-    if (decoder)
-        return decoder(pkt)
-
     const service = spec.serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null
@@ -307,6 +298,18 @@ export function printServices(device: JDDevice) {
     return srv;
 }
 
+export function toAscii(d: ArrayLike<number>) {
+    let r = ""
+    for (let i = 0; i < d.length; ++i) {
+        const c = d[i]
+        if (c < 32 || c >= 128)
+            r += "."
+        else
+            r += String.fromCharCode(c)
+    }
+    return r
+}
+
 export function printPacket(pkt: Packet, opts: Options = {}): string {
     const frame_flags = pkt._header[3]
 
@@ -355,8 +358,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
             pdesc += "; " + "Announce services: " + services.join(", ")
         }
     } else {
-        const decoder = serv_decoders[serv_id]
-        const decoded = decoder ? decoder(pkt) : null
+        const decoded = decodePacketData(pkt)
         if (decoded) {
             pdesc += "; " + decoded
         } else if (pkt.service_command == jd.CMD_EVENT) {
@@ -367,7 +369,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
             if (v0 != v1)
                 pdesc += "; signed: " + num2str(v1)
         } else if (d.length) {
-            pdesc += "; " + U.toHex(d)
+            pdesc += "; " + U.toHex(d) + " " + toAscii(d)
         }
     }
 

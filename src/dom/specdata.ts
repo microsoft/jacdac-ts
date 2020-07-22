@@ -1,4 +1,5 @@
-export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
+export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
+{
     "_base": {
         "name": "Common registers and commands",
         "camelName": "base",
@@ -9,7 +10,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
             "commands": "Command codes are subdivided as follows:\n* Commands `0x000-0x07f` - common to all services\n* Commands `0x080-0xeff` - defined per-service\n* Commands `0xf00-0xfff` - reserved for implementation\n\nCommands follow.",
             "registers": "Register codes are subdivided as follows:\n* Registers `0x001-0x07f` - r/w common to all services\n* Registers `0x080-0x0ff` - r/w defined per-service\n* Registers `0x100-0x17f` - r/o common to all services\n* Registers `0x180-0x1ff` - r/o defined per-service\n* Registers `0x200-0xeff` - custom, defined per-service\n* Registers `0xf00-0xfff` - reserved for implementation, should not be seen on the wire\n\nThe types listed are typical. Check spec for particular service for exact type,\nand a service-specific name for a register (eg. `value` could be `pulse_length`).\nAll registers default to `0` unless otherwise indicated."
         },
-        "classIdentifier": 0,
+        "classIdentifier": 536870897,
         "enums": {},
         "packets": {
             "announce": {
@@ -229,13 +230,13 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
     },
     "_sensor": {
         "name": "Sensor",
-        "camelName": "Sensor",
-        "shortName": "Sensor",
+        "camelName": "sensor",
+        "shortName": "sensor",
         "extends": [],
         "notes": {
             "short": "Base class for sensors."
         },
-        "classIdentifier": 0,
+        "classIdentifier": 536870898,
         "enums": {},
         "packets": {
             "is_streaming": {
@@ -1685,7 +1686,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "kind": "meta_pipe_command",
                 "name": "open_ssl",
                 "identifier": 1,
-                "description": "Open an SSL connection to a given host:port pair. Can be issued only once on given pipe.\nAfter the connection is established, an empty data report is sent.",
+                "description": "Open an SSL connection to a given host:port pair. Can be issued only once on given pipe.\nAfter the connection is established, an empty data report is sent.\nConnection is closed by closing the pipe.",
                 "fields": [
                     {
                         "name": "tcp_port",
@@ -1948,4 +1949,3 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         }
     }
 }
-
