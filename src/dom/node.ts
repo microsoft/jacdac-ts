@@ -57,7 +57,7 @@ export abstract class JDNode {
         if (listeners) {
             for (let i = 0; i < listeners.length; ++i) {
                 const listener = listeners[i];
-                if (handler ===  listener.handler) {
+                if (handler === listener.handler) {
                     listeners.splice(i, 1);
                     --i;
                     if (listeners.length == 0)
@@ -79,7 +79,12 @@ export abstract class JDNode {
         if (!eventName) return false;
 
         const listeners = this.listeners[eventName];
-        if (!listeners) return false;
+        if (!listeners || listeners.length == 0) {
+            // report unhandled errors
+            if (eventName == ERROR)
+                console.error(args[0]);
+            return false;
+        }
         for (let i = 0; i < listeners.length; ++i) {
             const listener = listeners[i];
             const handler = listener.handler;
