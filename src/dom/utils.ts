@@ -21,10 +21,6 @@ export function delay<T>(millis: number, value?: T): Promise<T> {
     return new Promise((resolve) => setTimeout(() => resolve(value), millis))
 }
 
-export function values<T>(m: SMap<T>): T[] {
-    return Object.keys(m).map(k => m[k])
-}
-
 export function memcpy(trg: Uint8Array, trgOff: number, src: ArrayLike<number>, srcOff?: number, len?: number) {
     if (srcOff === void 0)
         srcOff = 0
