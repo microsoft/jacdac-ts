@@ -89,22 +89,24 @@ export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketM
     let scaledValue: number = undefined
     let value = undefined
     let humanValue: string = undefined
-    let size = 0
+    let size = Math.abs(member.storage)
 
-    const fmt = spec.numberFormatFromStorageType(member.storage)
-    if (fmt == null) {
-        const buf = pkt.data.slice(offset)
-        if (member.type == "string")
+    if (!spec.isIntegerType(member.type)) {
+        const buf = size ? pkt.data.slice(offset, offset + size) : pkt.data.slice(offset)
+        if (member.type == "string") {
             humanValue = value = U.fromUTF8(U.uint8ArrayToString(buf))
-        else {
+        } else if (member.type == "pipe") {
+            value = buf
+            humanValue = U.toHex(buf.slice(0, 8)) + ":" + U.read16(buf, 8) + " [" + U.toHex(buf.slice(10)) + "]"
+        } else {
             value = buf
             humanValue = U.toHex(buf)
         }
         size = buf.length
     } else {
+        const fmt = spec.numberFormatFromStorageType(member.storage)
         numValue = pkt.getNumber(fmt, offset)
         value = scaledValue = spec.scaleValue(numValue, member.type)
-        size = sizeOfNumberFormat(fmt)
         const en = service.enums[member.type]
         if (en)
             humanValue = reverseLookup(en.members, numValue)
@@ -143,7 +145,7 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
                 name: "_",
                 type: "string",
                 unit: "",
-                storage: "bytes"
+                storage: 0
             }
         ]
     }
