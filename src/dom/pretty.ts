@@ -3,6 +3,7 @@ import * as jd from "./constants"
 import { Packet } from "./packet"
 import { JDDevice, shortDeviceId } from "./device"
 import * as spec from "./spec"
+import { NumberFormat } from "./buffer"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -76,7 +77,10 @@ export enum RegisterType {
     String,
 }
 
-export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketMember, pkt: Packet, offset: number) {
+export function decodeMember(
+    service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, member: jdspec.PacketMember,
+    pkt: Packet, offset: number
+) {
     if (!member)
         return null
 
@@ -96,8 +100,13 @@ export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketM
         } else if (member.type == "pipe") {
             value = buf
             const devid = U.toHex(buf.slice(0, 8))
-            humanValue = "pipe to " + shortDeviceId(devid) + " port:" + U.read16(buf, 8)
+            const port = U.read16(buf, 8)
+            humanValue = "pipe to " + shortDeviceId(devid) + " port:" + port
             // + " [" + U.toHex(buf.slice(10)) + "]"
+            if (pkt?.dev?.bus) {
+                const trg = pkt.dev.bus.device(devid)
+                trg.port(port).pipeType = service.shortId + "." + pktInfo.pipeType + ".report"
+            }
         } else {
             value = buf
             humanValue = U.toHex(buf)
@@ -107,6 +116,8 @@ export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketM
         const fmt = spec.numberFormatFromStorageType(member.storage)
         numValue = pkt.getNumber(fmt, offset)
         value = scaledValue = spec.scaleValue(numValue, member.type)
+        if (pkt.dev && member.type == "pipe_port")
+            pkt.dev.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
         const en = service.enums[member.type]
         if (en)
             humanValue = reverseLookup(en.members, numValue)
@@ -128,8 +139,9 @@ export function decodeMember(service: jdspec.ServiceSpec, member: jdspec.PacketM
 
 export function decodeMembers(service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, pkt: Packet, off = 0) {
     return pktInfo.fields.map(mem => {
-        const info = decodeMember(service, mem, pkt, off)
-        off += info.size
+        const info = decodeMember(service, pktInfo, mem, pkt, off)
+        if (info)
+            off += info.size
         return info
     }).filter(info => !!info)
 }
@@ -228,7 +240,47 @@ function decodePacket(service: jdspec.ServiceSpec, pkt: Packet) {
         || decodeCommand(service, pkt)
 }
 
+function decodePipe(pkt: Packet) {
+    const cmd = pkt.service_command
+    const pinfo = pkt.dev.port(cmd >> jd.PIPE_PORT_SHIFT)
+    if (!pinfo.pipeType)
+        return null
+
+    const [servId, pipeType, dir] = pinfo.pipeType.split(/\./)
+    const service = spec.serviceSpecificationFromName(servId)
+    if (!service)
+        return null
+
+    const meta = !!(cmd & jd.PIPE_METADATA_MASK)
+    const candidates = Object.values(service.packets)
+        .filter(p => p.pipeType == pipeType &&
+            /pipe/.test(p.kind) &&
+            /meta/.test(p.kind) == meta &&
+            /command/.test(p.kind) == (dir == "command"))
+        .filter(p => !meta || pkt.getNumber(NumberFormat.UInt16LE, 0) == p.identifier)
+
+    const cmdInfo = candidates[0]
+    if (cmdInfo) {
+        const decoded = decodeMembers(service, cmdInfo, pkt)
+        const payload = " { " + decoded.map(i => i.description).join(", ") + " }"
+        const description = cmdInfo.kind.toUpperCase() + " " + cmdInfo.name + payload
+        return {
+            info: cmdInfo,
+            decoded,
+            description,
+        }
+    }
+
+    return null
+}
+
 export function decodePacketData(pkt: Packet): string {
+    if (pkt.dev && pkt.service_number == jd.JD_SERVICE_NUMBER_PIPE) {
+        const info = decodePipe(pkt)
+        if (info)
+            return info.description
+    }
+
     const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
     const service = spec.serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
@@ -275,6 +327,8 @@ export function commandName(n: number) {
 }
 
 function toHex(n: number) {
+    if (n < 0)
+        return "-" + toHex(-n)
     return "0x" + n.toString(16)
 }
 
@@ -326,12 +380,12 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
         service_name = "CRC-ACK"
         cmdname = toHex(cmd)
     }
-    if (pkt.service_number == jd.JD_SERVICE_NUMBER_STREAM) {
-        service_name = "STREAM"
-        cmdname = `port:${cmd >> jd.STREAM_PORT_SHIFT} cnt:${cmd & jd.STREAM_COUNTER_MASK}`
-        if (cmd & jd.STREAM_METADATA_MASK)
+    if (pkt.service_number == jd.JD_SERVICE_NUMBER_PIPE) {
+        service_name = "PIPE"
+        cmdname = `port:${cmd >> jd.PIPE_PORT_SHIFT} cnt:${cmd & jd.PIPE_COUNTER_MASK}`
+        if (cmd & jd.PIPE_METADATA_MASK)
             cmdname += " meta"
-        if (cmd & jd.STREAM_CLOSE_MASK)
+        if (cmd & jd.PIPE_CLOSE_MASK)
             cmdname += " close"
     }
 

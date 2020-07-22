@@ -11,6 +11,10 @@ import { JDService } from "./service";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
 
+export interface PipeInfo {
+    pipeType?: string;
+}
+
 export class JDDevice extends JDNode {
     connected: boolean;
     private servicesData: Uint8Array
@@ -18,6 +22,7 @@ export class JDDevice extends JDNode {
     lastServiceUpdate: number
     private _shortId: string
     private _services: JDService[]
+    private ports: SMap<PipeInfo>
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
@@ -53,6 +58,16 @@ export class JDDevice extends JDNode {
             if (getNumber(this.servicesData, NumberFormat.UInt32LE, i) == service_class)
                 return true
         return false
+    }
+
+    port(id: number) {
+        if (!this.ports)
+            this.ports = {}
+        const key = id + ""
+        const ex = this.ports[key]
+        if (!ex)
+            return this.ports[key] = {}
+        return ex
     }
 
     get serviceLength() {

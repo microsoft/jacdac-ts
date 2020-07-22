@@ -21,7 +21,7 @@ declare namespace jdspec {
      */
     interface ServiceSpec {
         /**
-         * Name of the service, extracted from first H1 in markdown
+         * Human-readable name of the service, extracted from first H1 in markdown
          */
         name: string;
 
@@ -35,6 +35,10 @@ declare namespace jdspec {
          */
         shortName: string;
 
+        /**
+         * Short identifier for the service, from file name.
+         */
+        shortId: string;
 
         /**
          * When written in hex, it has the form 0x1xxxxxxx (except for control service).

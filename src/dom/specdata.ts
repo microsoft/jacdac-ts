@@ -2,6 +2,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
 {
     "_base": {
         "name": "Common registers and commands",
+        "shortId": "_base",
         "camelName": "base",
         "shortName": "base",
         "extends": [],
@@ -230,6 +231,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "_sensor": {
         "name": "Sensor",
+        "shortId": "_sensor",
         "camelName": "sensor",
         "shortName": "sensor",
         "extends": [],
@@ -275,6 +277,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "accelerometer": {
         "name": "Accelerometer",
+        "shortId": "accelerometer",
         "camelName": "accel",
         "shortName": "accel",
         "extends": [],
@@ -437,6 +440,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "bootloader": {
         "name": "Bootloader",
+        "shortId": "bootloader",
         "camelName": "Bootloader",
         "shortName": "Bootloader",
         "extends": [],
@@ -642,6 +646,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "button": {
         "name": "Button",
+        "shortId": "button",
         "camelName": "Button",
         "shortName": "Button",
         "extends": [],
@@ -732,6 +737,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "control": {
         "name": "Control",
+        "shortId": "control",
         "camelName": "Control",
         "shortName": "Control",
         "extends": [],
@@ -854,6 +860,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "humidity": {
         "name": "Humidity",
+        "shortId": "humidity",
         "camelName": "Humidity",
         "shortName": "Humidity",
         "extends": [],
@@ -918,6 +925,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "light": {
         "name": "Light",
+        "shortId": "light",
         "camelName": "Light",
         "shortName": "Light",
         "extends": [],
@@ -1036,6 +1044,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "logger": {
         "name": "Logger",
+        "shortId": "logger",
         "camelName": "Logger",
         "shortName": "Logger",
         "extends": [],
@@ -1131,6 +1140,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "motor": {
         "name": "Motor",
+        "shortId": "motor",
         "camelName": "Motor",
         "shortName": "Motor",
         "extends": [],
@@ -1175,6 +1185,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "multitouch": {
         "name": "Multitouch",
+        "shortId": "multitouch",
         "camelName": "Multitouch",
         "shortName": "Multitouch",
         "extends": [],
@@ -1312,6 +1323,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "music": {
         "name": "Music",
+        "shortId": "music",
         "camelName": "Music",
         "shortName": "Music",
         "extends": [],
@@ -1371,6 +1383,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "power": {
         "name": "Power",
+        "shortId": "power",
         "camelName": "Power",
         "shortName": "Power",
         "extends": [],
@@ -1526,6 +1539,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "servo": {
         "name": "Servo",
+        "shortId": "servo",
         "camelName": "Servo",
         "shortName": "Servo",
         "extends": [],
@@ -1570,6 +1584,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "slider": {
         "name": "Slider",
+        "shortId": "slider",
         "camelName": "Slider",
         "shortName": "Slider",
         "extends": [],
@@ -1633,6 +1648,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "tcp": {
         "name": "TCP",
+        "shortId": "tcp",
         "camelName": "TCP",
         "shortName": "TCP",
         "extends": [],
@@ -1755,6 +1771,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "temperature": {
         "name": "Temperature",
+        "shortId": "temperature",
         "camelName": "Temperature",
         "shortName": "Temperature",
         "extends": [],
@@ -1819,6 +1836,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
     },
     "wifi": {
         "name": "WIFI",
+        "shortId": "wifi",
         "camelName": "WIFI",
         "shortName": "WIFI",
         "extends": [],
@@ -1949,3 +1967,4 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
         }
     }
 }
+
