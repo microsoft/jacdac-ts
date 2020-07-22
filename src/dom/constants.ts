@@ -54,17 +54,17 @@ export const CMD_CONSOLE_REG = 0x80
 export const CMD_CONSOLE_MESSAGE_DBG = 0x80
 export const CMD_CONSOLE_SET_MIN_PRIORITY = 0x2000 | CMD_CONSOLE_REG
 
-export const STREAM_PORT_SHIFT = 7
-export const STREAM_COUNTER_MASK = 0x001f
-export const STREAM_CLOSE_MASK = 0x0020
-export const STREAM_METADATA_MASK = 0x0040
+export const PIPE_PORT_SHIFT = 7
+export const PIPE_COUNTER_MASK = 0x001f
+export const PIPE_CLOSE_MASK = 0x0020
+export const PIPE_METADATA_MASK = 0x0040
 
 export const JD_SERIAL_HEADER_SIZE = 16
 export const JD_SERIAL_MAX_PAYLOAD_SIZE = 236
 export const JD_SERVICE_NUMBER_MASK = 0x3f
 export const JD_SERVICE_NUMBER_INV_MASK = 0xc0
 export const JD_SERVICE_NUMBER_CRC_ACK = 0x3f
-export const JD_SERVICE_NUMBER_STREAM = 0x3e
+export const JD_SERVICE_NUMBER_PIPE = 0x3e
 export const JD_SERVICE_NUMBER_CTRL = 0x00
 
 // the COMMAND flag signifies that the device_identifier is the recipent
