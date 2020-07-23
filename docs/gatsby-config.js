@@ -20,7 +20,7 @@ module.exports = {
       resolve: `gatsby-source-filesystem`,
       options: {
         name: `spec`,
-        path: `${__dirname}/../src/spec.json`,
+        path: `${__dirname}/../jacdac-spec/dist/spec.json`,
       },
     },
     `gatsby-transformer-sharp`,
