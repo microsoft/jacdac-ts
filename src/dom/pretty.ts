@@ -173,7 +173,7 @@ export function decodeMember(
             } else {
                 humanValue = reverseLookup(enumInfo.members, numValue)
             }
-        }else if (member.type == "bool" ) {
+        } else if (member.type == "bool") {
             value = !!numValue
             humanValue = value ? "true" : "false"
         } else if (member.unit || scaledValue != numValue)
