@@ -27,10 +27,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Dump GitHub ref
-        env:
-          GITHUB_CONTEXT: ${{ github.ref }}
-        run: echo "$GITHUB_CONTEXT"          
       - name: github pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/master' }}
