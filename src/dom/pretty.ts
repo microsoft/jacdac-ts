@@ -93,6 +93,15 @@ export interface DecodedPacket {
     description: string
 }
 
+export function prettyUnit(u: jdspec.Unit): string {
+    switch (u) {
+        case "us": return "μs"
+        case "C": return "°C"
+        case "frac": return "fraction"
+        default: return u
+    }
+}
+
 export function decodeMember(
     service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, member: jdspec.PacketMember,
     pkt: Packet, offset: number
@@ -164,8 +173,11 @@ export function decodeMember(
             } else {
                 humanValue = reverseLookup(enumInfo.members, numValue)
             }
+        }else if (member.type == "bool" ) {
+            value = !!numValue
+            humanValue = value ? "true" : "false"
         } else if (member.unit || scaledValue != numValue)
-            humanValue = scaledValue + member.unit
+            humanValue = scaledValue + prettyUnit(member.unit)
         else {
             humanValue = scaledValue + ""
             if ((scaledValue | 0) == scaledValue && scaledValue >= 15)
@@ -227,7 +239,7 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
         fields: [
             {
                 name: "_",
-                type: "string",
+                type: "bytes",
                 unit: "",
                 storage: 0
             }
@@ -273,7 +285,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
     if (pkt.is_command || pkt.service_command != jd.CMD_EVENT)
         return null
 
-    const addr = pkt.uintData
+    const addr = pkt.getNumber(NumberFormat.UInt32LE, 0)
     const evInfo = service.packets.find(p => p.kind == "event" && p.identifier == addr)
         || syntheticPktInfo("event", addr)
 

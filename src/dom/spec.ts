@@ -29,7 +29,7 @@ export function isRegister(pkt: jdspec.PacketInfo) {
 }
 
 export function isIntegerType(tp: string) {
-    return /^[ui]\d+(\.|$)/.test(tp) || tp == "pipe_port"
+    return /^[ui]\d+(\.|$)/.test(tp) || tp == "pipe_port" || tp == "bool"
 }
 
 export function numberFormatFromStorageType(tp: jdspec.StorageType) {
