@@ -10,7 +10,6 @@ const DeviceList = (props: { serviceClass?: number }) => {
     const { bus, connectionState } = useContext(JacdacContext)
     const devices = useChange(bus, n => n.devices({ serviceClass: props.serviceClass }))
 
-    console.log(devices)
     return (
         <Grid
             container

@@ -11,15 +11,18 @@ function ConnectButton() {
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
     const [count, setCount] = useState(0)
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)), [bus])
+    console.log(`bus connection state ${connectionState}`)
+    const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
+    const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
     return <Button
         variant="contained"
         color="primary"
         startIcon={<UsbIcon />}
         disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
-        onClick={connectionState == BusState.Connected ? disconnectAsync : connectAsync}>
-        {(connectionState == BusState.Connected || connectionState == BusState.Disconnecting) ? "disconnect" : "connect"}
+        onClick={showDisconnect ? disconnectAsync : connectAsync}>
+        {showDisconnect ? "disconnect" : "connect"}
         {count > 0 && ` (${count})`}
-        {(connectionState == BusState.Connecting || connectionState == BusState.Disconnecting) && <CircularProgress />}
+        {inProgress && <CircularProgress />}
     </Button>
 }
 
