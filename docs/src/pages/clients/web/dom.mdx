@@ -35,9 +35,10 @@ import { createUSBBus, CHANGE } from "jacdac"
 
 const bus = createUSBBus();
 await bus.connectAsync();
-bus.on(CHANGE, () => bus.devices()
+bus.on(CHANGE, () => console.log(bus.devices()
     .map(device => device.toString())
     .join(", "))
+    )
 ```
 
 ## Vanilla JavaScript

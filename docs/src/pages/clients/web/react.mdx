@@ -4,8 +4,24 @@ JACDAC is compatible with React 16+ and hooks
 
 ## JacdacContext
 
-The ``JacdacContext`` provides access to the bus, and connection/disconnection functionalies.
+The ``JacdacContext`` provides access to the bus, and connection/disconnection functionalies from your hooks or components.
+
+```tsx
+import JacdacContext from "jacdac";
+
+function myComponent() {
+    const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
+
+    return <div>
+            <span>{bus.devices()} devices</span>
+            <span>{connectionState}</span>
+            <button onClick={connectAsync}>connect</button>
+            <button onClick={disconnectAsync}>disconnect</button>
+        </div>
+}
+```
 
 ## useQuery
 
 The ``useQuery`` hook allows to issue subscribeable queries for the GraphQL backend of JACDAC.
+
