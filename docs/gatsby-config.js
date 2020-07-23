@@ -6,6 +6,7 @@ module.exports = {
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
+    `gatsby-transformer-json`,
     `gatsby-theme-material-ui`,
     `gatsby-plugin-react-helmet`,
     {
@@ -13,6 +14,13 @@ module.exports = {
       options: {
         name: `images`,
         path: `${__dirname}/src/images`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `spec`,
+        path: `${__dirname}/../src/spec.json`,
       },
     },
     `gatsby-transformer-sharp`,
