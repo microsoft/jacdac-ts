@@ -14,11 +14,13 @@
     "preserveConstEnums": true,
     "declarationDir": "dist/types",
     "outDir": "dist/lib",
+    "newLine": "LF",
     "typeRoots": [
       "node_modules/@types"
     ]
   },
   "include": [
-    "src"
+    "src",
+    "jacdac-spec/dist/specdata.ts"
   ]
 }

@@ -1,7 +1,7 @@
-/// <reference path="spec.d.ts" />
+/// <reference path="../../jacdac-spec/spectool/jdspec.d.ts" />
 
 import { NumberFormat } from "./buffer";
-import * as specdata from "./specdata";
+import * as specdata from "../../jacdac-spec/dist/specdata";
 
 export const serviceSpecifications = specdata.serviceSpecifications
 

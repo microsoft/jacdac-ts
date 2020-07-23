@@ -186,11 +186,26 @@ export function decodeMember(
 }
 
 export function decodeMembers(service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, pkt: Packet, off = 0) {
-    return pktInfo.fields.map(mem => {
-        const info = decodeMember(service, pktInfo, mem, pkt, off)
-        if (info)
-            off += info.size
-        return info
+    const fields = pktInfo.fields.slice(0)
+    let idx = fields.findIndex(f => f.startRepeats)
+    if (idx >= 0) {
+        if (fields.some(f => !f.storage))
+            throw new Error("zero-sized field in repeats:")
+        let sz = 0
+        for (const f of fields)
+            sz += Math.abs(f.storage)
+        // make sure we have enough fields to decode all data
+        while (sz <= pkt.data.length) {
+            const f = fields[idx++]
+            sz += Math.abs(f.storage)
+            fields.push(f)
+        }
+    }
+    return fields.map(mem => {
+        const decoded = decodeMember(service, pktInfo, mem, pkt, off)
+        if (decoded)
+            off += decoded.size
+        return decoded
     }).filter(info => !!info)
 }
 
