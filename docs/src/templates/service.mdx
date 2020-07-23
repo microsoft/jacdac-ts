@@ -1,2 +1,18 @@
-<h1>{props.pageContext.node.name}</h1>
+import DeviceList from "../components/DeviceList"
+
+<h1>{props.pageContext.node.name} service</h1>
+
+<ul>
+    <li>class identifier: 0x{props.pageContext.node.classIdentifier.toString(16)}</li>
+</ul>
+
+## Playground
+
+List of devices with this service.
+
+<DeviceList serviceClass={props.pageContext.node.classIdentifier} />
+
+## See Also
+
+<p>see <a href={`https://microsoft.github.io/jacdac/services/${props.pageContext.node.shortId}`}>specification</a>.</p>
 
