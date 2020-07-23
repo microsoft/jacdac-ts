@@ -172,8 +172,7 @@ function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet) {
 
     const addr = pkt.service_command & jd.CMD_REG_MASK
     const regInfo =
-        Object.values(service.packets)
-            .find(p => spec.isRegister(p) && p.identifier == addr)
+        service.packets.find(p => spec.isRegister(p) && p.identifier == addr)
         || syntheticPktInfo("rw", addr)
 
     const decoded = decodeMembers(service, regInfo, pkt)
@@ -203,7 +202,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
         return null
 
     const addr = pkt.uintData
-    const evInfo = Object.values(service.packets).find(p => p.kind == "event" && p.identifier == addr)
+    const evInfo = service.packets.find(p => p.kind == "event" && p.identifier == addr)
         || syntheticPktInfo("event", addr)
 
     const decoded = decodeMembers(service, evInfo, pkt, 4)
@@ -220,7 +219,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
 
 function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet) {
     const kind = pkt.is_command ? "command" : "report"
-    const cmdInfo = Object.values(service.packets).find(p => p.kind == kind && p.identifier == pkt.service_command)
+    const cmdInfo = service.packets.find(p => p.kind == kind && p.identifier == pkt.service_command)
         || syntheticPktInfo(kind, pkt.service_command)
 
     const decoded = decodeMembers(service, cmdInfo, pkt)
@@ -252,7 +251,7 @@ function decodePipe(pkt: Packet) {
         return null
 
     const meta = !!(cmd & jd.PIPE_METADATA_MASK)
-    const candidates = Object.values(service.packets)
+    const candidates = service.packets
         .filter(p => p.pipeType == pipeType &&
             /pipe/.test(p.kind) &&
             /meta/.test(p.kind) == meta &&

@@ -11,7 +11,7 @@ export const serviceSpecifications = specdata.serviceSpecifications
  */
 export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
     const k = (name || "").toLowerCase().trim()
-    return serviceSpecifications[name];
+    return serviceSpecifications.find(s => s.shortId == name)
 }
 
 /**
@@ -21,12 +21,7 @@ export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
 export function serviceSpecificationFromClassIdentifier(classIdentifier: number): jdspec.ServiceSpec {
     if (classIdentifier === null || classIdentifier === undefined)
         return undefined;
-    for (const name of Object.keys(serviceSpecifications)) {
-        const spec = serviceSpecifications[name]
-        if (spec.classIdentifier === classIdentifier)
-            return spec;
-    }
-    return undefined;
+    return serviceSpecifications.find(s => s.classIdentifier === classIdentifier)
 }
 
 export function isRegister(pkt: jdspec.PacketInfo) {

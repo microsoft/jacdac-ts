@@ -76,7 +76,7 @@ declare namespace jdspec {
         /**
          * Registers, commands, and events defined in service.
          */
-        packets: SMap<PacketInfo>;
+        packets: PacketInfo[];
 
         /**
          * The service uses commands/registers over 0x100/0x200

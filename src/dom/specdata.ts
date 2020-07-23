@@ -1,5 +1,5 @@
-export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
-    "_base": {
+export const serviceSpecifications: jdspec.ServiceSpec[] = [
+    {
         "name": "Common registers and commands",
         "shortId": "_base",
         "camelName": "base",
@@ -12,43 +12,43 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 536870897,
         "enums": {},
-        "packets": {
-            "announce": {
+        "packets": [
+            {
                 "kind": "command",
                 "name": "announce",
                 "identifier": 0,
                 "description": "Enumeration data for control service; service-specific advertisement data otherwise.\nControl broadcasts it automatically every 500ms, but other service have to be queried to provide it.",
                 "fields": []
             },
-            "report:announce": {
+            {
                 "kind": "report",
                 "name": "announce",
                 "identifier": 0,
                 "description": "Enumeration data for control service; service-specific advertisement data otherwise.\nControl broadcasts it automatically every 500ms, but other service have to be queried to provide it.",
                 "fields": []
             },
-            "get_register": {
+            {
                 "kind": "command",
                 "name": "get_register",
                 "identifier": 4096,
                 "description": "Registers number `N` is fetched by issuing command `0x1000 | N`.\nThe report format is the same as the format of the register.",
                 "fields": []
             },
-            "report:get_register": {
+            {
                 "kind": "report",
                 "name": "get_register",
                 "identifier": 4096,
                 "description": "Registers number `N` is fetched by issuing command `0x1000 | N`.\nThe report format is the same as the format of the register.",
                 "fields": []
             },
-            "set_register": {
+            {
                 "kind": "command",
                 "name": "set_register",
                 "identifier": 8192,
                 "description": "Registers number `N` is set by issuing command `0x2000 | N`, with the format\nthe same as the format of the register.",
                 "fields": []
             },
-            "report:event": {
+            {
                 "kind": "report",
                 "name": "event",
                 "identifier": 1,
@@ -70,28 +70,28 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "calibrate": {
+            {
                 "kind": "command",
                 "name": "calibrate",
                 "identifier": 2,
                 "description": "Request to calibrate a sensor. The report indicates the calibration is done.",
                 "fields": []
             },
-            "report:calibrate": {
+            {
                 "kind": "report",
                 "name": "calibrate",
                 "identifier": 2,
                 "description": "Request to calibrate a sensor. The report indicates the calibration is done.",
                 "fields": []
             },
-            "description": {
+            {
                 "kind": "command",
                 "name": "description",
                 "identifier": 3,
                 "description": "Request human-readable description of service.",
                 "fields": []
             },
-            "report:description": {
+            {
                 "kind": "report",
                 "name": "description",
                 "identifier": 3,
@@ -105,7 +105,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "intensity": {
+            {
                 "kind": "rw",
                 "name": "intensity",
                 "identifier": 1,
@@ -120,7 +120,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "value": {
+            {
                 "kind": "rw",
                 "name": "value",
                 "identifier": 2,
@@ -135,7 +135,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "max_power": {
+            {
                 "kind": "rw",
                 "name": "max_power",
                 "identifier": 7,
@@ -151,7 +151,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "is_streaming": {
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -165,7 +165,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -181,7 +181,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "reading": {
+            {
                 "kind": "ro",
                 "name": "reading",
                 "identifier": 257,
@@ -196,7 +196,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "low_threshold": {
+            {
                 "kind": "rw",
                 "name": "low_threshold",
                 "identifier": 5,
@@ -211,7 +211,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "high_threshold": {
+            {
                 "kind": "rw",
                 "name": "high_threshold",
                 "identifier": 5,
@@ -226,9 +226,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "_sensor": {
+    {
         "name": "Sensor",
         "shortId": "_sensor",
         "camelName": "sensor",
@@ -239,8 +239,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 536870898,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -255,7 +255,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "is_streaming"
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -272,9 +272,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "streaming_interval"
             }
-        }
+        ]
     },
-    "accelerometer": {
+    {
         "name": "Accelerometer",
         "shortId": "accelerometer",
         "camelName": "accel",
@@ -286,8 +286,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 521405449,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -303,7 +303,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "is_streaming",
                 "derived": true
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -321,7 +321,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "streaming_interval",
                 "derived": true
             },
-            "forces": {
+            {
                 "kind": "ro",
                 "name": "forces",
                 "identifier": 257,
@@ -351,93 +351,93 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             },
-            "tilt_up": {
+            {
                 "kind": "event",
                 "name": "tilt_up",
                 "identifier": 1,
                 "description": "Emitted when accelerometer is tilted in the given direction.",
                 "fields": []
             },
-            "tilt_down": {
+            {
                 "kind": "event",
                 "name": "tilt_down",
                 "identifier": 2,
                 "description": "Emitted when accelerometer is tilted in the given direction.",
                 "fields": []
             },
-            "tilt_left": {
+            {
                 "kind": "event",
                 "name": "tilt_left",
                 "identifier": 3,
                 "description": "Emitted when accelerometer is tilted in the given direction.",
                 "fields": []
             },
-            "tilt_right": {
+            {
                 "kind": "event",
                 "name": "tilt_right",
                 "identifier": 4,
                 "description": "Emitted when accelerometer is tilted in the given direction.",
                 "fields": []
             },
-            "face_up": {
+            {
                 "kind": "event",
                 "name": "face_up",
                 "identifier": 5,
                 "description": "Emitted when accelerometer is laying flat in the given direction.",
                 "fields": []
             },
-            "face_down": {
+            {
                 "kind": "event",
                 "name": "face_down",
                 "identifier": 6,
                 "description": "Emitted when accelerometer is laying flat in the given direction.",
                 "fields": []
             },
-            "freefall": {
+            {
                 "kind": "event",
                 "name": "freefall",
                 "identifier": 7,
                 "description": "Emitted when total force acting on accelerometer is much less than 1g.",
                 "fields": []
             },
-            "shake": {
+            {
                 "kind": "event",
                 "name": "shake",
                 "identifier": 11,
                 "description": "Emitted when forces change violently a few times.",
                 "fields": []
             },
-            "force_2g": {
+            {
                 "kind": "event",
                 "name": "force_2g",
                 "identifier": 12,
                 "description": "Emitted when force in any direction exceeds given threshold.",
                 "fields": []
             },
-            "force_3g": {
+            {
                 "kind": "event",
                 "name": "force_3g",
                 "identifier": 8,
                 "description": "Emitted when force in any direction exceeds given threshold.",
                 "fields": []
             },
-            "force_6g": {
+            {
                 "kind": "event",
                 "name": "force_6g",
                 "identifier": 9,
                 "description": "Emitted when force in any direction exceeds given threshold.",
                 "fields": []
             },
-            "force_8g": {
+            {
                 "kind": "event",
                 "name": "force_8g",
                 "identifier": 10,
                 "description": "Emitted when force in any direction exceeds given threshold.",
                 "fields": []
             }
-        }
+        ]
     },
-    "bootloader": {
+    {
         "name": "Bootloader",
         "shortId": "bootloader",
         "camelName": "Bootloader",
@@ -460,8 +460,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 }
             }
         },
-        "packets": {
-            "info": {
+        "packets": [
+            {
                 "kind": "command",
                 "name": "info",
                 "identifier": 0,
@@ -469,7 +469,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "fields": [],
                 "identifierName": "announce"
             },
-            "report:info": {
+            {
                 "kind": "report",
                 "name": "info",
                 "identifier": 0,
@@ -505,7 +505,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "set_session": {
+            {
                 "kind": "command",
                 "name": "set_session",
                 "identifier": 128,
@@ -520,7 +520,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "report:set_session": {
+            {
                 "kind": "report",
                 "name": "set_session",
                 "identifier": 128,
@@ -535,7 +535,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "page_data": {
+            {
                 "kind": "command",
                 "name": "page_data",
                 "identifier": 128,
@@ -613,7 +613,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "report:page_data": {
+            {
                 "kind": "report",
                 "name": "page_data",
                 "identifier": 128,
@@ -641,9 +641,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "button": {
+    {
         "name": "Button",
         "shortId": "button",
         "camelName": "Button",
@@ -654,8 +654,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 343122531,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -671,7 +671,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "is_streaming",
                 "derived": true
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -689,7 +689,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "streaming_interval",
                 "derived": true
             },
-            "pressed": {
+            {
                 "kind": "ro",
                 "name": "pressed",
                 "identifier": 257,
@@ -704,37 +704,37 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             },
-            "down": {
+            {
                 "kind": "event",
                 "name": "down",
                 "identifier": 1,
                 "description": "Emitted when button goes from inactive (`pressed == 0`) to active.",
                 "fields": []
             },
-            "up": {
+            {
                 "kind": "event",
                 "name": "up",
                 "identifier": 2,
                 "description": "Emitted when button goes from active (`pressed == 1`) to inactive.",
                 "fields": []
             },
-            "click": {
+            {
                 "kind": "event",
                 "name": "click",
                 "identifier": 3,
                 "description": "Emitted together with `up` when the press time was not longer than 500ms.",
                 "fields": []
             },
-            "long_click": {
+            {
                 "kind": "event",
                 "name": "long_click",
                 "identifier": 4,
                 "description": "Emitted together with `up` when the press time was more than 500ms.",
                 "fields": []
             }
-        }
+        ]
     },
-    "control": {
+    {
         "name": "Control",
         "shortId": "control",
         "camelName": "Control",
@@ -745,29 +745,29 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 0,
         "enums": {},
-        "packets": {
-            "noop": {
+        "packets": [
+            {
                 "kind": "command",
                 "name": "noop",
                 "identifier": 128,
                 "description": "Do nothing. Always ignored. Can be used to test ACKs.",
                 "fields": []
             },
-            "identify": {
+            {
                 "kind": "command",
                 "name": "identify",
                 "identifier": 129,
                 "description": "Blink an LED or otherwise draw user's attention.",
                 "fields": []
             },
-            "reset": {
+            {
                 "kind": "command",
                 "name": "reset",
                 "identifier": 130,
                 "description": "Reset device. ACK may or may not be sent.",
                 "fields": []
             },
-            "device_description": {
+            {
                 "kind": "const",
                 "name": "device_description",
                 "identifier": 384,
@@ -781,7 +781,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "device_class": {
+            {
                 "kind": "const",
                 "name": "device_class",
                 "identifier": 385,
@@ -796,7 +796,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "bootloader_device_class": {
+            {
                 "kind": "const",
                 "name": "bootloader_device_class",
                 "identifier": 388,
@@ -811,7 +811,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "firmware_version": {
+            {
                 "kind": "const",
                 "name": "firmware_version",
                 "identifier": 389,
@@ -825,7 +825,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "temperature": {
+            {
                 "kind": "ro",
                 "name": "temperature",
                 "identifier": 386,
@@ -840,7 +840,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "uptime": {
+            {
                 "kind": "ro",
                 "name": "uptime",
                 "identifier": 390,
@@ -855,9 +855,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "humidity": {
+    {
         "name": "Humidity",
         "shortId": "humidity",
         "camelName": "Humidity",
@@ -869,8 +869,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 382210232,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -886,7 +886,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "is_streaming",
                 "derived": true
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -904,7 +904,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "streaming_interval",
                 "derived": true
             },
-            "humidity": {
+            {
                 "kind": "ro",
                 "name": "humidity",
                 "identifier": 257,
@@ -920,9 +920,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             }
-        }
+        ]
     },
-    "light": {
+    {
         "name": "Light",
         "shortId": "light",
         "camelName": "Light",
@@ -944,8 +944,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 }
             }
         },
-        "packets": {
-            "brightness": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "brightness",
                 "identifier": 1,
@@ -962,7 +962,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "intensity"
             },
-            "actual_brightness": {
+            {
                 "kind": "ro",
                 "name": "actual_brightness",
                 "identifier": 384,
@@ -977,7 +977,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "light_type": {
+            {
                 "kind": "rw",
                 "name": "light_type",
                 "identifier": 128,
@@ -991,7 +991,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "num_pixels": {
+            {
                 "kind": "rw",
                 "name": "num_pixels",
                 "identifier": 129,
@@ -1007,7 +1007,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "max_power": {
+            {
                 "kind": "rw",
                 "name": "max_power",
                 "identifier": 7,
@@ -1024,7 +1024,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "max_power"
             },
-            "run": {
+            {
                 "kind": "command",
                 "name": "run",
                 "identifier": 129,
@@ -1039,9 +1039,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "logger": {
+    {
         "name": "Logger",
         "shortId": "logger",
         "camelName": "Logger",
@@ -1063,8 +1063,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 }
             }
         },
-        "packets": {
-            "min_priority": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "min_priority",
                 "identifier": 128,
@@ -1079,7 +1079,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "report:debug": {
+            {
                 "kind": "report",
                 "name": "debug",
                 "identifier": 128,
@@ -1093,7 +1093,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "report:log": {
+            {
                 "kind": "report",
                 "name": "log",
                 "identifier": 129,
@@ -1107,7 +1107,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "report:warn": {
+            {
                 "kind": "report",
                 "name": "warn",
                 "identifier": 130,
@@ -1121,7 +1121,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "report:error": {
+            {
                 "kind": "report",
                 "name": "error",
                 "identifier": 131,
@@ -1135,9 +1135,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "motor": {
+    {
         "name": "Motor",
         "shortId": "motor",
         "camelName": "Motor",
@@ -1148,8 +1148,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 385895640,
         "enums": {},
-        "packets": {
-            "duty": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "duty",
                 "identifier": 2,
@@ -1165,7 +1165,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "value"
             },
-            "enabled": {
+            {
                 "kind": "rw",
                 "name": "enabled",
                 "identifier": 1,
@@ -1180,9 +1180,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "intensity"
             }
-        }
+        ]
     },
-    "multitouch": {
+    {
         "name": "Multitouch",
         "shortId": "multitouch",
         "camelName": "Multitouch",
@@ -1194,8 +1194,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 416636459,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -1211,7 +1211,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "is_streaming",
                 "derived": true
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -1229,7 +1229,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "streaming_interval",
                 "derived": true
             },
-            "capacity": {
+            {
                 "kind": "ro",
                 "name": "capacity",
                 "identifier": 257,
@@ -1244,7 +1244,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             },
-            "touch": {
+            {
                 "kind": "event",
                 "name": "touch",
                 "identifier": 1,
@@ -1259,7 +1259,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "release": {
+            {
                 "kind": "event",
                 "name": "release",
                 "identifier": 2,
@@ -1274,7 +1274,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "tap": {
+            {
                 "kind": "event",
                 "name": "tap",
                 "identifier": 3,
@@ -1289,7 +1289,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "long_press": {
+            {
                 "kind": "event",
                 "name": "long_press",
                 "identifier": 4,
@@ -1304,23 +1304,23 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "swipe_pos": {
+            {
                 "kind": "event",
                 "name": "swipe_pos",
                 "identifier": 16,
                 "description": "Emitted when input channels are successively touched in order of increasing channel numbers.",
                 "fields": []
             },
-            "swipe_neg": {
+            {
                 "kind": "event",
                 "name": "swipe_neg",
                 "identifier": 17,
                 "description": "Emitted when input channels are successively touched in order of decreasing channel numbers.",
                 "fields": []
             }
-        }
+        ]
     },
-    "music": {
+    {
         "name": "Music",
         "shortId": "music",
         "camelName": "Music",
@@ -1331,8 +1331,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 458731991,
         "enums": {},
-        "packets": {
-            "volume": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "volume",
                 "identifier": 1,
@@ -1349,7 +1349,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "intensity"
             },
-            "play_tone": {
+            {
                 "kind": "command",
                 "name": "play_tone",
                 "identifier": 128,
@@ -1378,9 +1378,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "power": {
+    {
         "name": "Power",
         "shortId": "power",
         "camelName": "Power",
@@ -1391,8 +1391,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 530893146,
         "enums": {},
-        "packets": {
-            "enabled": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "enabled",
                 "identifier": 1,
@@ -1408,7 +1408,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "intensity"
             },
-            "max_power": {
+            {
                 "kind": "rw",
                 "name": "max_power",
                 "identifier": 7,
@@ -1425,7 +1425,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "max_power"
             },
-            "overload": {
+            {
                 "kind": "ro",
                 "name": "overload",
                 "identifier": 385,
@@ -1439,7 +1439,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "current_draw": {
+            {
                 "kind": "ro",
                 "name": "current_draw",
                 "identifier": 257,
@@ -1455,7 +1455,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             },
-            "battery_voltage": {
+            {
                 "kind": "ro",
                 "name": "battery_voltage",
                 "identifier": 384,
@@ -1470,7 +1470,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "battery_charge": {
+            {
                 "kind": "ro",
                 "name": "battery_charge",
                 "identifier": 386,
@@ -1486,7 +1486,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "optional": true
             },
-            "battery_capacity": {
+            {
                 "kind": "const",
                 "name": "battery_capacity",
                 "identifier": 387,
@@ -1502,7 +1502,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "optional": true
             },
-            "keep_on_pulse_duration": {
+            {
                 "kind": "rw",
                 "name": "keep_on_pulse_duration",
                 "identifier": 128,
@@ -1518,7 +1518,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "keep_on_pulse_period": {
+            {
                 "kind": "rw",
                 "name": "keep_on_pulse_period",
                 "identifier": 129,
@@ -1534,9 +1534,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             }
-        }
+        ]
     },
-    "servo": {
+    {
         "name": "Servo",
         "shortId": "servo",
         "camelName": "Servo",
@@ -1547,8 +1547,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 318542083,
         "enums": {},
-        "packets": {
-            "pulse": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "pulse",
                 "identifier": 2,
@@ -1564,7 +1564,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "value"
             },
-            "enabled": {
+            {
                 "kind": "rw",
                 "name": "enabled",
                 "identifier": 1,
@@ -1579,9 +1579,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "intensity"
             }
-        }
+        ]
     },
-    "slider": {
+    {
         "name": "Slider",
         "shortId": "slider",
         "camelName": "Slider",
@@ -1592,8 +1592,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 522667846,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -1609,7 +1609,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "is_streaming",
                 "derived": true
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -1627,7 +1627,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "streaming_interval",
                 "derived": true
             },
-            "position": {
+            {
                 "kind": "ro",
                 "name": "position",
                 "identifier": 257,
@@ -1643,9 +1643,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             }
-        }
+        ]
     },
-    "tcp": {
+    {
         "name": "TCP",
         "shortId": "tcp",
         "camelName": "TCP",
@@ -1666,8 +1666,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 }
             }
         },
-        "packets": {
-            "open": {
+        "packets": [
+            {
                 "kind": "command",
                 "name": "open",
                 "identifier": 128,
@@ -1682,7 +1682,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "open"
             },
-            "report:open": {
+            {
                 "kind": "report",
                 "name": "open",
                 "identifier": 128,
@@ -1697,7 +1697,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "open_ssl": {
+            {
                 "kind": "meta_pipe_command",
                 "name": "open_ssl",
                 "identifier": 1,
@@ -1719,7 +1719,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "open"
             },
-            "outdata": {
+            {
                 "kind": "pipe_command",
                 "name": "outdata",
                 "identifier": 0,
@@ -1735,7 +1735,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "open"
             },
-            "indata": {
+            {
                 "kind": "pipe_report",
                 "name": "indata",
                 "identifier": 0,
@@ -1751,7 +1751,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "open"
             },
-            "error": {
+            {
                 "kind": "meta_pipe_report",
                 "name": "error",
                 "identifier": 0,
@@ -1766,9 +1766,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "open"
             }
-        }
+        ]
     },
-    "temperature": {
+    {
         "name": "Temperature",
         "shortId": "temperature",
         "camelName": "Temperature",
@@ -1780,8 +1780,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
         },
         "classIdentifier": 337754823,
         "enums": {},
-        "packets": {
-            "is_streaming": {
+        "packets": [
+            {
                 "kind": "rw",
                 "name": "is_streaming",
                 "identifier": 3,
@@ -1797,7 +1797,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "is_streaming",
                 "derived": true
             },
-            "streaming_interval": {
+            {
                 "kind": "rw",
                 "name": "streaming_interval",
                 "identifier": 4,
@@ -1815,7 +1815,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 "identifierName": "streaming_interval",
                 "derived": true
             },
-            "temperature": {
+            {
                 "kind": "ro",
                 "name": "temperature",
                 "identifier": 257,
@@ -1831,9 +1831,9 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "identifierName": "reading"
             }
-        }
+        ]
     },
-    "wifi": {
+    {
         "name": "WIFI",
         "shortId": "wifi",
         "camelName": "WIFI",
@@ -1864,8 +1864,8 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 }
             }
         },
-        "packets": {
-            "scan": {
+        "packets": [
+            {
                 "kind": "command",
                 "name": "scan",
                 "identifier": 128,
@@ -1880,7 +1880,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "scan"
             },
-            "results": {
+            {
                 "kind": "pipe_report",
                 "name": "results",
                 "identifier": 0,
@@ -1928,7 +1928,7 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                 ],
                 "pipeType": "scan"
             },
-            "connect": {
+            {
                 "kind": "command",
                 "name": "connect",
                 "identifier": 129,
@@ -1942,28 +1942,27 @@ export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
                     }
                 ]
             },
-            "disconnect": {
+            {
                 "kind": "command",
                 "name": "disconnect",
                 "identifier": 130,
                 "description": "Disconnect from current WiFi network if any.",
                 "fields": []
             },
-            "got_ip": {
+            {
                 "kind": "event",
                 "name": "got_ip",
                 "identifier": 1,
                 "description": "Emitted upon successful join and IP address assignment.",
                 "fields": []
             },
-            "lost_ip": {
+            {
                 "kind": "event",
                 "name": "lost_ip",
                 "identifier": 2,
                 "description": "Emitted when disconnected from network.",
                 "fields": []
             }
-        }
+        ]
     }
-}
-
+]
