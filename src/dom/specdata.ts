@@ -1,5 +1,4 @@
-export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> =
-{
+export const serviceSpecifications: jdspec.SMap<jdspec.ServiceSpec> = {
     "_base": {
         "name": "Common registers and commands",
         "shortId": "_base",
