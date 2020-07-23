@@ -99,6 +99,7 @@
             const logDiv = document.getElementById("log");
             const line = document.createElement("div");
             line.innerText = "" + msg;
+            line.style.whiteSpace = "pre-wrap";
             logDiv.appendChild(line);
             while (logDiv.childElementCount > 500)
                 logDiv.firstChild.remove();

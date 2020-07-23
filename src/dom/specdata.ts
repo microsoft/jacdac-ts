@@ -1691,11 +1691,11 @@ export const serviceSpecifications: jdspec.ServiceSpec[] = [
                     {
                         "name": "outbound_port",
                         "unit": "",
-                        "type": "u16",
-                        "storage": 2,
-                        "isSimpleType": true
+                        "type": "pipe_port",
+                        "storage": 2
                     }
-                ]
+                ],
+                "pipeType": "open"
             },
             {
                 "kind": "meta_pipe_command",

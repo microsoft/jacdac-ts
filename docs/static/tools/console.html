@@ -58,7 +58,7 @@
             const decoded = jacdac.decodePacketData(pkt);
             console.debug(jacdac.printPacket(pkt))
             if (decoded)
-                log(`${jacdac.deviceServiceName(pkt)}: ${decoded}`)
+                log(`${jacdac.deviceServiceName(pkt)}: ${decoded.description}`)
         })
 
         async function sniff() {

@@ -237,6 +237,13 @@ export function fromHex(hex: string) {
     return r
 }
 
+export function toArray<T>(a: ArrayLike<T>): T[] {
+    const r: T[] = new Array(a.length)
+    for (let i = 0; i < a.length; ++i)
+        r[i] = a[i]
+    return r
+}
+
 export interface MutableArrayLike<T> {
     readonly length: number;
     [n: number]: T;

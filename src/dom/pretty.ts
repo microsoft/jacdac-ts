@@ -77,10 +77,26 @@ export enum RegisterType {
     String,
 }
 
+export interface DecodedMember {
+    info: jdspec.PacketMember
+    value: any
+    numValue: number
+    scaledValue: number
+    humanValue: string
+    description: string
+    size: number
+}
+
+export interface DecodedPacket {
+    info: jdspec.PacketInfo
+    decoded: DecodedMember[]
+    description: string
+}
+
 export function decodeMember(
     service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, member: jdspec.PacketMember,
     pkt: Packet, offset: number
-) {
+): DecodedMember {
     if (!member)
         return null
 
@@ -93,10 +109,19 @@ export function decodeMember(
     let humanValue: string = undefined
     let size = Math.abs(member.storage)
 
-    if (!spec.isIntegerType(member.type)) {
+    const enumInfo = service.enums[member.type]
+    const isInt = spec.isIntegerType(member.type) || !!enumInfo
+
+    if (!isInt) {
         const buf = size ? pkt.data.slice(offset, offset + size) : pkt.data.slice(offset)
         if (member.type == "string") {
-            humanValue = value = JSON.stringify(U.fromUTF8(U.uint8ArrayToString(buf)))
+            try {
+                value = U.fromUTF8(U.uint8ArrayToString(buf))
+            } catch {
+                // invalid UTF8
+                value = U.uint8ArrayToString(buf)
+            }
+            humanValue = JSON.stringify(value).replace(/\\u0000/g, "\\0")
         } else if (member.type == "pipe") {
             value = buf
             const devid = U.toHex(buf.slice(0, 8))
@@ -109,7 +134,7 @@ export function decodeMember(
             }
         } else {
             value = buf
-            humanValue = U.toHex(buf)
+            humanValue = hexDump(buf)
         }
         size = buf.length
     } else {
@@ -118,13 +143,34 @@ export function decodeMember(
         value = scaledValue = spec.scaleValue(numValue, member.type)
         if (pkt.dev && member.type == "pipe_port")
             pkt.dev.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
-        const en = service.enums[member.type]
-        if (en)
-            humanValue = reverseLookup(en.members, numValue)
-        else if (member.unit || scaledValue != numValue)
+        if (enumInfo) {
+            if (enumInfo.isFlags) {
+                humanValue = ""
+                let curr = numValue
+                for (const key of Object.keys(enumInfo.members)) {
+                    const val = enumInfo.members[key]
+                    if (curr & val) {
+                        if (humanValue)
+                            humanValue += " | "
+                        humanValue += key
+                        curr &= ~val
+                    }
+                }
+                if (curr) {
+                    if (humanValue)
+                        humanValue += " | "
+                    humanValue += hexNum(curr)
+                }
+            } else {
+                humanValue = reverseLookup(enumInfo.members, numValue)
+            }
+        } else if (member.unit || scaledValue != numValue)
             humanValue = scaledValue + member.unit
-        else
-            humanValue = toHex(scaledValue) + " (" + scaledValue + ")"
+        else {
+            humanValue = scaledValue + ""
+            if ((scaledValue | 0) == scaledValue && scaledValue >= 15)
+                humanValue += " (" + hexNum(scaledValue) + ")"
+        }
     }
 
     return {
@@ -132,7 +178,9 @@ export function decodeMember(
         numValue,
         scaledValue,
         humanValue,
-        description: member.name + ": " + humanValue,
+        description: member.name + ":" +
+            (humanValue.indexOf("\n") >= 0 ? "\n" + humanValue.replace(/^/gm, "      ") : " " + humanValue),
+        info: member,
         size
     }
 }
@@ -146,11 +194,20 @@ export function decodeMembers(service: jdspec.ServiceSpec, pktInfo: jdspec.Packe
     }).filter(info => !!info)
 }
 
+export function wrapDecodedMembers(decoded: DecodedMember[]) {
+    if (decoded.length == 0)
+        return " {}"
+    else if (decoded.length == 1 && decoded[0].description.length < 60)
+        return " { " + decoded[0].description + " }"
+    else
+        return " {\n" + decoded.map(d => "    " + d.description).join("\n") + "\n}"
+}
+
 function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketInfo {
     return {
         kind,
         identifier: addr,
-        name: toHex(addr),
+        name: hexNum(addr),
         description: "",
         fields: [
             {
@@ -163,7 +220,7 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
     }
 }
 
-function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet) {
+function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
     const isSet = !!(pkt.service_command & jd.CMD_SET_REG)
     const isGet = !!(pkt.service_command & jd.CMD_GET_REG)
 
@@ -183,7 +240,7 @@ function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet) {
     else if (decoded.length == 1)
         description = regInfo.name + ": " + decoded[0].humanValue
     else
-        description = "{ " + decoded.map(i => i.description).join(", ") + " }"
+        description = wrapDecodedMembers(decoded)
 
     if (isGet)
         description = "GET " + description
@@ -206,9 +263,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
         || syntheticPktInfo("event", addr)
 
     const decoded = decodeMembers(service, evInfo, pkt, 4)
-
-    let description = decoded.length ? " { " + decoded.map(i => i.description).join(", ") + " }" : ""
-    description = "EVENT " + evInfo.name + description
+    let description = "EVENT " + evInfo.name + wrapDecodedMembers(decoded)
 
     return {
         info: evInfo,
@@ -217,14 +272,13 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
     }
 }
 
-function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet) {
+function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
     const kind = pkt.is_command ? "command" : "report"
     const cmdInfo = service.packets.find(p => p.kind == kind && p.identifier == pkt.service_command)
         || syntheticPktInfo(kind, pkt.service_command)
 
     const decoded = decodeMembers(service, cmdInfo, pkt)
-    const payload = " { " + decoded.map(i => i.description).join(", ") + " }"
-    const description = (pkt.is_command ? "CMD " : "REPORT ") + cmdInfo.name + payload
+    const description = (pkt.is_command ? "CMD " : "REPORT ") + cmdInfo.name + wrapDecodedMembers(decoded)
 
     return {
         info: cmdInfo,
@@ -233,13 +287,13 @@ function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet) {
     }
 }
 
-function decodePacket(service: jdspec.ServiceSpec, pkt: Packet) {
+function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
     return decodeRegister(service, pkt)
         || decodeEvent(service, pkt)
         || decodeCommand(service, pkt)
 }
 
-function decodePipe(pkt: Packet) {
+function decodePipe(pkt: Packet): DecodedPacket {
     const cmd = pkt.service_command
     const pinfo = pkt.dev.port(cmd >> jd.PIPE_PORT_SHIFT)
     if (!pinfo.pipeType)
@@ -260,9 +314,8 @@ function decodePipe(pkt: Packet) {
 
     const cmdInfo = candidates[0]
     if (cmdInfo) {
-        const decoded = decodeMembers(service, cmdInfo, pkt)
-        const payload = " { " + decoded.map(i => i.description).join(", ") + " }"
-        const description = cmdInfo.kind.toUpperCase() + " " + cmdInfo.name + payload
+        const decoded = decodeMembers(service, cmdInfo, pkt, meta ? 4 : 0)
+        const description = cmdInfo.kind.toUpperCase() + " " + cmdInfo.name + wrapDecodedMembers(decoded)
         return {
             info: cmdInfo,
             decoded,
@@ -273,11 +326,11 @@ function decodePipe(pkt: Packet) {
     return null
 }
 
-export function decodePacketData(pkt: Packet): string {
+export function decodePacketData(pkt: Packet): DecodedPacket {
     if (pkt.dev && pkt.service_number == jd.JD_SERVICE_NUMBER_PIPE) {
         const info = decodePipe(pkt)
         if (info)
-            return info.description
+            return info
     }
 
     const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
@@ -285,7 +338,7 @@ export function decodePacketData(pkt: Packet): string {
     if (!service)
         return null
 
-    return decodePacket(service, pkt).description
+    return decodePacket(service, pkt)
 }
 
 function reverseLookup(map: U.SMap<number>, n: number) {
@@ -293,7 +346,7 @@ function reverseLookup(map: U.SMap<number>, n: number) {
         if (map[k] == n)
             return k
     }
-    return toHex(n)
+    return hexNum(n)
 }
 
 export function serviceClass(name: string): number {
@@ -325,9 +378,9 @@ export function commandName(n: number) {
     return reverseLookup(generic_commands, n)
 }
 
-function toHex(n: number) {
+function hexNum(n: number) {
     if (n < 0)
-        return "-" + toHex(-n)
+        return "-" + hexNum(-n)
     return "0x" + n.toString(16)
 }
 
@@ -363,6 +416,26 @@ export function toAscii(d: ArrayLike<number>) {
     return r
 }
 
+export function hexDump(d: ArrayLike<number>): string {
+    const chunk = 32
+    if (d.length <= chunk)
+        return U.toHex(d) + "\u00A0|\u00A0" + toAscii(d)
+
+    const a = U.toArray(d)
+    let r = ""
+    for (let i = 0; i < d.length; i += chunk) {
+        if (i + chunk >= d.length) {
+            let s = U.toHex(a.slice(i))
+            while (s.length < chunk * 2)
+                s += "  "
+            r += s + "\u00A0|\u00A0" + toAscii(a.slice(i))
+        } else {
+            r += hexDump(a.slice(i, i + chunk)) + "\n"
+        }
+    }
+    return r
+}
+
 export function printPacket(pkt: Packet, opts: Options = {}): string {
     const frame_flags = pkt._header[3]
 
@@ -377,7 +450,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
     let cmdname = commandName(cmd)
     if (pkt.service_number == jd.JD_SERVICE_NUMBER_CRC_ACK) {
         service_name = "CRC-ACK"
-        cmdname = toHex(cmd)
+        cmdname = hexNum(cmd)
     }
     if (pkt.service_number == jd.JD_SERVICE_NUMBER_PIPE) {
         service_name = "PIPE"
@@ -395,7 +468,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
     else
         pdesc = 'from ' + pdesc
     if (frame_flags & jd.JD_FRAME_FLAG_ACK_REQUESTED)
-        pdesc = `[ack:${toHex(pkt.crc)}] ` + pdesc
+        pdesc = `[ack:${hexNum(pkt.crc)}] ` + pdesc
 
     const d = pkt.data
     if (pkt.dev && pkt.service_number == 0 && pkt.service_command == jd.CMD_ADVERTISEMENT_DATA) {
@@ -413,7 +486,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
     } else {
         const decoded = decodePacketData(pkt)
         if (decoded) {
-            pdesc += "; " + decoded
+            pdesc += "; " + decoded.description
         } else if (pkt.service_command == jd.CMD_EVENT) {
             pdesc += "; ev=" + num2str(pkt.intData) + " arg=" + (U.read32(pkt.data, 4) | 0)
         } else if (0 < d.length && d.length <= 4) {
@@ -422,7 +495,7 @@ export function printPacket(pkt: Packet, opts: Options = {}): string {
             if (v0 != v1)
                 pdesc += "; signed: " + num2str(v1)
         } else if (d.length) {
-            pdesc += "; " + U.toHex(d) + " " + toAscii(d)
+            pdesc += "; " + hexDump(d)
         }
     }
 
