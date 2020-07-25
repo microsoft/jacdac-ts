@@ -17,6 +17,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       shortName
       shortId
       classIdentifier
+      source
     }
   }
 }

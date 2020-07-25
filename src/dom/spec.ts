@@ -1,9 +1,9 @@
 /// <reference path="../../jacdac-spec/spectool/jdspec.d.ts" />
 
 import { NumberFormat } from "./buffer";
-import * as specdata from "../../jacdac-spec/dist/specdata";
+import specdata from "../../jacdac-spec/dist/spec.json";
 
-export const serviceSpecifications = specdata.serviceSpecifications
+export const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
 
 /**
  * Looks up a service specification by name
