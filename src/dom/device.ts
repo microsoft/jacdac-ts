@@ -103,7 +103,7 @@ export class JDDevice extends JDNode {
         }
     }
 
-    service(service_number: number) {
+    service(service_number: number): JDService {
         if (!this.announced) return undefined;
         this.initServices();
         service_number = service_number | 0;
@@ -176,6 +176,7 @@ export class JDDevice extends JDNode {
     disconnect() {
         this.connected = false;
         this.emit(DISCONNECT)
+        this.emit(CHANGE)
     }
 }
 
