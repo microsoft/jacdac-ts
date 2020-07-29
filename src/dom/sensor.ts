@@ -1,7 +1,7 @@
 import { JDService } from "./service";
 import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, REPORT_RECEIVE } from "./constants";
 import { bufferOfInt } from "./struct";
-import { DebouncedPoll, debouncedPollAsync } from "./utils";
+import { debouncedPollAsync } from "./utils";
 
 export function setStreamingAsync(service: JDService, on: boolean) {
     const register = service.registerAt(REG_IS_STREAMING);

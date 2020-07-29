@@ -12,6 +12,8 @@ on a service, that may be get, set or streamed. All these elements are [nodes](/
 The node is globally uniquely identifiable in the dom,
 implement an event emitter pattern is observable.
 
+## Methods
+
 ### ``id``
 
 The ``id`` identifier can be used to lookup any node within a single bus.
@@ -66,3 +68,7 @@ const unregister = node.subscribe("connect", () => console.log('connect!'))
 ...
 unregister()
 ```
+
+### See Also
+
+[Device](/clients/web/dom/device), [Service](/clients/web/dom/device), [Register](/clients/web/dom/device)

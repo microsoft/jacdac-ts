@@ -1,1 +1,57 @@
 # JDRegister
+
+A **[register](/clients/web/dom/register)** is an addressed data location
+on a [service](/clients/web/dom/service), that may be get, set or streamed. 
+
+<DeviceList />
+
+This object inherits methods and properties from [node](/clients/web/dom/node).
+
+## Methods
+
+### ``data``
+
+Returns register raw data state as a ``UInt8Array``.
+
+```typescript
+const data = register.data;
+```
+
+### ``sendSetAsync``
+
+Sends data to set the register value. This function returns a promise.
+
+```typescript
+await service.sendSetAsync(data)
+```
+
+## Events
+
+### ``REPORT_RECEIVE``
+
+Raised after a report is received.
+
+```typescript
+register.on(REPORT_RECEIVE, reg => console.log(reg))
+```
+
+### ``REPORT_UPDATE``
+
+Raised when a report was received that introduced a change to the register data.
+
+```typescript
+register.on(REPORT_UPDATE, reg => console.log(reg))
+```
+
+### ``CHANGE``
+
+Raised when the register changed.
+
+```typescript
+register.on(CHANGE, () => console.log(this))
+```
+
+
+### See Also
+
+[Device](/clients/web/dom/device), [Service](/clients/web/dom/service)
