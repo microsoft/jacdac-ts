@@ -16,6 +16,9 @@ export const query = graphql`
 
 # Services
 
+Known services are specified in [https://github.com/microsoft/jacdac/tree/master/services](https://github.com/microsoft/jacdac/tree/master/services)
+using [this format](https://github.com/microsoft/jacdac/tree/master/spectool). Please send us a pull request to register your own service.
+
 <ul>
     {props.data.allSpecJson.edges.map(node => <li>
         <Link to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
