@@ -152,7 +152,7 @@ export class JDDevice extends JDNode {
             this.lastServiceUpdate = pkt.timestamp
             if (this._services) {
                 // patch services
-                throw new Error("need to patch vervices")
+                throw new Error("need to patch services")
             }
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
