@@ -17,7 +17,6 @@ const DeviceList = (props: { serviceClass?: number }) => {
         >
             {connectionState == BusState.Connected && !devices.length && <ListItem><ListItemText primary="No device detected..." /></ListItem>}
             {devices.map(device => <Grid item xs={4}><DeviceCard device={device} /></Grid>)}
-            {connectionState == BusState.Disconnected && <ListItem><ListItemText primary="Connect to see devices" /></ListItem>}
         </Grid>
     )
 

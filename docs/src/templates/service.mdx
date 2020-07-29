@@ -1,15 +1,8 @@
 import DeviceList from "../components/DeviceList"
 import { Link } from "gatsby"
 
-<h1>{props.pageContext.node.name} service</h1>
-
-<ul>
-    <li>class identifier: 0x{props.pageContext.node.classIdentifier.toString(16)}</li>
-</ul>
-
-## Playground
-
-List of devices with this service.
+<h1>{props.pageContext.node.name}</h1>
+<p>{props.pageContext.node.notes.short}</p>
 
 <DeviceList serviceClass={props.pageContext.node.classIdentifier} />
 
@@ -19,11 +12,10 @@ List of devices with this service.
     {props.pageContext.node.source}
 </pre>
 
-
 ## See Also
 
 <ul>
-    <li><a href={`https://microsoft.github.io/jacdac/services/${props.pageContext.node.shortId}`}>specification</a>.</li>
+    <li>Edit <a href={`https://microsoft.github.io/jacdac/services/${props.pageContext.node.shortId}`}>specification</a>.</li>
     <li>Using services in JavaScript with <Link to={`/clients/web/dom/service`}>JDService</Link></li>
 </ul>
 

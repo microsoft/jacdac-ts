@@ -1,0 +1,23 @@
+import { Link } from "gatsby"
+import { graphql } from "gatsby"
+
+export const query = graphql`
+  query {
+    allSpecJson {
+      edges {
+        node {
+          shortId
+          name
+        }
+      }
+    }
+  }
+`
+
+# Services
+
+<ul>
+    {props.data.allSpecJson.edges.map(node => <li>
+        <Link to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
+    </li>)}
+</ul>
