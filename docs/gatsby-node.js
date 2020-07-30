@@ -1,6 +1,7 @@
 const path = require(`path`)
 const slug = require(`slug`)
 const { slash } = require(`gatsby-core-utils`)
+const { createFilePath } = require(`gatsby-source-filesystem`)
 
 // Implement the Gatsby API “createPages”. This is
 // called after the Gatsby bootstrap is finished so you have
@@ -52,4 +53,18 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       },
     })
   })
+}
+
+exports.onCreateNode = ({ node, actions, getNode }) => {
+  const { createNodeField } = actions
+  console.log(node.internal.type)
+  if (node.internal.type === `Mdx`) {
+    console.log('create slug node')
+    const value = createFilePath({ node, getNode })
+    createNodeField({
+      name: `slug`,
+      node,
+      value,
+    })
+  }
 }

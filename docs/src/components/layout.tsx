@@ -28,6 +28,14 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 // tslint:disable-next-line: no-submodule-imports
 import MenuIcon from '@material-ui/icons/Menu';
+// tslint:disable-next-line: no-submodule-imports
+import ListItem from '@material-ui/core/ListItem';
+// tslint:disable-next-line: no-submodule-imports
+import List from '@material-ui/core/List';
+// tslint:disable-next-line: no-submodule-imports
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+// tslint:disable-next-line: no-submodule-imports
+import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -108,14 +116,39 @@ const Layout = ({ children }) => {
     setOpen(false);
   };
   const data = useStaticQuery(graphql`
-    query SiteTitleQuery {
+    query {
       site {
         siteMetadata {
           title
         }
       }
+
+      allMdx {
+        edges {
+          node {
+            headings {
+              value
+            }
+            excerpt
+            fields {
+              slug
+            }
+          }
+        }
+      }
+
     }
   `)
+
+  // convert pages into tree
+  const toc = data.allMdx.edges
+    .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
+    .map(node => {
+      return {
+        name: node.node.headings[0].value,
+        path: node.node.fields.slug
+      }
+    })
 
   return (
     <JacdacProvider>
@@ -156,6 +189,15 @@ const Layout = ({ children }) => {
             </IconButton>
           </div>
           <Divider />
+          <List>
+            {toc.map(entry => (
+              <ListItem button key={entry.name}>
+                <Link to={entry.path}>
+                  <ListItemText primary={entry.name} />
+                </Link>
+              </ListItem>
+            ))}
+          </List>
         </Drawer>
         <main
           className={clsx(classes.content, {
@@ -174,10 +216,6 @@ const Layout = ({ children }) => {
       </div>
     </JacdacProvider>
   )
-}
-
-Layout.propTypes = {
-  children: PropTypes.node.isRequired,
 }
 
 export default Layout
