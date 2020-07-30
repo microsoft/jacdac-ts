@@ -9,7 +9,8 @@ export default function ErrorSnackbar() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(undefined)
 
-  useEffect(() => bus.subscribe(ERROR, () => {
+  useEffect(() => bus.subscribe(ERROR, error => {
+    setError(error);
     setOpen(true);
   }))
 
@@ -20,7 +21,7 @@ export default function ErrorSnackbar() {
     setOpen(false);
   };
 
-  const message = error ? `${error.context} ${error.exception.message}` : ''
+  const message = error ? `${error.exception.message}` : ''
   return (
     <Snackbar
       anchorOrigin={{

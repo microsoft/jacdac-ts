@@ -7,15 +7,106 @@
 
 import React from "react"
 import PropTypes from "prop-types"
+import clsx from 'clsx';
+import { makeStyles, useTheme } from '@material-ui/core';
+import CssBaseline from '@material-ui/core/CssBaseline';
+// tslint:disable-next-line: no-submodule-imports
+import AppBar from '@material-ui/core/AppBar';
+// tslint:disable-next-line: no-submodule-imports
+import Toolbar from '@material-ui/core/Toolbar';
+// tslint:disable-next-line: no-submodule-imports
+import Typography from '@material-ui/core/Typography';
+// tslint:disable-next-line: no-submodule-imports
+import Drawer from '@material-ui/core/Drawer'
+import ConnectButton from '../jacdac/ConnectButton';
+import { Link } from 'gatsby-theme-material-ui';
+// tslint:disable-next-line: no-submodule-imports
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+// tslint:disable-next-line: no-submodule-imports
+import Divider from '@material-ui/core/Divider';
+// tslint:disable-next-line: no-submodule-imports
+import IconButton from '@material-ui/core/IconButton';
+// tslint:disable-next-line: no-submodule-imports
+import MenuIcon from '@material-ui/icons/Menu';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
-import Header from "./header"
+
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import { Typography } from "@material-ui/core"
+
+
+const drawerWidth = 240;
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+  },
+  appBar: {
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  appBarShift: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  hide: {
+    display: 'none',
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0,
+  },
+  drawerPaper: {
+    width: drawerWidth,
+  },
+  drawerHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: 'flex-end',
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: -drawerWidth,
+  },
+  contentShift: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginLeft: 0,
+  },
+}));
 
 const Layout = ({ children }) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const [open, setOpen] = React.useState(false);
+
+  const handleDrawerOpen = () => {
+    setOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setOpen(false);
+  };
   const data = useStaticQuery(graphql`
     query SiteTitleQuery {
       site {
@@ -28,24 +119,59 @@ const Layout = ({ children }) => {
 
   return (
     <JacdacProvider>
-      <Typography>
-        <ErrorSnackbar />
-        <Header siteTitle={data.site.siteMetadata.title} />
-        <div
-          style={{
-            margin: `0 auto`,
-            maxWidth: 1280,
-            padding: `1rem 1.0875rem 1.45rem`,
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar position="fixed"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: open,
+          })}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              className={clsx(classes.menuButton, open && classes.hide)}
+            > <MenuIcon />
+            </IconButton>
+            <Typography variant="h6">
+              <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
+            </Typography>
+            <ConnectButton />
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          className={classes.drawer}
+          variant="persistent"
+          anchor="left"
+          open={open}
+          classes={{
+            paper: classes.drawerPaper,
           }}
         >
-          <main>
+          <div className={classes.drawerHeader}>
+            <IconButton onClick={handleDrawerClose}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </div>
+          <Divider />
+        </Drawer>
+        <main
+          className={clsx(classes.content, {
+            [classes.contentShift]: open,
+          })}
+        >
+          <div className={classes.drawerHeader} />
+          <Typography>
             {children}
-          </main>
-          <footer>
-            © {new Date().getFullYear()} Microsoft Corporation
+          </Typography>
+        </main>
+        <footer>
+          © {new Date().getFullYear()} Microsoft Corporation
         </footer>
-        </div>
-      </Typography>
+        <ErrorSnackbar />
+      </div>
     </JacdacProvider>
   )
 }
