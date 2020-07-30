@@ -415,7 +415,7 @@ function num2str(n: number) {
     return n + " (0x" + n.toString(16) + ")"
 }
 
-export interface Options {
+export interface PrintPacketOptions {
     skipRepeatedAnnounce?: boolean;
 }
 
@@ -463,7 +463,7 @@ export function hexDump(d: ArrayLike<number>): string {
     return r
 }
 
-export function printPacket(pkt: Packet, opts: Options = {}): string {
+export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string {
     const frame_flags = pkt._header[3]
 
     let devname = pkt.dev ? pkt.dev.name || pkt.dev.shortId : pkt.device_identifier
