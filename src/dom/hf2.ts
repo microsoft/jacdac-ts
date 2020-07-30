@@ -388,6 +388,10 @@ export class Proto {
                     }
                     return null
                 })
+                .catch(e => {
+                    this.error(e)
+                    return null
+                })
 
         return this.lock.enqueue("talk", () =>
             this.sendMsgAsync(pkt)
