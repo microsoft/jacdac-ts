@@ -9,7 +9,7 @@ import React from "react"
 import PropTypes from "prop-types"
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
-
+import ErrorSnackbar from "./ErrorSnackbar"
 import Header from "./header"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
@@ -29,6 +29,7 @@ const Layout = ({ children }) => {
   return (
     <JacdacProvider>
       <Typography>
+        <ErrorSnackbar />
         <Header siteTitle={data.site.siteMetadata.title} />
         <div
           style={{
