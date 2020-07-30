@@ -11,7 +11,6 @@ function ConnectButton() {
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
     const [count, setCount] = useState(0)
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)), [bus])
-    console.log(`bus connection state ${connectionState}`)
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
     return <Button

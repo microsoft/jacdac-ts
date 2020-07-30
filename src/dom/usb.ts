@@ -32,8 +32,15 @@ export function createUSBBus(options?: USBOptions): JDBus {
     let hf2: Proto;
     const bus = new JDBus({
         connectAsync: (background) => {
-            if (hf2) return Promise.resolve();
+            if (hf2) {
+                console.log(`reusing hf2`)
+                return Promise.resolve();
+            }
             const transport = new Transport(options);
+            transport.onError = (e) => {
+                bus.errorHandler("HF2", e)
+                bus.disconnectAsync()
+            }
             hf2 = new Proto(transport);
             const onJDMessage = (buf: Uint8Array) => {
                 const pkts = Packet.fromFrame(buf, bus.timestamp)
@@ -42,16 +49,24 @@ export function createUSBBus(options?: USBOptions): JDBus {
             }
             return hf2.connectAsync(background)
                 .then(() => hf2.onJDMessage(onJDMessage))
+                .catch(e => {
+                    console.log(`hf2 connection error`)
+                    hf2 = undefined;
+                    throw e;
+                })
         },
         sendPacketAsync: p => {
+            if (!hf2)
+                throw new Error("hf2 transport disconnected")
+
             const buf = p.toBuffer();
             return hf2.sendJDMessageAsync(buf)
-                .then(() => { }, err => console.log(err));
+                .then(() => { });
         },
         disconnectAsync: () => {
             const h = hf2;
             hf2 = undefined;
-            return h.disconnectAsync();
+            return h ? h.disconnectAsync() : Promise.resolve();
         }
     });
 

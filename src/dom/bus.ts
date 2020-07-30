@@ -65,7 +65,6 @@ export class JDBus extends JDNode {
      */
     constructor(public options?: BusOptions) {
         super();
-        console.log(`new bus...`)
         this.options = this.options || {};
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
@@ -77,6 +76,7 @@ export class JDBus extends JDNode {
 
     private setConnectionState(state: BusState) {
         if (this._connectionState !== state) {
+            this.log(`${BusState[this._connectionState]} -> ${BusState[state]}`)
             this._connectionState = state;
             this.emit(CONNECTION_STATE, this._connectionState);
             switch (this._connectionState) {
@@ -158,22 +158,28 @@ export class JDBus extends JDNode {
     }
 
     errorHandler(context: string, exception: any) {
+        this.log(`error ${context} ${exception?.description}`)
         this.emit(ERROR, { context, exception })
         this.emit(CHANGE)
     }
 
     connectAsync(background?: boolean): Promise<void> {
         // already connected
-        if (this.connectionState == BusState.Connected)
+        if (this.connectionState == BusState.Connected) {
+            this.log(`already connected`)
             return Promise.resolve();
+        }
 
         // connecting
         if (!this._connectPromise) {
             // already disconnecting, retry when disconnected
-            if (this._disconnectPromise)
+            if (this._disconnectPromise) {
+                this.log(`queuing connect after disconnecting`)
                 this._connectPromise = this._disconnectPromise.then(() => this.connectAsync())
+            }
             else {
                 // starting a fresh connection
+                this.log(`connecting`)
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
                 const connectAsyncPromise = this.options.connectAsync ? this.options.connectAsync(background) : Promise.resolve();
@@ -188,6 +194,8 @@ export class JDBus extends JDNode {
                         this.errorHandler(CONNECT, e);
                     })
             }
+        } else {
+            this.log(`connect with existing promise`)
         }
         return this._connectPromise;
     }
@@ -212,6 +220,8 @@ export class JDBus extends JDNode {
                         this.setConnectionState(BusState.Disconnected);
                     });
             }
+        } else {
+            this.log(`disconnect with existing promise`)
         }
         return this._disconnectPromise;
     }
@@ -318,11 +328,5 @@ export class JDBus extends JDNode {
      */
     lookupName(id: string) {
         return this._deviceNames[id];
-    }
-
-    log(msg: any) {
-        if (this._minConsolePriority > ConsolePriority.Log)
-            return
-        console.log(msg);
     }
 }

@@ -171,7 +171,8 @@ export class Transport {
     }
 
     error(msg: string) {
-        throw new Error(`USB error on device ${this.dev ? this.dev.productName : "n/a"} (${msg})`)
+        console.error(`USB error on device ${this.dev ? this.dev.productName : "n/a"} (${msg})`)
+        this.onError(new Error("hf2 error"))
     }
 
     private async readLoop() {

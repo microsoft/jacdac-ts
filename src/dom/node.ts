@@ -31,6 +31,10 @@ export abstract class JDNode {
         return this.addListenerInternal(eventName, handler, true);
     }
 
+    protected log(msg: any) {
+        console.log(`${this}: ${msg}`)
+    }
+
     private addListenerInternal(eventName: string, handler: EventHandler, once: boolean): JDNode {
         if (!eventName || !handler) return this;
 
