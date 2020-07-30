@@ -436,12 +436,15 @@ export class Proto {
     }
 
     handleEvent(buf: Uint8Array) {
-        let evid = U.read32(buf, 0)
-        let f = this.eventHandlers[evid + ""]
+        const evid = U.read32(buf, 0)
+        const f = this.eventHandlers[evid + ""]
         if (f) {
             f(buf.slice(4))
         } else {
             this.io.log("unhandled event: " + evid.toString(16))
+            if (evid === 0x800020) {
+                this.io.onError(new Error("hf2 corrupted"))
+            }
         }
     }
     onSerial(data: Uint8Array, iserr: boolean) {
