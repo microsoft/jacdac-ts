@@ -261,3 +261,5 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
 
     return []
 }
+
+export default Packet;
