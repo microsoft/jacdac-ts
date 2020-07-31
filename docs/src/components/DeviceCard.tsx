@@ -31,7 +31,7 @@ const useStyles = makeStyles({
 function navigateToService(service: JDService) {
     const spec = service.specification;
     if (spec)
-        navigate(`/spec/services/${spec.shortId}`) // todo spec
+        navigate(`/services/${spec.shortId}`) // todo spec
 }
 
 const DeviceCard = (props: { device: JDDevice, children?: any, onServiceClick?: (service: JDService) => void }) => {

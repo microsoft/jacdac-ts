@@ -1,5 +1,4 @@
 const path = require(`path`)
-const slug = require(`slug`)
 const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
 
@@ -39,7 +38,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
   // already includes an ID field, we just use that for
   // each page's path.
   result.data.allSpecJson.nodes.forEach(node => {
-    const p = `/services/${slug(node.shortId)}/`;
+    const p = `/services/${node.shortId}/`;
     console.log(`create page ${p}`)
     createPage({
       // Each page is required to have a `path` as well
@@ -59,7 +58,6 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
   const { createNodeField } = actions
   console.log(node.internal.type)
   if (node.internal.type === `Mdx`) {
-    console.log('create slug node')
     const value = createFilePath({ node, getNode })
     createNodeField({
       name: `slug`,

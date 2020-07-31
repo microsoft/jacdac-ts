@@ -137,11 +137,18 @@ const Layout = ({ children }) => {
         }
       }
 
+      allSpecJson {
+        nodes {
+          name
+          shortId
+        }
+      }
+
     }
   `)
 
   // convert pages into tree
-  const toc = data.allMdx.edges
+  let toc = data.allMdx.edges
     .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
     .map(node => {
       return {
@@ -149,6 +156,13 @@ const Layout = ({ children }) => {
         path: node.node.fields.slug
       }
     })
+
+  toc = toc.concat(data.allSpecJson.nodes.map(node => {
+    return {
+      name: node.name,
+      path: `/services/${node.shortId}`
+    }
+  }))
 
   return (
     <JacdacProvider>
