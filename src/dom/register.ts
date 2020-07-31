@@ -1,5 +1,5 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, SRV_LIGHT_SPECTRUM_SENSOR } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
@@ -29,6 +29,10 @@ export class JDRegister extends JDNode {
 
     sendSetIntAsync(value: number): Promise<void> {
         return this.sendSetAsync(bufferOfInt(value))
+    }
+
+    get specification() {
+        return this.service.specification?.packets.find(packet => packet.identifier === this.address)
     }
 
     get data() {

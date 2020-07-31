@@ -25,12 +25,12 @@ export function ensureStreamingSubscription(service: JDService): () => void {
     const register = service.registerAt(REG_IS_STREAMING)
     const startStreaming = async () => {
         console.log("start streaming")
-        await setStreamingAsync(this.register.service, true)
+        await setStreamingAsync(register.service, true)
     }
     const ensureStreaming = debouncedPollAsync(startStreaming, 1000, 2000);
     const observable = register.observe(REPORT_RECEIVE);
     return observable.subscribe({
-        next: this.ensureStreaming.execute(),
+        next: () => ensureStreaming.execute(),
         error: e => ensureStreaming.stop(),
         complete: () => {
             ensureStreaming.stop()

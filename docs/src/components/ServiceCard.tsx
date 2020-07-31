@@ -14,6 +14,7 @@ import IconButton from '@material-ui/core/IconButton';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'gatsby-theme-material-ui';
+import ServiceInput from './ServiceInput';
 
 const useStyles = makeStyles({
     root: {
@@ -46,7 +47,7 @@ export default function ServiceCard(props: { service: JDService, linkToService?:
                     <Link to="/clients/web/dom/device">{service.device.name || service.device.shortId}</Link>
                 </Typography>
                 <Typography variant="body2" component="p">
-
+                    <ServiceInput service={service} />
                 </Typography>
             </CardContent>
         </Card>
