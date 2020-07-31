@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid, List } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority } from '../../../src/dom/constants';
@@ -35,7 +35,9 @@ const PacketList = (props: {
 
     return (
         <Grid container>
-            {packets?.map(packet => <PacketListItem packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
+            <List dense={true}>
+                {packets?.map(packet => <PacketListItem packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
+            </List>
         </Grid>
     )
 
