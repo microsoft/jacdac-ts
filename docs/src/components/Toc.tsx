@@ -107,7 +107,6 @@ export default function Toc() {
     }))
 
     toc = treeifyToc(toc)
-    console.log(toc)
 
     return <List component="nav" className={classes.root}  >
         {toc.map(entry => <TocListItem entry={entry} />)}
