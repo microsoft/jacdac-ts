@@ -5,11 +5,11 @@ import { Packet } from '../../../src/dom/packet';
 import { printPacket, decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
 import { hash } from '../../../src/dom/utils'
 
-const PacketListItem = (props: {
+export default function PacketListItem(props: {
     packet: Packet,
     consoleMode?: boolean,
     skipRepeatedAnnounce?: boolean
-}) => {
+}) {
     const { packet, consoleMode, skipRepeatedAnnounce } = props;
     let text: string;
     if (consoleMode) {
@@ -22,5 +22,3 @@ const PacketListItem = (props: {
         {text}
     </ListItem>
 }
-
-export default PacketListItem;

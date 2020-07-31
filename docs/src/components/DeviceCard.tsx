@@ -34,7 +34,7 @@ function navigateToService(service: JDService) {
         navigate(`/services/${spec.shortId}`) // todo spec
 }
 
-const DeviceCard = (props: { device: JDDevice, children?: any, onServiceClick?: (service: JDService) => void }) => {
+export default function DeviceCard(props: { device: JDDevice, children?: any, onServiceClick?: (service: JDService) => void }) {
     const { device, children, onServiceClick } = props;
     const classes = useStyles();
     const services = useChange(device, () => device.services()
@@ -56,5 +56,3 @@ const DeviceCard = (props: { device: JDDevice, children?: any, onServiceClick?: 
         </Card>
     );
 }
-
-export default DeviceCard

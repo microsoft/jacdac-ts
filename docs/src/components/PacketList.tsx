@@ -6,11 +6,11 @@ import { PACKET_RECEIVE, ConsolePriority } from '../../../src/dom/constants';
 import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 
-const PacketList = (props: {
+export default function PacketList(props: {
     maxItems?: number,
     consoleMode?: boolean,
     skipRepeatedAnnounce?: boolean
-}) => {
+}) {
     const { consoleMode, skipRepeatedAnnounce } = props
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
@@ -42,5 +42,3 @@ const PacketList = (props: {
     )
 
 }
-
-export default PacketList

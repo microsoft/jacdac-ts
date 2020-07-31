@@ -54,7 +54,7 @@ function treeifyToc(toc: TocNode[]) {
     return toc
 }
 
-function Toc() {
+export default function Toc() {
     const classes = useStyles();
     const data = useStaticQuery(graphql`
   query {
@@ -132,5 +132,3 @@ function Toc() {
         </React.Fragment>
     }
 }
-
-export default Toc;

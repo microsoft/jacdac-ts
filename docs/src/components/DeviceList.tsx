@@ -1,24 +1,23 @@
 
 import React, { useContext } from 'react';
-import { ListItem, ListItemText, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import DeviceCard from './DeviceCard';
+import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
-import { BusState } from '../../../src/dom/bus';
 import JacdacContext from '../../../src/react/Context';
 
-const DeviceList = (props: { serviceClass?: number }) => {
-    const { bus, connectionState } = useContext(JacdacContext)
-    const devices = useChange(bus, n => n.devices({ serviceClass: props.serviceClass }))
+export default function DeviceList(props: { serviceClass?: number, linkToService?: boolean }) {
+    const { serviceClass, linkToService } = props
+    const { bus } = useContext(JacdacContext)
+    const devices = useChange(bus, n => n.devices({ serviceClass }))
 
     return (
         <Grid
             container
             spacing={2}
         >
-            {devices.map(device => <Grid item xs={4}><DeviceCard device={device} /></Grid>)}
+            {serviceClass === undefined && devices.map(device => <Grid item xs={4}><DeviceCard device={device} /></Grid>)}
+            {!!serviceClass && devices.map(device => device.services({ serviceClass }).map(service => <Grid item xs={4}><ServiceCard service={service} linkToService={linkToService} /></Grid>))}
         </Grid>
     )
-
 }
-
-export default DeviceList

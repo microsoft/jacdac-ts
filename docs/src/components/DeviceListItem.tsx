@@ -5,10 +5,8 @@ import { JDDevice } from '../../../src/dom/device';
 import DeviceCard from './DeviceCard';
 
 
-const DeviceListItem = (props: { device: JDDevice }) => {
+export default function DeviceListItem(props: { device: JDDevice }) {
     return <ListItem key={props.device.id}>
         <DeviceCard device={props.device} />
     </ListItem>
 }
-
-export default DeviceListItem;
