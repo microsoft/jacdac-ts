@@ -199,8 +199,10 @@ export class Transport {
                     await U.delay(5)
                 }
             } catch (err) {
-                if (this.dev)
+                if (this.dev) {
                     this.onError(err)
+                    await this.disconnectAsync()
+                }
                 await U.delay(300)
             }
         }

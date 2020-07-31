@@ -4,8 +4,8 @@ import { JDBus, BusState } from "../../../src/dom/bus";
 import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 
+const bus = createUSBBus();
 const JacdacProvider = ({ children }) => {
-    const bus = useMemo<JDBus>(createUSBBus, [createUSBBus]);
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
 
@@ -16,7 +16,7 @@ const JacdacProvider = ({ children }) => {
             bus.connectAsync(true);
         }
         return () => { }
-    }, [bus])
+    })
 
     // subscribe to connection state changes
     useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)),[bus])

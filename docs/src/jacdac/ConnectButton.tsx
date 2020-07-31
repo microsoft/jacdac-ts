@@ -9,8 +9,8 @@ import { DEVICE_CHANGE } from "../../../src/dom/constants";
 
 function ConnectButton() {
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
-    const [count, setCount] = useState(0)
-    useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)), [bus])
+    const [count, setCount] = useState(bus.devices().length)
+    useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
     return <Button

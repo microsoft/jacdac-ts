@@ -1,7 +1,6 @@
 import { Transport, Proto } from "./hf2";
 import { JDBus } from "./bus";
 import { Packet } from "./packet";
-import { assert } from "./utils";
 
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>;
