@@ -39,7 +39,6 @@ const DeviceCard = (props: { device: JDDevice, children?: any, onServiceClick?: 
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
-    console.log(services)
     return (
         <Card className={classes.root}>
             <CardContent>
@@ -48,10 +47,6 @@ const DeviceCard = (props: { device: JDDevice, children?: any, onServiceClick?: 
                 </Typography>
                 <Typography variant="h5" component="h2">
                     {device.shortId}
-                </Typography>
-                <Typography variant="body2" component="p">
-                    {services.map(service => service.name)
-                        .join(', ')}
                 </Typography>
             </CardContent>
             <CardActions>
