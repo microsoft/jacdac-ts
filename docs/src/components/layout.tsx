@@ -6,7 +6,6 @@
  */
 
 import React from "react"
-import PropTypes from "prop-types"
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -39,10 +38,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
+import Toc from "./Toc"
 
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-
 
 const drawerWidth = 240;
 
@@ -122,47 +121,8 @@ const Layout = ({ children }) => {
           title
         }
       }
-
-      allMdx {
-        edges {
-          node {
-            headings {
-              value
-            }
-            excerpt
-            fields {
-              slug
-            }
-          }
-        }
-      }
-
-      allSpecJson {
-        nodes {
-          name
-          shortId
-        }
-      }
-
     }
   `)
-
-  // convert pages into tree
-  let toc = data.allMdx.edges
-    .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
-    .map(node => {
-      return {
-        name: node.node.headings[0].value,
-        path: node.node.fields.slug
-      }
-    })
-
-  toc = toc.concat(data.allSpecJson.nodes.map(node => {
-    return {
-      name: node.name,
-      path: `/services/${node.shortId}`
-    }
-  }))
 
   return (
     <JacdacProvider>
@@ -203,15 +163,7 @@ const Layout = ({ children }) => {
             </IconButton>
           </div>
           <Divider />
-          <List>
-            {toc.map(entry => (
-              <ListItem button key={entry.name}>
-                <Link to={entry.path}>
-                  <ListItemText primary={entry.name} />
-                </Link>
-              </ListItem>
-            ))}
-          </List>
+          <Toc />
         </Drawer>
         <main
           className={clsx(classes.content, {
