@@ -70,7 +70,10 @@ export class JDBus extends JDNode {
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
 
-    get connectionState() {
+    /**
+     * Gets the bus connection state.
+     */
+    get connectionState(): BusState {
         return this._connectionState;
     }
 
@@ -89,6 +92,9 @@ export class JDBus extends JDNode {
         }
     }
 
+    /**
+     * Gets a unique identifier for this node in the JACDAC DOM.
+     */
     get id() {
         return `bus`;
     }
