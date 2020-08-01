@@ -6,19 +6,25 @@ import { DecodedMember } from "../../../src/dom/pretty";
 
 function MemberInput(props: { member: DecodedMember, labelledby: string }) {
     const { member, labelledby } = props;
-    if (member.info.type == "bool")
+    const { info } = member;
+    console.log(member)
+    if (info.type == "bool")
         return <Switch value={member.value} />
-    else if (member.scaledValue !== undefined)
-        return <Slider disabled value={member.scaledValue} aria-labelledby={labelledby} min={0} max={1} />
-    else
-        return <span>{member.humanValue}</span>
+    else if (member.numValue !== undefined && info.storage > 0) {
+        return <Slider value={member.numValue}
+            aria-labelledby={labelledby}
+            min={0} max={1 << (8 * member.size)}
+        />
+    }
+
+    return <Typography variant="h4">{member.humanValue}</Typography>
 }
 
 function Decoded(props: { member: DecodedMember }) {
     const { member } = props;
     return <div>
         <Typography id="slider" gutterBottom>
-            {member.description}
+            {member.info.name}
         </Typography>
         <MemberInput member={member} labelledby={"slider"} />
     </div>
@@ -26,7 +32,6 @@ function Decoded(props: { member: DecodedMember }) {
 
 export default function ReportRegister(props: { register: JDRegister }) {
     const { register } = props;
-    const spec = register.specification;
     const [decoded, setDecoded] = useState(register.decode())
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
@@ -34,6 +39,9 @@ export default function ReportRegister(props: { register: JDRegister }) {
     }))
 
     return <div>
+        {!!decoded && <Typography gutterBottom>
+            {decoded.info.name}
+        </Typography>}
         {decoded && decoded.decoded.map(member =>
             <Decoded member={member} />)}
     </div>
