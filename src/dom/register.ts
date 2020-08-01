@@ -48,6 +48,10 @@ export class JDRegister extends JDNode {
         return d && intOfBuffer(d);
     }
 
+    get boolValue(): boolean {
+        return !!this.intValue;
+    }
+
     toString() {
         const d = this.data;
         return `${this.id} ${d ? toHex(d) : ""}`

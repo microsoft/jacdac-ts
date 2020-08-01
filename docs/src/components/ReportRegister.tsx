@@ -7,7 +7,6 @@ import { DecodedMember } from "../../../src/dom/pretty";
 function MemberInput(props: { member: DecodedMember, labelledby: string }) {
     const { member, labelledby } = props;
     const { info } = member;
-    console.log(member)
     if (info.type == "bool")
         return <Switch checked={member.value} />
     else if (member.numValue !== undefined && info.storage > 0) {

@@ -16,25 +16,3 @@ export function setThresholdAsync(service: JDService, low: boolean, value: numbe
     const register = service.registerAt(low ? REG_LOW_THRESHOLD : REG_LOW_THRESHOLD)
     return register.sendSetAsync(bufferOfInt(value))
 }
-
-/**
- * Starts a debounced task to check that a device is streaming. Return unsubscribe function.
- * @param service 
- */
-export function ensureStreamingSubscription(service: JDService): () => void {
-    const register = service.registerAt(REG_IS_STREAMING)
-    const startStreaming = async () => {
-        console.log("start streaming")
-        await setStreamingAsync(register.service, true)
-    }
-    const ensureStreaming = debouncedPollAsync(startStreaming, 1000, 2000);
-    const observable = register.observe(REPORT_RECEIVE);
-    return observable.subscribe({
-        next: () => ensureStreaming.execute(),
-        error: e => ensureStreaming.stop(),
-        complete: () => {
-            ensureStreaming.stop()
-            setStreamingAsync(register.service, false)
-        }
-    }).unsubscribe
-}
