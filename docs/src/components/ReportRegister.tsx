@@ -9,7 +9,7 @@ function MemberInput(props: { member: DecodedMember, labelledby: string }) {
     const { info } = member;
     console.log(member)
     if (info.type == "bool")
-        return <Switch value={member.value} />
+        return <Switch checked={member.value} />
     else if (member.numValue !== undefined && info.storage > 0) {
         return <Slider value={member.numValue}
             aria-labelledby={labelledby}
@@ -22,10 +22,11 @@ function MemberInput(props: { member: DecodedMember, labelledby: string }) {
 
 function Decoded(props: { member: DecodedMember }) {
     const { member } = props;
+    const { info } = member;
     return <div>
-        <Typography id="slider" gutterBottom>
-            {member.info.name}
-        </Typography>
+        {info.name !== "_" && <Typography id="slider" gutterBottom>
+            {info.name}
+        </Typography>}
         <MemberInput member={member} labelledby={"slider"} />
     </div>
 }
