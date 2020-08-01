@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List } from '@material-ui/core';
+import { Grid, List, TextField } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority } from '../../../src/dom/constants';
@@ -9,12 +9,14 @@ import Packet from '../../../src/dom/packet'
 export default function PacketList(props: {
     maxItems?: number,
     consoleMode?: boolean,
-    skipRepeatedAnnounce?: boolean
+    skipRepeatedAnnounce?: boolean,
+    filtering?: boolean
 }) {
-    const { consoleMode, skipRepeatedAnnounce } = props
+    const { consoleMode, skipRepeatedAnnounce, filtering } = props
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
-    const [packets, setPackets] = useState([])
+    const [packets, setPackets] = useState<Packet[]>([])
+    const [filter, setFilter] = useState("")
     // enable logging
     useEffect(() => {
         if (consoleMode)
@@ -33,10 +35,21 @@ export default function PacketList(props: {
         }
     ))
 
+    const lfilter = filter.toLowerCase();
     return (
         <Grid container>
+            {filtering && <TextField
+                label="Filter"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={filter}
+                size="small"
+                onChange={event => setFilter(event.target.value)}
+            />}
             <List dense={true}>
-                {packets?.map(packet => <PacketListItem packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
+                {packets?.filter(packet => !filter || packet.toString().toLowerCase().indexOf(lfilter) > -1)
+                    .map(packet => <PacketListItem packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
             </List>
         </Grid>
     )

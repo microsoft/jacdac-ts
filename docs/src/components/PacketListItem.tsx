@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ListItem } from '@material-ui/core';
+import { ListItem, Typography } from '@material-ui/core';
 import { Packet } from '../../../src/dom/packet';
 import { printPacket, decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
 import { hash } from '../../../src/dom/utils'
@@ -18,7 +18,7 @@ export default function PacketListItem(props: {
     } else {
         text = printPacket(packet, { skipRepeatedAnnounce })
     }
-    return <ListItem key={hash(packet.toBuffer(), 32)}>
-        {text}
-    </ListItem>
+    return <ListItem key={hash(packet.toBuffer(), 32)} dense={true}>
+            <Typography variant="body2">{text}</Typography>
+        </ListItem>
 }

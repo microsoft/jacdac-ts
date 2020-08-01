@@ -5,9 +5,11 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React from "react"
+import React, { useState } from "react"
 import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/core';
+import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup } from '@material-ui/core';
+// tslint:disable-next-line: no-submodule-imports
+import { Link } from 'gatsby-theme-material-ui';
 import CssBaseline from '@material-ui/core/CssBaseline';
 // tslint:disable-next-line: no-submodule-imports
 import AppBar from '@material-ui/core/AppBar';
@@ -18,7 +20,8 @@ import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports
 import Drawer from '@material-ui/core/Drawer'
 import ConnectButton from '../jacdac/ConnectButton';
-import { Link } from 'gatsby-theme-material-ui';
+// tslint:disable-next-line: no-submodule-imports
+import HistoryIcon from '@material-ui/icons/History';
 // tslint:disable-next-line: no-submodule-imports
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 // tslint:disable-next-line: no-submodule-imports
@@ -27,23 +30,16 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 // tslint:disable-next-line: no-submodule-imports
 import MenuIcon from '@material-ui/icons/Menu';
-// tslint:disable-next-line: no-submodule-imports
-import ListItem from '@material-ui/core/ListItem';
-// tslint:disable-next-line: no-submodule-imports
-import List from '@material-ui/core/List';
-// tslint:disable-next-line: no-submodule-imports
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-// tslint:disable-next-line: no-submodule-imports
-import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
 import Toc from "./Toc"
+import PacketList from "./PacketList"
 
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
 
-const drawerWidth = 240;
+const drawerWidth = `${30}rem`;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
     }),
   },
   appBarShift: {
-    width: `calc(100% - ${drawerWidth}px)`,
+    width: `calc(100% - ${drawerWidth})`,
     marginLeft: drawerWidth,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
@@ -91,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: -drawerWidth,
+    marginLeft: `-${drawerWidth}`,
   },
   contentShift: {
     transition: theme.transitions.create('margin', {
@@ -105,15 +101,26 @@ const useStyles = makeStyles((theme) => ({
 const Layout = ({ children }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [drawerConsole, setDrawerConsole] = useState(false);
+  const [consoleMode, setConsoleMode] = useState(true);
 
-  const handleDrawerOpen = () => {
+  const handleDrawerToc = () => {
+    setDrawerConsole(false)
     setOpen(true);
-  };
-
+  }
+  const handleDrawerConsole = () => {
+    setDrawerConsole(true);
+    setOpen(true);
+  }
   const handleDrawerClose = () => {
     setOpen(false);
-  };
+  }
+
+  const handleConsoleModeChange = () => {
+    setConsoleMode(!consoleMode)
+  }
+
   const data = useStaticQuery(graphql`
     query {
       site {
@@ -136,11 +143,19 @@ const Layout = ({ children }) => {
           <Toolbar>
             <IconButton
               color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
+              aria-label="open table of contents"
+              onClick={handleDrawerToc}
               edge="start"
               className={clsx(classes.menuButton, open && classes.hide)}
             > <MenuIcon />
+            </IconButton>
+            <IconButton
+              color="inherit"
+              aria-label="open console"
+              onClick={handleDrawerConsole}
+              edge="start"
+              className={clsx(classes.menuButton, open && classes.hide)}
+            > <HistoryIcon />
             </IconButton>
             <Typography variant="h6">
               <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
@@ -158,12 +173,22 @@ const Layout = ({ children }) => {
           }}
         >
           <div className={classes.drawerHeader}>
+            {drawerConsole && <Typography variant="h6">
+                <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />
+                  }
+                  label="packets"
+                />
+              </FormGroup>
+            </Typography>}
             <IconButton onClick={handleDrawerClose}>
               <ChevronLeftIcon />
             </IconButton>
           </div>
           <Divider />
-          <Toc />
+          {drawerConsole ? <PacketList consoleMode={consoleMode} /> : <Toc />}
         </Drawer>
         <main
           className={clsx(classes.content, {
