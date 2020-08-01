@@ -49,7 +49,7 @@ export default function PacketList(props: {
             />}
             <List dense={true}>
                 {packets?.filter(packet => !filter || packet.toString().toLowerCase().indexOf(lfilter) > -1)
-                    .map(packet => <PacketListItem packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
+                    .map(packet => <PacketListItem key={packet.key} packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
             </List>
         </Grid>
     )

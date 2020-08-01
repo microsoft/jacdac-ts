@@ -16,8 +16,8 @@ export default function DeviceList(props: { serviceClass?: number, linkToService
             container
             spacing={2}
         >
-            {serviceClass === undefined && devices.map(device => <Grid item xs={4}><DeviceCard device={device} /></Grid>)}
-            {!!serviceClass && devices.map(device => device.services({ serviceClass }).map(service => <Grid item xs={4}><ServiceCard service={service} linkToService={linkToService} /></Grid>))}
+            {serviceClass === undefined && devices.map(device => <Grid key={device.id} item xs={4}><DeviceCard device={device} /></Grid>)}
+            {!!serviceClass && devices.map(device => device.services({ serviceClass }).map(service => <Grid key={service.id} item xs={4}><ServiceCard service={service} linkToService={linkToService} /></Grid>))}
         </Grid>
     )
 }

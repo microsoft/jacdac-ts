@@ -18,7 +18,7 @@ export default function PacketListItem(props: {
     } else {
         text = printPacket(packet, { skipRepeatedAnnounce })
     }
-    return <ListItem key={hash(packet.toBuffer(), 32)} dense={true}>
+    return <ListItem dense={true}>
             <Typography variant="body2">{text}</Typography>
         </ListItem>
 }

@@ -15,10 +15,14 @@ export default function ServiceInput(props: { service: JDService }) {
     const registers = packets.filter(isRegister);
     const reports = registers.filter(reg => reg.kind == "ro")
 
-    useEffect(() => service.subscribe(CHANGE, () => {
+    useEffect(() => {
         if (connectionState == BusState.Connected)
             setStreamingAsync(service, true)
-    }), [connectionState])
+        return service.subscribe(CHANGE, () => {
+            if (connectionState == BusState.Connected)
+                setStreamingAsync(service, true)
+        })
+    }, [connectionState, service])
 
     return <React.Fragment>
         {reports.map(report => <ReportRegister register={service.registerAt(report.identifier)} />)}

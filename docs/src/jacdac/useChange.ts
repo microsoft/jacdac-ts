@@ -6,7 +6,7 @@ import JacdacContext from "../../../src/react/Context";
 function useChange<TNode extends JDNode, TValue>(node: TNode, query: (n: TNode) => TValue): TValue {
     const { bus } = useContext(JacdacContext)
     const [version, setVersion] = useState(0)
-    const value = useMemo(() => query(node), [node, version, bus])
+    const value = query(node)
 
     useEffect(() => node.subscribe(CHANGE, () => {
         //console.log(`change ${node} ${version}`)

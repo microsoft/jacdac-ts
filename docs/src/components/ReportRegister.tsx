@@ -22,12 +22,12 @@ function MemberInput(props: { member: DecodedMember, labelledby: string }) {
 function Decoded(props: { member: DecodedMember }) {
     const { member } = props;
     const { info } = member;
-    return <div>
+    return <React.Fragment>
         {info.name !== "_" && <Typography id="slider" gutterBottom>
             {info.name}
         </Typography>}
         <MemberInput member={member} labelledby={"slider"} />
-    </div>
+    </React.Fragment>
 }
 
 export default function ReportRegister(props: { register: JDRegister }) {
@@ -38,11 +38,11 @@ export default function ReportRegister(props: { register: JDRegister }) {
         setDecoded(register.decode())
     }))
 
-    return <div>
+    return <React.Fragment>
         {!!decoded && <Typography gutterBottom>
             {decoded.info.name}
         </Typography>}
         {decoded && decoded.decoded.map(member =>
             <Decoded member={member} />)}
-    </div>
+    </React.Fragment>
 }

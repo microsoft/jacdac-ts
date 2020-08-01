@@ -50,7 +50,7 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
                 </Typography>
             </CardContent>
             <CardActions>
-                {services.map(service => <ServiceButton service={service} onClick={() => (onServiceClick || navigateToService)(service)} />)}
+                {services.map(service => <ServiceButton key={service.id} service={service} onClick={() => (onServiceClick || navigateToService)(service)} />)}
             </CardActions>
             {children}
         </Card>

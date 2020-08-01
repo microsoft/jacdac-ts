@@ -19,8 +19,12 @@ export class Packet {
     _data: Uint8Array;
     timestamp: number
     dev: JDDevice
+    readonly key: number;
 
-    private constructor() { }
+    private static _nextKey = 1;
+    private constructor() {
+        this.key = Packet._nextKey++;
+    }
 
     static fromBinary(buf: Uint8Array) {
         const p = new Packet()
@@ -127,7 +131,7 @@ export class Packet {
         if (buf.length < 4)
             buf = bufferConcat(buf, new Uint8Array(4))
         if (buf.length == 8)
-            return read32(buf,0) + read32(buf,4) * 0x100000000
+            return read32(buf, 0) + read32(buf, 4) * 0x100000000
         return read32(buf, 0)
     }
 
