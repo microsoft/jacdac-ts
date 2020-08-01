@@ -5,10 +5,10 @@ import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
 import { bufferEq, toHex } from "./utils";
 import { bufferOfInt } from "./struct";
+import { decodePacketData, DecodedPacket } from "./pretty";
 
 export class JDRegister extends JDNode {
-    private _data: Uint8Array;
-    public lastData: number;
+    private _lastReportPkt: Packet;
 
     constructor(
         public readonly service: JDService,
@@ -36,21 +36,31 @@ export class JDRegister extends JDNode {
     }
 
     get data() {
-        return this._data;
+        return this._lastReportPkt?.data;
+    }
+
+    get lastDataTimestamp() {
+        return this._lastReportPkt?.timestamp
     }
 
     get intValue(): number {
-        return this.data && intOfBuffer(this.data);
+        const d = this.data;
+        return d && intOfBuffer(d);
     }
 
     toString() {
-        return `${this.id} ${this._data ? toHex(this._data) : ""}`
+        const d = this.data;
+        return `${this.id} ${d ? toHex(d) : ""}`
+    }
+
+    decode(): DecodedPacket {
+        return this._lastReportPkt
+            && decodePacketData(this._lastReportPkt);
     }
 
     processReport(pkt: Packet) {
-        const updated = !bufferEq(this._data, pkt.data)
-        this._data = pkt.data;
-        this.lastData = pkt.timestamp;
+        const updated = !bufferEq(this.data, pkt.data)
+        this._lastReportPkt = pkt;
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
             this.emit(REPORT_UPDATE, this)
