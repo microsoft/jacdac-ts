@@ -10,9 +10,10 @@ export default function PacketList(props: {
     maxItems?: number,
     consoleMode?: boolean,
     skipRepeatedAnnounce?: boolean,
-    filtering?: boolean
+    filtering?: boolean,
+    serviceClass?: number
 }) {
-    const { consoleMode, skipRepeatedAnnounce, filtering } = props
+    const { consoleMode, skipRepeatedAnnounce, filtering, serviceClass } = props
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
     const [packets, setPackets] = useState<Packet[]>([])
@@ -29,6 +30,13 @@ export default function PacketList(props: {
                 const decoded = decodePacketData(pkt);
                 if (!decoded) return; // ignore
             }
+
+            if (filter && pkt.toString().toLowerCase().indexOf(lfilter) < 0)
+                return; // no filter mathc
+
+            if (serviceClass !== undefined && pkt.service_class != serviceClass)
+                return; // not matching service class
+
             const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
             ps.unshift(pkt)
             setPackets(ps)
@@ -48,8 +56,7 @@ export default function PacketList(props: {
                 onChange={event => setFilter(event.target.value)}
             />}
             <List dense={true}>
-                {packets?.filter(packet => !filter || packet.toString().toLowerCase().indexOf(lfilter) > -1)
-                    .map(packet => <PacketListItem key={packet.key} packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
+                {packets?.map(packet => <PacketListItem key={packet.key} packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
             </List>
         </Grid>
     )

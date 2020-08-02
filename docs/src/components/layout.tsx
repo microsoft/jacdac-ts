@@ -98,7 +98,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Layout = ({ children }) => {
+const Layout = ({ pageContext, children }) => {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -188,7 +188,7 @@ const Layout = ({ children }) => {
             </IconButton>
           </div>
           <Divider />
-          {drawerConsole ? <PacketList consoleMode={consoleMode} /> : <Toc />}
+          {drawerConsole ? <PacketList serviceClass={pageContext?.node?.classIdentifier} consoleMode={consoleMode} /> : <Toc />}
         </Drawer>
         <main
           className={clsx(classes.content, {
