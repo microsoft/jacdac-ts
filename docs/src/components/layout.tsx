@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link } from 'gatsby-theme-material-ui';
+// tslint:disable-next-line: no-submodule-imports
 import CssBaseline from '@material-ui/core/CssBaseline';
 // tslint:disable-next-line: no-submodule-imports
 import AppBar from '@material-ui/core/AppBar';
@@ -47,6 +48,7 @@ const drawerWidth = `${30}rem`;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    flexGrow: 1
   },
   appBar: {
     transition: theme.transitions.create(['margin', 'width'], {
@@ -103,13 +105,11 @@ const useStyles = makeStyles((theme) => ({
 
 const Layout = ({ pageContext, children }) => {
   const classes = useStyles();
-  const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [drawerConsole, setDrawerConsole] = useState(false);
   const [consoleMode, setConsoleMode] = useState(true);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
-  console.log(pageContext)
 
   const handleDrawerToc = () => {
     setDrawerConsole(false)
@@ -166,7 +166,7 @@ const Layout = ({ pageContext, children }) => {
             <Typography variant="h6">
               <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
             </Typography>
-            <ConnectButton />
+            <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -181,7 +181,7 @@ const Layout = ({ pageContext, children }) => {
           <div className={classes.drawerHeader}>
             {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             {drawerConsole && <Typography variant="h6">
-                <FormGroup row>
+              <FormGroup row>
                 <FormControlLabel
                   control={
                     <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />

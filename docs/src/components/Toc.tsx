@@ -59,7 +59,6 @@ function treeifyToc(toc: TocNode[]) {
       const parentPath = `${parts.join("/")}`;
       const parent = tocNodes[parentPath]
       if (parent) {
-        console.log(`${node.path} -> ${parent.path}`)
         if (!parent.children)
           parent.children = [];
         parent.children.push(node)
