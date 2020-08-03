@@ -3,6 +3,8 @@ import React, { useEffect, useContext, useState } from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
 import { ERROR } from '../../../src/dom/constants'
 import JacdacContext from '../../../src/react/Context';
+// tslint:disable-next-line: no-submodule-imports
+import Alert from '@material-ui/lab/Alert';
 
 export default function ErrorSnackbar() {
   const { bus } = useContext(JacdacContext)
@@ -25,13 +27,14 @@ export default function ErrorSnackbar() {
   return (
     <Snackbar
       anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'center',
+        vertical: 'top',
+        horizontal: 'right',
       }}
       open={open}
       autoHideDuration={6000}
       onClose={handleClose}
-      message={message}
-    />
+    >
+      <Alert severity="error">{message}</Alert>
+    </Snackbar>
   );
 }
