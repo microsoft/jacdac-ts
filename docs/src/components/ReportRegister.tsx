@@ -9,13 +9,12 @@ function MemberInput(props: { member: DecodedMember, labelledby: string }) {
     const { info } = member;
     if (info.type == "bool")
         return <Switch checked={member.value} />
-    else if (member.numValue !== undefined && info.storage > 0) {
+    else if (member.numValue !== undefined && info.unit == "frac" && info.storage > 0) {
         return <Slider value={member.numValue}
             aria-labelledby={labelledby}
             min={0} max={1 << (8 * member.size)}
         />
     }
-
     return <Typography variant="h4">{member.humanValue}</Typography>
 }
 

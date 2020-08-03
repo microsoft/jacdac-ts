@@ -133,7 +133,7 @@ export default function Toc() {
         defaultExpandIcon={<ChevronRightIcon />}
         defaultExpanded={Object.keys(nodes)}
     >
-        {tree.map(entry => <TocListItem entry={entry} />)}
+        {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} />)}
     </TreeView>
 
     function TocListItem(props: { entry: TocNode }) {
@@ -141,11 +141,12 @@ export default function Toc() {
         const sub = !!entry.children && !!entry.children.length;
 
         return <TreeItem
+            key={'tocitem' + entry.path} 
             nodeId={entry.path.replace(/\/$/, '')}
             label={<Link to={entry.path}>
                 <ListItemText primary={entry.name} />
             </Link>}>
-            {sub && entry.children.map(child => <TocListItem entry={child} />)}
+            {sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} />)}
         </TreeItem>
     }
 }

@@ -20,7 +20,7 @@ import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports
 import Drawer from '@material-ui/core/Drawer'
 import ConnectButton from '../jacdac/ConnectButton';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports, match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
 // tslint:disable-next-line: no-submodule-imports
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -35,9 +35,12 @@ import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
 import Toc from "./Toc"
 import PacketList from "./PacketList"
+import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
+// tslint:disable-next-line: no-submodule-imports
+import Alert from "@material-ui/lab/Alert";
 
 const drawerWidth = `${30}rem`;
 
@@ -104,6 +107,9 @@ const Layout = ({ pageContext, children }) => {
   const [open, setOpen] = useState(false);
   const [drawerConsole, setDrawerConsole] = useState(false);
   const [consoleMode, setConsoleMode] = useState(true);
+  const serviceClass = pageContext?.node?.classIdentifier;
+  const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
+  console.log(pageContext)
 
   const handleDrawerToc = () => {
     setDrawerConsole(false)
@@ -173,6 +179,7 @@ const Layout = ({ pageContext, children }) => {
           }}
         >
           <div className={classes.drawerHeader}>
+            {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             {drawerConsole && <Typography variant="h6">
                 <FormGroup row>
                 <FormControlLabel
@@ -188,7 +195,7 @@ const Layout = ({ pageContext, children }) => {
             </IconButton>
           </div>
           <Divider />
-          {drawerConsole ? <PacketList serviceClass={pageContext?.node?.classIdentifier} consoleMode={consoleMode} /> : <Toc />}
+          {drawerConsole ? <PacketList serviceClass={serviceClass} consoleMode={consoleMode} /> : <Toc />}
         </Drawer>
         <main
           className={clsx(classes.content, {
