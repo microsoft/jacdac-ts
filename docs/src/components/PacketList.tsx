@@ -2,8 +2,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Grid, List, TextField } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
-import { PACKET_RECEIVE, ConsolePriority } from '../../../src/dom/constants';
-import { decodePacketData } from '../../../src/dom/pretty'
+import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS } from '../../../src/dom/constants';
+import { decodePacketData, isRepeatAnnounce } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 
 export default function PacketList(props: {
@@ -11,9 +11,10 @@ export default function PacketList(props: {
     consoleMode?: boolean,
     skipRepeatedAnnounce?: boolean,
     filtering?: boolean,
-    serviceClass?: number
+    serviceClass?: number,
+    showTime?: boolean
 }) {
-    const { consoleMode, skipRepeatedAnnounce, filtering, serviceClass } = props
+    const { consoleMode, skipRepeatedAnnounce, filtering, serviceClass, showTime } = props
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
     const [packets, setPackets] = useState<Packet[]>([])
@@ -24,7 +25,7 @@ export default function PacketList(props: {
             bus.minConsolePriority = ConsolePriority.Debug;
     })
     // render packets
-    useEffect(() => bus.subscribe(PACKET_RECEIVE,
+    useEffect(() => bus.subscribe(consoleMode ? PACKET_RECEIVE : PACKET_PROCESS,
         (pkt: Packet) => {
             if (consoleMode) {
                 const decoded = decodePacketData(pkt);
@@ -34,6 +35,10 @@ export default function PacketList(props: {
             if (filter && pkt.toString().toLowerCase().indexOf(lfilter) < 0)
                 return; // no filter mathc
 
+            // don't repeat
+            if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
+                return;
+
             if (serviceClass !== undefined && pkt.service_class != serviceClass)
                 return; // not matching service class
 
@@ -42,6 +47,10 @@ export default function PacketList(props: {
             setPackets(ps)
         }
     ))
+    // clear when consoleMode changes
+    useEffect(() => {
+        setPackets([])
+    }, [consoleMode, skipRepeatedAnnounce])
 
     const lfilter = filter.toLowerCase();
     return (
@@ -56,7 +65,12 @@ export default function PacketList(props: {
                 onChange={event => setFilter(event.target.value)}
             />}
             <List dense={true}>
-                {packets?.map(packet => <PacketListItem key={packet.key} packet={packet} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} />)}
+                {packets?.map(packet => <PacketListItem
+                    key={packet.key}
+                    packet={packet}
+                    consoleMode={consoleMode}
+                    skipRepeatedAnnounce={skipRepeatedAnnounce}
+                    showTime={showTime} />)}
             </List>
         </Grid>
     )

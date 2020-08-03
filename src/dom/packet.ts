@@ -8,6 +8,7 @@ import {
     JD_SERVICE_NUMBER_MASK,
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
+    CMD_ADVERTISEMENT_DATA,
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -152,6 +153,13 @@ export class Packet {
                 break
         }
         return this.getNumber(fmt, 0)
+    }
+
+    get isRepeatedAnnounce() {
+        return this.dev
+            && this.service_number == 0
+            && this.service_command == CMD_ADVERTISEMENT_DATA
+            && this.dev.lastServiceUpdate < this.timestamp
     }
 
     compress(stripped: Uint8Array[]) {

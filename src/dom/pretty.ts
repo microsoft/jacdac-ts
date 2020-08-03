@@ -416,6 +416,7 @@ function num2str(n: number) {
 }
 
 export interface PrintPacketOptions {
+    showTime?: boolean;
     skipRepeatedAnnounce?: boolean;
 }
 
@@ -526,5 +527,5 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         }
     }
 
-    return (!isNaN(pkt.timestamp) ? Math.round(pkt.timestamp) + "ms: " : "") + pdesc
+    return (!isNaN(pkt.timestamp) && opts?.showTime ? Math.round(pkt.timestamp) + "ms: " : "") + pdesc
 }

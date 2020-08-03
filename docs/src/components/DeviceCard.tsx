@@ -40,22 +40,21 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
-/*    
     const controlSpec = serviceSpecificationFromClassIdentifier(SRV_CTRL)
     const firmwareRegisterSpec = controlSpec.packets.find(pkt => pkt.name == "firmware_version");
 
     const controlService = useChange(device, () => device.service(SRV_CTRL))
 
     const firmwareRegister = controlService?.register(firmwareRegisterSpec.identifier);
-    const [firmware, setFirmware] = useState(firmwareRegister?.stringValue);
-    useChange(firmwareRegister, reg => setFirmware(reg?.stringValue))
+    const [firmware, setFirmware] = useState(firmwareRegister?.stringValue || "");
+    //useChange(firmwareRegister, reg => setFirmware(reg?.stringValue))
     useEffect(() => {
-        if(firmwareRegister && !firmwareRegister.data) {
-            console.log(`firwmare get`, firmwareRegister)
+        if (firmwareRegister && !firmwareRegister.data) {
+            console.log(`firmware get`, firmwareRegister)
             firmwareRegister?.sendGetAsync()
         }
     }, [firmwareRegister])
-*/
+
     return (
         <Card className={classes.root}>
             <CardContent>

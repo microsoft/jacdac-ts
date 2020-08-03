@@ -108,6 +108,7 @@ const Layout = ({ pageContext, children }) => {
   const [open, setOpen] = useState(false);
   const [drawerConsole, setDrawerConsole] = useState(false);
   const [consoleMode, setConsoleMode] = useState(true);
+  const [skipRepeatedAnnounce, setSkipRepeatedAnnounce] = useState(true);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
 
@@ -125,6 +126,10 @@ const Layout = ({ pageContext, children }) => {
 
   const handleConsoleModeChange = () => {
     setConsoleMode(!consoleMode)
+  }
+
+  const handleSkipRepeatedAnnounceChange = () => {
+    setSkipRepeatedAnnounce(!skipRepeatedAnnounce)
   }
 
   const data = useStaticQuery(graphql`
@@ -182,6 +187,12 @@ const Layout = ({ pageContext, children }) => {
             {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             {drawerConsole && <Typography variant="h6">
               <FormGroup row>
+                {!consoleMode && <FormControlLabel
+                  control={
+                    <Switch checked={skipRepeatedAnnounce} onChange={handleSkipRepeatedAnnounceChange} />
+                  }
+                  label="skip repeat announce"
+                />}
                 <FormControlLabel
                   control={
                     <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />
@@ -195,7 +206,7 @@ const Layout = ({ pageContext, children }) => {
             </IconButton>
           </div>
           <Divider />
-          {drawerConsole ? <PacketList serviceClass={serviceClass} consoleMode={consoleMode} /> : <Toc />}
+          {drawerConsole ? <PacketList serviceClass={serviceClass} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} /> : <Toc />}
         </Drawer>
         <main
           className={clsx(classes.content, {
