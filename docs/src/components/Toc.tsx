@@ -10,12 +10,20 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
-
+// tslint:disable-next-line: no-submodule-imports
+import TreeView from '@material-ui/lab/TreeView';
+// tslint:disable-next-line: no-submodule-imports
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// tslint:disable-next-line: no-submodule-imports
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+// tslint:disable-next-line: no-submodule-imports
+import TreeItem from '@material-ui/lab/TreeItem';
 
 interface TocNode {
     name: string;
     path: string;
     children?: TocNode[];
+    expanded?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -43,6 +51,7 @@ function treeifyToc(toc: TocNode[]) {
             const parentPath = `${parts.join("/")}`;
             const parent = tocNodes[parentPath]
             if (parent) {
+                if (!parent.children) parent.children = [];
                 parent.children.push(node)
                 toc[index] = undefined;
                 break;
@@ -51,7 +60,10 @@ function treeifyToc(toc: TocNode[]) {
         }
     })
     toc = toc.filter(node => !!node);
-    return toc
+    return {
+      tree: toc,
+      nodes: tocNodes
+    }
 }
 
 export default function Toc() {
@@ -89,7 +101,13 @@ export default function Toc() {
 `)
 
     // convert pages into tree
-    let toc: TocNode[] = data.allMdx.edges
+    let toc: TocNode[] = [{
+      name: "Home",
+      path: "/",
+      children: [],
+      expanded: true
+    }]
+    data.allMdx.edges
         .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
         .map(node => {
             return {
@@ -98,36 +116,36 @@ export default function Toc() {
                 children: []
             }
         })
+        .forEach(node => toc.push(node))
 
-    toc = toc.concat(data.allSpecJson.nodes.map(node => {
+    data.allSpecJson.nodes.map(node => {
         return {
             name: node.name,
             path: `/services/${node.shortId}`
         }
-    }))
+    }).forEach(node => toc.push(node))
 
-    toc = treeifyToc(toc)
+    const { tree, nodes } = treeifyToc(toc)
 
-    return <List component="nav" className={classes.root}  >
-        {toc.map(entry => <TocListItem entry={entry} />)}
-    </List>
+    return <TreeView
+        className={classes.root}
+        defaultCollapseIcon={<ExpandMoreIcon />}
+        defaultExpandIcon={<ChevronRightIcon />}
+        defaultExpanded={Object.keys(nodes)}
+    >
+        {tree.map(entry => <TocListItem entry={entry} />)}
+    </TreeView>
 
     function TocListItem(props: { entry: TocNode }) {
         const { entry } = props;
         const sub = !!entry.children && !!entry.children.length;
 
-        return <React.Fragment>
-            <ListItem button key={entry.name} className={classes.nested}>
-                <Link to={entry.path}>
-                    <ListItemText primary={entry.name} />
-                </Link>
-            </ListItem>
-            {sub &&
-                <Collapse in={true}>
-                    <List component="div">
-                        {entry.children.map(child => <TocListItem entry={child} />)}
-                    </List>
-                </Collapse>}
-        </React.Fragment>
+        return <TreeItem
+            nodeId={entry.path.replace(/\/$/, '')}
+            label={<Link to={entry.path}>
+                <ListItemText primary={entry.name} />
+            </Link>}>
+            {sub && entry.children.map(child => <TocListItem entry={child} />)}
+        </TreeItem>
     }
 }
