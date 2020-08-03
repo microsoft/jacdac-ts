@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -10,6 +10,7 @@ import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
+import { serviceSpecificationFromClassIdentifier } from '../../../src/dom/spec';
 
 const useStyles = makeStyles({
     root: {
@@ -39,6 +40,22 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
+/*    
+    const controlSpec = serviceSpecificationFromClassIdentifier(SRV_CTRL)
+    const firmwareRegisterSpec = controlSpec.packets.find(pkt => pkt.name == "firmware_version");
+
+    const controlService = useChange(device, () => device.service(SRV_CTRL))
+
+    const firmwareRegister = controlService?.register(firmwareRegisterSpec.identifier);
+    const [firmware, setFirmware] = useState(firmwareRegister?.stringValue);
+    useChange(firmwareRegister, reg => setFirmware(reg?.stringValue))
+    useEffect(() => {
+        if(firmwareRegister && !firmwareRegister.data) {
+            console.log(`firwmare get`, firmwareRegister)
+            firmwareRegister?.sendGetAsync()
+        }
+    }, [firmwareRegister])
+*/
     return (
         <Card className={classes.root}>
             <CardContent>

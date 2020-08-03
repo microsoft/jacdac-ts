@@ -1,11 +1,9 @@
 import { JDService } from "./service";
 import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, REPORT_RECEIVE } from "./constants";
-import { bufferOfInt } from "./struct";
-import { debouncedPollAsync } from "./utils";
 
 export function setStreamingAsync(service: JDService, on: boolean) {
-    const register = service.registerAt(REG_IS_STREAMING);
-    return register.sendSetAsync(bufferOfInt(on ? 1 : 0))
+    const register = service.register(REG_IS_STREAMING);
+    return register.sendSetBoolAsync(on)
 }
 
 export function calibrateAsync(service: JDService) {
@@ -13,6 +11,6 @@ export function calibrateAsync(service: JDService) {
 }
 
 export function setThresholdAsync(service: JDService, low: boolean, value: number) {
-    const register = service.registerAt(low ? REG_LOW_THRESHOLD : REG_LOW_THRESHOLD)
-    return register.sendSetAsync(bufferOfInt(value))
+    const register = service.register(low ? REG_LOW_THRESHOLD : REG_LOW_THRESHOLD)
+    return register.sendSetIntAsync(value)
 }

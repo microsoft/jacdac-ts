@@ -20,13 +20,13 @@ Returns the unique service identifier for the service.
 const srvid = service.serviceClass;
 ```
 
-### ``registerAt``
+### ``register``
 
 This function returns a [register](/clients/web/dom/register) object mapped at a given address.
 You can use register to read and write data to the service.
 
 ```typescript
-const register = service.registerAt(0x42);
+const register = service.register(0x42);
 ```
 
 ### ``specification``

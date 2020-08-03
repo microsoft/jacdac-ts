@@ -113,7 +113,7 @@ export class JDBus extends JDNode {
                 ?.service(parseInt(m.groups["dev"]))
             case "reg": return this.device(m.groups["dev"])
                 ?.service(parseInt(m.groups["dev"]))
-                ?.registerAt(parseInt(m.groups["reg"]));
+                ?.register(parseInt(m.groups["reg"]));
         }
         return undefined;
     }

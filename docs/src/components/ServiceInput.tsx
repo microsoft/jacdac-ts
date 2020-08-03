@@ -25,6 +25,6 @@ export default function ServiceInput(props: { service: JDService }) {
     }, [connectionState, service])
 
     return <React.Fragment>
-        {reports.map(report => <ReportRegister register={service.registerAt(report.identifier)} />)}
+        {reports.map(report => <ReportRegister register={service.register(report.identifier)} />)}
     </React.Fragment>
 }

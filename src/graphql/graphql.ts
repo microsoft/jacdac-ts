@@ -58,6 +58,8 @@ type Register implements Node {
     address: Int!
     data: [Int!]
     intValue: Int
+    boolValue: Boolean
+    stringValue: String
 }
 
 """

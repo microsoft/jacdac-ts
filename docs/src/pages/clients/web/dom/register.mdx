@@ -17,12 +17,61 @@ Returns register raw data state as a ``UInt8Array``.
 const data = register.data;
 ```
 
+### ``intValue``
+
+Reads register value as a signed integer. ``undefined`` is no data is available.
+
+```typescript
+const i = register.intValue
+```
+
+### ``boolValue``
+
+Reads register value as a boolean value. ``undefined`` is no data is available.
+
+```typescript
+const b = register.boolValue
+```
+
+### ``stringValue``
+
+Reads register value as a string value. ``undefined`` is no data is available.
+
+```typescript
+const s = register.stringValue
+```
+
 ### ``sendSetAsync``
 
 Sends data to set the register value. This function returns a promise.
 
 ```typescript
 await service.sendSetAsync(data)
+```
+
+### ``sendSetIntAsync``
+
+Sends signed integer to set the register value. This function returns a promise.
+
+```typescript
+await service.sendSetIntAsync(42)
+```
+
+
+### ``sendSetBoolAsync``
+
+Sends boolean value to set the register value. This function returns a promise.
+
+```typescript
+await service.sendSetBoolAsync(true)
+```
+
+### ``sendSetStringAsync``
+
+Sends boolean value to set the register value. This function returns a promise.
+
+```typescript
+await service.sendSetStringAsync(":)")
 ```
 
 ## Events
