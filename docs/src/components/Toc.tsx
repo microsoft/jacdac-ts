@@ -20,55 +20,64 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
 
 interface TocNode {
-    name: string;
-    path: string;
-    children?: TocNode[];
-    expanded?: boolean;
+  name: string;
+  path: string;
+  children?: TocNode[];
 }
 
 const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            width: '100%',
-            maxWidth: 360,
-            backgroundColor: theme.palette.background.paper,
-        },
-        nested: {
-            paddingLeft: theme.spacing(4),
-        },
-    }),
+  createStyles({
+    root: {
+      width: '100%',
+      maxWidth: 360,
+      backgroundColor: theme.palette.background.paper,
+    },
+    nested: {
+      paddingLeft: theme.spacing(4),
+    },
+  }),
 );
 
 function treeifyToc(toc: TocNode[]) {
-    toc = toc.slice(0)
-    // reconstruct tree
-    const tocNodes: { [index: string]: TocNode } = {};
-    toc.forEach(node => tocNodes[node.path.replace(/\/$/, '')] = node);
-    toc.forEach((node, index) => {
-        const parts = node.path.replace(/\/$/, '').split("/");
-        parts.pop();
-        while (parts.length) {
-            const parentPath = `${parts.join("/")}`;
-            const parent = tocNodes[parentPath]
-            if (parent) {
-                if (!parent.children) parent.children = [];
-                parent.children.push(node)
-                toc[index] = undefined;
-                break;
-            }
-            parts.pop();
-        }
-    })
-    toc = toc.filter(node => !!node);
-    return {
-      tree: toc,
-      nodes: tocNodes
+  let tree = toc.slice(0)
+
+  // reconstruct tree
+  const tocNodes: { [index: string]: TocNode } = {};
+  tree.forEach((node, index) => {
+    const k = node.path.replace(/\/$/, '')
+    if (tocNodes[k]) {
+      tree[index] = undefined
     }
+    else
+      tocNodes[k] = node
+  });
+  tree = tree.filter(node => !!node)
+  tree.forEach((node, index) => {
+    const parts = node.path.replace(/\/$/, '').split("/");
+    parts.pop();
+    while (parts.length) {
+      const parentPath = `${parts.join("/")}`;
+      const parent = tocNodes[parentPath]
+      if (parent) {
+        console.log(`${node.path} -> ${parent.path}`)
+        if (!parent.children)
+          parent.children = [];
+        parent.children.push(node)
+        tree[index] = undefined;
+        break;
+      }
+      parts.pop();
+    }
+  })
+  return {
+    tree: tree.filter(node => !!node),
+    nodes: tocNodes
+  }
 }
 
 export default function Toc() {
-    const classes = useStyles();
-    const data = useStaticQuery(graphql`
+  const classes = useStyles();
+  const data = useStaticQuery(graphql`
   query {
     site {
       siteMetadata {
@@ -100,53 +109,62 @@ export default function Toc() {
   }
 `)
 
-    // convert pages into tree
-    let toc: TocNode[] = [{
-      name: "Home",
-      path: "/",
-      children: [],
-      expanded: true
-    }]
-    data.allMdx.edges
-        .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
-        .map(node => {
-            return {
-                name: node.node.headings[0].value,
-                path: node.node.fields.slug,
-                children: []
-            }
-        })
-        .forEach(node => toc.push(node))
+  // convert pages into tree
+  let toc: TocNode[] = [{
+    name: "Home",
+    path: "/",
+  }, {
+    name: "Specification",
+    path: "/spec/"
+  }, {
+    name: "Services",
+    path: "/services/"
+  }, {
+    name: "Clients",
+    path: "/clients/"
+  }, {
+    name: "Tools",
+    path: "/tools/"
+  }]
+  data.allMdx.edges
+    .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
+    .map(node => {
+      return {
+        name: node.node.headings[0].value,
+        path: node.node.fields.slug
+      }
+    })
+    .forEach(node => toc.push(node))
 
-    data.allSpecJson.nodes.map(node => {
-        return {
-            name: node.name,
-            path: `/services/${node.shortId}`
-        }
-    }).forEach(node => toc.push(node))
-
-    const { tree, nodes } = treeifyToc(toc)
-
-    return <TreeView
-        className={classes.root}
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
-        defaultExpanded={Object.keys(nodes)}
-    >
-        {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} />)}
-    </TreeView>
-
-    function TocListItem(props: { entry: TocNode }) {
-        const { entry } = props;
-        const sub = !!entry.children && !!entry.children.length;
-
-        return <TreeItem
-            key={'tocitem' + entry.path} 
-            nodeId={entry.path.replace(/\/$/, '')}
-            label={<Link to={entry.path}>
-                <ListItemText primary={entry.name} />
-            </Link>}>
-            {sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} />)}
-        </TreeItem>
+  data.allSpecJson.nodes.map(node => {
+    return {
+      name: node.name,
+      path: `/services/${node.shortId}`
     }
+  }).forEach(node => toc.push(node))
+
+  const { tree, nodes } = treeifyToc(toc)
+
+  return <TreeView
+    className={classes.root}
+    defaultCollapseIcon={<ExpandMoreIcon />}
+    defaultExpandIcon={<ChevronRightIcon />}
+    defaultExpanded={Object.keys(nodes)}
+  >
+    {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} />)}
+  </TreeView>
+
+  function TocListItem(props: { entry: TocNode }) {
+    const { entry } = props;
+    const sub = !!entry.children && !!entry.children.length;
+
+    return <TreeItem
+      key={'tocitem' + entry.path}
+      nodeId={entry.path.replace(/\/$/, '')}
+      label={<Link to={entry.path}>
+        <ListItemText primary={entry.name} />
+      </Link>}>
+      {sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} />)}
+    </TreeItem>
+  }
 }
