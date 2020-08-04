@@ -2,7 +2,7 @@ import { JDDevice } from "./device";
 import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, REG_IS_STREAMING } from "./constants";
+import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier } from "./spec";
 import { isObject } from "util";
@@ -67,7 +67,7 @@ export class JDService extends JDNode {
 
     processPacket(pkt: Packet) {
         this.emit(PACKET_RECEIVE, pkt)
-        if (pkt.is_report) {
+        if (pkt.is_report && pkt.service_command & CMD_GET_REG) {
             const address = pkt.service_command & CMD_REG_MASK
             const reg = this.register({ address })
             if (reg)
