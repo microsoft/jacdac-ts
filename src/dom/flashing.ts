@@ -3,7 +3,7 @@ import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import { JDDevice } from "./device"
-import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, PACKET_RECEIVE, CMD_REG_MASK, CtrlReg } from "./constants"
+import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, CtrlReg, PACKET_REPORT } from "./constants"
 import { unpack, pack } from "./struct"
 import { assert } from "./utils"
 
@@ -13,8 +13,6 @@ const BL_SUBPAGE_SIZE = 208
 const numRetries = 3
 
 let _startTime = 0
-// set to null when no flashing in progress
-let flashers: FlashClient[]
 
 const uf2ExtTags: U.SMap<number> = {
     version: -0x9fc7bc,
@@ -34,6 +32,7 @@ export interface FirmwareBlob {
     pageSize: number;
     name: string;
     version: string;
+    updateCandidates?: FwInfo[];
 }
 
 function timestamp() {
@@ -50,12 +49,11 @@ class FlashClient {
     private pageSize: number
     private flashSize: number
     private sessionId: number
-    private classClients: FlashClient[]
+    classClients: FlashClient[]
     private lastStatus: Packet
     private pending: boolean
     public dev_class: number
     public device: JDDevice
-    private didReset = false
 
     constructor(private bus: JDBus, adpkt: Packet) {
         const d = bufferToArray(adpkt.data, NumberFormat.UInt32LE)
@@ -63,16 +61,23 @@ class FlashClient {
         this.flashSize = d[2]
         this.dev_class = d[3]
         this.device = adpkt.dev
+        this.handlePacket = this.handlePacket.bind(this)
     }
 
-    handlePacket(pkt: Packet) {
+    private handlePacket(pkt: Packet) {
         if (pkt.service_command == BL_CMD_PAGE_DATA)
             this.lastStatus = pkt
     }
 
-    start() { }
+    private start() {
+        this.device.on(PACKET_REPORT, this.handlePacket)
+    }
 
-    async sendCommandAsync(p: Packet) {
+    private stop() {
+        this.device.off(PACKET_REPORT, this.handlePacket)
+    }
+
+    private async sendCommandAsync(p: Packet) {
         p.service_number = 1
         await p.sendCmdAsync(this.device)
     }
@@ -110,21 +115,10 @@ class FlashClient {
             throw new Error("Can't set session id")
     }
 
-    async maybeReset() {
-        if (!this.didReset) {
-            const rst = Packet.onlyHeader(CtrlCmd.Reset)
-            rst.service_number = 0
-            await rst.sendCmdAsync(this.device)
-            this.didReset = true
-        }
-    }
-
     private async endFlashAsync() {
-        log(`done flashing ${this.device}; resetting`)
-
         for (let f of this.classClients) {
-            f.didReset = false
-            await f.maybeReset()
+            await U.delay(100)
+            await f.device.sendCtrlCommand(CtrlCmd.Reset)
         }
     }
 
@@ -217,88 +211,37 @@ class FlashClient {
         throw new Error("too many retries")
     }
 
-    public destroy() { }
-
-    public async flashFirmwareBlob(fw: FirmwareBlob) {
-        await this.startFlashAsync()
-
-        for (const page of fw.pages) {
-            if (page.data.length != this.pageSize)
-                throw new Error("invalid page size")
-            await this.flashPage(page)
+    public async flashFirmwareBlob(fw: FirmwareBlob, progress?: (perc: number) => void) {
+        const total = fw.pages.length + 3
+        let idx = 0
+        const prog = () => {
+            if (progress)
+                progress(100 * idx / total)
+            idx++
         }
-
-        await this.endFlashAsync()
-    }
-
-
-    public static async forDeviceClass(bus: JDBus, dev_class: number) {
-        if (!flashers)
-            await makeBootloaderList(bus)
-        const all = flashers.filter(f => f.dev_class == dev_class)
-        if (all.length > 0)
-            all[0].classClients = all
-        return all[0]
-    }
-}
-
-async function makeBootloaderList(bus: JDBus) {
-    log("resetting all devices")
-
-    const rst = Packet.onlyHeader(CtrlCmd.Reset)
-    await rst.sendAsMultiCommandAsync(bus, SRV_CTRL)
-
-    log("asking for bootloaders")
-
-    if (flashers === undefined) {
-        bus.on(PACKET_RECEIVE, (p: Packet) => {
-            if (!flashers)
-                return
-
-            if (!p.is_command &&
-                p.service_number == 1 &&
-                p.service_command == CMD_ADVERTISEMENT_DATA &&
-                p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
-            ) {
-                if (!flashers.find(f => f.device.deviceId == p.device_identifier)) {
-                    log(`new flasher`)
-                    flashers.push(new FlashClient(bus, p))
+        try {
+            prog()
+            await this.startFlashAsync()
+            prog()
+            for (const page of fw.pages) {
+                if (page.data.length != this.pageSize)
+                    throw new Error("invalid page size")
+                await this.flashPage(page)
+                prog()
+            }
+        } finally {
+            try {
+                // even if something failed, try to reset everyone
+                await this.endFlashAsync()
+                prog()
+            } finally {
+                // even if resetting failed, unregister event listeners
+                for (let d of this.classClients) {
+                    d.stop()
                 }
             }
-
-            if (!p.is_command && p.service_number == 1) {
-                const f = flashers.find(f => f.device.deviceId == p.device_identifier)
-                if (f)
-                    f.handlePacket(p)
-            }
-        })
-    }
-    flashers = []
-
-    const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
-    // collect everyone for 1s
-    for (let i = 0; i < 10; ++i) {
-        await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
-        await U.delay(100)
-    }
-
-    if (flashers.length == 0) {
-        log("no bootloaders reported; trying for another 10s")
-
-        // the user is meant to connect their device now
-        for (let i = 0; i < 100; ++i) {
-            await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
-            await U.delay(100)
-            // but we stop on the first encountered device
-            if (flashers.length > 0)
-                break
         }
     }
-
-    if (flashers.length == 0)
-        throw new Error("no devices to flash")
-
-    log(`${flashers.length} bootloader(s) found; [0]:${flashers[0].dev_class.toString(16)}`)
 }
 
 const UF2_MAGIC_START0 = 0x0A324655;
@@ -382,41 +325,72 @@ export interface FwInfo {
     blDeviceClass: number;
 }
 
-export async function scanFirmwares(bus: JDBus) {
+async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
     const devices: U.SMap<FwInfo> = {}
+    const flashers: FlashClient[] = []
     try {
-        bus.on(PACKET_RECEIVE, handlePkt)
-        for (let i = 0; i < 3; ++i) {
-            for (const reg of [
-                CtrlReg.BootloaderDeviceClass,
-                CtrlReg.DeviceClass,
-                CtrlReg.FirmwareVersion,
-                CtrlReg.DeviceDescription,
-            ]) {
-                const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
-                await pkt.sendAsMultiCommandAsync(bus, SRV_CTRL)
-                await U.delay(1)
-            }
-        }
-        await U.delay(200)
-    } finally {
-        bus.off(PACKET_RECEIVE, handlePkt)
-    }
-    return devices
-
-    function handlePkt(p: Packet) {
-        console.log(p.toString())
-        if (p.is_report && p.service_number == 0 && p.service_command & CMD_GET_REG) {
-            let dev = devices[p.device_identifier]
-            if (!dev) {
-                dev = devices[p.device_identifier] = {
-                    deviceId: p.device_identifier,
-                    deviceClass: null,
-                    version: null,
-                    name: null,
-                    blDeviceClass: null
+        bus.on(PACKET_REPORT, handlePkt)
+        for (let i = 0; i < numTries; ++i) {
+            // ask all CTRL services for bootloader info
+            if (!makeFlashers) {
+                for (const reg of [
+                    CtrlReg.BootloaderDeviceClass,
+                    CtrlReg.DeviceClass,
+                    CtrlReg.FirmwareVersion,
+                    CtrlReg.DeviceDescription,
+                ]) {
+                    const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
+                    await pkt.sendAsMultiCommandAsync(bus, SRV_CTRL)
+                    await U.delay(10)
                 }
             }
+
+            // also ask BL services if any
+            const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
+            await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+
+            await U.delay(10)
+        }
+    } finally {
+        bus.off(PACKET_REPORT, handlePkt)
+    }
+    const devs = Object.values(devices).filter(d => {
+        if (!d.blDeviceClass)
+            d.blDeviceClass = d.deviceClass
+        if (!d.deviceClass)
+            d.deviceClass = d.blDeviceClass
+        if (!d.deviceClass)
+            return false
+        return true
+    })
+    return { devs, flashers }
+
+    function handlePkt(p: Packet) {
+        let dev = devices[p.device_identifier]
+        if (!dev) {
+            dev = devices[p.device_identifier] = {
+                deviceId: p.device_identifier,
+                deviceClass: null,
+                version: null,
+                name: null,
+                blDeviceClass: null
+            }
+        }
+
+        if (p.service_number == 1 &&
+            p.service_command == CMD_ADVERTISEMENT_DATA &&
+            p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
+        ) {
+            dev.blDeviceClass = p.getNumber(NumberFormat.UInt32LE, 12)
+            if (makeFlashers) {
+                if (!flashers.find(f => f.device.deviceId == p.device_identifier)) {
+                    log(`new flasher`)
+                    flashers.push(new FlashClient(bus, p))
+                }
+            }
+        }
+
+        if (!makeFlashers && p.service_number == 0 && p.service_command & CMD_GET_REG) {
             const reg = p.service_command & CMD_REG_MASK
             if (reg == CtrlReg.BootloaderDeviceClass)
                 dev.blDeviceClass = p.uintData
@@ -430,25 +404,39 @@ export async function scanFirmwares(bus: JDBus) {
     }
 }
 
-export async function flashFirmwareBlobs(bus: JDBus, blobs: FirmwareBlob[]) {
-    try {
-        _startTime = Date.now()
-        let numok = 0
-        for (const blob of blobs) {
-            const f = await FlashClient.forDeviceClass(bus, blob.deviceClass)
-            if (!f) {
-                log(`skipping ${blob.name}`)
-                continue
-            }
-            log(`flashing ${blob.name}`)
-            await f.flashFirmwareBlob(blob)
-            numok++
-        }
-        // reset everyone else
-        for (let f of flashers) {
-            await f.maybeReset()
-        }
-    } finally {
-        flashers = null
-    }
+export async function scanFirmwares(bus: JDBus, timeout = 300) {
+    const devs = (await scanCore(bus, (timeout / 50) >> 0, false)).devs
+    devs.sort((a, b) => U.strcmp(a.deviceId, b.deviceId))
+    return devs
+}
+
+export function updateApplicable(dev: FwInfo, blob: FirmwareBlob) {
+    return dev.blDeviceClass == blob.deviceClass && dev.version !== blob.version
+}
+
+export function computeUpdates(devices: FwInfo[], blobs: FirmwareBlob[]) {
+    return blobs.filter(blob => {
+        const cand = devices.filter(d => updateApplicable(d, blob))
+        if (cand.length == 0)
+            return false
+        blob.updateCandidates = cand
+        return true
+    })
+}
+
+export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, progress?: (perc: number) => void) {
+    if (!blob.updateCandidates || !blob.updateCandidates.length)
+        return
+    _startTime = Date.now()
+    log(`resetting ${blob.updateCandidates.length} device(s)`)
+    for (const d of blob.updateCandidates)
+        await bus.device(d.deviceId).sendCtrlCommand(CtrlCmd.Reset)
+    const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.deviceClass)
+    if (!flashers.length)
+        throw new Error("no devices to flash")
+    if (flashers.length != blob.updateCandidates.length)
+        throw new Error("wrong number of flashers responding: " + flashers.length)
+    flashers[0].classClients = flashers
+    log(`flashing ${blob.name}`)
+    await flashers[0].flashFirmwareBlob(blob, progress)
 }
