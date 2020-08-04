@@ -51,11 +51,6 @@ const generic_commands: U.SMap<number> = {
     CMD_EVENT: 0x01,
     CMD_CALIBRATE: 0x02,
     CMD_GET_DESCRIPTION: 0x03,
-    /*
-    CMD_CTRL_NOOP: 0x80,
-    CMD_CTRL_IDENTIFY: 0x81,
-    CMD_CTRL_RESET: 0x82,
-    */
 }
 
 const generic_regs: U.SMap<number> = {

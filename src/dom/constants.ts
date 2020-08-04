@@ -42,14 +42,6 @@ export const CMD_CALIBRATE = 0x02
 // request human-readable description of service
 export const CMD_GET_DESCRIPTION = 0x03
 
-// Commands specific to control service
-// do nothing
-export const CMD_CTRL_NOOP = 0x80
-// blink led or otherwise draw user's attention
-export const CMD_CTRL_IDENTIFY = 0x81
-// reset device
-export const CMD_CTRL_RESET = 0x82
-
 export const CMD_CONSOLE_REG = 0x80
 export const CMD_CONSOLE_MESSAGE_DBG = 0x80
 export const CMD_CONSOLE_SET_MIN_PRIORITY = 0x2000 | CMD_CONSOLE_REG
@@ -156,3 +148,35 @@ export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'
 
 export const ERROR = 'error'
+
+// Service: Control
+export enum CtrlCmd {
+    /** No args. Do nothing. Always ignored. Can be used to test ACKs. */
+    Noop = 0x80,
+
+    /** No args. Blink an LED or otherwise draw user's attention. */
+    Identify = 0x81,
+
+    /** No args. Reset device. ACK may or may not be sent. */
+    Reset = 0x82,
+}
+
+export enum CtrlReg {
+    /** Constant string (bytes). Identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C) */
+    DeviceDescription = 0x180,
+
+    /** Constant uint32_t. A numeric code for the string above; used to identify firmware images. */
+    DeviceClass = 0x181,
+
+    /** Constant uint32_t. Typically the same as `device_class` unless device was flashed by hand; the bootloader will respond to that code. */
+    BootloaderDeviceClass = 0x184,
+
+    /** Constant string (bytes). A string describing firmware version; typically semver. */
+    FirmwareVersion = 0x185,
+
+    /** Read-only °C int16_t. MCU temperature in degrees Celsius (approximate). */
+    Temperature = 0x182,
+
+    /** Read-only μs uint64_t. Number of microseconds since boot. */
+    Uptime = 0x186,
+}
