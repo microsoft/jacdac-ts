@@ -5,7 +5,6 @@ import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier } from "./spec";
-import { isObject } from "util";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -44,7 +43,7 @@ export class JDService extends JDNode {
     }
 
     register(address: number | { address: number }) {
-        const a = (isObject(address) ? <number>(<any>address).address : <number>address) | 0;
+        const a = (typeof address == "number" ? address : address.address) | 0;
         if (!this._registers)
             this._registers = [];
         let register = this._registers[a];
