@@ -101,6 +101,9 @@ const useStyles = makeStyles((theme) => ({
     }),
     marginLeft: 0,
   },
+  footerLink: {
+    marginRight: theme.spacing(0.5)
+  }
 }));
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
@@ -138,6 +141,11 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
       site {
         siteMetadata {
           title
+        }
+      }
+      allJacdacTsJson {
+        nodes {
+          version
         }
       }
     }
@@ -218,10 +226,15 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
           <Typography>
             {children}
           </Typography>
-        </main>
-        <footer>
+          <footer>
+            <Divider />
+            <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
+            <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
+            <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
+            <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
           © {new Date().getFullYear()} Microsoft Corporation
         </footer>
+        </main>
         <ErrorSnackbar />
       </div>
     </JacdacProvider>

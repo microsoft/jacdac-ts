@@ -133,7 +133,6 @@ export default function Toc() {
   data.allMdx.edges.map(node => node.node)
     .filter(node => !!node.headings.length && !/404/.test(node.headings[0].value))
     .map(node => {
-      console.log(node)
       const r = {
         name: node.headings[0].value,
         path: node.fields.slug

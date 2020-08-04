@@ -6,6 +6,22 @@ import specdata from "../../jacdac-spec/dist/spec.json";
 export const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
 
 /**
+ * Checks if classIdentifier is compatible with requiredClassIdentifier
+*/
+export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): boolean {
+    // direct hit
+    if (classIdentifier === requiredClassIdentifier)
+        return true;
+
+    // lookup inheritance chain
+    const classSpec = serviceSpecificationFromClassIdentifier(classIdentifier);
+    return !!classSpec?.extends?.some(extend => {
+        const extendSpec = serviceSpecificationFromName(extend);
+        return !!extendSpec && isInstanceOf(classIdentifier, extendSpec.classIdentifier)
+    });
+}
+
+/**
  * Looks up a service specification by name
  * @param name 
  */

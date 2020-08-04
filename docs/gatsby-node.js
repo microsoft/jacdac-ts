@@ -81,7 +81,6 @@ async function createSpecPages(graphql, actions, reporter) {
   }
   // Create pages.
   const specs = result.data.allMdx.edges.map(node => node.node).filter(node => {
-    console.log(JSON.stringify(node, null, 2))
     return node.parent.sourceInstanceName == "specPages";
   })
   // you'll call `createPage` for each result

@@ -37,6 +37,13 @@ module.exports = {
         path: `${__dirname}/../jacdac-spec/dist/spec.json`,
       },
     },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `package`,
+        path: `${__dirname}/../package.json`,
+      },
+    },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
     {

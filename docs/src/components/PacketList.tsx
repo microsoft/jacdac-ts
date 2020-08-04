@@ -3,8 +3,9 @@ import { Grid, List, TextField } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS } from '../../../src/dom/constants';
-import { decodePacketData, isRepeatAnnounce } from '../../../src/dom/pretty'
+import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
+import { isInstanceOf } from '../../../src/dom/spec';
 
 export default function PacketList(props: {
     maxItems?: number,
@@ -39,7 +40,7 @@ export default function PacketList(props: {
             if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
                 return;
 
-            if (serviceClass !== undefined && pkt.service_class != serviceClass)
+            if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
                 return; // not matching service class
 
             const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
