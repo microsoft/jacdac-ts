@@ -21,6 +21,11 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       notes {
         short
       }
+      packets {
+        kind
+        name
+        identifier
+      }
       source
     }
   }
