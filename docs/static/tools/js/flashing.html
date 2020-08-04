@@ -50,6 +50,8 @@
             await jd.disconnectAsync();
             await jd.connectAsync();
             log('started')
+            const fw = await jacdac.scanFirmwares(jd)
+            console.log(fw)
         }
 
         // replace

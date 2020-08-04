@@ -3,7 +3,7 @@ import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import { JDDevice } from "./device"
-import { CMD_CTRL_RESET, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA } from "./constants"
+import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, PACKET_RECEIVE, CMD_REG_MASK, CtrlReg } from "./constants"
 import { unpack, pack } from "./struct"
 import { assert } from "./utils"
 
@@ -16,6 +16,13 @@ let _startTime = 0
 // set to null when no flashing in progress
 let flashers: FlashClient[]
 
+const uf2ExtTags: U.SMap<number> = {
+    version: -0x9fc7bc,
+    name: -0x650d9d,
+    pageSize: 0x0be9f7,
+    deviceClass: 0xc8a729
+}
+
 export interface FirmwarePage {
     data: Uint8Array;
     targetAddress: number;
@@ -24,7 +31,9 @@ export interface FirmwarePage {
 export interface FirmwareBlob {
     pages: FirmwarePage[];
     deviceClass: number;
+    pageSize: number;
     name: string;
+    version: string;
 }
 
 function timestamp() {
@@ -103,7 +112,7 @@ class FlashClient {
 
     async maybeReset() {
         if (!this.didReset) {
-            const rst = Packet.onlyHeader(CMD_CTRL_RESET)
+            const rst = Packet.onlyHeader(CtrlCmd.Reset)
             rst.service_number = 0
             await rst.sendCmdAsync(this.device)
             this.didReset = true
@@ -236,13 +245,13 @@ class FlashClient {
 async function makeBootloaderList(bus: JDBus) {
     log("resetting all devices")
 
-    const rst = Packet.onlyHeader(CMD_CTRL_RESET)
+    const rst = Packet.onlyHeader(CtrlCmd.Reset)
     await rst.sendAsMultiCommandAsync(bus, SRV_CTRL)
 
     log("asking for bootloaders")
 
     if (flashers === undefined) {
-        bus.on('packetReceive', (p: Packet) => {
+        bus.on(PACKET_RECEIVE, (p: Packet) => {
             if (!flashers)
                 return
 
@@ -299,24 +308,27 @@ const UF2_MAGIC_END = 0x0AB16F30;
 export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
     const blobs: FirmwareBlob[] = []
     let currBlob: FirmwareBlob
-    let addr = 0
-    const pageSize = 1024 // TODO
     for (let off = 0; off < uf2.length; off += 512) {
         const header = uf2.slice(off, off + 32)
-        let [magic0, magic1, _flags, trgaddr, payloadSize, blkNo, numBlocks, familyID] =
+        let [magic0, magic1, flags, trgaddr, payloadSize, blkNo, numBlocks, familyID] =
             bufferToArray(header, NumberFormat.UInt32LE)
         if (magic0 != UF2_MAGIC_START0 ||
             magic1 != UF2_MAGIC_START1 ||
-            getNumber(uf2, NumberFormat.UInt32LE, 512 - 4) != UF2_MAGIC_END)
+            getNumber(uf2, NumberFormat.UInt32LE, off + 512 - 4) != UF2_MAGIC_END)
             throw new Error("invalid UF2")
         if (blkNo == 0) {
             flush()
             currBlob = {
                 pages: [],
                 deviceClass: familyID,
+                version: "",
+                pageSize: 1024,
                 name: "FW " + familyID.toString(16)
             }
         }
+        if (flags & 0x8000)
+            parseExtTags(uf2.slice(off + 32 + payloadSize, off + 512))
+        const pageSize = currBlob.pageSize || 1024
         let currPage = currBlob.pages[currBlob.pages.length - 1]
         if (!currPage || !(currPage.targetAddress <= trgaddr && trgaddr < currPage.targetAddress + pageSize)) {
             currPage = {
@@ -327,14 +339,95 @@ export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
             currBlob.pages.push(currPage)
         }
         currPage.data.set(uf2.slice(off + 32, off + 32 + payloadSize), trgaddr - currPage.targetAddress)
+
     }
     flush()
+    return blobs
 
     function flush() {
         if (currBlob)
             blobs.push(currBlob)
     }
-    return blobs
+
+    function parseExtTags(buf: Uint8Array) {
+        let sz = 0
+        for (let i = 0; i < buf.length; i += sz) {
+            sz = buf[i]
+            if (sz == 0)
+                break
+            const desig = getNumber(buf, NumberFormat.UInt32LE, i) >>> 8
+            for (const key of Object.keys(uf2ExtTags)) {
+                const tg = uf2ExtTags[key]
+                if (desig == Math.abs(tg)) {
+                    let v: any
+                    if (tg < 0) {
+                        v = U.bufferToString(buf.slice(i + 4, i + sz))
+                    } else {
+                        v = getNumber(buf, NumberFormat.UInt32LE, i + 4)
+                    }
+                    (currBlob as any)[key] = v
+                    break
+                }
+            }
+            sz = (sz + 3) & ~3
+        }
+    }
+}
+
+export interface FwInfo {
+    deviceId: string;
+    version: string;
+    name: string;
+    deviceClass: number;
+    blDeviceClass: number;
+}
+
+export async function scanFirmwares(bus: JDBus) {
+    const devices: U.SMap<FwInfo> = {}
+    try {
+        bus.on(PACKET_RECEIVE, handlePkt)
+        for (let i = 0; i < 3; ++i) {
+            for (const reg of [
+                CtrlReg.BootloaderDeviceClass,
+                CtrlReg.DeviceClass,
+                CtrlReg.FirmwareVersion,
+                CtrlReg.DeviceDescription,
+            ]) {
+                const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
+                await pkt.sendAsMultiCommandAsync(bus, SRV_CTRL)
+                await U.delay(1)
+            }
+        }
+        await U.delay(200)
+    } finally {
+        bus.off(PACKET_RECEIVE, handlePkt)
+    }
+    return devices
+
+    function handlePkt(p: Packet) {
+        console.log(p.toString())
+        if (p.is_report && p.service_number == 0 && p.service_command & CMD_GET_REG) {
+            let dev = devices[p.device_identifier]
+            if (!dev) {
+                dev = devices[p.device_identifier] = {
+                    deviceId: p.device_identifier,
+                    deviceClass: null,
+                    version: null,
+                    name: null,
+                    blDeviceClass: null
+                }
+            }
+            const reg = p.service_command & CMD_REG_MASK
+            if (reg == CtrlReg.BootloaderDeviceClass)
+                dev.blDeviceClass = p.uintData
+            else if (reg == CtrlReg.DeviceClass)
+                dev.deviceClass = p.uintData
+            else if (reg == CtrlReg.DeviceDescription)
+                dev.name = U.bufferToString(p.data)
+            else if (reg == CtrlReg.FirmwareVersion)
+                dev.version = U.bufferToString(p.data)
+        }
+    }
 }
 
 export async function flashFirmwareBlobs(bus: JDBus, blobs: FirmwareBlob[]) {
