@@ -1,8 +1,18 @@
 import DeviceList from "../components/DeviceList"
-import { Link } from "gatsby"
+import { Link } from 'gatsby-theme-material-ui';
+import { Fragment } from "React"
+import { serviceSpecificationFromName } from "../../../src/dom/spec"
 
 <h1>{props.pageContext.node.name}</h1>
 <p>{props.pageContext.node.notes.short}</p>
+<Fragment>
+{!!props.pageContext.node.extends?.length && 
+    <p>
+        <span>Extends </span>
+    {props.pageContext.node.extends.map(extend => <Link to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>)}
+    .
+    </p>}
+</Fragment>
 
 <DeviceList serviceClass={props.pageContext.node.classIdentifier} />
 
