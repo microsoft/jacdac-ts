@@ -34,6 +34,8 @@
     <div class="hint">
         Drag and drop a UF2 file with firmware.
     </div>
+    <div id="upd" style="padding: 1em">
+    </div>
     <div id="log">
         <div>waiting for message...</div>
     </div>
@@ -42,24 +44,60 @@
     <script>
         // webusb
         const jd = jacdac.createUSBBus()
-        jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
+        // jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function listenWebUsb() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            refreshUpdateList([])
             log('started')
-            const fw = await jacdac.scanFirmwares(jd)
-            console.log(fw)
         }
 
-        // replace
+        async function refreshUpdateList(blobs) {
+            if (!jd.connected) {
+                await jd.disconnectAsync()
+                await jd.connectAsync()
+            }
+
+            const logDiv = document.getElementById("upd");
+            while (logDiv.firstChild)
+                logDiv.removeChild(logDiv.firstChild)
+
+            const fws = await jacdac.scanFirmwares(jd)
+            fws.forEach(fw => {
+                const blob = blobs.find(b => jacdac.updateApplicable(fw, b))
+                const line = document.createElement("div");
+                logDiv.appendChild(line)
+                line.innerText = jd.device(fw.deviceId) + ": " + fw.name + " " + fw.version
+                if (blob) {
+                    const text = "-> " + blob.name + " " + blob.version;
+                    const btn = document.createElement("button");
+                    btn.innerText = text;
+                    line.appendChild(btn)
+                    btn.onclick = async () => {
+                        blob.updateCandidates = [fw]
+                        btn.innerText = "Flashing..."
+                        await jacdac.flashFirmwareBlob(jd, blob, prog => {
+                            btn.innerText = Math.round(prog) + "% done"
+                        })
+                        await refreshUpdateList(blobs)
+                    }
+                }
+
+                const idbtn = document.createElement("button");
+                idbtn.innerText = "blink";
+                line.appendChild(idbtn)
+                idbtn.onclick = () => {
+                    // identify
+                    jd.device(fw.deviceId).sendCtrlCommand(0x81)
+                }
+            })
+        }
+
         async function importUF2(file) {
             const buf = new Uint8Array(await file.arrayBuffer())
             const blobs = jacdac.parseUF2(buf)
-            console.log(blobs)
-            await jacdac.flashFirmwareBlobs(jd, blobs)
+            await refreshUpdateList(blobs)
         }
 
         // binding ui

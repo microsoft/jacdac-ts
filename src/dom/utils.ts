@@ -30,6 +30,12 @@ export function memcpy(trg: Uint8Array, trgOff: number, src: ArrayLike<number>, 
         trg[trgOff + i] = src[srcOff + i]
 }
 
+export function strcmp(a: string, b: string) {
+    if (a == b) return 0;
+    if (a < b) return -1;
+    else return 1;
+}
+
 export function bufferEq(a: Uint8Array, b: ArrayLike<number>) {
     if (a == b)
         return true
