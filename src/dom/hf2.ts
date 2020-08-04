@@ -444,9 +444,10 @@ export class Proto {
             f(buf.slice(4))
         } else {
             this.io.log("unhandled event: " + evid.toString(16))
-            if (evid === 0x800020) {
-                this.io.onError(new Error("hf2 corrupted"))
-            }
+            // We can get these before we're ready to recv; this is fine.
+            //if (evid === 0x800020) {
+            //    this.io.onError(new Error("hf2 corrupted"))
+            //}
         }
     }
     onSerial(data: Uint8Array, iserr: boolean) {
