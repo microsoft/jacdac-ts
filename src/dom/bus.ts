@@ -148,7 +148,10 @@ export class JDBus extends JDNode {
     sendPacketAsync(p: Packet) {
         this.emit(PACKET_SEND, p);
         const spa = this.options.sendPacketAsync;
-        return spa ? spa(p) : Promise.resolve();
+        if (!spa)
+            return Promise.resolve();
+
+        return spa(p);
     }
 
     get connecting() {

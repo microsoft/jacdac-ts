@@ -56,7 +56,7 @@ export function createUSBBus(options?: USBOptions): JDBus {
         },
         sendPacketAsync: p => {
             if (!hf2)
-                throw new Error("hf2 transport disconnected")
+                return Promise.reject("hf2 transport disconnected")
 
             const buf = p.toBuffer();
             return hf2.sendJDMessageAsync(buf)

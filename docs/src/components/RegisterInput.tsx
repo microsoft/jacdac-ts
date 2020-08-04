@@ -18,8 +18,8 @@ function MemberInput(props: { member: DecodedMember, labelledby: string }) {
     return <Typography variant="h4">{member.humanValue}</Typography>
 }
 
-function Decoded(props: { member: DecodedMember }) {
-    const { member } = props;
+function Decoded(props: { member: DecodedMember, showName?: boolean }) {
+    const { member, showName } = props;
     const { info } = member;
     return <React.Fragment>
         {info.name !== "_" && <Typography id="slider" gutterBottom>
@@ -29,19 +29,26 @@ function Decoded(props: { member: DecodedMember }) {
     </React.Fragment>
 }
 
-export default function ReportRegister(props: { register: JDRegister }) {
-    const { register } = props;
+export default function RegisterInput(props: { register: JDRegister, showName?: boolean, showMemberName?: boolean }) {
+    const { register, showName, showMemberName } = props;
     const [decoded, setDecoded] = useState(register.decode())
 
+    // read at least once
+    useEffect(() => {
+        if (!decoded)
+            register.sendGetAsync()
+    })
+
+    // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         setDecoded(register.decode())
     }))
 
     return <React.Fragment>
-        {!!decoded && <Typography gutterBottom>
+        {showName && !!decoded && <Typography gutterBottom>
             {decoded.info.name}
         </Typography>}
         {decoded && decoded.decoded.map(member =>
-            <Decoded member={member} />)}
+            <Decoded member={member} showName={showMemberName} />)}
     </React.Fragment>
 }
