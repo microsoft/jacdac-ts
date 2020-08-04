@@ -103,7 +103,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Layout = ({ pageContext, children }) => {
+export default function Layout(props: { pageContext?: any; children: any; }) {
+  const { pageContext, children } = props;
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [drawerConsole, setDrawerConsole] = useState(false);
@@ -226,5 +227,3 @@ const Layout = ({ pageContext, children }) => {
     </JacdacProvider>
   )
 }
-
-export default Layout

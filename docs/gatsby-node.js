@@ -2,13 +2,8 @@ const path = require(`path`)
 const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
 
-// Implement the Gatsby API “createPages”. This is
-// called after the Gatsby bootstrap is finished so you have
-// access to any information necessary to programmatically
-// create pages.
-exports.createPages = async ({ graphql, actions, reporter }) => {
+async function createServicePages(graphql, actions, reporter) {
   const { createPage } = actions
-
   const result = await graphql(`
 {
   allSpecJson {
@@ -33,7 +28,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
 `)
 
   if (result.errors) {
-    reporter.panicOnBuild(`Error while running GraphQL query.`)
+    reporter.panicOnBuild('🚨  ERROR: Loading "createPages" query')
     return
   }
 
@@ -57,12 +52,63 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
         node
       },
     })
+  }) 
+}
+
+async function createSpecPages(graphql, actions, reporter) {
+  const { createPage } = actions
+  const result = await graphql(`
+  {
+    allMdx {
+      edges {
+        node {
+          id
+          fields {
+            slug
+          }
+          parent {
+            ... on File {
+              sourceInstanceName
+            }
+          }
+        }
+      }
+    }
+  }  
+  `)
+  if (result.errors) {
+    reporter.panicOnBuild('🚨  ERROR: Loading "createPages" query')
+  }
+  // Create pages.
+  const specs = result.data.allMdx.edges.map(node => node.node).filter(node => {
+    console.log(JSON.stringify(node, null, 2))
+    return node.parent.sourceInstanceName == "specPages";
   })
+  // you'll call `createPage` for each result
+  specs.forEach(node => {
+    createPage({
+      // This is the slug you created before
+      // (or `node.frontmatter.slug`)
+      path: `/spec${node.fields.slug}`,
+      // This component will wrap our MDX content
+      component: path.resolve(`./src/components/spec.tsx`),
+      context: { id: node.id }
+    })
+  }) 
+}
+
+// Implement the Gatsby API “createPages”. This is
+// called after the Gatsby bootstrap is finished so you have
+// access to any information necessary to programmatically
+// create pages.
+exports.createPages = async ({ graphql, actions, reporter }) => {
+  await createServicePages(graphql, actions, reporter)
+  await createSpecPages(graphql, actions, reporter)
 }
 
 exports.onCreateNode = ({ node, actions, getNode }) => {
   const { createNodeField } = actions
-  console.log(node.internal.type)
+  console.log(`${node.internal.type} -> ${node.value}`)
   if (node.internal.type === `Mdx`) {
     const value = createFilePath({ node, getNode })
     createNodeField({

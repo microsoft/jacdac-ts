@@ -94,6 +94,11 @@ export default function Toc() {
           fields {
             slug
           }
+          parent {
+            ... on File {
+              sourceInstanceName
+            }
+          }
         }
       }
     }
@@ -125,13 +130,17 @@ export default function Toc() {
     name: "Tools",
     path: "/tools/"
   }]
-  data.allMdx.edges
-    .filter(node => !!node.node.headings.length && !/404/.test(node.node.headings[0].value))
+  data.allMdx.edges.map(node => node.node)
+    .filter(node => !!node.headings.length && !/404/.test(node.headings[0].value))
     .map(node => {
-      return {
-        name: node.node.headings[0].value,
-        path: node.node.fields.slug
+      console.log(node)
+      const r = {
+        name: node.headings[0].value,
+        path: node.fields.slug
       }
+      if (node.parent.sourceInstanceName == "specPages")
+        r.path = "/spec" + r.path
+      return r;
     })
     .forEach(node => toc.push(node))
 
