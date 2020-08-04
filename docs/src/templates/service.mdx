@@ -1,9 +1,14 @@
 import DeviceList from "../components/DeviceList"
 import { Link } from 'gatsby-theme-material-ui';
-import { Fragment } from "React"
+import { Fragment } from "react"
 import { serviceSpecificationFromName } from "../../../src/dom/spec"
+import PacketSpecification from "../components/PacketSpecification"
+import Chip from '@material-ui/core/Chip';
 
-<h1>{props.pageContext.node.name}</h1>
+
+<h1>{props.pageContext.node.name}
+    <span style={{ marginLeft: "1rem" }}><Chip size="small" label={`id 0x${props.pageContext.node.classIdentifier.toString(16)}`} /></span>
+</h1>
 <p>{props.pageContext.node.notes.short}</p>
 <Fragment>
 {!!props.pageContext.node.extends?.length && 
@@ -15,6 +20,11 @@ import { serviceSpecificationFromName } from "../../../src/dom/spec"
 </Fragment>
 
 <DeviceList serviceClass={props.pageContext.node.classIdentifier} />
+
+<Fragment>
+    {props.pageContext.node.packets
+        .map(pkt => <PacketSpecification serviceClass={props.pageContext.node.classIdentifier} registerAddress={pkt.identifier} />)}
+</Fragment>
 
 ## Specification
 
