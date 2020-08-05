@@ -1,10 +1,9 @@
 import DeviceList from "../components/DeviceList"
 import { Link } from 'gatsby-theme-material-ui';
 import { Fragment } from "react"
-import { serviceSpecificationFromName } from "../../../src/dom/spec"
+import { serviceSpecificationFromName, isRegister } from "../../../src/dom/spec"
 import PacketSpecification from "../components/PacketSpecification"
 import Chip from '@material-ui/core/Chip';
-
 
 <h1>{props.pageContext.node.name}
     <span style={{ marginLeft: "1rem" }}><Chip size="small" label={`id 0x${props.pageContext.node.classIdentifier.toString(16)}`} /></span>
@@ -19,10 +18,11 @@ import Chip from '@material-ui/core/Chip';
     </p>}
 </Fragment>
 
-<DeviceList serviceClass={props.pageContext.node.classIdentifier} />
+## Registers
 
 <Fragment>
     {props.pageContext.node.packets
+        .filter(isRegister)
         .map(pkt => <PacketSpecification serviceClass={props.pageContext.node.classIdentifier} registerAddress={pkt.identifier} />)}
 </Fragment>
 

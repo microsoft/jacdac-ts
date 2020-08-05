@@ -10,7 +10,7 @@ import CreateIcon from '@material-ui/icons/Create';
 import LockIcon from '@material-ui/icons/Lock';
 // tslint:disable-next-line: no-submodule-imports
 import CallToActionIcon from '@material-ui/icons/CallToAction';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import DeviceList from "./DeviceList";
 
@@ -56,6 +56,6 @@ export default function PacketSpecification(props: { serviceClass: number, regis
             {packet.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <p>{packet.description}</p>
-        {isRegister(packet) && <DeviceList serviceClass={serviceClass} registerAddress={registerAddress} />}
+        {isRegister(packet) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerAddress={registerAddress} />}
     </div>
 }

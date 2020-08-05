@@ -7,13 +7,14 @@ import { CHANGE } from "../../../src/dom/constants";
 import JacdacContext from '../../../src/react/Context';
 import { BusState } from "../../../src/dom/bus";
 
-export default function ServiceInput(props: { service: JDService, showConst?: boolean, showRw?: boolean }) {
+export default function ServiceInput(props: { service: JDService, showConst?: boolean, showRw?: boolean, registerAddress?: number, showRegisterName?: boolean }) {
     const { connectionState } = useContext(JacdacContext)
-    const { service, showConst, showRw } = props;
+    const { service, showConst, showRw, registerAddress, showRegisterName } = props;
     const spec = service.specification;
     const packets = spec.packets;
     const registers = packets.filter(isRegister);
-    const reports = registers.filter(reg => reg.kind == "ro" || (showConst && reg.kind == "const") || (showRw && reg.kind == "rw"))
+    const reports = registerAddress !== undefined ? registers.filter(reg => reg.identifier === registerAddress)
+        : registers.filter(reg => reg.kind == "ro" || (showConst && reg.kind == "const") || (showRw && reg.kind == "rw"));
 
     useEffect(() => {
         if (connectionState == BusState.Connected)
@@ -22,9 +23,9 @@ export default function ServiceInput(props: { service: JDService, showConst?: bo
             if (connectionState == BusState.Connected)
                 setStreamingAsync(service, true)
         })
-    }, [connectionState, service])
+    }, [connectionState, service]);
 
     return <React.Fragment>
-        {reports.map(report => <RegisterInput register={service.register(report.identifier)} showName={true} showMemberName={true} />)}
+        {reports.map(report => <RegisterInput register={service.register(report.identifier)} showName={showRegisterName} showMemberName={true} />)}
     </React.Fragment>
 }

@@ -33,21 +33,21 @@ const useStyles = makeStyles({
     },
 });
 
-export default function ServiceCard(props: { service: JDService, linkToService?: boolean }) {
-    const { service, linkToService } = props;
+export default function ServiceCard(props: { service: JDService, linkToService?: boolean, registerAddress?: number, showDeviceName?: boolean, showServiceName?: boolean, showRegisterName?: boolean }) {
+    const { service, linkToService, registerAddress, showDeviceName, showServiceName, showRegisterName } = props;
     const classes = useStyles();
 
     return (
         <Card className={classes.root}>
             <CardContent>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
+                {showServiceName && <Typography className={classes.title} color="textSecondary" gutterBottom>
                     <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/dom/service"}>{service.name}</Link>
-                </Typography>
-                <Typography variant="h5" component="h2">
+                </Typography>}
+                {showDeviceName && <Typography variant="h5" component="h2">
                     <Link to="/clients/web/dom/device">{service.device.name || service.device.shortId}</Link>
-                </Typography>
+                </Typography>}
                 <Typography variant="body2" component="p">
-                    <ServiceInput service={service} />
+                    <ServiceInput service={service} showRegisterName={showRegisterName} registerAddress={registerAddress} />
                 </Typography>
             </CardContent>
         </Card>
