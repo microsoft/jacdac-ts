@@ -5,9 +5,11 @@ import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier } from "./spec";
+import { JDEvent } from "./event";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
+    private _events: JDEvent[];
     private _specification: jdspec.ServiceSpec = null;
 
     constructor(
@@ -52,6 +54,15 @@ export class JDService extends JDNode {
         return register;
     }
 
+    event(address: number) {
+        if (!this._events)
+            this._events = [];
+        let event = this._events[address];
+        if (!event)
+            event = this._events[address] = new JDEvent(this, address);
+        return event;
+    }
+
     sendPacketAsync(pkt: Packet) {
         pkt.dev = this.device;
         pkt.service_number = this.service_number;
@@ -71,6 +82,12 @@ export class JDService extends JDNode {
             const reg = this.register({ address })
             if (reg)
                 reg.processReport(pkt);
+        }
+        else if (pkt.is_event) {
+            const address = pkt.intData
+            const reg = this.event(address)
+            if (reg)
+                reg.processEvent(pkt);
         }
     }
 }

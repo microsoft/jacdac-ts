@@ -9,6 +9,7 @@ import {
     JD_SERVICE_NUMBER_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     CMD_ADVERTISEMENT_DATA,
+    CMD_EVENT,
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -112,6 +113,10 @@ export class Packet {
 
     get is_reg_get() {
         return (this.service_command >> 12) == (CMD_SET_REG >> 12)
+    }
+
+    get is_event() {
+        return this.is_command && this.service_command === CMD_EVENT;
     }
 
     get data(): Uint8Array {
