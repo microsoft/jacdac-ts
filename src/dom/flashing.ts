@@ -10,7 +10,7 @@ import { assert } from "./utils"
 const BL_CMD_PAGE_DATA = 0x80
 const BL_CMD_SET_SESSION = 0x81
 const BL_SUBPAGE_SIZE = 208
-const numRetries = 3
+const numRetries = 15
 
 let _startTime = 0
 
@@ -117,7 +117,7 @@ class FlashClient {
 
     private async endFlashAsync() {
         for (let f of this.classClients) {
-            await U.delay(100)
+            await U.delay(10)
             await f.device.sendCtrlCommand(CtrlCmd.Reset)
         }
     }
@@ -212,7 +212,7 @@ class FlashClient {
     }
 
     public async flashFirmwareBlob(fw: FirmwareBlob, progress?: (perc: number) => void) {
-        const total = fw.pages.length + 3
+        const total = fw.pages.length + 12
         let idx = 0
         const prog = () => {
             if (progress)
@@ -234,6 +234,11 @@ class FlashClient {
                 // even if something failed, try to reset everyone
                 await this.endFlashAsync()
                 prog()
+                // wait until we're out of bootloader mode; otherwise the subsequent scan will keep devices in BL mode
+                for (let i = 0; i < 10; ++i) {
+                    await U.delay(150)
+                    prog()
+                }
             } finally {
                 // even if resetting failed, unregister event listeners
                 for (let d of this.classClients) {

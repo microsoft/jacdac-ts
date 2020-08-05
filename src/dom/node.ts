@@ -1,7 +1,6 @@
 import { SMap } from "./utils";
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants";
 import { Observable, Observer } from "./observable";
-import { isArray } from "util";
 export type EventHandler = (...args) => void;
 
 interface Listener {
@@ -12,9 +11,9 @@ interface Listener {
 function normalizeEventNames(eventNames: string | string[]): string[] {
     if (!eventNames)
         eventNames = [];
-    if (!isArray(eventNames))
+    if (typeof eventNames == "string")
         eventNames = [eventNames]
-    return <string[]>eventNames;
+    return eventNames;
 }
 
 export abstract class JDNode {

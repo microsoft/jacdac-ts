@@ -34,6 +34,8 @@
     <div class="hint">
         Drag and drop a UF2 file with firmware.
     </div>
+    <div id="err" style="color: red">
+    </div>
     <div id="upd" style="padding: 1em">
     </div>
     <div id="log">
@@ -47,23 +49,42 @@
         // jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
-        async function listenWebUsb() {
-            log('starting')
-            refreshUpdateList([])
-            log('started')
+        let flashing = false
+        let blobs
+
+        async function startUpdate() {
+            if (!blobs) {
+                blobs = []
+                while (true) {
+                    if (flashing)
+                        await jacdac.delay(100)
+                    await refreshUpdateList()
+                }
+            }
         }
 
-        async function refreshUpdateList(blobs) {
+        async function listenWebUsb() {
+            startUpdate()
+        }
+
+        async function refreshUpdateList() {
+            if (flashing)
+                return
+
             if (!jd.connected) {
                 await jd.disconnectAsync()
                 await jd.connectAsync()
             }
 
+            const fws = await jacdac.scanFirmwares(jd)
+
+            if (flashing)
+                return
+
             const logDiv = document.getElementById("upd");
             while (logDiv.firstChild)
                 logDiv.removeChild(logDiv.firstChild)
 
-            const fws = await jacdac.scanFirmwares(jd)
             fws.forEach(fw => {
                 const blob = blobs.find(b => jacdac.updateApplicable(fw, b))
                 const line = document.createElement("div");
@@ -75,12 +96,18 @@
                     btn.innerText = text;
                     line.appendChild(btn)
                     btn.onclick = async () => {
+                        flashing = true
                         blob.updateCandidates = [fw]
                         btn.innerText = "Flashing..."
-                        await jacdac.flashFirmwareBlob(jd, blob, prog => {
-                            btn.innerText = Math.round(prog) + "% done"
-                        })
-                        await refreshUpdateList(blobs)
+                        try {
+                            await jacdac.flashFirmwareBlob(jd, blob, prog => {
+                                btn.innerText = Math.round(prog) + "% done"
+                            })
+                        } catch (e) {
+                            error(e)
+                        } finally {
+                            flashing = false
+                        }
                     }
                 }
 
@@ -94,10 +121,15 @@
             })
         }
 
+        function error(e) {
+            console.error(e.stack)
+            document.getElementById("err").innerText = e.message;
+        }
+
         async function importUF2(file) {
             const buf = new Uint8Array(await file.arrayBuffer())
-            const blobs = jacdac.parseUF2(buf)
-            await refreshUpdateList(blobs)
+            startUpdate()
+            blobs = jacdac.parseUF2(buf)
         }
 
         // binding ui
