@@ -1,4 +1,5 @@
 import React, { createContext, useState } from "react";
+import { allKinds } from "./KindIcon";
 
 export interface PacketFilterProps {
     consoleMode: boolean,
@@ -6,9 +7,6 @@ export interface PacketFilterProps {
 
     kinds: string[],
     setKinds: (kinds: string[]) => void,
-
-    skipRepeatedAnnounce: boolean,
-    setSkipRepeatedAnnounce: (value: boolean) => void
 }
 
 const PacketFilterContext = createContext<PacketFilterProps>({
@@ -17,9 +15,6 @@ const PacketFilterContext = createContext<PacketFilterProps>({
 
     kinds: [],
     setKinds: (k) => {},
-
-    skipRepeatedAnnounce: false,
-    setSkipRepeatedAnnounce: (v) => { }
 });
 PacketFilterContext.displayName = "packets";
 
@@ -27,17 +22,14 @@ export default PacketFilterContext;
 
 export const PacketFilterProvider = ({ children }) => {
     const [consoleMode, setConsoleMode] = useState(true)
-    const [skipRepeatedAnnounce, setSkipRepeatedAnnounce] = useState(false)
-    const [kinds, setKinds] = useState(["rw", "ro", "const", "event", "command"])
+    const [kinds, setKinds] = useState(["rw", "ro", "event", "command"])
 
     return (
         <PacketFilterContext.Provider value={{
             consoleMode, setConsoleMode,
             kinds, setKinds,
-            skipRepeatedAnnounce, setSkipRepeatedAnnounce
         }}>
             {children}
         </PacketFilterContext.Provider>
     )
 }
-

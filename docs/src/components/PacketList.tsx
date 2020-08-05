@@ -10,9 +10,9 @@ import PauseIcon from '@material-ui/icons/Pause';
 import ClearIcon from '@material-ui/icons/Clear';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PacketFilterContext from './PacketFilterContext';
-import KindIcon from './KindIcon';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import KindIcon, { allKinds, kindName } from "./KindIcon";
 
 export default function PacketList(props: {
     maxItems?: number,
@@ -20,12 +20,12 @@ export default function PacketList(props: {
     showTime?: boolean
 }) {
     const { serviceClass, showTime } = props
-    const { consoleMode, setConsoleMode, skipRepeatedAnnounce, setSkipRepeatedAnnounce, kinds, setKinds } = useContext(PacketFilterContext)
+    const { consoleMode, setConsoleMode, kinds, setKinds } = useContext(PacketFilterContext)
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
     const [packets, setPackets] = useState<Packet[]>([])
     const [paused, setPaused] = useState(false)
-
+    const skipRepeatedAnnounce = !showKind("announce")
 
     function showKind(k: string) {
         return kinds.indexOf(k) > -1
@@ -65,15 +65,12 @@ export default function PacketList(props: {
     // clear when consoleMode changes
     useEffect(() => {
         setPackets([])
-    }, [consoleMode, skipRepeatedAnnounce])
+    }, [consoleMode, ...kinds])
 
     const togglePaused = () => setPaused(!paused)
     const clearPackets = () => setPackets([])
     const handleConsoleModeChange = () => {
         setConsoleMode(!consoleMode)
-    }
-    const handleSkipRepeatedAnnounceChange = () => {
-        setSkipRepeatedAnnounce(!skipRepeatedAnnounce)
     }
     const handleKinds = (event: React.MouseEvent<HTMLElement>, newKinds: string[]) => {
         setKinds(newKinds)
@@ -87,32 +84,25 @@ export default function PacketList(props: {
                         <IconButton title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
                     </ButtonGroup>
 
-                    <ToggleButtonGroup value={kinds} onChange={handleKinds}>
-                        {["rw", "ro", "const", "event", "command"].map(kind => <ToggleButton value={kind}><KindIcon kind={kind} /></ToggleButton>)}
-                    </ToggleButtonGroup>
-
                     <Typography variant="h6">
                         <FormGroup row>
                             <FormControlLabel
-                                control={
-                                    <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />
-                                }
+                                control={<Switch checked={!consoleMode} onChange={handleConsoleModeChange} />}
                                 label="packets"
                             />
                         </FormGroup>
-                        {!consoleMode && <FormControlLabel
-                            control={
-                                <Switch checked={skipRepeatedAnnounce} onChange={handleSkipRepeatedAnnounceChange} />
-                            }
-                            label={<KindIcon kind="announce" />}
-                        />}
                     </Typography>
+
+                    <ToggleButtonGroup value={kinds} onChange={handleKinds}>
+                        {allKinds().map(kind => <ToggleButton value={kind} title={kindName(kind)}><KindIcon kind={kind} /></ToggleButton>)}
+                    </ToggleButtonGroup>
+
                 </ListItem>
                 {packets?.map(packet => <PacketListItem
                     key={packet.key}
                     packet={packet}
                     consoleMode={consoleMode}
-                    skipRepeatedAnnounce={skipRepeatedAnnounce}
+                    skipRepeatedAnnounce={!showKind("announce")}
                     showTime={showTime} />)}
             </List>
         </Grid>

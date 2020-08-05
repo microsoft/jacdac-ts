@@ -44,7 +44,7 @@ import "./layout.css"
 import Alert from "@material-ui/lab/Alert";
 import PacketFilterContext, { PacketFilterProps, PacketFilterProvider } from "./PacketFilterContext";
 
-const drawerWidth = `${30}rem`;
+const drawerWidth = `${40}rem`;
 
 const useStyles = makeStyles((theme) => ({
   root: {
