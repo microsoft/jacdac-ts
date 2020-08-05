@@ -3,7 +3,7 @@ import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, SRV_LIGHT_SPECTRUM_
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array } from "./utils";
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 
@@ -21,10 +21,13 @@ export class JDRegister extends JDNode {
     }
 
     // send a message to set the register value
-    sendSetAsync(data: Uint8Array): Promise<void> {
+    sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
-        return this.service.sendPacketAsync(pkt);
+        let p = this.service.sendPacketAsync(pkt)
+        if (autoRefresh)
+            p = delay(50).then(() => this.sendGetAsync())
+        return p;
     }
 
     sendGetAsync(): Promise<void> {
@@ -32,16 +35,16 @@ export class JDRegister extends JDNode {
         return this.service.sendCmdAsync(cmd)
     }
 
-    sendSetIntAsync(value: number): Promise<void> {
-        return this.sendSetAsync(bufferOfInt(value))
+    sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void> {
+        return this.sendSetAsync(bufferOfInt(value), autoRefresh)
     }
 
-    sendSetBoolAsync(value: boolean): Promise<void> {
-        return this.sendSetIntAsync(value ? 1 : 0)
+    sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void> {
+        return this.sendSetIntAsync(value ? 1 : 0, autoRefresh)
     }
 
-    sendSetStringAsync(value: string): Promise<void> {
-        return this.sendSetAsync(stringToUint8Array(toUTF8(value || "")))
+    sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void> {
+        return this.sendSetAsync(stringToUint8Array(toUTF8(value || "")), autoRefresh)
     }
 
     get specification() {

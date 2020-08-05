@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { JDRegister } from "../../../src/dom/register";
-import { Slider, Typography, Switch } from "@material-ui/core";
+import { Slider, Typography, Switch, TextField } from "@material-ui/core";
 import { REPORT_UPDATE } from "../../../src/dom/constants";
 import { DecodedMember } from "../../../src/dom/pretty";
 import { debouncedPollAsync } from "../../../src/dom/utils";
@@ -9,9 +9,15 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
     const { register, member, labelledby } = props;
     const { specification } = register
     const { info } = member;
-    const handleSwitch = () => register.sendSetBoolAsync(!register.boolValue);
+    const mod = specification.kind == "rw";
+    const handleSwitch = () => register.sendSetBoolAsync(!register.boolValue, true)
+    const handleNumChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const v = parseInt(event.target.value.replace(/[^\d]+$/, ''));
+        if (!isNaN(v))
+            register.sendSetIntAsync(parseInt(event.target.value), true);
+    };
+
     if (info.type == "bool") {
-        const mod = specification.kind == "rw"
         return <Switch checked={member.value} onClick={mod && handleSwitch} />
     }
     else if (member.numValue !== undefined && info.unit == "frac" && info.storage > 0) {
@@ -20,6 +26,10 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
             min={0} max={1 << (8 * member.size)}
         />
     }
+
+    if (member.numValue !== undefined && mod)
+        return <TextField type="number" label={member.numValue} onChange={handleNumChange} />
+
     return <Typography variant="h5">{member.humanValue}</Typography>
 }
 
@@ -39,7 +49,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
     const [decoded, setDecoded] = useState(register.decode())
 
     // keep reading
-    useEffect(() => debouncedPollAsync(() => register.sendGetAsync(), 50))
+    useEffect(() => debouncedPollAsync(() => register.sendGetAsync()))
 
     // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
