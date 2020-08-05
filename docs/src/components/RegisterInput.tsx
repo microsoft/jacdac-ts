@@ -3,7 +3,7 @@ import { JDRegister } from "../../../src/dom/register";
 import { Slider, Typography, Switch } from "@material-ui/core";
 import { REPORT_UPDATE } from "../../../src/dom/constants";
 import { DecodedMember } from "../../../src/dom/pretty";
-import { debounceAsync } from "../../../src/dom/utils";
+import { debouncedPollAsync } from "../../../src/dom/utils";
 
 function MemberInput(props: { register: JDRegister, member: DecodedMember, labelledby: string }) {
     const { register, member, labelledby } = props;
@@ -39,7 +39,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
     const [decoded, setDecoded] = useState(register.decode())
 
     // keep reading
-    useEffect(() => debounceAsync(() => register.sendGetAsync(), 500))
+    useEffect(() => debouncedPollAsync(() => register.sendGetAsync(), 50))
 
     // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {

@@ -345,21 +345,16 @@ export interface DebouncedPoll {
 /**
  * Creates a debounced polls the handler, use stop to any polling interval
  * @param handler 
- * @param delay 
+ * @param debouncedDelay 
  * @param pollDelay 
  */
-export function debouncedPollAsync(handler: () => Promise<void>, delay: number, pollDelay: number): DebouncedPoll {
-    const debounced = debounceAsync(handler, delay);
+export function debouncedPollAsync(handler: () => Promise<void>, debouncedDelay: number = 500, pollDelay: number = 500): () => void {
+    const debounced = debounceAsync(handler, debouncedDelay);
     let interval
 
     const poll = () => {
         if (!interval)
             interval = setInterval(() => debounced(), pollDelay)
-    }
-
-    const execute = () => {
-        poll()
-        debounced()
     }
 
     const stop = () => {
@@ -370,5 +365,5 @@ export function debouncedPollAsync(handler: () => Promise<void>, delay: number, 
     }
 
     poll()
-    return { execute, stop }
+    return stop
 }
