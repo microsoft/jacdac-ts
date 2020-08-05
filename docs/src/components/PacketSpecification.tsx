@@ -5,8 +5,7 @@ import React, { Fragment } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import Chip from '@material-ui/core/Chip';
 import DeviceList from "./DeviceList";
-import KindIcon from "./KindIcon"
-
+import KindIcon, { kindName } from "./KindIcon"
 import { makeStyles, createStyles } from "@material-ui/core";
 import IDChip from "./IDChip";
 
@@ -23,21 +22,13 @@ const useStyles = makeStyles((theme) => createStyles({
 export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo }) {
     const { serviceClass, packetInfo } = props;
     const classes = useStyles();
-    const kinds = {
-        "ro": "read-only",
-        "rw": "read-write"
-        // command
-        // event
-        // const
-    }
-
     if (!packetInfo)
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
 
     return <div className={classes.root}>
         <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
             <IDChip className={classes.chip} id={packetInfo.identifier} />
-            {<Chip className={classes.chip} size="small" label={kinds[packetInfo.kind] || packetInfo.kind} icon={<KindIcon kind={packetInfo.kind} />} />}
+            <Chip className={classes.chip} size="small" label={kindName(packetInfo.kind)} icon={<KindIcon kind={packetInfo.kind} />} />
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>

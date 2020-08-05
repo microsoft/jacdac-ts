@@ -19,7 +19,6 @@ export default function KindIcon(props: { kind: string }) {
         case "event": return <FlashOnIcon />;
         case "announce": return <AnnouncementIcon />;
     }
-    console.error(`unknown ${props.kind}`)
     return undefined;
 }
 
