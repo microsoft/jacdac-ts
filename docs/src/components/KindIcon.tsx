@@ -12,6 +12,7 @@ export default function KindIcon(props: { kind: string }) {
     switch (props.kind) {
         case "ro": return <LockIcon />;
         case "rw": return <CreateIcon />;
+        case "const": return <LockIcon />;
         case "command": return <CallToActionIcon />;
         case "event": return <FlashOnIcon />;
     }
