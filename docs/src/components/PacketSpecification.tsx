@@ -1,4 +1,4 @@
-import { serviceSpecificationFromClassIdentifier, isRegister } from "../../../src/dom/spec"
+import { isRegister } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import React, { Fragment } from "react";
@@ -26,11 +26,9 @@ const useStyles = makeStyles((theme) => createStyles({
 }),
 );
 
-export default function PacketSpecification(props: { serviceClass: number, registerAddress: number }) {
-    const { serviceClass, registerAddress } = props;
+export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo }) {
+    const { serviceClass, packetInfo } = props;
     const classes = useStyles();
-    const service = serviceSpecificationFromClassIdentifier(serviceClass)
-    const packet = service?.packets.find(pkt => pkt.identifier == registerAddress)
     const kinds = {
         "ro": "read-only",
         "rw": "read-write"
@@ -45,17 +43,18 @@ export default function PacketSpecification(props: { serviceClass: number, regis
         "event": <FlashOnIcon />
     }
 
-    if (!packet)
-        return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${registerAddress}`}</Alert>
+    if (!packetInfo)
+        return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
 
+        console.log(packetInfo)
     return <div className={classes.root}>
-        <h3 id={`register:${packet.identifier}`}>{packet.name}
-            <Chip className={classes.chip} size="small" label={`id 0x${packet.identifier.toString(16)}`} />
-            {<Chip className={classes.chip} size="small" label={kinds[packet.kind] || packet.kind} icon={icons[packet.kind]} />}
-            {packet.optional && <Chip className={classes.chip} size="small" label="optional" />}
-            {packet.derived && <Chip className={classes.chip} size="small" label="derived" />}
+        <h3 id={`register:${packetInfo.identifier}`}>{packetInfo.name}
+            <Chip className={classes.chip} size="small" label={`id 0x${packetInfo.identifier.toString(16)}`} />
+            {<Chip className={classes.chip} size="small" label={kinds[packetInfo.kind] || packetInfo.kind} icon={icons[packetInfo.kind]} />}
+            {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
+            {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
-        <p>{packet.description}</p>
-        {isRegister(packet) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerAddress={registerAddress} />}
+        <p>{packetInfo.description}</p>
+        {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerAddress={packetInfo.identifier} />}
     </div>
 }

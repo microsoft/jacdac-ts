@@ -20,6 +20,8 @@ async function createServicePages(graphql, actions, reporter) {
         kind
         name
         identifier
+        description
+        derived
       }
       source
     }

@@ -44,6 +44,10 @@ export function isRegister(pkt: jdspec.PacketInfo) {
     return pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw"
 }
 
+export function isEvent(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "event"
+}
+
 export function isIntegerType(tp: string) {
     return /^[ui]\d+(\.|$)/.test(tp) || tp == "pipe_port" || tp == "bool"
 }
