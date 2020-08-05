@@ -124,7 +124,6 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  const { consoleMode, setConsoleMode, skipRepeatedAnnounce, setSkipRepeatedAnnounce } = useContext(PacketFilterContext)
   const [drawerConsole, setDrawerConsole] = useState(false);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
@@ -139,14 +138,6 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   }
   const handleDrawerClose = () => {
     setOpen(false);
-  }
-
-  const handleConsoleModeChange = () => {
-    setConsoleMode(!consoleMode)
-  }
-
-  const handleSkipRepeatedAnnounceChange = () => {
-    setSkipRepeatedAnnounce(!skipRepeatedAnnounce)
   }
 
   const data = useStaticQuery(graphql`
@@ -206,28 +197,12 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
       >
         <div className={classes.drawerHeader}>
           {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
-          {drawerConsole && <Typography variant="h6">
-            <FormGroup row>
-              {!consoleMode && <FormControlLabel
-                control={
-                  <Switch checked={skipRepeatedAnnounce} onChange={handleSkipRepeatedAnnounceChange} />
-                }
-                label="skip repeat announce"
-              />}
-              <FormControlLabel
-                control={
-                  <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />
-                }
-                label="packets"
-              />
-            </FormGroup>
-          </Typography>}
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
-        {drawerConsole ? <PacketList serviceClass={serviceClass} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} /> : <Toc />}
+        {drawerConsole ? <PacketList serviceClass={serviceClass} /> : <Toc />}
       </Drawer>
       <main
         className={clsx(classes.content, {

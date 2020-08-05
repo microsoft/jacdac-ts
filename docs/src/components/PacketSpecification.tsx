@@ -4,15 +4,8 @@ import Alert from '@material-ui/lab/Alert';
 import React, { Fragment } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import Chip from '@material-ui/core/Chip';
-// tslint:disable-next-line: no-submodule-imports
-import CreateIcon from '@material-ui/icons/Create';
-// tslint:disable-next-line: no-submodule-imports
-import LockIcon from '@material-ui/icons/Lock';
-// tslint:disable-next-line: no-submodule-imports
-import CallToActionIcon from '@material-ui/icons/CallToAction';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FlashOnIcon from '@material-ui/icons/FlashOn';
 import DeviceList from "./DeviceList";
+import KindIcon from "./KindIcon"
 
 import { makeStyles, createStyles } from "@material-ui/core";
 import IDChip from "./IDChip";
@@ -37,12 +30,6 @@ export default function PacketSpecification(props: { serviceClass: number, packe
         // event
         // const
     }
-    const icons = {
-        "ro": <LockIcon />,
-        "rw": <CreateIcon />,
-        "command": <CallToActionIcon />,
-        "event": <FlashOnIcon />
-    }
 
     if (!packetInfo)
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
@@ -50,7 +37,7 @@ export default function PacketSpecification(props: { serviceClass: number, packe
     return <div className={classes.root}>
         <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
             <IDChip className={classes.chip} id={packetInfo.identifier} />
-            {<Chip className={classes.chip} size="small" label={kinds[packetInfo.kind] || packetInfo.kind} icon={icons[packetInfo.kind]} />}
+            {<Chip className={classes.chip} size="small" label={kinds[packetInfo.kind] || packetInfo.kind} icon={<KindIcon kind={packetInfo.kind} />} />}
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
