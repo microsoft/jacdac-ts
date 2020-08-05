@@ -1,13 +1,15 @@
 import React from "react"
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CreateIcon from '@material-ui/icons/Create';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import LockIcon from '@material-ui/icons/Lock';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CallToActionIcon from '@material-ui/icons/CallToAction';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FlashOnIcon from '@material-ui/icons/FlashOn';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DataUsageIcon from '@material-ui/icons/DataUsage';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AnnouncementIcon from '@material-ui/icons/Announcement';
 
 export default function KindIcon(props: { kind: string }) {
@@ -23,7 +25,7 @@ export default function KindIcon(props: { kind: string }) {
 }
 
 export function kindName(kind: string) {
-    switch(kind) {
+    switch (kind) {
         case "ro": return "read-only";
         case "rw": return "read-write";
         default: return kind
