@@ -348,7 +348,7 @@ export interface DebouncedPoll {
  * @param debouncedDelay 
  * @param pollDelay 
  */
-export function debouncedPollAsync(handler: () => Promise<void>, debouncedDelay: number = 100, pollDelay: number = 500): () => void {
+export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: number = 500, debouncedDelay: number = 100): () => void {
     const debounced = debounceAsync(handler, debouncedDelay);
     let interval
 

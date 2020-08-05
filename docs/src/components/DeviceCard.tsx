@@ -15,7 +15,7 @@ import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
-import { serviceSpecificationFromClassIdentifier } from '../../../src/dom/spec';
+import { debouncedPollAsync } from '../../../src/dom/utils';
 
 const useStyles = makeStyles({
     root: {
@@ -45,31 +45,30 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
-    const controlSpec = serviceSpecificationFromClassIdentifier(SRV_CTRL)
     const controlService = useChange(device, () => device.service(SRV_CTRL))
-    const deviceName = device.name;
 
     const firmwareRegister = controlService?.register(CtrlReg.FirmwareVersion);
-    const [firmware, setFirmware] = useState(firmwareRegister?.stringValue || "");
-    //useChange(firmwareRegister, reg => setFirmware(reg?.stringValue))
-    useEffect(() => {
-        if (firmwareRegister && !firmwareRegister.data) {
-            console.log(`firmware get`, firmwareRegister)
-            firmwareRegister?.sendGetAsync()
-        }
-    }, [firmwareRegister])
-
+    const tempRegister = controlService?.register(CtrlReg.Temperature)
+    const firmware = firmwareRegister?.stringValue || "";
+    const [temperature, setTemperature] = useState<number>(tempRegister?.intValue || undefined)
+/*    useEffect(() => debouncedPollAsync(async () => {
+        console.log(`poll temperature ${temperature}`)
+        if (!firmwareRegister?.data)
+            await firmwareRegister?.sendGetAsync()
+        await tempRegister?.sendGetAsync()
+        setTemperature(tempRegister?.intValue || undefined)
+    }), [controlService])
+*/
     return (
         <Card className={classes.root}>
             <CardContent>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                     {device.deviceId}
+                    {firmware !== undefined && `v${firmware}`}
+                    {temperature !== undefined && `${temperature}°`}
                 </Typography>
                 <Typography variant="h5" component="h2">
-                    {device.name || device.shortId}
-                    <Typography >
-                        {!!deviceName && `(${device.shortId})`}
-                    </Typography>
+                    {device.name}
                 </Typography>
             </CardContent>
             <CardActions>

@@ -20,7 +20,6 @@ export const PacketFilterProvider = ({ children }) => {
     const [consoleMode, setConsoleMode] = useState(true)
     const [skipRepeatedAnnounce, setSkipRepeatedAnnounce] = useState(false)
 
-    console.log({consoleMode, skipRepeatedAnnounce})
     return (
         <PacketFilterContext.Provider value={{
             consoleMode, setConsoleMode,

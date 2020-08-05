@@ -95,8 +95,10 @@ export abstract class JDNode {
     emit(eventName: string, ...args): boolean {
         if (!eventName) return false;
 
-        if (eventName === CHANGE)
+        if (eventName === CHANGE) {
             this.changeId++;
+            //console.info(`node ${this.id} changed to ${this.changeId}`)
+        }
 
         const listeners = this.listeners[eventName];
         if (!listeners || listeners.length == 0) {
