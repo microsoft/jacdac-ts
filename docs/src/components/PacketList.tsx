@@ -88,7 +88,7 @@ export default function PacketList(props: {
                     </ButtonGroup>
 
                     <ToggleButtonGroup value={kinds} onChange={handleKinds}>
-                        {["rw", "ro", "event", "command"].map(kind => <ToggleButton value={kind}><KindIcon kind={kind} /></ToggleButton>)}
+                        {["rw", "ro", "const", "event", "command"].map(kind => <ToggleButton value={kind}><KindIcon kind={kind} /></ToggleButton>)}
                     </ToggleButtonGroup>
 
                     <Typography variant="h6">
