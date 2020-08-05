@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
+// tslint:disable-next-line: no-submodule-imports
 import { makeStyles } from '@material-ui/core/styles';
+// tslint:disable-next-line: no-submodule-imports
 import Card from '@material-ui/core/Card';
+// tslint:disable-next-line: no-submodule-imports
 import CardActions from '@material-ui/core/CardActions';
+// tslint:disable-next-line: no-submodule-imports
 import CardContent from '@material-ui/core/CardContent';
+// tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { JDDevice } from '../../../src/dom/device';
 import { CtrlReg, SRV_CTRL, SRV_LOGGER, ANNOUNCE } from '../../../src/dom/constants';
@@ -26,7 +31,7 @@ const useStyles = makeStyles({
     },
     pos: {
         marginBottom: 12,
-    },
+    }
 });
 
 function navigateToService(service: JDService) {
@@ -42,6 +47,7 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
     const controlSpec = serviceSpecificationFromClassIdentifier(SRV_CTRL)
     const controlService = useChange(device, () => device.service(SRV_CTRL))
+    const deviceName = device.name;
 
     const firmwareRegister = controlService?.register(CtrlReg.FirmwareVersion);
     const [firmware, setFirmware] = useState(firmwareRegister?.stringValue || "");
@@ -60,7 +66,10 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
                     {device.deviceId}
                 </Typography>
                 <Typography variant="h5" component="h2">
-                    {device.shortId}
+                    {device.name || device.shortId}
+                    <Typography >
+                        {!!deviceName && `(${device.shortId})`}
+                    </Typography>
                 </Typography>
             </CardContent>
             <CardActions>

@@ -31,7 +31,7 @@ export default function DeviceList(props: { serviceClass?: number, linkToService
             {hasServiceClass && devices.map(device => device.services({ serviceClass }).map(service => {
                 return <Grid key={service.id} item xs={4}>
                     {!hasRegisterAddress && <ServiceCard service={service} linkToService={linkToService} />}
-                    {hasRegisterAddress && <RegisterInput register={service.register(registerAddress)} showName={false} />}
+                    {hasRegisterAddress && <RegisterInput register={service.register(registerAddress)} showDeviceName={true} showName={false} />}
                 </Grid>
             }))}
         </Grid>

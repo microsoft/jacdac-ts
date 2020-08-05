@@ -3,6 +3,7 @@ import { JDRegister } from "../../../src/dom/register";
 import { Slider, Typography, Switch } from "@material-ui/core";
 import { REPORT_UPDATE } from "../../../src/dom/constants";
 import { DecodedMember } from "../../../src/dom/pretty";
+import { debounceAsync } from "../../../src/dom/utils";
 
 function MemberInput(props: { member: DecodedMember, labelledby: string }) {
     const { member, labelledby } = props;
@@ -15,7 +16,7 @@ function MemberInput(props: { member: DecodedMember, labelledby: string }) {
             min={0} max={1 << (8 * member.size)}
         />
     }
-    return <Typography variant="h4">{member.humanValue}</Typography>
+    return <Typography variant="h5">{member.humanValue}</Typography>
 }
 
 function Decoded(props: { member: DecodedMember, showName?: boolean }) {
@@ -29,15 +30,12 @@ function Decoded(props: { member: DecodedMember, showName?: boolean }) {
     </React.Fragment>
 }
 
-export default function RegisterInput(props: { register: JDRegister, showName?: boolean, showMemberName?: boolean }) {
-    const { register, showName, showMemberName } = props;
+export default function RegisterInput(props: { register: JDRegister, showDeviceName?: boolean, showName?: boolean, showMemberName?: boolean }) {
+    const { register, showName, showMemberName, showDeviceName } = props;
     const [decoded, setDecoded] = useState(register.decode())
 
-    // read at least once
-    useEffect(() => {
-        if (!decoded)
-            register.sendGetAsync()
-    })
+    // keep reading
+    useEffect(() => debounceAsync(() => register.sendGetAsync(), 500))
 
     // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
@@ -45,6 +43,9 @@ export default function RegisterInput(props: { register: JDRegister, showName?: 
     }))
 
     return <React.Fragment>
+        {showDeviceName && <Typography>
+            {register.service.device.name}/
+        </Typography>}
         {showName && !!decoded && <Typography gutterBottom>
             {decoded.info.name}
         </Typography>}

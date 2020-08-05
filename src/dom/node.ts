@@ -1,11 +1,20 @@
 import { SMap } from "./utils";
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR } from "./constants";
 import { Observable, Observer } from "./observable";
+import { isArray } from "util";
 export type EventHandler = (...args) => void;
 
 interface Listener {
     handler: EventHandler;
     once: boolean;
+}
+
+function normalizeEventNames(eventNames: string | string[]): string[] {
+    if (!eventNames)
+        eventNames = [];
+    if (!isArray(eventNames))
+        eventNames = [eventNames]
+    return <string[]>eventNames;
 }
 
 export abstract class JDNode {
@@ -19,23 +28,29 @@ export abstract class JDNode {
      */
     abstract get id(): string;
 
-    on(eventName: string, handler: EventHandler) {
-        return this.addListenerInternal(eventName, handler, false);
+    on(eventName: string | string[], handler: EventHandler) {
+        normalizeEventNames(eventName)
+            .forEach(eventName => this.addListenerInternal(eventName, handler, false));
+        return this;
     }
 
-    off(eventName: string, handler: EventHandler) {
-        return this.removeListenerInternval(eventName, handler);
+    off(eventName: string | string[], handler: EventHandler) {
+        normalizeEventNames(eventName)
+            .forEach(eventName => this.removeListenerInternval(eventName, handler))
+        return this;
     }
 
-    once(eventName: string, handler: EventHandler) {
-        return this.addListenerInternal(eventName, handler, true);
+    once(eventName: string | string[], handler: EventHandler) {
+        normalizeEventNames(eventName)
+            .forEach(eventName => this.addListenerInternal(eventName, handler, true));
+        return this;
     }
 
     protected log(msg: any) {
         console.log(`${this}: ${msg}`)
     }
 
-    private addListenerInternal(eventName: string, handler: EventHandler, once: boolean): JDNode {
+    private addListenerInternal(eventName: string, handler: EventHandler, once: boolean) {
         if (!eventName || !handler) return this;
 
         const listeners = this.listeners[eventName] || (this.listeners[eventName] = []);
@@ -50,8 +65,6 @@ export abstract class JDNode {
             handler,
             once: !!once
         })
-        //console.log(`${eventName}->${listeners.length}`)
-        return this;
     }
 
     private removeListenerInternval(eventName: string, handler: EventHandler): JDNode {
@@ -127,7 +140,7 @@ export abstract class JDNode {
      * Creates an observable from the given event
      * @param eventName 
      */
-    observe<T>(eventName: string): Observable<T> {
+    observe<T>(eventName: string | string[]): Observable<T> {
         return fromEvent<T>(this, eventName);
     }
 
@@ -136,31 +149,31 @@ export abstract class JDNode {
      * @param eventName 
      * @param next 
      */
-    subscribe<T>(eventName: string, next: (value: T) => void): () => void {
+    subscribe<T>(eventName: string | string[], next: (value: T) => void): () => void {
         const observer = this.observe<T>(eventName);
         return observer.subscribe({ next }).unsubscribe
     }
 }
 
 class EventObservable<T> implements Observable<T> {
-    constructor(public eventEmitter: JDNode, public eventName: string) {
+    constructor(public eventEmitter: JDNode, public eventNames: string[]) {
     }
 
     subscribe(observer: Observer<T>) {
         //console.log(`on ${this.eventName}`)
-        this.eventEmitter.on(this.eventName, observer.next)
+        this.eventEmitter.on(this.eventNames, observer.next)
         this.eventEmitter.on(ERROR, observer.error)
         // never completes
         return {
             unsubscribe: () => {
                 //console.log(`off ${this.eventName}`)
-                this.eventEmitter.off(this.eventName, observer.next);
+                this.eventEmitter.off(this.eventNames, observer.next);
                 this.eventEmitter.off(ERROR, observer.error)
             }
         }
     }
 }
 
-export function fromEvent<T>(eventEmitter: JDNode, eventName: string): Observable<T> {
-    return new EventObservable<T>(eventEmitter, eventName)
+export function fromEvent<T>(eventEmitter: JDNode, eventNames: string | string[]): Observable<T> {
+    return new EventObservable<T>(eventEmitter, normalizeEventNames(eventNames))
 }

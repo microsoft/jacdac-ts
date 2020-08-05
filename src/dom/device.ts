@@ -34,7 +34,7 @@ export class JDDevice extends JDNode {
     }
 
     get name() {
-        return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId);
+        return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId) || this.shortId;
     }
 
     get announced(): boolean {

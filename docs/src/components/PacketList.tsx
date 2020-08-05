@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Grid, List, TextField } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
-import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS } from '../../../src/dom/constants';
+import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND } from '../../../src/dom/constants';
 import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 import { isInstanceOf } from '../../../src/dom/spec';
@@ -26,7 +26,7 @@ export default function PacketList(props: {
             bus.minConsolePriority = ConsolePriority.Debug;
     })
     // render packets
-    useEffect(() => bus.subscribe(consoleMode ? PACKET_RECEIVE : PACKET_PROCESS,
+    useEffect(() => bus.subscribe(consoleMode ? [PACKET_RECEIVE] : [PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
             if (consoleMode) {
                 const decoded = decodePacketData(pkt);
