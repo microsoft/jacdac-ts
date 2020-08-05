@@ -48,7 +48,7 @@ export default function PacketSpecification(props: { serviceClass: number, packe
 
         console.log(packetInfo)
     return <div className={classes.root}>
-        <h3 id={`register:${packetInfo.identifier}`}>{packetInfo.name}
+        <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
             <Chip className={classes.chip} size="small" label={`id 0x${packetInfo.identifier.toString(16)}`} />
             {<Chip className={classes.chip} size="small" label={kinds[packetInfo.kind] || packetInfo.kind} icon={icons[packetInfo.kind]} />}
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
