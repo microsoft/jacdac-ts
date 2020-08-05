@@ -1,5 +1,5 @@
 import { SMap } from "./utils";
-import { NEW_LISTENER, REMOVE_LISTENER, ERROR } from "./constants";
+import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants";
 import { Observable, Observer } from "./observable";
 import { isArray } from "util";
 export type EventHandler = (...args) => void;
@@ -19,6 +19,7 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
 
 export abstract class JDNode {
     readonly listeners: SMap<Listener[]> = {};
+    changeId = 0;
 
     constructor() {
     }
@@ -94,6 +95,9 @@ export abstract class JDNode {
      */
     emit(eventName: string, ...args): boolean {
         if (!eventName) return false;
+
+        if (eventName === CHANGE)
+            this.changeId++;
 
         const listeners = this.listeners[eventName];
         if (!listeners || listeners.length == 0) {
