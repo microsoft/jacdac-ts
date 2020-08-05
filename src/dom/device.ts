@@ -10,6 +10,7 @@ import { JDBus } from "./bus";
 import { JDService } from "./service";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
+import { isInstanceOf } from "./spec";
 
 export interface PipeInfo {
     pipeType?: string;
@@ -54,9 +55,11 @@ export class JDDevice extends JDNode {
 
     hasService(service_class: number): boolean {
         if (!this.announced) return false;
-        for (let i = 4; i < this.servicesData.length; i += 4)
-            if (getNumber(this.servicesData, NumberFormat.UInt32LE, i) == service_class)
+        for (let i = 4; i < this.servicesData.length; i += 4) {
+            const sc = getNumber(this.servicesData, NumberFormat.UInt32LE, i);
+            if (isInstanceOf(sc, service_class))
                 return true
+        }
         return false
     }
 

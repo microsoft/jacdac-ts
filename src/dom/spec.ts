@@ -17,7 +17,7 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
     const classSpec = serviceSpecificationFromClassIdentifier(classIdentifier);
     return !!classSpec?.extends?.some(extend => {
         const extendSpec = serviceSpecificationFromName(extend);
-        return !!extendSpec && isInstanceOf(classIdentifier, extendSpec.classIdentifier)
+        return !!extendSpec && isInstanceOf(extendSpec.classIdentifier, requiredClassIdentifier)
     });
 }
 
