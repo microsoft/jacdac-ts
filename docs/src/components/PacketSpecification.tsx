@@ -15,6 +15,7 @@ import FlashOnIcon from '@material-ui/icons/FlashOn';
 import DeviceList from "./DeviceList";
 
 import { makeStyles, createStyles } from "@material-ui/core";
+import IDChip from "./IDChip";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -46,10 +47,9 @@ export default function PacketSpecification(props: { serviceClass: number, packe
     if (!packetInfo)
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
 
-        console.log(packetInfo)
     return <div className={classes.root}>
         <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
-            <Chip className={classes.chip} size="small" label={`id 0x${packetInfo.identifier.toString(16)}`} />
+            <IDChip className={classes.chip} id={packetInfo.identifier} />
             {<Chip className={classes.chip} size="small" label={kinds[packetInfo.kind] || packetInfo.kind} icon={icons[packetInfo.kind]} />}
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
