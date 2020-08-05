@@ -7,9 +7,9 @@ import { CHANGE } from "../../../src/dom/constants";
 import JacdacContext from '../../../src/react/Context';
 import { BusState } from "../../../src/dom/bus";
 
-export default function ServiceInput(props: { service: JDService, showConst?: boolean, showRw?: boolean, registerAddress?: number, showRegisterName?: boolean }) {
+export default function ServiceInput(props: { service: JDService, showConst?: boolean, showRw?: boolean, registerIdentifier?: number, showRegisterName?: boolean }) {
     const { connectionState } = useContext(JacdacContext)
-    const { service, showConst, showRw, registerAddress, showRegisterName } = props;
+    const { service, showConst, showRw, registerIdentifier: registerAddress, showRegisterName } = props;
     const spec = service.specification;
     const packets = spec.packets;
     const registers = packets.filter(isRegister);

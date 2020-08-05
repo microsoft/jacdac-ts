@@ -33,6 +33,6 @@ export default function PacketSpecification(props: { serviceClass: number, packe
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <p>{packetInfo.description}</p>
-        {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerAddress={packetInfo.identifier} />}
+        {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
     </div>
 }
