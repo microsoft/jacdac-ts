@@ -153,14 +153,11 @@ export class JDDevice extends JDNode {
         if (!bufferEq(pkt.data.slice(4), servData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
-            if (this._services) {
-                // patch services
-                throw new Error("need to patch services")
-            }
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
-            this.bus.emit(DEVICE_CHANGE, this);
             this.emit(CHANGE)
+            this.bus.emit(DEVICE_CHANGE, this);
+            this.bus.emit(CHANGE, this);
         }
     }
 
