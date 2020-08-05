@@ -7,7 +7,7 @@ function useChange<TNode extends JDNode, TValue>(node: TNode, query: (n: TNode) 
     const value = query(node)
 
     useEffect(() => node?.subscribe(CHANGE, () => {
-        console.log(`change ${node} ${version}->${node.changeId}`)
+        //console.log(`change ${node} ${version}->${node.changeId}`)
         setVersion(node.changeId)
     }), [node, version])
 

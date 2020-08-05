@@ -5,7 +5,7 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React, { useState } from "react"
+import React, { useState, useContext } from "react"
 import clsx from 'clsx';
 import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
@@ -42,6 +42,7 @@ import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 import "./layout.css"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
+import PacketFilterContext, { PacketFilterProps, PacketFilterProvider } from "./PacketFilterContext";
 
 const drawerWidth = `${30}rem`;
 
@@ -108,11 +109,23 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
+  return (
+    <JacdacProvider>
+      <PacketFilterProvider>
+        <LayoutWithContext {...props}>
+        </LayoutWithContext>
+      </PacketFilterProvider>
+    </JacdacProvider>
+  )
+}
+
+
+function LayoutWithContext(props: { pageContext?: any; children: any; }) {
+  const { pageContext, children } = props;
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const { consoleMode, setConsoleMode, skipRepeatedAnnounce, setSkipRepeatedAnnounce } = useContext(PacketFilterContext)
   const [drawerConsole, setDrawerConsole] = useState(false);
-  const [consoleMode, setConsoleMode] = useState(true);
-  const [skipRepeatedAnnounce, setSkipRepeatedAnnounce] = useState(true);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
 
@@ -152,91 +165,89 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
   `)
 
   return (
-    <JacdacProvider>
-      <div className={classes.root}>
-        <CssBaseline />
-        <AppBar position="fixed"
-          className={clsx(classes.appBar, {
-            [classes.appBarShift]: open,
-          })}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open table of contents"
-              onClick={handleDrawerToc}
-              edge="start"
-              className={clsx(classes.menuButton, open && classes.hide)}
-            > <MenuIcon />
-            </IconButton>
-            <IconButton
-              color="inherit"
-              aria-label="open console"
-              onClick={handleDrawerConsole}
-              edge="start"
-              className={clsx(classes.menuButton, open && classes.hide)}
-            > <HistoryIcon />
-            </IconButton>
-            <Typography variant="h6">
-              <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
-            </Typography>
-            <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          className={classes.drawer}
-          variant="persistent"
-          anchor="left"
-          open={open}
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-        >
-          <div className={classes.drawerHeader}>
-            {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
-            {drawerConsole && <Typography variant="h6">
-              <FormGroup row>
-                {!consoleMode && <FormControlLabel
-                  control={
-                    <Switch checked={skipRepeatedAnnounce} onChange={handleSkipRepeatedAnnounceChange} />
-                  }
-                  label="skip repeat announce"
-                />}
-                <FormControlLabel
-                  control={
-                    <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />
-                  }
-                  label="packets"
-                />
-              </FormGroup>
-            </Typography>}
-            <IconButton onClick={handleDrawerClose}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </div>
-          <Divider />
-          {drawerConsole ? <PacketList serviceClass={serviceClass} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} /> : <Toc />}
-        </Drawer>
-        <main
-          className={clsx(classes.content, {
-            [classes.contentShift]: open,
-          })}
-        >
-          <div className={classes.drawerHeader} />
-          <Typography>
-            {children}
+    <div className={classes.root}>
+      <CssBaseline />
+      <AppBar position="fixed"
+        className={clsx(classes.appBar, {
+          [classes.appBarShift]: open,
+        })}
+      >
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open table of contents"
+            onClick={handleDrawerToc}
+            edge="start"
+            className={clsx(classes.menuButton, open && classes.hide)}
+          > <MenuIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            aria-label="open console"
+            onClick={handleDrawerConsole}
+            edge="start"
+            className={clsx(classes.menuButton, open && classes.hide)}
+          > <HistoryIcon />
+          </IconButton>
+          <Typography variant="h6">
+            <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
-          <footer>
-            <Divider />
-            <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
+          <div className={clsx(classes.menuButton)}><ConnectButton /></div>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        className={classes.drawer}
+        variant="persistent"
+        anchor="left"
+        open={open}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <div className={classes.drawerHeader}>
+          {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
+          {drawerConsole && <Typography variant="h6">
+            <FormGroup row>
+              {!consoleMode && <FormControlLabel
+                control={
+                  <Switch checked={skipRepeatedAnnounce} onChange={handleSkipRepeatedAnnounceChange} />
+                }
+                label="skip repeat announce"
+              />}
+              <FormControlLabel
+                control={
+                  <Switch checked={!consoleMode} onChange={handleConsoleModeChange} />
+                }
+                label="packets"
+              />
+            </FormGroup>
+          </Typography>}
+          <IconButton onClick={handleDrawerClose}>
+            <ChevronLeftIcon />
+          </IconButton>
+        </div>
+        <Divider />
+        {drawerConsole ? <PacketList serviceClass={serviceClass} consoleMode={consoleMode} skipRepeatedAnnounce={skipRepeatedAnnounce} /> : <Toc />}
+      </Drawer>
+      <main
+        className={clsx(classes.content, {
+          [classes.contentShift]: open,
+        })}
+      >
+        <div className={classes.drawerHeader} />
+        <Typography>
+          {children}
+        </Typography>
+        <footer>
+          <Divider />
+          <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
+          <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
+          <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
+          <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
           © {new Date().getFullYear()} Microsoft Corporation
         </footer>
-        </main>
-        <ErrorSnackbar />
-      </div>
-    </JacdacProvider>
+      </main>
+      <ErrorSnackbar />
+    </div>
   )
 }

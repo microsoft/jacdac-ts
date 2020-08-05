@@ -14,7 +14,7 @@ export default function PacketListItem(props: {
     let text: string;
     if (consoleMode) {
         const decoded = decodePacketData(packet);
-        text = `${deviceServiceName(packet)}: ${decoded.description}`
+        text = `${deviceServiceName(packet)}: ${decoded?.description || "???"}`
     } else {
         text = printPacket(packet, { skipRepeatedAnnounce, showTime })
     }
