@@ -46,6 +46,8 @@ export default function ServiceCard(props: {
     const { service, linkToService, registerIdentifier, showDeviceName, showServiceName, showMemberName, eventIdentifier } = props;
     const classes = useStyles();
 
+    const hasRegisterIdentifier = registerIdentifier !== undefined;
+    const hasEventIdentifier = eventIdentifier !== undefined
     return (
         <Card className={classes.root}>
             <CardContent>
@@ -56,8 +58,8 @@ export default function ServiceCard(props: {
                     <Link to="/clients/web/dom/device">{service.device.name || service.device.shortId}</Link>
                 </Typography>}
                 <Typography variant="body2" component="p">
-                    {(registerIdentifier !== undefined || eventIdentifier === undefined) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
-                    {(registerIdentifier === undefined || eventIdentifier !== undefined) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
+                    {(hasRegisterIdentifier || !hasEventIdentifier) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
+                    {(!hasRegisterIdentifier || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
                 </Typography>
             </CardContent>
         </Card>
