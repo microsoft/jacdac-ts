@@ -56,7 +56,7 @@ export default function RandomGenerator() {
                     }} />
                     {copySuccess && <CheckIcon />}
                 </Typography>}
-            {value == undefined &&
+            {value === undefined &&
                 <Alert severity="error">Oops, unable to generate a strong random number.</Alert>}
         </CardContent>
         <CardActions>
