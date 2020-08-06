@@ -5,13 +5,15 @@ import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import { TextField, Button, Paper, Card, makeStyles, CardContent, CardActions, Typography } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';
+// tslint:disable-next-line: no-submodule-imports
+import Alert from '@material-ui/lab/Alert';
 
 function uniqueServiceId() {
     let id = cryptoRandomUint32()
     while (serviceSpecificationFromClassIdentifier(id)) {
         id = cryptoRandomUint32()
     }
-    return "0x" + ("000000000" + id.toString(16)).slice(-8)
+    return id !== undefined && ("0x" + ("000000000" + id.toString(16)).slice(-8))
 }
 
 const useStyles = makeStyles({
@@ -47,12 +49,15 @@ export default function RandomGenerator() {
             <Typography className={classes.title} color="textSecondary" gutterBottom>
                 Random Service Identifier
             </Typography>
-            <Typography variant="h5" component="h2">
-                <TextField value={value} InputProps={{
-                    readOnly: true,
-                }} />
-                {copySuccess && <CheckIcon />}
-            </Typography>
+            {value !== undefined &&
+                <Typography variant="h5" component="h2">
+                    <TextField value={value} InputProps={{
+                        readOnly: true,
+                    }} />
+                    {copySuccess && <CheckIcon />}
+                </Typography>}
+            {value == undefined &&
+                <Alert severity="error">Oops, unable to generate a strong random number.</Alert>}
         </CardContent>
         <CardActions>
             <Button size="small" onClick={handleCopy}>Copy</Button>
