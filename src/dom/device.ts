@@ -149,8 +149,7 @@ export class JDDevice extends JDNode {
             this.emit(CHANGE)
         }
 
-        const servData = this.servicesData?.slice(4)
-        if (!bufferEq(pkt.data.slice(4), servData)) {
+        if (!bufferEq(pkt.data, this.servicesData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this);
