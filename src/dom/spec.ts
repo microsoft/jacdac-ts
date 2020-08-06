@@ -9,6 +9,10 @@ export const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
  * Checks if classIdentifier is compatible with requiredClassIdentifier
 */
 export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): boolean {
+    // garbage data
+    if (classIdentifier === undefined)
+        return false;
+
     // direct hit
     if (classIdentifier === requiredClassIdentifier)
         return true;
