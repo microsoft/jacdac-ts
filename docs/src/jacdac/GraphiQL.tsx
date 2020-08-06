@@ -48,7 +48,7 @@ class MemStorage {
 
 }
 
-const JacDaciQL = (props: { query?: string }) => {
+const JDiQL = (props: { query?: string }) => {
     const fetcher = useFetcher();
     const [q, setq] = useState(props.query)
     const storage = new MemStorage()
@@ -65,10 +65,10 @@ const JacDaciQL = (props: { query?: string }) => {
             <GraphiQL.Toolbar>
                 <GraphiQL.ToolbarButton label={"Reset"} title="Reset example" onClick={() => setq(props.query || defaultQuery)} />
             </GraphiQL.Toolbar>
-            <GraphiQL.Logo>JacDacQL</GraphiQL.Logo>
+            <GraphiQL.Logo>JACDAC-QL</GraphiQL.Logo>
             <GraphiQL.Footer></GraphiQL.Footer>
         </GraphiQL>
     </div>
 }
 
-export default JacDaciQL
+export default JDiQL

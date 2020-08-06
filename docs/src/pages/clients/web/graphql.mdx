@@ -1,16 +1,16 @@
-import JacDaciQL from "../../../jacdac/GraphiQL"
+import JDiQL from "../../../jacdac/GraphiQL"
 
 # GraphQL
 
 JACDAC exposes the state of the [DOM](/clients/web/dom) as a [GraphQL](https://graphql.org/) instance.
 
-<JacDaciQL />
+<JDiQL />
 
 ## Schema
 
 ```graphql
 """
-A identifiable node in the JacDac DOM
+A identifiable node in the JACDAC DOM
 """
 interface Node {
     """
@@ -63,7 +63,7 @@ type Register implements Node {
 }
 
 """
-A bus of devices, service and register using the JacDac protocol
+A bus of devices, service and register using the JACDAC protocol
 """
 type Query {
     """
@@ -101,10 +101,10 @@ schema {
 }
 ```
 
-## JacDaciQL
+## JDiQL
 
-The ``JacDaciQL`` component inlines the GraphiQL IDE for the JACDAC data store.
+The ``JDiQL`` component inlines the GraphiQL IDE for the JACDAC data store.
 
 ```tsx
-<JacDaciQL />
+<JDiQL />
 ```
