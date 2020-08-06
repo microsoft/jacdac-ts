@@ -370,7 +370,9 @@ export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: numb
 }
 
 export function cryptoRandomUint32(): number {
+    if (typeof window === "undefined")
+        return undefined; // not supported
     const vals = new Uint32Array(1)
-    crypto.getRandomValues(vals)
+    window.crypto.getRandomValues(vals)
     return vals[0]
 }
