@@ -85,9 +85,9 @@ export class JDService extends JDNode {
         }
         else if (pkt.is_event) {
             const address = pkt.intData
-            const reg = this.event(address)
-            if (reg)
-                reg.processEvent(pkt);
+            const ev = this.event(address)
+            if (ev)
+                ev.processEvent(pkt);
         }
     }
 }

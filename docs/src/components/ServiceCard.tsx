@@ -14,7 +14,8 @@ import IconButton from '@material-ui/core/IconButton';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'gatsby-theme-material-ui';
-import ServiceInput from './ServiceInput';
+import ServiceRegisters from './ServiceRegisters';
+import ServiceEvents from './ServiceEvents';
 
 const useStyles = makeStyles({
     root: {
@@ -33,8 +34,16 @@ const useStyles = makeStyles({
     },
 });
 
-export default function ServiceCard(props: { service: JDService, linkToService?: boolean, registerIdentifier?: number, showDeviceName?: boolean, showServiceName?: boolean, showRegisterName?: boolean }) {
-    const { service, linkToService, registerIdentifier, showDeviceName, showServiceName, showRegisterName } = props;
+export default function ServiceCard(props: {
+    service: JDService,
+    linkToService?: boolean,
+    registerIdentifier?: number,
+    showDeviceName?: boolean,
+    showServiceName?: boolean,
+    showMemberName?: boolean,
+    eventIdentifier?: number
+}) {
+    const { service, linkToService, registerIdentifier, showDeviceName, showServiceName, showMemberName, eventIdentifier } = props;
     const classes = useStyles();
 
     return (
@@ -47,7 +56,8 @@ export default function ServiceCard(props: { service: JDService, linkToService?:
                     <Link to="/clients/web/dom/device">{service.device.name || service.device.shortId}</Link>
                 </Typography>}
                 <Typography variant="body2" component="p">
-                    <ServiceInput service={service} showRegisterName={showRegisterName} registerIdentifier={registerIdentifier} />
+                    {(registerIdentifier !== undefined || eventIdentifier === undefined) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
+                    {(registerIdentifier === undefined || eventIdentifier !== undefined) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
                 </Typography>
             </CardContent>
         </Card>

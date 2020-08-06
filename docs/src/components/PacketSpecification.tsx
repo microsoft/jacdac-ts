@@ -1,4 +1,4 @@
-import { isRegister } from "../../../src/dom/spec"
+import { isRegister, isEvent } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import React, { Fragment } from "react";
@@ -34,5 +34,6 @@ export default function PacketSpecification(props: { serviceClass: number, packe
         </h3>
         <p>{packetInfo.description}</p>
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
+        {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
     </div>
 }

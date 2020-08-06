@@ -13,8 +13,16 @@ const useStyles = makeStyles({
     },
 });
 
-export default function DeviceList(props: { serviceClass?: number, linkToService?: boolean, registerIdentifier?: number, showDeviceName?: boolean, showServiceName?: boolean, showRegisterName?: boolean }) {
-    const { serviceClass, linkToService, registerIdentifier, showDeviceName, showServiceName, showRegisterName } = props
+export default function DeviceList(props: {
+    serviceClass?: number,
+    linkToService?: boolean,
+    registerIdentifier?: number,
+    eventIdentifier?: number,
+    showDeviceName?: boolean,
+    showServiceName?: boolean,
+    showRegisterName?: boolean
+}) {
+    const { serviceClass, linkToService, registerIdentifier, showDeviceName, showServiceName, showRegisterName, eventIdentifier } = props
     const { bus } = useContext(JacdacContext)
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const classes = useStyles()
@@ -29,7 +37,7 @@ export default function DeviceList(props: { serviceClass?: number, linkToService
             {!hasServiceClass && devices.map(device => <Grid key={device.id} item xs={4}><DeviceCard device={device} /></Grid>)}
             {hasServiceClass && devices.map(device => device.services({ serviceClass }).map(service => {
                 return <Grid key={service.id} item xs={4}>
-                    <ServiceCard service={service} linkToService={linkToService} showDeviceName={showDeviceName} showServiceName={showServiceName} showRegisterName={showRegisterName} registerIdentifier={registerIdentifier} />
+                    <ServiceCard service={service} linkToService={linkToService} showDeviceName={showDeviceName} showServiceName={showServiceName} showMemberName={showRegisterName} registerIdentifier={registerIdentifier} eventIdentifier={eventIdentifier} />
                 </Grid>
             }))}
         </Grid>

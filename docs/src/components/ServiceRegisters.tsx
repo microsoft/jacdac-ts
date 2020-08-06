@@ -7,13 +7,19 @@ import { CHANGE } from "../../../src/dom/constants";
 import JacdacContext from '../../../src/react/Context';
 import { BusState } from "../../../src/dom/bus";
 
-export default function ServiceInput(props: { service: JDService, showConst?: boolean, showRw?: boolean, registerIdentifier?: number, showRegisterName?: boolean }) {
+export default function ServiceRegisters(props: {
+    service: JDService,
+    showConst?: boolean,
+    showRw?: boolean,
+    registerIdentifier?: number,
+    showRegisterName?: boolean
+}) {
     const { connectionState } = useContext(JacdacContext)
-    const { service, showConst, showRw, registerIdentifier: registerAddress, showRegisterName } = props;
+    const { service, showConst, showRw, registerIdentifier, showRegisterName } = props;
     const spec = service.specification;
     const packets = spec.packets;
     const registers = packets.filter(isRegister);
-    const reports = registerAddress !== undefined ? registers.filter(reg => reg.identifier === registerAddress)
+    const reports = registerIdentifier !== undefined ? registers.filter(reg => reg.identifier === registerIdentifier)
         : registers.filter(reg => reg.kind == "ro" || (showConst && reg.kind == "const") || (showRw && reg.kind == "rw"));
 
     useEffect(() => {

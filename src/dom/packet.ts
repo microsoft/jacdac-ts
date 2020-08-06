@@ -116,7 +116,7 @@ export class Packet {
     }
 
     get is_event() {
-        return this.is_command && this.service_command === CMD_EVENT;
+        return this.service_command === CMD_EVENT;
     }
 
     get data(): Uint8Array {

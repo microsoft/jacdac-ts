@@ -8,6 +8,7 @@ import { isEvent } from "./spec";
 export class JDEvent extends JDNode {
     private _lastReportPkt: Packet;
     private _specification: jdspec.PacketInfo;
+    private _count: number = 0;
 
     constructor(
         public readonly service: JDService,
@@ -29,6 +30,10 @@ export class JDEvent extends JDNode {
         return this._specification;
     }
 
+    get count() {
+        return this._count;
+    }
+
     get lastDataTimestamp() {
         return this._lastReportPkt?.timestamp
     }
@@ -39,7 +44,9 @@ export class JDEvent extends JDNode {
     }
 
     processEvent(pkt: Packet) {
+        console.log(`${this}++`)
         this._lastReportPkt = pkt;
+        this._count++;
         this.service.emit(EVENT, this)
         this.emit(CHANGE)
     }
