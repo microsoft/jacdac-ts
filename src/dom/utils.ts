@@ -370,6 +370,6 @@ export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: numb
 
 export function cryptoRandomUint32(): number {
     const vals = new Uint32Array(1)
-    window.crypto.getRandomValues(vals)
+    crypto.getRandomValues(vals)
     return vals[0]
 }
