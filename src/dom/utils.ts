@@ -230,6 +230,7 @@ export class PromiseQueue {
 }
 
 export function toHex(bytes: ArrayLike<number>) {
+    if (!bytes) return undefined;
     let r = ""
     for (let i = 0; i < bytes.length; ++i)
         r += ("0" + bytes[i].toString(16)).slice(-2)

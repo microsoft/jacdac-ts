@@ -16,6 +16,9 @@ import Typography from '@material-ui/core/Typography';
 import { Link } from 'gatsby-theme-material-ui';
 import ServiceRegisters from './ServiceRegisters';
 import ServiceEvents from './ServiceEvents';
+import { isCommand } from '../../../src/dom/spec';
+import { CardActions } from '@material-ui/core';
+import ServiceCommands from './ServiceCommands';
 
 const useStyles = makeStyles({
     root: {
@@ -41,13 +44,18 @@ export default function ServiceCard(props: {
     showDeviceName?: boolean,
     showServiceName?: boolean,
     showMemberName?: boolean,
-    eventIdentifier?: number
+    eventIdentifier?: number,
+    commandIdentifier?: number
 }) {
-    const { service, linkToService, registerIdentifier, showDeviceName, showServiceName, showMemberName, eventIdentifier } = props;
+    const { service, linkToService, registerIdentifier, showDeviceName, showServiceName, showMemberName, eventIdentifier, commandIdentifier } = props;
     const classes = useStyles();
 
+    const hasCommands = service.specification?.packets.some(isCommand)
     const hasRegisterIdentifier = registerIdentifier !== undefined;
     const hasEventIdentifier = eventIdentifier !== undefined
+    const hasCommandIdentifier = commandIdentifier !== undefined
+
+    console.log(`has command`, hasCommands)
     return (
         <Card className={classes.root}>
             <CardContent>
@@ -58,10 +66,14 @@ export default function ServiceCard(props: {
                     <Link to="/clients/web/dom/device">{service.device.name || service.device.shortId}</Link>
                 </Typography>}
                 <Typography variant="body2" component="p">
-                    {(hasRegisterIdentifier || !hasEventIdentifier) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
-                    {(!hasRegisterIdentifier || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
+                    {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
+                    {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
                 </Typography>
             </CardContent>
+            {(hasCommands || hasCommandIdentifier) &&
+                <CardActions>
+                    <ServiceCommands service={service} commandIdentifier={commandIdentifier} />
+                </CardActions>}
         </Card>
     );
 }

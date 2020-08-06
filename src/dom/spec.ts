@@ -48,6 +48,10 @@ export function isEvent(pkt: jdspec.PacketInfo) {
     return pkt.kind == "event"
 }
 
+export function isCommand(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "command"
+}
+
 export function isIntegerType(tp: string) {
     return /^[ui]\d+(\.|$)/.test(tp) || tp == "pipe_port" || tp == "bool"
 }

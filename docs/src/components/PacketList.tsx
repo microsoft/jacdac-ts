@@ -37,7 +37,7 @@ export default function PacketList(props: {
             bus.minConsolePriority = ConsolePriority.Debug;
     })
     // render packets
-    useEffect(() => bus.subscribe(consoleMode ? [PACKET_RECEIVE] : [PACKET_PROCESS, PACKET_SEND],
+    useEffect(() => bus.subscribe([consoleMode ? PACKET_RECEIVE : PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
             if (paused)
                 return; // ignore

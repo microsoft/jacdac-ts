@@ -18,7 +18,7 @@ export interface PipeInfo {
 
 export class JDDevice extends JDNode {
     connected: boolean;
-    private servicesData: Uint8Array
+    servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
     private _shortId: string
@@ -55,7 +55,7 @@ export class JDDevice extends JDNode {
 
     hasService(service_class: number): boolean {
         if (!this.announced) return false;
-        for (let i = 4; i < this.servicesData.length; i += 4) {
+        for (let i = 0; i < this.servicesData.length; i += 4) {
             const sc = getNumber(this.servicesData, NumberFormat.UInt32LE, i);
             if (isInstanceOf(sc, service_class))
                 return true
