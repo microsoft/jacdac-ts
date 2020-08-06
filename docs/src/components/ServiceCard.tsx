@@ -70,7 +70,7 @@ export default function ServiceCard(props: {
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
                 </Typography>
             </CardContent>
-            {(hasCommands || hasCommandIdentifier) &&
+            {(hasCommands || hasCommandIdentifier) && (!hasRegisterIdentifier && !hasEventIdentifier) &&
                 <CardActions>
                     <ServiceCommands service={service} commandIdentifier={commandIdentifier} />
                 </CardActions>}
