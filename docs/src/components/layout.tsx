@@ -9,7 +9,7 @@ import React, { useState, useContext } from "react"
 import clsx from 'clsx';
 import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup, Container } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import { Link } from 'gatsby-theme-material-ui';
+import { Link, IconButton, Button } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import CssBaseline from '@material-ui/core/CssBaseline';
 // tslint:disable-next-line: no-submodule-imports
@@ -27,8 +27,6 @@ import HistoryIcon from '@material-ui/icons/History';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 // tslint:disable-next-line: no-submodule-imports
 import Divider from '@material-ui/core/Divider';
-// tslint:disable-next-line: no-submodule-imports
-import IconButton from '@material-ui/core/IconButton';
 // tslint:disable-next-line: no-submodule-imports
 import MenuIcon from '@material-ui/icons/Menu';
 import { useStaticQuery, graphql } from "gatsby"

@@ -10,8 +10,6 @@ import CardContent from '@material-ui/core/CardContent';
 // tslint:disable-next-line: no-submodule-imports
 import CardMedia from '@material-ui/core/CardMedia';
 // tslint:disable-next-line: no-submodule-imports
-import IconButton from '@material-ui/core/IconButton';
-// tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'gatsby-theme-material-ui';
 import ServiceRegisters from './ServiceRegisters';

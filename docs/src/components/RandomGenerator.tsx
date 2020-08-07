@@ -2,11 +2,12 @@
 import React, { useState } from "react"
 import { cryptoRandomUint32 } from "../../../src/dom/utils";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
-import { TextField, Button, Paper, Card, makeStyles, CardContent, CardActions, Typography } from "@material-ui/core";
+import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typography } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
+import { Button } from "gatsby-theme-material-ui";
 
 function looksRandom(n: number) {
     const s = n.toString(16)

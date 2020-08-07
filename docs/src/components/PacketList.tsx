@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List, TextField, ListItem, ButtonGroup, IconButton, Typography, FormControlLabel, Switch, FormGroup } from '@material-ui/core';
+import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND } from '../../../src/dom/constants';
@@ -13,6 +13,7 @@ import PacketFilterContext from './PacketFilterContext';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
+import { IconButton } from 'gatsby-theme-material-ui';
 
 export default function PacketList(props: {
     maxItems?: number,

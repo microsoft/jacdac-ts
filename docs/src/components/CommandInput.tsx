@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Typography, Badge, Button } from "@material-ui/core";
+import React from "react";
+import { Typography } from "@material-ui/core";
 import { JDService } from "../../../src/dom/service";
+import { Button } from "gatsby-theme-material-ui";
 
 export default function CommandInput(props: { service: JDService, command: jdspec.PacketInfo, showDeviceName?: boolean }) {
     const { service, command, showDeviceName } = props;
 
     const handleClick = () => {
         // todo args
-        console.log(`send command`, command)
         service.sendCmdAsync(command.identifier)
     }
 
