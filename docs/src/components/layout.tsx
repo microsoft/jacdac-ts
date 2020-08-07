@@ -41,6 +41,7 @@ import "./layout.css"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
 import { PacketFilterProvider } from "./PacketFilterContext";
+import SEO from "./seo";
 
 const drawerWidth = `${40}rem`;
 
@@ -155,6 +156,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
 
   return (
     <div className={classes.root}>
+      <SEO />
       <CssBaseline />
       <AppBar position="fixed"
         className={clsx(classes.appBar, {

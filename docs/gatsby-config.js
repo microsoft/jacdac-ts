@@ -2,7 +2,7 @@ module.exports = {
   siteMetadata: {
     title: `JACDAC`,
     description: `Documentation for the JACDAC protocol and libraries.`,
-    author: `@msmakecode`,
+    author: `Microsoft`,
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
