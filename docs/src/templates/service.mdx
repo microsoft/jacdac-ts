@@ -5,6 +5,7 @@ import { serviceSpecificationFromName, isRegister, isEvent, isCommand } from "..
 import PacketSpecification from "../components/PacketSpecification"
 import Chip from '@material-ui/core/Chip';
 import IDChip from "../components/IDChip";
+import ServiceSpecificationSource from "../components/ServiceSpecificationSource"
 
 <h1>{props.pageContext.node.name}
     <span style={{ marginLeft: "1rem" }}><IDChip id={props.pageContext.node.classIdentifier} /></span>
@@ -28,9 +29,7 @@ import IDChip from "../components/IDChip";
 
 ## Specification
 
-<pre>
-    {props.pageContext.node.source}
-</pre>
+<ServiceSpecificationSource classIdentifier={props.pageContext.node.classIdentifier} />
 
 ## See Also
 

@@ -55,7 +55,6 @@ export default function ServiceCard(props: {
     const hasEventIdentifier = eventIdentifier !== undefined
     const hasCommandIdentifier = commandIdentifier !== undefined
 
-    console.log(`has command`, hasCommands)
     return (
         <Card className={classes.root}>
             <CardContent>
