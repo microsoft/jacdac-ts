@@ -22,6 +22,6 @@
   },
   "include": [
     "src",
-    "jacdac-spec/dist/specdata.ts"
+    "jacdac-spec/dist/specconstants.ts"
   ]
 }
