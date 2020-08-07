@@ -6,6 +6,7 @@ import RegisterInput from "./RegisterInput";
 import { CHANGE } from "../../../src/dom/constants";
 import JacdacContext from '../../../src/react/Context';
 import { BusState } from "../../../src/dom/bus";
+import useChange from '../jacdac/useChange';
 
 export default function ServiceRegisters(props: {
     service: JDService,
@@ -21,6 +22,7 @@ export default function ServiceRegisters(props: {
     const registers = packets.filter(isRegister);
     const reports = registerIdentifier !== undefined ? registers.filter(reg => reg.identifier === registerIdentifier)
         : registers.filter(reg => reg.kind == "ro" || (showConst && reg.kind == "const") || (showRw && reg.kind == "rw"));
+    useChange(service)
 
     useEffect(() => {
         if (connectionState == BusState.Connected)

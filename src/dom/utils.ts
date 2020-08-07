@@ -354,8 +354,10 @@ export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: numb
     let interval
 
     const poll = () => {
-        if (!interval)
+        if (!interval) {
             interval = setInterval(() => debounced(), pollDelay)
+            debounced()
+        }
     }
 
     const stop = () => {
