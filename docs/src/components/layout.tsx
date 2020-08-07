@@ -21,13 +21,13 @@ import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports
 import Drawer from '@material-ui/core/Drawer'
 import ConnectButton from '../jacdac/ConnectButton';
-// tslint:disable-next-line: no-submodule-imports, match-default-export-name
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import Divider from '@material-ui/core/Divider';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MenuIcon from '@material-ui/icons/Menu';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
@@ -40,7 +40,7 @@ import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 import "./layout.css"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
-import PacketFilterContext, { PacketFilterProps, PacketFilterProvider } from "./PacketFilterContext";
+import { PacketFilterProvider } from "./PacketFilterContext";
 
 const drawerWidth = `${40}rem`;
 

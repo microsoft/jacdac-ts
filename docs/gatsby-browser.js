@@ -1,1 +1,1 @@
-require("prism-themes/themes/prism-dracula.css")
+require("prism-themes/themes/prism-ghcolors.css")
