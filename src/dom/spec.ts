@@ -63,9 +63,6 @@ export function numberFormatFromStorageType(tp: jdspec.StorageType) {
     }
 }
 
-export function scaleValue(v: number, tp: string) {
-    const m = /^[ui](\d+)\.(\d+)$/.exec(tp)
-    if (m)
-        return v / (1 << parseInt(m[2]))
-    return v
+export function scaleValue(v: number, info: jdspec.PacketMember) {
+    return v / (1 << info.shift)
 }
