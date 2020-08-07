@@ -66,6 +66,7 @@ module.exports = {
           default: require.resolve("./src/components/layout.tsx"),
         },
         gatsbyRemarkPlugins: [
+          `gatsby-remark-autolink-headers`,
           `gatsby-remark-prismjs`
         ]
       },
@@ -81,6 +82,7 @@ module.exports = {
               rel: "nofollow"
             }
           },
+          `gatsby-remark-autolink-headers`,
           `gatsby-remark-prismjs`
         ],
       },
