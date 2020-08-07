@@ -144,7 +144,7 @@ export function decodeMember(
     } else {
         const fmt = spec.numberFormatFromStorageType(member.storage)
         numValue = pkt.getNumber(fmt, offset)
-        value = scaledValue = spec.scaleValue(numValue, member.type)
+        value = scaledValue = spec.scaleValue(numValue, member)
         if (pkt.dev && member.type == "pipe_port")
             pkt.dev.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
         if (enumInfo) {

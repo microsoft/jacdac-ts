@@ -8,10 +8,27 @@ import CheckIcon from '@material-ui/icons/Check';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 
+function looksRandom(n: number) {
+    const s = n.toString(16)
+    const h = "0123456789abcdef"
+    for (let i = 0; i < h.length; ++i) {
+        const hh = h[i]
+        if (s.indexOf(hh + hh + hh) >= 0)
+            return false
+    }
+    if (/f00d|dead|deaf|beef/.test(s))
+        return false
+    return true
+}
+
+function genServId() {
+    return (cryptoRandomUint32() & 0xfff_ffff) | 0x1000_0000
+}
+
 function uniqueServiceId() {
-    let id = cryptoRandomUint32()
-    while (serviceSpecificationFromClassIdentifier(id)) {
-        id = cryptoRandomUint32()
+    let id = genServId()
+    while (!looksRandom(id) || serviceSpecificationFromClassIdentifier(id)) {
+        id = genServId()
     }
     return id !== undefined && ("0x" + ("000000000" + id.toString(16)).slice(-8))
 }
