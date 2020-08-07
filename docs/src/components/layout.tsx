@@ -7,7 +7,7 @@
 
 import React, { useState, useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup } from '@material-ui/core';
+import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup, Container } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -204,24 +204,26 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
         <Divider />
         {drawerConsole ? <PacketList serviceClass={serviceClass} /> : <Toc />}
       </Drawer>
-      <main
-        className={clsx(classes.content, {
-          [classes.contentShift]: open,
-        })}
-      >
-        <div className={classes.drawerHeader} />
-        <Typography>
-          {children}
-        </Typography>
-        <footer>
-          <Divider />
-          <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
-          <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
-          <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
-          <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
+      <Container maxWidth={open ? "lg" : "sm"}>
+        <main
+          className={clsx(classes.content, {
+            [classes.contentShift]: open,
+          })}
+        >
+          <div className={classes.drawerHeader} />
+          <Typography>
+            {children}
+          </Typography>
+          <footer>
+            <Divider />
+            <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
+            <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
+            <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
+            <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
           © {new Date().getFullYear()} Microsoft Corporation
         </footer>
-      </main>
+        </main>
+      </Container>
       <ErrorSnackbar />
     </div>
   )
