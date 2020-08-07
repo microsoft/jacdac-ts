@@ -1,16 +1,22 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup } from '@material-ui/core';
+import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND } from '../../../src/dom/constants';
 import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 import { isInstanceOf } from '../../../src/dom/spec';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PauseIcon from '@material-ui/icons/Pause';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ClearIcon from '@material-ui/icons/Clear';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PacketFilterContext from './PacketFilterContext';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ToggleButton from '@material-ui/lab/ToggleButton';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import { IconButton } from 'gatsby-theme-material-ui';
@@ -95,7 +101,7 @@ export default function PacketList(props: {
                     </Typography>
 
                     <ToggleButtonGroup value={kinds} onChange={handleKinds}>
-                        {allKinds().map(kind => <ToggleButton value={kind} title={kindName(kind)}><KindIcon kind={kind} /></ToggleButton>)}
+                        {allKinds().map(kind => <Tooltip title={kindName(kind)}><ToggleButton value={kind}><KindIcon kind={kind} /></ToggleButton></Tooltip>)}
                     </ToggleButtonGroup>
 
                 </ListItem>
