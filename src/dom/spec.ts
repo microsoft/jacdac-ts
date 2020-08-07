@@ -9,6 +9,10 @@ export const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
  * Checks if classIdentifier is compatible with requiredClassIdentifier
 */
 export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): boolean {
+    // garbage data
+    if (classIdentifier === undefined)
+        return false;
+
     // direct hit
     if (classIdentifier === requiredClassIdentifier)
         return true;
@@ -42,6 +46,14 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
 
 export function isRegister(pkt: jdspec.PacketInfo) {
     return pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw"
+}
+
+export function isEvent(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "event"
+}
+
+export function isCommand(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "command"
 }
 
 export function isIntegerType(tp: string) {

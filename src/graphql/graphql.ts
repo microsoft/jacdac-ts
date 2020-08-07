@@ -8,7 +8,7 @@ export function getSchema() {
         // keep in sync with /clients/web/graphql        
         _schema = buildSchema(`
 """
-A identifiable node in the JacDac DOM
+A identifiable node in the JACDAC DOM
 """
 interface Node {
     """
@@ -63,7 +63,7 @@ type Register implements Node {
 }
 
 """
-A bus of devices, service and register using the JacDac protocol
+A bus of devices, service and register using the JACDAC protocol
 """
 type Query {
     """

@@ -1,20 +1,13 @@
-import { serviceSpecificationFromClassIdentifier, isRegister } from "../../../src/dom/spec"
+import { isRegister, isEvent, isCommand } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import React, { Fragment } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import Chip from '@material-ui/core/Chip';
-// tslint:disable-next-line: no-submodule-imports
-import CreateIcon from '@material-ui/icons/Create';
-// tslint:disable-next-line: no-submodule-imports
-import LockIcon from '@material-ui/icons/Lock';
-// tslint:disable-next-line: no-submodule-imports
-import CallToActionIcon from '@material-ui/icons/CallToAction';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FlashOnIcon from '@material-ui/icons/FlashOn';
 import DeviceList from "./DeviceList";
-
 import { makeStyles, createStyles } from "@material-ui/core";
+import IDChip from "./IDChip";
+import KindChip from "./KindChip";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -26,36 +19,22 @@ const useStyles = makeStyles((theme) => createStyles({
 }),
 );
 
-export default function PacketSpecification(props: { serviceClass: number, registerAddress: number }) {
-    const { serviceClass, registerAddress } = props;
+export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo }) {
+    const { serviceClass, packetInfo } = props;
     const classes = useStyles();
-    const service = serviceSpecificationFromClassIdentifier(serviceClass)
-    const packet = service?.packets.find(pkt => pkt.identifier == registerAddress)
-    const kinds = {
-        "ro": "read-only",
-        "rw": "read-write"
-        // command
-        // event
-        // const
-    }
-    const icons = {
-        "ro": <LockIcon />,
-        "rw": <CreateIcon />,
-        "command": <CallToActionIcon />,
-        "event": <FlashOnIcon />
-    }
-
-    if (!packet)
-        return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${registerAddress}`}</Alert>
+    if (!packetInfo)
+        return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
 
     return <div className={classes.root}>
-        <h3 id={`register:${packet.identifier}`}>{packet.name}
-            <Chip className={classes.chip} size="small" label={`id 0x${packet.identifier.toString(16)}`} />
-            {<Chip className={classes.chip} size="small" label={kinds[packet.kind] || packet.kind} icon={icons[packet.kind]} />}
-            {packet.optional && <Chip className={classes.chip} size="small" label="optional" />}
-            {packet.derived && <Chip className={classes.chip} size="small" label="derived" />}
+        <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
+            <IDChip className={classes.chip} id={packetInfo.identifier} />
+            <KindChip className={classes.chip} kind={packetInfo.kind} />
+            {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
+            {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
-        <p>{packet.description}</p>
-        {isRegister(packet) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerAddress={registerAddress} />}
+        <p>{packetInfo.description}</p>
+        {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
+        {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
+        {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
     </div>
 }

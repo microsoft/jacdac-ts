@@ -6,9 +6,11 @@ import { JDNode } from "./node";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
+import { isRegister } from "./spec";
 
 export class JDRegister extends JDNode {
     private _lastReportPkt: Packet;
+    private _specification: jdspec.PacketInfo;
 
     constructor(
         public readonly service: JDService,
@@ -48,7 +50,9 @@ export class JDRegister extends JDNode {
     }
 
     get specification() {
-        return this.service.specification?.packets.find(packet => packet.identifier === this.address)
+        if (!this._specification)
+            this._specification = this.service.specification?.packets.find(packet => isRegister(packet) && packet.identifier === this.address)
+        return this._specification;
     }
 
     get data() {

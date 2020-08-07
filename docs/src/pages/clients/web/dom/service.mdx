@@ -3,7 +3,7 @@ import DeviceList from "../../../../components/DeviceList"
 # JDService
 
 > A **service** is a [DOM](/clients/web/dom) [node](/clients/web/dom/node)
-that has [registers](/clients/web/dom/register), accept **commands**
+that has [registers](/clients/web/dom/register), [events](/clients/web/dom/event), accept **commands**
 and may return **acks**. A service is hosted in a [device](/clients/web/dom/device).
 
 <DeviceList />
@@ -27,6 +27,15 @@ You can use register to read and write data to the service.
 
 ```typescript
 const register = service.register(0x42);
+```
+
+### ``event``
+
+This function returns an [event](/clients/web/dom/event) object mapped at a given address.
+You can use an event to listen to events coming from the device.
+
+```typescript
+const event = service.event(0x42);
 ```
 
 ### ``specification``

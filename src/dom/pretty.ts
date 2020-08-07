@@ -192,6 +192,22 @@ export function decodeMember(
     }
 }
 
+export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number) {
+    let r = [];
+    let curr = value
+    for (const key of Object.keys(enumInfo.members)) {
+        const val = enumInfo.members[key]
+        if (curr & val) {
+            r.push(val)
+        }
+    }
+    return r;
+}
+
+export function flagsToValue(values: number[]) {
+    return values.reduce((prev, cur) => prev | cur, 0)
+}
+
 export function decodeMembers(service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, pkt: Packet, off = 0) {
     const fields = pktInfo.fields.slice(0)
     let idx = fields.findIndex(f => f.startRepeats)

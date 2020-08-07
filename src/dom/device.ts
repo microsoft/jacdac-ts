@@ -18,7 +18,7 @@ export interface PipeInfo {
 
 export class JDDevice extends JDNode {
     connected: boolean;
-    private servicesData: Uint8Array
+    servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
     private _shortId: string
@@ -55,7 +55,7 @@ export class JDDevice extends JDNode {
 
     hasService(service_class: number): boolean {
         if (!this.announced) return false;
-        for (let i = 4; i < this.servicesData.length; i += 4) {
+        for (let i = 0; i < this.servicesData.length; i += 4) {
             const sc = getNumber(this.servicesData, NumberFormat.UInt32LE, i);
             if (isInstanceOf(sc, service_class))
                 return true
@@ -149,18 +149,14 @@ export class JDDevice extends JDNode {
             this.emit(CHANGE)
         }
 
-        const servData = this.servicesData?.slice(4)
-        if (!bufferEq(pkt.data.slice(4), servData)) {
+        if (!bufferEq(pkt.data, this.servicesData)) {
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
-            if (this._services) {
-                // patch services
-                throw new Error("need to patch services")
-            }
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
-            this.bus.emit(DEVICE_CHANGE, this);
             this.emit(CHANGE)
+            this.bus.emit(DEVICE_CHANGE, this);
+            this.bus.emit(CHANGE, this);
         }
     }
 

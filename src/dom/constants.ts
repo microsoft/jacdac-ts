@@ -129,6 +129,7 @@ export const DISCONNECTING = 'disconnecting'
 export const ANNOUNCE = 'announce'
 export const RESTART = 'restart'
 export const CHANGE = 'change'
+export const EVENT = 'event'
 
 export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'
@@ -148,6 +149,10 @@ export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'
 
 export const ERROR = 'error'
+
+export const PACKET_KIND_RW = "rw"
+export const PACKET_KIND_RO = "ro"
+export const PACKET_KIND_EVENT = "event"
 
 // Service: Control
 export enum CtrlCmd {

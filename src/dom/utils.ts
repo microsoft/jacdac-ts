@@ -230,6 +230,7 @@ export class PromiseQueue {
 }
 
 export function toHex(bytes: ArrayLike<number>) {
+    if (!bytes) return undefined;
     let r = ""
     for (let i = 0; i < bytes.length; ++i)
         r += ("0" + bytes[i].toString(16)).slice(-2)
@@ -348,7 +349,7 @@ export interface DebouncedPoll {
  * @param debouncedDelay 
  * @param pollDelay 
  */
-export function debouncedPollAsync(handler: () => Promise<void>, debouncedDelay: number = 100, pollDelay: number = 500): () => void {
+export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: number = 500, debouncedDelay: number = 100): () => void {
     const debounced = debounceAsync(handler, debouncedDelay);
     let interval
 
@@ -366,4 +367,12 @@ export function debouncedPollAsync(handler: () => Promise<void>, debouncedDelay:
 
     poll()
     return stop
+}
+
+export function cryptoRandomUint32(): number {
+    if (typeof window === "undefined")
+        return undefined; // not supported
+    const vals = new Uint32Array(1)
+    window.crypto.getRandomValues(vals)
+    return vals[0]
 }
