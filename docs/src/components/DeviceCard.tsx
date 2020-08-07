@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
 import Card from '@material-ui/core/Card';
 // tslint:disable-next-line: no-submodule-imports
-import CardActions from '@material-ui/core/CardActions';
-// tslint:disable-next-line: no-submodule-imports
 import CardContent from '@material-ui/core/CardContent';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { JDDevice } from '../../../src/dom/device';
-import { CtrlReg, SRV_CTRL, SRV_LOGGER, ANNOUNCE } from '../../../src/dom/constants';
+import { SRV_CTRL, SRV_LOGGER, ANNOUNCE } from '../../../src/dom/constants';
 import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
-import { debouncedPollAsync } from '../../../src/dom/utils';
+import { CardActions } from '@material-ui/core';
+import { DeviceCardHeader } from './DeviceCardHeader';
 
 const useStyles = makeStyles({
     root: {
@@ -45,31 +44,11 @@ export default function DeviceCard(props: { device: JDDevice, children?: any, on
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
-    const controlService = useChange(device, () => device.service(SRV_CTRL))
 
-    const firmwareRegister = controlService?.register(CtrlReg.FirmwareVersion);
-    const tempRegister = controlService?.register(CtrlReg.Temperature)
-    const firmware = firmwareRegister?.stringValue || "";
-    const [temperature, setTemperature] = useState<number>(tempRegister?.intValue || undefined)
-/*    useEffect(() => debouncedPollAsync(async () => {
-        console.log(`poll temperature ${temperature}`)
-        if (!firmwareRegister?.data)
-            await firmwareRegister?.sendGetAsync()
-        await tempRegister?.sendGetAsync()
-        setTemperature(tempRegister?.intValue || undefined)
-    }), [controlService])
-*/
     return (
         <Card className={classes.root}>
+            <DeviceCardHeader device={device} />
             <CardContent>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    {device.deviceId}
-                    {firmware !== undefined && `v${firmware}`}
-                    {temperature !== undefined && `${temperature}°`}
-                </Typography>
-                <Typography variant="h5" component="h2">
-                    {device.name}
-                </Typography>
             </CardContent>
             <CardActions>
                 {services.map(service => <ServiceButton key={service.id} service={service} onClick={() => (onServiceClick || navigateToService)(service)} />)}

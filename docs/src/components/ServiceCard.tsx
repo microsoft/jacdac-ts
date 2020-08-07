@@ -1,14 +1,11 @@
 import React from 'react';
 import { JDService } from "../../../src/dom/service";
-import { JDDevice } from "../../../src/dom/device";
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
 import Card from '@material-ui/core/Card';
 // tslint:disable-next-line: no-submodule-imports
 import CardContent from '@material-ui/core/CardContent';
-// tslint:disable-next-line: no-submodule-imports
-import CardMedia from '@material-ui/core/CardMedia';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'gatsby-theme-material-ui';
@@ -17,6 +14,7 @@ import ServiceEvents from './ServiceEvents';
 import { isCommand } from '../../../src/dom/spec';
 import { CardActions } from '@material-ui/core';
 import ServiceCommands from './ServiceCommands';
+import { DeviceCardHeader } from './DeviceCardHeader';
 
 const useStyles = makeStyles({
     root: {
@@ -55,12 +53,10 @@ export default function ServiceCard(props: {
 
     return (
         <Card className={classes.root}>
+            <DeviceCardHeader device={service.device} />
             <CardContent>
                 {showServiceName && <Typography className={classes.title} color="textSecondary" gutterBottom>
                     <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/dom/service"}>{service.name}</Link>
-                </Typography>}
-                {showDeviceName && <Typography variant="h5" component="h2">
-                    <Link to="/clients/web/dom/device">{service.device.name || service.device.shortId}</Link>
                 </Typography>}
                 <Typography variant="body2" component="p">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
