@@ -45,6 +45,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     root: {
         flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
+        marginBottom: theme.spacing(1)
     },
     pre: {
         margin: "0",
@@ -71,10 +72,10 @@ export default function ServiceSpecificationSource(props: { classIdentifier: num
                     <Tab label="Markdown" {...a11yProps(0)} />
                     <Tab label="JSON" {...a11yProps(1)} />
                 </Tabs>
+                {[spec.source, JSON.stringify(spec, null, 2)].map((src, index) => <TabPanel value={value} index={index}>
+                    <pre className={classes.pre}>{src}</pre>
+                </TabPanel>)}
             </Paper>
-            {[spec.source, JSON.stringify(spec, null, 2)].map((src, index) => <TabPanel value={value} index={index}>
-                <pre className={classes.pre}>{src}</pre>
-            </TabPanel>)}
         </div>
     );
 }
