@@ -118,7 +118,6 @@
     "commitizen": "^3.0.0",
     "coveralls": "^3.0.2",
     "cross-env": "^5.2.0",
-    "gatsby-remark-autolink-headers": "^2.3.11",
     "graphiql": "^1.0.3",
     "graphql": "^15.1.0",
     "jest": "^23.6.0",

@@ -67,7 +67,10 @@ module.exports = {
         },
         gatsbyRemarkPlugins: [
           `gatsby-remark-autolink-headers`,
-          `gatsby-remark-prismjs`
+          `gatsby-remark-prismjs`,
+          'gatsby-remark-external-links',
+          'gatsby-remark-numbered-footnotes',
+          'gatsby-remark-embedder'          
         ]
       },
     },
@@ -75,18 +78,15 @@ module.exports = {
       resolve: `gatsby-transformer-remark`,
       options: {
         plugins: [
-          {
-            resolve: "gatsby-remark-external-links",
-            options: {
-              target: "_self",
-              rel: "nofollow"
-            }
-          },
           `gatsby-remark-autolink-headers`,
-          `gatsby-remark-prismjs`
+          `gatsby-remark-prismjs`,
+          'gatsby-remark-external-links',
+          'gatsby-remark-numbered-footnotes',
+          'gatsby-remark-embedder'          
         ],
       },
     },
+    "gatsby-plugin-sitemap"
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.dev/offline
     // `gatsby-plugin-offline`,
