@@ -1,24 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { JDRegister } from "../../../src/dom/register";
-import { Slider, Typography, Switch, TextField } from "@material-ui/core";
+import { Slider, Typography, Switch, TextField, Select, MenuItem } from "@material-ui/core";
 import { REPORT_UPDATE } from "../../../src/dom/constants";
-import { DecodedMember } from "../../../src/dom/pretty";
+import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/dom/pretty";
 import { debouncedPollAsync } from "../../../src/dom/utils";
+import IDChip from "./IDChip"
 
 function MemberInput(props: { register: JDRegister, member: DecodedMember, labelledby: string }) {
     const { register, member, labelledby } = props;
     const { specification } = register
+    const serviceSpecifiction = register.service.specification
     const { info } = member;
     const mod = specification.kind == "rw";
+    const enumInfo = serviceSpecifiction.enums[info.type]
+
     const handleSwitch = () => register.sendSetBoolAsync(!register.boolValue, true)
     const handleNumChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const v = parseInt(event.target.value.replace(/[^\d]+$/, ''));
         if (!isNaN(v))
             register.sendSetIntAsync(parseInt(event.target.value), true);
+    }
+    const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
+        const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
+        console.log(v)
+        register.sendSetIntAsync(v, true);
     };
 
     if (info.type == "bool") {
         return <Switch checked={member.value} onClick={mod && handleSwitch} />
+    }
+    else if (enumInfo !== undefined && member.numValue !== undefined) {
+        return <Select
+            multiple={enumInfo.isFlags}
+            value={enumInfo.isFlags ? valueToFlags(enumInfo, member.numValue) : member.numValue}
+            onChange={handleEnumChange}>
+            {Object.keys(enumInfo.members).map(n => <MenuItem value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
+        </Select>
     }
     else if (member.numValue !== undefined && info.unit == "frac" && info.storage > 0) {
         return <Slider value={member.numValue}
