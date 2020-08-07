@@ -409,7 +409,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
     }
 }
 
-export async function scanFirmwares(bus: JDBus, timeout = 300) {
+export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<FwInfo[]> {
     const devs = (await scanCore(bus, (timeout / 50) >> 0, false)).devs
     devs.sort((a, b) => U.strcmp(a.deviceId, b.deviceId))
     return devs

@@ -35,6 +35,7 @@ import ErrorSnackbar from "./ErrorSnackbar"
 import Toc from "./Toc"
 import PacketList from "./PacketList"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
+import UpdateIcon from '@material-ui/icons/Update';
 
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
@@ -184,6 +185,14 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
+          <IconButton
+            color="inherit"
+            aria-label="updater"
+            to="/tools/updater"
+            edge="start"
+            className={clsx(classes.menuButton, open && classes.hide)}
+          > <UpdateIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer
