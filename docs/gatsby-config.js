@@ -3,6 +3,7 @@ module.exports = {
     title: `JACDAC`,
     description: `Documentation for the JACDAC protocol and libraries.`,
     author: `Microsoft`,
+    siteUrl: `https://microsoft.github.io/jacdac-ts`
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
