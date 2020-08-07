@@ -1,5 +1,7 @@
 import { SRV_CTRL, CtrlCmd, CtrlReg } from "../../../src/dom/constants";
-import { CardHeader, IconButton } from "@material-ui/core";
+import { CardHeader } from "@material-ui/core";
+// tslint:disable-next-line: no-submodule-imports
+import { Link, IconButton } from 'gatsby-theme-material-ui';
 import { JDDevice } from "../../../src/dom/device";
 import React, { Fragment, useState, useEffect } from "react";
 import useChange from "../jacdac/useChange";
@@ -45,7 +47,9 @@ export function DeviceCardHeader(props: { device: JDDevice }) {
                 </IconButton>
             </Fragment>
         }
-        title={device.name}
+        title={<Link to="/clients/web/dom/device">
+            {device.name}
+        </Link>}
         subheader={
             <React.Fragment>
                 {device.deviceId}
