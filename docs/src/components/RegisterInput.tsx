@@ -37,10 +37,10 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
             {Object.keys(enumInfo.members).map(n => <MenuItem value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
-    else if (member.numValue !== undefined && info.unit == "frac" && info.storage > 0) {
-        return <Slider value={member.numValue}
+    else if (member.scaledValue !== undefined && info.unit == "frac") {
+        return <Slider value={member.scaledValue}
             aria-labelledby={labelledby}
-            min={0} max={1 << (8 * member.size)}
+            min={0} max={1}
         />
     }
 
