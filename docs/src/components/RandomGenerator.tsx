@@ -8,6 +8,7 @@ import CheckIcon from '@material-ui/icons/Check';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import { Button } from "gatsby-theme-material-ui";
+import { NoSsr } from '@material-ui/core';
 
 function looksRandom(n: number) {
     const s = n.toString(16)
@@ -23,12 +24,15 @@ function looksRandom(n: number) {
 }
 
 function genServId() {
-    return (cryptoRandomUint32() & 0xfff_ffff) | 0x1000_0000
+    const n = cryptoRandomUint32();
+    if (n === undefined)
+        return undefined;
+    return (n & 0xfff_ffff) | 0x1000_0000
 }
 
 function uniqueServiceId() {
     let id = genServId()
-    while (!looksRandom(id) || serviceSpecificationFromClassIdentifier(id)) {
+    while (id !== undefined && (!looksRandom(id) || serviceSpecificationFromClassIdentifier(id))) {
         id = genServId()
     }
     return id !== undefined && ("0x" + ("000000000" + id.toString(16)).slice(-8))
@@ -62,24 +66,26 @@ export default function RandomGenerator() {
         }
     };
 
-    return <Card className={classes.root}>
-        <CardContent>
-            <Typography className={classes.title} color="textSecondary" gutterBottom>
-                Random Service Identifier
+    return <NoSsr>
+        <Card className={classes.root}>
+            <CardContent>
+                <Typography className={classes.title} color="textSecondary" gutterBottom>
+                    Random Service Identifier
             </Typography>
-            {value !== undefined &&
-                <Typography variant="h5" component="h2">
-                    <TextField value={value} InputProps={{
-                        readOnly: true,
-                    }} />
-                    {copySuccess && <CheckIcon />}
-                </Typography>}
-            {value === undefined &&
-                <Alert severity="error">Oops, unable to generate a strong random number.</Alert>}
-        </CardContent>
-        <CardActions>
-            <Button size="small" onClick={handleCopy}>Copy</Button>
-            <Button size="small" onClick={handleRegenerate}>Regenerate</Button>
-        </CardActions>
-    </Card>
+                {value !== undefined &&
+                    <Typography variant="h5" component="h2">
+                        <TextField value={value} InputProps={{
+                            readOnly: true,
+                        }} />
+                        {copySuccess && <CheckIcon />}
+                    </Typography>}
+                {value === undefined &&
+                    <Alert severity="error">Oops, unable to generate a strong random number.</Alert>}
+            </CardContent>
+            <CardActions>
+                <Button size="small" onClick={handleCopy}>Copy</Button>
+                <Button size="small" onClick={handleRegenerate}>Regenerate</Button>
+            </CardActions>
+        </Card>
+    </NoSsr>
 }
