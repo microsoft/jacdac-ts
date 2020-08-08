@@ -44,7 +44,6 @@ export class JDEvent extends JDNode {
     }
 
     processEvent(pkt: Packet) {
-        console.log(`${this}++`)
         this._lastReportPkt = pkt;
         this._count++;
         this.service.emit(EVENT, this)

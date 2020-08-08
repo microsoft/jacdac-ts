@@ -10,8 +10,6 @@ import FlashOnIcon from '@material-ui/icons/FlashOn';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DataUsageIcon from '@material-ui/icons/DataUsage';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import AnnouncementIcon from '@material-ui/icons/Announcement';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ReplyIcon from '@material-ui/icons/Reply';
 
 export default function KindIcon(props: { kind: string }) {
@@ -21,7 +19,6 @@ export default function KindIcon(props: { kind: string }) {
         case "const": return <LockIcon />;
         case "command": return <CallToActionIcon />;
         case "event": return <FlashOnIcon />;
-        case "announce": return <AnnouncementIcon />;
         case "report": return <ReplyIcon />;
     }
     return undefined;
@@ -36,5 +33,5 @@ export function kindName(kind: string) {
 }
 
 export function allKinds() {
-    return ["rw", "ro", "const", "event", "command", "report", "announce"]
+    return ["rw", "ro", "const", "event", "command", "report"]
 }

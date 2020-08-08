@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip } from '@material-ui/core';
+import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND } from '../../../src/dom/constants';
@@ -18,8 +18,12 @@ import PacketFilterContext from './PacketFilterContext';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import AnnouncementIcon from '@material-ui/icons/Announcement';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import { IconButton } from 'gatsby-theme-material-ui';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import GradientIcon from '@material-ui/icons/Gradient';
 
 export default function PacketList(props: {
     maxItems?: number,
@@ -27,15 +31,16 @@ export default function PacketList(props: {
     showTime?: boolean
 }) {
     const { serviceClass, showTime } = props
-    const { consoleMode, setConsoleMode, kinds, setKinds } = useContext(PacketFilterContext)
+    const { flags, setFlags } = useContext(PacketFilterContext)
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
     const [packets, setPackets] = useState<Packet[]>([])
     const [paused, setPaused] = useState(false)
-    const skipRepeatedAnnounce = !showKind("announce")
+    const consoleMode = hasFlag("console")
+    const skipRepeatedAnnounce = !hasFlag("announce")
 
-    function showKind(k: string) {
-        return kinds.indexOf(k) > -1
+    function hasFlag(k: string) {
+        return flags.indexOf(k) > -1
     }
 
     // enable logging
@@ -54,6 +59,7 @@ export default function PacketList(props: {
                 if (!decoded) return; // ignore
             }
 
+            console.log(decoded.info.kind)
             // don't repeat
             if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
                 return;
@@ -61,7 +67,7 @@ export default function PacketList(props: {
             if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
                 return; // not matching service class
 
-            if (decoded && !showKind(decoded.info.kind))
+            if (decoded && !hasFlag(decoded.info.kind))
                 return; // ignore packet type
 
             const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
@@ -72,15 +78,12 @@ export default function PacketList(props: {
     // clear when consoleMode changes
     useEffect(() => {
         setPackets([])
-    }, [consoleMode, ...kinds])
+    }, [consoleMode, ...flags])
 
     const togglePaused = () => setPaused(!paused)
     const clearPackets = () => setPackets([])
-    const handleConsoleModeChange = () => {
-        setConsoleMode(!consoleMode)
-    }
-    const handleKinds = (event: React.MouseEvent<HTMLElement>, newKinds: string[]) => {
-        setKinds(newKinds)
+    const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
+        setFlags(newFlags)
     };
     return (
         <Grid container>
@@ -91,25 +94,17 @@ export default function PacketList(props: {
                         <IconButton title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
                     </ButtonGroup>
 
-                    <Typography variant="h6">
-                        <FormGroup row>
-                            <FormControlLabel
-                                control={<Switch checked={!consoleMode} onChange={handleConsoleModeChange} />}
-                                label="packets"
-                            />
-                        </FormGroup>
-                    </Typography>
-
-                    <ToggleButtonGroup value={kinds} onChange={handleKinds}>
-                        {allKinds().map(kind => <Tooltip title={kindName(kind)}><ToggleButton value={kind}><KindIcon kind={kind} /></ToggleButton></Tooltip>)}
+                    <ToggleButtonGroup value={flags} onChange={handleModes}>
+                        <ToggleButton title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
+                        {allKinds().map(kind => <ToggleButton title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}
+                        <ToggleButton title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
                     </ToggleButtonGroup>
-
                 </ListItem>
                 {packets?.map(packet => <PacketListItem
                     key={packet.key}
                     packet={packet}
                     consoleMode={consoleMode}
-                    skipRepeatedAnnounce={!showKind("announce")}
+                    skipRepeatedAnnounce={skipRepeatedAnnounce}
                     showTime={showTime} />)}
             </List>
         </Grid>

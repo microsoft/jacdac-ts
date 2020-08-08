@@ -35,6 +35,7 @@ import ErrorSnackbar from "./ErrorSnackbar"
 import Toc from "./Toc"
 import PacketList from "./PacketList"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UpdateIcon from '@material-ui/icons/Update';
 
 // tslint:disable-next-line: no-import-side-effect

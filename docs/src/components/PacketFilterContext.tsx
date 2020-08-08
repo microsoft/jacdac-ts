@@ -2,32 +2,24 @@ import React, { createContext, useState } from "react";
 import { allKinds } from "./KindIcon";
 
 export interface PacketFilterProps {
-    consoleMode: boolean,
-    setConsoleMode: (value: boolean) => void,
-
-    kinds: string[],
-    setKinds: (kinds: string[]) => void,
+    flags: string[],
+    setFlags: (kinds: string[]) => void,
 }
 
 const PacketFilterContext = createContext<PacketFilterProps>({
-    consoleMode: true,
-    setConsoleMode: (v) => { },
-
-    kinds: [],
-    setKinds: (k) => {},
+    flags: [],
+    setFlags: (k) => { },
 });
 PacketFilterContext.displayName = "packets";
 
 export default PacketFilterContext;
 
 export const PacketFilterProvider = ({ children }) => {
-    const [consoleMode, setConsoleMode] = useState(true)
-    const [kinds, setKinds] = useState(["rw", "ro", "event", "command"])
+    const [flags, setFlags] = useState(["console", "rw", "ro", "event", "command", "report"])
 
     return (
         <PacketFilterContext.Provider value={{
-            consoleMode, setConsoleMode,
-            kinds, setKinds,
+            flags, setFlags,
         }}>
             {children}
         </PacketFilterContext.Provider>
