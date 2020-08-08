@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { ListItem, Typography } from '@material-ui/core';
+import { ListItem, Typography, ListItemIcon } from '@material-ui/core';
 import { Packet } from '../../../src/dom/packet';
 import { printPacket, decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
+import { decode } from 'punycode';
+import KindIcon from './KindIcon';
 
 export default function PacketListItem(props: {
     packet: Packet,
@@ -12,13 +14,16 @@ export default function PacketListItem(props: {
 }) {
     const { packet, consoleMode, skipRepeatedAnnounce, showTime } = props;
     let text: string;
+    const decoded = decodePacketData(packet);
     if (consoleMode) {
-        const decoded = decodePacketData(packet);
         text = `${deviceServiceName(packet)}: ${decoded?.description || "???"}`
     } else {
         text = printPacket(packet, { skipRepeatedAnnounce, showTime })
     }
     return <ListItem dense={true}>
-            <Typography variant="body2">{text}</Typography>
-        </ListItem>
+        <ListItemIcon>
+            <KindIcon kind={decoded?.info.kind} />
+        </ListItemIcon>
+        <Typography variant="body2">{text}</Typography>
+    </ListItem>
 }

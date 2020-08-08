@@ -11,6 +11,8 @@ import FlashOnIcon from '@material-ui/icons/FlashOn';
 import DataUsageIcon from '@material-ui/icons/DataUsage';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ReplyIcon from '@material-ui/icons/Reply';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import DeviceUnknownIcon from '@material-ui/icons/DeviceUnknown';
 
 export default function KindIcon(props: { kind: string }) {
     switch (props.kind) {
@@ -21,7 +23,7 @@ export default function KindIcon(props: { kind: string }) {
         case "event": return <FlashOnIcon />;
         case "report": return <ReplyIcon />;
     }
-    return undefined;
+    return <DeviceUnknownIcon />;
 }
 
 export function kindName(kind: string) {
