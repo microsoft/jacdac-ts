@@ -213,7 +213,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
         }}
       >
         <div className={classes.drawerHeader}>
-          {serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
+          {drawerConsole && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
