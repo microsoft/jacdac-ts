@@ -39,15 +39,23 @@ function navigateToService(service: JDService) {
         navigate(`/services/${spec.shortId}`) // todo spec
 }
 
-export default function DeviceCard(props: { device: JDDevice, children?: any, action?: JSX.Element | JSX.Element[], content?: JSX.Element | JSX.Element[], onServiceClick?: (service: JDService) => void }) {
-    const { device, children, action, content, onServiceClick } = props;
+export default function DeviceCard(props: {
+    device: JDDevice,
+    children?: any,
+    action?: JSX.Element | JSX.Element[],
+    content?: JSX.Element | JSX.Element[],
+    onServiceClick?: (service: JDService) => void,
+    showTemperature?: boolean,
+    showFirmware?: boolean
+}) {
+    const { device, children, action, content, onServiceClick, showTemperature, showFirmware } = props;
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
 
     return (
         <Card className={classes.root}>
-            <DeviceCardHeader device={device} />
+            <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} />
             {content &&
                 <CardContent>
                     {content}

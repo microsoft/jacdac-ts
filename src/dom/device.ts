@@ -55,6 +55,8 @@ export class JDDevice extends JDNode {
 
     hasService(service_class: number): boolean {
         if (!this.announced) return false;
+        if (service_class === 0) return true;
+
         for (let i = 0; i < this.servicesData.length; i += 4) {
             const sc = getNumber(this.servicesData, NumberFormat.UInt32LE, i);
             if (isInstanceOf(sc, service_class))

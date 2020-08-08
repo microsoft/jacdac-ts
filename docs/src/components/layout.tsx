@@ -29,6 +29,8 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import Divider from '@material-ui/core/Divider';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MenuIcon from '@material-ui/icons/Menu';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import GetAppIcon from '@material-ui/icons/GetApp';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -51,6 +53,9 @@ const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
     flexGrow: 1
+  },
+  grow: {
+    flexGrow: 1,
   },
   appBar: {
     transition: theme.transitions.create(['margin', 'width'], {
@@ -185,6 +190,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
+          <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <IconButton
             color="inherit"
@@ -192,7 +198,8 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
             to="/tools/updater"
             edge="start"
             className={clsx(classes.menuButton, open && classes.hide)}
-          > <UpdateIcon />
+          >
+            <GetAppIcon />
           </IconButton>
         </Toolbar>
       </AppBar>

@@ -55,6 +55,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FwInfo, blob: Fir
     }
 
     return <DeviceCard device={device}
+        showFirmware={true}
         content={<Typography>
             {firmware.name}
         </Typography>}
