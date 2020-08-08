@@ -59,7 +59,6 @@ export default function PacketList(props: {
                 if (!decoded) return; // ignore
             }
 
-            console.log(decoded.info.kind)
             // don't repeat
             if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
                 return;
