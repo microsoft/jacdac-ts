@@ -1,5 +1,4 @@
 import React, { createContext, useState } from "react";
-import { allKinds } from "./KindIcon";
 
 export interface PacketFilterProps {
     flags: string[],

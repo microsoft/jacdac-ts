@@ -46,6 +46,7 @@ import "./layout.css"
 import Alert from "@material-ui/lab/Alert";
 import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
+import { DbProvider } from "./DbContext";
 
 const drawerWidth = `${40}rem`;
 
@@ -118,8 +119,9 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
   return (
     <JacdacProvider>
       <PacketFilterProvider>
-        <LayoutWithContext {...props}>
-        </LayoutWithContext>
+        <DbProvider>
+          <LayoutWithContext {...props} />
+        </DbProvider>
       </PacketFilterProvider>
     </JacdacProvider>
   )

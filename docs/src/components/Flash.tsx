@@ -1,14 +1,17 @@
 import { parseUF2, FwInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
-import React, { useState, useContext, Fragment } from "react"
+import React, { useState, useContext, Fragment, useEffect } from "react"
 import JacdacContext from "../../../src/react/Context"
 import useChange from '../jacdac/useChange';
-import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles } from "@material-ui/core";
+import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip } from "@material-ui/core";
 import DeviceCard from "./DeviceCard";
 import { Button } from "gatsby-theme-material-ui";
 import { BusState } from "../../../src/dom/bus";
 import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
+import DbContext from "./DbContext";
+import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE } from "../../../src/dom/constants";
+import { delay } from "../../../src/dom/utils";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -69,27 +72,52 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FwInfo, blob: Fir
 
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
+    const { db } = useContext(DbContext)
     const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
     const [fws, setFws] = useState<FwInfo[]>(undefined)
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
+    const [scanning, setScanning] = useState(false)
     const classes = useStyles()
+    const FILE_NAME = "firmware.uf2"
 
-    useChange(bus, async () => {
-        if (flashing > 0 || connectionState != BusState.Connected)
+    async function tryLoadFirmware() {
+        const file = await db?.get(FILE_NAME)
+        if (file)
+            await importUF2(file)
+    }
+
+    async function scan() {
+        if (flashing > 0 || scanning || connectionState != BusState.Connected)
             return;
-        const fws = await scanFirmwares(bus)
-        setFws(fws)
-    })
+        try {
+            setScanning(true)
+            const fws = await scanFirmwares(bus)
+            setFws(fws)
+        }
+        finally {
+            setScanning(false)
+        }
+    }
+    // load indexed db file once
+    useEffect(() => { tryLoadFirmware() }, [db])
+    useEffect(() => { scan() }, [flashing])
+    useEffect(bus.subscribe([DEVICE_ANNOUNCE, DEVICE_DISCONNECT], () => scan()))
     const handleFiles = async (files: FileList) => {
         const file = files.item(0)
         if (file) {
             try {
                 setImporting(true)
+                // first try loading
                 await importUF2(file)
+                // success, store
+                db?.put(FILE_NAME, file)
             } finally {
                 setImporting(false)
             }
+
+            // scan again
+            await scan()
         }
     }
     async function importUF2(file: File) {
@@ -101,7 +129,9 @@ export default function Flash() {
             firmware: fw,
             device: bus.device(fw.deviceId),
             blob: blobs?.find(b => fw.deviceClass == b.deviceClass),
-            setFlashing: (b: boolean) => setFlashing(flashing + (b ? 1 : -1))
+            setFlashing: (b: boolean) => {
+                setFlashing(flashing + (b ? 1 : -1))
+            }
         }
     }).filter(fw => !!fw.blob && !!fw.device);
 
@@ -110,8 +140,8 @@ export default function Flash() {
             {importing && <LinearProgress variant="indeterminate" />}
             {!blobs && !importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
             {blobs && <Paper className={classes.blobs}><List>
-                {blobs.map(blob => <ListItem>
-                    <span>{blob.name}</span> <IDChip id={blob.deviceClass} />
+                {blobs.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
+                    <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
                 </ListItem>)}
             </List></Paper>}
             {updates && <Grid container spacing={2}>

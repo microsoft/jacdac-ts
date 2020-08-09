@@ -77,7 +77,7 @@ export default function PacketList(props: {
     // clear when consoleMode changes
     useEffect(() => {
         setPackets([])
-    }, [consoleMode, ...flags])
+    }, [consoleMode, JSON.stringify(flags)])
 
     const togglePaused = () => setPaused(!paused)
     const clearPackets = () => setPackets([])
