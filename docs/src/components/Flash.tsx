@@ -1,7 +1,7 @@
 import { parseUF2, FirmwareInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
 import React, { useState, useContext, Fragment, useEffect } from "react"
 import JacdacContext from "../../../src/react/Context"
-import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip } from "@material-ui/core";
+import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip, Tabs, Tab } from "@material-ui/core";
 import DeviceCard from "./DeviceCard";
 import { Button } from "gatsby-theme-material-ui";
 import { BusState } from "../../../src/dom/bus";
@@ -11,6 +11,7 @@ import { JDDevice } from "../../../src/dom/device";
 import { useFirmwareBlobs } from "./DbContext";
 import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
 import useEvent from '../jacdac/useEvent';
+import TabPanel, { a11yProps } from './TabPanel';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -75,6 +76,7 @@ export default function Flash() {
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
+    const [tab, setTab] = useState(0);
     const classes = useStyles()
 
     const devices = useEvent(DEVICE_CHANGE, bus, () => bus.devices())
@@ -112,6 +114,9 @@ export default function Flash() {
             setImporting(false)
         }
     }
+    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+        setTab(newValue);
+    };
     const updates = devices.map(device => {
         return {
             firmware: device.firmwareInfo,
@@ -124,23 +129,31 @@ export default function Flash() {
     }).filter(fw => !!fw.firmware && !!fw.blob && !!fw.device);
 
     return (
-        <Fragment>
-            {<Paper className={classes.blobs}><List>
-                <ListItem key="importbtn">
-                    {importing && <LinearProgress variant="indeterminate" />}
-                    {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
-                    {!importing && <Button aria-label={"Clear UF2 firmware"} onClick={handleClear}>clear</Button>}
-                </ListItem>
-                {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
-                    <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
-                </ListItem>)}
-            </List></Paper>}
-            {updates && <Grid container spacing={2}>
-                {updates
-                    .map(update => <Grid key={"fw" + update.device.id} item xs={4}>
-                        <UpdateDeviceCard {...update} />
-                    </Grid>)}
-            </Grid>}
-        </Fragment>
+        <Paper className={classes.blobs}>
+            <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
+                <Tab label={`Firmware (${blobs?.length || 0})`} {...a11yProps(0)} />
+                <Tab label={`Updates (${updates?.filter(up => updateApplicable(up.firmware, up.blob)).length || 0})`} {...a11yProps(1)} />
+            </Tabs>
+            <TabPanel value={tab} index={0}>
+                <List>
+                    <ListItem key="importbtn">
+                        {importing && <LinearProgress variant="indeterminate" />}
+                        {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
+                        {!importing && <Button aria-label={"Clear UF2 firmware"} onClick={handleClear}>clear</Button>}
+                    </ListItem>
+                    {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
+                        <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
+                    </ListItem>)}
+                </List>
+            </TabPanel>
+            <TabPanel value={tab} index={1}>
+                {updates && <Grid container spacing={2}>
+                    {updates
+                        .map(update => <Grid key={"fw" + update.device.id} item xs={4}>
+                            <UpdateDeviceCard {...update} />
+                        </Grid>)}
+                </Grid>}
+            </TabPanel>
+        </Paper>
     )
 }
