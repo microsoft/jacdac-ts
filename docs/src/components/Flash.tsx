@@ -9,7 +9,7 @@ import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
 import { useFirmwareBlobs } from "./DbContext";
-import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE, DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
+import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
 import useEvent from '../jacdac/useEvent';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -77,7 +77,7 @@ export default function Flash() {
     const [scanning, setScanning] = useState(false)
     const classes = useStyles()
 
-    const devices = useEvent(DEVICE_FIRMWARE_INFO, bus, () => bus.devices())
+    const devices = useEvent(DEVICE_CHANGE, bus, () => bus.devices())
     const blobs = useEvent(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (flashing > 0 || scanning || connectionState != BusState.Connected)
@@ -92,7 +92,7 @@ export default function Flash() {
     }
     // load indexed db file once
     useEffect(() => { scan() }, [flashing])
-    useEffect(bus.subscribe([DEVICE_ANNOUNCE, DEVICE_DISCONNECT], () => scan()))
+    useEffect(bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
     const handleFiles = async (files: FileList) => {
         const file = files.item(0)
         if (file) {
