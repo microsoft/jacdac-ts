@@ -9,8 +9,8 @@ import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
 import { useFirmwareBlobs } from "./DbContext";
-import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE, DEVICE_FIRMWARE_INFO } from "../../../src/dom/constants";
-import { useEvent } from '../jacdac/useChange';
+import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE, DEVICE_FIRMWARE_INFO, FIRMWARE_INFO } from "../../../src/dom/constants";
+import useEvent from '../jacdac/useEvent';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -71,13 +71,14 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
-    const { blobs, setFile } = useFirmwareBlobs()
+    const { setFirmwareFile } = useFirmwareBlobs()
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
     const classes = useStyles()
 
-    const devices = useEvent(DEVICE_FIRMWARE_INFO, bus, () => bus.devices());
+    const devices = useEvent(DEVICE_FIRMWARE_INFO, bus, () => bus.devices())
+    const blobs = useEvent(FIRMWARE_INFO, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (flashing > 0 || scanning || connectionState != BusState.Connected)
             return;
@@ -97,8 +98,7 @@ export default function Flash() {
         if (file) {
             try {
                 setImporting(true)
-                // try loading
-                await setFile(file)
+                await setFirmwareFile(file)
             } finally {
                 setImporting(false)
             }
@@ -121,7 +121,7 @@ export default function Flash() {
     return (
         <Fragment>
             {importing && <LinearProgress variant="indeterminate" />}
-            {!blobs && !importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
+            {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
             {blobs && <Paper className={classes.blobs}><List>
                 {blobs.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
                     <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />

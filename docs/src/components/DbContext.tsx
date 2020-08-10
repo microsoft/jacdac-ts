@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { FirmwareBlob, parseUF2 } from "../../../src/dom/flashing";
+import JacdacContext from "../../../src/react/Context";
 
 export interface Db {
     dependencyId: () => number,
@@ -137,23 +138,30 @@ export function useDbFile(fileName: string) {
 }
 
 export function useFirmwareBlobs() {
+    const { bus } = useContext(JacdacContext)
     const { file, setFile } = useDbFile("firmware.uf2")
-    const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
 
-    async function load(f: File) {
+    async function load(f: File, store: boolean) {
         if (f) {
             const buf = new Uint8Array(await f.arrayBuffer())
             const bls = parseUF2(buf);
-            await setFile(f)
-            setBlobs(bls)
+            // success, store and save in bus
+            if (store)
+                await setFile(f)
+            bus.firmwareBlobs = bls
         } else {
-            await setFile(undefined)
-            setBlobs(undefined)
+            if (store)
+                await setFile(undefined)
+            bus.firmwareBlobs = undefined
         }
     }
-    useEffect(() => { load(file) }, [file])
+    useEffect(() => {
+        console.log(`import uf2`, file)
+        load(file, false)
+    }, [file])
     return {
-        blobs,
-        setFile: (file: File) => load(file)
+        setFirmwareFile: (file: File) => {
+            load(file, true)
+        }
     }
 }
