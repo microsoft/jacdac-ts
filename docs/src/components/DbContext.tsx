@@ -100,7 +100,6 @@ DbContext.displayName = "db";
 export default DbContext;
 
 export const DbProvider = ({ children }) => {
-    const { bus } = useContext(DbContext)
     const [db, SetDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
     useEffect(() => {
@@ -155,9 +154,9 @@ export function useFirmwareBlobs() {
         file().then(f => load(f, false))
     }, [dependencyId()])
     return {
-        setFirmwareFile: async (file: File) => {
+        setFirmwareFile: async (f: File) => {
             console.log(`import new uf2`)
-            await load(file, true)
+            await load(f, true)
         }
     }
 }

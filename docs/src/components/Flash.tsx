@@ -102,9 +102,14 @@ export default function Flash() {
             } finally {
                 setImporting(false)
             }
-
-            // scan again
-            await scan()
+        }
+    }
+    const handleClear = async () => {
+        try {
+            setImporting(true)
+            await setFirmwareFile(undefined)
+        } finally {
+            setImporting(false)
         }
     }
     const updates = devices.map(device => {
@@ -124,6 +129,7 @@ export default function Flash() {
                 <ListItem key="importbtn">
                     {importing && <LinearProgress variant="indeterminate" />}
                     {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
+                    {!importing && <Button aria-label={"Clear UF2 firmware"} onClick={handleClear}>clear</Button>}
                 </ListItem>
                 {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
                     <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
