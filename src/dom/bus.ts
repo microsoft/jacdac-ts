@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { JDDevice } from "./device";
-import { SMap, debounceAsync } from "./utils";
+import { SMap, debounceAsync, strcmp } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -273,6 +273,8 @@ export class JDBus extends JDNode {
         if (!d) {
             d = new JDDevice(this, id)
             this._devices.push(d);
+            // stable sort
+            this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
             this.emit(CHANGE)
