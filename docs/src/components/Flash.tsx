@@ -9,9 +9,8 @@ import { BusState } from "../../../src/dom/bus";
 import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
-import DbContext from "./DbContext";
+import { useDbFile } from "./DbContext";
 import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE } from "../../../src/dom/constants";
-import { delay } from "../../../src/dom/utils";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -72,19 +71,17 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FwInfo, blob: Fir
 
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
-    const { db } = useContext(DbContext)
     const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
     const [fws, setFws] = useState<FwInfo[]>(undefined)
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
     const classes = useStyles()
-    const FILE_NAME = "firmware.uf2"
+    const { file: firmwareFile, setFile: setFirmwareFile } = useDbFile("firmware.uf2")
 
     async function tryLoadFirmware() {
-        const file = await db?.get(FILE_NAME)
-        if (file)
-            await importUF2(file)
+        if (firmwareFile)
+            await importUF2(firmwareFile)
     }
 
     async function scan() {
@@ -100,7 +97,7 @@ export default function Flash() {
         }
     }
     // load indexed db file once
-    useEffect(() => { tryLoadFirmware() }, [db])
+    useEffect(() => { tryLoadFirmware() }, [firmwareFile])
     useEffect(() => { scan() }, [flashing])
     useEffect(bus.subscribe([DEVICE_ANNOUNCE, DEVICE_DISCONNECT], () => scan()))
     const handleFiles = async (files: FileList) => {
@@ -111,7 +108,7 @@ export default function Flash() {
                 // first try loading
                 await importUF2(file)
                 // success, store
-                db?.put(FILE_NAME, file)
+                await setFirmwareFile(file)
             } finally {
                 setImporting(false)
             }

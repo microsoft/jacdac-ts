@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 export interface Db {
-    put: (id: string, file: File) => void;
+    dependencyId: () => number,
+    put: (id: string, file: File) => Promise<void>;
     get: (id: string) => Promise<File>;
     del: (id: string) => Promise<void>;
 }
@@ -12,19 +13,27 @@ function openDbAsync(): Promise<Db> {
     const STORE_FILES = "FILES"
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     let db: IDBDatabase;
+    let changeId = 0;
 
     const api = {
-        put: (id: string, file: File) => {
-            try {
-                const transaction = db.transaction([STORE_FILES], "readwrite");
-                const blobs = transaction.objectStore(STORE_FILES)
-                blobs.put(file, id);
-            } catch (e) {
-                console.error(`idb: put ${id} failed`)
-            }
+        dependencyId: () => changeId,
+        put: (id: string, file: File): Promise<void> => {
+            changeId++
+            return new Promise<void>((resolve, reject) => {
+                try {
+                    const transaction = db.transaction([STORE_FILES], "readwrite");
+                    const blobs = transaction.objectStore(STORE_FILES)
+                    const request = blobs.put(file, id);
+                    request.onsuccess = (event) => resolve()
+                    request.onerror = (event) => resolve()
+                } catch (e) {
+                    console.error(`idb: put ${id} failed`)
+                    reject(e)
+                }
+            })
         },
         get: (id: string): Promise<File> => {
-            return new Promise((resolve, reject) => {
+            return new Promise<File>((resolve, reject) => {
                 try {
                     const transaction = db.transaction([STORE_FILES], "readonly");
                     const blobs = transaction.objectStore(STORE_FILES)
@@ -38,13 +47,14 @@ function openDbAsync(): Promise<Db> {
             })
         },
         del: (id: string): Promise<void> => {
-            return new Promise((resolve, reject) => {
+            changeId++
+            return new Promise<void>((resolve, reject) => {
                 try {
                     const transaction = db.transaction([STORE_FILES], "readwrite");
                     const blobs = transaction.objectStore(STORE_FILES)
                     const request = blobs.delete(id);
-                    request.onsuccess = (event) => resolve((event.target as any).result)
-                    request.onerror = (event) => resolve((event.target as any).result)
+                    request.onsuccess = (event) => resolve()
+                    request.onerror = (event) => resolve()
                 } catch (e) {
                     console.error(`idb: del ${id}`)
                     reject(e)
@@ -100,4 +110,27 @@ export const DbProvider = ({ children }) => {
             {children}
         </DbContext.Provider>
     )
+}
+
+export function useDbFile(fileName: string) {
+    const [file, setFile] = useState<File>(undefined);
+    const { db } = useContext(DbContext);
+
+    // runs once
+    useEffect(() => {
+        if (db)
+            db.get(fileName)
+                .then(f => setFile(f))
+    }, [db, db?.dependencyId()])
+
+    return {
+        file,
+        setFile: async (f: File) => {
+            if (!f)
+                await db.del(fileName)
+            else
+                await db.put(fileName, f)
+            setFile(f)
+        }
+    }
 }
