@@ -4,9 +4,8 @@ import JacdacContext from "../../../src/react/Context";
 
 export interface Db {
     dependencyId: () => number,
-    put: (id: string, file: File) => Promise<void>;
-    get: (id: string) => Promise<File>;
-    del: (id: string) => Promise<void>;
+    getFile: (id: string) => Promise<File>;
+    putFile: (id: string, file: File) => Promise<void>;
 }
 
 function openDbAsync(): Promise<Db> {
@@ -19,13 +18,13 @@ function openDbAsync(): Promise<Db> {
 
     const api = {
         dependencyId: () => changeId,
-        put: (id: string, file: File): Promise<void> => {
+        putFile: (id: string, file: File): Promise<void> => {
             changeId++
             return new Promise<void>((resolve, reject) => {
                 try {
                     const transaction = db.transaction([STORE_FILES], "readwrite");
                     const blobs = transaction.objectStore(STORE_FILES)
-                    const request = blobs.put(file, id);
+                    const request = file ? blobs.put(file, id) : blobs.delete(id);;
                     request.onsuccess = (event) => resolve()
                     request.onerror = (event) => resolve()
                 } catch (e) {
@@ -34,7 +33,7 @@ function openDbAsync(): Promise<Db> {
                 }
             })
         },
-        get: (id: string): Promise<File> => {
+        getFile: (id: string): Promise<File> => {
             return new Promise<File>((resolve, reject) => {
                 try {
                     const transaction = db.transaction([STORE_FILES], "readonly");
@@ -44,21 +43,6 @@ function openDbAsync(): Promise<Db> {
                     request.onerror = (event) => resolve((event.target as any).result)
                 } catch (e) {
                     console.error(`idb: get ${id} failed`)
-                    reject(e)
-                }
-            })
-        },
-        del: (id: string): Promise<void> => {
-            changeId++
-            return new Promise<void>((resolve, reject) => {
-                try {
-                    const transaction = db.transaction([STORE_FILES], "readwrite");
-                    const blobs = transaction.objectStore(STORE_FILES)
-                    const request = blobs.delete(id);
-                    request.onsuccess = (event) => resolve()
-                    request.onerror = (event) => resolve()
-                } catch (e) {
-                    console.error(`idb: del ${id}`)
                     reject(e)
                 }
             })
@@ -119,13 +103,8 @@ export function useDbFile(fileName: string) {
 
     return {
         dependencyId: () => db?.dependencyId(),
-        file: () => db?.get(fileName) || Promise.resolve(undefined),
-        setFile: async (f: File) => {
-            if (!f)
-                await db?.del(fileName)
-            else
-                await db?.put(fileName, f)
-        }
+        file: () => db?.getFile(fileName) || Promise.resolve(undefined),
+        setFile: async (f: File) => { await db?.putFile(fileName, f) }
     }
 }
 
