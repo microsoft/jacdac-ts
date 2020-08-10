@@ -131,7 +131,6 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const [drawerConsole, setDrawerConsole] = useState(false);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
-  useFirmwareBlobs()
 
   const handleDrawerToc = () => {
     setDrawerConsole(false)

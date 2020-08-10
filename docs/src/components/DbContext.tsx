@@ -100,6 +100,7 @@ DbContext.displayName = "db";
 export default DbContext;
 
 export const DbProvider = ({ children }) => {
+    const { bus } = useContext(DbContext)
     const [db, SetDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
     useEffect(() => {
@@ -115,31 +116,23 @@ export const DbProvider = ({ children }) => {
 }
 
 export function useDbFile(fileName: string) {
-    const [file, setFile] = useState<File>(undefined);
     const { db } = useContext(DbContext);
 
-    // runs once
-    useEffect(() => {
-        if (db)
-            db.get(fileName)
-                .then(f => setFile(f))
-    }, [db, db?.dependencyId()])
-
     return {
-        file,
+        dependencyId: () => db?.dependencyId(),
+        file: () => db?.get(fileName) || Promise.resolve(undefined),
         setFile: async (f: File) => {
             if (!f)
                 await db?.del(fileName)
             else
                 await db?.put(fileName, f)
-            setFile(f)
         }
     }
 }
 
 export function useFirmwareBlobs() {
     const { bus } = useContext(JacdacContext)
-    const { file, setFile } = useDbFile("firmware.uf2")
+    const { file, setFile, dependencyId } = useDbFile("firmware.uf2")
 
     async function load(f: File, store: boolean) {
         if (f) {
@@ -151,18 +144,19 @@ export function useFirmwareBlobs() {
             bus.firmwareBlobs = bls
             console.log(`loaded blobs`, bls)
         } else {
+            // delete entry
             if (store)
                 await setFile(undefined)
             bus.firmwareBlobs = undefined
         }
     }
     useEffect(() => {
-        console.log(`import stored uf2`, file)
-        load(file, false)
-    }, [file])
+        console.log(`import stored uf2`)
+        file().then(f => load(f, false))
+    }, [dependencyId()])
     return {
         setFirmwareFile: async (file: File) => {
-            console.log(`import new uf2`, file)
+            console.log(`import new uf2`)
             await load(file, true)
         }
     }

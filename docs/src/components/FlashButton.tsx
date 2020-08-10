@@ -4,14 +4,14 @@ import { IconButton } from "gatsby-theme-material-ui";
 import GetAppIcon from '@material-ui/icons/GetApp';
 import { Badge } from "@material-ui/core";
 import JacdacContext from "../../../src/react/Context";
-import { FIRMWARE_INFO, DEVICE_FIRMWARE_INFO } from "../../../src/dom/constants";
+import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import useEvent from "../jacdac/useEvent";
 import { computeUpdates } from "../../../src/dom/flashing";
 
 export default function FlashButton() {
     const { bus } = useContext(JacdacContext)
 
-    const updates = useEvent([FIRMWARE_INFO, DEVICE_FIRMWARE_INFO],
+    const updates = useEvent([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO],
         bus,
         bus => computeUpdates(bus.devices().map(d => d.firmwareInfo), bus.firmwareBlobs))
 
