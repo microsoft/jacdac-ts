@@ -8,8 +8,9 @@ import { BusState } from "../../../src/dom/bus";
 import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
-import { useDbFile, useFirmwareBlobs } from "./DbContext";
-import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE } from "../../../src/dom/constants";
+import { useFirmwareBlobs } from "./DbContext";
+import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE, DEVICE_FIRMWARE_INFO } from "../../../src/dom/constants";
+import { useEvent } from '../jacdac/useChange';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -71,20 +72,18 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
     const { blobs, setFile } = useFirmwareBlobs()
-    const [fws, setFws] = useState<FirmwareInfo[]>(undefined)
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
     const classes = useStyles()
-    const { file: firmwareFile, setFile: setFirmwareFile } = useDbFile("firmware.uf2")
 
+    const devices = useEvent(DEVICE_FIRMWARE_INFO, bus, () => bus.devices());
     async function scan() {
         if (flashing > 0 || scanning || connectionState != BusState.Connected)
             return;
         try {
             setScanning(true)
-            const fws = await scanFirmwares(bus)
-            setFws(fws)
+            await scanFirmwares(bus)
         }
         finally {
             setScanning(false)
@@ -108,16 +107,16 @@ export default function Flash() {
             await scan()
         }
     }
-    const updates = fws?.map(fw => {
+    const updates = devices.map(device => {
         return {
-            firmware: fw,
-            device: bus.device(fw.deviceId),
-            blob: blobs?.find(b => fw.deviceClass == b.deviceClass),
+            firmware: device.firmwareInfo,
+            device,
+            blob: device.firmwareInfo && blobs?.find(b => device.firmwareInfo.deviceClass == b.deviceClass),
             setFlashing: (b: boolean) => {
                 setFlashing(flashing + (b ? 1 : -1))
             }
         }
-    }).filter(fw => !!fw.blob && !!fw.device);
+    }).filter(fw => !!fw.firmware && !!fw.blob && !!fw.device);
 
     return (
         <Fragment>
