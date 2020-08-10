@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider } from '@material-ui/core';
+import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND, SRV_LOGGER } from '../../../src/dom/constants';
@@ -26,6 +26,14 @@ import { IconButton } from 'gatsby-theme-material-ui';
 import GradientIcon from '@material-ui/icons/Gradient';
 import ConsoleListItem from './ConsoleListItem';
 
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        items: {
+            flex: 1
+        }
+    })
+);
+
 export default function PacketList(props: {
     maxItems?: number,
     serviceClass?: number,
@@ -33,6 +41,7 @@ export default function PacketList(props: {
 }) {
     const { serviceClass, showTime } = props
     const { flags, setFlags } = useContext(PacketFilterContext)
+    const classes = useStyles()
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)
     const [packets, setPackets] = useState<Packet[]>([])
@@ -91,28 +100,26 @@ export default function PacketList(props: {
         setFlags(newFlags)
     };
     return (
-        <Grid container>
-            <List dense={true}>
-                <ListItem key="filters">
-                    <ButtonGroup>
-                        <IconButton title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
-                        <IconButton title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
-                    </ButtonGroup>
+        <List className={classes.items} dense={true}>
+            <ListItem key="filters">
+                <ButtonGroup>
+                    <IconButton title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+                    <IconButton title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
+                </ButtonGroup>
 
-                    <ToggleButtonGroup value={flags} onChange={handleModes}>
-                        <ToggleButton title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
-                        {allKinds().map(kind => <ToggleButton title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}
-                        <ToggleButton title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
-                    </ToggleButtonGroup>
-                </ListItem>
-                {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
-                    : <PacketListItem
-                        key={'pkt' + packet.key}
-                        packet={packet}
-                        skipRepeatedAnnounce={skipRepeatedAnnounce}
-                        showTime={showTime} />)}
-            </List>
-        </Grid>
+                <ToggleButtonGroup value={flags} onChange={handleModes}>
+                    <ToggleButton title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
+                    {allKinds().map(kind => <ToggleButton title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}
+                    <ToggleButton title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
+                </ToggleButtonGroup>
+            </ListItem>
+            {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
+                : <PacketListItem
+                    key={'pkt' + packet.key}
+                    packet={packet}
+                    skipRepeatedAnnounce={skipRepeatedAnnounce}
+                    showTime={showTime} />)}
+        </List>
     )
 
 }

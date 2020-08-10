@@ -2,7 +2,8 @@
 import React from 'react';
 import { ListItem, Typography, ListItemIcon, Theme, makeStyles, createStyles, Chip } from '@material-ui/core';
 import { Packet } from '../../../src/dom/packet';
-import { decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
+import { decodePacketData } from '../../../src/dom/pretty'
+import clsx from 'clsx';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import WarningIcon from '@material-ui/icons/Warning';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
@@ -11,13 +12,21 @@ import { JSONTryParse } from '../../../src/dom/utils';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
+        device: {
+            marginRight: theme.spacing(1)
+        },
+        item: {
+            marginBottom: 0,
+            borderTop: "1px solid #ddd",
+            borderBottom: "1px solid #ddd",
+        },
         debug: {
             color: "gray"
         },
         log: {
         },
         warn: {
-            background: "yellow"
+            background: "#ffffd5"
         },
         error: {
         }
@@ -43,11 +52,11 @@ export default function ConsoleListItem(props: {
         }
     }
 
-    return <ListItem dense={true} className={severityClass()}>
+    return <ListItem dense={true} className={clsx(classes.item, severityClass())}>
         {severity >= 0x82 && <ListItemIcon>
             {severity == 0x82 ? <WarningIcon /> : <ErrorIcon />}
         </ListItemIcon>}
-        <Chip size="small" label={packet?.dev?.shortId || "?"} />
+        <Chip className={classes.device} size="small" label={packet?.dev?.shortId || "?"} />
         <Typography variant="body2">{text}</Typography>
     </ListItem>
 }
