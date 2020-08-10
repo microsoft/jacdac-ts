@@ -32,7 +32,7 @@ export interface FirmwareBlob {
     pageSize: number;
     name: string;
     version: string;
-    updateCandidates?: FwInfo[];
+    updateCandidates?: FirmwareInfo[];
 }
 
 function timestamp() {
@@ -322,7 +322,7 @@ export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
     }
 }
 
-export interface FwInfo {
+export interface FirmwareInfo {
     deviceId: string;
     version: string;
     name: string;
@@ -331,7 +331,7 @@ export interface FwInfo {
 }
 
 async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
-    const devices: U.SMap<FwInfo> = {}
+    const devices: U.SMap<FirmwareInfo> = {}
     const flashers: FlashClient[] = []
     try {
         bus.on(PACKET_REPORT, handlePkt)
@@ -409,17 +409,17 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
     }
 }
 
-export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<FwInfo[]> {
+export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<FirmwareInfo[]> {
     const devs = (await scanCore(bus, (timeout / 50) >> 0, false)).devs
     devs.sort((a, b) => U.strcmp(a.deviceId, b.deviceId))
     return devs
 }
 
-export function updateApplicable(dev: FwInfo, blob: FirmwareBlob) {
+export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
     return dev.blDeviceClass == blob.deviceClass && dev.version !== blob.version
 }
 
-export function computeUpdates(devices: FwInfo[], blobs: FirmwareBlob[]) {
+export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]) {
     return blobs.filter(blob => {
         const cand = devices.filter(d => updateApplicable(d, blob))
         if (cand.length == 0)

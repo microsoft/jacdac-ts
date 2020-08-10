@@ -1,4 +1,4 @@
-import { parseUF2, FwInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
+import { parseUF2, FirmwareInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
 import React, { useState, useContext, Fragment, useEffect } from "react"
 import JacdacContext from "../../../src/react/Context"
 import useChange from '../jacdac/useChange';
@@ -35,7 +35,7 @@ function LinearProgressWithLabel(props: LinearProgressProps & { value: number })
     );
 }
 
-function UpdateDeviceCard(props: { device: JDDevice, firmware: FwInfo, blob: FirmwareBlob, setFlashing: (b: boolean) => void }) {
+function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blob: FirmwareBlob, setFlashing: (b: boolean) => void }) {
     const { bus } = useContext(JacdacContext)
     const { device, firmware, blob, setFlashing: setParentFlashing } = props
     const [flashing, setFlashing] = useState(false)
@@ -72,7 +72,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FwInfo, blob: Fir
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
     const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
-    const [fws, setFws] = useState<FwInfo[]>(undefined)
+    const [fws, setFws] = useState<FirmwareInfo[]>(undefined)
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
