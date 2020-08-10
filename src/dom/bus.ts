@@ -23,7 +23,7 @@ import {
     DISCONNECTING,
     DEVICE_CHANGE,
     CHANGE,
-    FIRMWARE_INFO
+    FIRMWARE_BLOBS_CHANGE
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
@@ -175,7 +175,7 @@ export class JDBus extends JDNode {
 
     set firmwareBlobs(blobs: FirmwareBlob[]) {
         this._firmwareBlobs = blobs;
-        this.emit(FIRMWARE_INFO)
+        this.emit(FIRMWARE_BLOBS_CHANGE)
         this.emit(CHANGE)
     }
 

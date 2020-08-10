@@ -131,6 +131,7 @@ export const RESTART = 'restart'
 export const CHANGE = 'change'
 export const EVENT = 'event'
 export const FIRMWARE_INFO = 'firmwareInfo'
+export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 
 export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'

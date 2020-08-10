@@ -9,7 +9,7 @@ import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
 import { useFirmwareBlobs } from "./DbContext";
-import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE, DEVICE_FIRMWARE_INFO, FIRMWARE_INFO } from "../../../src/dom/constants";
+import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE, DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import useEvent from '../jacdac/useEvent';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -78,7 +78,7 @@ export default function Flash() {
     const classes = useStyles()
 
     const devices = useEvent(DEVICE_FIRMWARE_INFO, bus, () => bus.devices())
-    const blobs = useEvent(FIRMWARE_INFO, bus, () => bus.firmwareBlobs)
+    const blobs = useEvent(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (flashing > 0 || scanning || connectionState != BusState.Connected)
             return;

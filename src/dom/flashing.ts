@@ -424,17 +424,17 @@ export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<Firmware
 }
 
 export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
-    return dev.blDeviceClass == blob.deviceClass && dev.version !== blob.version
+    return dev && blob && dev.blDeviceClass == blob.deviceClass && dev.version !== blob.version
 }
 
 export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]) {
-    return blobs.filter(blob => {
+    return blobs?.filter(blob => {
         const cand = devices.filter(d => updateApplicable(d, blob))
         if (cand.length == 0)
             return false
         blob.updateCandidates = cand
         return true
-    })
+    }) || []
 }
 
 export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, progress?: (perc: number) => void) {

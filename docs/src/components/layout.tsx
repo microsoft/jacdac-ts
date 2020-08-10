@@ -29,24 +29,20 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import Divider from '@material-ui/core/Divider';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MenuIcon from '@material-ui/icons/Menu';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import GetAppIcon from '@material-ui/icons/GetApp';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
 import Toc from "./Toc"
 import PacketList from "./PacketList"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import UpdateIcon from '@material-ui/icons/Update';
-
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
 import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
-import { DbProvider } from "./DbContext";
+import { DbProvider, useFirmwareBlobs } from "./DbContext";
+import FlashButton from "./FlashButton";
 
 const drawerWidth = `${40}rem`;
 
@@ -135,6 +131,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const [drawerConsole, setDrawerConsole] = useState(false);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
+  useFirmwareBlobs()
 
   const handleDrawerToc = () => {
     setDrawerConsole(false)
@@ -194,15 +191,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           </Typography>
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          <IconButton
-            color="inherit"
-            aria-label="updater"
-            to="/tools/updater"
-            edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
-          >
-            <GetAppIcon />
-          </IconButton>
+          <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
         </Toolbar>
       </AppBar>
       <Drawer

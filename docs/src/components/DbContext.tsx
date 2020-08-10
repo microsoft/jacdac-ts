@@ -157,11 +157,12 @@ export function useFirmwareBlobs() {
         }
     }
     useEffect(() => {
-        console.log(`import uf2`, file)
+        console.log(`import stored uf2`, file)
         load(file, false)
     }, [file])
     return {
         setFirmwareFile: async (file: File) => {
+            console.log(`import new uf2`, file)
             await load(file, true)
         }
     }

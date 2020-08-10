@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Button } from "gatsby-theme-material-ui";
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
 import { CircularProgress } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
