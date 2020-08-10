@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { JDDevice } from "./device";
-import { SMap } from "./utils";
+import { SMap, debounceAsync } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -27,7 +27,7 @@ import {
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
-import { FirmwareBlob } from "./flashing";
+import { FirmwareBlob, scanFirmwares } from "./flashing";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -71,6 +71,8 @@ export class JDBus extends JDNode {
         this.options = this.options || {};
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
+        const debouncedScanFirmwares = debounceAsync(async () => { await scanFirmwares(this) }, 1000)
+        this.on(DEVICE_ANNOUNCE, debouncedScanFirmwares)
     }
 
     /**
