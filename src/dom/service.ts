@@ -4,7 +4,7 @@ import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG } from "./constants";
 import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier } from "./spec";
+import { serviceSpecificationFromClassIdentifier, isRegister } from "./spec";
 import { JDEvent } from "./event";
 
 export class JDService extends JDNode {
@@ -46,6 +46,11 @@ export class JDService extends JDNode {
 
     register(address: number | { address: number }) {
         const a = (typeof address == "number" ? address : address.address) | 0;
+        const spec = this.specification;
+        if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === a)) {
+            this.log(`spec error: attempting to access register 0x${a.toString(16)} in service ${this}`)
+            return undefined;
+        }
         if (!this._registers)
             this._registers = [];
         let register = this._registers[a];
