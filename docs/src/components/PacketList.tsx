@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider } from '@material-ui/core';
 import JacdacContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
-import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND } from '../../../src/dom/constants';
+import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND, SRV_LOGGER } from '../../../src/dom/constants';
 import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 import { isInstanceOf } from '../../../src/dom/spec';
@@ -24,6 +24,7 @@ import KindIcon, { allKinds, kindName } from "./KindIcon";
 import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import GradientIcon from '@material-ui/icons/Gradient';
+import ConsoleListItem from './ConsoleListItem';
 
 export default function PacketList(props: {
     maxItems?: number,
@@ -53,21 +54,26 @@ export default function PacketList(props: {
         (pkt: Packet) => {
             if (paused)
                 return; // ignore
+            // don't repeat announce
+            if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
+                return;
+            // not matching service class
+            if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
+                return;
+
+            if (consoleMode && (pkt.service_class !== SRV_LOGGER || pkt.service_command < 0x80 || pkt.service_command > 0x83))
+                return;
 
             const decoded = decodePacketData(pkt);
             if (consoleMode) {
-                if (!decoded) return; // ignore
+                if (!decoded) {
+                    return; // ignore            
+                }
             }
-
-            // don't repeat
-            if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
-                return;
-
-            if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
-                return; // not matching service class
-
-            if (decoded && !hasFlag(decoded.info.kind))
+            else if (decoded && !hasFlag(decoded.info.kind)) {
+                console.log(`ignore ${decoded.info.kind}`)
                 return; // ignore packet type
+            }
 
             const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
             ps.unshift(pkt)
@@ -99,12 +105,12 @@ export default function PacketList(props: {
                         <ToggleButton title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
                     </ToggleButtonGroup>
                 </ListItem>
-                {packets?.map(packet => <PacketListItem
-                    key={packet.key}
-                    packet={packet}
-                    consoleMode={consoleMode}
-                    skipRepeatedAnnounce={skipRepeatedAnnounce}
-                    showTime={showTime} />)}
+                {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
+                    : <PacketListItem
+                        key={'pkt' + packet.key}
+                        packet={packet}
+                        skipRepeatedAnnounce={skipRepeatedAnnounce}
+                        showTime={showTime} />)}
             </List>
         </Grid>
     )

@@ -378,3 +378,12 @@ export function cryptoRandomUint32(): number {
     window.crypto.getRandomValues(vals)
     return vals[0]
 }
+
+export function JSONTryParse(src: string) {
+    try {
+        return JSON.parse(src)
+    }
+    catch (e) {
+        return undefined;
+    }
+}

@@ -70,7 +70,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
         if (register.specification.kind == "const" && register.data !== undefined)
             return Promise.resolve();
         return register.sendGetAsync()
-    }, register.data ? 5000 : 200), [register])
+    }, register.data ? 5000 : 500), [register])
 
     // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
