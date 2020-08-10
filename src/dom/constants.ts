@@ -130,12 +130,14 @@ export const ANNOUNCE = 'announce'
 export const RESTART = 'restart'
 export const CHANGE = 'change'
 export const EVENT = 'event'
+export const FIRMWARE_INFO = 'firmwareInfo'
 
 export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'
 export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const DEVICE_RESTART = 'deviceRestart'
 export const DEVICE_CHANGE = 'deviceChange'
+export const DEVICE_FIRMWARE_INFO = 'firmwareInfo'
 
 export const PACKET_SEND = 'packetSend'
 

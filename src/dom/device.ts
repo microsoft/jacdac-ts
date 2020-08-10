@@ -2,7 +2,7 @@ import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -11,6 +11,7 @@ import { JDService } from "./service";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
 import { isInstanceOf } from "./spec";
+import { FirmwareInfo } from "./flashing";
 
 export interface PipeInfo {
     pipeType?: string;
@@ -23,7 +24,8 @@ export class JDDevice extends JDNode {
     lastServiceUpdate: number
     private _shortId: string
     private _services: JDService[]
-    private ports: SMap<PipeInfo>
+    private ports: SMap<PipeInfo>;
+    private _firmwareInfo: FirmwareInfo;
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
@@ -47,6 +49,21 @@ export class JDDevice extends JDNode {
         if (!this._shortId)
             this._shortId = shortDeviceId(this.deviceId)
         return this._shortId;
+    }
+
+    get firmwareInfo() {
+        return this._firmwareInfo;
+    }
+
+    set firmwareInfo(info: FirmwareInfo) {
+        const changed = JSON.stringify(this._firmwareInfo) !== JSON.stringify(info);
+        if (changed) {
+           this._firmwareInfo = info;
+           this.bus.emit(DEVICE_FIRMWARE_INFO, this)
+           this.emit(FIRMWARE_INFO)
+           this.bus.emit(DEVICE_CHANGE, this)
+           this.emit(CHANGE)
+        }
     }
 
     toString() {

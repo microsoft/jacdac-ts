@@ -1,7 +1,6 @@
 import { parseUF2, FirmwareInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
 import React, { useState, useContext, Fragment, useEffect } from "react"
 import JacdacContext from "../../../src/react/Context"
-import useChange from '../jacdac/useChange';
 import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip } from "@material-ui/core";
 import DeviceCard from "./DeviceCard";
 import { Button } from "gatsby-theme-material-ui";
@@ -9,7 +8,7 @@ import { BusState } from "../../../src/dom/bus";
 import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
-import { useDbFile } from "./DbContext";
+import { useDbFile, useFirmwareBlobs } from "./DbContext";
 import { DEVICE_DISCONNECT, DEVICE_ANNOUNCE } from "../../../src/dom/constants";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -71,18 +70,13 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
-    const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
+    const { blobs, setFile } = useFirmwareBlobs()
     const [fws, setFws] = useState<FirmwareInfo[]>(undefined)
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
     const classes = useStyles()
     const { file: firmwareFile, setFile: setFirmwareFile } = useDbFile("firmware.uf2")
-
-    async function tryLoadFirmware() {
-        if (firmwareFile)
-            await importUF2(firmwareFile)
-    }
 
     async function scan() {
         if (flashing > 0 || scanning || connectionState != BusState.Connected)
@@ -97,7 +91,6 @@ export default function Flash() {
         }
     }
     // load indexed db file once
-    useEffect(() => { tryLoadFirmware() }, [firmwareFile])
     useEffect(() => { scan() }, [flashing])
     useEffect(bus.subscribe([DEVICE_ANNOUNCE, DEVICE_DISCONNECT], () => scan()))
     const handleFiles = async (files: FileList) => {
@@ -105,10 +98,8 @@ export default function Flash() {
         if (file) {
             try {
                 setImporting(true)
-                // first try loading
-                await importUF2(file)
-                // success, store
-                await setFirmwareFile(file)
+                // try loading
+                await setFile(file)
             } finally {
                 setImporting(false)
             }
@@ -116,10 +107,6 @@ export default function Flash() {
             // scan again
             await scan()
         }
-    }
-    async function importUF2(file: File) {
-        const buf = new Uint8Array(await file.arrayBuffer())
-        setBlobs(parseUF2(buf))
     }
     const updates = fws?.map(fw => {
         return {

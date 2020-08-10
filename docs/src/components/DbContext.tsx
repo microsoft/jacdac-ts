@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
+import { FirmwareBlob, parseUF2 } from "../../../src/dom/flashing";
 
 export interface Db {
     dependencyId: () => number,
@@ -127,10 +128,32 @@ export function useDbFile(fileName: string) {
         file,
         setFile: async (f: File) => {
             if (!f)
-                await db.del(fileName)
+                await db?.del(fileName)
             else
-                await db.put(fileName, f)
+                await db?.put(fileName, f)
             setFile(f)
         }
+    }
+}
+
+export function useFirmwareBlobs() {
+    const { file, setFile } = useDbFile("firmware.uf2")
+    const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
+
+    async function load(f: File) {
+        if (f) {
+            const buf = new Uint8Array(await f.arrayBuffer())
+            const bls = parseUF2(buf);
+            await setFile(f)
+            setBlobs(bls)
+        } else {
+            await setFile(undefined)
+            setBlobs(undefined)
+        }
+    }
+    useEffect(() => { load(file) }, [file])
+    return {
+        blobs,
+        setFile: (file: File) => load(file)
     }
 }

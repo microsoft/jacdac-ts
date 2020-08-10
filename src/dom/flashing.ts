@@ -368,7 +368,15 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             return false
         return true
     })
-    return { devs, flashers }
+    // store info in objects
+    devs.forEach(info => {
+        const dev = bus.device(info.deviceId)
+        if (dev) dev.firmwareInfo = info
+    })
+    return {
+        devs,
+        flashers
+    }
 
     function handlePkt(p: Packet) {
         let dev = devices[p.device_identifier]

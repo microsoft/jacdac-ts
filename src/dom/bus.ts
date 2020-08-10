@@ -22,10 +22,12 @@ import {
     CONNECTION_STATE,
     DISCONNECTING,
     DEVICE_CHANGE,
-    CHANGE
+    CHANGE,
+    FIRMWARE_INFO
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
+import { FirmwareBlob } from "./flashing";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -58,6 +60,7 @@ export class JDBus extends JDNode {
     private _startTime: number;
     private _gcInterval: any;
     private _minConsolePriority = ConsolePriority.Log;
+    private _firmwareBlobs: FirmwareBlob[];
 
     /**
      * Creates the bus with the given transport
@@ -164,6 +167,16 @@ export class JDBus extends JDNode {
 
     get connected() {
         return this._connectionState == BusState.Connected
+    }
+
+    get firmwareBlobs() {
+        return this._firmwareBlobs
+    }
+
+    set firmwareBlobs(blobs: FirmwareBlob[]) {
+        this._firmwareBlobs = blobs;
+        this.emit(FIRMWARE_INFO)
+        this.emit(CHANGE)
     }
 
     errorHandler(context: string, exception: any) {
