@@ -120,10 +120,12 @@ export default function Flash() {
 
     return (
         <Fragment>
-            {importing && <LinearProgress variant="indeterminate" />}
-            {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
-            {blobs && <Paper className={classes.blobs}><List>
-                {blobs.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
+            {<Paper className={classes.blobs}><List>
+                <ListItem key="importbtn">
+                    {importing && <LinearProgress variant="indeterminate" />}
+                    {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
+                </ListItem>
+                {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
                     <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
                 </ListItem>)}
             </List></Paper>}

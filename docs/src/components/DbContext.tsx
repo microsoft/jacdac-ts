@@ -149,6 +149,7 @@ export function useFirmwareBlobs() {
             if (store)
                 await setFile(f)
             bus.firmwareBlobs = bls
+            console.log(`loaded blobs`, bls)
         } else {
             if (store)
                 await setFile(undefined)
@@ -160,8 +161,8 @@ export function useFirmwareBlobs() {
         load(file, false)
     }, [file])
     return {
-        setFirmwareFile: (file: File) => {
-            load(file, true)
+        setFirmwareFile: async (file: File) => {
+            await load(file, true)
         }
     }
 }
