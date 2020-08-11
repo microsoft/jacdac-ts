@@ -1,13 +1,14 @@
 import { isRegister, isEvent, isCommand } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
-import React, { Fragment } from "react";
+import React from "react";
 // tslint:disable-next-line: no-submodule-imports
 import Chip from '@material-ui/core/Chip';
 import DeviceList from "./DeviceList";
 import { makeStyles, createStyles } from "@material-ui/core";
 import IDChip from "./IDChip";
 import KindChip from "./KindChip";
+import PacketMembersChip from "./PacketMembersChip";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -27,6 +28,7 @@ export default function PacketSpecification(props: { serviceClass: number, packe
 
     return <div className={classes.root}>
         <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
+            <PacketMembersChip className={classes.chip} members={packetInfo.fields} />
             <IDChip className={classes.chip} id={packetInfo.identifier} />
             <KindChip className={classes.chip} kind={packetInfo.kind} />
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}

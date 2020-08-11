@@ -22,6 +22,16 @@ async function createServicePages(graphql, actions, reporter) {
         identifier
         description
         derived
+        fields {
+          name
+          unit
+          type
+          storage
+          defaultValue
+          isSimpleType
+          typicalMin
+          typicalMax
+        }
       }
       source
     }
