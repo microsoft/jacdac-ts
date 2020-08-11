@@ -58,5 +58,8 @@
   },
   "bugs": {
     "url": "https://github.com/gatsbyjs/gatsby/issues"
+  },
+  "devDependencies": {
+    "react-markdown": "^4.3.1"
   }
 }

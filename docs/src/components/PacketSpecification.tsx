@@ -9,6 +9,7 @@ import { makeStyles, createStyles } from "@material-ui/core";
 import IDChip from "./IDChip";
 import KindChip from "./KindChip";
 import PacketMembersChip from "./PacketMembersChip";
+import Markdown from "./Markdown";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -34,7 +35,7 @@ export default function PacketSpecification(props: { serviceClass: number, packe
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
-        <p>{packetInfo.description}</p>
+        <p><Markdown source={packetInfo.description}/></p>
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
