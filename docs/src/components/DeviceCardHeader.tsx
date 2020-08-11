@@ -10,18 +10,16 @@ import FingerprintIcon from '@material-ui/icons/Fingerprint';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { debouncedPollAsync } from "../../../src/dom/utils";
+import useRegisterValue from "../jacdac/useRegisterValue";
 
 
 export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean }) {
     const { device, showFirmware, showTemperature } = props;
     const controlService = useChange(device, () => device.service(SRV_CTRL))
-    const firmwareRegister = showFirmware && controlService?.register(CtrlReg.FirmwareVersion);
-    const tempRegister = showTemperature && controlService?.register(CtrlReg.Temperature)
-    const firmware = useChange(firmwareRegister, () => firmwareRegister?.stringValue);
-    const temperature = useChange(tempRegister, () => tempRegister?.intValue);
-    useEffect(() => debouncedPollAsync(() => firmwareRegister && !firmwareRegister.data && firmwareRegister.sendGetAsync(), 5000), [firmwareRegister])
-    useEffect(() => debouncedPollAsync(() => tempRegister?.sendGetAsync(), 5000), [tempRegister])
-
+    const { register: firmwareRegister } = useRegisterValue(device, SRV_CTRL, CtrlReg.DeviceDescription)
+    const { register: tempRegister } = useRegisterValue(device, SRV_CTRL, CtrlReg.Temperature)
+    const firmware = firmwareRegister?.stringValue;
+    const temperature = tempRegister?.intValue;
     const handleIdentify = () => {
         device.service(SRV_CTRL).sendCmdAsync(CtrlCmd.Identify)
     }
