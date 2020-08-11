@@ -92,7 +92,7 @@ export function prettyUnit(u: jdspec.Unit): string {
     switch (u) {
         case "us": return "μs"
         case "C": return "°C"
-        case "frac": return "fraction"
+        case "frac": return "" // don't show fraction
         default: return u
     }
 }
@@ -171,8 +171,13 @@ export function decodeMember(
         } else if (member.type == "bool") {
             value = !!numValue
             humanValue = value ? "true" : "false"
-        } else if (member.unit || scaledValue != numValue)
-            humanValue = scaledValue + prettyUnit(member.unit)
+        } else if (member.unit || scaledValue != numValue) {
+            // don't show so much digits
+            let v = scaledValue;
+            if (member.unit)
+                v = U.roundWithPrecision(v, 3)
+            humanValue = v + prettyUnit(member.unit)
+        }
         else {
             humanValue = scaledValue + ""
             if ((scaledValue | 0) == scaledValue && scaledValue >= 15)
