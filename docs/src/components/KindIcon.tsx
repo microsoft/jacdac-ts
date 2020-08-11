@@ -13,6 +13,12 @@ import DataUsageIcon from '@material-ui/icons/DataUsage';
 import ReplyIcon from '@material-ui/icons/Reply';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeviceUnknownIcon from '@material-ui/icons/DeviceUnknown';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import DeviceHubIcon from '@material-ui/icons/DeviceHub';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import DockIcon from '@material-ui/icons/Dock';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import BubbleChartIcon from '@material-ui/icons/BubbleChart';
 
 export default function KindIcon(props: { kind: string }) {
     switch (props.kind) {
@@ -22,6 +28,9 @@ export default function KindIcon(props: { kind: string }) {
         case "command": return <CallToActionIcon />;
         case "event": return <FlashOnIcon />;
         case "report": return <ReplyIcon />;
+        case "bus": return <DeviceHubIcon />;
+        case "device": return <DockIcon />;
+        case "service": return <BubbleChartIcon />
     }
     return <DeviceUnknownIcon />;
 }
