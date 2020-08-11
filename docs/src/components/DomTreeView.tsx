@@ -21,6 +21,7 @@ import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent } from '../../../src/dom/spec';
 import { Switch } from '@material-ui/core';
+import useRegisterValue from '../jacdac/useRegisterValue';
 
 declare module 'csstype' {
     interface Properties {
@@ -204,6 +205,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
             {...other}
         />)}
         {events?.map(event => <EventTreeItem
+            key={`ev${event.id}`}
             event={event}
             checked={checked}
             setChecked={setChecked}
@@ -216,6 +218,9 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
 function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps & DomTreeViewProps) {
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
+    useRegisterValue(register.service.device, register.service.service_number, register.address, 500)
+    const decoded = register.decode()
+    console.log(decoded)
 
     const handleChecked = c => {
         setChecked(id, c)
@@ -223,7 +228,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
     return <StyledTreeItem
         nodeId={id}
         labelText={specification?.name || register.id}
-        labelInfo={id}
+        labelInfo={decoded?.decoded[0].humanValue}
         kind={specification?.kind || "register"}
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("register") > -1 && setChecked && handleChecked}
