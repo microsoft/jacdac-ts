@@ -15,8 +15,7 @@ import useRegisterValue from "../jacdac/useRegisterValue";
 
 export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean }) {
     const { device, showFirmware, showTemperature } = props;
-    const controlService = useChange(device, () => device.service(SRV_CTRL))
-    const firmwareRegister = useRegisterValue(device, 0, CtrlReg.DeviceDescription)
+    const firmwareRegister = useRegisterValue(device, 0, CtrlReg.FirmwareVersion)
     const tempRegister = useRegisterValue(device, 0, CtrlReg.Temperature)
     const firmware = firmwareRegister?.stringValue;
     const temperature = tempRegister?.intValue;
