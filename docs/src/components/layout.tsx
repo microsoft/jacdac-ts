@@ -46,6 +46,7 @@ import SEO from "./seo";
 import { DbProvider, useFirmwareBlobs } from "./DbContext";
 import FlashButton from "./FlashButton";
 import DomTreeView from "./DomTree";
+import TocBreadcrumbs from "./TocBreadcrums";
 
 const drawerWidth = `${40}rem`;
 
@@ -120,7 +121,6 @@ enum DrawerType {
 }
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
-  const { pageContext, children } = props;
   return (
     <JacdacProvider>
       <PacketFilterProvider>
@@ -225,6 +225,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
         }}
       >
         <div className={classes.drawerHeader}>
+          <TocBreadcrumbs path={pageContext?.frontmatter?.path} />
           {drawerType === DrawerType.Packets && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
