@@ -2,6 +2,23 @@ import DomTree from "../components/DomTree"
 
 # DOM tree
 
-<DomTree checkboxes={["register"]} 
+A tree
+
+<DomTree checkboxes={["register", "device", "service", "event"]} 
     serviceFilter={srv => srv.serviceClass !== 0 && srv.serviceClass !== 0x12dc1fca} 
+    />
+
+
+Another tree
+
+<DomTree checkboxes={["device"]}
+    serviceFilter={srv => srv.specification?.packets.some(p => p.identifierName === "reading")}
+    registerFilter={r => false}
+    />
+
+streamers
+
+<DomTree checkboxes={["device"]}
+    serviceFilter={srv => srv.specification?.packets.some(p => p.identifierName === "reading")}
+    registerFilter={r => false}
     />

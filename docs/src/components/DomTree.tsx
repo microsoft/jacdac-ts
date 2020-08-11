@@ -173,15 +173,17 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
 }
 
 function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & DomTreeViewProps) {
-    const { service, checked, setChecked, checkboxes, ...other } = props;
+    const { service, checked, setChecked, checkboxes, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
     const id = service.id
     const name = service.name
     const packets = useChange(service, () => specification?.packets)
     const registers = packets?.filter(isRegister)
-        .map(info => service.register(info.identifier));
+        .map(info => service.register(info.identifier))
+        .filter(reg => !registerFilter || registerFilter(reg))
     const events = packets?.filter(isEvent)
-        .map(info => service.event(info.identifier));
+        .map(info => service.event(info.identifier))
+        .filter(ev => !eventFilter || eventFilter(ev))
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
@@ -252,6 +254,8 @@ export interface DomTreeViewProps {
     onChecked?: (checked: CheckedMap) => void;
     deviceFilter?: (devices: JDDevice) => boolean;
     serviceFilter?: (services: JDService) => boolean;
+    registerFilter?: (register: JDRegister) => boolean;
+    eventFilter?: (event: JDEvent) => boolean;
 }
 
 export default function DomTreeView(props: DomTreeViewProps) {
