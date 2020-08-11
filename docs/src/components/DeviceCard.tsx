@@ -8,13 +8,14 @@ import CardContent from '@material-ui/core/CardContent';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { JDDevice } from '../../../src/dom/device';
-import { SRV_CTRL, SRV_LOGGER, ANNOUNCE } from '../../../src/dom/constants';
+import { SRV_CTRL, SRV_LOGGER, CtrlReg } from '../../../src/dom/constants';
 import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
 import { CardActions } from '@material-ui/core';
 import { DeviceCardHeader } from './DeviceCardHeader';
+import useRegisterValue from '../jacdac/useRegisterValue';
 
 const useStyles = makeStyles({
     root: {
@@ -39,6 +40,12 @@ function navigateToService(service: JDService) {
         navigate(`/services/${spec.shortId}`) // todo spec
 }
 
+function DeviceDescription(props: { device: JDDevice }) {
+    const { device } = props;
+    const { register } = useRegisterValue(device, SRV_CTRL, CtrlReg.DeviceDescription)
+    return <span>{register?.stringValue || ""}</span>
+}
+
 export default function DeviceCard(props: {
     device: JDDevice,
     children?: any,
@@ -46,9 +53,11 @@ export default function DeviceCard(props: {
     content?: JSX.Element | JSX.Element[],
     onServiceClick?: (service: JDService) => void,
     showTemperature?: boolean,
-    showFirmware?: boolean
+    showFirmware?: boolean,
+    showDescription?: boolean
 }) {
-    const { device, children, action, content, onServiceClick, showTemperature, showFirmware } = props;
+    const { device, children, action, content, onServiceClick,
+        showDescription, showTemperature, showFirmware } = props;
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
@@ -56,8 +65,9 @@ export default function DeviceCard(props: {
     return (
         <Card className={classes.root}>
             <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} />
-            {content &&
+            {(showDescription || content) &&
                 <CardContent>
+                    {showDescription && <DeviceDescription device={device} />}
                     {content}
                 </CardContent>}
             <CardActions>

@@ -143,6 +143,8 @@ const useStyles = makeStyles(
 );
 
 interface DomTreeViewItemProps {
+    expanded: string[];
+    selected: string[];
     checked?: { [id: string]: boolean }
     setChecked?: (id: string, value: boolean) => void;
 }
@@ -298,6 +300,8 @@ export default function DomTreeView(props: DomTreeViewProps) {
                 checked={checked}
                 setChecked={handleChecked}
                 checkboxes={checkboxes}
+                expanded={expanded}
+                selected={selected}
                 {...other}
             />)}
         </TreeView>

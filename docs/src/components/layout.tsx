@@ -45,7 +45,7 @@ import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
 import { DbProvider, useFirmwareBlobs } from "./DbContext";
 import FlashButton from "./FlashButton";
-import DomTreeView from "./DomTree";
+import DomTreeView from "./DomTreeView";
 import TocBreadcrumbs from "./TocBreadcrums";
 
 const drawerWidth = `${40}rem`;
