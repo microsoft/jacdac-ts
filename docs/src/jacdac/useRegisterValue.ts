@@ -11,7 +11,6 @@ export default function useRegisterValue(device: JDDevice, serviceNumber: number
     const spec = register?.specification
     const isConst = spec?.kind == "const"
 
-    console.log(`use register ${serviceNumber} ${service} ${registerIdentifier} ${register} ${spec?.name || ""}`)
     useChange(register);
     useEffect(() => debouncedPollAsync(
         () => register && (!isConst || !register.data) && register.sendGetAsync(),
