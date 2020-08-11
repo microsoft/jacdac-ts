@@ -7,7 +7,7 @@ import { debouncedPollAsync } from "../../../src/dom/utils";
 import { ANNOUNCE } from "../../../src/dom/constants";
 
 export default function useRegisterValue(device: JDDevice, serviceNumber: number, registerIdentifier: number, pollDelay?: number) {
-    const service = useEventRaised(ANNOUNCE, device, () => device.service(serviceNumber))
+    const service = useEventRaised(ANNOUNCE, device, () => device?.service(serviceNumber))
     const register = service?.register(registerIdentifier)
     const spec = register?.specification
     const isConst = spec?.kind == "const"
