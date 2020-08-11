@@ -59,6 +59,10 @@ export class JDRegister extends JDNode {
         return this._specification;
     }
 
+    get isReading() {
+        return this.specification?.identifierName === "reading"
+    }
+
     get data() {
         return this._lastReportPkt?.data;
     }
