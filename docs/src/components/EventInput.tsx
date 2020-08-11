@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { JDEvent } from "../../../src/dom/event";
-import { CHANGE } from "../../../src/dom/constants";
 import { Typography, Badge } from "@material-ui/core";
 import KindIcon from "./KindIcon";
+import useEventCount from "../jacdac/useEventCount";
 
 export default function EventInput(props: { event: JDEvent, showDeviceName?: boolean, showName?: boolean }) {
     const { event, showName, showDeviceName } = props;
-    const [count, setCount] = useState(event.count)
+    const count = useEventCount(event)
     const spec = event.specification
-    useEffect(() => event.subscribe(CHANGE, () => {
-        setCount(event.count)
-    }))
 
     return <React.Fragment>
         {showDeviceName && <Typography>

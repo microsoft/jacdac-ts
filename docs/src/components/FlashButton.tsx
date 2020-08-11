@@ -5,13 +5,13 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import { Badge } from "@material-ui/core";
 import JacdacContext from "../../../src/react/Context";
 import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
-import useEvent from "../jacdac/useEvent";
+import useEventRaised from "../jacdac/useEventRaised";
 import { computeUpdates } from "../../../src/dom/flashing";
 
 export default function FlashButton() {
     const { bus } = useContext(JacdacContext)
 
-    const updates = useEvent([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO],
+    const updates = useEventRaised([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO],
         bus,
         bus => computeUpdates(bus.devices().map(d => d.firmwareInfo), bus.firmwareBlobs))
 

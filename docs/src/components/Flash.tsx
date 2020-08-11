@@ -10,7 +10,7 @@ import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
 import { useFirmwareBlobs } from "./DbContext";
 import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
-import useEvent from '../jacdac/useEvent';
+import useEventRaised from "../jacdac/useEventRaised";
 import TabPanel, { a11yProps } from './TabPanel';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -79,8 +79,8 @@ export default function Flash() {
     const [tab, setTab] = useState(0);
     const classes = useStyles()
 
-    const devices = useEvent(DEVICE_CHANGE, bus, () => bus.devices())
-    const blobs = useEvent(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
+    const devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices())
+    const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (flashing > 0 || scanning || connectionState != BusState.Connected)
             return;

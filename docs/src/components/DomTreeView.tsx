@@ -22,6 +22,7 @@ import useChange from "../jacdac/useChange";
 import { isRegister, isEvent } from '../../../src/dom/spec';
 import { Switch } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
+import useEventCount from '../jacdac/useEventCount';
 
 declare module 'csstype' {
     interface Properties {
@@ -92,7 +93,7 @@ function StyledTreeItem(props: TreeItemProps & {
     setChecked?: (state: boolean) => void;
 }) {
     const classes = useTreeItemStyles();
-    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, ...other } = props;
+    const { key, labelText, kind, labelInfo, color, bgColor, checked, setChecked, ...other } = props;
     const [checkedState, setCheckedState] = useState(false)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -101,6 +102,7 @@ function StyledTreeItem(props: TreeItemProps & {
     }
     return (
         <TreeItem
+            key={key}
             label={
                 <div className={classes.labelRoot}>
                     {setChecked && <Switch
@@ -144,6 +146,7 @@ const useStyles = makeStyles(
 );
 
 interface DomTreeViewItemProps {
+    key: string;
     expanded: string[];
     selected: string[];
     checked?: { [id: string]: boolean }
@@ -166,6 +169,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
     >
         {services?.map(service => <ServiceTreeItem
+            key={service.id}
             service={service}
             checked={checked}
             setChecked={setChecked}
@@ -198,6 +202,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
         setChecked={checkboxes && checkboxes.indexOf("service") > -1 && setChecked && handleChecked}
     >
         {registers?.map(register => <RegisterTreeItem
+            key={register.id}
             register={register}
             checked={checked}
             setChecked={setChecked}
@@ -205,7 +210,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
             {...other}
         />)}
         {events?.map(event => <EventTreeItem
-            key={`ev${event.id}`}
+            key={event.id}
             event={event}
             checked={checked}
             setChecked={setChecked}
@@ -220,7 +225,6 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
     const { specification, id } = register
     useRegisterValue(register.service.device, register.service.service_number, register.address, 500)
     const decoded = register.decode()
-    console.log(decoded)
 
     const handleChecked = c => {
         setChecked(id, c)
@@ -238,6 +242,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
 function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTreeViewProps) {
     const { event, checked, setChecked, checkboxes } = props;
     const { specification, id } = event
+    const count = useEventCount(event)
 
     const handleChecked = c => {
         setChecked(id, c)
@@ -245,7 +250,7 @@ function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTre
     return <StyledTreeItem
         nodeId={id}
         labelText={specification?.name || event.id}
-        labelInfo={id}
+        labelInfo={(count || "") + ""}
         kind="event"
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("event") > -1 && setChecked && handleChecked}
@@ -301,6 +306,7 @@ export default function DomTreeView(props: DomTreeViewProps) {
             onNodeSelect={handleSelect}
         >
             {devices?.map(device => <DeviceTreeItem
+                key={device.id}
                 device={device}
                 checked={checked}
                 setChecked={handleChecked}
