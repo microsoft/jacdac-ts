@@ -25,7 +25,7 @@ import { JDService } from '../../../src/dom/service';
 import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister } from '../../../src/dom/spec';
-import { Checkbox } from '@material-ui/core';
+import { Switch } from '@material-ui/core';
 
 declare module 'csstype' {
     interface Properties {
@@ -107,7 +107,7 @@ function StyledTreeItem(props: TreeItemProps & {
         <TreeItem
             label={
                 <div className={classes.labelRoot}>
-                    {setChecked && <Checkbox
+                    {setChecked && <Switch
                         checked={checkedState}
                         color="primary"
                         inputProps={{ 'aria-label': 'secondary checkbox' }}
