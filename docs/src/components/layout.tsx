@@ -29,6 +29,8 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import Divider from '@material-ui/core/Divider';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MenuIcon from '@material-ui/icons/Menu';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -43,6 +45,7 @@ import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
 import { DbProvider, useFirmwareBlobs } from "./DbContext";
 import FlashButton from "./FlashButton";
+import DomTreeView from "./DomTree";
 
 const drawerWidth = `${40}rem`;
 
@@ -110,6 +113,12 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+enum DrawerType {
+  Toc,
+  Packets,
+  Dom
+}
+
 export default function Layout(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   return (
@@ -128,17 +137,21 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  const [drawerConsole, setDrawerConsole] = useState(false);
+  const [drawerType, setDrawerType] = useState(DrawerType.Toc);
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
-    setDrawerConsole(false)
+    setDrawerType(DrawerType.Toc)
     setOpen(true);
   }
   const handleDrawerConsole = () => {
-    setDrawerConsole(true);
+    setDrawerType(DrawerType.Packets);
+    setOpen(true);
+  }
+  const handleDrawerDom = () => {
+    setDrawerType(DrawerType.Dom);
     setOpen(true);
   }
   const handleDrawerClose = () => {
@@ -180,6 +193,14 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           </IconButton>
           <IconButton
             color="inherit"
+            aria-label="open DOM tree"
+            onClick={handleDrawerDom}
+            edge="start"
+            className={clsx(classes.menuButton, open && classes.hide)}
+          > <AccountTreeIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
             aria-label="open console"
             onClick={handleDrawerConsole}
             edge="start"
@@ -204,13 +225,15 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
         }}
       >
         <div className={classes.drawerHeader}>
-          {drawerConsole && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
+          {drawerType === DrawerType.Packets && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
-        {drawerConsole ? <PacketList serviceClass={serviceClass} /> : <Toc />}
+        {drawerType === DrawerType.Toc ? <Toc />
+          : drawerType === DrawerType.Packets ? <PacketList serviceClass={serviceClass} />
+            : <DomTreeView />}
       </Drawer>
       <Container maxWidth={open ? "lg" : "sm"}>
         <main
