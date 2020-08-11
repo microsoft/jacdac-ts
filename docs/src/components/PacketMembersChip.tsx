@@ -16,6 +16,5 @@ export default function PacketMembersChip(props: { members: jdspec.PacketMember[
         const label = `${member.type}${prettyUnit(member.unit)}`
         return <Chip className={className} size="small" icon={<CategoryIcon />} label={label} />
     }
-
-    return <span>{JSON.stringify(members)}</span>
+    return <></>
 }

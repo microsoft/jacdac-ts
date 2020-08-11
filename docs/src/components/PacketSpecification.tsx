@@ -10,6 +10,7 @@ import IDChip from "./IDChip";
 import KindChip from "./KindChip";
 import PacketMembersChip from "./PacketMembersChip";
 import Markdown from "./Markdown";
+import { prettyUnit } from "../../../src/dom/pretty";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -20,6 +21,44 @@ const useStyles = makeStyles((theme) => createStyles({
     },
 }),
 );
+
+function isSet(field: any) {
+    return field !== null && field !== undefined
+}
+
+function MemberType(props: { member: jdspec.PacketMember }) {
+    const { member } = props;
+    const parts: any = [
+        prettyUnit(member.unit),
+        isSet(member.typicalMin) && `[${member.typicalMin}, ${member.typicalMax}]`,
+        isSet(member.absoluteMin) && `absolute [${member.absoluteMin}, ${member.absoluteMin}]`,
+    ].filter(f => isSet(f) && f)
+
+    return <li>
+        {member.name !== "_" && <code>{member.name}{":"}</code>}
+        <code>{member.type}</code>
+        {parts.join(', ')} </li>
+}
+
+function MembersType(props: { members: jdspec.PacketMember[] }) {
+    const { members } = props;
+
+    const member = members[0]
+    if (members.length == 0 || (members.length == 1
+        && member.name == "_"
+        && !isSet(member.typicalMin)
+        && !isSet(member.absoluteMin)
+    )
+    )
+        return <></>
+
+    return <p>
+        <h4>Fields</h4>
+        <ul>
+            {members.map(member => <MemberType member={member} />)}
+        </ul>
+    </p>
+}
 
 export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo }) {
     const { serviceClass, packetInfo } = props;
@@ -35,7 +74,8 @@ export default function PacketSpecification(props: { serviceClass: number, packe
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
-        <p><Markdown source={packetInfo.description}/></p>
+        <p><Markdown source={packetInfo.description} /></p>
+        <MembersType members={packetInfo.fields} />
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
