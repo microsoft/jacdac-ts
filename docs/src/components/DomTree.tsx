@@ -13,13 +13,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import { SvgIconProps } from '@material-ui/core/SvgIcon';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import DockIcon from '@material-ui/icons/Dock';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import BubbleChartIcon from '@material-ui/icons/BubbleChart';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ReplyIcon from '@material-ui/icons/Reply';
+import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/dom/device';
 import { JDService } from '../../../src/dom/service';
 import { JDRegister } from '../../../src/dom/register';
@@ -89,14 +83,14 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
 function StyledTreeItem(props: TreeItemProps & {
     bgColor?: string;
     color?: string;
-    labelIcon: React.ElementType<SvgIconProps>;
+    kind?: string;
     labelInfo?: string;
     labelText: string;
     checked?: boolean;
     setChecked?: (state: boolean) => void;
 }) {
     const classes = useTreeItemStyles();
-    const { labelText, labelIcon: LabelIcon, labelInfo, color, bgColor, checked, setChecked, ...other } = props;
+    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, ...other } = props;
     const [checkedState, setCheckedState] = useState(false)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -113,7 +107,7 @@ function StyledTreeItem(props: TreeItemProps & {
                         inputProps={{ 'aria-label': 'secondary checkbox' }}
                         onChange={handleChecked}
                     />}
-                    <LabelIcon color="inherit" className={classes.labelIcon} />
+                    <KindIcon kind={kind} className={classes.labelIcon} />
                     <Typography variant="body2" className={classes.labelText}>
                         {labelText}
                     </Typography>
@@ -163,7 +157,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         nodeId={id}
         labelText={name}
         labelInfo={id}
-        labelIcon={DockIcon}
+        kind={"device"}
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
     >
@@ -191,7 +185,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
         nodeId={id}
         labelText={name}
         labelInfo={id}
-        labelIcon={BubbleChartIcon}
+        kind={"service"}
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("service") > -1 && setChecked && handleChecked}
     >
@@ -221,7 +215,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
         nodeId={id}
         labelText={specification?.name || register.id}
         labelInfo={id}
-        labelIcon={ReplyIcon}
+        kind={specification?.kind || "register"}
         onClick={handleClick}
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("register") > -1 && setChecked && handleChecked}

@@ -20,19 +20,20 @@ import DockIcon from '@material-ui/icons/Dock';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import BubbleChartIcon from '@material-ui/icons/BubbleChart';
 
-export default function KindIcon(props: { kind: string }) {
-    switch (props.kind) {
-        case "ro": return <DataUsageIcon />;
-        case "rw": return <CreateIcon />;
-        case "const": return <LockIcon />;
-        case "command": return <CallToActionIcon />;
-        case "event": return <FlashOnIcon />;
-        case "report": return <ReplyIcon />;
-        case "bus": return <DeviceHubIcon />;
-        case "device": return <DockIcon />;
-        case "service": return <BubbleChartIcon />
+export default function KindIcon(props: { kind: string, className?: string }) {
+    const { kind, className } = props
+    switch (kind) {
+        case "ro": return <DataUsageIcon className={className} />;
+        case "rw": return <CreateIcon className={className} />;
+        case "const": return <LockIcon className={className} />;
+        case "command": return <CallToActionIcon className={className} />;
+        case "event": return <FlashOnIcon className={className} />;
+        case "report": return <ReplyIcon className={className} />;
+        case "bus": return <DeviceHubIcon className={className} />;
+        case "device": return <DockIcon className={className} />;
+        case "service": return <BubbleChartIcon className={className} />
     }
-    return <DeviceUnknownIcon />;
+    return <DeviceUnknownIcon className={className} />;
 }
 
 export function kindName(kind: string) {

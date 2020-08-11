@@ -22,6 +22,10 @@ export class JDRegister extends JDNode {
         return `reg:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
     }
 
+    get nodeKind() {
+        return "register"
+    }
+
     // send a message to set the register value
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.address;

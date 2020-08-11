@@ -23,6 +23,10 @@ export class JDService extends JDNode {
         return `srv:${this.device.id}:${this.service_number.toString(16)}`
     }
 
+    get nodeKind() {
+        return "service"
+    }
+
     get serviceClass() {
         return this.device.serviceClassAt(this.service_number);
     }

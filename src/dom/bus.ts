@@ -104,6 +104,10 @@ export class JDBus extends JDNode {
         return `bus`;
     }
 
+    get nodeKind() {
+        return "bus"
+    }
+
     toString() {
         return this.id;
     }

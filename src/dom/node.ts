@@ -28,6 +28,11 @@ export abstract class JDNode {
      */
     abstract get id(): string;
 
+    /**
+     * Gets a kind identifier useful for UI descriptions
+     */
+    abstract get nodeKind(): string;
+
     on(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName)
             .forEach(eventName => this.addListenerInternal(eventName, handler, false));

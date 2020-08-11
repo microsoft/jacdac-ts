@@ -36,6 +36,10 @@ export class JDDevice extends JDNode {
         return `dev:${this.deviceId}`
     }
 
+    get nodeKind() {
+        return "device"
+    }
+
     get name() {
         return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId) || this.shortId;
     }
