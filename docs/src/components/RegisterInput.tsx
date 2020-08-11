@@ -63,7 +63,7 @@ function Decoded(props: { member: DecodedMember, showName?: boolean, register: J
 
 export default function RegisterInput(props: { register: JDRegister, showDeviceName?: boolean, showName?: boolean, showMemberName?: boolean }) {
     const { register, showName, showMemberName, showDeviceName } = props;
-    const [decoded, setDecoded] = useState(register.decode())
+    const [decoded, setDecoded] = useState(register.decoded)
 
     // keep reading
     useEffect(() => debouncedPollAsync(() => {
@@ -74,7 +74,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
 
     // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
-        setDecoded(register.decode())
+        setDecoded(register.decoded)
     }))
 
     return <React.Fragment>

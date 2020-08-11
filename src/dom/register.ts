@@ -10,6 +10,7 @@ import { isRegister } from "./spec";
 
 export class JDRegister extends JDNode {
     private _lastReportPkt: Packet;
+    private _lastDecodedPkt: DecodedPacket;
     private _specification: jdspec.PacketInfo;
 
     constructor(
@@ -95,19 +96,27 @@ export class JDRegister extends JDNode {
         return value;
     }
 
+    get humanValue(): string {
+        return this.decoded?.decoded?.map(field => field.humanValue).join(',');
+    }
+
     toString() {
         const d = this.data;
         return `${this.id} ${d ? toHex(d) : ""}`
     }
 
-    decode(): DecodedPacket {
-        return this._lastReportPkt
-            && decodePacketData(this._lastReportPkt);
+    get decoded(): DecodedPacket {
+        if (!this._lastDecodedPkt) {
+            this._lastDecodedPkt = this._lastReportPkt
+                && decodePacketData(this._lastReportPkt);
+        }
+        return this._lastDecodedPkt;
     }
 
     processReport(pkt: Packet) {
         const updated = !bufferEq(this.data, pkt.data)
         this._lastReportPkt = pkt;
+        this._lastDecodedPkt = undefined;
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
             this.emit(REPORT_UPDATE, this)

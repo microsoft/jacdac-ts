@@ -14,7 +14,8 @@ export default function useRegisterValue(device: JDDevice, serviceNumber: number
 
     useChange(register);
     useEffect(() => {
-        if (register?.isReading) {
+        if (!register) return () => {}
+        if (register.isReading) {
             setStreamingAsync(register.service, true)
             return () => {}
         }

@@ -191,15 +191,17 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
     const events = packets?.filter(isEvent)
         .map(info => service.event(info.identifier))
         .filter(ev => !eventFilter || eventFilter(ev))
+    const readingPacket = packets?.find(reg => isRegister(reg) && reg.identifierName === "reading")
+    const reading = useRegisterValue(service.device, service.service_number, readingPacket?.identifier)
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
-        labelInfo={id}
+        labelInfo={reading?.humanValue || id}
         kind={"service"}
         checked={checked && checked[id]}
-        setChecked={checkboxes && checkboxes.indexOf("service") > -1 && setChecked && handleChecked}
+        setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
     >
         {registers?.map(register => <RegisterTreeItem
             key={register.id}
@@ -224,7 +226,6 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
     useRegisterValue(register.service.device, register.service.service_number, register.address, 500)
-    const decoded = register.decode()
 
     const handleChecked = c => {
         setChecked(id, c)
@@ -232,10 +233,10 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
     return <StyledTreeItem
         nodeId={id}
         labelText={specification?.name || register.id}
-        labelInfo={decoded?.decoded[0].humanValue}
+        labelInfo={register.humanValue}
         kind={specification?.kind || "register"}
         checked={checked && checked[id]}
-        setChecked={checkboxes && checkboxes.indexOf("register") > -1 && setChecked && handleChecked}
+        setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
     />
 }
 
@@ -253,7 +254,7 @@ function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTre
         labelInfo={(count || "") + ""}
         kind="event"
         checked={checked && checked[id]}
-        setChecked={checkboxes && checkboxes.indexOf("event") > -1 && setChecked && handleChecked}
+        setChecked={checkboxes?.indexOf("event") > -1 && setChecked && handleChecked}
     />
 }
 

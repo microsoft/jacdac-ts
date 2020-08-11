@@ -49,7 +49,10 @@ export class JDService extends JDNode {
     }
 
     register(address: number | { address: number }) {
-        const a = (typeof address == "number" ? address : address.address) | 0;
+        const a = (typeof address == "number" ? address : address?.address);
+        if (a === undefined)
+            return undefined;
+
         const spec = this.specification;
         if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === a)) {
             this.log(`spec error: attempting to access register 0x${a.toString(16)} in service ${this}`)
