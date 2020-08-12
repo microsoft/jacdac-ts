@@ -2,7 +2,7 @@ import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -62,11 +62,11 @@ export class JDDevice extends JDNode {
     set firmwareInfo(info: FirmwareInfo) {
         const changed = JSON.stringify(this._firmwareInfo) !== JSON.stringify(info);
         if (changed) {
-           this._firmwareInfo = info;
-           this.bus.emit(DEVICE_FIRMWARE_INFO, this)
-           this.emit(FIRMWARE_INFO)
-           this.bus.emit(DEVICE_CHANGE, this)
-           this.emit(CHANGE)
+            this._firmwareInfo = info;
+            this.bus.emit(DEVICE_FIRMWARE_INFO, this)
+            this.emit(FIRMWARE_INFO)
+            this.bus.emit(DEVICE_CHANGE, this)
+            this.emit(CHANGE)
         }
     }
 
@@ -199,6 +199,16 @@ export class JDDevice extends JDNode {
         this.connected = false;
         this.emit(DISCONNECT)
         this.emit(CHANGE)
+    }
+
+    identify() {
+        return this.service(SRV_CTRL)
+            .sendCmdAsync(CtrlCmd.Identify)
+    }
+
+    reset() {
+        return this.service(SRV_CTRL)
+            .sendCmdAsync(CtrlCmd.Identify)
     }
 }
 

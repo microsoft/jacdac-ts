@@ -9,7 +9,6 @@ import useChange from "../jacdac/useChange";
 import FingerprintIcon from '@material-ui/icons/Fingerprint';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import RefreshIcon from '@material-ui/icons/Refresh';
-import { debouncedPollAsync } from "../../../src/dom/utils";
 import useRegisterValue from "../jacdac/useRegisterValue";
 
 
@@ -19,12 +18,8 @@ export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boole
     const tempRegister = useRegisterValue(device, 0, CtrlReg.Temperature)
     const firmware = firmwareRegister?.stringValue;
     const temperature = tempRegister?.intValue;
-    const handleIdentify = () => {
-        device.service(SRV_CTRL).sendCmdAsync(CtrlCmd.Identify)
-    }
-    const handleReset = () => {
-        device.service(SRV_CTRL).sendCmdAsync(CtrlCmd.Reset)
-    }
+    const handleIdentify = () => device.identify()
+    const handleReset = () => device.reset()
     return <CardHeader
         action={
             <Fragment>

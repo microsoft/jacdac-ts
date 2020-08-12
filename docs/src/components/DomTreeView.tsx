@@ -13,6 +13,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
+import FingerprintIcon from '@material-ui/icons/Fingerprint';
 import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/dom/device';
 import { JDEvent } from '../../../src/dom/event';
@@ -20,7 +21,7 @@ import { JDService } from '../../../src/dom/service';
 import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent } from '../../../src/dom/spec';
-import { Switch } from '@material-ui/core';
+import { Switch, IconButton } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 
@@ -91,9 +92,10 @@ function StyledTreeItem(props: TreeItemProps & {
     labelText: string;
     checked?: boolean;
     setChecked?: (state: boolean) => void;
+    actions?: JSX.Element | JSX.Element[]
 }) {
     const classes = useTreeItemStyles();
-    const { key, labelText, kind, labelInfo, color, bgColor, checked, setChecked, ...other } = props;
+    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, ...other } = props;
     const [checkedState, setCheckedState] = useState(false)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -102,7 +104,6 @@ function StyledTreeItem(props: TreeItemProps & {
     }
     return (
         <TreeItem
-            key={key}
             label={
                 <div className={classes.labelRoot}>
                     {setChecked && <Switch
@@ -117,6 +118,7 @@ function StyledTreeItem(props: TreeItemProps & {
                     </Typography>
                     <Typography variant="caption" color="inherit">
                         {labelInfo}
+                        {actions}
                     </Typography>
                 </div>
             }
@@ -160,13 +162,18 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
     const handleChecked = c => setChecked(id, c)
+    const handleIdentify = () => device.identify()
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
-        labelInfo={id}
         kind={"device"}
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
+        actions={
+            <IconButton aria-label="identify" title="identify" onClick={handleIdentify}>
+                <FingerprintIcon />
+            </IconButton>
+        }
     >
         {services?.map(service => <ServiceTreeItem
             key={service.id}
@@ -198,7 +205,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
-        labelInfo={reading?.humanValue || id}
+        labelInfo={reading?.humanValue}
         kind={"service"}
         checked={checked && checked[id]}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
