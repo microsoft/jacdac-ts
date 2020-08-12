@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
@@ -18,7 +18,6 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
-import { CSVLink } from "react-csv";
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -38,7 +37,7 @@ interface Table {
     id: number;
     name: string;
     headers: string[];
-    rows: number[];
+    rows: number[][];
 }
 
 export default function Collector(props: {}) {
@@ -50,6 +49,7 @@ export default function Collector(props: {}) {
     const [checked, setChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<Table[]>([])
+    const [recordingLength, setRecordingLength] = useState(0)
     const [prefix, setPrefix] = useState("data")
     const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
     const registers = checked.map(id => bus.node(id) as JDRegister)
@@ -76,6 +76,24 @@ export default function Collector(props: {}) {
     const handleSamplingIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSamplingIntervalDelay(event.target.value.trim())
     }
+    useEffect(() => {
+        if (error) return undefined;
+        const delay = parseInt(samplingIntervalDelay)
+        const interval = setInterval(() => {
+            if (!recording) return; // already done
+
+            const row: number[] = [bus.timestamp];
+            registers.forEach(register => {
+                const values = register.numValues;
+                values.forEach(value => row.push(value))
+            })
+            tables[0].rows.push(row)
+            setTables(tables);
+            setRecordingLength(tables[0].rows.length)
+        }, delay);
+
+        return () => clearInterval(interval);
+    }, [recording, samplingIntervalDelay, checked]);
 
     return (
         <div className={classes.root}>
@@ -120,16 +138,12 @@ export default function Collector(props: {}) {
                         }}
                         onChange={handleSamplingIntervalChange} />
                     <List>
-                        {tables.map(table => <ListItem key={table.id}>
-                            <ListItemText primary={table.name} secondary={`${table.rows.length} rows`} />
+                        {tables.map((table, index) => <ListItem key={table.id}>
+                            <ListItemText primary={table.name} secondary={`${(recording && !index) ? recordingLength : table.rows.length} rows`} />
                             <ListItemSecondaryAction>
-                                {!!table.rows.length && <CSVLink
-                                    data={table.headers.concat(table.rows as any)}
-                                    filename={`${table.name}.csv`}
-                                    target="_blank"
-                                >
-                                    <SaveAltIcon color="inherit" />
-                                </CSVLink>}
+                                {(!recording || !!index) && !!table.rows.length && <IconButton>
+                                    <SaveAltIcon />
+                                </IconButton>}
                             </ListItemSecondaryAction>
                         </ListItem>)}
                     </List>

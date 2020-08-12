@@ -86,6 +86,14 @@ export class JDRegister extends JDNode {
         return !!this.intValue;
     }
 
+    get numValues(): number[] {
+        return this.decoded?.decoded.map(m => m.numValue)
+    }
+
+    get scaledValues(): number[] {
+        return this.decoded?.decoded.map(m => m.scaledValue)
+    }
+
     get stringValue(): string {
         const buf = this.data;
         if (buf === undefined) return undefined;
