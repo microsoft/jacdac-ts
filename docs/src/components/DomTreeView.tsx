@@ -163,7 +163,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
     const readings = services
-        .filter(service => service.specification?.packets.some(pkt => isReading(pkt)))
+        .filter(service => !!service.readingRegister)
         .map(service => service.name)
         .join(',')
 
@@ -281,7 +281,7 @@ export interface DomTreeViewProps {
     defaultChecked?: CheckedMap;
     checkboxes?: ("device" | "service" | "register" | "event")[];
     onSelect?: (selected: string[]) => void;
-    onChecked?: (checked: CheckedMap) => void;
+    onChecked?: (checked: string[]) => void;
     deviceFilter?: (devices: JDDevice) => boolean;
     serviceFilter?: (services: JDService) => boolean;
     registerFilter?: (register: JDRegister) => boolean;
@@ -306,10 +306,13 @@ export default function DomTreeView(props: DomTreeViewProps) {
         if (onSelect) onSelect(nodeIds)
     };
     const handleChecked = (id: string, v: boolean) => {
-        checked[id] = v;
+        if (!v)
+            delete checked[id]
+        else
+            checked[id] = v;
         setChecked(checked)
         if (onChecked)
-            onChecked(checked)
+            onChecked(Object.keys(checked))
     };
 
     return (

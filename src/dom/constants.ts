@@ -157,4 +157,11 @@ export const PACKET_KIND_RW = "rw"
 export const PACKET_KIND_RO = "ro"
 export const PACKET_KIND_EVENT = "event"
 
+export const REGISTER_NODE_NAME = "register"
+export const EVENT_NODE_NAME = "event"
+export const SERVICE_NODE_NAME = "service"
+export const DEVICE_NODE_NAME = "device"
+export const BUS_NODE_NAME = "bus"
+export const COMMAND_NODE_NAME = "command"
+
 export * from "../../jacdac-spec/dist/specconstants";

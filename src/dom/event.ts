@@ -2,7 +2,7 @@ import { JDNode } from "./node";
 import { JDService } from "./service";
 import Packet from "./packet";
 import { intOfBuffer } from "./buffer";
-import { CHANGE, EVENT } from "./constants";
+import { CHANGE, EVENT, EVENT_NODE_NAME } from "./constants";
 import { isEvent } from "./spec";
 
 export class JDEvent extends JDNode {
@@ -17,11 +17,11 @@ export class JDEvent extends JDNode {
     }
 
     get id() {
-        return `ev:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
+        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
     }
 
     get nodeKind() {
-        return "event"
+        return EVENT_NODE_NAME
     }
 
     get data() {

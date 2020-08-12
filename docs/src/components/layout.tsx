@@ -7,7 +7,7 @@
 
 import React, { useState, useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup, Container } from '@material-ui/core';
+import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup, Container, Icon } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton, Button } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -31,6 +31,8 @@ import Divider from '@material-ui/core/Divider';
 import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -73,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
     }),
   },
   menuButton: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
   },
   hide: {
     display: 'none',
@@ -212,6 +214,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           </Typography>
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
+            <FiberManualRecordIcon />
+          </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
         </Toolbar>
       </AppBar>

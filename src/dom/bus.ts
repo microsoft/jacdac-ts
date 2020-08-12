@@ -23,7 +23,12 @@ import {
     DISCONNECTING,
     DEVICE_CHANGE,
     CHANGE,
-    FIRMWARE_BLOBS_CHANGE
+    FIRMWARE_BLOBS_CHANGE,
+    BUS_NODE_NAME,
+    DEVICE_NODE_NAME,
+    SERVICE_NODE_NAME,
+    EVENT_NODE_NAME,
+    REGISTER_NODE_NAME
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
@@ -101,11 +106,11 @@ export class JDBus extends JDNode {
      * Gets a unique identifier for this node in the JACDAC DOM.
      */
     get id() {
-        return `bus`;
+        return this.nodeKind;
     }
 
     get nodeKind() {
-        return "bus"
+        return BUS_NODE_NAME
     }
 
     toString() {
@@ -113,16 +118,19 @@ export class JDBus extends JDNode {
     }
 
     node(id: string) {
-        const m = /^(?<type>bus|dev|srv|reg)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
+        const m = /^(?<type>bus|device|service|register|event)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
         if (!m) return undefined;
         switch (m.groups["type"]) {
-            case "bus": return this;
-            case "dev": return this.device(m.groups["dev"])
-            case "srv": return this.device(m.groups["dev"])
+            case BUS_NODE_NAME: return this;
+            case DEVICE_NODE_NAME: return this.device(m.groups["dev"])
+            case SERVICE_NODE_NAME: return this.device(m.groups["dev"])
                 ?.service(parseInt(m.groups["dev"]))
-            case "reg": return this.device(m.groups["dev"])
+            case REGISTER_NODE_NAME: return this.device(m.groups["dev"])
                 ?.service(parseInt(m.groups["dev"]))
                 ?.register(parseInt(m.groups["reg"]));
+            case EVENT_NODE_NAME: return this.device(m.groups["dev"])
+                ?.service(parseInt(m.groups["dev"]))
+                ?.event(parseInt(m.groups["reg"]));
         }
         return undefined;
     }

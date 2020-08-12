@@ -1,5 +1,5 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, SRV_LIGHT_SPECTRUM_SENSOR, CMD_GET_REG } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, SRV_LIGHT_SPECTRUM_SENSOR, CMD_GET_REG, REGISTER_NODE_NAME } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
@@ -20,11 +20,11 @@ export class JDRegister extends JDNode {
     }
 
     get id() {
-        return `reg:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
+        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
     }
 
     get nodeKind() {
-        return "register"
+        return REGISTER_NODE_NAME
     }
 
     // send a message to set the register value

@@ -2,9 +2,9 @@ import { JDDevice } from "./device";
 import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG } from "./constants";
+import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NAME } from "./constants";
 import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier, isRegister } from "./spec";
+import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading } from "./spec";
 import { JDEvent } from "./event";
 
 export class JDService extends JDNode {
@@ -20,11 +20,11 @@ export class JDService extends JDNode {
     }
 
     get id() {
-        return `srv:${this.device.id}:${this.service_number.toString(16)}`
+        return `${this.nodeKind}:${this.device.id}:${this.service_number.toString(16)}`
     }
 
     get nodeKind() {
-        return "service"
+        return SERVICE_NODE_NAME
     }
 
     get serviceClass() {
@@ -33,6 +33,10 @@ export class JDService extends JDNode {
 
     get name() {
         return serviceName(this.serviceClass)
+    }
+
+    get readingRegister() {
+        return this.specification?.packets.find(pkt => isReading(pkt))
     }
 
     /**
