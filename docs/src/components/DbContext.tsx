@@ -120,7 +120,6 @@ export function useFirmwareBlobs() {
             if (store)
                 await setFile(f)
             bus.firmwareBlobs = bls
-            console.log(`loaded blobs`, bls)
         } else {
             // delete entry
             if (store)

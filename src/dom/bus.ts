@@ -118,21 +118,21 @@ export class JDBus extends JDNode {
     }
 
     node(id: string) {
-        const m = /^(?<type>bus|device|service|register|event)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
-        if (!m) return undefined;
-        switch (m.groups["type"]) {
-            case BUS_NODE_NAME: return this;
-            case DEVICE_NODE_NAME: return this.device(m.groups["dev"])
-            case SERVICE_NODE_NAME: return this.device(m.groups["dev"])
-                ?.service(parseInt(m.groups["dev"]))
-            case REGISTER_NODE_NAME: return this.device(m.groups["dev"])
-                ?.service(parseInt(m.groups["dev"]))
-                ?.register(parseInt(m.groups["reg"]));
-            case EVENT_NODE_NAME: return this.device(m.groups["dev"])
-                ?.service(parseInt(m.groups["dev"]))
-                ?.event(parseInt(m.groups["reg"]));
+        const resolve = () => {
+            const m = /^(?<type>bus|device|service|register|event)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
+            if (!m) return undefined;
+            switch (m.groups["type"]) {
+                case BUS_NODE_NAME: return this;
+                case DEVICE_NODE_NAME: return this.device(m.groups["dev"])
+                case SERVICE_NODE_NAME: return this.device(m.groups["dev"])?.service(parseInt(m.groups["srv"], 16))
+                case REGISTER_NODE_NAME: return this.device(m.groups["dev"])?.service(parseInt(m.groups["srv"], 16))?.register(parseInt(m.groups["reg"], 16));
+                case EVENT_NODE_NAME: return this.device(m.groups["dev"])?.service(parseInt(m.groups["srv"], 16))?.event(parseInt(m.groups["reg"], 16));
+            }
+            return undefined;
         }
-        return undefined;
+        const node = resolve();
+        this.log(`node ${id} not found`)
+        return node;
     }
 
     private resetTime() {

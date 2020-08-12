@@ -85,6 +85,7 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
 );
 
 function StyledTreeItem(props: TreeItemProps & {
+    nodeId: string;
     bgColor?: string;
     color?: string;
     kind?: string;
@@ -95,7 +96,7 @@ function StyledTreeItem(props: TreeItemProps & {
     actions?: JSX.Element | JSX.Element[]
 }) {
     const classes = useTreeItemStyles();
-    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, ...other } = props;
+    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, ...other } = props;
     const [checkedState, setCheckedState] = useState(false)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -105,6 +106,7 @@ function StyledTreeItem(props: TreeItemProps & {
     }
     return (
         <TreeItem
+            nodeId={nodeId}
             label={
                 <div className={classes.labelRoot}>
                     {setChecked && <Switch
@@ -152,7 +154,7 @@ interface DomTreeViewItemProps {
     key: string;
     expanded: string[];
     selected: string[];
-    checked?: { [id: string]: boolean }
+    checked?: string[];
     setChecked?: (id: string, value: boolean) => void;
 }
 
@@ -177,7 +179,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         labelText={name}
         labelInfo={readings}
         kind={"device"}
-        checked={checked && checked[id]}
+        checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
         actions={
             <IconButton aria-label="identify" title="identify" size="small" onClick={handleIdentify}>
@@ -217,7 +219,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
         labelText={name}
         labelInfo={reading?.humanValue}
         kind={"service"}
-        checked={checked && checked[id]}
+        checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
     >
         {registers?.map(register => <RegisterTreeItem
@@ -252,7 +254,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
         labelText={specification?.name || register.id}
         labelInfo={register.humanValue}
         kind={specification?.kind || "register"}
-        checked={checked && checked[id]}
+        checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
     />
 }
@@ -270,7 +272,7 @@ function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTre
         labelText={specification?.name || event.id}
         labelInfo={(count || "") + ""}
         kind="event"
-        checked={checked && checked[id]}
+        checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("event") > -1 && setChecked && handleChecked}
     />
 }
@@ -278,8 +280,11 @@ function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTre
 export type CheckedMap = { [id: string]: boolean };
 
 export interface DomTreeViewProps {
-    defaultChecked?: CheckedMap;
+    defaultChecked?: string[];
+    defaultExpanded?: string[];
+    defaultSelected?: string[];
     checkboxes?: ("device" | "service" | "register" | "event")[];
+    onToggle?: (expanded: string[]) => void;
     onSelect?: (selected: string[]) => void;
     onChecked?: (checked: string[]) => void;
     deviceFilter?: (devices: JDDevice) => boolean;
@@ -289,16 +294,17 @@ export interface DomTreeViewProps {
 }
 
 export default function DomTreeView(props: DomTreeViewProps) {
-    const { onChecked, defaultChecked, onSelect, checkboxes, deviceFilter, ...other } = props;
+    const { onChecked, defaultExpanded, defaultSelected, defaultChecked, onToggle, onSelect, checkboxes, deviceFilter, ...other } = props;
     const classes = useStyles();
-    const [expanded, setExpanded] = useState<string[]>([]);
-    const [selected, setSelected] = useState<string[]>([]);
-    const [checked, setChecked] = useState<{ [id: string]: boolean }>(defaultChecked || {})
+    const [expanded, setExpanded] = useState<string[]>(defaultExpanded || []);
+    const [selected, setSelected] = useState<string[]>(defaultSelected || []);
+    const [checked, setChecked] = useState<string[]>(defaultChecked || [])
     const { bus } = useContext(JacdacContext)
     const devices = useChange(bus, () => bus.devices().filter(dev => !deviceFilter || deviceFilter(dev)))
 
     const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
         setExpanded(nodeIds);
+        if (onToggle) onToggle(nodeIds)
     };
 
     const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
@@ -306,13 +312,14 @@ export default function DomTreeView(props: DomTreeViewProps) {
         if (onSelect) onSelect(nodeIds)
     };
     const handleChecked = (id: string, v: boolean) => {
-        if (!v)
-            delete checked[id]
+        const i = checked.indexOf(id)
+        if (!v && i > -1)
+            checked.splice(i, 1)
         else
-            checked[id] = v;
+            checked.push(id)
         setChecked(checked)
         if (onChecked)
-            onChecked(Object.keys(checked))
+            onChecked(checked)
     };
 
     return (

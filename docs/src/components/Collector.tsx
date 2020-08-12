@@ -31,14 +31,14 @@ export default function Collector(props: {}) {
     const { bus } = useContext(JacdacContext)
     const classes = useStyles();
     const [tab, setTab] = useState(0);
-    const [registers, setRegisters] = useState<JDRegister[]>([])
+    const [expanded, setExpanded] = useState<string[]>([])
+    const [checked, setChecked] = useState<string[]>([])
 
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => setTab(newValue);
-    const handleRegisterChecked = (checked: string[]) => {
-        const regs = checked.map(id => bus.node(id) as JDRegister).filter(reg => !!reg);
-        console.log(regs)
-        setRegisters(regs)
-    }
+    const handleToggle = (ids) => setExpanded(ids)
+    const handleCheck = (ids) => setChecked(ids)
+    const registers = checked.map(id => bus.node(id) as JDRegister)
+    console.log(expanded, checked, registers)
     return (
         <div className={classes.root}>
             <Paper square>
@@ -52,15 +52,18 @@ export default function Collector(props: {}) {
                         serviceFilter={srv => !!srv.readingRegister}
                         eventFilter={ev => false}
                         registerFilter={reg => reg.isReading}
-                        onChecked={handleRegisterChecked}
+                        defaultExpanded={expanded}
+                        defaultChecked={checked}
+                        onToggle={handleToggle}
+                        onChecked={handleCheck}
                     />
                 </TabPanel>
                 <TabPanel value={tab} index={1}>
                     <Grid container
                         spacing={2}>
                         {registers.map(register =>
-                            <Grid item>
-                                <RegisterInput register={register} showDeviceName={true} />
+                            <Grid item key={register.id}>
+                                <RegisterInput register={register} showDeviceName={true} showName={true} />
                             </Grid>)}
                     </Grid>
                 </TabPanel>
