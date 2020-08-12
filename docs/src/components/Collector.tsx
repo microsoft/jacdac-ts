@@ -37,7 +37,26 @@ interface Table {
     id: number;
     name: string;
     headers: string[];
+    startTimestamp: number;
     rows: number[][];
+}
+
+function downloadUrl(url: string, name: string) {
+    const a = document.createElement("a") as HTMLAnchorElement;
+    document.body.appendChild(a);
+    a.style.display = "none";
+    a.href = url;
+    a.download = name;
+    a.click();
+}
+
+function downloadCSV(table: Table, sep: string) {
+    console.log(table)
+    let csv = [table.headers.join(sep)]
+    table.rows.forEach(row => csv.push(row.map(row => row.toString()).join(sep)))
+
+    const url = `data:text/plain;charset=utf-8,${encodeURI(csv.join('\n'))}`
+    downloadUrl(url, `${table.name}.csv`)
 }
 
 export default function Collector(props: {}) {
@@ -67,7 +86,8 @@ export default function Collector(props: {}) {
             const newTable: Table = {
                 id: Math.random(),
                 name: `${prefix}${tables.length}`,
-                headers: ["timestamp"].concat(registers.map(register => register.id)),
+                startTimestamp: undefined,
+                headers: ["timestamp"].concat(registers.map(register => `${register.service.device.name}/${register.service.name}`)),
                 rows: []
             }
             setTables([newTable, ...tables])
@@ -78,7 +98,7 @@ export default function Collector(props: {}) {
         setSamplingIntervalDelay(event.target.value.trim())
     }
     const handleDownload = (table: Table) => {
-        console.log(table)
+        downloadCSV(table, ",")
     }
     const handleDeleteTable = (table: Table) => {
         const i = tables.indexOf(table)
@@ -93,14 +113,17 @@ export default function Collector(props: {}) {
     const addRow = () => {
         if (!recording) return; // already done
 
-        const row: number[] = [bus.timestamp];
+        const table = tables[0]
+        if (table.startTimestamp === undefined)
+            table.startTimestamp = bus.timestamp
+        const row: number[] = [bus.timestamp - table.startTimestamp];
         registers.forEach(register => {
             const values = register.numValues;
             values.forEach(value => row.push(value))
         })
-        tables[0].rows.push(row)
+        table.rows.push(row)
         setTables(tables);
-        setRecordingLength(tables[0].rows.length)
+        setRecordingLength(table.rows.length)
     }
     // setting interval
     useEffect(() => {
