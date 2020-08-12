@@ -5,7 +5,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction } from '@material-ui/core';
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
 import DomTreeView from './DomTreeView';
 import { JDRegister } from '../../../src/dom/register';
@@ -51,7 +51,9 @@ export default function Collector(props: {}) {
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<Table[]>([])
     const [prefix, setPrefix] = useState("data")
+    const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
     const registers = checked.map(id => bus.node(id) as JDRegister)
+    const error = isNaN(parseInt(samplingIntervalDelay)) || !/\d+/.test(samplingIntervalDelay)
 
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => setTab(newValue);
     const handleToggle = (ids) => setExpanded(ids)
@@ -64,11 +66,15 @@ export default function Collector(props: {}) {
             tables.unshift({
                 id: Math.random(),
                 name: `${prefix}${tables.length}`,
-                headers: registers.map(register => register.id),
+                headers: ["timestamp"].concat(registers.map(register => register.id)),
                 rows: []
             })
+            setTables(tables)
             setRecording(true)
         }
+    }
+    const handleSamplingIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSamplingIntervalDelay(event.target.value.trim())
     }
 
     return (
@@ -106,6 +112,13 @@ export default function Collector(props: {}) {
                             disabled={!registers?.length}
                         >{recording ? "Stop" : "Start"}</Button>
                     </ButtonGroup>
+                    <TextField error={error}
+                        label="Sampling interval"
+                        value={samplingIntervalDelay}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start">ms</InputAdornment>,
+                        }}
+                        onChange={handleSamplingIntervalChange} />
                     <List>
                         {tables.map(table => <ListItem key={table.id}>
                             <ListItemText primary={table.name} secondary={`${table.rows.length} rows`} />
