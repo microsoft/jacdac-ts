@@ -38,7 +38,6 @@ export default function Collector(props: {}) {
     const handleToggle = (ids) => setExpanded(ids)
     const handleCheck = (ids) => setChecked(ids)
     const registers = checked.map(id => bus.node(id) as JDRegister)
-    console.log(expanded, checked, registers)
     return (
         <div className={classes.root}>
             <Paper square>

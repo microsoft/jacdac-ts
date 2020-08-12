@@ -97,7 +97,7 @@ function StyledTreeItem(props: TreeItemProps & {
 }) {
     const classes = useTreeItemStyles();
     const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, ...other } = props;
-    const [checkedState, setCheckedState] = useState(false)
+    const [checkedState, setCheckedState] = useState(checked)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
         ev.stopPropagation()

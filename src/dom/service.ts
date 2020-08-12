@@ -20,7 +20,7 @@ export class JDService extends JDNode {
     }
 
     get id() {
-        return `${this.nodeKind}:${this.device.id}:${this.service_number.toString(16)}`
+        return `${this.nodeKind}:${this.device.deviceId}:${this.service_number.toString(16)}`
     }
 
     get nodeKind() {
@@ -64,18 +64,19 @@ export class JDService extends JDNode {
         }
         if (!this._registers)
             this._registers = [];
-        let register = this._registers[a];
+        let register = this._registers.find(reg => reg.address === a);
         if (!register)
-            register = this._registers[a] = new JDRegister(this, a);
+            this._registers.push(register = new JDRegister(this, a));
         return register;
     }
 
     event(address: number) {
+        address = address | 0;
         if (!this._events)
             this._events = [];
-        let event = this._events[address];
+        let event = this._events.find(ev => ev.address === address);
         if (!event)
-            event = this._events[address] = new JDEvent(this, address);
+            this._events.push(event = new JDEvent(this, address));
         return event;
     }
 

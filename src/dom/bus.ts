@@ -121,12 +121,16 @@ export class JDBus extends JDNode {
         const resolve = () => {
             const m = /^(?<type>bus|device|service|register|event)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
             if (!m) return undefined;
+            const dev = m.groups["dev"];
+            const srv = parseInt(m.groups["srv"], 16);
+            const reg = parseInt(m.groups["reg"], 16);
+            console.log(dev, srv, reg)
             switch (m.groups["type"]) {
                 case BUS_NODE_NAME: return this;
-                case DEVICE_NODE_NAME: return this.device(m.groups["dev"])
-                case SERVICE_NODE_NAME: return this.device(m.groups["dev"])?.service(parseInt(m.groups["srv"], 16))
-                case REGISTER_NODE_NAME: return this.device(m.groups["dev"])?.service(parseInt(m.groups["srv"], 16))?.register(parseInt(m.groups["reg"], 16));
-                case EVENT_NODE_NAME: return this.device(m.groups["dev"])?.service(parseInt(m.groups["srv"], 16))?.event(parseInt(m.groups["reg"], 16));
+                case DEVICE_NODE_NAME: return this.device(dev)
+                case SERVICE_NODE_NAME: return this.device(dev)?.service(srv)
+                case REGISTER_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg);
+                case EVENT_NODE_NAME: return this.device(dev)?.service(srv)?.event(reg);
             }
             return undefined;
         }

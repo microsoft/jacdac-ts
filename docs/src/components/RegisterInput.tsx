@@ -22,7 +22,6 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
     }
     const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
-        console.log(v)
         register.sendSetIntAsync(v, true);
     };
 
