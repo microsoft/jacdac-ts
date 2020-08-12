@@ -35,8 +35,9 @@ export class JDService extends JDNode {
         return serviceName(this.serviceClass)
     }
 
-    get readingRegister() {
-        return this.specification?.packets.find(pkt => isReading(pkt))
+    get readingRegister(): JDRegister {
+        const pkt = this.specification?.packets.find(pkt => isReading(pkt))
+        return pkt && this.register(pkt.identifier)
     }
 
     /**

@@ -4,6 +4,7 @@ import { Packet } from "./packet"
 import { JDDevice, shortDeviceId } from "./device"
 import * as spec from "./spec"
 import { NumberFormat } from "./buffer"
+import { roundWithPrecision } from "./utils"
 
 const service_classes: U.SMap<number> = {
     "<disabled>": -1,
@@ -95,6 +96,30 @@ export function prettyUnit(u: jdspec.Unit): string {
         case "frac": return "" // don't show fraction
         default: return u
     }
+}
+
+export function prettyDuration(ms: number) {
+    if (ms < 1000)
+        return `${roundWithPrecision(ms / 1000, 2)}s`
+    let s = ms / 1000
+    if (s < 10)
+        return `${roundWithPrecision(s, 1)}s`
+    if (s < 60)
+        return `${Math.floor(s)}s`
+
+    let r = "";
+    const h = Math.floor(s / (24 * 3600))
+    if (h > 0) {
+        r += h + ":"
+        s -= h * (24 * 3600)
+    }
+    const m = Math.floor(s / 3600)
+    if (m > 0) {
+        r += m + ":"
+        s -= m * 3600
+    }
+    r += Math.floor(s)
+    return r;
 }
 
 export function decodeMember(

@@ -1,17 +1,17 @@
 
 import React, { useContext } from 'react';
-import { Grid, makeStyles } from '@material-ui/core';
+import { Grid, makeStyles, Theme, createStyles } from '@material-ui/core';
 import DeviceCard from './DeviceCard';
 import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
 import JacdacContext from '../../../src/react/Context';
-import { toHex } from '../../../src/dom/utils';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
-        marginBottom: "1rem"
+        marginBottom: theme.spacing(1),
+        marginLeft: theme.spacing(1)
     },
-});
+}))
 
 export default function DeviceList(props: {
     serviceClass?: number,
