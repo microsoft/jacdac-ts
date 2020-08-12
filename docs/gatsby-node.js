@@ -3,7 +3,7 @@ const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
 
 async function createServicePages(graphql, actions, reporter) {
-  const { createPage } = actions
+  const { createPage, createRedirect } = actions
   const result = await graphql(`
 {
   allSpecJson {
@@ -52,7 +52,8 @@ async function createServicePages(graphql, actions, reporter) {
   // each page's path.
   result.data.allSpecJson.nodes.forEach(node => {
     const p = `/services/${node.shortId}/`;
-    console.log(`create page ${p}`)
+    const r = `/services/0x${node.classIdentifier.toString(16)}`
+    console.log(`create page ${p}, redirect ${r}`)
     createPage({
       // Each page is required to have a `path` as well
       // as a template component. The `context` is
@@ -63,6 +64,10 @@ async function createServicePages(graphql, actions, reporter) {
       context: {
         node
       },
+    })
+    createRedirect({
+      fromPath: r,
+      toPath: p
     })
   }) 
 }

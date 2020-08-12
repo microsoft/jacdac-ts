@@ -37,7 +37,9 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-helmet": "^6.1.0",
-    "slug": "^3.3.2"
+    "slug": "^3.3.2",
+    "gatsby-plugin-meta-redirect": "^1.1.1",
+    "react-markdown": "^4.3.1"
   },
   "keywords": [
     "jacdac"
@@ -58,8 +60,5 @@
   },
   "bugs": {
     "url": "https://github.com/gatsbyjs/gatsby/issues"
-  },
-  "devDependencies": {
-    "react-markdown": "^4.3.1"
   }
 }
