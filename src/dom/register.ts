@@ -23,6 +23,10 @@ export class JDRegister extends JDNode {
         return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
     }
 
+    get name() {
+        return this.specification?.name || this.address.toString(16);
+    }
+
     get nodeKind() {
         return REGISTER_NODE_NAME
     }
