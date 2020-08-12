@@ -18,6 +18,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
+import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -53,7 +54,8 @@ export default function Collector(props: {}) {
     const [prefix, setPrefix] = useState("data")
     const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
     const registers = checked.map(id => bus.node(id) as JDRegister)
-    const error = isNaN(parseInt(samplingIntervalDelay)) || !/\d+/.test(samplingIntervalDelay)
+    const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
+    const error = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
 
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => setTab(newValue);
     const handleToggle = (ids) => setExpanded(ids)
@@ -76,24 +78,38 @@ export default function Collector(props: {}) {
     const handleSamplingIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSamplingIntervalDelay(event.target.value.trim())
     }
+    const handleDownload = (table: Table) => {
+        console.log(table)
+    }
+
+    // data collection
+    // interval add dataentry
+    const addRow = () => {
+        if (!recording) return; // already done
+
+        const row: number[] = [bus.timestamp];
+        registers.forEach(register => {
+            const values = register.numValues;
+            values.forEach(value => row.push(value))
+        })
+        tables[0].rows.push(row)
+        setTables(tables);
+        setRecordingLength(tables[0].rows.length)
+    }
+    // setting interval
+    useEffect(() => {
+        if (!error)
+            registers.forEach(register => register.service
+                .register(SensorReg.StreamingInterval)
+                .sendSetIntAsync(samplingIntervalDelayi)
+            )
+    }, [samplingIntervalDelayi, checked, error])
+    // collecting
     useEffect(() => {
         if (error) return undefined;
-        const delay = parseInt(samplingIntervalDelay)
-        const interval = setInterval(() => {
-            if (!recording) return; // already done
-
-            const row: number[] = [bus.timestamp];
-            registers.forEach(register => {
-                const values = register.numValues;
-                values.forEach(value => row.push(value))
-            })
-            tables[0].rows.push(row)
-            setTables(tables);
-            setRecordingLength(tables[0].rows.length)
-        }, delay);
-
+        const interval = setInterval(() => addRow(), samplingIntervalDelayi);
         return () => clearInterval(interval);
-    }, [recording, samplingIntervalDelay, checked]);
+    }, [recording, samplingIntervalDelayi, checked]);
 
     return (
         <div className={classes.root}>
@@ -131,6 +147,7 @@ export default function Collector(props: {}) {
                         >{recording ? "Stop" : "Start"}</Button>
                     </ButtonGroup>
                     <TextField error={error}
+                        disabled={recording}
                         label="Sampling interval"
                         value={samplingIntervalDelay}
                         InputProps={{
@@ -141,7 +158,7 @@ export default function Collector(props: {}) {
                         {tables.map((table, index) => <ListItem key={table.id}>
                             <ListItemText primary={table.name} secondary={`${(recording && !index) ? recordingLength : table.rows.length} rows`} />
                             <ListItemSecondaryAction>
-                                {(!recording || !!index) && !!table.rows.length && <IconButton>
+                                {(!recording || !!index) && !!table.rows.length && <IconButton onClick={() => handleDownload(table)}>
                                     <SaveAltIcon />
                                 </IconButton>}
                             </ListItemSecondaryAction>
