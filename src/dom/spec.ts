@@ -48,6 +48,10 @@ export function isRegister(pkt: jdspec.PacketInfo) {
     return pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw"
 }
 
+export function isReading(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "ro" && pkt.identifierName == "reading"
+}
+
 export function isEvent(pkt: jdspec.PacketInfo) {
     return pkt.kind == "event"
 }

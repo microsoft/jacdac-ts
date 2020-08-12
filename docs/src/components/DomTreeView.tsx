@@ -20,7 +20,7 @@ import { JDEvent } from '../../../src/dom/event';
 import { JDService } from '../../../src/dom/service';
 import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
-import { isRegister, isEvent } from '../../../src/dom/spec';
+import { isRegister, isEvent, isReading } from '../../../src/dom/spec';
 import { Switch, IconButton } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
@@ -161,16 +161,22 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const name = device.name
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
+    const readings = services
+        .filter(service => service.specification?.packets.some(pkt => isReading(pkt)))
+        .map(service => service.name)
+        .join(',')
+
     const handleChecked = c => setChecked(id, c)
     const handleIdentify = () => device.identify()
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
+        labelInfo={readings}
         kind={"device"}
         checked={checked && checked[id]}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
         actions={
-            <IconButton aria-label="identify" title="identify" onClick={handleIdentify}>
+            <IconButton aria-label="identify" title="identify" size="small" onClick={handleIdentify}>
                 <FingerprintIcon />
             </IconButton>
         }
@@ -198,7 +204,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
     const events = packets?.filter(isEvent)
         .map(info => service.event(info.identifier))
         .filter(ev => !eventFilter || eventFilter(ev))
-    const readingPacket = packets?.find(reg => isRegister(reg) && reg.identifierName === "reading")
+    const readingPacket = packets?.find(reg => isReading(reg))
     const reading = useRegisterValue(service.device, service.service_number, readingPacket?.identifier)
 
     const handleChecked = c => setChecked(id, c)

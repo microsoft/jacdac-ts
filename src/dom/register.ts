@@ -6,7 +6,7 @@ import { JDNode } from "./node";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
-import { isRegister } from "./spec";
+import { isRegister, isReading } from "./spec";
 
 export class JDRegister extends JDNode {
     private _lastReportPkt: Packet;
@@ -61,7 +61,7 @@ export class JDRegister extends JDNode {
     }
 
     get isReading() {
-        return this.specification?.identifierName === "reading"
+        return this.specification && isReading(this.specification)
     }
 
     get data() {
