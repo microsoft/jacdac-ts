@@ -5,7 +5,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment } from '@material-ui/core';
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
 import DomTreeView from './DomTreeView';
 import { JDRegister } from '../../../src/dom/register';
@@ -18,19 +18,18 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import DeleteIcon from '@material-ui/icons/Delete';
 import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
         marginBottom: theme.spacing(1)
     },
-    pre: {
-        margin: "0",
-        padding: "0",
-        backgroundColor: "transparent",
-        whiteSpec: "pre-wrap"
+    field: {
+        marginLeft: theme.spacing(1)
     }
 }));
 
@@ -65,13 +64,13 @@ export default function Collector(props: {}) {
             // finalize recording
             setRecording(false)
         } else {
-            tables.unshift({
+            const newTable: Table = {
                 id: Math.random(),
                 name: `${prefix}${tables.length}`,
                 headers: ["timestamp"].concat(registers.map(register => register.id)),
                 rows: []
-            })
-            setTables(tables)
+            }
+            setTables([newTable, ...tables])
             setRecording(true)
         }
     }
@@ -80,6 +79,13 @@ export default function Collector(props: {}) {
     }
     const handleDownload = (table: Table) => {
         console.log(table)
+    }
+    const handleDeleteTable = (table: Table) => {
+        const i = tables.indexOf(table)
+        if (i > -1) {
+            tables.splice(i, 1)
+            setTables([...tables])
+        }
     }
 
     // data collection
@@ -138,15 +144,17 @@ export default function Collector(props: {}) {
                                 <RegisterInput register={register} showDeviceName={true} showName={true} />
                             </Grid>)}
                     </Grid>
-                    <ButtonGroup>
+                    <FormControl>
                         <Button
                             title="start/stop recording"
                             onClick={handleRecording}
                             startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
                             disabled={!registers?.length}
                         >{recording ? "Stop" : "Start"}</Button>
-                    </ButtonGroup>
-                    <TextField error={error}
+                    </FormControl>
+                    <TextField
+                        className={classes.field}
+                        error={error}
                         disabled={recording}
                         label="Sampling interval"
                         value={samplingIntervalDelay}
@@ -160,6 +168,9 @@ export default function Collector(props: {}) {
                             <ListItemSecondaryAction>
                                 {(!recording || !!index) && !!table.rows.length && <IconButton onClick={() => handleDownload(table)}>
                                     <SaveAltIcon />
+                                </IconButton>}
+                                {(!recording || !!index) && <IconButton onClick={() => handleDeleteTable(table)}>
+                                    <DeleteIcon />
                                 </IconButton>}
                             </ListItemSecondaryAction>
                         </ListItem>)}
