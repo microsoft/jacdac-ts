@@ -99,6 +99,7 @@ function StyledTreeItem(props: TreeItemProps & {
     const [checkedState, setCheckedState] = useState(false)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
+        ev.stopPropagation()
         setChecked(c)
         setCheckedState(c)
     }
@@ -167,7 +168,10 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         .join(',')
 
     const handleChecked = c => setChecked(id, c)
-    const handleIdentify = () => device.identify()
+    const handleIdentify = (ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        ev.stopPropagation()
+        device.identify()
+    }
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
