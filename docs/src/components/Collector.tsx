@@ -5,7 +5,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button } from '@material-ui/core';
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
 import DomTreeView from './DomTreeView';
 import { JDRegister } from '../../../src/dom/register';
@@ -16,6 +16,9 @@ import { IconButton } from 'gatsby-theme-material-ui';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import StopIcon from '@material-ui/icons/Stop';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import SaveAltIcon from '@material-ui/icons/SaveAlt';
+import { CSVLink } from "react-csv";
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -32,6 +35,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface Table {
+    id: number;
     name: string;
     headers: string[];
     rows: number[];
@@ -45,7 +49,7 @@ export default function Collector(props: {}) {
     const [expanded, setExpanded] = useState<string[]>([])
     const [checked, setChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
-    const [tables, setTables] = useState([])
+    const [tables, setTables] = useState<Table[]>([])
     const [prefix, setPrefix] = useState("data")
     const registers = checked.map(id => bus.node(id) as JDRegister)
 
@@ -57,8 +61,9 @@ export default function Collector(props: {}) {
             // finalize recording
             setRecording(false)
         } else {
-            tables.push({
-                name: `${prefix}${tables.length}.csv`,
+            tables.unshift({
+                id: Math.random(),
+                name: `${prefix}${tables.length}`,
                 headers: registers.map(register => register.id),
                 rows: []
             })
@@ -101,6 +106,20 @@ export default function Collector(props: {}) {
                             disabled={!registers?.length}
                         >{recording ? "Stop" : "Start"}</Button>
                     </ButtonGroup>
+                    <List>
+                        {tables.map(table => <ListItem key={table.id}>
+                            <ListItemText primary={table.name} secondary={`${table.rows.length} rows`} />
+                            <ListItemSecondaryAction>
+                                {!!table.rows.length && <CSVLink
+                                    data={table.headers.concat(table.rows as any)}
+                                    filename={`${table.name}.csv`}
+                                    target="_blank"
+                                >
+                                    <SaveAltIcon color="inherit" />
+                                </CSVLink>}
+                            </ListItemSecondaryAction>
+                        </ListItem>)}
+                    </List>
                 </TabPanel>
             </Paper>
         </div>
