@@ -315,7 +315,7 @@ export default function DomTreeView(props: DomTreeViewProps) {
         const i = checked.indexOf(id)
         if (!v && i > -1)
             checked.splice(i, 1)
-        else
+        else if (v && i < 0)
             checked.push(id)
         setChecked(checked)
         if (onChecked)

@@ -85,6 +85,6 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
             {decoded.info.name}
         </Typography>}
         {decoded && decoded.decoded.map(member =>
-            <Decoded register={register} member={member} showName={showMemberName} />)}
+            <Decoded key={`member` + member.info.name} register={register} member={member} showName={showMemberName} />)}
     </React.Fragment>
 }
