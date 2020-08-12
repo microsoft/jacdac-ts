@@ -7,11 +7,13 @@ import Chip from '@material-ui/core/Chip';
 import IDChip from "../components/IDChip";
 import ServiceSpecificationSource from "../components/ServiceSpecificationSource"
 import Markdown from "../components/Markdown";
+import EnumSpecification from "../components/EnumSpecification";
 
 <h1>{props.pageContext.node.name}
     <span style={{ marginLeft: "1rem" }}><IDChip id={props.pageContext.node.classIdentifier} /></span>
 </h1>
 <p><Markdown source={props.pageContext.node.notes.short} /></p>
+
 <Fragment>
 {!!props.pageContext.node.extends?.length && 
     <p>
@@ -20,6 +22,8 @@ import Markdown from "../components/Markdown";
     .
     </p>}
 </Fragment>
+
+<EnumSpecification serviceClass={props.pageContext.node.classIdentifier} />
 
 ## Packets
 

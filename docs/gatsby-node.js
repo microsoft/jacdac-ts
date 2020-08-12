@@ -29,6 +29,8 @@ async function createServicePages(graphql, actions, reporter) {
           storage
           defaultValue
           isSimpleType
+          absoluteMin
+          absoluteMax
           typicalMin
           typicalMax
         }
