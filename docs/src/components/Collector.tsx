@@ -97,6 +97,7 @@ export default function Collector(props: {}) {
         else {
             checked.push(register.id)
             setStreamingAsync(register.service, true)
+            register.sendGetAsync() // at least some data
         }
         setChecked([...checked])
     }
@@ -145,7 +146,7 @@ export default function Collector(props: {}) {
         const table = tables[0]
         const row: number[] = [];
         recordingRegisters.forEach(register => {
-            const values = register.numValues;
+            const values = register.values;
             if (values)
                 values.forEach(value => row.push(value))
             else { // no data yet

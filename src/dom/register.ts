@@ -86,6 +86,10 @@ export class JDRegister extends JDNode {
         return !!this.intValue;
     }
 
+    get values(): number[] {
+        return this.decoded?.decoded.map(m => m.info.unit == "frac" ? m.scaledValue : m.numValue)
+    }
+
     get numValues(): number[] {
         return this.decoded?.decoded.map(m => m.numValue)
     }

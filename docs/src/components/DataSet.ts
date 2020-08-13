@@ -16,6 +16,7 @@ export class DataSet {
     readonly id = Math.random().toString()
     readonly rows: Example[];
     readonly labels: string[];
+    maxRows = -1;
 
     // maintain computed min/max to avoid recomputation
     mins: number[];
@@ -48,6 +49,10 @@ export class DataSet {
                 this.mins[i] = Math.min(this.mins[i], data[i])
                 this.maxs[i] = Math.max(this.maxs[i], data[i])
             }
+        }
+
+        if (this.maxRows > 0 && this.rows.length > this.maxRows * 1.1) {
+            this.rows.shift();
         }
     }
 
