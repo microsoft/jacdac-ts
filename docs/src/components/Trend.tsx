@@ -6,7 +6,6 @@ import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
-        margin: theme.spacing(2)
     },
     graph: {
         marginTop: theme.spacing(2),

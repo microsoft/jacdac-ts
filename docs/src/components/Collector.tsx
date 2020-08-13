@@ -80,6 +80,20 @@ const palette = [
     "#2f4b7c",
 ]
 
+const LIVE_HORIZON = 20
+function createDataSet(fields: JDField[], name: string, live: boolean) {
+    const headers = fields.map(field => `${field.register.service.device.name}/${field.name}`)
+    const units = fields.map(field => field.unit)
+    const colors = fields.map((_, index) => palette[index % palette.length])
+    const set = new DataSet(name,
+        colors,
+        headers,
+        units)
+    if (live)
+        set.maxRows = LIVE_HORIZON + 10
+    return set;
+}
+
 export default function Collector(props: {}) {
     const { } = props;
     const { bus } = useContext(JacdacContext)
@@ -90,18 +104,18 @@ export default function Collector(props: {}) {
     const [recordingLength, setRecordingLength] = useState(0)
     const [prefix, setPrefix] = useState("data")
     const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
+    const [liveDataSet, setLiveDataSet] = useState<DataSet>(undefined)
+    const [liveDataTimestamp, setLiveDataTimestamp] = useState(0)
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
             .services().find(srv => srv.readingRegister)
             ?.readingRegister
         ).filter(reg => !!reg))
-    const recordingFields = readingRegisters
-        .map(reg => reg.fields.filter(field => fieldIdsChecked.indexOf(field.id) > -1))
-        .filter(fs => fs.length)
-        .reduce((l, r) => l.concat(r), [])
+    const recordingFields = fieldIdsChecked.map(id => bus.node(id) as JDField)
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const error = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
 
+    const newDataSet = (live: boolean) => createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live)
     const handleCheck = (field: JDField) => () => {
         const i = fieldIdsChecked.indexOf(field.id)
         if (i > -1) {
@@ -113,22 +127,17 @@ export default function Collector(props: {}) {
             setStreamingAsync(field.register.service, true)
             field.register.sendGetAsync() // at least some data
         }
+        fieldIdsChecked.sort()
         setFieldIdsChecked([...fieldIdsChecked])
-        setRecording(false)
+        setLiveDataSet(newDataSet(true))
     }
     const handleRecording = () => {
         if (recording) {
-            // finalize recording
+            setLiveDataSet(newDataSet(true))
+            setTables([liveDataSet, ...tables])
             setRecording(false)
         } else {
-            const headers = recordingFields.map(field => `${field.register.service.device.name}/${field.name}`)
-            const units = recordingFields.map(field => field.unit)
-            const colors = recordingFields.map((_, index) => palette[index % palette.length])
-            const newTable = new DataSet(`${prefix || "data"}${tables.length}`,
-                colors,
-                headers,
-                units)
-            setTables([newTable, ...tables])
+            setLiveDataSet(newDataSet(false))
             setRecording(true)
         }
     }
@@ -152,13 +161,13 @@ export default function Collector(props: {}) {
     // data collection
     // interval add data entry
     const addRow = () => {
-        if (!recording) return; // already done
+        if (!liveDataSet) return;
 
-        const table = tables[0]
         const row = recordingFields.map(f => f.value)
-        table.addExample(bus.timestamp, row)
-        setTables(tables);
-        setRecordingLength(table.rows.length)
+        liveDataSet.addExample(bus.timestamp, row)
+        setLiveDataSet(liveDataSet);
+        setRecordingLength(liveDataSet.rows.length)
+        setLiveDataTimestamp(bus.timestamp)
     }
     // setting interval
     useEffect(() => {
@@ -176,7 +185,7 @@ export default function Collector(props: {}) {
     }, [recording, samplingIntervalDelayi, fieldIdsChecked]);
 
     const sources = <Grid container spacing={2}>
-        {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor. Did you connect your device?</Alert>}
+        {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
         {readingRegisters.map(register =>
             <Grid item xs={4} key={'source' + register.id}>
                 <Card>
@@ -188,7 +197,7 @@ export default function Collector(props: {}) {
                         <FormGroup>
                             {register.fields.map(field =>
                                 <FormControlLabel key={field.id}
-                                    control={<Switch onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
+                                    control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
                                     label={field.name}
                                 />)}
                         </FormGroup>
@@ -237,7 +246,7 @@ export default function Collector(props: {}) {
                     onChange={handlePrefixChange} />
             </div>
         </div>
-        {tables[0] && <Trend height={12} dataSet={tables[0]} horizon={20} dot={true} gradient={true} />}
+        {liveDataSet && <Trend height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
         {!!tables.length && <div>
             <h3>Recordings</h3>
             <Grid container spacing={2}>
@@ -246,17 +255,18 @@ export default function Collector(props: {}) {
                         <Card>
                             <CardHeader
                                 title={table.name}
-                                secondary={`${(recording && !index) ? recordingLength : table.rows.length} rows, ${prettyDuration(table.duration)}`} />
+                                subheader={`${table.rows.length} rows, ${prettyDuration(table.duration)}`} />
                             <CardContent>
-                                {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
+                                <div>{table.headers.join(', ')}</div>
+                                <Trend dataSet={table} height={8} mini={true} />
                             </CardContent>
                             <CardActions>
-                                {(!recording || !!index) && !!table.rows.length && <IconButton color="primary" onClick={handleDownload(table)}>
+                                <IconButton color="primary" onClick={handleDownload(table)}>
                                     <SaveAltIcon />
-                                </IconButton>}
-                                {(!recording || !!index) && <IconButton onClick={handleDeleteTable(table)}>
+                                </IconButton>
+                                <IconButton onClick={handleDeleteTable(table)}>
                                     <DeleteIcon />
-                                </IconButton>}
+                                </IconButton>
                             </CardActions>
                         </Card>
                     </Grid>)}

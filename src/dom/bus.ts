@@ -122,23 +122,24 @@ export class JDBus extends JDNode {
         const resolve = () => {
             const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(id)
             if (!m) return undefined;
+            const type = m.groups["type"]
             const dev = m.groups["dev"];
             const srv = parseInt(m.groups["srv"], 16);
             const reg = parseInt(m.groups["reg"], 16);
             const idx = parseInt(m.groups["idx"], 16);
-            console.log(dev, srv, reg)
-            switch (m.groups["type"]) {
+            //console.log(type, this.device(dev), this.device(dev)?.service(srv), this.device(dev)?.service(srv)?.register(reg), idx)
+            switch (type) {
                 case BUS_NODE_NAME: return this;
                 case DEVICE_NODE_NAME: return this.device(dev)
                 case SERVICE_NODE_NAME: return this.device(dev)?.service(srv)
                 case REGISTER_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg);
                 case EVENT_NODE_NAME: return this.device(dev)?.service(srv)?.event(reg);
-                case FIELD_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg)?.fields[idx]
+                case FIELD_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg)?.fields[idx];
             }
+            this.log(`node ${id} not found`)
             return undefined;
         }
         const node = resolve();
-        this.log(`node ${id} not found`)
         return node;
     }
 

@@ -12,7 +12,7 @@ export class JDField extends JDNode {
     }
 
     get id() {
-        return `${this.nodeKind}:${this.register.service.device.deviceId}:${this.register.service.serviceClass.toString(16)}:${this.register.address.toString(16)}:${this.index.toString(16)}`
+        return `${this.nodeKind}:${this.register.service.device.deviceId}:${this.register.service.service_number.toString(16)}:${this.register.address.toString(16)}:${this.index.toString(16)}`
     }
 
     get name() {
