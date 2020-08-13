@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme) => createStyles({
 export interface TrendProps {
     dataSet: DataSet,
     dot?: boolean;
+    gradient?: boolean;
 }
 
 function UnitTrend(props: {
@@ -28,7 +29,7 @@ function UnitTrend(props: {
     width?: number,
     height?: number,
 } & TrendProps) {
-    const { dataSet, unit, horizon, width, height, dot } = props;
+    const { dataSet, unit, horizon, width, height, dot, gradient } = props;
     const { rows } = dataSet;
     const classes = useStyles()
 
@@ -43,7 +44,7 @@ function UnitTrend(props: {
     const headers = indexes.map(i => dataSet.headers[i])
     const colors = indexes.map(i => dataSet.colors[i])
     const data = rows.slice(-horizon)
-    const useGradient = data.length < rows.length
+    const useGradient = gradient || data.length < rows.length
     const times = data.map(ex => ex.timestamp)
     const maxt = Math.max.apply(null, times);
     const mint = Math.min.apply(null, times);
@@ -53,6 +54,7 @@ function UnitTrend(props: {
         minv = 0
         maxv = 1
     }
+    const rv = maxv - minv;
 
     const margin = 2;
     const h = (maxv - minv) || 10;
@@ -68,34 +70,38 @@ function UnitTrend(props: {
     function y(v: number) {
         if (v === undefined || isNaN(v))
             v = minv;
-        return - (v - minv) / h * (vph - 2 * margin)
+        // adding random for lineragradient bug workaround
+        // which does not render perfectly
+        // horizontal lines
+        return (Math.random() * 0.0001 * rv - (v - minv)) / h * (vph - 2 * margin)
     }
     const lastRow = data[data.length - 1]
 
-    return <Paper className={classes.graph} square>
-        <svg viewBox={`0 0 ${vpw} ${vph}`}>
-            {useGradient && <defs>
-                {indexes.map((index, i) =>
-                    <linearGradient key={`grad${i}`} id={`gradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopOpacity="0" stopColor={colors[i]} />
-                        <stop offset="5%" stopOpacity="0" stopColor={colors[i]} />
-                        <stop offset="40%" stopOpacity="1" stopColor={colors[i]} />
-                        <stop offset="100%" stopOpacity="1" stopColor={colors[i]} />
-                    </linearGradient>)}
-            </defs>}
-            {indexes.map((index, i) => {
-                const color = colors[i]
-                const points = data
-                    .map(row => `${x(row.timestamp)},${y(row.data[index])}`).join(' ');
-                const header = headers[i]
-                return <g key={`line${index}`} transform={`translate(${toffset}, ${vph - margin})`}>
-                    <polyline points={points} fill="none" stroke={useGradient ? `url(#gradient${index})` : color} strokeWidth={strokeWidth} stroke-linejoin="round" />
-                    {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={color} />}
-                </g>
-            })}
-        </svg>
-    </Paper>
-
+    return (
+        <Paper className={classes.graph} square>
+            <svg viewBox={`0 0 ${vpw} ${vph}`}>
+                {useGradient && <defs>
+                    {indexes.map((index, i) =>
+                        <linearGradient key={`grad${i}`} id={`gradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopOpacity="0" stopColor={colors[i]} />
+                            <stop offset="5%" stopOpacity="0" stopColor={colors[i]} />
+                            <stop offset="40%" stopOpacity="1" stopColor={colors[i]} />
+                            <stop offset="100%" stopOpacity="1" stopColor={colors[i]} />
+                        </linearGradient>)}
+                </defs>}
+                {indexes.map((index, i) => {
+                    const color = colors[i]
+                    const points =
+                        data.map(row => `${x(row.timestamp)},${y(row.data[index])}`).join(' ');
+                    const header = headers[i]
+                    return <g key={`line${index}`} transform={`translate(${toffset}, ${vph - margin})`}>
+                        <polyline points={points} fill="none" stroke={useGradient ? `url(#gradient${index})` : color} strokeWidth={strokeWidth} stroke-linejoin="round" />
+                        {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={color} />}
+                    </g>
+                })}
+            </svg>
+        </Paper>
+    )
 }
 
 

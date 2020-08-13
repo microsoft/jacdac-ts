@@ -227,7 +227,7 @@ export default function Collector(props: {}) {
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
         </div>
-        {tables[0] && <Trend dataSet={tables[0]} horizon={20} dot={true} />}
+        {tables[0] && <Trend dataSet={tables[0]} horizon={20} dot={true} gradient={true} />}
         {!!tables.length && <div>
             <List dense>
                 {tables.map((table, index) =>
