@@ -238,26 +238,25 @@ export default function Collector(props: {}) {
         </div>
         {tables[0] && <Trend height={12} dataSet={tables[0]} horizon={20} dot={true} gradient={true} />}
         {!!tables.length && <div>
-            <List dense>
+            <Grid container spacing={2}>
                 {tables.map((table, index) =>
-                    <ListItem key={`result` + table.id}>
-                        <ListItemText primary={table.name} secondary={
-                            <React.Fragment>
-                                {`${(recording && !index) ? recordingLength : table.rows.length} rows`}
-                                {`, ${prettyDuration(table.duration)}`}
-                                {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
-                            </React.Fragment>
-                        } />
-                        <ListItemSecondaryAction>
-                            {(!recording || !!index) && !!table.rows.length && <IconButton onClick={handleDownload(table)}>
-                                <SaveAltIcon />
-                            </IconButton>}
-                            {(!recording || !!index) && <IconButton onClick={handleDeleteTable(table)}>
-                                <DeleteIcon />
-                            </IconButton>}
-                        </ListItemSecondaryAction>
-                    </ListItem>)}
-            </List>
+                    <Grid item key={`result` + table.id}>
+                        <Card>
+                            <CardHeader title={table.name} secondary={`${(recording && !index) ? recordingLength : table.rows.length} rows, ${prettyDuration(table.duration)}`} />
+                            <CardContent>
+                                    {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
+                            </CardContent>
+                            <CardActions>
+                                {(!recording || !!index) && !!table.rows.length && <IconButton onClick={handleDownload(table)}>
+                                    <SaveAltIcon />
+                                </IconButton>}
+                                {(!recording || !!index) && <IconButton onClick={handleDeleteTable(table)}>
+                                    <DeleteIcon />
+                                </IconButton>}
+                            </CardActions>
+                        </Card>
+                    </Grid>)}
+            </Grid>
         </div>}
     </div >
     )
