@@ -114,6 +114,7 @@ export default function Collector(props: {}) {
             field.register.sendGetAsync() // at least some data
         }
         setFieldIdsChecked([...fieldIdsChecked])
+        setRecording(false)
     }
     const handleRecording = () => {
         if (recording) {
@@ -238,16 +239,19 @@ export default function Collector(props: {}) {
         </div>
         {tables[0] && <Trend height={12} dataSet={tables[0]} horizon={20} dot={true} gradient={true} />}
         {!!tables.length && <div>
+            <h3>Recordings</h3>
             <Grid container spacing={2}>
                 {tables.map((table, index) =>
                     <Grid item key={`result` + table.id}>
                         <Card>
-                            <CardHeader title={table.name} secondary={`${(recording && !index) ? recordingLength : table.rows.length} rows, ${prettyDuration(table.duration)}`} />
+                            <CardHeader
+                                title={table.name}
+                                secondary={`${(recording && !index) ? recordingLength : table.rows.length} rows, ${prettyDuration(table.duration)}`} />
                             <CardContent>
-                                    {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
+                                {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
                             </CardContent>
                             <CardActions>
-                                {(!recording || !!index) && !!table.rows.length && <IconButton onClick={handleDownload(table)}>
+                                {(!recording || !!index) && !!table.rows.length && <IconButton color="primary" onClick={handleDownload(table)}>
                                     <SaveAltIcon />
                                 </IconButton>}
                                 {(!recording || !!index) && <IconButton onClick={handleDeleteTable(table)}>
