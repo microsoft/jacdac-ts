@@ -24,6 +24,8 @@ import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 import { prettyDuration } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
 import { setStreamingAsync } from '../../../src/dom/sensor';
+import { DataSet } from './DataSet';
+import Trend from './Trend';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -42,17 +44,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         margin: theme.spacing(0.5),
         marginLeft: theme.spacing(1),
         marginBottom: theme.spacing(2)
+    },
+    trend: {
+        width: "10rem"
     }
 }));
-
-interface Table {
-    id: number;
-    name: string;
-    headers: string[];
-    startTimestamp: number;
-    duration: number;
-    rows: number[][];
-}
 
 function downloadUrl(url: string, name: string) {
     const a = document.createElement("a") as HTMLAnchorElement;
@@ -63,11 +59,8 @@ function downloadUrl(url: string, name: string) {
     a.click();
 }
 
-function downloadCSV(table: Table, sep: string) {
-    console.log(table)
-    let csv = [table.headers.join(sep)]
-    table.rows.forEach(row => csv.push(row.map(cell => cell !== undefined ? cell.toString() : "").join(sep)))
-
+function downloadCSV(table: DataSet, sep: string) {
+    const csv = table.toCSV(sep)
     const url = `data:text/plain;charset=utf-8,${encodeURI(csv.join('\n'))}`
     downloadUrl(url, `${table.name}.csv`)
 }
@@ -78,7 +71,7 @@ export default function Collector(props: {}) {
     const classes = useStyles();
     const [checked, setChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
-    const [tables, setTables] = useState<Table[]>([])
+    const [tables, setTables] = useState<DataSet[]>([])
     const [recordingLength, setRecordingLength] = useState(0)
     const [prefix, setPrefix] = useState("data")
     const [activeStep, setActiveStep] = useState(0)
@@ -115,22 +108,17 @@ export default function Collector(props: {}) {
             // finalize recording
             setRecording(false)
         } else {
-            const headers = ["timestamp"]
+            const headers = []
+            let units = []
             recordingRegisters.forEach(register => {
                 const fields = register.specification.fields
+                units = units.concat(fields.map(field => field.unit))
                 if (fields.length == 1 && fields[0].name == "_")
                     headers.push(`${register.service.device.name}/${register.specification.name}`)
                 else
                     fields.forEach(field => headers.push(`${register.service.device.name}/${field.name}`))
             })
-            const newTable: Table = {
-                id: Math.random(),
-                name: `${prefix || "data"}${tables.length}`,
-                startTimestamp: undefined,
-                duration: 0,
-                headers,
-                rows: []
-            }
+            const newTable = new DataSet(`${prefix || "data"}${tables.length}`, headers, units)
             setTables([newTable, ...tables])
             setRecording(true)
         }
@@ -141,10 +129,10 @@ export default function Collector(props: {}) {
     const handlePrefixChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPrefix(event.target.value.trim())
     }
-    const handleDownload = (table: Table) => () => {
+    const handleDownload = (table: DataSet) => () => {
         downloadCSV(table, ",")
     }
-    const handleDeleteTable = (table: Table) => () => {
+    const handleDeleteTable = (table: DataSet) => () => {
         const i = tables.indexOf(table)
         if (i > -1) {
             tables.splice(i, 1)
@@ -153,15 +141,12 @@ export default function Collector(props: {}) {
     }
 
     // data collection
-    // interval add dataentry
+    // interval add data entry
     const addRow = () => {
         if (!recording) return; // already done
 
         const table = tables[0]
-        if (table.startTimestamp === undefined)
-            table.startTimestamp = bus.timestamp
-        const row: number[] = [bus.timestamp - table.startTimestamp];
-        table.duration = row[0]
+        const row: number[] = [];
         recordingRegisters.forEach(register => {
             const values = register.numValues;
             if (values)
@@ -172,7 +157,7 @@ export default function Collector(props: {}) {
             }
 
         })
-        table.rows.push(row)
+        table.addExample(bus.timestamp, row)
         setTables(tables);
         setRecordingLength(table.rows.length)
     }
@@ -240,6 +225,7 @@ export default function Collector(props: {}) {
                             disabled={!recordingRegisters?.length}
                         >{recording ? "Stop" : "Start"}</Button>
                     </div>
+                    {tables[0] && <Trend dataSet={tables[0]} horizon={25} />}
                     <div className={classes.row}>
                         <TextField
                             className={classes.field}
@@ -268,6 +254,7 @@ export default function Collector(props: {}) {
                                         <React.Fragment>
                                             {`${(recording && !index) ? recordingLength : table.rows.length} rows`}
                                             {`, ${prettyDuration(table.duration)}`}
+                                            {(!recording || !index) && <Trend dataSet={table} height={8} mini={true} />}
                                         </React.Fragment>
                                     } />
                                     <ListItemSecondaryAction>

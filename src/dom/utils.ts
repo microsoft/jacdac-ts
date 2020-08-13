@@ -400,3 +400,10 @@ export function roundWithPrecision(x: number, digits: number): number {
     }
     return r;
 }
+
+export function unique(values: string[]) {
+    const r = {}
+    for (let i = 0; i < values.length; ++i)
+        r[values[i]] = ""
+    return Object.keys(r)
+}
