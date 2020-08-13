@@ -28,7 +28,8 @@ import {
     DEVICE_NODE_NAME,
     SERVICE_NODE_NAME,
     EVENT_NODE_NAME,
-    REGISTER_NODE_NAME
+    REGISTER_NODE_NAME,
+    FIELD_NODE_NAME
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
@@ -119,11 +120,12 @@ export class JDBus extends JDNode {
 
     node(id: string) {
         const resolve = () => {
-            const m = /^(?<type>bus|device|service|register|event)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+))?)?)?$/.exec(id)
+            const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(id)
             if (!m) return undefined;
             const dev = m.groups["dev"];
             const srv = parseInt(m.groups["srv"], 16);
             const reg = parseInt(m.groups["reg"], 16);
+            const idx = parseInt(m.groups["idx"], 16);
             console.log(dev, srv, reg)
             switch (m.groups["type"]) {
                 case BUS_NODE_NAME: return this;
@@ -131,6 +133,7 @@ export class JDBus extends JDNode {
                 case SERVICE_NODE_NAME: return this.device(dev)?.service(srv)
                 case REGISTER_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg);
                 case EVENT_NODE_NAME: return this.device(dev)?.service(srv)?.event(reg);
+                case FIELD_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg)?.fields[idx]
             }
             return undefined;
         }

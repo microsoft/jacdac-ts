@@ -7,11 +7,13 @@ import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Arr
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
+import { JDField } from "./field";
 
 export class JDRegister extends JDNode {
     private _lastReportPkt: Packet;
     private _lastDecodedPkt: DecodedPacket;
     private _specification: jdspec.PacketInfo;
+    private _fields: JDField[];
 
     constructor(
         public readonly service: JDService,
@@ -29,6 +31,12 @@ export class JDRegister extends JDNode {
 
     get nodeKind() {
         return REGISTER_NODE_NAME
+    }
+
+    get fields() {
+        if (!this._fields)
+            this._fields = this.specification?.fields.map((field, index) => new JDField(this, index, field));
+        return this._fields;
     }
 
     // send a message to set the register value

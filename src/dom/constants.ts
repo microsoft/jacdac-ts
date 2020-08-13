@@ -163,5 +163,6 @@ export const SERVICE_NODE_NAME = "service"
 export const DEVICE_NODE_NAME = "device"
 export const BUS_NODE_NAME = "bus"
 export const COMMAND_NODE_NAME = "command"
+export const FIELD_NODE_NAME = "field"
 
 export * from "../../jacdac-spec/dist/specconstants";
