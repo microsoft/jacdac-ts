@@ -22,7 +22,11 @@ export class DataSet {
     mins: number[];
     maxs: number[];
 
-    constructor(public readonly name: string, public readonly headers: string[], public readonly units: string[]) {
+    constructor(
+        public readonly name: string,
+        public readonly colors: string[],
+        public readonly headers: string[],
+        public readonly units: string[]) {
         this.rows = [];
         this.labels = [];
     }
@@ -51,8 +55,25 @@ export class DataSet {
             }
         }
 
-        if (this.maxRows > 0 && this.rows.length > this.maxRows * 1.1) {
-            this.rows.shift();
+        let refreshminmax = false;
+        while (this.maxRows > 0 && this.rows.length > this.maxRows * 1.1) {
+            const d = this.rows.shift();
+            refreshminmax = true;
+        }
+        if (refreshminmax) {
+            for (let r = 0; r < this.rows.length; ++r) {
+                const row = this.rows[r];
+                if (r == 0) {
+                    this.mins = row.data.slice(0)
+                    this.maxs = row.data.slice(0)
+                } else {
+                    for (let i = 0; i < row.data.length; ++i) {
+                        this.mins[i] = Math.min(this.mins[i], row.data[i])
+                        this.maxs[i] = Math.max(this.mins[i], row.data[i])
+                    }
+                }
+            }
+
         }
     }
 

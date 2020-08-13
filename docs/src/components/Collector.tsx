@@ -69,6 +69,13 @@ function downloadCSV(table: DataSet, sep: string) {
     downloadUrl(url, `${table.name}.csv`)
 }
 
+const palette = [
+    "#000",
+    "#f0f",
+    "#0ff",
+    "#00f"
+]
+
 export default function Collector(props: {}) {
     const { } = props;
     const { bus } = useContext(JacdacContext)
@@ -111,12 +118,17 @@ export default function Collector(props: {}) {
             recordingRegisters.forEach(register => {
                 const fields = register.specification.fields
                 units = units.concat(fields.map(field => field.unit))
-                if (fields.length == 1 && fields[0].name == "_")
+                if (fields.length == 1 && fields[0].name == "_") {
                     headers.push(`${register.service.device.name}/${register.specification.name}`)
+                }
                 else
                     fields.forEach(field => headers.push(`${register.service.device.name}/${field.name}`))
             })
-            const newTable = new DataSet(`${prefix || "data"}${tables.length}`, headers, units)
+            const colors = headers.map((_, index) => palette[index % palette.length])
+            const newTable = new DataSet(`${prefix || "data"}${tables.length}`,
+                colors,
+                headers,
+                units)
             setTables([newTable, ...tables])
             setRecording(true)
         }
@@ -215,7 +227,7 @@ export default function Collector(props: {}) {
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
         </div>
-        {tables[0] && <Trend dataSet={tables[0]} horizon={25} dot={true} />}
+        {tables[0] && <Trend dataSet={tables[0]} horizon={20} dot={true} />}
         {!!tables.length && <div>
             <List dense>
                 {tables.map((table, index) =>

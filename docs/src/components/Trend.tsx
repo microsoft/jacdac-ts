@@ -41,6 +41,7 @@ function UnitTrend(props: {
         .map((u, index) => (u || "frac") === unit ? index : undefined)
         .filter(index => index !== undefined)
     const headers = indexes.map(i => dataSet.headers[i])
+    const colors = indexes.map(i => dataSet.colors[i])
     const data = rows.slice(-horizon)
     const useGradient = data.length < rows.length
     const times = data.map(ex => ex.timestamp)
@@ -57,7 +58,6 @@ function UnitTrend(props: {
     const h = (maxv - minv) || 10;
     const w = (maxt - mint) || 10;
 
-    const c = "black"
     const strokeWidth = 0.25
     const pointRadius = strokeWidth * 2
     const toffset = - pointRadius * 3
@@ -68,26 +68,29 @@ function UnitTrend(props: {
     function y(v: number) {
         if (v === undefined || isNaN(v))
             v = minv;
-        return vph - (v - minv) / h * (vph - 2 * margin)
+        return - (v - minv) / h * (vph - 2 * margin)
     }
     const lastRow = data[data.length - 1]
 
     return <Paper className={classes.graph} square>
         <svg viewBox={`0 0 ${vpw} ${vph}`}>
-            <defs>
-                {useGradient && <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopOpacity="0" stopColor={c} />
-                    <stop offset="40%" stopOpacity="1" stopColor={c} />
-                    <stop offset="100%" stopOpacity="1" stopColor={c} />
-                </linearGradient>}
-            </defs>
-            {indexes.map(index => {
+            {useGradient && <defs>
+                {indexes.map((index, i) =>
+                    <linearGradient key={`grad${i}`} id={`gradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopOpacity="0" stopColor={colors[i]} />
+                        <stop offset="5%" stopOpacity="0" stopColor={colors[i]} />
+                        <stop offset="40%" stopOpacity="1" stopColor={colors[i]} />
+                        <stop offset="100%" stopOpacity="1" stopColor={colors[i]} />
+                    </linearGradient>)}
+            </defs>}
+            {indexes.map((index, i) => {
+                const color = colors[i]
                 const points = data
                     .map(row => `${x(row.timestamp)},${y(row.data[index])}`).join(' ');
-                const header = headers[index]
-                return <g key={`line${index}`} transform={`translate(${toffset}, ${-margin})`}>
-                    <polyline points={points} fill="none" stroke={useGradient ? `url(#gradient)` : c} strokeWidth={strokeWidth} stroke-linejoin="round" />
-                    {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={c} />}
+                const header = headers[i]
+                return <g key={`line${index}`} transform={`translate(${toffset}, ${vph - margin})`}>
+                    <polyline points={points} fill="none" stroke={useGradient ? `url(#gradient${index})` : color} strokeWidth={strokeWidth} stroke-linejoin="round" />
+                    {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={color} />}
                 </g>
             })}
         </svg>
@@ -96,7 +99,12 @@ function UnitTrend(props: {
 }
 
 
-export default function Trend(props: { horizon?: number, width?: number, height?: number, mini?: boolean } & TrendProps) {
+export default function Trend(props: {
+    horizon?: number,
+    width?: number,
+    height?: number,
+    mini?: boolean
+} & TrendProps) {
     const { dataSet, mini } = props;
     const { rows } = dataSet;
     const classes = useStyles()
