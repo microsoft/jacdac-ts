@@ -9,7 +9,8 @@ const useStyles = makeStyles((theme) => createStyles({
         margin: theme.spacing(2)
     },
     graph: {
-        margin: theme.spacing(2)
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
     },
     mini: {
         display: "inline-block",

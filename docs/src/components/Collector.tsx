@@ -70,10 +70,14 @@ function downloadCSV(table: DataSet, sep: string) {
 }
 
 const palette = [
-    "#000",
-    "#f0f",
-    "#0ff",
-    "#00f"
+    "#003f5c",
+    "#ffa600",
+    "#665191",
+    "#a05195",
+    "#ff7c43",
+    "#d45087",
+    "#f95d6a",
+    "#2f4b7c",
 ]
 
 export default function Collector(props: {}) {
@@ -226,8 +230,28 @@ export default function Collector(props: {}) {
                     disabled={!recordingRegisters?.length}
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
+            <div className={classes.row}>
+                <TextField
+                    className={classes.field}
+                    error={error}
+                    disabled={recording}
+                    label="Sampling interval"
+                    value={samplingIntervalDelay}
+                    variant="outlined"
+                    InputProps={{
+                        startAdornment: <InputAdornment position="start">ms</InputAdornment>,
+                    }}
+                    onChange={handleSamplingIntervalChange} />
+                <TextField
+                    className={classes.field}
+                    disabled={recording}
+                    label="File name prefix"
+                    value={prefix}
+                    variant="outlined"
+                    onChange={handlePrefixChange} />
+            </div>
         </div>
-        {tables[0] && <Trend dataSet={tables[0]} horizon={20} dot={true} gradient={true} />}
+        {tables[0] && <Trend height={12} dataSet={tables[0]} horizon={20} dot={true} gradient={true} />}
         {!!tables.length && <div>
             <List dense>
                 {tables.map((table, index) =>
