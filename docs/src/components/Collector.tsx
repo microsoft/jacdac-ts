@@ -6,7 +6,6 @@ import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
 import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton } from '@material-ui/core';
-import TabPanel, { a11yProps } from './TabPanel';
 import DomTreeView from './DomTreeView';
 import { JDRegister } from '../../../src/dom/register';
 import JacdacContext from '../../../src/react/Context';
@@ -26,10 +25,15 @@ import useChange from '../jacdac/useChange';
 import { setStreamingAsync } from '../../../src/dom/sensor';
 import { DataSet } from './DataSet';
 import Trend from './Trend';
+// tslint:disable-next-line: no-submodule-imports
+import Alert from '@material-ui/lab/Alert';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
         marginBottom: theme.spacing(1)
+    },
+    grow: {
+        flexGrow: 1
     },
     field: {
         marginLeft: theme.spacing(1)
@@ -74,7 +78,6 @@ export default function Collector(props: {}) {
     const [tables, setTables] = useState<DataSet[]>([])
     const [recordingLength, setRecordingLength] = useState(0)
     const [prefix, setPrefix] = useState("data")
-    const [activeStep, setActiveStep] = useState(0)
     const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
@@ -85,12 +88,6 @@ export default function Collector(props: {}) {
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const error = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
 
-    const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    };
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
     const handleCheck = (register: JDRegister) => () => {
         const i = checked.indexOf(register.id)
         if (i > -1) {
@@ -177,7 +174,7 @@ export default function Collector(props: {}) {
     }, [recording, samplingIntervalDelayi, checked]);
 
     const sources = <Grid container spacing={2}>
-        {!readingRegisters.length && `waiting for sensors...`}
+        {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor. Did you connect your device?</Alert>}
         {readingRegisters.map(register =>
             <Grid item xs={4} key={'source' + register.id}>
                 <Card>
@@ -199,83 +196,47 @@ export default function Collector(props: {}) {
 
 
     return (<div className={classes.root}>
-        <Stepper activeStep={activeStep} orientation="vertical">
-            <Step key={"datasource"}>
-                <StepLabel>Choose sensors to record...</StepLabel>
-                <StepContent>
-                    {sources}
-                    {!!readingRegisters.length && <div className={classes.buttons}>
-                        <Button disabled={!checked.length} variant="contained" color="primary" onClick={handleNext}>
-                            Next
-                    </Button>
-                    </div>}
-                </StepContent>
-            </Step>
-            <Step key={"recorder"}>
-                <StepLabel>Record your data</StepLabel>
-                <StepContent>
-                    <div className={classes.buttons}>
-                        <ButtonGroup>
-                            <Button variant="contained" onClick={handleBack}>
-                                Previous
-                        </Button>
-                            <Button
-                                size="large"
-                                variant="contained"
-                                color="primary"
-                                title="start/stop recording"
-                                onClick={handleRecording}
-                                startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
-                                disabled={!recordingRegisters?.length}
-                            >{recording ? "Stop" : "Start"}</Button>
-                        </ButtonGroup>
-                    </div>
-                    {tables[0] && <Trend dataSet={tables[0]} horizon={25} />}
-                    <div className={classes.row}>
-                        <TextField
-                            className={classes.field}
-                            error={error}
-                            disabled={recording}
-                            label="Sampling interval"
-                            value={samplingIntervalDelay}
-                            variant="outlined"
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start">ms</InputAdornment>,
-                            }}
-                            onChange={handleSamplingIntervalChange} />
-                        <TextField
-                            className={classes.field}
-                            disabled={recording}
-                            label="File name prefix"
-                            value={prefix}
-                            variant="outlined"
-                            onChange={handlePrefixChange} />
-                    </div>
-                    {!!tables.length && <div>
-                        <List dense>
-                            {tables.map((table, index) =>
-                                <ListItem key={`result` + table.id}>
-                                    <ListItemText primary={table.name} secondary={
-                                        <React.Fragment>
-                                            {`${(recording && !index) ? recordingLength : table.rows.length} rows`}
-                                            {`, ${prettyDuration(table.duration)}`}
-                                            {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
-                                        </React.Fragment>
-                                    } />
-                                    <ListItemSecondaryAction>
-                                        {(!recording || !!index) && !!table.rows.length && <IconButton onClick={handleDownload(table)}>
-                                            <SaveAltIcon />
-                                        </IconButton>}
-                                        {(!recording || !!index) && <IconButton onClick={handleDeleteTable(table)}>
-                                            <DeleteIcon />
-                                        </IconButton>}
-                                    </ListItemSecondaryAction>
-                                </ListItem>)}
-                        </List>
-                    </div>}
-                </StepContent>
-            </Step>
-        </Stepper>
-    </div>
+        <div>
+            <h3>Choose sensors</h3>
+            {sources}
+        </div>
+        <div>
+            <h3>Record data</h3>
+            <div className={classes.buttons}>
+                <Button
+                    size="large"
+                    variant="contained"
+                    color="primary"
+                    title="start/stop recording"
+                    onClick={handleRecording}
+                    startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
+                    disabled={!recordingRegisters?.length}
+                >{recording ? "Stop" : "Start"}</Button>
+            </div>
+        </div>
+        {tables[0] && <Trend dataSet={tables[0]} horizon={25} dot={true} />}
+        {!!tables.length && <div>
+            <List dense>
+                {tables.map((table, index) =>
+                    <ListItem key={`result` + table.id}>
+                        <ListItemText primary={table.name} secondary={
+                            <React.Fragment>
+                                {`${(recording && !index) ? recordingLength : table.rows.length} rows`}
+                                {`, ${prettyDuration(table.duration)}`}
+                                {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
+                            </React.Fragment>
+                        } />
+                        <ListItemSecondaryAction>
+                            {(!recording || !!index) && !!table.rows.length && <IconButton onClick={handleDownload(table)}>
+                                <SaveAltIcon />
+                            </IconButton>}
+                            {(!recording || !!index) && <IconButton onClick={handleDeleteTable(table)}>
+                                <DeleteIcon />
+                            </IconButton>}
+                        </ListItemSecondaryAction>
+                    </ListItem>)}
+            </List>
+        </div>}
+    </div >
     )
 }
