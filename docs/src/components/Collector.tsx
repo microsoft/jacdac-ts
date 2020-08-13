@@ -215,15 +215,20 @@ export default function Collector(props: {}) {
                 <StepLabel>Record your data</StepLabel>
                 <StepContent>
                     <div className={classes.buttons}>
-                        <Button
-                            size="large"
-                            variant="contained"
-                            color="primary"
-                            title="start/stop recording"
-                            onClick={handleRecording}
-                            startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
-                            disabled={!recordingRegisters?.length}
-                        >{recording ? "Stop" : "Start"}</Button>
+                        <ButtonGroup>
+                            <Button variant="contained" onClick={handleBack}>
+                                Previous
+                        </Button>
+                            <Button
+                                size="large"
+                                variant="contained"
+                                color="primary"
+                                title="start/stop recording"
+                                onClick={handleRecording}
+                                startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
+                                disabled={!recordingRegisters?.length}
+                            >{recording ? "Stop" : "Start"}</Button>
+                        </ButtonGroup>
                     </div>
                     {tables[0] && <Trend dataSet={tables[0]} horizon={25} />}
                     <div className={classes.row}>
@@ -254,7 +259,7 @@ export default function Collector(props: {}) {
                                         <React.Fragment>
                                             {`${(recording && !index) ? recordingLength : table.rows.length} rows`}
                                             {`, ${prettyDuration(table.duration)}`}
-                                            {(!recording || !index) && <Trend dataSet={table} height={8} mini={true} />}
+                                            {(!recording || index) && <Trend dataSet={table} height={8} mini={true} />}
                                         </React.Fragment>
                                     } />
                                     <ListItemSecondaryAction>
