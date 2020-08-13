@@ -5,9 +5,9 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton } from '@material-ui/core';
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel } from '@material-ui/core';
 import DomTreeView from './DomTreeView';
-import { JDRegister } from '../../../src/dom/register';
+import { JDRegister as JDField } from '../../../src/dom/register';
 import JacdacContext from '../../../src/react/Context';
 import RegisterInput from './RegisterInput'
 import { IconButton } from 'gatsby-theme-material-ui';
@@ -65,7 +65,7 @@ function downloadUrl(url: string, name: string) {
 
 function downloadCSV(table: DataSet, sep: string) {
     const csv = table.toCSV(sep)
-    const url = `data:text/plain;charset=utf-8,${encodeURI(csv.join('\n'))}`
+    const url = `data:text/plain;charset=utf-8,${encodeURI(csv)}`
     downloadUrl(url, `${table.name}.csv`)
 }
 
@@ -84,7 +84,7 @@ export default function Collector(props: {}) {
     const { } = props;
     const { bus } = useContext(JacdacContext)
     const classes = useStyles();
-    const [checked, setChecked] = useState<string[]>([])
+    const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<DataSet[]>([])
     const [recordingLength, setRecordingLength] = useState(0)
@@ -95,40 +95,34 @@ export default function Collector(props: {}) {
             .services().find(srv => srv.readingRegister)
             ?.readingRegister
         ).filter(reg => !!reg))
-    const recordingRegisters = readingRegisters.filter(reg => checked.indexOf(reg.id) > -1)
+    const recordingFields = readingRegisters
+        .map(reg => reg.fields.filter(field => fieldIdsChecked.indexOf(field.id) > -1))
+        .filter(fs => fs.length)
+        .reduce((l, r) => l.concat(r), [])
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const error = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
 
-    const handleCheck = (register: JDRegister) => () => {
-        const i = checked.indexOf(register.id)
+    const handleCheck = (field: JDField) => () => {
+        const i = fieldIdsChecked.indexOf(field.id)
         if (i > -1) {
-            checked.splice(i, 1)
-            setStreamingAsync(register.service, false)
+            fieldIdsChecked.splice(i, 1)
+            setStreamingAsync(field.register.service, false)
         }
         else {
-            checked.push(register.id)
-            setStreamingAsync(register.service, true)
-            register.sendGetAsync() // at least some data
+            fieldIdsChecked.push(field.id)
+            setStreamingAsync(field.register.service, true)
+            field.register.sendGetAsync() // at least some data
         }
-        setChecked([...checked])
+        setFieldIdsChecked([...fieldIdsChecked])
     }
     const handleRecording = () => {
         if (recording) {
             // finalize recording
             setRecording(false)
         } else {
-            const headers = []
-            let units = []
-            recordingRegisters.forEach(register => {
-                const fields = register.specification.fields
-                units = units.concat(fields.map(field => field.unit))
-                if (fields.length == 1 && fields[0].name == "_") {
-                    headers.push(`${register.service.device.name}/${register.specification.name}`)
-                }
-                else
-                    fields.forEach(field => headers.push(`${register.service.device.name}/${field.name}`))
-            })
-            const colors = headers.map((_, index) => palette[index % palette.length])
+            const headers = recordingFields.map(field => `${field.register.service.device.name}/${field.name}`)
+            const units = recordingFields.map(field => field.unit)
+            const colors = recordingFields.map((_, index) => palette[index % palette.length])
             const newTable = new DataSet(`${prefix || "data"}${tables.length}`,
                 colors,
                 headers,
@@ -160,17 +154,7 @@ export default function Collector(props: {}) {
         if (!recording) return; // already done
 
         const table = tables[0]
-        const row: number[] = [];
-        recordingRegisters.forEach(register => {
-            const values = register.values;
-            if (values)
-                values.forEach(value => row.push(value))
-            else { // no data yet
-                const fields = register.specification.fields
-                fields.forEach(() => row.push(undefined))
-            }
-
-        })
+        const row = recordingFields.map(f => f.value)
         table.addExample(bus.timestamp, row)
         setTables(tables);
         setRecordingLength(table.rows.length)
@@ -178,34 +162,35 @@ export default function Collector(props: {}) {
     // setting interval
     useEffect(() => {
         if (!error)
-            recordingRegisters.forEach(register => register.service
+            recordingFields.forEach(field => field.register.service
                 .register(SensorReg.StreamingInterval)
                 .sendSetIntAsync(samplingIntervalDelayi)
             )
-    }, [samplingIntervalDelayi, checked, error])
+    }, [samplingIntervalDelayi, fieldIdsChecked, error])
     // collecting
     useEffect(() => {
         if (error) return undefined;
         const interval = setInterval(() => addRow(), samplingIntervalDelayi);
         return () => clearInterval(interval);
-    }, [recording, samplingIntervalDelayi, checked]);
+    }, [recording, samplingIntervalDelayi, fieldIdsChecked]);
 
     const sources = <Grid container spacing={2}>
         {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor. Did you connect your device?</Alert>}
         {readingRegisters.map(register =>
             <Grid item xs={4} key={'source' + register.id}>
                 <Card>
-                    <CardHeader>
-                        {register.service.name}
-                    </CardHeader>
+                    <CardHeader subheader={register.service.name}
+                        title={`${register.service.device.name}/${register.name}`} />
                     <CardContent>
-                        {`${register.service.device.name}/${register.name}`}
                     </CardContent>
                     <CardActions>
-                        <Switch
-                            onChange={handleCheck(register)}
-                            checked={checked.indexOf(register.id) > -1}
-                        />
+                        <FormGroup>
+                            {register.fields.map(field =>
+                                <FormControlLabel key={field.id}
+                                    control={<Switch onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
+                                    label={field.name}
+                                />)}
+                        </FormGroup>
                     </CardActions>
                 </Card>
             </Grid>)}
@@ -227,7 +212,7 @@ export default function Collector(props: {}) {
                     title="start/stop recording"
                     onClick={handleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
-                    disabled={!recordingRegisters?.length}
+                    disabled={!recordingFields?.length}
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
             <div className={classes.row}>

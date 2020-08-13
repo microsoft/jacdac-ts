@@ -1,7 +1,8 @@
 import { FIELD_NODE_NAME } from "./constants"
-import { JDRegister } from "./jacdac"
+import { JDRegister } from "./register"
+import { JDNode } from "./node"
 
-export class JDField extends Node {
+export class JDField extends JDNode {
     constructor(
         public readonly register: JDRegister,
         public readonly index: number,
@@ -10,11 +11,31 @@ export class JDField extends Node {
         super()
     }
 
-    id() {
-        return `${this.nodeType}:${this.register.service.device.deviceId}:${this.register.service.serviceClass.toString(16)}:${this.register.address.toString(16)}:${this.index.toString(16)}`
+    get id() {
+        return `${this.nodeKind}:${this.register.service.device.deviceId}:${this.register.service.serviceClass.toString(16)}:${this.register.address.toString(16)}:${this.index.toString(16)}`
     }
 
-    nodeKind() {
+    get name() {
+        return this.specification.name === "_" ? this.register.specification.name : this.specification.name
+    }
+
+    get unit() {
+        return this.specification.unit;
+    }
+
+    get nodeKind() {
         return FIELD_NODE_NAME
+    }
+
+    get decoded() {
+        const decoded = this.register.decoded;
+        return decoded?.decoded[this.index]
+    }
+
+    get value() {
+        if (this.unit == "frac")
+            return this.decoded?.scaledValue
+        else
+            return this.decoded?.numValue
     }
 }
