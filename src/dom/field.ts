@@ -23,6 +23,17 @@ export class JDField extends JDNode {
         return `${this.register.qualifiedName}.${this.name}`
     }
 
+    get prettyName() {
+        const service = this.register.service
+        const parts = [service.device.name]
+        if (service.device.services({ serviceClass: service.serviceClass }).length > 1)
+            parts.push(`[${service.service_number.toString(16)}]`)
+        parts.push(this.register.name)
+        if (this.specification.name !== "_")
+            parts.push(this.name)
+        return parts.join('.')
+    }
+
     get unit() {
         return this.specification.unit;
     }

@@ -36,7 +36,7 @@ export class JDService extends JDNode {
     }
 
     get qualifiedName() {
-        return `${this.device.qualifiedName}.${this.name}`
+        return `${this.device.qualifiedName}[${this.service_number.toString(16)}]`
     }
 
     get readingRegister(): JDRegister {

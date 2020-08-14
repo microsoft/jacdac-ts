@@ -96,7 +96,7 @@ const palette = [
 
 const LIVE_HORIZON = 64
 function createDataSet(fields: JDField[], name: string, live: boolean) {
-    const headers = fields.map(field => `${field.register.service.device.name}.${field.register.name}.${field.name}`)
+    const headers = fields.map(field => field.prettyName)
     const units = fields.map(field => field.unit)
     const colors = fields.map((_, index) => palette[index % palette.length])
     const set = new DataSet(name,
