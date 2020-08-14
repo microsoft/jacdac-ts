@@ -208,7 +208,7 @@ export default function Collector(props: {}) {
                                     control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
                                     label={<React.Fragment>
                                         {field.name}
-                                        {<Chip size="small" icon={<CategoryIcon />} label={prettyUnit(field.unit)} />}
+                                        {!!prettyUnit(field.unit) && ` (${prettyUnit(field.unit)})`}
                                         {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
                                     </React.Fragment>}
                                 />)}

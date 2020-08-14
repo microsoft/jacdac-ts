@@ -48,7 +48,7 @@ function UnitTrend(props: {
     const times = data.map(ex => ex.timestamp)
     const maxt = Math.max.apply(null, times);
     const mint = Math.min.apply(null, times);
-    let minv = unit == "frac" ? 0 : Math.max.apply(null, indexes.map(i => dataSet.mins[i]));
+    let minv = unit == "frac" ? 0 : Math.min.apply(null, indexes.map(i => dataSet.mins[i]));
     let maxv = unit == "frac" ? 1 : Math.max.apply(null, indexes.map(i => dataSet.maxs[i]));
     if (isNaN(minv) && isNaN(maxv)) {
         minv = 0
