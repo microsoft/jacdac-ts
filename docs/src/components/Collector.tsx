@@ -312,7 +312,7 @@ export default function Collector(props: {}) {
                     value={prefix}
                     variant="outlined"
                     onChange={handlePrefixChange} />
-                <EventSelect eventId={triggerEventId} onChange={handleTriggerChange} label={"Start Event"} />
+                <EventSelect className={classes.field} eventId={triggerEventId} onChange={handleTriggerChange} label={"Start Event"} />
             </div>
         </div>
         {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}

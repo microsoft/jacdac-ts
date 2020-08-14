@@ -14,11 +14,11 @@ import Select from '@material-ui/core/Select';
 import { JDEvent } from '../../../src/dom/event';
 import JacdacContext from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
+import clsx from 'clsx';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         formControl: {
-            margin: theme.spacing(1),
             minWidth: 120,
         },
         selectEmpty: {
@@ -27,8 +27,8 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-export default function EventSelect(props: { eventId: string, onChange: (eventId: string) => void, label: string, filter?: (event: JDEvent) => boolean }) {
-    const { eventId, onChange, label, filter } = props
+export default function EventSelect(props: { eventId: string, onChange: (eventId: string) => void, label: string, filter?: (event: JDEvent) => boolean, className?: string }) {
+    const { eventId, onChange, label, filter, className } = props
     const { bus } = useContext(JacdacContext)
     const classes = useStyles();
     const events = useChange(bus, () => bus.devices()
@@ -45,7 +45,7 @@ export default function EventSelect(props: { eventId: string, onChange: (eventId
     };
 
     return (
-        <FormControl variant="outlined" className={classes.formControl}>
+        <FormControl variant="outlined" className={clsx(className, classes.formControl)}>
             <InputLabel>{label}</InputLabel>
             <Select
                 value={eventId}
