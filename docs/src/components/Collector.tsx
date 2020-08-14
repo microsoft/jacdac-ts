@@ -128,17 +128,21 @@ export default function Collector(props: {}) {
             ?.readingRegister
         ).filter(reg => !!reg))
     const recordingFields = fieldIdsChecked.map(id => bus.node(id) as JDField)
+        .filter(f => !!f)
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
     const errorSamplingDuration = isNaN(samplingCount)
     const error = errorSamplingDuration || errorSamplingIntervalDelay
     const triggerEvent = bus.node(triggerEventId) as JDEvent
-    useEffect(() => triggerEvent?.subscribe(EVENT, () => {
-        toggleRecording()
-    }), [triggerEvent, recording])
+    useEffect(() => {
+        console.log(`trigger event`, triggerEventId, triggerEvent)
+        return triggerEvent?.subscribe(EVENT, () => {
+            toggleRecording()
+        })
+    }, [triggerEvent, recording])
 
-    const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live) : undefined
+    const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField).filter(f => !!f), `${prefix || "data"}${tables.length}`, live) : undefined
     const handleCheck = (field: JDField) => () => {
         const i = fieldIdsChecked.indexOf(field.id)
         if (i > -1) {
