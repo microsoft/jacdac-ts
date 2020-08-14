@@ -49,6 +49,8 @@ import { DbProvider, useFirmwareBlobs } from "./DbContext";
 import FlashButton from "./FlashButton";
 import DomTreeView from "./DomTreeView";
 import TocBreadcrumbs from "./TocBreadcrums";
+// tslint:disable-next-line: no-submodule-imports
+import { createMuiTheme, responsiveFontSizes, ThemeProvider } from '@material-ui/core/styles';
 
 const drawerWidth = `${40}rem`;
 
@@ -123,14 +125,18 @@ enum DrawerType {
 }
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
+  const theme = responsiveFontSizes(createMuiTheme());
+
   return (
-    <JacdacProvider>
-      <PacketFilterProvider>
-        <DbProvider>
-          <LayoutWithContext {...props} />
-        </DbProvider>
-      </PacketFilterProvider>
-    </JacdacProvider>
+    <ThemeProvider theme={theme}>
+      <JacdacProvider>
+        <PacketFilterProvider>
+          <DbProvider>
+            <LayoutWithContext {...props} />
+          </DbProvider>
+        </PacketFilterProvider>
+      </JacdacProvider>
+    </ThemeProvider>
   )
 }
 
@@ -248,7 +254,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           })}
         >
           <div className={classes.drawerHeader} />
-            {children}
+          {children}
           <footer>
             <Divider />
             <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
