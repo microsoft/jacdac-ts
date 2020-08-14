@@ -220,11 +220,11 @@ export default function Collector(props: {}) {
 
 
     return (<div className={classes.root}>
-        <div>
+        <div key="sensors">
             <h3>Choose sensors</h3>
             {sources}
         </div>
-        <div>
+        <div key="record">
             <h3>Record data</h3>
             <div className={classes.buttons}>
                 <Button
@@ -258,9 +258,9 @@ export default function Collector(props: {}) {
                     onChange={handlePrefixChange} />
             </div>
         </div>
-        {liveDataSet && <Trend height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
-        {liveDataSet && <DataSetTable className={classes.segment} dataSet={liveDataSet} rows={3} />}
-        {!!tables.length && <div>
+        {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
+        {liveDataSet && <DataSetTable key="datasettable" className={classes.segment} dataSet={liveDataSet} rows={3} />}
+        {!!tables.length && <div keys="recordings">
             <h3>Recordings</h3>
             <Grid container spacing={2}>
                 {tables.map((table, index) =>

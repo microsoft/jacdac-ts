@@ -32,6 +32,8 @@ function UnitTrend(props: {
     const { dataSet, unit, horizon, width, height, dot, gradient } = props;
     const { rows } = dataSet;
     const classes = useStyles()
+    const shape = unit == "frac" ? "step" : "line"
+    const symmetric = unit == "g" ? true : false
 
     if (rows.length < 2)
         return <></>
@@ -50,18 +52,24 @@ function UnitTrend(props: {
     const mint = Math.min.apply(null, times);
     let minv = unit == "frac" ? 0 : Math.min.apply(null, indexes.map(i => dataSet.mins[i]));
     let maxv = unit == "frac" ? 1 : Math.max.apply(null, indexes.map(i => dataSet.maxs[i]));
+    let opposite = unit != "frac" && Math.sign(minv) != Math.sign(maxv)
     if (isNaN(minv) && isNaN(maxv)) {
         minv = 0
         maxv = 1
     }
+    if (symmetric) {
+        maxv = Math.max(Math.abs(minv), Math.abs(maxv))
+        minv = -maxv
+    }
     const rv = maxv - minv;
-    console.log(minv, maxv)
 
     const margin = 2;
     const h = (maxv - minv) || 10;
     const w = (maxt - mint) || 10;
 
     const strokeWidth = 0.25
+    const axisWidth = 0.2
+    const axisColor = "#ccc"
     const pointRadius = strokeWidth * 2
     const toffset = - pointRadius * 3
 
@@ -82,6 +90,12 @@ function UnitTrend(props: {
         <Paper className={classes.graph} square>
             <svg viewBox={`0 0 ${vpw} ${vph}`}>
                 {useGradient && <defs>
+                    <linearGradient key={`gradaxis`} id={`gradientaxis`} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopOpacity="0" stopColor={axisColor} />
+                            <stop offset="5%" stopOpacity="0" stopColor={axisColor} />
+                            <stop offset="40%" stopOpacity="1" stopColor={axisColor} />
+                            <stop offset="100%" stopOpacity="1" stopColor={axisColor} />
+                        </linearGradient>
                     {indexes.map((index, i) =>
                         <linearGradient key={`grad${i}`} id={`gradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopOpacity="0" stopColor={colors[i]} />
@@ -90,16 +104,20 @@ function UnitTrend(props: {
                             <stop offset="100%" stopOpacity="1" stopColor={colors[i]} />
                         </linearGradient>)}
                 </defs>}
-                {indexes.map((index, i) => {
-                    const color = colors[i]
-                    const points =
-                        data.map(row => `${x(row.timestamp)},${y(row.data[index])}`).join(' ');
-                    const header = headers[i]
-                    return <g key={`line${index}`} transform={`translate(${toffset}, ${vph - margin})`}>
-                        <polyline points={points} fill="none" stroke={useGradient ? `url(#gradient${index})` : color} strokeWidth={strokeWidth} stroke-linejoin="round" />
-                        {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={color} />}
-                    </g>
-                })}
+                <g transform={`translate(${toffset}, ${vph - margin})`}>
+                    {opposite && <line x1={x(mint)} x2={x(maxt)} y1={y(0)} y2={y(0)} strokeWidth={axisWidth} stroke={useGradient ? `url(#gradientaxis)` : axisColor} />}
+                    {indexes.map((index, i) => {
+                        const color = colors[i]
+                        const path = shape == "step"
+                            ? data.map((row, ri) => ri == 0 ? `M ${x(row.timestamp)} ${y(row.data[index])}` : `H ${x(row.timestamp)} V ${y(row.data[index])}`).join(' ')
+                            : data.map((row, ri) => `${ri == 0 ? `M` : `L`} ${x(row.timestamp)} ${y(row.data[index])}`).join(' ');
+                        const header = headers[i]
+                        return <g key={`line${index}`}>
+                            <path d={path} fill="none" stroke={useGradient ? `url(#gradient${index})` : color} strokeWidth={strokeWidth} strokeLinejoin="round" />
+                            {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={color} />}
+                        </g>
+                    })}
+                </g>
             </svg>
         </Paper>
     )

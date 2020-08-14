@@ -79,7 +79,6 @@ export class DataSet {
                 }
             }
         }
-        console.log(this.mins, this.maxs)
     }
 
     toCSV(sep: string = ",") {
