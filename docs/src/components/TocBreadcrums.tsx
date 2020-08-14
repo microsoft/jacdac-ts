@@ -10,8 +10,8 @@ export default function TocBreadcrumbs(props: { path: string }) {
 
   return <Breadcrumbs maxItems={2} aria-label="breadcrumb">
     {parts.slice(0, parts.length - 1)
-      .map((p, i) => <Link color="inherit" to={"/" + parts.slice(0, i).join("/")}>{p}</Link>)}
-    {<Typography color="textPrimary">{parts[parts.length - 1]}</Typography>}
+      .map((p, i) => <Link key={`breadcrump${i}`} color="inherit" to={"/" + parts.slice(0, i).join("/")}>{p}</Link>)}
+    {<Typography key={`breadcrumblast`} color="textPrimary">{parts[parts.length - 1]}</Typography>}
   </Breadcrumbs>
 
 }
