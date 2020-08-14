@@ -33,6 +33,16 @@ export abstract class JDNode {
      */
     abstract get nodeKind(): string;
 
+    /**
+     * Gets the local name
+     */
+    abstract get name(): string;
+
+    /**
+     * Gets the name including parents
+     */
+    abstract get qualifiedName(): string;
+
     on(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName)
             .forEach(eventName => this.addListenerInternal(eventName, handler, false));

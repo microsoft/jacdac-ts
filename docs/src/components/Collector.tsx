@@ -34,6 +34,9 @@ import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import DataSetTable from './DataSetTable';
+import EventSelect from './EventSelect';
+import { JDEvent } from '../../../src/dom/event';
+import { EVENT } from '../../../src/dom/constants';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -118,6 +121,7 @@ export default function Collector(props: {}) {
     const [samplingDuration, setSamplingDuration] = useState("10")
     const [liveDataSet, setLiveDataSet] = useState<DataSet>(undefined)
     const [, setLiveDataTimestamp] = useState(0)
+    const [triggerEventId, setTriggerEventId] = useState<string>("")
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
             .services().find(srv => srv.readingRegister)
@@ -129,6 +133,10 @@ export default function Collector(props: {}) {
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
     const errorSamplingDuration = isNaN(samplingCount)
     const error = errorSamplingDuration || errorSamplingIntervalDelay
+    const triggerEvent = bus.node(triggerEventId) as JDEvent
+    useEffect(() => triggerEvent?.subscribe(EVENT, () => {
+        toggleRecording()
+    }), [triggerEventId])
 
     const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live) : undefined
     const handleCheck = (field: JDField) => () => {
@@ -147,17 +155,23 @@ export default function Collector(props: {}) {
         setLiveDataSet(newDataSet(true))
     }
     const stopRecording = () => {
-        setTables([liveDataSet, ...tables])
-        setLiveDataSet(newDataSet(true))
-        setRecording(false)        
-    }
-    const handleRecording = () => {
         if (recording) {
-            stopRecording()
-        } else {
+            setTables([liveDataSet, ...tables])
+            setLiveDataSet(newDataSet(true))
+            setRecording(false)
+        }
+    }
+    const startRecording = () => {
+        if (!recording && recordingFields.length) {
             setLiveDataSet(newDataSet(false))
             setRecording(true)
         }
+    }
+    const toggleRecording = () => {
+        if (recording)
+            stopRecording()
+        else
+            startRecording()
     }
     const handleSamplingIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSamplingIntervalDelay(event.target.value.trim())
@@ -178,6 +192,7 @@ export default function Collector(props: {}) {
             setTables([...tables])
         }
     }
+    const handleTriggerChange = (eventId: string) => setTriggerEventId(eventId)
     const handleIdentify = (device: JDDevice) => () => device.identify()
     const handleReset = (device: JDReset) => () => device.reset()
 
@@ -262,7 +277,7 @@ export default function Collector(props: {}) {
                     variant="contained"
                     color={recording ? "secondary" : "primary"}
                     title="start/stop recording"
-                    onClick={handleRecording}
+                    onClick={toggleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
                     disabled={!recordingFields?.length}
                 >{recording ? "Stop" : "Start"}</Button>
@@ -297,6 +312,7 @@ export default function Collector(props: {}) {
                     value={prefix}
                     variant="outlined"
                     onChange={handlePrefixChange} />
+                <EventSelect eventId={triggerEventId} onChange={handleTriggerChange} label={"Start Event"} />
             </div>
         </div>
         {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}

@@ -44,6 +44,10 @@ export class JDDevice extends JDNode {
         return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId) || this.shortId;
     }
 
+    get qualifiedName() {
+        return this.name
+    }
+
     get announced(): boolean {
         return !!this.servicesData && !!this.servicesData.length;
     }

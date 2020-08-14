@@ -4,7 +4,7 @@ import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NAME } from "./constants";
 import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading } from "./spec";
+import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading, isEvent } from "./spec";
 import { JDEvent } from "./event";
 
 export class JDService extends JDNode {
@@ -35,6 +35,10 @@ export class JDService extends JDNode {
         return serviceName(this.serviceClass)
     }
 
+    get qualifiedName() {
+        return `${this.device.qualifiedName}.${this.name}`
+    }
+
     get readingRegister(): JDRegister {
         const pkt = this.specification?.packets.find(pkt => isReading(pkt))
         return pkt && this.register(pkt.identifier)
@@ -47,6 +51,10 @@ export class JDService extends JDNode {
         if (this._specification === null)
             this._specification = serviceSpecificationFromClassIdentifier(this.serviceClass)
         return this._specification;
+    }
+
+    get events() {
+        return this.specification?.packets.filter(isEvent).map(info => this.event(info.identifier))
     }
 
     toString() {

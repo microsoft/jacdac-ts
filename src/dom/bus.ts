@@ -110,6 +110,14 @@ export class JDBus extends JDNode {
         return this.nodeKind;
     }
 
+    get name() {
+        return "bus"
+    }
+
+    get qualifiedName() {
+        return this.name
+    }
+
     get nodeKind() {
         return BUS_NODE_NAME
     }

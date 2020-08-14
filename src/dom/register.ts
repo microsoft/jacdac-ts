@@ -8,25 +8,18 @@ import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
+import { JDServiceNode } from "./servicenode";
 
-export class JDRegister extends JDNode {
+
+export class JDRegister extends JDServiceNode {
     private _lastReportPkt: Packet;
     private _lastDecodedPkt: DecodedPacket;
-    private _specification: jdspec.PacketInfo;
     private _fields: JDField[];
 
     constructor(
-        public readonly service: JDService,
-        public readonly address: number) {
-        super()
-    }
-
-    get id() {
-        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
-    }
-
-    get name() {
-        return this.specification?.name || this.address.toString(16);
+        service: JDService,
+        address: number) {
+        super(service, address, isRegister)
     }
 
     get nodeKind() {
@@ -64,12 +57,6 @@ export class JDRegister extends JDNode {
 
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void> {
         return this.sendSetAsync(stringToUint8Array(toUTF8(value || "")), autoRefresh)
-    }
-
-    get specification() {
-        if (!this._specification)
-            this._specification = this.service.specification?.packets.find(packet => isRegister(packet) && packet.identifier === this.address)
-        return this._specification;
     }
 
     get isReading() {

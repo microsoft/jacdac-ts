@@ -80,7 +80,7 @@ export default function PacketList(props: {
                 }
             }
             else if (decoded && !hasFlag(decoded.info.kind)) {
-                console.log(`ignore ${decoded.info.kind}`)
+                //console.log(`ignore ${decoded.info.kind}`)
                 return; // ignore packet type
             }
 
@@ -103,14 +103,14 @@ export default function PacketList(props: {
         <List className={classes.items} dense={true}>
             <ListItem key="filters">
                 <ButtonGroup>
-                    <IconButton title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
-                    <IconButton title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
+                    <IconButton key="start" title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+                    <IconButton key="clear" title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
                 </ButtonGroup>
 
                 <ToggleButtonGroup value={flags} onChange={handleModes}>
-                    <ToggleButton title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
-                    {allKinds().map(kind => <ToggleButton title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}
-                    <ToggleButton title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
+                    <ToggleButton key="console" title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
+                    {allKinds().map(kind => <ToggleButton key={kind} title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}
+                    <ToggleButton key="announce" title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
                 </ToggleButtonGroup>
             </ListItem>
             {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
