@@ -39,8 +39,8 @@ export default function DataSetTable(props: { dataSet: DataSet, rows?: number, c
         <TableBody>
           {dataSet.rows.slice(rows !== undefined ? -rows : 0).map((row, index) =>
             <TableRow key={`row` + index}>
-              <TableCell align="right" key="timestamp">{prettyDuration(row.timestamp - dataSet.startTimestamp)}</TableCell>
-              {row.data.map(v => <TableCell align="right">{v}</TableCell>)}
+              <TableCell key="headers" align="right" key="timestamp">{prettyDuration(row.timestamp - dataSet.startTimestamp)}</TableCell>
+              {row.data.map((v,i) => <TableCell key={"cell" + i} align="right">{v}</TableCell>)}
             </TableRow>
           )}
         </TableBody>

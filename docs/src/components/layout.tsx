@@ -248,9 +248,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           })}
         >
           <div className={classes.drawerHeader} />
-          <Typography>
             {children}
-          </Typography>
           <footer>
             <Divider />
             <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
