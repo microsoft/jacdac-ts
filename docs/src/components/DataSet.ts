@@ -43,6 +43,10 @@ export class DataSet {
         return (first && last && last.timestamp - first.timestamp) || 0
     }
 
+    get length() {
+        return this.rows.length
+    }
+
     addExample(timestamp: number, data: number[]) {
         this.rows.push(new Example(timestamp, data))
 

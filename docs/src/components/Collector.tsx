@@ -112,11 +112,12 @@ export default function Collector(props: {}) {
     const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<DataSet[]>([])
-    const [recordingLength, setRecordingLength] = useState(0)
+    const [, setRecordingLength] = useState(0)
     const [prefix, setPrefix] = useState("data")
     const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
+    const [samplingDuration, setSamplingDuration] = useState("10")
     const [liveDataSet, setLiveDataSet] = useState<DataSet>(undefined)
-    const [liveDataTimestamp, setLiveDataTimestamp] = useState(0)
+    const [, setLiveDataTimestamp] = useState(0)
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
             .services().find(srv => srv.readingRegister)
@@ -124,7 +125,10 @@ export default function Collector(props: {}) {
         ).filter(reg => !!reg))
     const recordingFields = fieldIdsChecked.map(id => bus.node(id) as JDField)
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
-    const error = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
+    const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
+    const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
+    const errorSamplingDuration = isNaN(samplingCount)
+    const error = errorSamplingDuration || errorSamplingIntervalDelay
 
     const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live) : undefined
     const handleCheck = (field: JDField) => () => {
@@ -142,11 +146,14 @@ export default function Collector(props: {}) {
         setFieldIdsChecked([...fieldIdsChecked])
         setLiveDataSet(newDataSet(true))
     }
+    const stopRecording = () => {
+        setTables([liveDataSet, ...tables])
+        setLiveDataSet(newDataSet(true))
+        setRecording(false)        
+    }
     const handleRecording = () => {
         if (recording) {
-            setLiveDataSet(newDataSet(true))
-            setTables([liveDataSet, ...tables])
-            setRecording(false)
+            stopRecording()
         } else {
             setLiveDataSet(newDataSet(false))
             setRecording(true)
@@ -154,6 +161,9 @@ export default function Collector(props: {}) {
     }
     const handleSamplingIntervalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSamplingIntervalDelay(event.target.value.trim())
+    }
+    const handleSamplingDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSamplingDuration(event.target.value.trim())
     }
     const handlePrefixChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPrefix(event.target.value.trim())
@@ -181,6 +191,11 @@ export default function Collector(props: {}) {
         setLiveDataSet(liveDataSet);
         setRecordingLength(liveDataSet.rows.length)
         setLiveDataTimestamp(bus.timestamp)
+
+        if (recording && liveDataSet.length >= samplingCount) {
+            // stop recording
+            stopRecording()
+        }
     }
     // setting interval
     useEffect(() => {
@@ -189,13 +204,13 @@ export default function Collector(props: {}) {
                 .register(SensorReg.StreamingInterval)
                 .sendSetIntAsync(samplingIntervalDelayi)
             )
-    }, [samplingIntervalDelayi, fieldIdsChecked, error])
+    }, [samplingIntervalDelayi, fieldIdsChecked, errorSamplingIntervalDelay])
     // collecting
     useEffect(() => {
         if (error) return undefined;
         const interval = setInterval(() => addRow(), samplingIntervalDelayi);
         return () => clearInterval(interval);
-    }, [recording, samplingIntervalDelayi, fieldIdsChecked]);
+    }, [recording, samplingIntervalDelayi, samplingCount, fieldIdsChecked]);
 
     const sources = <Grid container spacing={2}>
         {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
@@ -245,7 +260,7 @@ export default function Collector(props: {}) {
                 <Button
                     size="large"
                     variant="contained"
-                    color="primary"
+                    color={recording ? "secondary" : "primary"}
                     title="start/stop recording"
                     onClick={handleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
@@ -255,7 +270,7 @@ export default function Collector(props: {}) {
             <div className={classes.row}>
                 <TextField
                     className={classes.field}
-                    error={error}
+                    error={errorSamplingIntervalDelay}
                     disabled={recording}
                     label="Sampling interval"
                     value={samplingIntervalDelay}
@@ -264,6 +279,17 @@ export default function Collector(props: {}) {
                         startAdornment: <InputAdornment position="start">ms</InputAdornment>,
                     }}
                     onChange={handleSamplingIntervalChange} />
+                <TextField
+                    className={classes.field}
+                    error={errorSamplingDuration}
+                    disabled={recording}
+                    label="Sampling duration"
+                    value={samplingDuration}
+                    variant="outlined"
+                    InputProps={{
+                        startAdornment: <InputAdornment position="start">s</InputAdornment>,
+                    }}
+                    onChange={handleSamplingDurationChange} />
                 <TextField
                     className={classes.field}
                     disabled={recording}
@@ -275,7 +301,7 @@ export default function Collector(props: {}) {
         </div>
         {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
         {liveDataSet && <DataSetTable key="datasettable" className={classes.segment} dataSet={liveDataSet} rows={3} />}
-        {!!tables.length && <div keys="recordings">
+        {!!tables.length && <div key="recordings">
             <h3>Recordings</h3>
             <Grid container spacing={2}>
                 {tables.map((table, index) =>
