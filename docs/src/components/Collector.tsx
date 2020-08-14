@@ -21,8 +21,10 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import CategoryIcon from '@material-ui/icons/Category';
 import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
-import { prettyDuration } from '../../../src/dom/pretty'
+import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
 import { setStreamingAsync } from '../../../src/dom/sensor';
 import { DataSet } from './DataSet';
@@ -86,7 +88,7 @@ const palette = [
     "#2f4b7c",
 ]
 
-const LIVE_HORIZON = 20
+const LIVE_HORIZON = 64
 function createDataSet(fields: JDField[], name: string, live: boolean) {
     const headers = fields.map(field => `${field.register.service.device.name}/${field.name}`)
     const units = fields.map(field => field.unit)
@@ -121,7 +123,7 @@ export default function Collector(props: {}) {
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const error = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
 
-    const newDataSet = (live: boolean) => createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live)
+    const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live) : undefined
     const handleCheck = (field: JDField) => () => {
         const i = fieldIdsChecked.indexOf(field.id)
         if (i > -1) {
@@ -206,6 +208,7 @@ export default function Collector(props: {}) {
                                     control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
                                     label={<React.Fragment>
                                         {field.name}
+                                        {<Chip size="small" icon={<CategoryIcon />} label={prettyUnit(field.unit)} />}
                                         {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
                                     </React.Fragment>}
                                 />)}
@@ -256,7 +259,7 @@ export default function Collector(props: {}) {
             </div>
         </div>
         {liveDataSet && <Trend height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
-        {liveDataSet && <DataSetTable dataSet={liveDataSet} rows={3} />}
+        {liveDataSet && <DataSetTable className={classes.segment} dataSet={liveDataSet} rows={3} />}
         {!!tables.length && <div>
             <h3>Recordings</h3>
             <Grid container spacing={2}>

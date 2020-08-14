@@ -44,23 +44,16 @@ export class DataSet {
 
     addExample(timestamp: number, data: number[]) {
         this.rows.push(new Example(timestamp, data))
-        // update mins and maxes
-        if (!this.mins) {
-            this.mins = data.slice(0)
-            this.maxs = data.slice(0)
-        } else {
-            for (let i = 0; i < data.length; ++i) {
-                this.mins[i] = Math.min(this.mins[i], data[i])
-                this.maxs[i] = Math.max(this.maxs[i], data[i])
-            }
-        }
 
+        // drop rows if needed
         let refreshminmax = false;
         while (this.maxRows > 0 && this.rows.length > this.maxRows * 1.1) {
             const d = this.rows.shift();
             refreshminmax = true;
         }
+
         if (refreshminmax) {
+            // refresh entire mins/max
             for (let r = 0; r < this.rows.length; ++r) {
                 const row = this.rows[r];
                 if (r == 0) {
@@ -69,12 +62,24 @@ export class DataSet {
                 } else {
                     for (let i = 0; i < row.data.length; ++i) {
                         this.mins[i] = Math.min(this.mins[i], row.data[i])
-                        this.maxs[i] = Math.max(this.mins[i], row.data[i])
+                        this.maxs[i] = Math.max(this.maxs[i], row.data[i])
                     }
                 }
             }
-
         }
+        else {
+            // incremental update
+            if (!this.mins) {
+                this.mins = data.slice(0)
+                this.maxs = data.slice(0)
+            } else {
+                for (let i = 0; i < data.length; ++i) {
+                    this.mins[i] = Math.min(this.mins[i], data[i])
+                    this.maxs[i] = Math.max(this.maxs[i], data[i])
+                }
+            }
+        }
+        console.log(this.mins, this.maxs)
     }
 
     toCSV(sep: string = ",") {

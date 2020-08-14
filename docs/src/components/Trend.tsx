@@ -55,6 +55,7 @@ function UnitTrend(props: {
         maxv = 1
     }
     const rv = maxv - minv;
+    console.log(minv, maxv)
 
     const margin = 2;
     const h = (maxv - minv) || 10;

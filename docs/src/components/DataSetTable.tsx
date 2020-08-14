@@ -23,12 +23,12 @@ const useStyles = makeStyles({
   },
 });
 
-export default function DataSetTable(props: { dataSet: DataSet, rows?: number }) {
-  const { dataSet, rows } = props
+export default function DataSetTable(props: { dataSet: DataSet, rows?: number, className?: string }) {
+  const { dataSet, rows, className } = props
   const classes = useStyles();
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer className={className} component={Paper}>
       <Table className={classes.table} aria-label="simple table" size="small">
         <TableHead>
           <TableRow>
