@@ -7,8 +7,9 @@ export class Example {
 
     }
 
-    toVector(): number[] {
-        return [this.timestamp].concat(this.data)
+    toVector(startTimestamp?: number): number[] {
+        const t = this.timestamp - (startTimestamp || 0)
+        return [t].concat(this.data)
     }
 }
 
@@ -83,9 +84,10 @@ export class DataSet {
 
     toCSV(sep: string = ",") {
         const allheaders = ["time", ...this.headers].join(sep)
+        const start = this.startTimestamp
         let csv = [allheaders]
         this.rows.forEach(row => csv.push(
-            row.toVector().map(cell => cell !== undefined ? cell.toString() : "").join(sep)
+            row.toVector(start).map(cell => cell !== undefined ? cell.toString() : "").join(sep)
         ))
         return csv.join('\n');
     }
