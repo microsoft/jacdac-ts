@@ -5,7 +5,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel } from '@material-ui/core';
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
 import DomTreeView from './DomTreeView';
 import { JDRegister as JDField } from '../../../src/dom/register';
 import JacdacContext from '../../../src/react/Context';
@@ -19,6 +19,8 @@ import StopIcon from '@material-ui/icons/Stop';
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 import { prettyDuration } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
@@ -52,6 +54,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
     trend: {
         width: "10rem"
+    },
+    vmiddle: {
+        verticalAlign: "middle"
     }
 }));
 
@@ -199,7 +204,10 @@ export default function Collector(props: {}) {
                             {register.fields.map(field =>
                                 <FormControlLabel key={field.id}
                                     control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
-                                    label={field.name}
+                                    label={<React.Fragment>
+                                        {field.name}
+                                        {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
+                                    </React.Fragment>}
                                 />)}
                         </FormGroup>
                     </CardActions>
