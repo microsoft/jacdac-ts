@@ -22,7 +22,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import CategoryIcon from '@material-ui/icons/Category';
+import FingerprintIcon from '@material-ui/icons/Fingerprint';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import RefreshIcon from '@material-ui/icons/Refresh';
 import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
@@ -166,6 +168,8 @@ export default function Collector(props: {}) {
             setTables([...tables])
         }
     }
+    const handleIdentify = (device: JDDevice) => () => device.identify()
+    const handleReset = (device: JDReset) => () => device.reset()
 
     // data collection
     // interval add data entry
@@ -199,7 +203,17 @@ export default function Collector(props: {}) {
             <Grid item xs={4} key={'source' + register.id}>
                 <Card>
                     <CardHeader subheader={register.service.name}
-                        title={`${register.service.device.name}/${register.name}`} />
+                        title={`${register.service.device.name}/${register.name}`}
+                        action={
+                            <React.Fragment>
+                                <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify(register.service.device)}>
+                                    <FingerprintIcon />
+                                </IconButton>
+                                <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset(register.service.device)}>
+                                    <RefreshIcon />
+                                </IconButton>
+                            </React.Fragment>
+                        } />
                     <CardContent>
                     </CardContent>
                     <CardActions>

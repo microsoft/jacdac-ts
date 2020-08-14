@@ -23,10 +23,10 @@ export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boole
     return <CardHeader
         action={
             <Fragment>
-                <IconButton aria-label="identify" title="identify" onClick={handleIdentify}>
+                <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify}>
                     <FingerprintIcon />
                 </IconButton>
-                <IconButton aria-label="reset" title="reset" onClick={handleReset}>
+                <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
                     <RefreshIcon />
                 </IconButton>
             </Fragment>
