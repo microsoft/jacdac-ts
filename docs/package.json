@@ -17,6 +17,7 @@
     "gatsby-plugin-meta-redirect": "^1.1.1",
     "gatsby-plugin-offline": "^3.2.12",
     "gatsby-plugin-react-helmet": "^3.3.5",
+    "gatsby-plugin-robots-txt": "^1.5.1",
     "gatsby-plugin-sharp": "^2.6.13",
     "gatsby-plugin-sitemap": "^2.4.11",
     "gatsby-prismjs-dracula": "^0.1.15",
