@@ -44,7 +44,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         marginLeft: theme.spacing(1)
     },
     segment: {
-        marginTop: theme.spacing(2)
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2)
     },
     row: {
         margin: theme.spacing(0.5)
