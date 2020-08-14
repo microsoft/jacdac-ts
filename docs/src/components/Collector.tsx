@@ -136,7 +136,7 @@ export default function Collector(props: {}) {
     const triggerEvent = bus.node(triggerEventId) as JDEvent
     useEffect(() => triggerEvent?.subscribe(EVENT, () => {
         toggleRecording()
-    }), [triggerEventId])
+    }), [triggerEvent, recording])
 
     const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField), `${prefix || "data"}${tables.length}`, live) : undefined
     const handleCheck = (field: JDField) => () => {
