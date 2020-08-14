@@ -27,6 +27,7 @@ import { DataSet } from './DataSet';
 import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
+import DataSetTable from './DataSetTable';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -247,6 +248,7 @@ export default function Collector(props: {}) {
             </div>
         </div>
         {liveDataSet && <Trend height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
+        {liveDataSet && <DataSetTable dataSet={liveDataSet} rows={3} />}
         {!!tables.length && <div>
             <h3>Recordings</h3>
             <Grid container spacing={2}>
