@@ -43,5 +43,6 @@ export class JDEvent extends JDServiceNode {
         this.emit(EVENT)
         this.service.emit(EVENT, this)
         this.emit(CHANGE)
+        //console.log(`event`, this, pkt)
     }
 }

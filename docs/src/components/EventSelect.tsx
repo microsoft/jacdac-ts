@@ -27,7 +27,13 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-export default function EventSelect(props: { eventId: string, onChange: (eventId: string) => void, label: string, filter?: (event: JDEvent) => boolean, className?: string }) {
+export default function EventSelect(props: {
+    eventId: string,
+    onChange: (eventId: string) => void,
+    label: string,
+    filter?: (event: JDEvent) => boolean,
+    className?: string
+}) {
     const { eventId, onChange, label, filter, className } = props
     const { bus } = useContext(JacdacContext)
     const classes = useStyles();
@@ -48,7 +54,7 @@ export default function EventSelect(props: { eventId: string, onChange: (eventId
         <FormControl variant="outlined" className={clsx(className, classes.formControl)}>
             <InputLabel>{label}</InputLabel>
             <Select
-                value={eventId}
+                value={selectedEvent ? eventId : ""}
                 onChange={handleChange}
                 label={selectedEvent?.qualifiedName}>
                 <MenuItem value={""}>

@@ -136,11 +136,17 @@ export default function Collector(props: {}) {
     const error = errorSamplingDuration || errorSamplingIntervalDelay
     const triggerEvent = bus.node(triggerEventId) as JDEvent
     useEffect(() => {
-        console.log(`trigger event`, triggerEventId, triggerEvent)
-        return triggerEvent?.subscribe(EVENT, () => {
+        //console.log(`trigger event`, triggerEventId, triggerEvent)
+        const un = triggerEvent?.subscribe(EVENT, () => {
+            //console.log(`trigger toggle recoring`, recording)
             toggleRecording()
         })
-    }, [triggerEvent, recording])
+        //console.log(`mounted`, triggerEvent)
+        return () => {
+            //console.log(`unmount trigger`)
+            if (un) un()
+        }
+    }, [triggerEvent, recording, fieldIdsChecked, liveDataSet])
 
     const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField).filter(f => !!f), `${prefix || "data"}${tables.length}`, live) : undefined
     const handleCheck = (field: JDField) => () => {
@@ -320,7 +326,6 @@ export default function Collector(props: {}) {
             </div>
         </div>
         {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
-        {liveDataSet && <DataSetTable key="datasettable" className={classes.segment} dataSet={liveDataSet} maxRows={3} minRows={3} />}
         {!!tables.length && <div key="recordings">
             <h3>Recordings</h3>
             <Grid container spacing={2}>
@@ -348,4 +353,7 @@ export default function Collector(props: {}) {
         </div>}
     </div >
     )
+
+    //{liveDataSet && <DataSetTable key="datasettable" className={classes.segment} dataSet={liveDataSet} maxRows={3} minRows={3} />}
+
 }

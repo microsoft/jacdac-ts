@@ -16,7 +16,9 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
     return eventNames;
 }
 
+let nextNodeId = 0
 export abstract class JDNode {
+    public readonly nodeId = nextNodeId++ // debugging
     readonly listeners: SMap<Listener[]> = {};
     changeId = 0;
 
@@ -66,34 +68,33 @@ export abstract class JDNode {
     }
 
     private addListenerInternal(eventName: string, handler: EventHandler, once: boolean) {
-        if (!eventName || !handler) return this;
+        if (!eventName || !handler) {
+            return this;
+        }
 
-        const listeners = this.listeners[eventName] || (this.listeners[eventName] = []);
-        const listener = listeners.find(listener => listener.handler == handler)
+        const eventListeners = this.listeners[eventName] || (this.listeners[eventName] = []);
+        const listener = eventListeners.find(listener => listener.handler === handler)
         if (listener) {
             listener.once = !!once;
             return;
         }
 
-        this.emit(NEW_LISTENER, eventName, handler)
-        listeners.push({
+        eventListeners.push({
             handler,
             once: !!once
         })
+        this.emit(NEW_LISTENER, eventName, handler)
     }
 
     private removeListenerInternval(eventName: string, handler: EventHandler): JDNode {
         if (!eventName || !handler) return this;
 
-        const listeners = this.listeners[eventName]
-        if (listeners) {
-            for (let i = 0; i < listeners.length; ++i) {
-                const listener = listeners[i];
+        const eventListeners = this.listeners[eventName]
+        if (eventListeners) {
+            for (let i = 0; i < eventListeners.length; ++i) {
+                const listener = eventListeners[i];
                 if (handler === listener.handler) {
-                    listeners.splice(i, 1);
-                    --i;
-                    if (listeners.length == 0)
-                        delete this.listeners[eventName];
+                    eventListeners.splice(i, 1);
                     this.emit(REMOVE_LISTENER, eventName, handler);
                     return this;
                 }
@@ -115,18 +116,18 @@ export abstract class JDNode {
             //console.info(`node ${this.id} changed to ${this.changeId}`)
         }
 
-        const listeners = this.listeners[eventName];
-        if (!listeners || listeners.length == 0) {
+        const eventListeners = this.listeners[eventName];
+        if (!eventListeners || eventListeners.length == 0) {
             // report unhandled errors
             if (eventName == ERROR)
                 console.error(args[0]);
             return false;
         }
-        for (let i = 0; i < listeners.length; ++i) {
-            const listener = listeners[i];
+        for (let i = 0; i < eventListeners.length; ++i) {
+            const listener = eventListeners[i];
             const handler = listener.handler;
             if (listener.once) {
-                listeners.splice(i, 1);
+                eventListeners.splice(i, 1);
                 --i;
             }
             try {
@@ -138,8 +139,6 @@ export abstract class JDNode {
                     this.emit(ERROR, e)
             }
         }
-        if (listeners.length == 0)
-            delete this.listeners[eventName]
         return true;
     }
 
@@ -176,19 +175,20 @@ export abstract class JDNode {
 }
 
 class EventObservable<T> implements Observable<T> {
-    constructor(public eventEmitter: JDNode, public eventNames: string[]) {
+    constructor(public readonly eventEmitter: JDNode, public readonly eventNames: string[]) {
+        //console.log(`obs`, this.eventNames)
     }
 
     subscribe(observer: Observer<T>) {
-        //console.log(`on ${this.eventName}`)
-        this.eventEmitter.on(this.eventNames, observer.next)
-        this.eventEmitter.on(ERROR, observer.error)
+        //console.log(`on`, this.eventNames, observer)
+        if (observer.next) this.eventEmitter.on(this.eventNames, observer.next)
+        if (observer.error) this.eventEmitter.on(ERROR, observer.error)
         // never completes
         return {
             unsubscribe: () => {
-                //console.log(`off ${this.eventName}`)
-                this.eventEmitter.off(this.eventNames, observer.next);
-                this.eventEmitter.off(ERROR, observer.error)
+                //console.log(`off`, this.eventNames, observer)
+                if (observer.next) this.eventEmitter.off(this.eventNames, observer.next);
+                if (observer.error) this.eventEmitter.off(ERROR, observer.error)
             }
         }
     }
