@@ -1,7 +1,7 @@
 import { parseUF2, FirmwareInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
 import React, { useState, useContext, Fragment, useEffect } from "react"
 import JacdacContext from "../../../src/react/Context"
-import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip, Tabs, Tab } from "@material-ui/core";
+import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip, Tabs, Tab, CircularProgress, CircularProgressProps } from "@material-ui/core";
 import DeviceCard from "./DeviceCard";
 import { Button } from "gatsby-theme-material-ui";
 import { BusState } from "../../../src/dom/bus";
@@ -21,20 +21,28 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
+function CircularProgressWithLabel(props: CircularProgressProps & { value: number }) {
     return (
-        <Box display="flex" alignItems="center">
-            <Box width="100%" mr={1}>
-                <LinearProgress variant="determinate" {...props} />
-            </Box>
-            <Box minWidth={35}>
-                <Typography variant="body2" color="textSecondary">{`${Math.round(
+        <Box position="relative" display="inline-flex">
+            <CircularProgress variant="static" {...props} />
+            <Box
+                top={0}
+                left={0}
+                bottom={0}
+                right={0}
+                position="absolute"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+            >
+                <Typography variant="caption" component="div" color="textSecondary">{`${Math.round(
                     props.value,
                 )}%`}</Typography>
             </Box>
         </Box>
     );
 }
+
 
 function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blob: FirmwareBlob, setFlashing: (b: boolean) => void }) {
     const { bus } = useContext(JacdacContext)
@@ -63,7 +71,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
             {firmware.name}
         </Typography>}
         // tslint:disable-next-line: react-this-binding-issue
-        action={flashing ? <LinearProgressWithLabel value={progress} />
+        action={flashing ? <CircularProgressWithLabel value={progress} />
             : updateApplicable(firmware, blob)
                 ? <Button disabled={flashing} variant="contained"
                     color="primary" onClick={() => handleFlashing()}>Flash</Button>
