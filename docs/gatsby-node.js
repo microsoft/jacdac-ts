@@ -15,6 +15,7 @@ async function createServicePages(graphql, actions, reporter) {
       extends
       notes {
         short
+        long
       }
       packets {
         kind

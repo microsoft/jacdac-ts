@@ -12,7 +12,9 @@ import EnumSpecification from "../components/EnumSpecification";
 <h1>{props.pageContext.node.name}
     <span style={{ marginLeft: "1rem" }}><IDChip id={props.pageContext.node.classIdentifier} /></span>
 </h1>
-<p><Markdown source={props.pageContext.node.notes.short} /></p>
+
+<Markdown source={props.pageContext.node.notes.short} />
+<Markdown source={props.pageContext.node.notes.long || ""} />
 
 <Fragment>
 {!!props.pageContext.node.extends?.length && 
