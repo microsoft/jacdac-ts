@@ -4,8 +4,9 @@ import JacdacContext from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
-import { CircularProgress } from "@material-ui/core";
+import { CircularProgress, Hidden } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
+import KindIcon from "../components/KindIcon";
 
 function ConnectButton() {
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
@@ -16,10 +17,10 @@ function ConnectButton() {
     return <Button
         variant="contained"
         color="primary"
-        startIcon={<UsbIcon />}
+        startIcon={showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />}
         disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
         onClick={showDisconnect ? disconnectAsync : connectAsync}>
-        {showDisconnect ? "disconnect" : "connect"}
+        {<Hidden mdDown>{showDisconnect ? "disconnect" : "connect"}</Hidden>}
         {count > 0 && ` (${count})`}
         {inProgress && <CircularProgress />}
     </Button>
