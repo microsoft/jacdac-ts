@@ -157,7 +157,7 @@ export default function Flash() {
             <TabPanel value={tab} index={1}>
                 {updates && <Grid container spacing={2}>
                     {updates
-                        .map(update => <Grid key={"fw" + update.device.id} item xs={4}>
+                        .map(update => <Grid key={"fw" + update.device.id} item xs={12} sm={6} md={4}>
                             <UpdateDeviceCard {...update} />
                         </Grid>)}
                 </Grid>}

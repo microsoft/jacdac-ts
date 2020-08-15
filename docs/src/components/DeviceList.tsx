@@ -8,8 +8,7 @@ import JacdacContext from '../../../src/react/Context';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
-        marginBottom: theme.spacing(1),
-        marginLeft: theme.spacing(1)
+        marginBottom: theme.spacing(1)
     },
 }))
 
@@ -39,7 +38,7 @@ export default function DeviceList(props: {
             spacing={2}
             className={classes.root}
         >
-            {!hasServiceClass && devices.map(device => <Grid key={device.id} item xs={4}>
+            {!hasServiceClass && devices.map(device => <Grid key={device.id} item xs={12} sm={6} md={4}>
                 <DeviceCard
                     device={device}
                     showDescription={true}
@@ -48,7 +47,7 @@ export default function DeviceList(props: {
                 />
             </Grid>)}
             {hasServiceClass && devices.map(device => device.services({ serviceClass }).map(service => {
-                return <Grid key={service.id} item xs={4}>
+                return <Grid key={service.id} item xs={12} sm={6} md={4}>
                     <ServiceCard service={service}
                         linkToService={linkToService}
                         showDeviceName={showDeviceName}
