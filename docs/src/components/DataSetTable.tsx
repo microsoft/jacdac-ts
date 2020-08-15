@@ -23,9 +23,14 @@ const useStyles = makeStyles({
   },
 });
 
-export default function DataSetTable(props: { dataSet: DataSet, rows?: number, className?: string }) {
-  const { dataSet, rows, className } = props
+export default function DataSetTable(props: { dataSet: DataSet, maxRows?: number, minRows?: number, className?: string }) {
+  const { dataSet, maxRows, minRows, className } = props
+  const { headers, startTimestamp } = dataSet
   const classes = useStyles();
+
+  const data = dataSet.rows.slice(maxRows !== undefined ? -maxRows : 0)
+  while(minRows !== undefined && data.length < minRows)
+    data.push(undefined)
 
   return (
     <TableContainer className={className} component={Paper}>
@@ -33,14 +38,15 @@ export default function DataSetTable(props: { dataSet: DataSet, rows?: number, c
         <TableHead>
           <TableRow>
             <TableCell align="right" key="time">Time</TableCell>
-            {dataSet.headers.map(header => <TableCell align="right" key={`header` + header}>{header}</TableCell>)}
+            {headers.map(header => <TableCell align="right" key={`header` + header}>{header}</TableCell>)}
           </TableRow>
         </TableHead>
         <TableBody>
-          {dataSet.rows.slice(rows !== undefined ? -rows : 0).map((row, index) =>
+          {data.map((row, index) =>
             <TableRow key={`row` + index}>
-              <TableCell key="headers" align="right" key="timestamp">{prettyDuration(row.timestamp - dataSet.startTimestamp)}</TableCell>
-              {row.data.map((v,i) => <TableCell key={"cell" + i} align="right">{v}</TableCell>)}
+              <TableCell align="right" key="timestamp">{row ? prettyDuration(row.timestamp - startTimestamp) : "_"}</TableCell>
+              {row ? row.data.map((v, i) => <TableCell key={"cell" + i} align="right">{v}</TableCell>)
+                : headers.map((h, i) => <TableCell key={"cell" + i} align="right">_</TableCell>)}
             </TableRow>
           )}
         </TableBody>

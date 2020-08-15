@@ -320,7 +320,7 @@ export default function Collector(props: {}) {
             </div>
         </div>
         {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
-        {liveDataSet && <DataSetTable key="datasettable" className={classes.segment} dataSet={liveDataSet} rows={3} />}
+        {liveDataSet && <DataSetTable key="datasettable" className={classes.segment} dataSet={liveDataSet} maxRows={3} minRows={3} />}
         {!!tables.length && <div key="recordings">
             <h3>Recordings</h3>
             <Grid container spacing={2}>
