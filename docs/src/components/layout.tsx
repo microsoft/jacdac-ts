@@ -51,6 +51,7 @@ import DomTreeView from "./DomTreeView";
 import TocBreadcrumbs from "./TocBreadcrums";
 // tslint:disable-next-line: no-submodule-imports
 import { createMuiTheme, responsiveFontSizes, ThemeProvider } from '@material-ui/core/styles';
+import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
 
 const drawerWidth = `${40}rem`;
 
@@ -118,12 +119,6 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-enum DrawerType {
-  Toc,
-  Packets,
-  Dom
-}
-
 export default function Layout(props: { pageContext?: any; children: any; }) {
   const theme = responsiveFontSizes(createMuiTheme());
 
@@ -132,7 +127,9 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
       <JacdacProvider>
         <PacketFilterProvider>
           <DbProvider>
-            <LayoutWithContext {...props} />
+            <DrawerProvider>
+              <LayoutWithContext {...props} />
+            </DrawerProvider>
           </DbProvider>
         </PacketFilterProvider>
       </JacdacProvider>
@@ -144,26 +141,23 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const [drawerType, setDrawerType] = useState(DrawerType.Toc);
+  const { type: drawerType, setType: setDrawerType} = useContext(DrawerContext)
+  const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
     setDrawerType(DrawerType.Toc)
-    setOpen(true);
   }
   const handleDrawerConsole = () => {
     setDrawerType(DrawerType.Packets);
-    setOpen(true);
   }
   const handleDrawerDom = () => {
     setDrawerType(DrawerType.Dom);
-    setOpen(true);
   }
   const handleDrawerClose = () => {
-    setOpen(false);
+    setDrawerType(DrawerType.None)
   }
 
   const data = useStaticQuery(graphql`

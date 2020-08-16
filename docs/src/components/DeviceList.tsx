@@ -5,6 +5,7 @@ import DeviceCard from './DeviceCard';
 import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
 import JacdacContext from '../../../src/react/Context';
+import useGridBreakpoints from './useGridBreakpoints';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -28,6 +29,7 @@ export default function DeviceList(props: {
         showDeviceName, showServiceName, showRegisterName, showFirmware, showTemperature,
         eventIdentifier, commandIdentifier } = props
     const { bus } = useContext(JacdacContext)
+    const gridBreakpoints = useGridBreakpoints()
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const classes = useStyles()
     const hasServiceClass = serviceClass !== undefined
@@ -47,7 +49,7 @@ export default function DeviceList(props: {
                 />
             </Grid>)}
             {hasServiceClass && devices.map(device => device.services({ serviceClass }).map(service => {
-                return <Grid key={service.id} item xs={12} sm={6} md={4}>
+                return <Grid key={service.id} item {...gridBreakpoints}>
                     <ServiceCard service={service}
                         linkToService={linkToService}
                         showDeviceName={showDeviceName}

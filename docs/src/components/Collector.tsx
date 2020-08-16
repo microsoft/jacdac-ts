@@ -28,8 +28,8 @@ import DataSetTable from './DataSetTable';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT } from '../../../src/dom/constants';
-import { JDDevice } from '../../../src/dom/device';
 import DeviceActions from './DeviceActions';
+import useGridBreakpoints from './useGridBreakpoints';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -105,6 +105,7 @@ export default function Collector(props: {}) {
     const { } = props;
     const { bus } = useContext(JacdacContext)
     const classes = useStyles();
+    const gridBreakpoints = useGridBreakpoints()
     const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<DataSet[]>([])
@@ -231,7 +232,7 @@ export default function Collector(props: {}) {
     const sources = <Grid container spacing={2}>
         {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
         {readingRegisters.map(register =>
-            <Grid item xs={12} sm={6} md={4} key={'source' + register.id}>
+            <Grid item {...gridBreakpoints} key={'source' + register.id}>
                 <Card>
                     <CardHeader subheader={register.service.name}
                         title={`${register.service.device.name}/${register.name}`}
@@ -312,7 +313,7 @@ export default function Collector(props: {}) {
             <h3>Recordings</h3>
             <Grid container spacing={2}>
                 {tables.map((table, index) =>
-                    <Grid item xs={12} sm={6} md={4} key={`result` + table.id}>
+                    <Grid item {...gridBreakpoints} key={`result` + table.id}>
                         <Card>
                             <CardHeader
                                 title={table.name}

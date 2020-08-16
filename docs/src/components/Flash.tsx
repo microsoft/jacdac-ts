@@ -12,6 +12,7 @@ import { useFirmwareBlobs } from "./DbContext";
 import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
 import TabPanel, { a11yProps } from './TabPanel';
+import useGridBreakpoints from "./useGridBreakpoints";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -80,6 +81,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 
 export default function Flash() {
     const { bus, connectionState } = useContext(JacdacContext)
+    const gridBreakpoints = useGridBreakpoints()
     const { setFirmwareFile } = useFirmwareBlobs()
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
@@ -157,7 +159,7 @@ export default function Flash() {
             <TabPanel value={tab} index={1}>
                 {updates && <Grid container spacing={2}>
                     {updates
-                        .map(update => <Grid key={"fw" + update.device.id} item xs={12} sm={6} md={4}>
+                        .map(update => <Grid key={"fw" + update.device.id} item {...gridBreakpoints}>
                             <UpdateDeviceCard {...update} />
                         </Grid>)}
                 </Grid>}
