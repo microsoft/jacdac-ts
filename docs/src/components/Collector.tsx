@@ -1,12 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-// tslint:disable-next-line: no-submodule-imports
-import Tabs from '@material-ui/core/Tabs';
-// tslint:disable-next-line: no-submodule-imports
-import Tab from '@material-ui/core/Tab';
 import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
-import DomTreeView from './DomTreeView';
 import { JDRegister as JDField } from '../../../src/dom/register';
 import JacdacContext from '../../../src/react/Context';
 import RegisterInput from './RegisterInput'
@@ -21,10 +16,6 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import RefreshIcon from '@material-ui/icons/Refresh';
 import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
@@ -37,6 +28,8 @@ import DataSetTable from './DataSetTable';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT } from '../../../src/dom/constants';
+import { JDDevice } from '../../../src/dom/device';
+import DeviceActions from './DeviceActions';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -203,8 +196,6 @@ export default function Collector(props: {}) {
         }
     }
     const handleTriggerChange = (eventId: string) => setTriggerEventId(eventId)
-    const handleIdentify = (device: JDDevice) => () => device.identify()
-    const handleReset = (device: JDReset) => () => device.reset()
 
     // data collection
     // interval add data entry
@@ -244,16 +235,7 @@ export default function Collector(props: {}) {
                 <Card>
                     <CardHeader subheader={register.service.name}
                         title={`${register.service.device.name}/${register.name}`}
-                        action={
-                            <React.Fragment>
-                                <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify(register.service.device)}>
-                                    <FingerprintIcon />
-                                </IconButton>
-                                <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset(register.service.device)}>
-                                    <RefreshIcon />
-                                </IconButton>
-                            </React.Fragment>
-                        } />
+                        action={<DeviceActions device={register.service.device} reset={true} />} />
                     <CardContent>
                     </CardContent>
                     <CardActions>

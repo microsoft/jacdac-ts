@@ -24,6 +24,7 @@ import { isRegister, isEvent, isReading } from '../../../src/dom/spec';
 import { Switch, IconButton } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
+import DeviceActions from './DeviceActions';
 
 declare module 'csstype' {
     interface Properties {
@@ -170,10 +171,6 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         .join(',')
 
     const handleChecked = c => setChecked(id, c)
-    const handleIdentify = (ev: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        ev.stopPropagation()
-        device.identify()
-    }
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
@@ -181,11 +178,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         kind={"device"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
-        actions={
-            <IconButton aria-label="identify" title="identify" size="small" onClick={handleIdentify}>
-                <FingerprintIcon />
-            </IconButton>
-        }
+        actions={<DeviceActions device={device} />}
     >
         {services?.map(service => <ServiceTreeItem
             key={service.id}
