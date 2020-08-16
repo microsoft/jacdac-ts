@@ -7,15 +7,18 @@ module.exports = {
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
-    `gatsby-plugin-optimize-svgs`,
-    `gatsby-transformer-json`,
-    `gatsby-theme-material-ui`,
-    `gatsby-plugin-react-helmet`,
     {
       resolve: `gatsby-source-filesystem`,
       options: {
         name: `images`,
         path: `${__dirname}/src/images`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/../jacdac-spec/spec/images`,
       },
     },
     {
@@ -46,6 +49,10 @@ module.exports = {
         path: `${__dirname}/../package.json`,
       },
     },
+    `gatsby-plugin-optimize-svgs`,
+    `gatsby-transformer-json`,
+    `gatsby-theme-material-ui`,
+    `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
     {
