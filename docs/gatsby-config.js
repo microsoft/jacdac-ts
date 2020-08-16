@@ -7,6 +7,7 @@ module.exports = {
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
+    `gatsby-plugin-optimize-svgs`,
     `gatsby-transformer-json`,
     `gatsby-theme-material-ui`,
     `gatsby-plugin-react-helmet`,
@@ -71,7 +72,17 @@ module.exports = {
           `gatsby-remark-prismjs`,
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',
-          'gatsby-remark-embedder'          
+          'gatsby-remark-embedder',
+          {
+            resolve: `gatsby-remark-images`,
+            options: {
+              // It's important to specify the maxWidth (in pixels) of
+              // the content container as this plugin uses this as the
+              // base for generating different widths of each image.
+              maxWidth: 590,
+            }
+          },
+          'gatsby-remark-static-images',
         ]
       },
     },
@@ -83,7 +94,17 @@ module.exports = {
           `gatsby-remark-prismjs`,
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',
-          'gatsby-remark-embedder'          
+          'gatsby-remark-embedder',
+          {
+            resolve: `gatsby-remark-images`,
+            options: {
+              // It's important to specify the maxWidth (in pixels) of
+              // the content container as this plugin uses this as the
+              // base for generating different widths of each image.
+              maxWidth: 590,
+            }
+          },
+          'gatsby-remark-static-images'
         ],
       },
     },
