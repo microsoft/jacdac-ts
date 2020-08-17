@@ -89,16 +89,18 @@ export class JDService extends JDNode {
         return event;
     }
 
-    sendPacketAsync(pkt: Packet) {
+    sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.dev = this.device;
         pkt.service_number = this.service_number;
+        if (ack !== undefined)
+            pkt.requires_ack = !!ack
         this.emit(PACKET_SEND, pkt)
         return pkt.sendCmdAsync(this.device);
     }
 
-    sendCmdAsync(cmd: number) {
+    sendCmdAsync(cmd: number, ack?: boolean) {
         const pkt = Packet.onlyHeader(cmd);
-        return this.sendPacketAsync(pkt)
+        return this.sendPacketAsync(pkt, ack)
     }
 
     processPacket(pkt: Packet) {
