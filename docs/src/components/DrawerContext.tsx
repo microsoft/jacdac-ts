@@ -31,3 +31,13 @@ export const DrawerProvider = ({ children }) => {
         </DrawerContext.Provider>
     )
 }
+
+export function drawerTitle(type: DrawerType) {
+    switch(type) {
+        case DrawerType.Dom:
+            return "Connected devices"
+        case DrawerType.Packets:
+            return "Packet console"
+        default: undefined
+    }
+}

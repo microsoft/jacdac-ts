@@ -51,7 +51,7 @@ import DomTreeView from "./DomTreeView";
 import TocBreadcrumbs from "./TocBreadcrums";
 // tslint:disable-next-line: no-submodule-imports
 import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
-import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
+import DrawerContext, { DrawerProvider, DrawerType, drawerTitle } from "./DrawerContext";
 
 const drawerWidth = `${40}rem`;
 
@@ -238,6 +238,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
         }}
       >
         <div className={classes.drawerHeader}>
+          {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
           <TocBreadcrumbs path={pageContext?.frontmatter?.path} />
           {drawerType === DrawerType.Packets && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
           <IconButton onClick={handleDrawerClose}>
