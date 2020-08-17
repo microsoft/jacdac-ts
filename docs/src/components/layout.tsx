@@ -18,15 +18,9 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
-// tslint:disable-next-line: no-submodule-imports
-import Drawer from '@material-ui/core/Drawer'
 import ConnectButton from '../jacdac/ConnectButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import Divider from '@material-ui/core/Divider';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -36,24 +30,19 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
-import Toc from "./Toc"
-import PacketList from "./PacketList"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-// tslint:disable-next-line: no-submodule-imports
-import Alert from "@material-ui/lab/Alert";
 import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
 import { DbProvider, useFirmwareBlobs } from "./DbContext";
 import FlashButton from "./FlashButton";
-import DomTreeView from "./DomTreeView";
-import TocBreadcrumbs from "./TocBreadcrums";
 // tslint:disable-next-line: no-submodule-imports
 import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
-import DrawerContext, { DrawerProvider, DrawerType, drawerTitle } from "./DrawerContext";
+import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
+import AppDrawer from "./AppDrawer";
 
-const drawerWidth = `${40}rem`;
+export const DRAWER_WIDTH = `${40}rem`;
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {
@@ -70,8 +59,8 @@ const useStyles = makeStyles((theme) => createStyles({
     }),
   },
   appBarShift: {
-    width: `calc(100% - ${drawerWidth})`,
-    marginLeft: drawerWidth,
+    width: `calc(100% - ${DRAWER_WIDTH})`,
+    marginLeft: DRAWER_WIDTH,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -84,11 +73,11 @@ const useStyles = makeStyles((theme) => createStyles({
     display: 'none',
   },
   drawer: {
-    width: drawerWidth,
+    width: DRAWER_WIDTH,
     flexShrink: 0,
   },
   drawerPaper: {
-    width: drawerWidth,
+    width: DRAWER_WIDTH,
   },
   drawerHeader: {
     display: 'flex',
@@ -107,7 +96,7 @@ const useStyles = makeStyles((theme) => createStyles({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: `-${drawerWidth}`,
+    marginLeft: `-${DRAWER_WIDTH}`,
   },
   mainContent: {
     flexGrow: 1
@@ -163,9 +152,6 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   }
   const handleDrawerDom = () => {
     setDrawerType(DrawerType.Dom);
-  }
-  const handleDrawerClose = () => {
-    setDrawerType(DrawerType.None)
   }
 
   const data = useStaticQuery(graphql`
@@ -228,28 +214,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
         </Toolbar>
       </AppBar>
-      <Drawer
-        className={classes.drawer}
-        variant="persistent"
-        anchor="left"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-      >
-        <div className={classes.drawerHeader}>
-          {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
-          <TocBreadcrumbs path={pageContext?.frontmatter?.path} />
-          {drawerType === DrawerType.Packets && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </div>
-        <Divider />
-        {drawerType === DrawerType.Toc ? <Toc />
-          : drawerType === DrawerType.Packets ? <PacketList serviceClass={serviceClass} />
-            : <DomTreeView />}
-      </Drawer>
+      <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
       <Container maxWidth={open ? "lg" : "sm"}>
         <main
           className={clsx(classes.content, {

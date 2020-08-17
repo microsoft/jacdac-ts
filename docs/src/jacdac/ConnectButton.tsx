@@ -8,7 +8,8 @@ import { CircularProgress, Hidden } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
 import KindIcon from "../components/KindIcon";
 
-function ConnectButton() {
+function ConnectButton(props: { full?: boolean, className?: string }) {
+    const { full, className } = props
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
     const [count, setCount] = useState(bus.devices().length)
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
@@ -17,10 +18,12 @@ function ConnectButton() {
     return <Button
         variant="contained"
         color="primary"
+        className={className}
         startIcon={showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />}
         disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
         onClick={showDisconnect ? disconnectAsync : connectAsync}>
-        {<Hidden mdDown>{showDisconnect ? "disconnect" : "connect"}</Hidden>}
+        {!full && <Hidden mdDown>{showDisconnect ? "disconnect" : "connect"}</Hidden>}
+        {full && (showDisconnect ? "disconnect" : "connect")}
         {count > 0 && ` (${count})`}
         {inProgress && <CircularProgress />}
     </Button>
