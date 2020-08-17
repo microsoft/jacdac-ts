@@ -371,12 +371,12 @@ export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: numb
     return stop
 }
 
-export function cryptoRandomUint32(): number {
+export function cryptoRandomUint32(length: number): Uint32Array {
     if (typeof window === "undefined")
         return undefined; // not supported
-    const vals = new Uint32Array(1)
+    const vals = new Uint32Array(length)
     window.crypto.getRandomValues(vals)
-    return vals[0]
+    return vals;
 }
 
 export function JSONTryParse(src: string) {

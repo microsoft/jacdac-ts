@@ -24,10 +24,14 @@ function looksRandom(n: number) {
 }
 
 function genServId() {
-    const n = cryptoRandomUint32();
+    const n = cryptoRandomUint32(1);
     if (n === undefined)
         return undefined;
-    return (n & 0xfff_ffff) | 0x1000_0000
+    return (n[0] & 0xfff_ffff) | 0x1000_0000
+}
+
+function toFullHex(n: number[]) {
+    return "0x" + n.map(id => ("000000000" + id.toString(16)).slice(-8)).join('')
 }
 
 function uniqueServiceId() {
@@ -35,7 +39,12 @@ function uniqueServiceId() {
     while (id !== undefined && (!looksRandom(id) || serviceSpecificationFromClassIdentifier(id))) {
         id = genServId()
     }
-    return id !== undefined && ("0x" + ("000000000" + id.toString(16)).slice(-8))
+    return id !== undefined && toFullHex([id])
+}
+
+function uniqueDeviceId() {
+    const n = cryptoRandomUint32(2);
+    return n !== undefined && toFullHex([n[0], n[1]])
 }
 
 const useStyles = makeStyles({
@@ -48,13 +57,15 @@ const useStyles = makeStyles({
     }
 })
 
-export default function RandomGenerator() {
+export default function RandomGenerator(props: { device?: boolean }) {
+    const { device } = props
     const classes = useStyles()
-    const [value, setValue] = useState(uniqueServiceId())
+    const [value, setValue] = useState(device ? uniqueDeviceId() : uniqueServiceId())
     const [copySuccess, setCopySuccess] = useState(false);
 
     const handleRegenerate = () => {
-        setValue(uniqueServiceId())
+        const v = device ? uniqueDeviceId() : uniqueServiceId()
+        setValue(v)
         setCopySuccess(false)
     }
     const handleCopy = async () => {
@@ -70,7 +81,7 @@ export default function RandomGenerator() {
         <Card className={classes.root}>
             <CardContent>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    Random Service Identifier
+                    {device ? "Random Device Identifier" : "Random Service Identifier"}
             </Typography>
                 {value !== undefined &&
                     <Typography variant="h5" component="h2">
