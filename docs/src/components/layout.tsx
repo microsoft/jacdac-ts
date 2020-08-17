@@ -50,12 +50,12 @@ import FlashButton from "./FlashButton";
 import DomTreeView from "./DomTreeView";
 import TocBreadcrumbs from "./TocBreadcrums";
 // tslint:disable-next-line: no-submodule-imports
-import { createMuiTheme, responsiveFontSizes, ThemeProvider } from '@material-ui/core/styles';
+import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
 import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
 
 const drawerWidth = `${40}rem`;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => createStyles({
   root: {
     display: 'flex',
     flexGrow: 1
@@ -99,7 +99,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'flex-end',
   },
   content: {
-    flexGrow: 1,
+    display: 'flex',
+    minHeight: '100vh',
+    flexDirection: 'column',
     padding: theme.spacing(3),
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -107,12 +109,18 @@ const useStyles = makeStyles((theme) => ({
     }),
     marginLeft: `-${drawerWidth}`,
   },
+  mainContent: {
+    flexGrow: 1
+  },
   contentShift: {
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
     marginLeft: 0,
+  },
+  footer: {
+    marginTop: theme.spacing(3)
   },
   footerLink: {
     marginRight: theme.spacing(0.5)
@@ -141,7 +149,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   const classes = useStyles();
-  const { type: drawerType, setType: setDrawerType} = useContext(DrawerContext)
+  const { type: drawerType, setType: setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
@@ -247,12 +255,13 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
             [classes.contentShift]: open,
           })}
         >
-          <div className={classes.drawerHeader} />
-          <Typography component="span">
-            {children}
-          </Typography>
-          <footer>
-            <Divider />
+          <div className={classes.mainContent}>
+            <div className={classes.drawerHeader} />
+            <Typography component="span">
+              {children}
+            </Typography>
+          </div>
+          <footer className={classes.footer}>
             <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
             <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
             <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
