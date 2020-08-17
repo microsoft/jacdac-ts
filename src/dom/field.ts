@@ -47,10 +47,7 @@ export class JDField extends JDNode {
         return decoded?.decoded[this.index]
     }
 
-    get value() {
-        if (this.unit == "frac")
-            return this.decoded?.scaledValue
-        else
-            return this.decoded?.numValue
+    get value(): any {
+        return this.decoded?.value
     }
 }
