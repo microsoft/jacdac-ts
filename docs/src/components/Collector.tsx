@@ -2,9 +2,9 @@ import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
-import { JDRegister as JDField } from '../../../src/dom/register';
+import { JDRegister } from '../../../src/dom/register';
+import { JDField } from '../../../src/dom/field';
 import JacdacContext from '../../../src/react/Context';
-import RegisterInput from './RegisterInput'
 import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -229,38 +229,35 @@ export default function Collector(props: {}) {
         return () => clearInterval(interval);
     }, [recording, samplingIntervalDelayi, samplingCount, fieldIdsChecked]);
 
-    const sources = <Grid container spacing={2}>
-        {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
-        {readingRegisters.map(register =>
-            <Grid item {...gridBreakpoints} key={'source' + register.id}>
-                <Card>
-                    <CardHeader subheader={register.service.name}
-                        title={`${register.service.device.name}/${register.name}`}
-                        action={<DeviceActions device={register.service.device} reset={true} />} />
-                    <CardContent>
-                    </CardContent>
-                    <CardActions>
-                        <FormGroup>
-                            {register.fields.map(field =>
-                                <FormControlLabel key={field.id}
-                                    control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
-                                    label={<React.Fragment>
-                                        {field.name}
-                                        {!!prettyUnit(field.unit) && ` (${prettyUnit(field.unit)})`}
-                                        {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
-                                    </React.Fragment>}
-                                />)}
-                        </FormGroup>
-                    </CardActions>
-                </Card>
-            </Grid>)}
-    </Grid>
-
-
     return (<div className={classes.root}>
         <div key="sensors">
             <h3>Choose sensors</h3>
-            {sources}
+            {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
+            {!!readingRegisters.length && <Grid container spacing={2}>
+                {readingRegisters.map(register =>
+                    <Grid item {...gridBreakpoints} key={'source' + register.id}>
+                        <Card>
+                            <CardHeader subheader={register.service.name}
+                                title={`${register.service.device.name}/${register.name}`}
+                                action={<DeviceActions device={register.service.device} reset={true} />} />
+                            <CardContent>
+                            </CardContent>
+                            <CardActions>
+                                <FormGroup>
+                                    {register.fields.map(field =>
+                                        <FormControlLabel key={field.id}
+                                            control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
+                                            label={<React.Fragment>
+                                                {field.name}
+                                                {!!prettyUnit(field.unit) && ` (${prettyUnit(field.unit)})`}
+                                                {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
+                                            </React.Fragment>}
+                                        />)}
+                                </FormGroup>
+                            </CardActions>
+                        </Card>
+                    </Grid>)}
+            </Grid>}
         </div>
         <div key="record">
             <h3>Record data</h3>
