@@ -1,3 +1,4 @@
+const maxImageWidth = 800
 module.exports = {
   siteMetadata: {
     title: `JACDAC`,
@@ -55,6 +56,7 @@ module.exports = {
     `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
+    `gatsby-remark-images`,
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
@@ -86,7 +88,7 @@ module.exports = {
               // It's important to specify the maxWidth (in pixels) of
               // the content container as this plugin uses this as the
               // base for generating different widths of each image.
-              maxWidth: 590,
+              maxWidth: maxImageWidth,
             }
           },
           'gatsby-remark-static-images',
@@ -108,7 +110,7 @@ module.exports = {
               // It's important to specify the maxWidth (in pixels) of
               // the content container as this plugin uses this as the
               // base for generating different widths of each image.
-              maxWidth: 590,
+              maxWidth: maxImageWidth,
             }
           },
           'gatsby-remark-static-images'
