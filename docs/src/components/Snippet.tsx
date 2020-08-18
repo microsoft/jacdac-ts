@@ -26,6 +26,7 @@ export default function Snippet(props: {
             value={value}
             wrapEnabled={true}
             showGutter={false}
+            highlightActiveLine={false}
             showPrintMargin={false}
             width="100%"
         />
