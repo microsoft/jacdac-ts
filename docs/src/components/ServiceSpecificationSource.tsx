@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
-import { makeStyles, Theme } from '@material-ui/core/styles';
-// tslint:disable-next-line: no-submodule-imports
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
 import { serviceSpecificationFromClassIdentifier } from '../../../src/dom/spec';
-import { Paper } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
