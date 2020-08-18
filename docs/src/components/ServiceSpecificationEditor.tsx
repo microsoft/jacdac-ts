@@ -10,8 +10,6 @@ import { serviceSpecificationFromName } from '../../../src/dom/spec';
 import TabPanel, { a11yProps } from './TabPanel';
 import ServiceSpecification from './ServiceSpecification';
 import RandomGenerator from './RandomGenerator';
-import DrawerContext, { DrawerType } from './DrawerContext';
-import { Button } from 'gatsby-theme-material-ui';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -34,7 +32,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [tab, setTab] = useState(0);
-    const { setDrawerType } = useContext(DrawerContext)
     const [source, setSource] = useState(
         `# My Service
 
@@ -68,14 +65,9 @@ TODO describe this register
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
-    const onShowSpec = () => {
-        setDrawerType(DrawerType.ServiceSpecification)
-    }
-
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={6}>
-                <Button variant="contained" color="primary" onClick={onShowSpec}>Documentation</Button>
                 <Paper square className={classes.segment}>
                     <AceEditor
                         mode="markdown"
