@@ -14,6 +14,7 @@ import ServiceSpecification from './ServiceSpecification';
 import RandomGenerator from './RandomGenerator';
 import { useDbValue } from './DbContext';
 import Snippet from './Snippet';
+import DrawerContext, { DrawerType } from './DrawerContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -23,6 +24,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
     segment: {
         marginBottom: theme.spacing(2)
+    },
+    wide: {
+        width: "100%",
     },
     pre: {
         margin: "0",
@@ -36,6 +40,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [tab, setTab] = useState(0);
+    const { drawerType } = useContext(DrawerContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
         `# My Service
 
@@ -62,7 +67,7 @@ TODO describe this register
         text: error.message,
         type: 'error'
     }))
-
+    const drawerOpen = drawerType != DrawerType.None
     const handleSourceChange = (newValue: string) => {
         setSource(newValue)
     }
@@ -71,19 +76,20 @@ TODO describe this register
     };
     return (
         <Grid spacing={2} className={classes.root} container>
-            <Grid key="editor" item xs={12} md={6}>
+            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 6}>
                 <Paper square className={classes.segment}>
                     <AceEditor
+                        className={classes.wide}
                         mode="markdown"
                         theme="github"
                         value={source}
                         onChange={handleSourceChange}
-                        name="markdowneditor"
+                        name="servicespecificationeditor"
                         wrapEnabled={true}
                         debounceChangePeriod={500}
                         editorProps={{ $blockScrolling: true }}
-                        minLines={18}
                         annotations={annotations}
+                        minLines={48}
                         setOptions={{
                             enableBasicAutocompletion: true,
                             enableLiveAutocompletion: true,
@@ -94,7 +100,7 @@ TODO describe this register
                     <RandomGenerator device={false} />
                 </Paper>
             </Grid>
-            <Grid key="output" item xs={12} md={6}>
+            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 6}>
                 <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                     <Tab label="Specification" {...a11yProps(0)} />
                     <Tab label="TypeScript" {...a11yProps(1)} />
