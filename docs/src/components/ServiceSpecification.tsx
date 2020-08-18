@@ -17,13 +17,13 @@ export default function ServiceSpecification(props: {
             <span style={{ marginLeft: "1rem" }}><IDChip id={node.classIdentifier} /></span>
         </h1>
         <Markdown key="notesshort" source={node.notes.short} />
-        <Markdown key="noteslong" source={node.notes.long || ""} />
         {!!node.extends?.length &&
             <p key="extends">
                 <span>Extends </span>
                 {node.extends.map(extend => <Link key={`extend${extend}`} to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>)}
     .
     </p>}
+        <Markdown key="noteslong" source={node.notes.long || ""} />
         <EnumSpecification key="enums" serviceClass={node.classIdentifier} />
         <h2>Packets</h2>
         {node.packets
