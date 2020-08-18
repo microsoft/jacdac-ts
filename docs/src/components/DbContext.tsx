@@ -1,52 +1,60 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { FirmwareBlob, parseUF2 } from "../../../src/dom/flashing";
+import { parseUF2 } from "../../../src/dom/flashing";
 import JacdacContext from "../../../src/react/Context";
 
 export interface Db {
     dependencyId: () => number,
     getFile: (id: string) => Promise<File>;
     putFile: (id: string, file: File) => Promise<void>;
+    getValue: (id: string) => Promise<string>;
+    putValue: (id: string, value: string) => Promise<void>;
 }
 
 function openDbAsync(): Promise<Db> {
-    const DB_VERSION = 1
-    const DB_NAME = "ASSETS"
+    const DB_VERSION = 2
+    const DB_NAME = "JACDAC"
     const STORE_FILES = "FILES"
+    const STORE_STORAGE = "STORAGE"
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     let db: IDBDatabase;
     let changeId = 0;
 
+    const put = (table: string, id: string, data: any) => {
+        changeId++
+        return new Promise<void>((resolve, reject) => {
+            try {
+                const transaction = db.transaction([table], "readwrite");
+                const blobs = transaction.objectStore(table)
+                const request = data !== undefined ? blobs.put(data, id) : blobs.delete(id);;
+                request.onsuccess = (event) => resolve()
+                request.onerror = (event) => resolve()
+            } catch (e) {
+                console.error(`idb: put ${id} failed`)
+                reject(e)
+            }
+        })
+    }
+    const get = (table: string, id: string) => {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                const transaction = db.transaction([table], "readonly");
+                const blobs = transaction.objectStore(table)
+                const request = blobs.get(id);
+                request.onsuccess = (event) => resolve((event.target as any).result)
+                request.onerror = (event) => resolve((event.target as any).result)
+            } catch (e) {
+                console.error(`idb: get ${id} failed`)
+                reject(e)
+            }
+        })
+    }
+
     const api = {
         dependencyId: () => changeId,
-        putFile: (id: string, file: File): Promise<void> => {
-            changeId++
-            return new Promise<void>((resolve, reject) => {
-                try {
-                    const transaction = db.transaction([STORE_FILES], "readwrite");
-                    const blobs = transaction.objectStore(STORE_FILES)
-                    const request = file ? blobs.put(file, id) : blobs.delete(id);;
-                    request.onsuccess = (event) => resolve()
-                    request.onerror = (event) => resolve()
-                } catch (e) {
-                    console.error(`idb: put ${id} failed`)
-                    reject(e)
-                }
-            })
-        },
-        getFile: (id: string): Promise<File> => {
-            return new Promise<File>((resolve, reject) => {
-                try {
-                    const transaction = db.transaction([STORE_FILES], "readonly");
-                    const blobs = transaction.objectStore(STORE_FILES)
-                    const request = blobs.get(id);
-                    request.onsuccess = (event) => resolve((event.target as any).result)
-                    request.onerror = (event) => resolve((event.target as any).result)
-                } catch (e) {
-                    console.error(`idb: get ${id} failed`)
-                    reject(e)
-                }
-            })
-        }
+        putFile: (id: string, file: File): Promise<void> => put(STORE_FILES, id, file),
+        getFile: (id: string): Promise<File> => get(STORE_FILES, id).then(v => v as File),
+        putValue: (id: string, value: string): Promise<void> => put(STORE_STORAGE, id, value),
+        getValue: (id: string): Promise<string> => get(STORE_STORAGE, id).then(v => v as string),
     }
 
     return new Promise((resolve, reject) => {
@@ -60,7 +68,11 @@ function openDbAsync(): Promise<Db> {
         }
         request.onupgradeneeded = function (event) {
             db = request.result;
-            db.createObjectStore(STORE_FILES);
+            const stores = db.objectStoreNames
+            if (!stores.contains(STORE_STORAGE))
+                db.createObjectStore(STORE_STORAGE);
+            if (!stores.contains(STORE_FILES))
+                db.createObjectStore(STORE_FILES);
             db.onerror = function (event) {
                 console.log("idb error", event);
             };
@@ -105,6 +117,28 @@ export function useDbFile(fileName: string) {
         dependencyId: () => db?.dependencyId(),
         file: () => db?.getFile(fileName) || Promise.resolve(undefined),
         setFile: async (f: File) => { await db?.putFile(fileName, f) }
+    }
+}
+
+export function useDbValue(id: string, initialValue: string) {
+    const { db } = useContext(DbContext)
+    const [_value, _setValue] = useState<string>(undefined)
+    useEffect(() => {
+        db?.getValue(id)
+            .then(v => {
+                if (v === undefined) {
+                    v = initialValue
+                    db?.putValue(id, v)
+                }
+                _setValue(v)
+            })
+    }, [db])
+    return {
+        value: _value,
+        setValue: (value: string) => {
+            db?.putValue(id, value)
+                .then(() => _setValue(value))
+        }
     }
 }
 

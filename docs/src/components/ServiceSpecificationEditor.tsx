@@ -10,6 +10,7 @@ import { serviceSpecificationFromName } from '../../../src/dom/spec';
 import TabPanel, { a11yProps } from './TabPanel';
 import ServiceSpecification from './ServiceSpecification';
 import RandomGenerator from './RandomGenerator';
+import { useDbValue } from './DbContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [tab, setTab] = useState(0);
-    const [source, setSource] = useState(
+    const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
         `# My Service
 
 TODO: describe your service
