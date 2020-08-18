@@ -145,7 +145,6 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const serviceClass = pageContext?.node?.classIdentifier;
   useFirmwareBlobs()
 
-  console.log(pageContext)
   const handleDrawerToc = () => {
     setDrawerType(DrawerType.Toc)
   }
@@ -207,6 +206,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           </IconButton>
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
+          </Typography>
+          <Typography variant="h5">
+
           </Typography>
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
