@@ -14,6 +14,8 @@ import JacdacContext from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import ConnectButton from "../jacdac/ConnectButton";
 import { JDService } from "../../../src/dom/service";
+import { useStaticQuery, graphql } from "gatsby";
+import Mdx from "./Mdx";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -33,6 +35,9 @@ const useStyles = makeStyles((theme) => createStyles({
     },
     alertButton: {
         marginLeft: theme.spacing(2)
+    },
+    mdx: {
+        margin: theme.spacing(2)
     }
 }));
 
@@ -40,10 +45,24 @@ export default function AppDrawer(props: { pagePath: string, service?: JDService
     const { pagePath, service } = props
     const classes = useStyles()
     const serviceClass = service?.serviceClass
-    const { type: drawerType, setType: setDrawerType } = useContext(DrawerContext)
+    const { drawerType, setDrawerType } = useContext(DrawerContext)
     const { connectionState } = useContext(JacdacContext)
     const open = drawerType !== DrawerType.None
     const connected = connectionState == BusState.Connected
+    const alertConnection = !connected &&
+        (drawerType == DrawerType.Dom || drawerType == DrawerType.Packets)
+    const query = useStaticQuery(graphql`
+        {
+          allFile(filter: {name: {eq: "service-spec-language"}}) {
+            nodes {
+              childMdx {
+                body
+              }
+            }
+          }
+        }
+      `)
+      const specMarkdown = query.allFile.nodes[0].childMdx.body
 
     const handleDrawerClose = () => {
         setDrawerType(DrawerType.None)
@@ -61,18 +80,19 @@ export default function AppDrawer(props: { pagePath: string, service?: JDService
         <div className={classes.drawerHeader}>
             {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
             <TocBreadcrumbs path={pagePath} />
-            {drawerType === DrawerType.Packets && serviceClass !== undefined 
+            {drawerType === DrawerType.Packets && serviceClass !== undefined
                 && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             <IconButton onClick={handleDrawerClose}>
                 <ChevronLeftIcon />
             </IconButton>
         </div>
         <Divider />
-        {drawerType === DrawerType.Toc && <Toc />}
-        {!connected && <Alert severity={"info"}>Connect to a JACDAC device to inspect the bus.
+        {alertConnection && <Alert severity={"info"}>Connect to a JACDAC device to inspect the bus.
         <ConnectButton className={classes.alertButton} full={true} /></Alert>}
-        {connected && drawerType === DrawerType.Packets 
+        {drawerType === DrawerType.Toc && <Toc />}
+        {drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
+        {connected && drawerType === DrawerType.Packets
             ? <PacketList serviceClass={serviceClass} />
-                : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
+            : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
     </Drawer>
 }

@@ -13,24 +13,24 @@ export default function ServiceSpecification(props: {
 }) {
     const { service: node, showSource } = props;
     return (<>
-        <h1>{node.name}
+        <h1 key="title">{node.name}
             <span style={{ marginLeft: "1rem" }}><IDChip id={node.classIdentifier} /></span>
         </h1>
-        <Markdown source={node.notes.short} />
-        <Markdown source={node.notes.long || ""} />
+        <Markdown key="notesshort" source={node.notes.short} />
+        <Markdown key="noteslong" source={node.notes.long || ""} />
         {!!node.extends?.length &&
-            <p>
+            <p key="extends">
                 <span>Extends </span>
-                {node.extends.map(extend => <Link to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>)}
+                {node.extends.map(extend => <Link key={`extend${extend}`} to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>)}
     .
     </p>}
-        <EnumSpecification serviceClass={node.classIdentifier} />
+        <EnumSpecification key="enums" serviceClass={node.classIdentifier} />
         <h2>Packets</h2>
         {node.packets
-            .map(pkt => <PacketSpecification serviceClass={node.classIdentifier} packetInfo={pkt} />)}
+            .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
         {showSource && <>
-            <h2>Specification</h2>
-            <ServiceSpecificationSource classIdentifier={node.classIdentifier} />
+            <h2 key="spech2">Specification</h2>
+            <ServiceSpecificationSource key="source" classIdentifier={node.classIdentifier} />
         </>}
     </>
     )

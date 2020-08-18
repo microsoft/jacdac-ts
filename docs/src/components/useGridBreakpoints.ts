@@ -9,7 +9,7 @@ export default function useGridBreakpoints(): {
     lg: GridSize,
     xl: GridSize
 } {
-    const { type } = useContext(DrawerContext)
-    if (type != DrawerType.None) return { xs: 12, md: 12, sm: 12,lg: 6, xl: 4}
+    const { drawerType } = useContext(DrawerContext)
+    if (drawerType != DrawerType.None) return { xs: 12, md: 12, sm: 12,lg: 6, xl: 4}
     else return { xs:12, sm:6, md:4, lg: 4, xl: 3 }
 }

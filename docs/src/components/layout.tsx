@@ -138,7 +138,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   const classes = useStyles();
-  const { type: drawerType, setType: setDrawerType } = useContext(DrawerContext)
+  const { drawerType, setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
   const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
