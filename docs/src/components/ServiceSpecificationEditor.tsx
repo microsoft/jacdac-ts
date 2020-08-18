@@ -3,7 +3,7 @@ import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Typography, Ta
 import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-spec/spectool/jdspec'
 import AceEditor from "react-ace";
 
-import "ace-builds/src-noconflict/mode-java";
+import "ace-builds/src-noconflict/mode-markdown";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools"
 import { serviceSpecificationFromName } from '../../../src/dom/spec';
