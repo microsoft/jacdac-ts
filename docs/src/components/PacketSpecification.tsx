@@ -52,12 +52,12 @@ function MembersType(props: { members: jdspec.PacketMember[] }) {
     )
         return <></>
 
-    return <p>
+    return <>
         <h4>Fields</h4>
         <ul>
-            {members.map(member => <MemberType member={member} />)}
+            {members.map(member => <MemberType key={`member${member.name}`} member={member} />)}
         </ul>
-    </p>
+    </>
 }
 
 export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo }) {
@@ -74,7 +74,7 @@ export default function PacketSpecification(props: { serviceClass: number, packe
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
-        <p><Markdown source={packetInfo.description} /></p>
+        <Markdown source={packetInfo.description} />
         <MembersType members={packetInfo.fields} />
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
