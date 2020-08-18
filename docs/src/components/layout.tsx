@@ -145,6 +145,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const serviceClass = pageContext?.node?.classIdentifier;
   useFirmwareBlobs()
 
+  console.log(pageContext)
   const handleDrawerToc = () => {
     setDrawerType(DrawerType.Toc)
   }
