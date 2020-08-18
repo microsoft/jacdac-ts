@@ -25,8 +25,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     segment: {
         marginBottom: theme.spacing(2)
     },
-    wide: {
-        width: "100%",
+    editor: {
     },
     pre: {
         margin: "0",
@@ -79,9 +78,11 @@ TODO describe this register
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 6}>
                 <Paper square className={classes.segment}>
                     <AceEditor
-                        className={classes.wide}
+                        className={classes.editor}
                         mode="markdown"
                         theme="github"
+                        width="100%"
+                        height="42rem"
                         value={source}
                         onChange={handleSourceChange}
                         name="servicespecificationeditor"
