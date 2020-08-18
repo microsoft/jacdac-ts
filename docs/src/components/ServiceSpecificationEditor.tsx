@@ -9,12 +9,16 @@ import "ace-builds/src-noconflict/ext-language_tools"
 import { serviceSpecificationFromName } from '../../../src/dom/spec';
 import TabPanel, { a11yProps } from './TabPanel';
 import ServiceSpecification from './ServiceSpecification';
+import RandomGenerator from './RandomGenerator';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
         marginBottom: theme.spacing(1)
+    },
+    segment: {
+        marginBottom: theme.spacing(2)
     },
     pre: {
         margin: "0",
@@ -63,7 +67,7 @@ TODO describe this register
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={6}>
-                <Paper square>
+                <Paper square className={classes.segment}>
                     <AceEditor
                         mode="markdown"
                         theme="github"
@@ -80,6 +84,9 @@ TODO describe this register
                             enableLiveAutocompletion: true,
                         }}
                     />
+                </Paper>
+                <Paper square className={classes.segment}>
+                    <RandomGenerator device={false} />
                 </Paper>
             </Grid>
             <Grid key="output" item xs={12} md={6}>
