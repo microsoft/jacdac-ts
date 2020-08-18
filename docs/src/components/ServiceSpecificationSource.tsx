@@ -6,6 +6,7 @@ import Tab from '@material-ui/core/Tab';
 import { serviceSpecificationFromClassIdentifier } from '../../../src/dom/spec';
 import { Paper, createStyles, makeStyles, Theme } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
+import Snippet from './Snippet';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -38,9 +39,12 @@ export default function ServiceSpecificationSource(props: { classIdentifier: num
                     <Tab label="Markdown" {...a11yProps(0)} />
                     <Tab label="JSON" {...a11yProps(1)} />
                 </Tabs>
-                {[spec.source, JSON.stringify(spec, null, 2)].map((src, index) => <TabPanel value={value} index={index}>
-                    <pre className={classes.pre}>{src}</pre>
-                </TabPanel>)}
+                <TabPanel value={value} index={0}>
+                    <Snippet value={spec.source} mode="markdown" /> 
+                </TabPanel>
+                <TabPanel value={value} index={1}>
+                    <Snippet value={JSON.stringify(spec, null, 2)} mode="json" /> 
+                </TabPanel>
             </Paper>
         </div>
     );
