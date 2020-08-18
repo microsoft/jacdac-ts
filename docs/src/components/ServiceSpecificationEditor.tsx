@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Typography } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Typography, Tabs, Tab } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-spec/spectool/jdspec'
 import AceEditor from "react-ace";
 
@@ -7,6 +7,8 @@ import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools"
 import { serviceSpecificationFromName } from '../../../src/dom/spec';
+import TabPanel, { a11yProps } from './TabPanel';
+import ServiceSpecification from './ServiceSpecification';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -25,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
+    const [tab, setTab] = useState(0);
     const [source, setSource] = useState(
         `# My Service
 
@@ -43,9 +46,9 @@ TODO describe this register
         "_sensor": serviceSpecificationFromName("_sensor")
     }
     const json = parseSpecificationMarkdownToJSON(source, includes)
-    const annotations = json?.errors?.map(error => ({ 
-        row: error.line, 
-        column: 1, 
+    const annotations = json?.errors?.map(error => ({
+        row: error.line,
+        column: 1,
         text: error.message,
         type: 'error'
     }))
@@ -53,11 +56,13 @@ TODO describe this register
     const handleSourceChange = (newValue: string) => {
         setSource(newValue)
     }
+    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+        setTab(newValue);
+    };
 
     return (
         <Grid spacing={2} className={classes.root} container>
-            <Grid key="editor" item xs={12} md={8}>
-                <Typography variant="h5">Markdown Specification</Typography>
+            <Grid key="editor" item xs={12} md={6}>
                 <Paper square>
                     <AceEditor
                         mode="markdown"
@@ -77,11 +82,17 @@ TODO describe this register
                     />
                 </Paper>
             </Grid>
-            <Grid key="output" item xs={12} md={4}>
-            <Typography variant="h5">JSON</Typography>
-                <Paper square>
+            <Grid key="output" item xs={12} md={6}>
+                <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
+                    <Tab label="Specification" {...a11yProps(0)} />
+                    <Tab label="JSON" {...a11yProps(1)} />
+                </Tabs>
+                <TabPanel value={tab} index={0}>
+                    {json && <ServiceSpecification service={json} />}
+                </TabPanel>
+                <TabPanel value={tab} index={1}>
                     <pre>{JSON.stringify(json, null, 2)}</pre>
-                </Paper>
+                </TabPanel>
             </Grid>
         </Grid>
     );

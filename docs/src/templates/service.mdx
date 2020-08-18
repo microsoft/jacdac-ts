@@ -1,48 +1,14 @@
-import DeviceList from "../components/DeviceList"
 import { Link } from 'gatsby-theme-material-ui';
-import { Fragment } from "react"
-import { serviceSpecificationFromName, isRegister, isEvent, isCommand } from "../../../src/dom/spec"
-import PacketSpecification from "../components/PacketSpecification"
-import Chip from '@material-ui/core/Chip';
-import IDChip from "../components/IDChip";
-import ServiceSpecificationSource from "../components/ServiceSpecificationSource"
-import Markdown from "../components/Markdown";
-import EnumSpecification from "../components/EnumSpecification";
+import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
+import ServiceSpecification from "../components/ServiceSpecification"
 
-<h1>{props.pageContext.node.name}
-    <span style={{ marginLeft: "1rem" }}><IDChip id={props.pageContext.node.classIdentifier} /></span>
-</h1>
-
-<Markdown source={props.pageContext.node.notes.short} />
-<Markdown source={props.pageContext.node.notes.long || ""} />
-
-<Fragment>
-{!!props.pageContext.node.extends?.length && 
-    <p>
-        <span>Extends </span>
-    {props.pageContext.node.extends.map(extend => <Link to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>)}
-    .
-    </p>}
-</Fragment>
-
-<EnumSpecification serviceClass={props.pageContext.node.classIdentifier} />
-
-## Packets
-
-<Fragment>
-    {props.pageContext.node.packets
-        .map(pkt => <PacketSpecification serviceClass={props.pageContext.node.classIdentifier} packetInfo={pkt} />)}
-</Fragment>
-
-## Specification
-
-<ServiceSpecificationSource classIdentifier={props.pageContext.node.classIdentifier} />
+<ServiceSpecification service={serviceSpecificationFromClassIdentifier(props.pageContext.node.classIdentifier)} showSource={true} />
 
 ## See Also
 
 <ul>
     <li><a href={`https://github.com/microsoft/jacdac/tree/master/services/${props.pageContext.node.shortId}.md`}>Edit specification source</a>.</li>
     <li>Read <Link to="/spec/service-spec-language">Service Specification Language</Link> reference</li>
-    <li>Create a new service specification using the [Service Editor](/tools/service-editor)
+    <li>Create a new service specification using the <Link to="/tools/service-editor">Service Editor</Link></li>
     <li>Using services in JavaScript with the <Link to={`/clients/web/dom`}>JACDAC DOM</Link></li>
 </ul>
