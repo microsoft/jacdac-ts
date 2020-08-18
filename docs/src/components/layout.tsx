@@ -208,8 +208,8 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
-          {pageTitle && <Typography variant="h5">
-            {pageTitle}
+          {pageTitle && pageTitle !== "JACDAC" && <Typography variant="h5">
+            {"/"} {pageTitle}
           </Typography>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
