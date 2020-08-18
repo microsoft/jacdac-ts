@@ -43,6 +43,7 @@ import FlashButton from "./FlashButton";
 import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
 import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
 import AppDrawer from "./AppDrawer";
+import WebUSBAlert from "./WebUSBAlert";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
@@ -231,6 +232,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
         >
           <div className={classes.mainContent}>
             <div className={classes.drawerHeader} />
+            <WebUSBAlert />
             <Typography component="span">
               {children}
             </Typography>
