@@ -37,6 +37,8 @@ export default function ServiceSpecificationEditor() {
 
 TODO: describe your service
 
+        extends: _sensor
+
 ## Registers
 
     ro position: i32 @ reading
