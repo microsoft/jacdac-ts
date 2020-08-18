@@ -12,31 +12,6 @@ async function createServicePages(graphql, actions, reporter) {
       shortName
       shortId
       classIdentifier
-      extends
-      notes {
-        short
-        long
-      }
-      packets {
-        kind
-        name
-        identifier
-        description
-        derived
-        fields {
-          name
-          unit
-          type
-          storage
-          defaultValue
-          isSimpleType
-          absoluteMin
-          absoluteMax
-          typicalMin
-          typicalMax
-        }
-      }
-      source
     }
   }
 }

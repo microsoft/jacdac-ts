@@ -13,9 +13,9 @@ import DrawerContext, { drawerTitle, DrawerType } from "./DrawerContext";
 import JacdacContext from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import ConnectButton from "../jacdac/ConnectButton";
-import { JDService } from "../../../src/dom/service";
 import { useStaticQuery, graphql } from "gatsby";
 import Mdx from "./Mdx";
+import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -41,16 +41,20 @@ const useStyles = makeStyles((theme) => createStyles({
     }
 }));
 
-export default function AppDrawer(props: { pagePath: string, service?: JDService }) {
-    const { pagePath, service } = props
+export default function AppDrawer(props: {
+    pagePath: string,
+    serviceClass?: number
+}) {
+    const { pagePath, serviceClass } = props
     const classes = useStyles()
-    const serviceClass = service?.serviceClass
     const { drawerType, setDrawerType } = useContext(DrawerContext)
     const { connectionState } = useContext(JacdacContext)
     const open = drawerType !== DrawerType.None
     const connected = connectionState == BusState.Connected
     const alertConnection = !connected &&
         (drawerType == DrawerType.Dom || drawerType == DrawerType.Packets)
+    const service = serviceClass !== undefined
+        && serviceSpecificationFromClassIdentifier(serviceClass)
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
@@ -62,7 +66,7 @@ export default function AppDrawer(props: { pagePath: string, service?: JDService
           }
         }
       `)
-      const specMarkdown = query.allFile.nodes[0].childMdx.body
+    const specMarkdown = query.allFile.nodes[0].childMdx.body
 
     const handleDrawerClose = () => {
         setDrawerType(DrawerType.None)
@@ -81,7 +85,7 @@ export default function AppDrawer(props: { pagePath: string, service?: JDService
             {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
             <TocBreadcrumbs path={pagePath} />
             {drawerType === DrawerType.Packets && serviceClass !== undefined
-                && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
+                && <Alert className={classes.alertButton} severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             <IconButton onClick={handleDrawerClose}>
                 <ChevronLeftIcon />
             </IconButton>

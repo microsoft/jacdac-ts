@@ -27,6 +27,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import EditIcon from '@material-ui/icons/Edit';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -141,7 +143,6 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { drawerType, setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
-  const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
@@ -210,6 +211,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
             <FiberManualRecordIcon />
+          </IconButton>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/service-editor" aria-label="Service editor">
+            <EditIcon />
           </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
         </Toolbar>
