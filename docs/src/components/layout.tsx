@@ -143,6 +143,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { drawerType, setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
+  const pageTitle = pageContext?.frontmatter?.title
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
@@ -207,9 +208,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
-          <Typography variant="h5">
-
-          </Typography>
+          {pageTitle && <Typography variant="h5">
+            {pageTitle}
+          </Typography>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
