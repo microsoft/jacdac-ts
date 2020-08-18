@@ -2,8 +2,23 @@
 
 import { NumberFormat } from "./buffer";
 import specdata from "../../jacdac-spec/dist/spec.json";
+import { SMap } from "./utils";
 
-export const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
+const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
+let customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
+
+/**
+ * Adds a custom service specification
+ * @param service 
+ */
+export function addCustomServiceSpecification(service: jdspec.ServiceSpec) {
+    if (service && service.classIdentifier)
+        customServiceSpecifications[service.classIdentifier] = service;
+}
+
+export function clearCustomServiceSpecifications() {
+    customServiceSpecifications = {}
+}
 
 /**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
@@ -32,6 +47,7 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
 export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
     const k = (name || "").toLowerCase().trim()
     return serviceSpecifications.find(s => s.shortId == name)
+        || Object.values(customServiceSpecifications).find(ser => ser.shortId == name)
 }
 
 /**
@@ -42,6 +58,7 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
     if (classIdentifier === null || classIdentifier === undefined)
         return undefined;
     return serviceSpecifications.find(s => s.classIdentifier === classIdentifier)
+        || customServiceSpecifications[classIdentifier]
 }
 
 export function isRegister(pkt: jdspec.PacketInfo) {

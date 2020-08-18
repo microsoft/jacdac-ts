@@ -16,6 +16,7 @@ import ConnectButton from "../jacdac/ConnectButton";
 import { useStaticQuery, graphql } from "gatsby";
 import Mdx from "./Mdx";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import PacketFilterContext from "./PacketFilterContext";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -45,8 +46,10 @@ export default function AppDrawer(props: {
     pagePath: string,
     serviceClass?: number
 }) {
-    const { pagePath, serviceClass } = props
+    const { pagePath } = props
     const classes = useStyles()
+    const { serviceClass: globalServiceClass } = useContext(PacketFilterContext)
+    const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const { drawerType, setDrawerType } = useContext(DrawerContext)
     const { connectionState } = useContext(JacdacContext)
     const open = drawerType !== DrawerType.None

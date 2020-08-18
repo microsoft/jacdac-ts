@@ -39,8 +39,9 @@ export default function PacketList(props: {
     serviceClass?: number,
     showTime?: boolean
 }) {
-    const { serviceClass, showTime } = props
-    const { flags, setFlags } = useContext(PacketFilterContext)
+    const { showTime } = props
+    const { flags, setFlags, serviceClass: globalServiceClass } = useContext(PacketFilterContext)
+    const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JacdacContext)

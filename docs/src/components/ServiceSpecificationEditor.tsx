@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Typography, Tabs, Tab } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-spec/spectool/jdspec'
 import AceEditor from "react-ace";
@@ -8,13 +8,14 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools"
-import { serviceSpecificationFromName } from '../../../src/dom/spec';
+import { serviceSpecificationFromName, clearCustomServiceSpecifications, addCustomServiceSpecification } from '../../../src/dom/spec';
 import TabPanel, { a11yProps } from './TabPanel';
 import ServiceSpecification from './ServiceSpecification';
 import RandomGenerator from './RandomGenerator';
 import { useDbValue } from './DbContext';
 import Snippet from './Snippet';
 import DrawerContext, { DrawerType } from './DrawerContext';
+import PacketFilterContext from './PacketFilterContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -40,6 +41,7 @@ export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [tab, setTab] = useState(0);
     const { drawerType } = useContext(DrawerContext)
+    const { setServiceClass } = useContext(PacketFilterContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
         `# My Service
 
@@ -60,6 +62,15 @@ TODO describe this register
         "_sensor": serviceSpecificationFromName("_sensor")
     }
     const json = parseSpecificationMarkdownToJSON(source, includes)
+    useEffect(() => {
+        addCustomServiceSpecification(json)
+        if (json.classIdentifier)
+            setServiceClass(json.classIdentifier)
+        return () => {
+            setServiceClass(undefined)
+            clearCustomServiceSpecifications();
+        }
+    }, [source])
     const annotations = json?.errors?.map(error => ({
         row: error.line,
         column: 1,
