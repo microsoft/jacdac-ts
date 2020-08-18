@@ -4,6 +4,8 @@ import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-sp
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-markdown";
+import "ace-builds/src-noconflict/mode-json";
+import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools"
 import { serviceSpecificationFromName } from '../../../src/dom/spec';
@@ -11,6 +13,7 @@ import TabPanel, { a11yProps } from './TabPanel';
 import ServiceSpecification from './ServiceSpecification';
 import RandomGenerator from './RandomGenerator';
 import { useDbValue } from './DbContext';
+import Snippet from './Snippet';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -47,7 +50,7 @@ TODO: describe your service
 TODO describe this register
 `
     )
-
+    const convs = converters();
     const includes = {
         "_base": serviceSpecificationFromName("_base"),
         "_sensor": serviceSpecificationFromName("_sensor")
@@ -94,14 +97,17 @@ TODO describe this register
             <Grid key="output" item xs={12} md={6}>
                 <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                     <Tab label="Specification" {...a11yProps(0)} />
-                    <Tab label="JSON" {...a11yProps(1)} />
+                    <Tab label="TypeScript" {...a11yProps(1)} />
+                    <Tab label="C" {...a11yProps(2)} />
+                    <Tab label="JSON" {...a11yProps(3)} />
                 </Tabs>
-                <TabPanel value={tab} index={0}>
+                <TabPanel key="spec" value={tab} index={0}>
                     {json && <ServiceSpecification service={json} />}
                 </TabPanel>
-                <TabPanel value={tab} index={1}>
-                    <pre>{JSON.stringify(json, null, 2)}</pre>
-                </TabPanel>
+                {["ts", "c", "json"].map((lang, i) =>
+                    <TabPanel key={`conv${lang}`} value={tab} index={i + 1}>
+                        <Snippet value={json && convs[lang](json)} mode={lang} />
+                    </TabPanel>)}
             </Grid>
         </Grid>
     );
