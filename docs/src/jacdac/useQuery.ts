@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect, useCallback, DependencyList } from "react";
-import JacdacContext from "../../../src/react/Context";
+import JACDACContext from "../../../src/react/Context";
 import { queryAsync } from "../../../src/graphql/graphql"
 
 export type OperationVariables = { [name: string]: any; };
@@ -27,7 +27,7 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
     query: string,
     options?: QueryHookOptions<TData, TVariables>,
 ): QueryResult<TData, TVariables> {
-    const { bus } = useContext(JacdacContext);
+    const { bus } = useContext(JACDACContext);
     const [pending, setPending] = useState(false);
     const [value, setValue] = useState(null);
     const [error, setError] = useState(null);

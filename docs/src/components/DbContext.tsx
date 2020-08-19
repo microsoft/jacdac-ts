@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { parseUF2 } from "../../../src/dom/flashing";
-import JacdacContext from "../../../src/react/Context";
+import JACDACContext from "../../../src/react/Context";
 import { delay } from "../../../src/dom/utils";
 
 export interface Db {
@@ -153,7 +153,7 @@ export function useDbValue(id: string, initialValue: string) {
 }
 
 export function useFirmwareBlobs() {
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const { file, setFile, dependencyId } = useDbFile("firmware.uf2")
 
     async function load(f: File, store: boolean) {

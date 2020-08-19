@@ -4,7 +4,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
 import { JDRegister } from '../../../src/dom/register';
 import { JDField } from '../../../src/dom/field';
-import JacdacContext from '../../../src/react/Context';
+import JACDACContext from '../../../src/react/Context';
 import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -103,7 +103,7 @@ function createDataSet(fields: JDField[], name: string, live: boolean) {
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const classes = useStyles();
     const gridBreakpoints = useGridBreakpoints()
     const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])

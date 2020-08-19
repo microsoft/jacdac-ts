@@ -4,7 +4,7 @@ import { Grid, makeStyles, Theme, createStyles } from '@material-ui/core';
 import DeviceCard from './DeviceCard';
 import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
-import JacdacContext from '../../../src/react/Context';
+import JACDACContext from '../../../src/react/Context';
 import useGridBreakpoints from './useGridBreakpoints';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -28,7 +28,7 @@ export default function DeviceList(props: {
     const { serviceClass, linkToService, registerIdentifier,
         showDeviceName, showServiceName, showRegisterName, showFirmware, showTemperature,
         eventIdentifier, commandIdentifier } = props
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const classes = useStyles()

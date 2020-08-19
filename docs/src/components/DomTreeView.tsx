@@ -1,5 +1,5 @@
 import React, { useContext, useState, ChangeEvent } from 'react';
-import JacdacContext from '../../../src/react/Context';
+import JACDACContext from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
@@ -292,7 +292,7 @@ export default function DomTreeView(props: DomTreeViewProps) {
     const [expanded, setExpanded] = useState<string[]>(defaultExpanded || []);
     const [selected, setSelected] = useState<string[]>(defaultSelected || []);
     const [checked, setChecked] = useState<string[]>(defaultChecked || [])
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const devices = useChange(bus, () => bus.devices().filter(dev => !deviceFilter || deviceFilter(dev)))
 
     const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {

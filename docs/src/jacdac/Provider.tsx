@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import JacdacContext from "../../../src/react/Context";
+import JACDACContext from "../../../src/react/Context";
 import { JDBus, BusState } from "../../../src/dom/bus";
 import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
@@ -24,9 +24,9 @@ const JacdacProvider = ({ children }) => {
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
-        <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
+        <JACDACContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
             {children}
-        </JacdacContext.Provider>
+        </JACDACContext.Provider>
     )
 }
 

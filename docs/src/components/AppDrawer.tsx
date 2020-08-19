@@ -10,7 +10,7 @@ import { DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import DrawerContext, { drawerTitle, DrawerType } from "./DrawerContext";
-import JacdacContext from "../../../src/react/Context";
+import JACDACContext from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import ConnectButton from "../jacdac/ConnectButton";
 import { useStaticQuery, graphql } from "gatsby";
@@ -51,7 +51,7 @@ export default function AppDrawer(props: {
     const { serviceClass: globalServiceClass } = useContext(PacketFilterContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const { drawerType, setDrawerType } = useContext(DrawerContext)
-    const { connectionState } = useContext(JacdacContext)
+    const { connectionState } = useContext(JACDACContext)
     const open = drawerType !== DrawerType.None
     const connected = connectionState == BusState.Connected
     const alertConnection = !connected &&
