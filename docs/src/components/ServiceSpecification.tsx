@@ -39,7 +39,7 @@ export default function ServiceSpecification(props: {
         ].filter(group => group.packets.length)
             .map(group => <Fragment key={`group${group.name}`}>
                 <h2>{group.name}</h2>
-                {group.note && <p>{group.note}</p>}
+                {group.note && <Markdown source={group.note} />}
                 {group.packets
                     .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
             </Fragment>)
