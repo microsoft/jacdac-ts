@@ -37,7 +37,9 @@ function MemberType(props: { member: jdspec.PacketMember }) {
     return <li>
         {member.name !== "_" && <code>{member.name}{":"}</code>}
         <code>{member.type}</code>
-        {parts.join(', ')} </li>
+        {parts.join(', ')} 
+        {member.startRepeats && <strong>starts repeating</strong>}
+        </li>
 }
 
 function MembersType(props: { members: jdspec.PacketMember[] }) {
