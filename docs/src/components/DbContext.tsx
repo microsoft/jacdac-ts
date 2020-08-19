@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { parseUF2 } from "../../../src/dom/flashing";
 import JacdacContext from "../../../src/react/Context";
+import { delay } from "../../../src/dom/utils";
 
 export interface Db {
     dependencyId: () => number,
@@ -18,10 +19,15 @@ function openDbAsync(): Promise<Db> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     let db: IDBDatabase;
     let changeId = 0;
+    let upgrading = false;
 
+    const checkUpgrading = () => {
+        if (upgrading) return delay(100)
+        else return Promise.resolve()
+    }
     const put = (table: string, id: string, data: any) => {
         changeId++
-        return new Promise<void>((resolve, reject) => {
+        return checkUpgrading().then(() => new Promise<void>((resolve, reject) => {
             try {
                 const transaction = db.transaction([table], "readwrite");
                 const blobs = transaction.objectStore(table)
@@ -32,10 +38,10 @@ function openDbAsync(): Promise<Db> {
                 console.error(`idb: put ${id} failed`)
                 reject(e)
             }
-        })
+        }))
     }
     const get = (table: string, id: string) => {
-        return new Promise<any>((resolve, reject) => {
+        return checkUpgrading().then(() => new Promise<any>((resolve, reject) => {
             try {
                 const transaction = db.transaction([table], "readonly");
                 const blobs = transaction.objectStore(table)
@@ -46,7 +52,7 @@ function openDbAsync(): Promise<Db> {
                 console.error(`idb: get ${id} failed`)
                 reject(e)
             }
-        })
+        }))
     }
 
     const api = {
@@ -67,16 +73,20 @@ function openDbAsync(): Promise<Db> {
             resolve(api);
         }
         request.onupgradeneeded = function (event) {
-            db = request.result;
-            const stores = db.objectStoreNames
-            if (!stores.contains(STORE_STORAGE))
-                db.createObjectStore(STORE_STORAGE);
-            if (!stores.contains(STORE_FILES))
-                db.createObjectStore(STORE_FILES);
-            db.onerror = function (event) {
-                console.log("idb error", event);
-            };
-            resolve(api);
+            upgrading = true;
+            try {
+                db = request.result;
+                const stores = db.objectStoreNames
+                if (!stores.contains(STORE_STORAGE))
+                    db.createObjectStore(STORE_STORAGE);
+                if (!stores.contains(STORE_FILES))
+                    db.createObjectStore(STORE_FILES);
+                db.onerror = function (event) {
+                    console.log("idb error", event);
+                };
+            } finally {
+                upgrading = false;
+            }
         };
     })
 }
