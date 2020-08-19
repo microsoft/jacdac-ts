@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromName } from "../../../src/dom/spec"
+import { serviceSpecificationFromName, isRegister, isEvent, isCommand } from "../../../src/dom/spec"
 import PacketSpecification from "../components/PacketSpecification"
 import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
@@ -12,6 +12,12 @@ export default function ServiceSpecification(props: {
     showSource?: boolean
 }) {
     const { service: node, showSource } = props;
+    const registers = node.packets.filter(r => isRegister(r))
+    const events = node.packets.filter(r => isEvent(r))
+    const commands = node.packets.filter(r => isCommand(r))
+    const others = node.packets.filter(r => registers.indexOf(r) < 0
+        && events.indexOf(r) < 0 && commands.indexOf(r) < 0)
+
     return (<>
         <h1 key="title">{node.name}
             <span style={{ marginLeft: "1rem" }}><IDChip id={node.classIdentifier} /></span>
@@ -25,9 +31,19 @@ export default function ServiceSpecification(props: {
     </p>}
         <Markdown key="noteslong" source={node.notes.long || ""} />
         <EnumSpecification key="enums" serviceClass={node.classIdentifier} />
-        <h2>Packets</h2>
-        {node.packets
-            .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
+        {[
+            { name: "Registers", packets: registers, note: node.notes["registers"] },
+            { name: "Events", packets: events, note: node.notes["events"] },
+            { name: "Commands", packets: commands, note: node.notes["commands"] },
+            { name: "Others", packets: others, note: node.notes["others"] }
+        ].filter(group => group.packets.length)
+            .map(group => <Fragment key={`group${group.name}`}>
+                <h2>{group.name}</h2>
+                {group.note && <p>{group.note}</p>}
+                {group.packets
+                    .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
+            </Fragment>)
+        }
         {showSource && <>
             <h2 key="spech2">Specification</h2>
             <ServiceSpecificationSource key="source"
