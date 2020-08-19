@@ -30,7 +30,11 @@ export default function ServiceSpecification(props: {
             .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
         {showSource && <>
             <h2 key="spech2">Specification</h2>
-            <ServiceSpecificationSource key="source" classIdentifier={node.classIdentifier} />
+            <ServiceSpecificationSource key="source"
+                classIdentifier={node.classIdentifier}
+                showMarkdown={true}
+                showSpecification={false}
+            />
         </>}
     </>
     )

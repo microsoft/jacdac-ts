@@ -16,6 +16,7 @@ import { useDbValue } from './DbContext';
 import Snippet from './Snippet';
 import DrawerContext, { DrawerType } from './DrawerContext';
 import PacketFilterContext from './PacketFilterContext';
+import ServiceSpecificationSource from './ServiceSpecificationSource';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -113,19 +114,10 @@ TODO describe this register
                 </Paper>
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 6}>
-                <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
-                    <Tab label="Specification" {...a11yProps(0)} />
-                    <Tab label="TypeScript" {...a11yProps(1)} />
-                    <Tab label="C" {...a11yProps(2)} />
-                    <Tab label="JSON" {...a11yProps(3)} />
-                </Tabs>
-                <TabPanel key="spec" value={tab} index={0}>
-                    {json && <ServiceSpecification service={json} />}
-                </TabPanel>
-                {["ts", "c", "json"].map((lang, i) =>
-                    <TabPanel key={`conv${lang}`} value={tab} index={i + 1}>
-                        <Snippet value={json && convs[lang](json)} mode={lang} />
-                    </TabPanel>)}
+                <ServiceSpecificationSource 
+                    serviceSpecification={json} 
+                    showMarkdown={false} 
+                    showSpecification={true} />
             </Grid>
         </Grid>
     );
