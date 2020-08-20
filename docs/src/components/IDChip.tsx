@@ -5,6 +5,6 @@ import { Chip } from '@material-ui/core';
 
 export default function IDChip(props: { id: number, className?: string }) {
     const { id, className } = props
-    const ids = `0x${id.toString(16)}`
-    return <Chip className={className} size="small" icon={<FingerprintIcon />} title={`identifier ${ids} (${id})`} label={ids} />
+    const ids = `0x${id !== undefined ? id.toString(16) : "???"}`
+    return <Chip className={className} size="small" icon={<FingerprintIcon />} title={`identifier ${ids}`} label={ids} />
 }

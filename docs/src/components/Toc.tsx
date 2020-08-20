@@ -90,6 +90,9 @@ export default function Toc() {
           headings {
             value
           }
+          frontmatter {
+            title
+          }
           excerpt
           fields {
             slug
@@ -131,10 +134,10 @@ export default function Toc() {
     path: "/tools/"
   }]
   data.allMdx.edges.map(node => node.node)
-    .filter(node => !!node.headings.length && !/404/.test(node.headings[0].value))
+    .filter(node => !!node.frontmatter?.title || (!!node.headings.length && !/404/.test(node.headings[0].value)))
     .map(node => {
       const r = {
-        name: node.headings[0].value,
+        name: node.frontmatter?.title || node.headings[0].value,
         path: node.fields.slug
       }
       if (node.parent.sourceInstanceName == "specPages")

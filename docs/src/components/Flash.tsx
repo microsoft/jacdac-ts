@@ -1,6 +1,6 @@
 import { parseUF2, FirmwareInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
 import React, { useState, useContext, Fragment, useEffect } from "react"
-import JacdacContext from "../../../src/react/Context"
+import JACDACContext from "../../../src/react/Context"
 import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip, Tabs, Tab, CircularProgress, CircularProgressProps } from "@material-ui/core";
 import DeviceCard from "./DeviceCard";
 import { Button } from "gatsby-theme-material-ui";
@@ -12,6 +12,7 @@ import { useFirmwareBlobs } from "./DbContext";
 import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
 import TabPanel, { a11yProps } from './TabPanel';
+import useGridBreakpoints from "./useGridBreakpoints";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -45,7 +46,7 @@ function CircularProgressWithLabel(props: CircularProgressProps & { value: numbe
 
 
 function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blob: FirmwareBlob, setFlashing: (b: boolean) => void }) {
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const { device, firmware, blob, setFlashing: setParentFlashing } = props
     const [flashing, setFlashing] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -79,7 +80,8 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 }
 
 export default function Flash() {
-    const { bus, connectionState } = useContext(JacdacContext)
+    const { bus, connectionState } = useContext(JACDACContext)
+    const gridBreakpoints = useGridBreakpoints()
     const { setFirmwareFile } = useFirmwareBlobs()
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
@@ -157,7 +159,7 @@ export default function Flash() {
             <TabPanel value={tab} index={1}>
                 {updates && <Grid container spacing={2}>
                     {updates
-                        .map(update => <Grid key={"fw" + update.device.id} item xs={12} sm={6} md={4}>
+                        .map(update => <Grid key={"fw" + update.device.id} item {...gridBreakpoints}>
                             <UpdateDeviceCard {...update} />
                         </Grid>)}
                 </Grid>}

@@ -18,43 +18,36 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
-// tslint:disable-next-line: no-submodule-imports
-import Drawer from '@material-ui/core/Drawer'
 import ConnectButton from '../jacdac/ConnectButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import Divider from '@material-ui/core/Divider';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import EditIcon from '@material-ui/icons/Edit';
 import { useStaticQuery, graphql } from "gatsby"
 import JacdacProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
-import Toc from "./Toc"
-import PacketList from "./PacketList"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-// tslint:disable-next-line: no-submodule-imports
-import Alert from "@material-ui/lab/Alert";
 import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
 import { DbProvider, useFirmwareBlobs } from "./DbContext";
 import FlashButton from "./FlashButton";
-import DomTreeView from "./DomTreeView";
-import TocBreadcrumbs from "./TocBreadcrums";
 // tslint:disable-next-line: no-submodule-imports
-import { createMuiTheme, responsiveFontSizes, ThemeProvider } from '@material-ui/core/styles';
+import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
+import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
+import AppDrawer from "./AppDrawer";
+import WebUSBAlert from "./WebUSBAlert";
 
-const drawerWidth = `${40}rem`;
+export const DRAWER_WIDTH = `${40}rem`;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => createStyles({
   root: {
     display: 'flex',
     flexGrow: 1
@@ -69,8 +62,8 @@ const useStyles = makeStyles((theme) => ({
     }),
   },
   appBarShift: {
-    width: `calc(100% - ${drawerWidth})`,
-    marginLeft: drawerWidth,
+    width: `calc(100% - ${DRAWER_WIDTH})`,
+    marginLeft: DRAWER_WIDTH,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -83,11 +76,11 @@ const useStyles = makeStyles((theme) => ({
     display: 'none',
   },
   drawer: {
-    width: drawerWidth,
+    width: DRAWER_WIDTH,
     flexShrink: 0,
   },
   drawerPaper: {
-    width: drawerWidth,
+    width: DRAWER_WIDTH,
   },
   drawerHeader: {
     display: 'flex',
@@ -98,13 +91,18 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'flex-end',
   },
   content: {
-    flexGrow: 1,
+    display: 'flex',
+    minHeight: '100vh',
+    flexDirection: 'column',
     padding: theme.spacing(3),
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: `-${drawerWidth}`,
+    marginLeft: `-${DRAWER_WIDTH}`,
+  },
+  mainContent: {
+    flexGrow: 1
   },
   contentShift: {
     transition: theme.transitions.create('margin', {
@@ -113,16 +111,13 @@ const useStyles = makeStyles((theme) => ({
     }),
     marginLeft: 0,
   },
+  footer: {
+    marginTop: theme.spacing(3)
+  },
   footerLink: {
     marginRight: theme.spacing(0.5)
   }
 }));
-
-enum DrawerType {
-  Toc,
-  Packets,
-  Dom
-}
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
   const theme = responsiveFontSizes(createMuiTheme());
@@ -132,7 +127,9 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
       <JacdacProvider>
         <PacketFilterProvider>
           <DbProvider>
-            <LayoutWithContext {...props} />
+            <DrawerProvider>
+              <LayoutWithContext {...props} />
+            </DrawerProvider>
           </DbProvider>
         </PacketFilterProvider>
       </JacdacProvider>
@@ -144,26 +141,20 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const { pageContext, children } = props;
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const [drawerType, setDrawerType] = useState(DrawerType.Toc);
+  const { drawerType, setDrawerType } = useContext(DrawerContext)
+  const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
-  const service = serviceClass !== undefined && serviceSpecificationFromClassIdentifier(serviceClass)
+  const pageTitle = pageContext?.frontmatter?.title
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
     setDrawerType(DrawerType.Toc)
-    setOpen(true);
   }
   const handleDrawerConsole = () => {
     setDrawerType(DrawerType.Packets);
-    setOpen(true);
   }
   const handleDrawerDom = () => {
     setDrawerType(DrawerType.Dom);
-    setOpen(true);
-  }
-  const handleDrawerClose = () => {
-    setOpen(false);
   }
 
   const data = useStaticQuery(graphql`
@@ -218,47 +209,35 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
+          {pageTitle && pageTitle !== "JACDAC" && <Typography variant="h5">
+            {"/"} {pageTitle}
+          </Typography>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
             <FiberManualRecordIcon />
           </IconButton>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/service-editor" aria-label="Service editor">
+            <EditIcon />
+          </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
         </Toolbar>
       </AppBar>
-      <Drawer
-        className={classes.drawer}
-        variant="persistent"
-        anchor="left"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-      >
-        <div className={classes.drawerHeader}>
-          <TocBreadcrumbs path={pageContext?.frontmatter?.path} />
-          {drawerType === DrawerType.Packets && serviceClass !== undefined && <Alert severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </div>
-        <Divider />
-        {drawerType === DrawerType.Toc ? <Toc />
-          : drawerType === DrawerType.Packets ? <PacketList serviceClass={serviceClass} />
-            : <DomTreeView />}
-      </Drawer>
+      <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
       <Container maxWidth={open ? "lg" : "sm"}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: open,
           })}
         >
-          <div className={classes.drawerHeader} />
-          <Typography component="span">
-            {children}
-          </Typography>
-          <footer>
-            <Divider />
+          <div className={classes.mainContent}>
+            <div className={classes.drawerHeader} />
+            <WebUSBAlert />
+            <Typography component="span">
+              {children}
+            </Typography>
+          </div>
+          <footer className={classes.footer}>
             <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
             <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
             <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>

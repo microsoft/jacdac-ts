@@ -12,31 +12,6 @@ async function createServicePages(graphql, actions, reporter) {
       shortName
       shortId
       classIdentifier
-      extends
-      notes {
-        short
-        long
-      }
-      packets {
-        kind
-        name
-        identifier
-        description
-        derived
-        fields {
-          name
-          unit
-          type
-          storage
-          defaultValue
-          isSimpleType
-          absoluteMin
-          absoluteMax
-          typicalMin
-          typicalMax
-        }
-      }
-      source
     }
   }
 }
@@ -49,21 +24,25 @@ async function createServicePages(graphql, actions, reporter) {
 
   // Create image post pages.
   const serviceTemplate = path.resolve(`src/templates/service.mdx`)
+  const serviceTestTemplate = path.resolve(`src/templates/service-test.mdx`)
   // We want to create a detailed page for each
   // Instagram post. Since the scraped Instagram data
   // already includes an ID field, we just use that for
   // each page's path.
   result.data.allSpecJson.nodes.forEach(node => {
     const p = `/services/${node.shortId}/`;
+    const ptest = `${p}test/`
     const r = `/services/0x${node.classIdentifier.toString(16)}`
-    console.log(`create page ${p}, redirect ${r}`)
     createPage({
-      // Each page is required to have a `path` as well
-      // as a template component. The `context` is
-      // optional but is often necessary so the template
-      // can query data specific to each page.
       path: p,
       component: slash(serviceTemplate),
+      context: {
+        node
+      },
+    })
+    createPage({
+      path: ptest,
+      component: slash(serviceTestTemplate),
       context: {
         node
       },

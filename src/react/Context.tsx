@@ -8,12 +8,12 @@ export interface JDContextProps {
     disconnectAsync: () => Promise<void>
 }
 
-const JacdacContext = createContext<JDContextProps>({
+const JACDACContext = createContext<JDContextProps>({
     bus: undefined,
     connectionState: BusState.Disconnected,
     connectAsync: undefined,
     disconnectAsync: undefined
 });
-JacdacContext.displayName = "jacdac";
+JACDACContext.displayName = "jacdac";
 
-export default JacdacContext;
+export default JACDACContext;

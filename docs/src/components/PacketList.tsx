@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles } from '@material-ui/core';
-import JacdacContext from '../../../src/react/Context';
+import JACDACContext from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND, SRV_LOGGER } from '../../../src/dom/constants';
 import { decodePacketData } from '../../../src/dom/pretty'
@@ -39,11 +39,12 @@ export default function PacketList(props: {
     serviceClass?: number,
     showTime?: boolean
 }) {
-    const { serviceClass, showTime } = props
-    const { flags, setFlags } = useContext(PacketFilterContext)
+    const { showTime } = props
+    const { flags, setFlags, serviceClass: globalServiceClass } = useContext(PacketFilterContext)
+    const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
     const maxItems = props.maxItems || 100
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const [packets, setPackets] = useState<Packet[]>([])
     const [paused, setPaused] = useState(false)
     const consoleMode = hasFlag("console")

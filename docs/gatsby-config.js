@@ -1,3 +1,4 @@
+const maxImageWidth = 800
 module.exports = {
   siteMetadata: {
     title: `JACDAC`,
@@ -7,14 +8,18 @@ module.exports = {
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
-    `gatsby-transformer-json`,
-    `gatsby-theme-material-ui`,
-    `gatsby-plugin-react-helmet`,
     {
       resolve: `gatsby-source-filesystem`,
       options: {
         name: `images`,
         path: `${__dirname}/src/images`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/../jacdac-spec/spec/images`,
       },
     },
     {
@@ -45,8 +50,13 @@ module.exports = {
         path: `${__dirname}/../package.json`,
       },
     },
+    `gatsby-plugin-optimize-svgs`,
+    `gatsby-transformer-json`,
+    `gatsby-theme-material-ui`,
+    `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
+    `gatsby-remark-images`,
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
@@ -71,7 +81,17 @@ module.exports = {
           `gatsby-remark-prismjs`,
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',
-          'gatsby-remark-embedder'          
+          'gatsby-remark-embedder',
+          {
+            resolve: `gatsby-remark-images`,
+            options: {
+              // It's important to specify the maxWidth (in pixels) of
+              // the content container as this plugin uses this as the
+              // base for generating different widths of each image.
+              maxWidth: maxImageWidth,
+            }
+          },
+          'gatsby-remark-static-images',
         ]
       },
     },
@@ -83,7 +103,17 @@ module.exports = {
           `gatsby-remark-prismjs`,
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',
-          'gatsby-remark-embedder'          
+          'gatsby-remark-embedder',
+          {
+            resolve: `gatsby-remark-images`,
+            options: {
+              // It's important to specify the maxWidth (in pixels) of
+              // the content container as this plugin uses this as the
+              // base for generating different widths of each image.
+              maxWidth: maxImageWidth,
+            }
+          },
+          'gatsby-remark-static-images'
         ],
       },
     },

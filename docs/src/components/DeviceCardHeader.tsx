@@ -1,15 +1,11 @@
 import { SRV_CTRL, CtrlCmd, CtrlReg } from "../../../src/dom/constants";
 import { CardHeader, Chip, Typography } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports
-import { Link, IconButton } from 'gatsby-theme-material-ui';
+import { Link } from 'gatsby-theme-material-ui';
 import { JDDevice } from "../../../src/dom/device";
-import React, { Fragment, useState, useEffect } from "react";
-import useChange from "../jacdac/useChange";
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import RefreshIcon from '@material-ui/icons/Refresh';
+import React from "react";
 import useRegisterValue from "../jacdac/useRegisterValue";
+import DeviceActions from "./DeviceActions";
 
 
 export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean }) {
@@ -18,19 +14,8 @@ export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boole
     const tempRegister = useRegisterValue(device, 0, CtrlReg.Temperature)
     const firmware = firmwareRegister?.stringValue;
     const temperature = tempRegister?.intValue;
-    const handleIdentify = () => device.identify()
-    const handleReset = () => device.reset()
     return <CardHeader
-        action={
-            <Fragment>
-                <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify}>
-                    <FingerprintIcon />
-                </IconButton>
-                <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
-                    <RefreshIcon />
-                </IconButton>
-            </Fragment>
-        }
+        action={<DeviceActions device={device} reset={true} />}
         title={<Link to="/clients/web/dom/device">
             {device.name}
         </Link>}

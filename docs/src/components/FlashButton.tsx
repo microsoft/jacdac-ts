@@ -3,13 +3,13 @@ import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import GetAppIcon from '@material-ui/icons/GetApp';
 import { Badge } from "@material-ui/core";
-import JacdacContext from "../../../src/react/Context";
+import JACDACContext from "../../../src/react/Context";
 import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
 import { computeUpdates } from "../../../src/dom/flashing";
 
 export default function FlashButton() {
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
 
     const updates = useEventRaised([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO],
         bus,

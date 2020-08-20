@@ -1,15 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-// tslint:disable-next-line: no-submodule-imports
-import Tabs from '@material-ui/core/Tabs';
-// tslint:disable-next-line: no-submodule-imports
-import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip, debounce } from '@material-ui/core';
-import DomTreeView from './DomTreeView';
-import { JDRegister as JDField } from '../../../src/dom/register';
-import JacdacContext from '../../../src/react/Context';
-import RegisterInput from './RegisterInput'
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
+import { JDRegister } from '../../../src/dom/register';
+import { JDField } from '../../../src/dom/field';
+import JACDACContext from '../../../src/react/Context';
 import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -21,10 +16,6 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import RefreshIcon from '@material-ui/icons/Refresh';
 import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
@@ -38,6 +29,8 @@ import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT } from '../../../src/dom/constants';
 import { throttle } from '../../../src/dom/utils';
+import DeviceActions from './DeviceActions';
+import useGridBreakpoints from './useGridBreakpoints';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -111,8 +104,9 @@ function createDataSet(fields: JDField[], name: string, live: boolean) {
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus } = useContext(JacdacContext)
+    const { bus } = useContext(JACDACContext)
     const classes = useStyles();
+    const gridBreakpoints = useGridBreakpoints()
     const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<DataSet[]>([])
@@ -204,8 +198,6 @@ export default function Collector(props: {}) {
         }
     }
     const handleTriggerChange = (eventId: string) => setTriggerEventId(eventId)
-    const handleIdentify = (device: JDDevice) => () => device.identify()
-    const handleReset = (device: JDReset) => () => device.reset()
 
     const updateLiveData = () => {
         setLiveDataSet(liveDataSet);
@@ -244,47 +236,35 @@ export default function Collector(props: {}) {
         return () => clearInterval(interval);
     }, [recording, samplingIntervalDelayi, samplingCount, fieldIdsChecked]);
 
-    const sources = <Grid container spacing={2}>
-        {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
-        {readingRegisters.map(register =>
-            <Grid item xs={12} sm={6} md={4} key={'source' + register.id}>
-                <Card>
-                    <CardHeader subheader={register.service.name}
-                        title={`${register.service.device.name}/${register.name}`}
-                        action={
-                            <React.Fragment>
-                                <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify(register.service.device)}>
-                                    <FingerprintIcon />
-                                </IconButton>
-                                <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset(register.service.device)}>
-                                    <RefreshIcon />
-                                </IconButton>
-                            </React.Fragment>
-                        } />
-                    <CardContent>
-                    </CardContent>
-                    <CardActions>
-                        <FormGroup>
-                            {register.fields.map(field =>
-                                <FormControlLabel key={field.id}
-                                    control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
-                                    label={<React.Fragment>
-                                        {field.name}
-                                        {!!prettyUnit(field.unit) && ` (${prettyUnit(field.unit)})`}
-                                        {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
-                                    </React.Fragment>}
-                                />)}
-                        </FormGroup>
-                    </CardActions>
-                </Card>
-            </Grid>)}
-    </Grid>
-
-
     return (<div className={classes.root}>
         <div key="sensors">
             <h3>Choose sensors</h3>
-            {sources}
+            {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
+            {!!readingRegisters.length && <Grid container spacing={2}>
+                {readingRegisters.map(register =>
+                    <Grid item {...gridBreakpoints} key={'source' + register.id}>
+                        <Card>
+                            <CardHeader subheader={register.service.name}
+                                title={`${register.service.device.name}/${register.name}`}
+                                action={<DeviceActions device={register.service.device} reset={true} />} />
+                            <CardContent>
+                            </CardContent>
+                            <CardActions>
+                                <FormGroup>
+                                    {register.fields.map(field =>
+                                        <FormControlLabel key={field.id}
+                                            control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
+                                            label={<React.Fragment>
+                                                {field.name}
+                                                {!!prettyUnit(field.unit) && ` (${prettyUnit(field.unit)})`}
+                                                {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
+                                            </React.Fragment>}
+                                        />)}
+                                </FormGroup>
+                            </CardActions>
+                        </Card>
+                    </Grid>)}
+            </Grid>}
         </div>
         <div key="record">
             <h3>Record data</h3>
@@ -337,7 +317,7 @@ export default function Collector(props: {}) {
             <h3>Recordings</h3>
             <Grid container spacing={2}>
                 {tables.map((table, index) =>
-                    <Grid item xs={12} sm={6} md={4} key={`result` + table.id}>
+                    <Grid item {...gridBreakpoints} key={`result` + table.id}>
                         <Card>
                             <CardHeader
                                 title={table.name}
