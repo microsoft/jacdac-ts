@@ -5,7 +5,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
+import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip, debounce } from '@material-ui/core';
 import DomTreeView from './DomTreeView';
 import { JDRegister as JDField } from '../../../src/dom/register';
 import JacdacContext from '../../../src/react/Context';
@@ -37,6 +37,7 @@ import DataSetTable from './DataSetTable';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT } from '../../../src/dom/constants';
+import { throttle } from '../../../src/dom/utils';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -94,7 +95,7 @@ const palette = [
     "#2f4b7c",
 ]
 
-const LIVE_HORIZON = 64
+const LIVE_HORIZON = 24
 function createDataSet(fields: JDField[], name: string, live: boolean) {
     const headers = fields.map(field => field.prettyName)
     const units = fields.map(field => field.unit)
@@ -104,7 +105,7 @@ function createDataSet(fields: JDField[], name: string, live: boolean) {
         headers,
         units)
     if (live)
-        set.maxRows = LIVE_HORIZON + 10
+        set.maxRows = LIVE_HORIZON + 4
     return set;
 }
 
@@ -206,6 +207,12 @@ export default function Collector(props: {}) {
     const handleIdentify = (device: JDDevice) => () => device.identify()
     const handleReset = (device: JDReset) => () => device.reset()
 
+    const updateLiveData = () => {
+        setLiveDataSet(liveDataSet);
+        setRecordingLength(liveDataSet.rows.length)
+        setLiveDataTimestamp(bus.timestamp)
+    }
+    const throttleUpdate = throttle(() => updateLiveData(), 30)
     // data collection
     // interval add data entry
     const addRow = () => {
@@ -213,13 +220,13 @@ export default function Collector(props: {}) {
 
         const row = recordingFields.map(f => f.value)
         liveDataSet.addExample(bus.timestamp, row)
-        setLiveDataSet(liveDataSet);
-        setRecordingLength(liveDataSet.rows.length)
-        setLiveDataTimestamp(bus.timestamp)
 
         if (recording && liveDataSet.length >= samplingCount) {
             // stop recording
+            updateLiveData()
             stopRecording()
+        } else {
+            throttleUpdate()
         }
     }
     // setting interval

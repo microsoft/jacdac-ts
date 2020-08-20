@@ -326,6 +326,16 @@ export function clone<T>(v: T): T {
     return JSON.parse(JSON.stringify(v))
 }
 
+export function throttle(handler: () => void, delay: number): () => void {
+    let enableCall = true;
+    return function () {
+        if (!enableCall) return;
+        enableCall = false;
+        handler();
+        setTimeout(() => enableCall = true, delay);
+    }
+}
+
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
     let timeOutId: any;
     return function () {
