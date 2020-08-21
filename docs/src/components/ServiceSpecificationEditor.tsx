@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Typography, Tabs, Tab } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-spec/spectool/jdspec'
 // tslint:disable-next-line: match-default-export-name
 import AceEditor from "react-ace";
@@ -14,12 +14,9 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/ext-language_tools"
-import { serviceSpecificationFromName, clearCustomServiceSpecifications, addCustomServiceSpecification } from '../../../src/dom/spec';
-import TabPanel, { a11yProps } from './TabPanel';
-import ServiceSpecification from './ServiceSpecification';
+import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import { useDbValue } from './DbContext';
-import Snippet from './Snippet';
 import DrawerContext, { DrawerType } from './DrawerContext';
 import PacketFilterContext from './PacketFilterContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
@@ -46,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
-    const [tab, setTab] = useState(0);
+    const [, setTab] = useState(0);
     const { drawerType } = useContext(DrawerContext)
     const { setServiceClass } = useContext(PacketFilterContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
@@ -63,11 +60,7 @@ TODO: describe your service
 TODO describe this register
 `
     )
-    const convs = converters();
-    const includes = {
-        "_base": serviceSpecificationFromName("_base"),
-        "_sensor": serviceSpecificationFromName("_sensor")
-    }
+    const includes = serviceMap()
     const json = parseSpecificationMarkdownToJSON(source, includes)
     useEffect(() => {
         addCustomServiceSpecification(json)
@@ -88,9 +81,6 @@ TODO describe this register
     const handleSourceChange = (newValue: string) => {
         setSource(newValue)
     }
-    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-        setTab(newValue);
-    };
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 6}>

@@ -26,7 +26,10 @@ export default function ServiceSpecification(props: {
         {!!node.extends?.length &&
             <p key="extends">
                 <span>Extends </span>
-                {node.extends.map(extend => <Link key={`extend${extend}`} to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>)}
+                {node.extends.map((extend, i) => <>
+                    {i > 0 && <span>, </span>}
+                    <Link key={`extend${extend}`} to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>
+                </>)}
     .
     </p>}
         <Markdown key="noteslong" source={node.notes.long || ""} />

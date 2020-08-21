@@ -20,6 +20,12 @@ export function clearCustomServiceSpecifications() {
     customServiceSpecifications = {}
 }
 
+export function serviceMap(): SMap<jdspec.ServiceSpec> {
+    const m: SMap<jdspec.ServiceSpec> = {};
+    serviceSpecifications.forEach(spec => m[spec.shortId] = spec)
+    return m;
+}
+
 /**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
 */
