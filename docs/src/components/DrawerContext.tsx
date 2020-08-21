@@ -7,7 +7,7 @@ export enum DrawerType {
     Dom,
     ServiceSpecification
 }
-  
+
 export interface DrawerProps {
     drawerType: DrawerType,
     setDrawerType: (type: DrawerType) => void,
@@ -26,7 +26,7 @@ export const DrawerProvider = ({ children }) => {
 
     return (
         <DrawerContext.Provider value={{
-            drawerType: type, 
+            drawerType: type,
             setDrawerType: setType,
         }}>
             {children}
@@ -35,13 +35,13 @@ export const DrawerProvider = ({ children }) => {
 }
 
 export function drawerTitle(type: DrawerType) {
-    switch(type) {
+    switch (type) {
         case DrawerType.Dom:
             return "Connected devices"
         case DrawerType.Packets:
             return "Packet console"
         case DrawerType.ServiceSpecification:
             return "Service Specification"
-        default: undefined
+        default: return undefined
     }
 }

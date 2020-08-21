@@ -1,12 +1,18 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Typography, Tabs, Tab } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-spec/spectool/jdspec'
+// tslint:disable-next-line: match-default-export-name
 import AceEditor from "react-ace";
 
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-markdown";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-json";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-javascript";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/theme-github";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/ext-language_tools"
 import { serviceSpecificationFromName, clearCustomServiceSpecifications, addCustomServiceSpecification } from '../../../src/dom/spec';
 import TabPanel, { a11yProps } from './TabPanel';
@@ -114,9 +120,9 @@ TODO describe this register
                 </Paper>
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 6}>
-                <ServiceSpecificationSource 
-                    serviceSpecification={json} 
-                    showMarkdown={false} 
+                <ServiceSpecificationSource
+                    serviceSpecification={json}
+                    showMarkdown={false}
                     showSpecification={true} />
             </Grid>
         </Grid>
