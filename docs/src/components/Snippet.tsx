@@ -1,12 +1,18 @@
 import React from "react"
 import AceEditor from "react-ace";
 
-import "ace-builds/webpack-resolver";
+//import "ace-builds/webpack-resolver";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-markdown";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-json";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-javascript";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/mode-csharp";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/theme-github";
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/ext-language_tools"
 
 export default function Snippet(props: {
