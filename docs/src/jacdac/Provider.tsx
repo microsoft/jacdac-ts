@@ -5,7 +5,7 @@ import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 
 const bus = createUSBBus();
-const JacdacProvider = ({ children }) => {
+const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
 
@@ -30,4 +30,4 @@ const JacdacProvider = ({ children }) => {
     )
 }
 
-export default JacdacProvider;
+export default JACDACProvider;

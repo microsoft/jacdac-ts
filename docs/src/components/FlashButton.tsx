@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import GetAppIcon from '@material-ui/icons/GetApp';
+import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 import { Badge } from "@material-ui/core";
 import JACDACContext from "../../../src/react/Context";
 import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
@@ -17,10 +17,10 @@ export default function FlashButton() {
 
     return <IconButton
         color="inherit"
-        aria-label={`Firmware updater ${updates.length} available`}
+        aria-label={`Firmware update ${updates.length} available`}
         to="/tools/updater">
         <Badge badgeContent={updates?.length} color="secondary">
-            <GetAppIcon />
+            <SystemUpdateAltIcon />
         </Badge>
     </IconButton>
 }

@@ -5,11 +5,11 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React, { useState, useContext } from "react"
+import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, useTheme, Switch, FormControlLabel, FormGroup, Container, Icon } from '@material-ui/core';
+import { makeStyles, Container } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import { Link, IconButton, Button } from 'gatsby-theme-material-ui';
+import { Link, IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import CssBaseline from '@material-ui/core/CssBaseline';
 // tslint:disable-next-line: no-submodule-imports
@@ -30,9 +30,8 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EditIcon from '@material-ui/icons/Edit';
 import { useStaticQuery, graphql } from "gatsby"
-import JacdacProvider from "../jacdac/Provider"
+import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
-import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
 import { PacketFilterProvider } from "./PacketFilterContext";
@@ -124,7 +123,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 
   return (
     <ThemeProvider theme={theme}>
-      <JacdacProvider>
+      <JACDACProvider>
         <PacketFilterProvider>
           <DbProvider>
             <DrawerProvider>
@@ -132,7 +131,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
             </DrawerProvider>
           </DbProvider>
         </PacketFilterProvider>
-      </JacdacProvider>
+      </JACDACProvider>
     </ThemeProvider>
   )
 }
