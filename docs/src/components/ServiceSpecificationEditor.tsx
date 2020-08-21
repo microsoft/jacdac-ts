@@ -83,7 +83,7 @@ TODO describe this register
     }
     return (
         <Grid spacing={2} className={classes.root} container>
-            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 6}>
+            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 5}>
                 <Paper square className={classes.segment}>
                     <AceEditor
                         className={classes.editor}
@@ -109,7 +109,7 @@ TODO describe this register
                     <RandomGenerator device={false} />
                 </Paper>
             </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 6}>
+            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 7}>
                 <ServiceSpecificationSource
                     serviceSpecification={json}
                     showMarkdown={false}
