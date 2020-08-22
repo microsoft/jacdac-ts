@@ -8,11 +8,11 @@ import { BusState } from "../../../src/dom/bus";
 import UploadButton from "./UploadButton";
 import IDChip from "./IDChip";
 import { JDDevice } from "../../../src/dom/device";
-import { useFirmwareBlobs } from "./DbContext";
 import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
 import TabPanel, { a11yProps } from './TabPanel';
 import useGridBreakpoints from "./useGridBreakpoints";
+import useFirmwareBlobs from "./useFirmwareBlobs";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

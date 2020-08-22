@@ -16,10 +16,10 @@ import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools"
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
-import { useDbValue } from './DbContext';
 import DrawerContext, { DrawerType } from './DrawerContext';
 import PacketFilterContext from './PacketFilterContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
+import useDbValue from './useDbValue';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

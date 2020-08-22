@@ -1,6 +1,4 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { parseUF2 } from "../../../src/dom/flashing";
-import JACDACContext from "../../../src/react/Context";
 import { delay } from "../../../src/dom/utils";
 
 export interface Db {
@@ -127,58 +125,5 @@ export function useDbFile(fileName: string) {
         dependencyId: () => db?.dependencyId(),
         file: () => db?.getFile(fileName) || Promise.resolve(undefined),
         setFile: async (f: File) => { await db?.putFile(fileName, f) }
-    }
-}
-
-export function useDbValue(id: string, initialValue: string) {
-    const { db } = useContext(DbContext)
-    const [_value, _setValue] = useState<string>(undefined)
-    useEffect(() => {
-        db?.getValue(id)
-            .then(v => {
-                if (v === undefined) {
-                    v = initialValue
-                    db?.putValue(id, v)
-                }
-                _setValue(v)
-            })
-    }, [db])
-    return {
-        value: _value,
-        setValue: (value: string) => {
-            db?.putValue(id, value)
-                .then(() => _setValue(value))
-        }
-    }
-}
-
-export function useFirmwareBlobs() {
-    const { bus } = useContext(JACDACContext)
-    const { file, setFile, dependencyId } = useDbFile("firmware.uf2")
-
-    async function load(f: File, store: boolean) {
-        if (f) {
-            const buf = new Uint8Array(await f.arrayBuffer())
-            const bls = parseUF2(buf);
-            // success, store and save in bus
-            if (store)
-                await setFile(f)
-            bus.firmwareBlobs = bls
-        } else {
-            // delete entry
-            if (store)
-                await setFile(undefined)
-            bus.firmwareBlobs = undefined
-        }
-    }
-    useEffect(() => {
-        console.log(`import stored uf2`)
-        file().then(f => load(f, false))
-    }, [dependencyId()])
-    return {
-        setFirmwareFile: async (f: File) => {
-            console.log(`import new uf2`)
-            await load(f, true)
-        }
     }
 }

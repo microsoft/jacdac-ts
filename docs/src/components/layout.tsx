@@ -36,13 +36,14 @@ import ErrorSnackbar from "./ErrorSnackbar"
 import "./layout.css"
 import { PacketFilterProvider } from "./PacketFilterContext";
 import SEO from "./seo";
-import { DbProvider, useFirmwareBlobs } from "./DbContext";
+import { DbProvider } from "./DbContext";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
 import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
 import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
+import useFirmwareBlobs from "./useFirmwareBlobs";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
