@@ -71,6 +71,11 @@ export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 export const JD_ADVERTISEMENT_0_COUNTER_MASK = 0x0000000F
 export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 0x00000100
 
+// time withouth seeing a package to be considered "lost"
+export const JD_DEVICE_LOST_DELAY = 2000
+// time without seeing a packet to be considered "disconnected"
+export const JD_DEVICE_DISCONNECTED_DELAY = 10000
+
 export enum ConsolePriority {
     Debug = 0,
     Log = 1,
@@ -123,6 +128,8 @@ export const REMOVE_LISTENER = 'removeListener'
 
 export const CONNECTION_STATE = 'connectionState'
 export const CONNECT = 'connect';
+export const LOST = 'lost'
+export const FOUND = 'found'
 export const CONNECTING = 'connecting';
 export const DISCONNECT = 'disconnect';
 export const DISCONNECTING = 'disconnecting'
@@ -134,6 +141,8 @@ export const FIRMWARE_INFO = 'firmwareInfo'
 export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 
 export const DEVICE_CONNECT = 'deviceConnect'
+export const DEVICE_LOST = 'deviceLost'
+export const DEVICE_FOUND = 'deviceFound'
 export const DEVICE_DISCONNECT = 'deviceDisconnect'
 export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const DEVICE_RESTART = 'deviceRestart'

@@ -16,6 +16,7 @@ import { JDService } from '../../../src/dom/service';
 import { CardActions } from '@material-ui/core';
 import { DeviceCardHeader } from './DeviceCardHeader';
 import useRegisterValue from '../jacdac/useRegisterValue';
+import { DeviceLostAlert } from './DeviceLostAlert';
 
 const useStyles = makeStyles({
     root: {
@@ -67,6 +68,7 @@ export default function DeviceCard(props: {
             <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} />
             {(showDescription || content) &&
                 <CardContent>
+                    {<DeviceLostAlert device={device} />}
                     {showDescription && <DeviceDescription device={device} />}
                     {content}
                 </CardContent>}

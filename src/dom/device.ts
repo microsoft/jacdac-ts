@@ -2,7 +2,7 @@ import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -19,6 +19,7 @@ export interface PipeInfo {
 
 export class JDDevice extends JDNode {
     connected: boolean;
+    _lost: boolean;
     servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
@@ -30,6 +31,7 @@ export class JDDevice extends JDNode {
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
         this.connected = true;
+        this._lost = false;
     }
 
     get id() {
@@ -72,6 +74,27 @@ export class JDDevice extends JDNode {
             this.bus.emit(DEVICE_CHANGE, this)
             this.emit(CHANGE)
         }
+    }
+
+    get lost() {
+        return this._lost;
+    }
+
+    set lost(v: boolean) {
+        if (!!v === this.lost) return;
+
+        // something changed
+        this._lost = !!v;
+        if (this.lost) {
+            this.emit(LOST)
+            this.bus.emit(DEVICE_LOST, this)
+        } else {
+            this.emit(FOUND)
+            this.bus.emit(DEVICE_FOUND, this)
+        }
+        this.emit(CHANGE)
+        this.bus.emit(DEVICE_CHANGE, this)
+        this.bus.emit(CHANGE)
     }
 
     toString() {
@@ -183,11 +206,12 @@ export class JDDevice extends JDNode {
             this.emit(ANNOUNCE)
             this.emit(CHANGE)
             this.bus.emit(DEVICE_CHANGE, this);
-            this.bus.emit(CHANGE, this);
+            this.bus.emit(CHANGE);
         }
     }
 
     processPacket(pkt: Packet) {
+        this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.is_report)
             this.emit(PACKET_REPORT, pkt)

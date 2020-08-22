@@ -29,7 +29,9 @@ import {
     SERVICE_NODE_NAME,
     EVENT_NODE_NAME,
     REGISTER_NODE_NAME,
-    FIELD_NODE_NAME
+    FIELD_NODE_NAME,
+    JD_DEVICE_DISCONNECTED_DELAY,
+    JD_DEVICE_LOST_DELAY
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
@@ -39,6 +41,8 @@ export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
     connectAsync?: (background?: boolean) => Promise<void>;
     disconnectAsync?: () => Promise<void>;
+    deviceLostDelay?: number;
+    deviceDisconnectedDelay?: number;
 }
 
 export interface Error {
@@ -317,13 +321,20 @@ export class JDBus extends JDNode {
     }
 
     private gcDevices() {
-        const cutoff = this.timestamp - 2000;
+        const LOST_DELAY = this.options?.deviceLostDelay || JD_DEVICE_LOST_DELAY;
+        const DISCONNECTED_DELAY = this.options?.deviceDisconnectedDelay || JD_DEVICE_DISCONNECTED_DELAY
+        const lostCutoff = this.timestamp - LOST_DELAY
+        const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY;
+        // cycle through events and disconnect devices that are long gone
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
-            if (dev.lastSeen < cutoff) {
+            if (dev.lastSeen < disconnectedCutoff) {
                 this._devices.splice(i, 1)
                 i--
                 this.disconnectDevice(dev)
+            }
+            else if (dev.lastSeen < lostCutoff) {
+                dev.lost = true
             }
         }
         // stop cleanup if all gone
