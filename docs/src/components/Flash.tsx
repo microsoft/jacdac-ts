@@ -1,18 +1,19 @@
-import { parseUF2, FirmwareInfo, scanFirmwares, FirmwareBlob, updateApplicable, flashFirmwareBlob } from "../../../src/dom/flashing"
-import React, { useState, useContext, Fragment, useEffect } from "react"
-import JACDACContext from "../../../src/react/Context"
-import { ListItem, List, Typography, LinearProgress, Box, LinearProgressProps, Grid, makeStyles, Paper, Theme, createStyles, Chip, Tabs, Tab, CircularProgress, CircularProgressProps } from "@material-ui/core";
-import DeviceCard from "./DeviceCard";
+import { Chip, createStyles, Grid, LinearProgress, List, ListItem, makeStyles, Paper, Tab, Tabs, Theme, Typography } from "@material-ui/core";
 import { Button } from "gatsby-theme-material-ui";
+import React, { useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/dom/bus";
-import UploadButton from "./UploadButton";
-import IDChip from "./IDChip";
+import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import { JDDevice } from "../../../src/dom/device";
-import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE, DEVICE_CHANGE } from "../../../src/dom/constants";
+import { FirmwareBlob, FirmwareInfo, flashFirmwareBlob, scanFirmwares, updateApplicable } from "../../../src/dom/flashing";
+import JACDACContext from "../../../src/react/Context";
 import useEventRaised from "../jacdac/useEventRaised";
+import CircularProgressWithLabel from "./CircularProgressWithLabel";
+import DeviceCard from "./DeviceCard";
+import IDChip from "./IDChip";
 import TabPanel, { a11yProps } from './TabPanel';
-import useGridBreakpoints from "./useGridBreakpoints";
+import UploadButton from "./UploadButton";
 import useFirmwareBlobs from "./useFirmwareBlobs";
+import useGridBreakpoints from "./useGridBreakpoints";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -21,29 +22,6 @@ const useStyles = makeStyles((theme: Theme) =>
         }
     })
 );
-
-function CircularProgressWithLabel(props: CircularProgressProps & { value: number }) {
-    return (
-        <Box position="relative" display="inline-flex">
-            <CircularProgress variant="static" {...props} />
-            <Box
-                top={0}
-                left={0}
-                bottom={0}
-                right={0}
-                position="absolute"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-            >
-                <Typography variant="caption" component="div" color="textSecondary">{`${Math.round(
-                    props.value,
-                )}%`}</Typography>
-            </Box>
-        </Box>
-    );
-}
-
 
 function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blob: FirmwareBlob, setFlashing: (b: boolean) => void }) {
     const { bus } = useContext(JACDACContext)
