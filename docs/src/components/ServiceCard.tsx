@@ -14,7 +14,8 @@ import ServiceEvents from './ServiceEvents';
 import { isCommand } from '../../../src/dom/spec';
 import { CardActions } from '@material-ui/core';
 import ServiceCommands from './ServiceCommands';
-import { DeviceCardHeader } from './DeviceCardHeader';
+import DeviceCardHeader from './DeviceCardHeader';
+import { DeviceLostAlert } from './DeviceLostAlert';
 
 const useStyles = makeStyles({
     root: {
@@ -62,6 +63,7 @@ export default function ServiceCard(props: {
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
                 </Typography>
+                <DeviceLostAlert device={service?.device} />
             </CardContent>
             {(hasCommands || hasCommandIdentifier) && (!hasRegisterIdentifier && !hasEventIdentifier) &&
                 <CardActions>

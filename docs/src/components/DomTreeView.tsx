@@ -25,6 +25,10 @@ import { Switch, IconButton } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
+import { LOST, FOUND } from '../../../src/dom/constants';
+import useEventRaised from '../jacdac/useEventRaised';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
 
 declare module 'csstype' {
     interface Properties {
@@ -90,6 +94,7 @@ function StyledTreeItem(props: TreeItemProps & {
     bgColor?: string;
     color?: string;
     kind?: string;
+    alert?: string;
     labelInfo?: string;
     labelText: string;
     checked?: boolean;
@@ -97,7 +102,7 @@ function StyledTreeItem(props: TreeItemProps & {
     actions?: JSX.Element | JSX.Element[]
 }) {
     const classes = useTreeItemStyles();
-    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, ...other } = props;
+    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, alert, ...other } = props;
     const [checkedState, setCheckedState] = useState(checked)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -120,7 +125,11 @@ function StyledTreeItem(props: TreeItemProps & {
                     <Typography variant="body2" className={classes.labelText}>
                         {labelText}
                     </Typography>
+                    {alert && <NotificationImportantIcon color="secondary" />}
                     <Typography variant="caption" color="inherit">
+                        {alert && <Typography component="span" color="secondary">
+                            {alert}
+                        </Typography>}
                         {labelInfo}
                         {actions}
                     </Typography>
@@ -163,6 +172,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
     const name = device.name
+    const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
     const readings = services
@@ -175,6 +185,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         nodeId={id}
         labelText={name}
         labelInfo={readings}
+        alert={lost && "Lost signal..."}
         kind={"device"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}

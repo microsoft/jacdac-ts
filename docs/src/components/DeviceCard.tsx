@@ -14,7 +14,7 @@ import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
 import { CardActions } from '@material-ui/core';
-import { DeviceCardHeader } from './DeviceCardHeader';
+import DeviceCardHeader from './DeviceCardHeader';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import { DeviceLostAlert } from './DeviceLostAlert';
 

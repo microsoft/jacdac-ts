@@ -7,7 +7,7 @@ import React from "react";
 import useRegisterValue from "../jacdac/useRegisterValue";
 import DeviceActions from "./DeviceActions";
 
-export function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean }) {
+export default function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean }) {
     const { device, showFirmware, showTemperature } = props;
     const firmwareRegister = useRegisterValue(device, 0, CtrlReg.FirmwareVersion)
     const tempRegister = useRegisterValue(device, 0, CtrlReg.Temperature)
