@@ -9,6 +9,8 @@ export interface ParsedFrame {
 }
 
 export function parseLog(logcontents: string): ParsedFrame[] {
+    if (!logcontents) return undefined
+
     const res: ParsedFrame[] = []
     let frameBytes = []
     let lastTime = 0
@@ -87,9 +89,8 @@ Time [s],Value,Parity Error,Framing Error
     return res
 }
 
-export function replayLog(bus: JDBus, text: string): void {
-    const frames = parseLog(text);
-    frames.forEach((frame) => {
+export function replayLog(bus: JDBus, frames: ParsedFrame[]): void {
+    frames?.forEach((frame) => {
         if (frame.info)
             console.warn("FRM: " + frame.info)
         for (const p of Packet.fromFrame(frame.data, frame.timestamp)) {

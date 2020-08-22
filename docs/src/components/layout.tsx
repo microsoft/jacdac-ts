@@ -29,6 +29,8 @@ import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EditIcon from '@material-ui/icons/Edit';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -216,6 +218,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
             <FiberManualRecordIcon />
+          </IconButton>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/player" aria-label="Replay packet trace">
+            <PlayArrowIcon />
           </IconButton>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/service-editor" aria-label="Service editor">
             <EditIcon />

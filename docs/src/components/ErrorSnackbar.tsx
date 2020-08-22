@@ -28,7 +28,7 @@ export default function ErrorSnackbar() {
     <Snackbar
       anchorOrigin={{
         vertical: 'top',
-        horizontal: 'right',
+        horizontal: 'center',
       }}
       open={open}
       autoHideDuration={6000}
