@@ -1,17 +1,20 @@
-import React, { useEffect, useContext, useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import Snackbar from '@material-ui/core/Snackbar';
-import { ERROR } from '../../../src/dom/constants'
-import JACDACContext from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
+import React, { useContext, useEffect, useState } from 'react';
+import { ERROR } from '../../../src/dom/constants';
+import { isCancelError } from '../../../src/dom/utils';
+import JACDACContext from '../../../src/react/Context';
 
 export default function ErrorSnackbar() {
   const { bus } = useContext(JACDACContext)
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(undefined)
 
-  useEffect(() => bus.subscribe(ERROR, error => {
+  useEffect(() => bus.subscribe(ERROR, (e: { exception: Error }) => {
+    if (isCancelError(e.exception))
+      return;
     setError(error);
     setOpen(true);
   }))

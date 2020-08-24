@@ -1,4 +1,4 @@
-import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, error, read32, read16, write32 } from "./utils";
+import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, throwError, read32, read16, write32 } from "./utils";
 import {
     JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -57,7 +57,7 @@ export class Packet {
     set device_identifier(id: string) {
         const idb = fromHex(id)
         if (idb.length != 8)
-            error("Invalid id")
+            throwError("Invalid id")
         this._header.set(idb, 4)
     }
 

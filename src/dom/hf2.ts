@@ -1,5 +1,6 @@
 import * as U from "./utils"
 import { USBOptions } from "./usb";
+import { throwError } from "./utils";
 
 const controlTransferGetReport = 0x01;
 const controlTransferSetReport = 0x09;
@@ -277,14 +278,19 @@ export class Transport {
         await this.tryReconnectAsync();
         if (!this.dev && !background)
             await this.requestDeviceAsync();
+        // background call and no device, just give up for now
+        if (!this.dev && background)
+            throwError("device not paired", true);
+
+        // let's connect!
         await this.openDeviceAsync();
     }
 
     private async openDeviceAsync() {
         if (!this.dev)
-            throw new Error("device not found")
+            throwError("device not found")
         if (!this.checkDevice())
-            throw new Error("device does not support HF2")
+            throwError("device does not support HF2")
 
         await this.dev.open()
         await this.dev.selectConfiguration(1)

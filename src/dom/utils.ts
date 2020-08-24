@@ -1,6 +1,13 @@
 
-export function error(msg: string) {
-    throw new Error(msg)
+export function throwError(msg: string, cancel?: boolean) {
+    const e = new Error(msg)
+    if (cancel)
+        (e as any).__cancel = true;
+    throw e;
+}
+
+export function isCancelError(e: Error) {
+    return !!(e as any)?.__cancel;
 }
 
 export function log(msg: string, v?: any) {
