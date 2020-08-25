@@ -98,7 +98,7 @@ export default function AppDrawer(props: {
         <ConnectButton className={classes.alertButton} full={true} /></Alert>}
         {drawerType === DrawerType.Toc && <Toc />}
         {drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
-        {connected && drawerType === DrawerType.Packets
+        {drawerType === DrawerType.Packets
             ? <PacketList serviceClass={serviceClass} />
             : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
     </Drawer>
