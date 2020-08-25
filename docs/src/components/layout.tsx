@@ -36,7 +36,7 @@ import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import { PacketFilterProvider } from "./PacketFilterContext";
+import { PacketsProvider } from "./PacketsContext";
 import SEO from "./seo";
 import { DbProvider } from "./DbContext";
 import FlashButton from "./FlashButton";
@@ -127,13 +127,13 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
   return (
     <ThemeProvider theme={theme}>
       <JACDACProvider>
-        <PacketFilterProvider>
+        <PacketsProvider>
           <DbProvider>
             <DrawerProvider>
               <LayoutWithContext {...props} />
             </DrawerProvider>
           </DbProvider>
-        </PacketFilterProvider>
+        </PacketsProvider>
       </JACDACProvider>
     </ThemeProvider>
   )

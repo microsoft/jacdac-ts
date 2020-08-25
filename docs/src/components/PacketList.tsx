@@ -7,13 +7,7 @@ import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 import { isInstanceOf } from '../../../src/dom/spec';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PauseIcon from '@material-ui/icons/Pause';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ClearIcon from '@material-ui/icons/Clear';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PacketFilterContext from './PacketFilterContext';
+import PacketsContext from './PacketsContext';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ToggleButton from '@material-ui/lab/ToggleButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -40,13 +34,11 @@ export default function PacketList(props: {
     showTime?: boolean
 }) {
     const { showTime } = props
-    const { flags, setFlags, serviceClass: globalServiceClass } = useContext(PacketFilterContext)
+    const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, setPackets } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
     const maxItems = props.maxItems || 100
     const { bus } = useContext(JACDACContext)
-    const [packets, setPackets] = useState<Packet[]>([])
-    const [paused, setPaused] = useState(false)
     const consoleMode = hasFlag("console")
     const skipRepeatedAnnounce = !hasFlag("announce")
 
@@ -95,19 +87,12 @@ export default function PacketList(props: {
         setPackets([])
     }, [consoleMode, JSON.stringify(flags)])
 
-    const togglePaused = () => setPaused(!paused)
-    const clearPackets = () => setPackets([])
     const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
         setFlags(newFlags)
     };
     return (
         <List className={classes.items} dense={true}>
             <ListItem key="filters">
-                <ButtonGroup>
-                    <IconButton key="start" title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
-                    <IconButton key="clear" title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
-                </ButtonGroup>
-
                 <ToggleButtonGroup value={flags} onChange={handleModes}>
                     <ToggleButton key="console" title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
                     {allKinds().map(kind => <ToggleButton key={kind} title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}

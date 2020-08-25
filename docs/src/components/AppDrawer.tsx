@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Drawer, Typography, Divider, makeStyles, createStyles } from "@material-ui/core";
 import TocBreadcrumbs from "./TocBreadcrums";
 import { IconButton } from "gatsby-theme-material-ui";
+// tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
 import PacketList from "./PacketList";
 import Toc from "./Toc";
@@ -16,7 +17,8 @@ import ConnectButton from "../jacdac/ConnectButton";
 import { useStaticQuery, graphql } from "gatsby";
 import Mdx from "./Mdx";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
-import PacketFilterContext from "./PacketFilterContext";
+import PacketsContext from "./PacketsContext";
+import PacketRecorder from "./PacketRecorder";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -48,7 +50,7 @@ export default function AppDrawer(props: {
 }) {
     const { pagePath } = props
     const classes = useStyles()
-    const { serviceClass: globalServiceClass } = useContext(PacketFilterContext)
+    const { serviceClass: globalServiceClass } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const { drawerType, setDrawerType } = useContext(DrawerContext)
     const { connectionState } = useContext(JACDACContext)
@@ -85,8 +87,9 @@ export default function AppDrawer(props: {
         }}
     >
         <div className={classes.drawerHeader}>
+            {drawerType !== DrawerType.Toc && <PacketRecorder />}
             {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
-            <TocBreadcrumbs path={pagePath} />
+            {drawerType == DrawerType.Toc && <TocBreadcrumbs path={pagePath} />}
             {drawerType === DrawerType.Packets && serviceClass !== undefined
                 && <Alert className={classes.alertButton} severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             <IconButton onClick={handleDrawerClose}>

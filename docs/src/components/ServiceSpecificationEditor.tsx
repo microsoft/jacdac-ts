@@ -17,7 +17,7 @@ import "ace-builds/src-noconflict/ext-language_tools"
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import DrawerContext, { DrawerType } from './DrawerContext';
-import PacketFilterContext from './PacketFilterContext';
+import PacketsContext from './PacketsContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useDbValue from './useDbValue';
 
@@ -45,7 +45,7 @@ export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [, setTab] = useState(0);
     const { drawerType } = useContext(DrawerContext)
-    const { setServiceClass } = useContext(PacketFilterContext)
+    const { setServiceClass } = useContext(PacketsContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
         `# My Service
 
