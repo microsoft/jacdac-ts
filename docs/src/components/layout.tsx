@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container } from '@material-ui/core';
+import { makeStyles, Container, Hidden } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -211,9 +211,11 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
-          {pageTitle && pageTitle !== "JACDAC" && <Typography variant="h5">
-            {"/"} {pageTitle}
-          </Typography>}
+          {pageTitle && pageTitle !== "JACDAC" && <Hidden mdDown={true}>
+            <Typography variant="h5">
+              {"/"} {pageTitle}
+            </Typography>
+          </Hidden>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
