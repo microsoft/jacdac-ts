@@ -462,8 +462,28 @@ export class Proto {
 
     async connectAsync(background?: boolean) {
         await this.io.connectAsync(background)
+        await this.checkMode()
         const buf = await this.talkAsync(HF2_CMD_INFO)
         this.io.log("Connected to: " + U.bufferToString(buf))
+    }
+
+    private async checkMode() {
+        // first check that we are not talking to a bootloader
+        const info = await this.talkAsync(HF2_CMD_BININFO)
+        const mode = U.read32(info, 0)
+        this.io.log(`hf2 mode ${mode}`)
+        if (mode == HF2_MODE_USERSPACE) {
+            // all good
+            this.io.log(`device in user-space mode`)
+        } else if (mode == HF2_MODE_BOOTLOADER) {
+            this.io.log(`device in bootloader mode, reseting into user-space mode`)
+            await this.talkAsync(HF2_CMD_RESET_INTO_APP)
+            // and fail
+            throwError("Device in bootloader mode")
+        } else {
+            // unknown mdoe
+            throwError("Unknown device operation mode")
+        }
     }
 
     disconnectAsync(): Promise<void> {
