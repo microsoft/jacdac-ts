@@ -7,19 +7,21 @@ import JACDACContext from "../../../src/react/Context";
 import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
 import { computeUpdates } from "../../../src/dom/flashing";
+import useChange from "../jacdac/useChange";
 
 export default function FlashButton() {
     const { bus } = useContext(JACDACContext)
 
+    const devices = useChange(bus, bus => bus.devices())
     const updates = useEventRaised([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO],
         bus,
-        bus => computeUpdates(bus.devices().map(d => d.firmwareInfo), bus.firmwareBlobs))
+        bus => computeUpdates(devices.map(d => d.firmwareInfo), bus.firmwareBlobs))
 
     return <IconButton
         color="inherit"
         aria-label={`Firmware update ${updates.length} available`}
         to="/tools/updater">
-        <Badge badgeContent={updates?.length} color="secondary">
+        <Badge badgeContent={updates.length} color="secondary">
             <SystemUpdateAltIcon />
         </Badge>
     </IconButton>

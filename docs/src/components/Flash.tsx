@@ -31,13 +31,15 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 
     const handleFlashing = async () => {
         if (flashing) return;
+        console.log(`flash ${device}`)
         try {
             setProgress(0)
             setFlashing(true)
             setParentFlashing(true)
-            blob.updateCandidates = [firmware]
-            await flashFirmwareBlob(bus, blob, prog => setProgress(prog))
+            const updateCandidates = [firmware]
+            await flashFirmwareBlob(bus, blob, updateCandidates, prog => setProgress(prog))
         } catch (e) {
+            console.error(e)
         } finally {
             setFlashing(false)
             setParentFlashing(false)

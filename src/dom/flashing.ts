@@ -32,7 +32,6 @@ export interface FirmwareBlob {
     pageSize: number;
     name: string;
     version: string;
-    updateCandidates?: FirmwareInfo[];
 }
 
 function timestamp() {
@@ -428,29 +427,34 @@ export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
 }
 
 export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]) {
-    return blobs?.filter(blob => {
-        const cand = devices.filter(d => updateApplicable(d, blob))
-        if (cand.length == 0)
-            return false
-        blob.updateCandidates = cand
-        return true
-    }) || []
+    return (blobs || []).map(blob => {
+        const updateCandidates = devices.filter(d => updateApplicable(d, blob))
+        if (updateCandidates.length == 0)
+            return undefined
+        return {
+            blob,
+            updateCandidates
+        }
+    }).filter(r => !!r)
 }
 
-export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, progress?: (perc: number) => void) {
-    if (!blob.updateCandidates || !blob.updateCandidates.length)
+export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCandidates: FirmwareInfo[], progress?: (perc: number) => void) {
+    if (!updateCandidates?.length)
         return
     _startTime = Date.now()
-    log(`resetting ${blob.updateCandidates.length} device(s)`)
-    for (const d of blob.updateCandidates) {
+    log(`resetting ${updateCandidates.length} device(s)`)
+    for (const d of updateCandidates) {
         const device = bus.device(d.deviceId);
+        log(`resetting ${device}`)
         await device.sendCtrlCommand(CtrlCmd.Reset)
     }
     const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.deviceClass)
     if (!flashers.length)
         throw new Error("no devices to flash")
-    if (flashers.length != blob.updateCandidates.length)
-        throw new Error("wrong number of flashers responding: " + flashers.length)
+    if (flashers.length != updateCandidates.length) {
+        console.log(flashers, blob)
+        throw new Error(`expected ${updateCandidates.length} flashers, got ${flashers.length}`)
+    }
     flashers[0].classClients = flashers
     log(`flashing ${blob.name}`)
     await flashers[0].flashFirmwareBlob(blob, progress)
