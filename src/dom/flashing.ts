@@ -442,8 +442,10 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, progress
         return
     _startTime = Date.now()
     log(`resetting ${blob.updateCandidates.length} device(s)`)
-    for (const d of blob.updateCandidates)
-        await bus.device(d.deviceId).sendCtrlCommand(CtrlCmd.Reset)
+    for (const d of blob.updateCandidates) {
+        const device = bus.device(d.deviceId);
+        await device.sendCtrlCommand(CtrlCmd.Reset)
+    }
     const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.deviceClass)
     if (!flashers.length)
         throw new Error("no devices to flash")

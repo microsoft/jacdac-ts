@@ -15,8 +15,8 @@ export default function PacketRecorder() {
     const togglePaused = () => setPaused(!paused)
     const clearPackets = () => setPackets([])
 
-    return <ButtonGroup>
+    return <>
         <IconButton key="start" title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
         <IconButton key="clear" title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
-    </ButtonGroup>
+    </>
 }

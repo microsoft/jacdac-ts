@@ -21,7 +21,7 @@ export default function DeviceCardHeader(props: { device: JDDevice, showFirmware
         subheader={
             <React.Fragment>
                 <Typography variant="caption" gutterBottom>{device.deviceId}</Typography>
-                {showFirmware && firmware && <Chip size="small" label={`v${firmware}`} />}
+                {showFirmware && firmware && <Chip size="small" label={firmware} />}
                 {showTemperature && temperature !== undefined && <Chip size="small" label={`${temperature}°`} />}
             </React.Fragment>
         }

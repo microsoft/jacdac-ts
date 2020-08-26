@@ -27,6 +27,7 @@ export default function useFirmwareBlobs() {
         file().then(f => load(f, false))
     }, [dependencyId()])
     return {
+        firmwareFileDependencyId: dependencyId(),
         setFirmwareFile: async (f: File) => {
             console.log(`import new uf2`)
             await load(f, true)

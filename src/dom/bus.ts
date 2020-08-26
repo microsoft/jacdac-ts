@@ -57,6 +57,8 @@ export enum BusState {
     Disconnected
 }
 
+const SCAN_FIRMWARE_INTERVAL = 30000
+
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
@@ -84,7 +86,7 @@ export class JDBus extends JDNode {
         const debouncedScanFirmwares = debounceAsync(async () => {
             this.log(`scanning firmwares`)
             await scanFirmwares(this);
-        }, 30000)
+        }, SCAN_FIRMWARE_INTERVAL)
         this.on(DEVICE_ANNOUNCE, debouncedScanFirmwares)
     }
 
@@ -306,6 +308,7 @@ export class JDBus extends JDNode {
     device(id: string) {
         let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
+            this.log(`new device ${id}`)
             d = new JDDevice(this, id)
             this._devices.push(d);
             // stable sort
@@ -315,7 +318,7 @@ export class JDBus extends JDNode {
             this.emit(CHANGE)
 
             if (!this._gcInterval)
-                this._gcInterval = setInterval(() => this.gcDevices(), 2000);
+                this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
         }
         return d
     }

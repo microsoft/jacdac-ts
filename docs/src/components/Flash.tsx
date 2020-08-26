@@ -60,7 +60,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 export default function Flash() {
     const { bus, connectionState } = useContext(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
-    const { setFirmwareFile } = useFirmwareBlobs()
+    const { firmwareFileDependencyId, setFirmwareFile } = useFirmwareBlobs()
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
@@ -81,7 +81,7 @@ export default function Flash() {
         }
     }
     // load indexed db file once
-    useEffect(() => { scan() }, [flashing])
+    useEffect(() => { scan() }, [flashing, firmwareFileDependencyId, connectionState])
     useEffect(bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
     const handleFiles = async (files: FileList) => {
         const file = files.item(0)
