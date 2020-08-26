@@ -18,7 +18,7 @@ export default function ServiceSpecification(props: {
     const others = node.packets.filter(r => registers.indexOf(r) < 0
         && events.indexOf(r) < 0 && commands.indexOf(r) < 0)
 
-    return (<>
+    return (<Fragment key={`servicespec${node.shortId}`}>
         <h1 key="title">{node.name}
             <span style={{ marginLeft: "1rem" }}><IDChip id={node.classIdentifier} /></span>
         </h1>
@@ -26,10 +26,10 @@ export default function ServiceSpecification(props: {
         {!!node.extends?.length &&
             <p key="extends">
                 <span>Extends </span>
-                {node.extends.map((extend, i) => <>
+                {node.extends.map((extend, i) => <Fragment key={`extend${extend}`}>
                     {i > 0 && <span>, </span>}
                     <Link key={`extend${extend}`} to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>
-                </>)}
+                </Fragment>)}
     .
     </p>}
         <Markdown key="noteslong" source={node.notes.long || ""} />
@@ -42,19 +42,19 @@ export default function ServiceSpecification(props: {
         ].filter(group => group.packets.length)
             .map(group => <Fragment key={`group${group.name}`}>
                 <h2>{group.name}</h2>
-                {group.note && <Markdown source={group.note} />}
+                {group.note && <Markdown key={`node${group.name}`} source={group.note} />}
                 {group.packets
                     .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
             </Fragment>)
         }
-        {showSource && <>
+        {showSource && <Fragment key="specs">
             <h2 key="spech2">Specification</h2>
             <ServiceSpecificationSource key="source"
                 classIdentifier={node.classIdentifier}
                 showMarkdown={true}
                 showSpecification={false}
             />
-        </>}
-    </>
+        </Fragment>}
+    </Fragment>
     )
 }

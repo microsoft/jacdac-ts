@@ -59,7 +59,7 @@ export default function ServiceCard(props: {
                 {showServiceName && <Typography className={classes.title} color="textSecondary" gutterBottom>
                     <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/dom/service"}>{service.name}</Link>
                 </Typography>}
-                <Typography variant="body2" component="p">
+                <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
                 </Typography>

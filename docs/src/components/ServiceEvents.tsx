@@ -16,6 +16,6 @@ export default function ServiceEvents(props: {
         events = events.filter(event => event.identifier === eventIdentifier)
 
     return <React.Fragment>
-        {events.map(event => <EventInput event={service.event(event.identifier)} showName={showEventName} />)}
+        {events.map(event => <EventInput key={`event${event.identifier}`} event={service.event(event.identifier)} showName={showEventName} />)}
     </React.Fragment>
 }

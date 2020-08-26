@@ -34,6 +34,6 @@ export default function ServiceRegisters(props: {
     }, [connectionState, service]);
 
     return <React.Fragment>
-        {reports.map(report => <RegisterInput register={service.register(report.identifier)} showName={showRegisterName} showMemberName={true} />)}
+        {reports.map(report => <RegisterInput key={`register${report.identifier}`} register={service.register(report.identifier)} showName={showRegisterName} showMemberName={true} />)}
     </React.Fragment>
 }

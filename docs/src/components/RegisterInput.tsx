@@ -46,14 +46,14 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
     if (member.numValue !== undefined && mod)
         return <TextField type="number" label={member.numValue} onChange={handleNumChange} />
 
-    return <Typography variant="h5">{member.humanValue}</Typography>
+    return <Typography component="span" variant="h5">{member.humanValue}</Typography>
 }
 
 function Decoded(props: { member: DecodedMember, showName?: boolean, register: JDRegister }) {
     const { member, showName, register } = props;
     const { info } = member;
     return <React.Fragment>
-        {info.name !== "_" && <Typography id="slider" gutterBottom>
+        {info.name !== "_" && <Typography id="slider" component="span" gutterBottom>
             {info.name}
         </Typography>}
         <MemberInput member={member} labelledby={"slider"} register={register} />
@@ -77,10 +77,10 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
     }))
 
     return <React.Fragment>
-        {showDeviceName && <Typography>
+        {showDeviceName && <Typography component="span" key="devicenamename">
             {register.service.device.name}/
         </Typography>}
-        {showName && !!decoded && <Typography gutterBottom>
+        {showName && !!decoded && <Typography component="span" key="registername" gutterBottom>
             {decoded.info.name}
         </Typography>}
         {decoded && decoded.decoded.map(member =>
