@@ -46,7 +46,7 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
     if (member.numValue !== undefined && mod)
         return <TextField type="number" label={member.numValue} onChange={handleNumChange} />
 
-    return <Typography component="span" variant="h5">{member.humanValue}</Typography>
+    return <Typography component="div" variant="h5">{member.humanValue}</Typography>
 }
 
 function Decoded(props: { member: DecodedMember, showName?: boolean, register: JDRegister }) {
