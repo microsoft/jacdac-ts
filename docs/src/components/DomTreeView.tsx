@@ -185,11 +185,11 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         nodeId={id}
         labelText={name}
         labelInfo={readings}
-        alert={lost && "Lost signal..."}
+        alert={lost && "Lost device..."}
         kind={"device"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
-        actions={<DeviceActions device={device} />}
+        actions={<DeviceActions device={device} reset={true} />}
     >
         {services?.map(service => <ServiceTreeItem
             key={service.id}
