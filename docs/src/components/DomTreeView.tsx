@@ -25,7 +25,7 @@ import { Switch, IconButton } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND } from '../../../src/dom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER } from '../../../src/dom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
@@ -176,7 +176,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
     const readings = services
-        .filter(service => !!service.readingRegister)
+        .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
         .map(service => service.name)
         .join(',')
 
