@@ -10,12 +10,12 @@ import JACDACContext from '../../../src/react/Context';
 export default function ErrorSnackbar() {
   const { bus } = useContext(JACDACContext)
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState(undefined)
+  const [error, setError] = useState<Error>(undefined)
 
   useEffect(() => bus.subscribe(ERROR, (e: { exception: Error }) => {
     if (isCancelError(e.exception))
       return;
-    setError(error);
+    setError(e.exception);
     setOpen(true);
   }))
 
@@ -26,7 +26,7 @@ export default function ErrorSnackbar() {
     setOpen(false);
   };
 
-  const message = error ? `${error.exception.message}` : ''
+  const message = error ? `${error.message}` : ''
   return (
     <Snackbar
       anchorOrigin={{
@@ -34,7 +34,7 @@ export default function ErrorSnackbar() {
         horizontal: 'center',
       }}
       open={open}
-      autoHideDuration={6000}
+      autoHideDuration={3000}
       onClose={handleClose}
     >
       <Alert severity="error">{message}</Alert>
