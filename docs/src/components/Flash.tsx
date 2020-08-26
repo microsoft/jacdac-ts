@@ -14,6 +14,7 @@ import TabPanel, { a11yProps } from './TabPanel';
 import UploadButton from "./UploadButton";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import useGridBreakpoints from "./useGridBreakpoints";
+import ConnectAlert from "./ConnectAlert";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -120,6 +121,7 @@ export default function Flash() {
 
     return (
         <Paper className={classes.blobs}>
+            <ConnectAlert />
             <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                 <Tab label={`Firmware (${blobs?.length || 0})`} {...a11yProps(0)} />
                 <Tab label={`Updates (${updates?.filter(up => updateApplicable(up.firmware, up.blob)).length || 0})`} {...a11yProps(1)} />
