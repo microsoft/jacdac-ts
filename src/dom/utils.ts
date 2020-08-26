@@ -424,3 +424,10 @@ export function unique(values: string[]) {
         r[values[i]] = ""
     return Object.keys(r)
 }
+
+export function ellipseJoin(values: string[], maxItems: number, elipse = "...") {
+    let v = values.slice(0, maxItems - 1)
+    if (v.length < values.length)
+        v.push(elipse)
+    return v.join(', ')
+}

@@ -29,6 +29,7 @@ import { LOST, FOUND, SRV_CTRL, SRV_LOGGER } from '../../../src/dom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
+import { ellipseJoin } from '../../../src/dom/utils';
 
 declare module 'csstype' {
     interface Properties {
@@ -175,10 +176,9 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
-    const readings = services
+    const readings = ellipseJoin(services
         .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
-        .map(service => service.name)
-        .join(',')
+        .map(service => service.name), 2)
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
