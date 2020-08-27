@@ -106,7 +106,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
 
 exports.onCreateNode = ({ node, actions, getNode }) => {
   const { createNodeField } = actions
-  console.log(`${node.internal.type} -> ${node.value}`)
+  //console.log(`${node.internal.type} -> ${node.value}`)
   if (node.internal.type === `Mdx`) {
     const value = createFilePath({ node, getNode })
     createNodeField({

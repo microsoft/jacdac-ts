@@ -1,6 +1,7 @@
 import { FIELD_NODE_NAME } from "./constants"
 import { JDRegister } from "./register"
 import { JDNode } from "./node"
+import { DecodedMember } from "./pretty"
 
 export class JDField extends JDNode {
     constructor(
@@ -11,15 +12,15 @@ export class JDField extends JDNode {
         super()
     }
 
-    get id() {
+    get id(): string {
         return `${this.nodeKind}:${this.register.service.device.deviceId}:${this.register.service.service_number.toString(16)}:${this.register.address.toString(16)}:${this.index.toString(16)}`
     }
 
-    get name() {
+    get name(): string {
         return this.specification.name === "_" ? this.register.specification.name : this.specification.name
     }
 
-    get qualifiedName() {
+    get qualifiedName(): string {
         return `${this.register.qualifiedName}.${this.name}`
     }
 
@@ -34,15 +35,15 @@ export class JDField extends JDNode {
         return parts.join('.')
     }
 
-    get unit() {
+    get unit(): jdspec.Unit {
         return this.specification.unit;
     }
 
-    get nodeKind() {
+    get nodeKind(): string {
         return FIELD_NODE_NAME
     }
 
-    get decoded() {
+    get decoded(): DecodedMember {
         const decoded = this.register.decoded;
         return decoded?.decoded[this.index]
     }

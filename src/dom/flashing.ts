@@ -1,11 +1,10 @@
-import * as U from "./utils"
 import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import { JDDevice } from "./device"
 import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, CtrlReg, PACKET_REPORT } from "./constants"
 import { unpack, pack } from "./struct"
-import { assert } from "./utils"
+import { assert, delay, bufferConcat, bufferToString, SMap, strcmp } from "./utils"
 
 const BL_CMD_PAGE_DATA = 0x80
 const BL_CMD_SET_SESSION = 0x81
@@ -14,7 +13,7 @@ const numRetries = 15
 
 let _startTime = 0
 
-const uf2ExtTags: U.SMap<number> = {
+const uf2ExtTags: SMap<number> = {
     version: -0x9fc7bc,
     name: -0x650d9d,
     pageSize: 0x0be9f7,
@@ -102,7 +101,7 @@ class FlashClient {
                         log(`set session on ${d.device}`)
                         await d.sendCommandAsync(setsession)
                     }
-                    await U.delay(5)
+                    await delay(5)
                 }
             }
             if (this.numPending() == 0)
@@ -116,7 +115,7 @@ class FlashClient {
 
     private async endFlashAsync() {
         for (let f of this.classClients) {
-            await U.delay(10)
+            await delay(10)
             await f.device.sendCtrlCommand(CtrlCmd.Reset)
         }
     }
@@ -139,7 +138,7 @@ class FlashClient {
         for (let i = 0; i < 100; ++i) {
             if (this.classClients.every(c => c.lastStatus != null))
                 break
-            await U.delay(5)
+            await delay(5)
         }
     }
 
@@ -162,7 +161,7 @@ class FlashClient {
                     sz = pageSize - suboff
                 const hd = pack("IHBB5I", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
                 assert(hd.length == 4 * 7)
-                const p = Packet.from(BL_CMD_PAGE_DATA, U.bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
+                const p = Packet.from(BL_CMD_PAGE_DATA, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
 
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
@@ -175,7 +174,7 @@ class FlashClient {
                             await f.sendCommandAsync(p)
                         }
                 }
-                await U.delay(5)
+                await delay(5)
             }
 
             await this.waitForStatusAsync()
@@ -235,7 +234,7 @@ class FlashClient {
                 prog()
                 // wait until we're out of bootloader mode; otherwise the subsequent scan will keep devices in BL mode
                 for (let i = 0; i < 10; ++i) {
-                    await U.delay(150)
+                    await delay(150)
                     prog()
                 }
             } finally {
@@ -308,7 +307,7 @@ export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
                 if (desig == Math.abs(tg)) {
                     let v: any
                     if (tg < 0) {
-                        v = U.bufferToString(buf.slice(i + 4, i + sz))
+                        v = bufferToString(buf.slice(i + 4, i + sz))
                     } else {
                         v = getNumber(buf, NumberFormat.UInt32LE, i + 4)
                     }
@@ -330,7 +329,7 @@ export interface FirmwareInfo {
 }
 
 async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
-    const devices: U.SMap<FirmwareInfo> = {}
+    const devices: SMap<FirmwareInfo> = {}
     const flashers: FlashClient[] = []
     try {
         bus.on(PACKET_REPORT, handlePkt)
@@ -345,7 +344,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
                 ]) {
                     const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
                     await pkt.sendAsMultiCommandAsync(bus, SRV_CTRL)
-                    await U.delay(10)
+                    await delay(10)
                 }
             }
 
@@ -353,7 +352,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
             await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
 
-            await U.delay(10)
+            await delay(10)
         }
     } finally {
         bus.off(PACKET_REPORT, handlePkt)
@@ -409,16 +408,16 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             else if (reg == CtrlReg.DeviceClass)
                 dev.deviceClass = p.uintData
             else if (reg == CtrlReg.DeviceDescription)
-                dev.name = U.bufferToString(p.data)
+                dev.name = bufferToString(p.data)
             else if (reg == CtrlReg.FirmwareVersion)
-                dev.version = U.bufferToString(p.data)
+                dev.version = bufferToString(p.data)
         }
     }
 }
 
 export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<FirmwareInfo[]> {
     const devs = (await scanCore(bus, (timeout / 50) >> 0, false)).devs
-    devs.sort((a, b) => U.strcmp(a.deviceId, b.deviceId))
+    devs.sort((a, b) => strcmp(a.deviceId, b.deviceId))
     return devs
 }
 

@@ -135,7 +135,7 @@ export class JDBus extends JDNode {
         return this.id;
     }
 
-    node(id: string) {
+    node(id: string): JDNode {
         const resolve = () => {
             const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(id)
             if (!m) return undefined;

@@ -1,6 +1,5 @@
-import * as U from "./utils"
 import { USBOptions } from "./usb";
-import { throwError } from "./utils";
+import { throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16, encodeU32LE, read32, bufferToString } from "./utils";
 
 const controlTransferGetReport = 0x01;
 const controlTransferSetReport = 0x09;
@@ -140,7 +139,7 @@ export class Transport {
             })
             .then(() => {
                 this.clearDev()
-                return U.delay(500)
+                return delay(500)
             })
     }
 
@@ -185,7 +184,7 @@ export class Transport {
         while (true) {
             if (!this.ready) {
                 break
-                //await U.delay(300)
+                //await delay(300)
                 //continue
             }
 
@@ -197,14 +196,14 @@ export class Transport {
                     this.onData(buf)
                 } else {
                     // throttle down if no data coming
-                    await U.delay(5)
+                    await delay(5)
                 }
             } catch (err) {
                 if (this.dev) {
                     this.onError(err)
                     await this.disconnectAsync()
                 }
-                await U.delay(300)
+                await delay(300)
             }
         }
     }
@@ -212,7 +211,7 @@ export class Transport {
     sendPacketAsync(pkt: Uint8Array) {
         if (!this.dev)
             return Promise.reject(new Error("Disconnected"))
-        U.assert(pkt.length <= 64)
+        assert(pkt.length <= 64)
         if (!this.epOut) {
             return this.dev.controlTransferOut({
                 requestType: "class",
@@ -297,8 +296,8 @@ export class Transport {
         if (this.altIface.endpoints.length) {
             this.epIn = this.altIface.endpoints.filter(e => e.direction == "in")[0]
             this.epOut = this.altIface.endpoints.filter(e => e.direction == "out")[0]
-            U.assert(this.epIn.packetSize == 64);
-            U.assert(this.epOut.packetSize == 64);
+            assert(this.epIn.packetSize == 64);
+            assert(this.epOut.packetSize == 64);
         }
         this.log("claim interface")
         await this.dev.claimInterface(this.iface.interfaceNumber)
@@ -309,10 +308,10 @@ export class Transport {
 }
 
 export class Proto {
-    eventHandlers: U.SMap<(buf: Uint8Array) => void> = {}
-    msgs = new U.PromiseBuffer<Uint8Array>()
+    eventHandlers: SMap<(buf: Uint8Array) => void> = {}
+    msgs = new PromiseBuffer<Uint8Array>()
     cmdSeq = (Math.random() * 0xffff) | 0;
-    private lock = new U.PromiseQueue();
+    private lock = new PromiseQueue();
 
     constructor(public io: Transport) {
         let frames: Uint8Array[] = []
@@ -322,7 +321,7 @@ export class Proto {
             let len = buf[0] & 63
             //console.log(`msg tp=${tp} len=${len}`)
             let frame = new Uint8Array(len)
-            U.memcpy(frame, 0, buf, 1, len)
+            memcpy(frame, 0, buf, 1, len)
             if (tp & HF2_FLAG_SERIAL_OUT) {
                 this.onSerial(frame, tp == HF2_FLAG_SERIAL_ERR)
                 return
@@ -331,13 +330,13 @@ export class Proto {
             if (tp == HF2_FLAG_CMDPKT_BODY) {
                 return
             } else {
-                U.assert(tp == HF2_FLAG_CMDPKT_LAST)
+                assert(tp == HF2_FLAG_CMDPKT_LAST)
                 let total = 0
                 for (let f of frames) total += f.length
                 let r = new Uint8Array(total)
                 let ptr = 0
                 for (let f of frames) {
-                    U.memcpy(r, ptr, f)
+                    memcpy(r, ptr, f)
                     ptr += f.length
                 }
                 frames = []
@@ -361,19 +360,19 @@ export class Proto {
         if (data) len += data.length
         let pkt = new Uint8Array(len)
         let seq = ++this.cmdSeq & 0xffff
-        U.write32(pkt, 0, cmd);
-        U.write16(pkt, 4, seq);
-        U.write16(pkt, 6, 0);
+        write32(pkt, 0, cmd);
+        write16(pkt, 4, seq);
+        write16(pkt, 6, 0);
         if (data)
-            U.memcpy(pkt, 8, data, 0, data.length)
+            memcpy(pkt, 8, data, 0, data.length)
         let numSkipped = 0
         let handleReturnAsync = (): Promise<Uint8Array> =>
             this.msgs.shiftAsync(1000) // we wait up to a second
                 .then(res => {
-                    if (U.read16(res, 0) != seq) {
+                    if (read16(res, 0) != seq) {
                         if (numSkipped < 3) {
                             numSkipped++
-                            this.io.log(`message out of sync, (${seq} vs ${U.read16(res, 0)}); will re-try`)
+                            this.io.log(`message out of sync, (${seq} vs ${read16(res, 0)}); will re-try`)
                             return handleReturnAsync()
                         }
                         this.error("out of sync")
@@ -430,12 +429,12 @@ export class Proto {
     }
 
     onEvent(id: number, f: (buf: Uint8Array) => void) {
-        U.assert(!!(id & HF2_EV_MASK))
+        assert(!!(id & HF2_EV_MASK))
         this.eventHandlers[id + ""] = f
     }
 
     onJDMessage(f: (buf: Uint8Array) => void) {
-        this.talkAsync(HF2_CMD_JDS_CONFIG, U.encodeU32LE([1]))
+        this.talkAsync(HF2_CMD_JDS_CONFIG, encodeU32LE([1]))
         this.onEvent(HF2_EV_JDS_PACKET, f)
     }
 
@@ -444,7 +443,7 @@ export class Proto {
     }
 
     handleEvent(buf: Uint8Array) {
-        const evid = U.read32(buf, 0)
+        const evid = read32(buf, 0)
         const f = this.eventHandlers[evid + ""]
         if (f) {
             f(buf.slice(4))
@@ -457,20 +456,20 @@ export class Proto {
         }
     }
     onSerial(data: Uint8Array, iserr: boolean) {
-        console.log("SERIAL:", U.bufferToString(data))
+        console.log("SERIAL:", bufferToString(data))
     }
 
     async connectAsync(background?: boolean) {
         await this.io.connectAsync(background)
         await this.checkMode()
         const buf = await this.talkAsync(HF2_CMD_INFO)
-        this.io.log("Connected to: " + U.bufferToString(buf))
+        this.io.log("Connected to: " + bufferToString(buf))
     }
 
     private async checkMode() {
         // first check that we are not talking to a bootloader
         const info = await this.talkAsync(HF2_CMD_BININFO)
-        const mode = U.read32(info, 0)
+        const mode = read32(info, 0)
         this.io.log(`hf2 mode ${mode}`)
         if (mode == HF2_MODE_USERSPACE) {
             // all good

@@ -8,7 +8,7 @@ import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";
-import { serviceClass } from "./pretty";
+import { serviceClass, shortDeviceId } from "./pretty";
 import { JDNode } from "./node";
 import { isInstanceOf } from "./spec";
 import { FirmwareInfo } from "./flashing";
@@ -238,13 +238,4 @@ export class JDDevice extends JDNode {
         return this.service(SRV_CTRL)
             .sendCmdAsync(CtrlCmd.Identify)
     }
-}
-
-// 2 letter + 2 digit ID; 1.8%/0.3%/0.07%/0.015% collision probability among 50/20/10/5 devices
-export function shortDeviceId(devid: string) {
-    const h = hash(fromHex(devid), 30)
-    return String.fromCharCode(0x41 + h % 26) +
-        String.fromCharCode(0x41 + idiv(h, 26) % 26) +
-        String.fromCharCode(0x30 + idiv(h, 26 * 26) % 10) +
-        String.fromCharCode(0x30 + idiv(h, 26 * 26 * 10) % 10)
 }

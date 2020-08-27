@@ -1,60 +1,63 @@
-import * as U from "./utils"
-import * as jd from "./constants"
 import { Packet } from "./packet"
-import { JDDevice, shortDeviceId } from "./device"
-import * as spec from "./spec"
 import { NumberFormat } from "./buffer"
-import { roundWithPrecision } from "./utils"
+import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray } from "./utils"
+import { isIntegerType, numberFormatFromStorageType, scaleValue, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
+import {
+    JD_SERVICE_NUMBER_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
+    JD_FRAME_FLAG_ACK_REQUESTED, SRV_LOGGER, SRV_BATTERY, SRV_ACCELEROMETER, SRV_BUTTON, SRV_TOUCHBUTTON, SRV_LIGHT_SENSOR, SRV_MICROPHONE, SRV_THERMOMETER, SRV_SWITCH, SRV_PIXEL, SRV_HAPTIC,
+    SRV_LIGHT, SRV_KEYBOARD, SRV_MOUSE, SRV_GAMEPAD, SRV_MUSIC, SRV_SERVO, SRV_CONTROLLER, SRV_LCD, SRV_MESSAGE_BUS, SRV_COLOR_SENSOR, SRV_LIGHT_SPECTRUM_SENSOR, SRV_PROXIMITY, SRV_TOUCH_BUTTONS,
+    SRV_SERVOS, SRV_ROTARY_ENCODER, SRV_DNS, SRV_PWM_LIGHT, SRV_BOOTLOADER, SRV_ARCADE_CONTROLS, SRV_POWER, SRV_SLIDER, SRV_MOTOR, SRV_TCP, SRV_WIFI, SRV_MULTITOUCH, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_NUMBER_CRC_ACK, CMD_ADVERTISEMENT_DATA
+} from "./constants"
 
-const service_classes: U.SMap<number> = {
+const service_classes: SMap<number> = {
     "<disabled>": -1,
     CTRL: 0,
-    LOGGER: jd.SRV_LOGGER,
-    BATTERY: jd.SRV_BATTERY,
-    ACCELEROMETER: jd.SRV_ACCELEROMETER,
-    BUTTON: jd.SRV_BUTTON,
-    TOUCHBUTTON: jd.SRV_TOUCHBUTTON,
-    LIGHT_SENSOR: jd.SRV_LIGHT_SENSOR,
-    MICROPHONE: jd.SRV_MICROPHONE,
-    THERMOMETER: jd.SRV_THERMOMETER,
-    SWITCH: jd.SRV_SWITCH,
-    PIXEL: jd.SRV_PIXEL,
-    HAPTIC: jd.SRV_HAPTIC,
-    LIGHT: jd.SRV_LIGHT,
-    KEYBOARD: jd.SRV_KEYBOARD,
-    MOUSE: jd.SRV_MOUSE,
-    GAMEPAD: jd.SRV_GAMEPAD,
-    MUSIC: jd.SRV_MUSIC,
-    SERVO: jd.SRV_SERVO,
-    CONTROLLER: jd.SRV_CONTROLLER,
-    LCD: jd.SRV_LCD,
-    MESSAGE_BUS: jd.SRV_MESSAGE_BUS,
-    COLOR_SENSOR: jd.SRV_COLOR_SENSOR,
-    LIGHT_SPECTRUM_SENSOR: jd.SRV_LIGHT_SPECTRUM_SENSOR,
-    PROXIMITY: jd.SRV_PROXIMITY,
-    TOUCH_BUTTONS: jd.SRV_TOUCH_BUTTONS,
-    SERVOS: jd.SRV_SERVOS,
-    ROTARY_ENCODER: jd.SRV_ROTARY_ENCODER,
-    DNS: jd.SRV_DNS,
-    PWM_LIGHT: jd.SRV_PWM_LIGHT,
-    BOOTLOADER: jd.SRV_BOOTLOADER,
-    ARCADE_CONTROLS: jd.SRV_ARCADE_CONTROLS,
-    POWER: jd.SRV_POWER,
-    SLIDER: jd.SRV_SLIDER,
-    MOTOR: jd.SRV_MOTOR,
-    TCP: jd.SRV_TCP,
-    WIFI: jd.SRV_WIFI,
-    MULTITOUCH: jd.SRV_MULTITOUCH,
+    LOGGER: SRV_LOGGER,
+    BATTERY: SRV_BATTERY,
+    ACCELEROMETER: SRV_ACCELEROMETER,
+    BUTTON: SRV_BUTTON,
+    TOUCHBUTTON: SRV_TOUCHBUTTON,
+    LIGHT_SENSOR: SRV_LIGHT_SENSOR,
+    MICROPHONE: SRV_MICROPHONE,
+    THERMOMETER: SRV_THERMOMETER,
+    SWITCH: SRV_SWITCH,
+    PIXEL: SRV_PIXEL,
+    HAPTIC: SRV_HAPTIC,
+    LIGHT: SRV_LIGHT,
+    KEYBOARD: SRV_KEYBOARD,
+    MOUSE: SRV_MOUSE,
+    GAMEPAD: SRV_GAMEPAD,
+    MUSIC: SRV_MUSIC,
+    SERVO: SRV_SERVO,
+    CONTROLLER: SRV_CONTROLLER,
+    LCD: SRV_LCD,
+    MESSAGE_BUS: SRV_MESSAGE_BUS,
+    COLOR_SENSOR: SRV_COLOR_SENSOR,
+    LIGHT_SPECTRUM_SENSOR: SRV_LIGHT_SPECTRUM_SENSOR,
+    PROXIMITY: SRV_PROXIMITY,
+    TOUCH_BUTTONS: SRV_TOUCH_BUTTONS,
+    SERVOS: SRV_SERVOS,
+    ROTARY_ENCODER: SRV_ROTARY_ENCODER,
+    DNS: SRV_DNS,
+    PWM_LIGHT: SRV_PWM_LIGHT,
+    BOOTLOADER: SRV_BOOTLOADER,
+    ARCADE_CONTROLS: SRV_ARCADE_CONTROLS,
+    POWER: SRV_POWER,
+    SLIDER: SRV_SLIDER,
+    MOTOR: SRV_MOTOR,
+    TCP: SRV_TCP,
+    WIFI: SRV_WIFI,
+    MULTITOUCH: SRV_MULTITOUCH,
 }
 
-const generic_commands: U.SMap<number> = {
+const generic_commands: SMap<number> = {
     CMD_ADVERTISEMENT_DATA: 0x00,
     CMD_EVENT: 0x01,
     CMD_CALIBRATE: 0x02,
     CMD_GET_DESCRIPTION: 0x03,
 }
 
-const generic_regs: U.SMap<number> = {
+const generic_regs: SMap<number> = {
     REG_INTENSITY: 0x01,
     REG_VALUE: 0x02,
     REG_IS_STREAMING: 0x03,
@@ -122,6 +125,15 @@ export function prettyDuration(ms: number) {
     return r;
 }
 
+// 2 letter + 2 digit ID; 1.8%/0.3%/0.07%/0.015% collision probability among 50/20/10/5 devices
+export function shortDeviceId(devid: string) {
+    const h = hash(fromHex(devid), 30)
+    return String.fromCharCode(0x41 + h % 26) +
+        String.fromCharCode(0x41 + idiv(h, 26) % 26) +
+        String.fromCharCode(0x30 + idiv(h, 26 * 26) % 10) +
+        String.fromCharCode(0x30 + idiv(h, 26 * 26 * 10) % 10)
+}
+
 export function decodeMember(
     service: jdspec.ServiceSpec, pktInfo: jdspec.PacketInfo, member: jdspec.PacketMember,
     pkt: Packet, offset: number
@@ -139,24 +151,24 @@ export function decodeMember(
     let size = Math.abs(member.storage)
 
     const enumInfo = service.enums[member.type]
-    const isInt = spec.isIntegerType(member.type) || !!enumInfo
+    const isInt = isIntegerType(member.type) || !!enumInfo
 
     if (!isInt) {
         const buf = size ? pkt.data.slice(offset, offset + size) : pkt.data.slice(offset)
         if (member.type == "string") {
             try {
-                value = U.fromUTF8(U.uint8ArrayToString(buf))
+                value = fromUTF8(uint8ArrayToString(buf))
             } catch {
                 // invalid UTF8
-                value = U.uint8ArrayToString(buf)
+                value = uint8ArrayToString(buf)
             }
             humanValue = JSON.stringify(value).replace(/\\u0000/g, "\\0")
         } else if (member.type == "pipe") {
             value = buf
-            const devid = U.toHex(buf.slice(0, 8))
-            const port = U.read16(buf, 8)
+            const devid = toHex(buf.slice(0, 8))
+            const port = read16(buf, 8)
             humanValue = "pipe to " + shortDeviceId(devid) + " port:" + port
-            // + " [" + U.toHex(buf.slice(10)) + "]"
+            // + " [" + toHex(buf.slice(10)) + "]"
             if (pkt?.dev?.bus) {
                 const trg = pkt.dev.bus.device(devid)
                 trg.port(port).pipeType = service.shortId + "." + pktInfo.pipeType + ".report"
@@ -167,9 +179,9 @@ export function decodeMember(
         }
         size = buf.length
     } else {
-        const fmt = spec.numberFormatFromStorageType(member.storage)
+        const fmt = numberFormatFromStorageType(member.storage)
         numValue = pkt.getNumber(fmt, offset)
-        value = scaledValue = spec.scaleValue(numValue, member)
+        value = scaledValue = scaleValue(numValue, member)
         if (pkt.dev && member.type == "pipe_port")
             pkt.dev.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
         if (enumInfo) {
@@ -200,7 +212,7 @@ export function decodeMember(
             // don't show so much digits
             let v = scaledValue;
             if (member.unit)
-                v = U.roundWithPrecision(v, 3)
+                v = roundWithPrecision(v, 3)
             humanValue = v + prettyUnit(member.unit)
         }
         else {
@@ -289,15 +301,15 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
 }
 
 function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    const isSet = !!(pkt.service_command & jd.CMD_SET_REG)
-    const isGet = !!(pkt.service_command & jd.CMD_GET_REG)
+    const isSet = !!(pkt.service_command & CMD_SET_REG)
+    const isGet = !!(pkt.service_command & CMD_GET_REG)
 
     if (isSet == isGet)
         return null
 
-    const addr = pkt.service_command & jd.CMD_REG_MASK
+    const addr = pkt.service_command & CMD_REG_MASK
     const regInfo =
-        service.packets.find(p => spec.isRegister(p) && p.identifier == addr)
+        service.packets.find(p => isRegister(p) && p.identifier == addr)
         || syntheticPktInfo("rw", addr)
 
     const decoded = decodeMembers(service, regInfo, pkt)
@@ -323,7 +335,7 @@ function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket
 }
 
 function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
-    if (pkt.is_command || pkt.service_command != jd.CMD_EVENT)
+    if (pkt.is_command || pkt.service_command != CMD_EVENT)
         return null
 
     const addr = pkt.getNumber(NumberFormat.UInt32LE, 0)
@@ -363,16 +375,16 @@ function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 
 function decodePipe(pkt: Packet): DecodedPacket {
     const cmd = pkt.service_command
-    const pinfo = pkt.dev.port(cmd >> jd.PIPE_PORT_SHIFT)
+    const pinfo = pkt.dev.port(cmd >> PIPE_PORT_SHIFT)
     if (!pinfo.pipeType)
         return null
 
     const [servId, pipeType, dir] = pinfo.pipeType.split(/\./)
-    const service = spec.serviceSpecificationFromName(servId)
+    const service = serviceSpecificationFromName(servId)
     if (!service)
         return null
 
-    const meta = !!(cmd & jd.PIPE_METADATA_MASK)
+    const meta = !!(cmd & PIPE_METADATA_MASK)
     const candidates = service.packets
         .filter(p => p.pipeType == pipeType &&
             /pipe/.test(p.kind) &&
@@ -395,21 +407,21 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.dev && pkt.service_number == jd.JD_SERVICE_NUMBER_PIPE) {
+    if (pkt.dev && pkt.service_number == JD_SERVICE_NUMBER_PIPE) {
         const info = decodePipe(pkt)
         if (info)
             return info
     }
 
     const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
-    const service = spec.serviceSpecificationFromClassIdentifier(srv_class)
+    const service = serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null
 
     return decodePacket(service, pkt)
 }
 
-function reverseLookup(map: U.SMap<number>, n: number) {
+function reverseLookup(map: SMap<number>, n: number) {
     for (let k of Object.keys(map)) {
         if (map[k] == n)
             return k
@@ -418,14 +430,14 @@ function reverseLookup(map: U.SMap<number>, n: number) {
 }
 
 export function serviceClass(name: string): number {
-    const serv = spec.serviceSpecificationFromName(name);
+    const serv = serviceSpecificationFromName(name);
     return serv ? serv.classIdentifier : service_classes[(name || "").toUpperCase()];
 }
 
 export function serviceName(n: number): string {
     if (n == null)
         return "?"
-    const serv = spec.serviceSpecificationFromClassIdentifier(n);
+    const serv = serviceSpecificationFromClassIdentifier(n);
     return serv ? serv.name.toUpperCase() : reverseLookup(service_classes, n)
 }
 
@@ -437,10 +449,10 @@ export function deviceServiceName(pkt: Packet): string {
 
 export function commandName(n: number) {
     let pref = ""
-    if ((n & jd.CMD_TOP_MASK) == jd.CMD_SET_REG) pref = "SET["
-    else if ((n & jd.CMD_TOP_MASK) == jd.CMD_GET_REG) pref = "GET["
+    if ((n & CMD_TOP_MASK) == CMD_SET_REG) pref = "SET["
+    else if ((n & CMD_TOP_MASK) == CMD_GET_REG) pref = "GET["
     if (pref) {
-        const reg = n & jd.CMD_REG_MASK
+        const reg = n & CMD_REG_MASK
         return pref + reverseLookup(generic_regs, reg) + "]"
     }
     return reverseLookup(generic_commands, n)
@@ -461,18 +473,6 @@ export interface PrintPacketOptions {
     skipRepeatedAnnounce?: boolean;
 }
 
-export function printServices(device: JDDevice) {
-    let srv = ""
-    const n = device.serviceLength;
-    for (let i = 0; i < n; ++i) {
-        const id = device.serviceClassAt(i);
-        const name = `${i}:${serviceName(id)}`;
-        if (i) srv += ", "
-        srv += name;
-    }
-    return srv;
-}
-
 export function toAscii(d: ArrayLike<number>) {
     let r = ""
     for (let i = 0; i < d.length; ++i) {
@@ -488,13 +488,13 @@ export function toAscii(d: ArrayLike<number>) {
 export function hexDump(d: ArrayLike<number>): string {
     const chunk = 32
     if (d.length <= chunk)
-        return U.toHex(d) + "\u00A0|\u00A0" + toAscii(d)
+        return toHex(d) + "\u00A0|\u00A0" + toAscii(d)
 
-    const a = U.toArray(d)
+    const a = toArray(d)
     let r = ""
     for (let i = 0; i < d.length; i += chunk) {
         if (i + chunk >= d.length) {
-            let s = U.toHex(a.slice(i))
+            let s = toHex(a.slice(i))
             while (s.length < chunk * 2)
                 s += "  "
             r += s + "\u00A0|\u00A0" + toAscii(a.slice(i))
@@ -510,37 +510,37 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
 
     let devname = pkt.dev ? pkt.dev.name || pkt.dev.shortId : pkt.device_identifier
 
-    if (frame_flags & jd.JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+    if (frame_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
         devname = "[multicmd]"
 
     const serv_id = serviceName(pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number))
     let service_name = `${serv_id} (${pkt.service_number})`
     const cmd = pkt.service_command
     let cmdname = commandName(cmd)
-    if (pkt.service_number == jd.JD_SERVICE_NUMBER_CRC_ACK) {
+    if (pkt.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
         service_name = "CRC-ACK"
         cmdname = hexNum(cmd)
     }
-    if (pkt.service_number == jd.JD_SERVICE_NUMBER_PIPE) {
+    if (pkt.service_number == JD_SERVICE_NUMBER_PIPE) {
         service_name = "PIPE"
-        cmdname = `port:${cmd >> jd.PIPE_PORT_SHIFT} cnt:${cmd & jd.PIPE_COUNTER_MASK}`
-        if (cmd & jd.PIPE_METADATA_MASK)
+        cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
+        if (cmd & PIPE_METADATA_MASK)
             cmdname += " meta"
-        if (cmd & jd.PIPE_CLOSE_MASK)
+        if (cmd & PIPE_CLOSE_MASK)
             cmdname += " close"
     }
 
     let pdesc = `${devname}/${service_name}: ${cmdname}; sz=${pkt.size}`
 
-    if (frame_flags & jd.JD_FRAME_FLAG_COMMAND)
+    if (frame_flags & JD_FRAME_FLAG_COMMAND)
         pdesc = 'to ' + pdesc
     else
         pdesc = 'from ' + pdesc
-    if (frame_flags & jd.JD_FRAME_FLAG_ACK_REQUESTED)
+    if (frame_flags & JD_FRAME_FLAG_ACK_REQUESTED)
         pdesc = `[ack:${hexNum(pkt.crc)}] ` + pdesc
 
     const d = pkt.data
-    if (pkt.dev && pkt.service_number == 0 && pkt.service_command == jd.CMD_ADVERTISEMENT_DATA) {
+    if (pkt.dev && pkt.service_number == 0 && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
         if (pkt.dev.lastServiceUpdate < pkt.timestamp) {
             if (opts.skipRepeatedAnnounce)
                 return ""
@@ -556,8 +556,8 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         const decoded = decodePacketData(pkt)
         if (decoded) {
             pdesc += "; " + decoded.description
-        } else if (pkt.service_command == jd.CMD_EVENT) {
-            pdesc += "; ev=" + num2str(pkt.intData) + " arg=" + (U.read32(pkt.data, 4) | 0)
+        } else if (pkt.service_command == CMD_EVENT) {
+            pdesc += "; ev=" + num2str(pkt.intData) + " arg=" + (read32(pkt.data, 4) | 0)
         } else if (0 < d.length && d.length <= 4) {
             let v0 = pkt.uintData, v1 = pkt.intData
             pdesc += "; " + num2str(v0)

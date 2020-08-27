@@ -9,13 +9,14 @@
         .device {
             margin: 0.5rem;
         }
+
         button:not(.active) {
             opacity: 0.7;
         }
+
         button.active {
             font-weight: bold;
         }
-
     </style>
     <script>
         var process = {
@@ -56,6 +57,19 @@
             log('started')
         }
 
+
+        function printServices(device) {
+            let srv = ""
+            const n = device.serviceLength;
+            for (let i = 0; i < n; ++i) {
+                const id = device.serviceClassAt(i);
+                const name = `${i}:${serviceName(id)}`;
+                if (i) srv += ", "
+                srv += name;
+            }
+            return srv;
+        }
+
         function connectDevice(device) {
             let div = document.getElementById(device.deviceId);
             if (!div) {
@@ -64,7 +78,7 @@
                 div.className = "device";
                 devicesDiv.append(div);
             }
-            div.innerText = `${device.toString()} - ${device.deviceId}: ${jacdac.printServices(device)}`;
+            div.innerText = `${device.toString()} - ${device.deviceId}: ${printServices(device)}`;
             if (speedTest) {
                 const speedRes = document.createElement("div")
                 const speedBtn = document.createElement("button")
@@ -105,7 +119,7 @@
                 case jacdac.BusState.Disconnected:
                     connect.classList.add('active'); break;
             }
-        }        
+        }
         jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
         updateConnectionState()
     </script>

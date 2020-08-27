@@ -27,6 +27,7 @@
     "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths",
     "postdistdocs": "node ./tools/prepare.js",
+    "apidocs": "node node_modules/@microsoft/api-extractor/bin/api-extractor run --local",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
@@ -109,6 +110,7 @@
     ]
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.9.11",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "@types/jest": "^23.3.2",
@@ -144,5 +146,8 @@
     "tslint": "^5.11.0",
     "tslint-microsoft-contrib": "^5.0.3",
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@microsoft/api-documenter": "^7.8.36"
   }
 }
