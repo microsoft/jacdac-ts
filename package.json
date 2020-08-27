@@ -113,10 +113,6 @@
     "@microsoft/api-documenter": "^7.8.36",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
-    "@types/jest": "^23.3.2",
-    "@types/node": "^10.11.0",
-    "@types/react": "^16.9.41",
-    "@types/w3c-web-usb": "^1.0.4",
     "colors": "^1.3.2",
     "commitizen": "^3.0.0",
     "coveralls": "^3.0.2",
@@ -146,5 +142,11 @@
     "tslint": "^5.11.0",
     "tslint-microsoft-contrib": "^5.0.3",
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@types/jest": "^23.3.2",
+    "@types/node": "^10.11.0",
+    "@types/react": "^16.9.41",
+    "@types/w3c-web-usb": "^1.0.4"
   }
 }
