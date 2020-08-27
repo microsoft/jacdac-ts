@@ -8,10 +8,11 @@ import json from 'rollup-plugin-json'
 const pkg = require('./package.json')
 
 export default [
-  { libraryName: 'jacdac', dir: 'dom' },
-  { libraryName: 'jacdac-graphql', dir: 'graphql', external: ["jacdac"] }, // include graphqljs
-  { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac", "webusb"] },
-  { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac", "react"] },
+  { libraryName: 'jacdac-dom', dir: 'dom' },
+  { libraryName: 'jacdac-graphql', dir: 'graphql', external: ["jacdac-dom"] }, // include graphqljs
+  { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-dom", "webusb"] },
+  { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-dom", "react"] },
+  { libraryName: 'jacdac', dir: '', external: ["jacdac-dom", "react", "jacdac-rect", "webusb", "jacdac-node"] },
 ].map(({ libraryName, dir, external }) => {
   return {
     input: `src/${dir}/${libraryName}.ts`,
