@@ -46,6 +46,8 @@ import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
+import { MDXProvider } from "@mdx-js/react";
+import CodeDemo from "./CodeBlock";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
@@ -121,20 +123,27 @@ const useStyles = makeStyles((theme) => createStyles({
   }
 }));
 
+const mdxComponents = {
+  CodeDemo: (props: any) => <CodeDemo {...props} />,
+  Link
+};
+
 export default function Layout(props: { pageContext?: any; children: any; }) {
   const theme = responsiveFontSizes(createMuiTheme());
 
   return (
     <ThemeProvider theme={theme}>
-      <JACDACProvider>
-        <PacketsProvider>
-          <DbProvider>
-            <DrawerProvider>
-              <LayoutWithContext {...props} />
-            </DrawerProvider>
-          </DbProvider>
-        </PacketsProvider>
-      </JACDACProvider>
+      <MDXProvider components={mdxComponents}>
+        <JACDACProvider>
+          <PacketsProvider>
+            <DbProvider>
+              <DrawerProvider>
+                <LayoutWithContext {...props} />
+              </DrawerProvider>
+            </DbProvider>
+          </PacketsProvider>
+        </JACDACProvider>
+      </MDXProvider>
     </ThemeProvider>
   )
 }

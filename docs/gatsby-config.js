@@ -78,6 +78,7 @@ module.exports = {
         },
         gatsbyRemarkPlugins: [
           `gatsby-remark-autolink-headers`,
+          'gatsby-plugin-mdx-code-demo',
           `gatsby-remark-prismjs`,
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',

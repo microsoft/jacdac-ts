@@ -6,9 +6,7 @@ import Layout from "./layout"
 
 export default function PageTemplate({ data: { mdx } }) {
   return <Layout>
-      <MDXProvider>
-        <MDXRenderer>{mdx.body}</MDXRenderer>
-      </MDXProvider>
+    <MDXRenderer>{mdx.body}</MDXRenderer>
   </Layout>
 }
 
