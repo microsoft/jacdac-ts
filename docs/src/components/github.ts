@@ -1,6 +1,6 @@
 const ROOT = "https://api.github.com/"
 
-interface GithubRelease {
+export interface GithubRelease {
     url: string,
     html_url: string,
     tag_name: string,
@@ -13,9 +13,9 @@ interface GithubRelease {
     }[]
 }
 
-export async function fetchLatestRelease(slug: string) {
+export async function fetchLatestRelease(slug: string): Promise<GithubRelease> {
     try {
-        const uri = `${ROOT}/repos/${slug}/releases/latest`;
+        const uri = `${ROOT}repos/${slug}/releases/latest`;
         const resp = await fetch(uri)
         console.log(resp)
         switch (resp.status) {

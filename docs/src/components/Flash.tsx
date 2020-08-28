@@ -15,6 +15,11 @@ import UploadButton from "./UploadButton";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import useGridBreakpoints from "./useGridBreakpoints";
 import ConnectAlert from "./ConnectAlert";
+import FirmwareButton from "./FirmwareButton";
+
+const firmwareRepos = [
+    "microsoft/jacdac-stm32x0"
+]
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -63,7 +68,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 export default function Flash() {
     const { bus, connectionState } = useContext(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
-    const { firmwareFileDependencyId, setFirmwareFile } = useFirmwareBlobs()
+    const { firmwareFileDependencyId, setFirmwareBlob } = useFirmwareBlobs()
     const [importing, setImporting] = useState(false)
     const [flashing, setFlashing] = useState(0)
     const [scanning, setScanning] = useState(false)
@@ -91,7 +96,7 @@ export default function Flash() {
         if (file) {
             try {
                 setImporting(true)
-                await setFirmwareFile(file)
+                await setFirmwareBlob(file)
             } finally {
                 setImporting(false)
             }
@@ -100,7 +105,7 @@ export default function Flash() {
     const handleClear = async () => {
         try {
             setImporting(true)
-            await setFirmwareFile(undefined)
+            await setFirmwareBlob(undefined)
         } finally {
             setImporting(false)
         }
@@ -118,6 +123,13 @@ export default function Flash() {
             }
         }
     }).filter(fw => !!fw.firmware && !!fw.blob && !!fw.device);
+    const handleImportRepo = () => {
+        try {
+            setImporting(true)
+        } finally {
+            setImporting(false)
+        }
+    }
 
     return (
         <Paper className={classes.blobs}>
@@ -128,10 +140,13 @@ export default function Flash() {
             </Tabs>
             <TabPanel value={tab} index={0}>
                 <List>
+                    {firmwareRepos.map(firmwareRepo => <ListItem key={`firmwarerepo${firmwareRepo}`}>
+                        <FirmwareButton slug={firmwareRepo} />
+                    </ListItem>)}
                     <ListItem key="importbtn">
                         {importing && <LinearProgress variant="indeterminate" />}
-                        {!importing && <UploadButton text={"Import UF2 firmware"} onFilesUploaded={handleFiles} />}
-                        {!importing && <Button aria-label={"Clear UF2 firmware"} onClick={handleClear}>clear</Button>}
+                        {!importing && <UploadButton text={"Import UF2 file"} onFilesUploaded={handleFiles} />}
+                        {!importing && <Button aria-label={"Clear firmwares"} onClick={handleClear}>clear</Button>}
                     </ListItem>
                     {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
                         <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />

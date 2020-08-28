@@ -3,16 +3,16 @@ import { delay } from "../../../src/dom/utils";
 
 export interface Db {
     dependencyId: () => number,
-    getFile: (id: string) => Promise<File>;
-    putFile: (id: string, file: File) => Promise<void>;
+    getBlob: (id: string) => Promise<Blob>;
+    putBlob: (id: string, blob: Blob) => Promise<void>;
     getValue: (id: string) => Promise<string>;
     putValue: (id: string, value: string) => Promise<void>;
 }
 
 function openDbAsync(): Promise<Db> {
-    const DB_VERSION = 2
+    const DB_VERSION = 3
     const DB_NAME = "JACDAC"
-    const STORE_FILES = "FILES"
+    const STORE_BLOBS = "BLOBS"
     const STORE_STORAGE = "STORAGE"
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     let db: IDBDatabase;
@@ -55,8 +55,8 @@ function openDbAsync(): Promise<Db> {
 
     const api = {
         dependencyId: () => changeId,
-        putFile: (id: string, file: File): Promise<void> => put(STORE_FILES, id, file),
-        getFile: (id: string): Promise<File> => get(STORE_FILES, id).then(v => v as File),
+        putBlob: (id: string, blob: Blob): Promise<void> => put(STORE_BLOBS, id, blob),
+        getBlob: (id: string): Promise<Blob> => get(STORE_BLOBS, id).then(v => v as Blob),
         putValue: (id: string, value: string): Promise<void> => put(STORE_STORAGE, id, value),
         getValue: (id: string): Promise<string> => get(STORE_STORAGE, id).then(v => v as string),
     }
@@ -77,8 +77,8 @@ function openDbAsync(): Promise<Db> {
                 const stores = db.objectStoreNames
                 if (!stores.contains(STORE_STORAGE))
                     db.createObjectStore(STORE_STORAGE);
-                if (!stores.contains(STORE_FILES))
-                    db.createObjectStore(STORE_FILES);
+                if (!stores.contains(STORE_BLOBS))
+                    db.createObjectStore(STORE_BLOBS);
                 db.onerror = function (event) {
                     console.log("idb error", event);
                 };
@@ -118,12 +118,12 @@ export const DbProvider = ({ children }) => {
     )
 }
 
-export function useDbFile(fileName: string) {
+export function useDbBlob(blobName: string) {
     const { db } = useContext(DbContext);
 
     return {
         dependencyId: () => db?.dependencyId(),
-        file: () => db?.getFile(fileName) || Promise.resolve(undefined),
-        setFile: async (f: File) => { await db?.putFile(fileName, f) }
+        blob: () => db?.getBlob(blobName) || Promise.resolve(undefined),
+        setBlob: async (blob: Blob) => { await db?.putBlob(blobName, blob) }
     }
 }
