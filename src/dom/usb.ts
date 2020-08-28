@@ -2,6 +2,8 @@ import { Transport, Proto } from "./hf2";
 import { JDBus } from "./bus";
 import { Packet } from "./packet";
 
+const HF2 = "HF2"
+
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>;
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
@@ -37,7 +39,7 @@ export function createUSBBus(options?: USBOptions): JDBus {
             }
             const transport = new Transport(options);
             transport.onError = (e) => {
-                bus.errorHandler("HF2", e)
+                bus.errorHandler(HF2, e)
                 bus.disconnectAsync()
             }
             hf2 = new Proto(transport);

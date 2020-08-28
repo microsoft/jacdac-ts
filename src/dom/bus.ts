@@ -100,6 +100,10 @@ export class JDBus extends JDNode {
     private setConnectionState(state: BusState) {
         if (this._connectionState !== state) {
             this.log(`${BusState[this._connectionState]} -> ${BusState[state]}`)
+            console.log({
+                connect: this._connectPromise,
+                disconnect: this._disconnectPromise
+            })
             this._connectionState = state;
             this.emit(CONNECTION_STATE, this._connectionState);
             switch (this._connectionState) {
@@ -115,23 +119,23 @@ export class JDBus extends JDNode {
     /**
      * Gets a unique identifier for this node in the JACDAC DOM.
      */
-    get id() {
+    get id(): string {
         return this.nodeKind;
     }
 
-    get name() {
+    get name(): string {
         return "bus"
     }
 
-    get qualifiedName() {
+    get qualifiedName(): string {
         return this.name
     }
 
-    get nodeKind() {
+    get nodeKind(): string {
         return BUS_NODE_NAME
     }
 
-    toString() {
+    toString(): string {
         return this.id;
     }
 
@@ -236,27 +240,39 @@ export class JDBus extends JDNode {
             // already disconnecting, retry when disconnected
             if (this._disconnectPromise) {
                 this.log(`queuing connect after disconnecting`)
-                this._connectPromise = this._disconnectPromise.then(() => this.connectAsync())
+                const p = this._disconnectPromise
+                this._disconnectPromise = undefined;
+                this._connectPromise = p.then(() => this.connectAsync())
             }
             else {
                 // starting a fresh connection
                 this.log(`connecting`)
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
-                const connectAsyncPromise = this.options.connectAsync ? this.options.connectAsync(background) : Promise.resolve();
-                this._connectPromise = connectAsyncPromise
+                if (this.options.connectAsync)
+                    this._connectPromise = this._connectPromise.then(() => this.options.connectAsync(background))
+                const p = this._connectPromise = this._connectPromise
                     .then(() => {
-                        this._connectPromise = undefined;
-                        this.setConnectionState(BusState.Connected)
+                        if (p == this._connectPromise) {
+                            this._connectPromise = undefined;
+                            this.setConnectionState(BusState.Connected)
+                        } else {
+                            this.log(`connection aborted in flight`)
+                        }
                     })
                     .catch(e => {
-                        this._connectPromise = undefined;
-                        this.setConnectionState(BusState.Disconnected)
-                        this.errorHandler(CONNECT, e);
+                        if (p == this._connectPromise) {
+                            this._connectPromise = undefined;
+                            this.setConnectionState(BusState.Disconnected)
+                            this.errorHandler(CONNECT, e);
+                        } else {
+                            this.log(`connection error aborted in flight`)
+                        }
                     })
             }
         } else {
             this.log(`connect with existing promise`)
+            console.log(this._connectPromise)
         }
         return this._connectPromise;
     }
@@ -268,21 +284,27 @@ export class JDBus extends JDNode {
 
         if (!this._disconnectPromise) {
             // connection in progress, wait and disconnect when done
-            if (this._connectPromise)
-                this._disconnectPromise = this._connectPromise.then(() => this.disconnectAsync())
-            else {
-                this._disconnectPromise = Promise.resolve();
-                this.setConnectionState(BusState.Disconnecting)
-                this._disconnectPromise = this._disconnectPromise
-                    .then(() => this.options.disconnectAsync ? this.options.disconnectAsync() : Promise.resolve())
-                    .catch(e => this.errorHandler(DISCONNECT, e))
-                    .finally(() => {
-                        this._disconnectPromise = undefined;
-                        this.setConnectionState(BusState.Disconnected);
-                    });
+            if (this._connectPromise) {
+                this.log(`cancelling connection and disconnect`)
+                this._connectPromise = undefined;
             }
+            this.log(`disconnecting`)
+            this._disconnectPromise = Promise.resolve();
+            this.setConnectionState(BusState.Disconnecting)
+            if (this.options.disconnectAsync)
+                this._disconnectPromise = this._disconnectPromise.then(() => this.options.disconnectAsync())
+            this._disconnectPromise = this._disconnectPromise
+                .catch(e => {
+                    this._disconnectPromise = undefined;
+                    this.errorHandler(DISCONNECT, e)
+                })
+                .finally(() => {
+                    this._disconnectPromise = undefined;
+                    this.setConnectionState(BusState.Disconnected);
+                });
         } else {
             this.log(`disconnect with existing promise`)
+            console.log(this._disconnectPromise)
         }
         return this._disconnectPromise;
     }
