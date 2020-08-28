@@ -12,8 +12,6 @@ import Typography from '@material-ui/core/Typography';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
 import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/dom/device';
 import { JDEvent } from '../../../src/dom/event';
@@ -21,7 +19,7 @@ import { JDService } from '../../../src/dom/service';
 import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent, isReading } from '../../../src/dom/spec';
-import { Switch, IconButton } from '@material-ui/core';
+import { Switch } from '@material-ui/core';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
@@ -30,6 +28,7 @@ import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
 import { ellipseJoin } from '../../../src/dom/utils';
+import { Link } from 'gatsby-theme-material-ui';
 
 declare module 'csstype' {
     interface Properties {
@@ -225,6 +224,9 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
         kind={"service"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
+        actions={specification && <Link color="inherit" to={`/services/${specification.shortId}`}>
+            <KindIcon kind="service" />
+        </Link>}
     >
         {registers?.map(register => <RegisterTreeItem
             key={register.id}
