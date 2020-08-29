@@ -15,7 +15,7 @@ import UploadButton from "./UploadButton";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import useGridBreakpoints from "./useGridBreakpoints";
 import ConnectAlert from "./ConnectAlert";
-import FirmwareButton from "./FirmwareButton";
+import FirmwareCard from "./FirmwareCard";
 
 const firmwareRepos = [
     "microsoft/jacdac-stm32x0"
@@ -123,14 +123,6 @@ export default function Flash() {
             }
         }
     }).filter(fw => !!fw.firmware && !!fw.blob && !!fw.device);
-    const handleImportRepo = () => {
-        try {
-            setImporting(true)
-        } finally {
-            setImporting(false)
-        }
-    }
-
     return (
         <Paper className={classes.blobs}>
             <ConnectAlert />
@@ -141,7 +133,7 @@ export default function Flash() {
             <TabPanel value={tab} index={0}>
                 <List>
                     {firmwareRepos.map(firmwareRepo => <ListItem key={`firmwarerepo${firmwareRepo}`}>
-                        <FirmwareButton slug={firmwareRepo} />
+                        <FirmwareCard slug={firmwareRepo} />
                     </ListItem>)}
                     <ListItem key="importbtn">
                         {importing && <LinearProgress variant="indeterminate" />}
