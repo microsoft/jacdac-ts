@@ -51,10 +51,10 @@ export interface Error {
 }
 
 export enum BusState {
-    Connected,
-    Connecting,
-    Disconnecting,
-    Disconnected
+    Connected = "connected",
+    Connecting = "connecting",
+    Disconnecting = "disconnecting",
+    Disconnected = "disconnected"
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000
