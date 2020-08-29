@@ -95,7 +95,7 @@ export default function RandomGenerator(props: { device?: boolean }) {
             </CardContent>
             <CardActions>
                 <Button size="small" onClick={handleCopy}>Copy</Button>
-                <Button size="small" onClick={handleRegenerate}>Regenerate</Button>
+                <Button size="small" color="primary" onClick={handleRegenerate}>Regenerate</Button>
             </CardActions>
         </Card>
     </NoSsr>
