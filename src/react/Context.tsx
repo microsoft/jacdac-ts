@@ -14,6 +14,6 @@ const JACDACContext = createContext<JDContextProps>({
     connectAsync: undefined,
     disconnectAsync: undefined
 });
-JACDACContext.displayName = "jacdac";
+JACDACContext.displayName = "JACDAC";
 
 export default JACDACContext;
