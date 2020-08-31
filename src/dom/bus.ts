@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { JDDevice } from "./device";
-import { SMap, debounceAsync, strcmp } from "./utils";
+import { SMap, debounceAsync, strcmp, arrayConcatMany } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -321,6 +321,13 @@ export class JDBus extends JDNode {
         let r = this._devices.slice();
         if (sc > -1) r = r.filter(s => s.hasService(sc))
         return r;
+    }
+
+    /**
+     * Gets the current list of services from all the known devices on the bus
+     */
+    services(options: { serviceName?: string, serviceClass?: number }) {
+        return arrayConcatMany(this.devices(options).map(d => d.services(options)))
     }
 
     /**
