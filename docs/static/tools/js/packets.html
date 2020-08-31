@@ -48,6 +48,7 @@
     <script src="/dist/jacdac-dom.umd.js"></script>
     <script>
         // webusb
+        jacdac = jacdacDom;
         let jd = jacdac.createUSBBus()
         jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))

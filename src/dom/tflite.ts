@@ -2,7 +2,10 @@ import * as U from "./utils"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import { JDDevice } from "./device"
-import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, CMD_SET_REG, REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER } from "./constants"
+import {
+    PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, CMD_SET_REG,
+    REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER, SRV_SLIDER
+} from "./constants"
 import { JDService } from "./service"
 import { pack } from "./struct"
 import { BaseReg, TFLiteSampleType, TFLiteReg } from "./constants"
@@ -108,6 +111,13 @@ export class TFLiteClient {
     }
 }
 
+export function stableSortServices(services: JDService[]) {
+    services.sort((a, b) =>
+        a.serviceClass - b.serviceClass ||
+        U.strcmp(a.device.deviceId, b.device.deviceId) ||
+        a.service_number - b.service_number)
+}
+
 export async function testTF(bus: JDBus) {
     const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
     if (!tfService) {
@@ -116,18 +126,24 @@ export async function testTF(bus: JDBus) {
     }
     const tf = new TFLiteClient(tfService)
 
-    const acc = bus.services({ serviceClass: SRV_ACCELEROMETER })
+    let acc = bus.services({ serviceClass: SRV_ACCELEROMETER })
     if (acc.length == 0) {
         console.log("no acc service")
         return
     }
+    acc = acc.concat(bus.services({ serviceClass: SRV_SLIDER }))
+    stableSortServices(acc)
     await tf.setInputs({
         samplesInWindow: 50,
         samplingInterval: 20,
-        inputs: acc
+        inputs: acc,
+        freeze: acc.length > 1
     })
     tf.onSample(sample => {
         console.log(sample)
     })
-    await tf.collect(200)
-} 
+    for (let i = 0; i < 3; ++i) {
+        await tf.collect(10)
+        await U.delay(1000)
+    }
+}

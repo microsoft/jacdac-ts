@@ -31,6 +31,7 @@
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
+        <button id="tftest">tftest</button>
     </div>
     <div id="devices">
     </div>
@@ -39,6 +40,7 @@
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
+        jacdac = jacdacDom;
         const jd = jacdac.createUSBBus()
         const speedTest = /speed/.test(document.location.search)
         jd.on(jacdac.DEVICE_CONNECT, dev => {
@@ -109,6 +111,12 @@
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
         disconnect.onclick = () => jd.disconnectAsync()
+
+        const tftest = document.getElementById("tftest");
+        tftest.onclick = () => {
+            scan();
+            setTimeout(() => jacdac.testTF(jd), 1000);
+        }
 
         function updateConnectionState() {
             connect.classList.remove('active');
