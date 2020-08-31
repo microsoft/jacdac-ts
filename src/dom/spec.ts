@@ -3,6 +3,7 @@
 import { NumberFormat } from "./buffer";
 import specdata from "../../jacdac-spec/dist/spec.json";
 import { SMap } from "./utils";
+import { BaseReg } from "./constants";
 
 const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
 let customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
@@ -72,7 +73,7 @@ export function isRegister(pkt: jdspec.PacketInfo) {
 }
 
 export function isReading(pkt: jdspec.PacketInfo) {
-    return pkt.kind == "ro" && pkt.identifierName == "reading"
+    return pkt.kind == "ro" && pkt.identifier == BaseReg.Reading
 }
 
 export function isEvent(pkt: jdspec.PacketInfo) {
