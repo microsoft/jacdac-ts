@@ -36,7 +36,7 @@ export class JDRegister extends JDServiceNode {
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
-        let p = this.service.sendPacketAsync(pkt)
+        let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
         if (autoRefresh)
             p = delay(50).then(() => this.sendGetAsync())
         return p;
