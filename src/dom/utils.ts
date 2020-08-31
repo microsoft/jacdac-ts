@@ -308,6 +308,19 @@ export function bufferConcat(a: Uint8Array, b: Uint8Array) {
     return r
 }
 
+export function bufferConcatMany(bufs: Uint8Array[]) {
+    let sz = 0
+    for (const buf of bufs)
+        sz += buf.length
+    const r = new Uint8Array(sz)
+    sz = 0
+    for (const buf of bufs) {
+        r.set(buf, sz)
+        sz += buf.length
+    }
+    return r
+}
+
 export function jsonCopyFrom<T>(trg: T, src: T) {
     let v = clone(src)
     for (let k of Object.keys(src)) {
