@@ -1,5 +1,5 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, SRV_LIGHT_SPECTRUM_SENSOR, CMD_GET_REG, REGISTER_NODE_NAME } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
