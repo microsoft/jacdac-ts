@@ -16,7 +16,6 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import { SensorReg } from '../../../jacdac-spec/dist/specconstants';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
 import { setStreamingAsync } from '../../../src/dom/sensor';
@@ -27,7 +26,7 @@ import Alert from '@material-ui/lab/Alert';
 import DataSetTable from './DataSetTable';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT } from '../../../src/dom/constants';
+import { EVENT, SensorReg } from '../../../src/dom/constants';
 import { throttle } from '../../../src/dom/utils';
 import DeviceActions from './DeviceActions';
 import useGridBreakpoints from './useGridBreakpoints';
