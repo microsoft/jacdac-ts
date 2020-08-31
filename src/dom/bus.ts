@@ -36,6 +36,7 @@ import {
 import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
+import { JDService } from "./service";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -326,7 +327,7 @@ export class JDBus extends JDNode {
     /**
      * Gets the current list of services from all the known devices on the bus
      */
-    services(options: { serviceName?: string, serviceClass?: number }) {
+    services(options: { serviceName?: string, serviceClass?: number }): JDService[] {
         return arrayConcatMany(this.devices(options).map(d => d.services(options)))
     }
 
