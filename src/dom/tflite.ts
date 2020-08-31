@@ -2,14 +2,15 @@ import * as U from "./utils"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import { JDDevice } from "./device"
-import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, CMD_SET_REG } from "./constants"
+import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, CMD_SET_REG, REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER } from "./constants"
 import { JDService } from "./service"
 import { pack } from "./struct"
 import { BaseReg, TFLiteSampleType, TFLiteReg } from "./constants"
 import { read } from "fs"
 import { warn } from "console"
 import { isReading } from "./spec"
-
+import { EventHandler } from "./eventsource"
+import { bufferToArray, NumberFormat } from "./buffer"
 
 export interface InputConfig {
     samplingInterval: number; // ms
@@ -41,7 +42,9 @@ export interface InputConfig {
     }
 */
 
-export class JDTFLiteClient extends JDService {
+export class TFLiteClient {
+    constructor(private service: JDService) { }
+
     async setInputs(cfg: InputConfig) {
         function error(msg: string) {
             throw new Error("TFLite inputs: " + msg)
@@ -90,10 +93,41 @@ export class JDTFLiteClient extends JDService {
             error("samples won't fit in packet")
 
         inputs.unshift(pack("HHI", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
-        await this.register(TFLiteReg.Inputs).sendSetAsync(U.bufferConcatMany(inputs))
+        await this.service.register(TFLiteReg.Inputs).sendSetAsync(U.bufferConcatMany(inputs))
     }
 
     async collect(numSamples: number) {
-        await this.register(TFLiteReg.StreamSamples).sendSetIntAsync(numSamples)
+        await this.service.register(TFLiteReg.StreamSamples).sendSetIntAsync(numSamples)
+    }
+
+    onSample(handler: (sample: number[]) => void) {
+        const reg = this.service.register(TFLiteReg.CurrentSample)
+        reg.on(REPORT_RECEIVE, () => {
+            handler(bufferToArray(reg.data, NumberFormat.Float32LE))
+        })
     }
 }
+
+export async function testTF(bus: JDBus) {
+    const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
+    if (!tfService) {
+        console.log("no tflite service")
+        return
+    }
+    const tf = new TFLiteClient(tfService)
+
+    const acc = bus.services({ serviceClass: SRV_ACCELEROMETER })
+    if (acc.length == 0) {
+        console.log("no acc service")
+        return
+    }
+    await tf.setInputs({
+        samplesInWindow: 50,
+        samplingInterval: 20,
+        inputs: acc
+    })
+    tf.onSample(sample => {
+        console.log(sample)
+    })
+    await tf.collect(200)
+} 
