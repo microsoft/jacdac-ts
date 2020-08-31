@@ -2,7 +2,7 @@ import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_NUMBER_CRC_ACK
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -17,6 +17,13 @@ export interface PipeInfo {
     pipeType?: string;
 }
 
+interface AckAwaiter {
+    pkt: Packet
+    retriesLeft: number
+    okCb: () => void
+    errCb: () => void
+}
+
 export class JDDevice extends JDNode {
     connected: boolean;
     _lost: boolean;
@@ -27,6 +34,7 @@ export class JDDevice extends JDNode {
     private _services: JDService[]
     private ports: SMap<PipeInfo>;
     private _firmwareInfo: FirmwareInfo;
+    private ackAwaiting: AckAwaiter[]
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
@@ -237,5 +245,57 @@ export class JDDevice extends JDNode {
     reset() {
         return this.service(SRV_CTRL)
             .sendCmdAsync(CtrlCmd.Identify)
+    }
+
+    private initAcks() {
+        this.ackAwaiting = []
+        this.on(PACKET_REPORT, rep => {
+            if (rep.service_number != JD_SERVICE_NUMBER_CRC_ACK)
+                return
+            let numdone = 0
+            for (const aa of this.ackAwaiting) {
+                if (aa.pkt && aa.pkt.crc == rep.service_command) {
+                    aa.pkt = null
+                    numdone++
+                    aa.okCb()
+                }
+            }
+            if (numdone)
+                this.ackAwaiting = this.ackAwaiting.filter(aa => !!aa.pkt)
+        })
+
+        const resend = () => {
+            let numdrop = 0
+            for (const aa of this.ackAwaiting) {
+                if (aa.pkt) {
+                    if (--aa.retriesLeft < 0) {
+                        aa.pkt = null
+                        aa.errCb()
+                        numdrop++
+                    } else {
+                        aa.pkt.sendCmdAsync(this)
+                    }
+                }
+            }
+            if (numdrop)
+                this.ackAwaiting = this.ackAwaiting.filter(aa => !!aa.pkt)
+            setTimeout(resend, Math.random() * 30 + 20)
+        }
+        setTimeout(resend, 10)
+    }
+
+    sendPktWithAck(pkt: Packet) {
+        pkt.requires_ack = true
+        if (!this.ackAwaiting)
+            this.initAcks()
+        return new Promise<void>((resolve, reject) => {
+            this.ackAwaiting.push({
+                pkt,
+                retriesLeft: 4,
+                okCb: resolve,
+                errCb: () => reject(new Error("No ACK for " + pkt.toString()))
+            })
+            pkt.sendCmdAsync(this)
+        })
     }
 }
