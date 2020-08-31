@@ -1,19 +1,16 @@
 import * as U from "./utils"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
-import { JDDevice } from "./device"
 import {
-    PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, CMD_SET_REG,
-    REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER, SRV_SLIDER
+    PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER, SRV_SLIDER
 } from "./constants"
 import { JDService } from "./service"
-import { pack } from "./struct"
-import { BaseReg, TFLiteSampleType, TFLiteReg } from "./constants"
-import { read } from "fs"
-import { warn } from "console"
+import { pack, unpack } from "./struct"
+import { TFLiteSampleType, TFLiteReg } from "./constants"
 import { isReading } from "./spec"
-import { EventHandler } from "./eventsource"
 import { bufferToArray, NumberFormat } from "./buffer"
+import { OutPipe } from "./pipes"
+import { TFLiteCmd } from "../../jacdac-spec/dist/specconstants"
 
 export interface InputConfig {
     samplingInterval: number; // ms
@@ -46,7 +43,9 @@ export interface InputConfig {
 */
 
 export class TFLiteClient {
-    constructor(private service: JDService) { }
+    constructor(private service: JDService) {
+        this.service.registersUseAcks = true
+    }
 
     async setInputs(cfg: InputConfig) {
         function error(msg: string) {
@@ -108,6 +107,22 @@ export class TFLiteClient {
         reg.on(REPORT_RECEIVE, () => {
             handler(bufferToArray(reg.data, NumberFormat.Float32LE))
         })
+    }
+
+    async deployModel(model: Uint8Array) {
+        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(TFLiteCmd.SetModel, "I", [model.length]))
+        const [pipePort] = unpack(resp.data, "H")
+        if (!pipePort)
+            throw new Error("wrong port " + pipePort)
+        const pipe = new OutPipe(this.service.device, pipePort)
+        const chunkSize = 224 // has to be divisible by 8
+        for (let i = 0; i < model.length; i += chunkSize)
+            await pipe.send(model.slice(i, i + chunkSize))
+        try {
+            await pipe.close()
+        } catch {
+            // the device may restart before we manage to close
+        }
     }
 }
 
