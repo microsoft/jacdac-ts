@@ -27,10 +27,11 @@
 </head>
 
 <body>
-    <h1>JACDAC/Devices</h1>
+    <h1>JACDAC/TFLite test</h1>
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
+        <button id="tftest">tftest</button>
     </div>
     <div id="devices">
     </div>
@@ -80,18 +81,6 @@
                 devicesDiv.append(div);
             }
             div.innerText = `${device.toString()} - ${device.deviceId}: ${printServices(device)}`;
-            if (speedTest) {
-                const speedRes = document.createElement("div")
-                const speedBtn = document.createElement("button")
-                speedBtn.innerText = "Speed test"
-                speedBtn.onclick = async () => {
-                    speedRes.innerText = "Testing..."
-                    const res = await jacdac.packetSpeedTest(device)
-                    speedRes.innerText += res.msg
-                }
-                div.appendChild(speedRes)
-                div.appendChild(speedBtn)
-            }
         }
 
         function disconnectDevice(device) {
@@ -111,6 +100,12 @@
         const disconnect = document.getElementById("disconnect");
         disconnect.onclick = () => jd.disconnectAsync()
 
+        const tftest = document.getElementById("tftest");
+        tftest.onclick = () => {
+            scan();
+            setTimeout(() => jacdac.testTF(jd), 1000);
+        }
+
         function updateConnectionState() {
             connect.classList.remove('active');
             disconnect.classList.remove('active');
@@ -124,7 +119,25 @@
         jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
         updateConnectionState()
 
-        
+        async function importTF(file) {
+            const buf = new Uint8Array(await file.arrayBuffer())
+            scan();
+            setTimeout(() => jacdac.testTF(jd, buf), 1000);
+        }
+
+        document.body.ondragover = ev => ev.preventDefault();
+        document.body.ondrop = drop;
+
+        async function drop(ev) {
+            ev.preventDefault();
+            const items = ev.dataTransfer.items;
+            if (!items) return;
+            const item = items[0];
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                importTF(file);
+            }
+        }
     </script>
 </body>
 
