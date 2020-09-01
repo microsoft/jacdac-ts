@@ -6,11 +6,11 @@ import {
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
-import { TFLiteSampleType, TFLiteReg } from "./constants"
+import { TFLiteCmd, TFLiteSampleType, TFLiteReg } from "./constants"
 import { isReading } from "./spec"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
-import { TFLiteCmd } from "../../jacdac-spec/dist/specconstants"
+import { JDRegister } from "./register"
 
 export interface InputConfig {
     samplingInterval: number; // ms
@@ -109,8 +109,15 @@ export class TFLiteClient {
         })
     }
 
+    onResults(handler: (sample: number[]) => void) {
+        const reg = this.service.register(TFLiteReg.Outputs)
+        reg.on(REPORT_RECEIVE, () => {
+            handler(bufferToArray(reg.data, NumberFormat.Float32LE))
+        })
+    }
+
     async deployModel(model: Uint8Array) {
-        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(TFLiteCmd.SetModel, "I", [model.length]))
+        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(TFLiteCmd.SetModel, "I", [model.length]), 3000)
         const [pipePort] = unpack(resp.data, "H")
         if (!pipePort)
             throw new Error("wrong port " + pipePort)
@@ -124,6 +131,56 @@ export class TFLiteClient {
             // the device may restart before we manage to close
         }
     }
+
+    async autoInvoke(everySamples = 1) {
+        await this.service.register(TFLiteReg.AutoInvokeEvery).sendSetIntAsync(everySamples)
+    }
+
+    private async getReg(id: TFLiteReg, f: (v: JDRegister) => any) {
+        const reg = this.service.register(id)
+        await reg.refresh()
+        return f(reg)
+    }
+
+    async modelStats(): Promise<TFModelStats> {
+        const info: any = {
+            "model_size": this.getReg(TFLiteReg.ModelSize, r => r.intValue),
+            "arena_size": this.getReg(TFLiteReg.AllocatedArenaSize, r => r.intValue),
+            "input_shape": this.getReg(TFLiteReg.InputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
+            "output_shape": this.getReg(TFLiteReg.OutputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
+            "last_error": this.getReg(TFLiteReg.LastError, r => U.uint8ArrayToString(r.data)),
+        }
+        for (const id of Object.keys(info)) {
+            info[id] = await info[id]
+        }
+        return info
+    }
+
+    async execStats(): Promise<TFExecStats> {
+        const info: any = {
+            "numSamples": this.getReg(TFLiteReg.NumSamples, r => r.intValue),
+            "sampleSize": this.getReg(TFLiteReg.SampleSize, r => r.intValue),
+            "lastRunTime": this.getReg(TFLiteReg.LastRunTime, r => r.intValue),
+        }
+        for (const id of Object.keys(info)) {
+            info[id] = await info[id]
+        }
+        return info
+    }
+}
+
+export interface TFExecStats {
+    "numSamples": number;
+    "sampleSize": number;
+    "lastRunTime": number;
+}
+
+export interface TFModelStats {
+    "modelSize": number;
+    "arenaSize": number;
+    "inputShape": number[];
+    "outputShape": number[];
+    "lastError": string;
 }
 
 export function stableSortServices(services: JDService[]) {
@@ -133,13 +190,20 @@ export function stableSortServices(services: JDService[]) {
         a.service_number - b.service_number)
 }
 
-export async function testTF(bus: JDBus) {
+
+export async function testTF(bus: JDBus, model: Uint8Array) {
     const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
     if (!tfService) {
         console.log("no tflite service")
         return
     }
     const tf = new TFLiteClient(tfService)
+
+    if (model)
+        await tf.deployModel(model)
+
+    const st = await tf.modelStats()
+    console.log(st)
 
     let acc = bus.services({ serviceClass: SRV_ACCELEROMETER })
     if (acc.length == 0) {
@@ -154,11 +218,28 @@ export async function testTF(bus: JDBus) {
         inputs: acc,
         freeze: acc.length > 1
     })
+
     tf.onSample(sample => {
-        console.log(sample)
+        console.log("SAMPLE", sample)
     })
-    for (let i = 0; i < 3; ++i) {
-        await tf.collect(10)
+
+    const classNames = ['noise', 'punch', 'left', 'right'];
+    tf.onResults(outp => {
+        for (let i = 0; i < outp.length; ++i) {
+            if (outp[i] > 0.7) {
+                console.log(outp[i].toFixed(3) + " " + classNames[i])
+            }
+        }
+        // console.log("OUT", outp)
+    })
+
+    await tf.autoInvoke(8)
+
+    let prev = 0
+    while (true) {
         await U.delay(1000)
+        const st = await tf.execStats()
+        console.log(st.numSamples - prev, st)
+        prev = st.numSamples
     }
 }
