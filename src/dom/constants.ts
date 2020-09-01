@@ -86,23 +86,16 @@ export enum ConsolePriority {
 
 /** known service numbers */
 export const SRV_CTRL = 0;
-export const SRV_LOGGER = 0x12dc1fca;
+
 export const SRV_BATTERY = 0x1d2a2acd;
-export const SRV_ACCELEROMETER = 0x1f140409;
-export const SRV_BUTTON = 0x1473a263;
 export const SRV_TOUCHBUTTON = 0x130cf5be;
 export const SRV_LIGHT_SENSOR = 0x15e7a0ff;
 export const SRV_MICROPHONE = 0x1a5c5866;
-export const SRV_THERMOMETER = 0x1421bac7;
 export const SRV_SWITCH = 0x14218172;
 export const SRV_PIXEL = 0x1768fbbf;
 export const SRV_HAPTIC = 0x116b14a3;
-export const SRV_LIGHT = 0x126f00e0;
 export const SRV_KEYBOARD = 0x1ae4812d;
 export const SRV_MOUSE = 0x14bc97bf;
-export const SRV_GAMEPAD = 0x100527e8;
-export const SRV_MUSIC = 0x1b57b1d7;
-export const SRV_SERVO = 0x12fc9103;
 export const SRV_CONTROLLER = 0x188ae4b8;
 export const SRV_LCD = 0x18d5284c;
 export const SRV_MESSAGE_BUS = 0x115cabf5;
@@ -111,17 +104,7 @@ export const SRV_LIGHT_SPECTRUM_SENSOR = 0x16fa0c0d;
 export const SRV_PROXIMITY = 0x14c1791b;
 export const SRV_TOUCH_BUTTONS = 0x1acb49d5;
 export const SRV_SERVOS = 0x182988d8;
-export const SRV_ROTARY_ENCODER = 0x10fa29c9;
 export const SRV_DNS = 0x117729bd;
-export const SRV_PWM_LIGHT = 0x1fb57453;
-export const SRV_BOOTLOADER = 0x1ffa9948;
-export const SRV_ARCADE_CONTROLS = 0x1deaa06e;
-export const SRV_POWER = 0x1fa4c95a;
-export const SRV_SLIDER = 0x1f274746;
-export const SRV_MOTOR = 0x17004cd8;
-export const SRV_TCP = 0x1b43b70b;
-export const SRV_WIFI = 0x18aae1fa;
-export const SRV_MULTITOUCH = 0x18d55e2b;
 
 export const NEW_LISTENER = 'newListener'
 export const REMOVE_LISTENER = 'removeListener'

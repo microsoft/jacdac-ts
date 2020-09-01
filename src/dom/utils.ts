@@ -308,6 +308,33 @@ export function bufferConcat(a: Uint8Array, b: Uint8Array) {
     return r
 }
 
+export function bufferConcatMany(bufs: Uint8Array[]) {
+    let sz = 0
+    for (const buf of bufs)
+        sz += buf.length
+    const r = new Uint8Array(sz)
+    sz = 0
+    for (const buf of bufs) {
+        r.set(buf, sz)
+        sz += buf.length
+    }
+    return r
+}
+
+export function arrayConcatMany<T>(arrs: T[][]) {
+    let sz = 0
+    for (const buf of arrs)
+        sz += buf.length
+    const r: T[] = new Array(sz)
+    sz = 0
+    for (const arr of arrs) {
+        for (let i = 0; i < arr.length; ++i)
+            r[i + sz] = arr[i]
+        sz += arr.length
+    }
+    return r
+}
+
 export function jsonCopyFrom<T>(trg: T, src: T) {
     let v = clone(src)
     for (let k of Object.keys(src)) {
@@ -341,6 +368,29 @@ export function throttle(handler: () => void, delay: number): () => void {
         handler();
         setTimeout(() => enableCall = true, delay);
     }
+}
+
+export function withTimeout<T>(timeout: number, p: Promise<T>) {
+    return new Promise<T>((resolve, reject) => {
+        let done = false
+        setTimeout(() => {
+            if (!done) {
+                done = true
+                reject(new Error("Timeout (" + timeout + "ms)"))
+            }
+        }, timeout)
+        p.then(v => {
+            if (!done) {
+                done = true
+                resolve(v)
+            }
+        }, e => {
+            if (!done) {
+                done = true
+                reject(e)
+            }
+        })
+    })
 }
 
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {

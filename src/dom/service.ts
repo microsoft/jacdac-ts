@@ -2,15 +2,17 @@ import { JDDevice } from "./device";
 import { Packet } from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NAME } from "./constants";
+import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NAME, REPORT_RECEIVE } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading, isEvent } from "./spec";
 import { JDEvent } from "./event";
+import { delay } from "./utils";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
     private _events: JDEvent[];
     private _specification: jdspec.ServiceSpec = null;
+    public registersUseAcks = false;
 
     constructor(
         public readonly device: JDDevice,
@@ -95,7 +97,10 @@ export class JDService extends JDNode {
         if (ack !== undefined)
             pkt.requires_ack = !!ack
         this.emit(PACKET_SEND, pkt)
-        return pkt.sendCmdAsync(this.device);
+        if (pkt.requires_ack)
+            return this.device.sendPktWithAck(pkt)
+        else
+            return pkt.sendCmdAsync(this.device);
     }
 
     sendCmdAsync(cmd: number, ack?: boolean) {
@@ -103,19 +108,42 @@ export class JDService extends JDNode {
         return this.sendPacketAsync(pkt, ack)
     }
 
+    sendCmdAwaitResponseAsync(pkt: Packet, timeout = 500) {
+        return new Promise<Packet>((resolve, reject) => {
+            const handleRes = (resp: Packet) => {
+                if (resp.service_command == pkt.service_command) {
+                    this.off(REPORT_RECEIVE, handleRes)
+                    if (resolve)
+                        resolve(resp)
+                    resolve = null
+                }
+            }
+            delay(timeout).then(() => {
+                if (!resolve) return
+                resolve = null
+                this.off(REPORT_RECEIVE, handleRes)
+                reject(new Error(`timeout (${timeout}ms) waiting for response to ${pkt}`))
+            })
+            this.sendPacketAsync(pkt)
+                .then(() => this.on(REPORT_RECEIVE, handleRes))
+        })
+    }
+
     processPacket(pkt: Packet) {
         this.emit(PACKET_RECEIVE, pkt)
-        if (pkt.is_report && pkt.service_command & CMD_GET_REG) {
-            const address = pkt.service_command & CMD_REG_MASK
-            const reg = this.register({ address })
-            if (reg)
-                reg.processReport(pkt);
-        }
-        else if (pkt.is_event) {
-            const address = pkt.intData
-            const ev = this.event(address)
-            if (ev)
-                ev.processEvent(pkt);
+        if (pkt.is_report) {
+            this.emit(REPORT_RECEIVE, pkt)
+            if (pkt.service_command & CMD_GET_REG) {
+                const address = pkt.service_command & CMD_REG_MASK
+                const reg = this.register({ address })
+                if (reg)
+                    reg.processReport(pkt);
+            } else if (pkt.is_event) {
+                const address = pkt.intData
+                const ev = this.event(address)
+                if (ev)
+                    ev.processEvent(pkt);
+            }
         }
     }
 }

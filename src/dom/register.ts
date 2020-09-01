@@ -1,9 +1,9 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, SRV_LIGHT_SPECTRUM_SENSOR, CMD_GET_REG, REGISTER_NODE_NAME } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay, withTimeout } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
@@ -36,7 +36,7 @@ export class JDRegister extends JDServiceNode {
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
-        let p = this.service.sendPacketAsync(pkt)
+        let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
         if (autoRefresh)
             p = delay(50).then(() => this.sendGetAsync())
         return p;
@@ -110,6 +110,13 @@ export class JDRegister extends JDServiceNode {
                 && decodePacketData(this._lastReportPkt);
         }
         return this._lastDecodedPkt;
+    }
+
+    refresh() {
+        return withTimeout(100, new Promise<void>((resolve, reject) => {
+            this.once(REPORT_RECEIVE, resolve)
+            this.sendGetAsync().then(() => { }, reject)
+        }))
     }
 
     processReport(pkt: Packet) {

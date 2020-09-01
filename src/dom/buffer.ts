@@ -62,7 +62,15 @@ function fmtInfo(fmt: NumberFormat) {
         swap = true
         size /= 10
     }
-    let isFloat = fmt >= NumberFormat.Float32LE
+    let isFloat = false
+    switch (fmt) {
+        case NumberFormat.Float32LE:
+        case NumberFormat.Float32BE:
+        case NumberFormat.Float64LE:
+        case NumberFormat.Float64BE:
+            isFloat = true
+            break
+    }
     return { size, signed, swap, isFloat }
 }
 
@@ -120,6 +128,19 @@ export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: num
         case NumberFormat.Int64LE:
             return read32(buf, offset) + (read32(buf, offset + 4) >> 0) * 0x100000000
         default:
+            const inf = fmtInfo(fmt)
+            if (inf.isFloat) {
+                let arr = new Uint8Array(inf.size)
+                for (let i = 0; i < inf.size; ++i) {
+                    arr[i] = buf[offset + i]
+                }
+                if (inf.swap)
+                    arr.reverse()
+                if (inf.size == 4)
+                    return new Float32Array(arr.buffer)[0]
+                else
+                    return new Float64Array(arr.buffer)[0]
+            }
             throw new Error("unsupported fmt:" + fmt)
     }
 }
