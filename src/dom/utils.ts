@@ -370,6 +370,29 @@ export function throttle(handler: () => void, delay: number): () => void {
     }
 }
 
+export function withTimeout<T>(timeout: number, p: Promise<T>) {
+    return new Promise<T>((resolve, reject) => {
+        let done = false
+        setTimeout(() => {
+            if (!done) {
+                done = true
+                reject(new Error("Timeout (" + timeout + "ms)"))
+            }
+        }, timeout)
+        p.then(v => {
+            if (!done) {
+                done = true
+                resolve(v)
+            }
+        }, e => {
+            if (!done) {
+                done = true
+                reject(e)
+            }
+        })
+    })
+}
+
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
     let timeOutId: any;
     return function () {
