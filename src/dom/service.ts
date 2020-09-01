@@ -131,17 +131,19 @@ export class JDService extends JDNode {
 
     processPacket(pkt: Packet) {
         this.emit(PACKET_RECEIVE, pkt)
-        if (pkt.is_report && pkt.service_command & CMD_GET_REG) {
-            const address = pkt.service_command & CMD_REG_MASK
-            const reg = this.register({ address })
-            if (reg)
-                reg.processReport(pkt);
-        }
-        else if (pkt.is_event) {
-            const address = pkt.intData
-            const ev = this.event(address)
-            if (ev)
-                ev.processEvent(pkt);
+        if (pkt.is_report) {
+            this.emit(REPORT_RECEIVE, pkt)
+            if (pkt.service_command & CMD_GET_REG) {
+                const address = pkt.service_command & CMD_REG_MASK
+                const reg = this.register({ address })
+                if (reg)
+                    reg.processReport(pkt);
+            } else if (pkt.is_event) {
+                const address = pkt.intData
+                const ev = this.event(address)
+                if (ev)
+                    ev.processEvent(pkt);
+            }
         }
     }
 }
