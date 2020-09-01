@@ -3,7 +3,7 @@ import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGIST
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay, withTimeout } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
@@ -110,6 +110,13 @@ export class JDRegister extends JDServiceNode {
                 && decodePacketData(this._lastReportPkt);
         }
         return this._lastDecodedPkt;
+    }
+
+    refresh() {
+        return withTimeout(100, new Promise<void>((resolve, reject) => {
+            this.once(REPORT_RECEIVE, resolve)
+            this.sendGetAsync().then(() => { }, reject)
+        }))
     }
 
     processReport(pkt: Packet) {
