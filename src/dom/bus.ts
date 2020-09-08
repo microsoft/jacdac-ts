@@ -85,8 +85,10 @@ export class JDBus extends JDNode {
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
         const debouncedScanFirmwares = debounceAsync(async () => {
-            this.log(`scanning firmwares`)
-            await scanFirmwares(this);
+            if (this.connected) {
+                this.log(`scanning firmwares`)
+                await scanFirmwares(this);
+            }
         }, SCAN_FIRMWARE_INTERVAL)
         this.on(DEVICE_ANNOUNCE, debouncedScanFirmwares)
     }

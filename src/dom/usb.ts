@@ -1,12 +1,17 @@
 import { Transport, Proto } from "./hf2";
-import { JDBus } from "./bus";
+import { JDBus, BusState } from "./bus";
 import { Packet } from "./packet";
+import { Observable } from "./observable";
+import { EventTargetObservable } from "./eventtargetobservable";
+import { delay } from "./utils";
 
 const HF2 = "HF2"
 
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>;
-    requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
+    requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>,
+    connectObservable?: Observable<USBConnectionEvent>;
+    disconnectObservable?: Observable<USBConnectionEvent>;
 }
 
 export function isWebUSBSupported(): boolean {
@@ -16,12 +21,16 @@ export function isWebUSBSupported(): boolean {
 }
 
 export function createUSBBus(options?: USBOptions): JDBus {
+    console.log(`creating new JACDAC bus`)
     if (!options) {
-        if (isWebUSBSupported())
+        if (isWebUSBSupported()) {
             options = {
                 getDevices: () => navigator.usb.getDevices(),
-                requestDevice: (filters) => navigator.usb.requestDevice(filters)
+                requestDevice: (filters) => navigator.usb.requestDevice(filters),
+                connectObservable: new EventTargetObservable(navigator.usb, "connect"),
+                disconnectObservable: new EventTargetObservable(navigator.usb, "disconnect")
             }
+        }
     }
     // dummy impl
     if (!options) {
@@ -70,6 +79,15 @@ export function createUSBBus(options?: USBOptions): JDBus {
             return h ? h.disconnectAsync() : Promise.resolve();
         }
     });
-
+    // auto connect
+    console.log(`usb device observed`)
+    options?.connectObservable?.subscribe({
+        next: ev => {
+            console.log(`usb device event: connect, `, bus.connectionState, ev)
+            if (bus.connectionState === BusState.Disconnected)
+                delay(500)
+                    .then(() => bus.connectAsync(true))
+        }
+    })
     return bus;
 }
