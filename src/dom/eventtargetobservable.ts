@@ -5,7 +5,7 @@ export class EventTargetObservable<TEvent> implements Observable<TEvent> {
     }
 
     subscribe(observer: Observer<TEvent>): { unsubscribe: () => void } {
-        const handler: EventListener = (ev: Event) => observer.next(<TEvent><any>ev)
+        const handler: EventListener = (ev: Event) => !!observer.next && observer.next(<TEvent><any>ev)
         this.element.addEventListener(this.eventName, handler, false)
         return {
             unsubscribe: () => this.element.removeEventListener(this.eventName, handler)
