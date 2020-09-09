@@ -84,13 +84,6 @@ export class JDBus extends JDNode {
         this.options = this.options || {};
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
-        const debouncedScanFirmwares = debounceAsync(async () => {
-            if (this.connected) {
-                this.log(`scanning firmwares`)
-                await scanFirmwares(this);
-            }
-        }, SCAN_FIRMWARE_INTERVAL)
-        this.on(DEVICE_ANNOUNCE, debouncedScanFirmwares)
     }
 
     /**
@@ -353,6 +346,27 @@ export class JDBus extends JDNode {
                 this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
         }
         return d
+    }
+
+    private _debouncedScanFirmwares: () => void;
+    setBackgroundFirmwareScans(enabled: boolean) {
+        if (enabled) {
+            if (!this._debouncedScanFirmwares) {
+                this.log(`enabling background firmware scans`)
+                this._debouncedScanFirmwares = debounceAsync(async () => {
+                    if (this.connected) {
+                        this.log(`scanning firmwares`)
+                        await scanFirmwares(this);
+                    }
+                }, SCAN_FIRMWARE_INTERVAL)
+                this.on(DEVICE_ANNOUNCE, this._debouncedScanFirmwares)
+            }
+        } else {
+            this.log(`disabling background firmware scans`)
+            const d = this._debouncedScanFirmwares;
+            this._debouncedScanFirmwares = undefined;
+            this.off(DEVICE_ANNOUNCE, d)
+        }
     }
 
     private gcDevices() {
