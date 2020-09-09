@@ -16,7 +16,6 @@ export class Example {
 export class DataSet {
     readonly id = Math.random().toString()
     readonly rows: Example[];
-    readonly labels: string[];
     maxRows = -1;
 
     // maintain computed min/max to avoid recomputation
@@ -29,7 +28,6 @@ export class DataSet {
         public readonly headers: string[],
         public readonly units: string[]) {
         this.rows = [];
-        this.labels = [];
     }
 
     get startTimestamp() {
