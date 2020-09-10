@@ -8,7 +8,7 @@ import { CircularProgress, Hidden } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
 import KindIcon from "../components/KindIcon";
 
-function ConnectButton(props: { full?: boolean, className?: string }) {
+export default function ConnectButton(props: { full?: boolean, className?: string }) {
     const { full, className } = props
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JACDACContext)
     const [count, setCount] = useState(bus.devices().length)
@@ -28,5 +28,3 @@ function ConnectButton(props: { full?: boolean, className?: string }) {
         {inProgress && <CircularProgress />}
     </Button>
 }
-
-export default ConnectButton;

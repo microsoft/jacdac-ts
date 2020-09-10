@@ -1,8 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Paper, Grid, ButtonGroup, Button, ListItem, List, ListItemText, ListItemSecondaryAction, TextField, InputAdornment, createStyles, FormControl, ListSubheader, Switch, Card, CardActions, CardHeader, CardContent, Stepper, Step, StepLabel, StepContent, StepButton, FormGroup, FormControlLabel, Chip } from '@material-ui/core';
-import { JDRegister } from '../../../src/dom/register';
+import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions, CardHeader, CardContent, FormGroup, FormControlLabel } from '@material-ui/core';
 import { JDField } from '../../../src/dom/field';
 import JACDACContext from '../../../src/react/Context';
 import { IconButton } from 'gatsby-theme-material-ui';
@@ -18,12 +17,13 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
+import ConnectButton from '../jacdac/ConnectButton';
 import { setStreamingAsync } from '../../../src/dom/sensor';
+import { BusState } from '../../../src/dom/bus'
 import { DataSet } from './DataSet';
 import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
-import DataSetTable from './DataSetTable';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT, SensorReg } from '../../../src/dom/constants';
@@ -103,7 +103,7 @@ function createDataSet(fields: JDField[], name: string, live: boolean) {
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus } = useContext(JACDACContext)
+    const { bus , connectionState } = useContext(JACDACContext)
     const classes = useStyles();
     const gridBreakpoints = useGridBreakpoints()
     const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
@@ -237,6 +237,7 @@ export default function Collector(props: {}) {
 
     return (<div className={classes.root}>
         <div key="sensors">
+            {connectionState == BusState.Disconnected && <p><ConnectButton /></p>}
             <h3>Choose sensors</h3>
             {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
             {!!readingRegisters.length && <Grid container spacing={2}>
@@ -315,7 +316,7 @@ export default function Collector(props: {}) {
         {!!tables.length && <div key="recordings">
             <h3>Recordings</h3>
             <Grid container spacing={2}>
-                {tables.map((table, index) =>
+                {tables.map((table) =>
                     <Grid item {...gridBreakpoints} key={`result` + table.id}>
                         <Card>
                             <CardHeader
