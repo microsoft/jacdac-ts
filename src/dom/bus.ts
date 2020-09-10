@@ -208,6 +208,10 @@ export class JDBus extends JDNode {
         return this._connectionState == BusState.Connected
     }
 
+    get disconnected() {
+        return this._connectionState == BusState.Disconnected
+    }
+
     get firmwareBlobs() {
         return this._firmwareBlobs
     }
