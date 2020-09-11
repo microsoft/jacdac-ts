@@ -309,7 +309,6 @@ export default function Collector(props: {}) {
                     <Grid item {...gridBreakpoints} key={`result` + table.id}>
                         <Card>
                             <CardHeader
-                                title={table.name}
                                 subheader={`${table.rows.length} rows, ${prettyDuration(table.duration)}`} />
                             <CardContent>
                                 <div>{table.headers.join(', ')}</div>

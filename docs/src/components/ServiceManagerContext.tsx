@@ -34,11 +34,17 @@ export interface IAckMessage extends IMessage {
     ackId?: string;
     data: {
         status: "success" | "error";
-        error: any;
+        data?: any;
+        error?: any;
     }
 }
 export interface IStatusMessage extends IMessage {
-    type: 'ready'
+    type: 'status',
+    data: {
+        status: 'ready' | 'error',
+        data?: any;
+        error?: any;
+    }
 }
 export interface ISaveTextMessage extends IMessage {
     type: 'save-text';
@@ -56,11 +62,17 @@ class IFrameTransport implements ITransport {
     }
 
     postReady() {
-        this.postMessage({ type: 'ready' } as IStatusMessage)
+        this.postMessage({
+            type: 'status',
+            data: {
+                status: 'ready'
+            }
+        } as IStatusMessage)
     }
 
     postMessage(msg: IMessage): Promise<void> {
         msg.id = "jd:" + Math.random()
+        msg.source = "jacdac"
         window.parent.postMessage(msg, this.targetOrigin)
         return Promise.resolve();
     }
@@ -71,7 +83,6 @@ class HostedFileStorage implements IFileStorage {
     }
     saveText(name: string, data: string): Promise<void> {
         return this.transport.postMessage({
-            source: 'jacdac',
             type: 'save-text',
             data: { name, data }
         } as ISaveTextMessage)

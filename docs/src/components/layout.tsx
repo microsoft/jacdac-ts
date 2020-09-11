@@ -135,8 +135,8 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
   return (
     <ThemeProvider theme={theme}>
       <MDXProvider components={mdxComponents}>
-        <ServiceManagerProvider>
-          <JACDACProvider>
+        <JACDACProvider>
+          <ServiceManagerProvider>
             <PacketsProvider>
               <DbProvider>
                 <DrawerProvider>
@@ -144,8 +144,8 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
                 </DrawerProvider>
               </DbProvider>
             </PacketsProvider>
-          </JACDACProvider>
-        </ServiceManagerProvider>
+          </ServiceManagerProvider>
+        </JACDACProvider>
       </MDXProvider>
     </ThemeProvider>
   )
