@@ -48,6 +48,7 @@ import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import CodeDemo from "./CodeBlock";
+import { ServiceManagerProvider } from "./ServiceManagerContext";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
@@ -134,15 +135,17 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
   return (
     <ThemeProvider theme={theme}>
       <MDXProvider components={mdxComponents}>
-        <JACDACProvider>
-          <PacketsProvider>
-            <DbProvider>
-              <DrawerProvider>
-                <LayoutWithContext {...props} />
-              </DrawerProvider>
-            </DbProvider>
-          </PacketsProvider>
-        </JACDACProvider>
+        <ServiceManagerProvider>
+          <JACDACProvider>
+            <PacketsProvider>
+              <DbProvider>
+                <DrawerProvider>
+                  <LayoutWithContext {...props} />
+                </DrawerProvider>
+              </DbProvider>
+            </PacketsProvider>
+          </JACDACProvider>
+        </ServiceManagerProvider>
       </MDXProvider>
     </ThemeProvider>
   )
