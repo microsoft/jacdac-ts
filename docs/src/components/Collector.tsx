@@ -30,6 +30,7 @@ import { EVENT, SensorReg } from '../../../src/dom/constants';
 import { throttle } from '../../../src/dom/utils';
 import DeviceActions from './DeviceActions';
 import useGridBreakpoints from './useGridBreakpoints';
+import ServiceManagerContext from './ServiceManagerContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -61,21 +62,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }));
 
-function downloadUrl(url: string, name: string) {
-    const a = document.createElement("a") as HTMLAnchorElement;
-    document.body.appendChild(a);
-    a.style.display = "none";
-    a.href = url;
-    a.download = name;
-    a.click();
-}
-
-function downloadCSV(table: DataSet, sep: string) {
-    const csv = table.toCSV(sep)
-    const url = `data:text/plain;charset=utf-8,${encodeURI(csv)}`
-    downloadUrl(url, `${table.name}.csv`)
-}
-
 const palette = [
     "#003f5c",
     "#ffa600",
@@ -103,7 +89,8 @@ function createDataSet(fields: JDField[], name: string, live: boolean) {
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus , connectionState } = useContext(JACDACContext)
+    const { bus, connectionState } = useContext(JACDACContext)
+    const { fileStorage } = useContext(ServiceManagerContext)
     const classes = useStyles();
     const gridBreakpoints = useGridBreakpoints()
     const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
@@ -187,7 +174,9 @@ export default function Collector(props: {}) {
         setPrefix(event.target.value.trim())
     }
     const handleDownload = (table: DataSet) => () => {
-        downloadCSV(table, ",")
+        const sep = ','
+        const csv = table.toCSV(sep)
+        fileStorage.saveText(`${table.name}.csv`, csv)
     }
     const handleDeleteTable = (table: DataSet) => () => {
         const i = tables.indexOf(table)
