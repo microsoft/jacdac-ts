@@ -315,9 +315,13 @@ export default function Collector(props: {}) {
                                 <Trend dataSet={table} height={8} mini={true} />
                             </CardContent>
                             <CardActions>
-                                <IconButton color="primary" onClick={handleDownload(table)}>
-                                    <SaveAltIcon />
-                                </IconButton>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<SaveAltIcon />}
+                                    onClick={handleDownload(table)}>
+                                    Save
+                                </Button>
                                 <IconButton onClick={handleDeleteTable(table)}>
                                     <DeleteIcon />
                                 </IconButton>
