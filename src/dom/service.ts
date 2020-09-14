@@ -79,7 +79,7 @@ export class JDService extends JDNode {
         if (!register) {
             const spec = this.specification;
             if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === a)) {
-                this.log(`warn`, `attempting to access register 0x${a.toString(16)}`)
+                this.log(`debug`, `attempting to access register 0x${a.toString(16)}`)
                 return undefined;
             }
             this._registers.push(register = new JDRegister(this, a));

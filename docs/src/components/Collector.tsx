@@ -19,12 +19,14 @@ import Trend from './Trend';
 import Alert from '@material-ui/lab/Alert';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT } from '../../../src/dom/constants';
+import { EVENT, SRV_TFLITE, TFLiteReg } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
-import useGridBreakpoints from './useGridBreakpoints';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
+import DeviceCardHeader from './DeviceCardHeader';
+import { JDDevice } from '../../../src/dom/device';
+import { TFLiteClient } from '../../../src/dom/tflite';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -82,6 +84,7 @@ export default function Collector(props: {}) {
     const { bus, connectionState } = useContext(JACDACContext)
     const classes = useStyles();
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
+    const [tfliteDeviceId, setTfliteDeviceId] = useState<string>("")
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<FieldDataSet[]>([])
     const [, setRecordingLength] = useState(0)
@@ -98,12 +101,18 @@ export default function Collector(props: {}) {
         ).filter(reg => !!reg))
     const recordingRegisters = readingRegisters
         .filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
+    const tfliteDevices = useChange(bus, bus => bus.devices({ serviceClass: SRV_TFLITE }))
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
     const errorSamplingDuration = isNaN(samplingCount)
     const error = errorSamplingDuration || errorSamplingIntervalDelay
     const triggerEvent = bus.node(triggerEventId) as JDEvent
+    const tfliteMode = !!tfliteDevices.length
+    const startEnabled = !!recordingRegisters?.length
+        && (!tfliteMode || tfliteDeviceId)
+    const tfliteDevice = tfliteDevices.find(dev => dev.id == tfliteDeviceId)
+
     useEffect(() => {
         //console.log(`trigger event`, triggerEventId, triggerEvent)
         const un = triggerEvent?.subscribe(EVENT, () => {
@@ -146,9 +155,21 @@ export default function Collector(props: {}) {
             setRecording(false)
         }
     }
-    const startRecording = () => {
+    const startRecording = async () => {
         if (!recording && recordingRegisters.length) {
             setLiveDataSet(newDataSet(registerIdsChecked, false))
+            const tfliteDevice = tfliteMode
+                && tfliteDevices.find(dev => dev.id == tfliteDeviceId)
+            if (tfliteDevice) {
+                const client = new TFLiteClient(tfliteDevice.services({ serviceClass: SRV_TFLITE })[0])
+                await client.setInputs({
+                    samplingInterval: samplingIntervalDelayi,
+                    samplesInWindow: 10,
+                    freeze: false,
+                    inputs: recordingRegisters.map(reg => reg.service)
+                })
+                await client.collect(samplingCount)
+            }
             setRecording(true)
         }
     }
@@ -175,6 +196,10 @@ export default function Collector(props: {}) {
             setTables([...tables])
         }
     }
+    const handleTfliteChecked = (dev: JDDevice) => () => {
+        const id = dev?.id == tfliteDeviceId ? '' : dev?.id
+        setTfliteDeviceId(id);
+    }
     const updateLiveData = () => {
         setLiveDataSet(liveDataSet);
         setRecordingLength(liveDataSet.rows.length)
@@ -183,9 +208,10 @@ export default function Collector(props: {}) {
     const throttleUpdate = throttle(() => updateLiveData(), 30)
     // data collection
     // interval add data entry
-    const addRow = () => {
+    const addRow = (values?: number[]) => {
         if (!liveDataSet) return;
-        liveDataSet.addRow()
+        console.log(values)
+        liveDataSet.addRow(values)
         if (recording && liveDataSet.length >= samplingCount) {
             // stop recording
             updateLiveData()
@@ -201,10 +227,18 @@ export default function Collector(props: {}) {
     }, [samplingIntervalDelayi, registerIdsChecked, errorSamplingIntervalDelay])
     // collecting
     useEffect(() => {
-        if (error) return undefined;
+        if (error || (tfliteDevice && recording)) return undefined;
         const interval = setInterval(() => addRow(), samplingIntervalDelayi);
         return () => clearInterval(interval);
-    }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked]);
+    }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked, tfliteDevice]);
+    useEffect(() => {
+        const tfliteService = (tfliteDevice?.services({ serviceClass: SRV_TFLITE }) || [])[0]
+        if (tfliteService) {
+            const client = new TFLiteClient(tfliteService)
+            return client.subscribeSample(values => addRow(values))
+        }
+        return () => { }
+    }, [recording, liveDataSet, registerIdsChecked, tfliteDevice])
 
     return (<div className={classes.root}>
         <div key="sensors">
@@ -219,6 +253,20 @@ export default function Collector(props: {}) {
                 handleRegisterCheck={handleRegisterCheck}
             />}
         </div>
+        {!!tfliteDevices.length && <div key="tflite">
+            <h3>Choose TensorFlow Lite Device</h3>
+            <p>The recorded data will be formatted for machine learning.</p>
+            <Grid>
+                {tfliteDevices.map(tfliteDevice => <Grid key={'tflite' + tfliteDevice.id} item xs={4}>
+                    <Card>
+                        <DeviceCardHeader device={tfliteDevice} />
+                        <CardActions>
+                            <Switch checked={tfliteDeviceId == tfliteDevice.id} onChange={handleTfliteChecked(tfliteDevice)} />
+                        </CardActions>
+                    </Card>
+                </Grid>)}
+            </Grid>
+        </div>}
         <div key="record">
             <h3>Record data</h3>
             <div className={classes.buttons}>
@@ -229,7 +277,7 @@ export default function Collector(props: {}) {
                     title="start/stop recording"
                     onClick={toggleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
-                    disabled={!recordingRegisters?.length}
+                    disabled={!startEnabled}
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
             <div className={classes.row}>

@@ -2,7 +2,11 @@ import * as U from "./utils"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import {
-    PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER, SRV_SLIDER
+    JD_SERIAL_MAX_PAYLOAD_SIZE,
+    REPORT_RECEIVE,
+    SRV_TFLITE,
+    SRV_ACCELEROMETER,
+    SRV_SLIDER
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
@@ -95,23 +99,24 @@ export class TFLiteClient {
             error("samples won't fit in packet")
 
         inputs.unshift(pack("HHI", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
-        await this.service.register(TFLiteReg.Inputs).sendSetAsync(U.bufferConcatMany(inputs))
+        await this.service.register(TFLiteReg.Inputs)
+            .sendSetAsync(U.bufferConcatMany(inputs))
     }
 
     async collect(numSamples: number) {
-        await this.service.register(TFLiteReg.StreamSamples).sendSetIntAsync(numSamples)
+        await this.service.register(TFLiteReg.StreamSamples)
+            .sendSetIntAsync(numSamples)
     }
 
-    onSample(handler: (sample: number[]) => void) {
+    subscribeSample(handler: (sample: number[]) => void): () => void {
         const reg = this.service.register(TFLiteReg.CurrentSample)
-        reg.on(REPORT_RECEIVE, () => {
-            handler(bufferToArray(reg.data, NumberFormat.Float32LE))
-        })
+        return reg.subscribe(REPORT_RECEIVE,
+            () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
     }
 
-    onResults(handler: (sample: number[]) => void) {
+    subscribeResults(handler: (sample: number[]) => void): () => void {
         const reg = this.service.register(TFLiteReg.Outputs)
-        reg.on(REPORT_RECEIVE, () => {
+        return reg.subscribe(REPORT_RECEIVE, () => {
             handler(bufferToArray(reg.data, NumberFormat.Float32LE))
         })
     }
@@ -191,6 +196,7 @@ export function stableSortServices(services: JDService[]) {
 }
 
 
+/*
 export async function testTF(bus: JDBus, model: Uint8Array) {
     const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
     if (!tfService) {
@@ -219,12 +225,12 @@ export async function testTF(bus: JDBus, model: Uint8Array) {
         freeze: acc.length > 1
     })
 
-    tf.onSample(sample => {
+    tf.subscribeSample(sample => {
         console.log("SAMPLE", sample)
     })
 
     const classNames = ['noise', 'punch', 'left', 'right'];
-    tf.onResults(outp => {
+    tf.subscribeResults(outp => {
         for (let i = 0; i < outp.length; ++i) {
             if (outp[i] > 0.7) {
                 console.log(outp[i].toFixed(3) + " " + classNames[i])
@@ -243,3 +249,4 @@ export async function testTF(bus: JDBus, model: Uint8Array) {
         prev = st.numSamples
     }
 }
+*/
