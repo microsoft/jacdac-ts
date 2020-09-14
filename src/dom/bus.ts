@@ -64,11 +64,11 @@ const SCAN_FIRMWARE_INTERVAL = 30000
 
 function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
     switch (level) {
-        case 'error': console.error(message, optionalArgs || "");
-        case 'warn': console.warn(message, optionalArgs || "");
-        case 'info': console.info(message, optionalArgs || "");
-        case 'debug': console.debug(message, optionalArgs || "");
-        default: console.log(message, optionalArgs || "")
+        case 'error': console.error(message, optionalArgs || ""); break;
+        case 'warn': console.warn(message, optionalArgs || ""); break;
+        case 'info': console.info(message, optionalArgs || ""); break;
+        case 'debug': console.debug(message, optionalArgs || ""); break;
+        default: console.log(message, optionalArgs || ""); break;
     }
 }
 
