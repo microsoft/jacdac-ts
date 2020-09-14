@@ -9,8 +9,6 @@ import { IconButton } from 'gatsby-theme-material-ui';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import StopIcon from '@material-ui/icons/Stop';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import useChange from '../jacdac/useChange';
 import ConnectButton from '../jacdac/ConnectButton';
 import { isSensor, setStreamingAsync } from '../../../src/dom/sensor';
@@ -23,10 +21,10 @@ import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
-import DeviceActions from './DeviceActions';
 import useGridBreakpoints from './useGridBreakpoints';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
+import ReadingFieldGrid from './ReadingFieldGrid';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -127,7 +125,7 @@ export default function Collector(props: {}) {
             `${prefix || "data"}${tables.length}`,
             live)
         : undefined
-    const handleCheck = (reg: JDRegister) => () => {
+    const handleRegisterCheck = (reg: JDRegister) => {
         const i = registerIdsChecked.indexOf(reg.id)
         if (i > -1) {
             registerIdsChecked.splice(i, 1)
@@ -214,29 +212,13 @@ export default function Collector(props: {}) {
             {connectionState == BusState.Disconnected && <p><ConnectButton /></p>}
             <h3>Choose sensors</h3>
             {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
-            {!!readingRegisters.length && <Grid container spacing={2}>
-                {readingRegisters.map(register => {
-                    const registerChecked = registerIdsChecked.indexOf(register.id) > -1;
-                    return <Grid item {...gridBreakpoints} key={'source' + register.id}>
-                        <Card>
-                            <CardHeader subheader={register.service.name}
-                                title={`${register.service.device.name}/${register.name}`}
-                                action={<DeviceActions device={register.service.device} reset={true} />} />
-                            <CardContent>
-                                {register.fields.map((field) => <span key={field.id}>
-                                    <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({
-                                        color: registerChecked ? liveDataSet.colorOf(field) : "#ccc"
-                                    })} />
-                                    {field.name}
-                                </span>)}
-                            </CardContent>
-                            <CardActions>
-                                <Switch disabled={recording} onChange={handleCheck(register)} checked={registerChecked} />
-                            </CardActions>
-                        </Card>
-                    </Grid>;
-                })}
-            </Grid>}
+            {!!readingRegisters.length && <ReadingFieldGrid 
+                readingRegisters={readingRegisters} 
+                registerIdsChecked={registerIdsChecked} 
+                recording={recording} 
+                liveDataSet={liveDataSet}
+                handleRegisterCheck={handleRegisterCheck}
+                />}
         </div>
         <div key="record">
             <h3>Record data</h3>
