@@ -1,3 +1,6 @@
+import { JDBus } from "../../../src/dom/bus";
+import { JDField } from "../../../src/dom/field";
+
 export class Example {
     label: string;
     constructor(
@@ -13,9 +16,11 @@ export class Example {
     }
 }
 
-export class DataSet {
+export default class FieldDataSet {
     readonly id = Math.random().toString()
     readonly rows: Example[];
+    readonly headers: string[];
+    readonly units: string[];
     maxRows = -1;
 
     // maintain computed min/max to avoid recomputation
@@ -23,11 +28,14 @@ export class DataSet {
     maxs: number[];
 
     constructor(
+        public readonly bus: JDBus,
         public readonly name: string,
-        public readonly colors: string[],
-        public readonly headers: string[],
-        public readonly units: string[]) {
+        public readonly fields: JDField[],
+        public readonly colors: string[]
+    ) {
         this.rows = [];
+        this.headers = fields.map(field => field.prettyName)
+        this.units = fields.map(field => field.unit)
     }
 
     get startTimestamp() {
@@ -45,7 +53,21 @@ export class DataSet {
         return this.rows.length
     }
 
-    addExample(timestamp: number, data: number[]) {
+    indexOf(field: JDField) {
+        return this.fields.indexOf(field)
+    }
+
+    colorOf(field: JDField) {
+        return this.colors[this.indexOf(field)]
+    }
+
+    addRow() {
+        const timestamp = this.bus.timestamp;
+        const data = this.fields.map(f => f.value)
+        this.addExample(timestamp, data)
+    }
+
+    private addExample(timestamp: number, data: number[]) {
         this.rows.push(new Example(timestamp, data))
 
         // drop rows if needed

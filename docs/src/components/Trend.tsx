@@ -1,5 +1,5 @@
 import React from "react"
-import { DataSet, Example } from "./DataSet";
+import FieldDataSet, { Example } from "./FieldDataSet";
 import { unique } from "../../../src/dom/utils";
 import { Paper, makeStyles, createStyles } from "@material-ui/core";
 import clsx from 'clsx';
@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 export interface TrendProps {
-    dataSet: DataSet,
+    dataSet: FieldDataSet,
     dot?: boolean;
     gradient?: boolean;
 }

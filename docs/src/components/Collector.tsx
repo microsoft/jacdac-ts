@@ -11,23 +11,22 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
 import ConnectButton from '../jacdac/ConnectButton';
-import { canStream, setStreamingAsync } from '../../../src/dom/sensor';
-import { BusState } from '../../../src/dom/bus'
-import { DataSet } from './DataSet';
+import { isSensor, setStreamingAsync } from '../../../src/dom/sensor';
+import { BusState, JDBus } from '../../../src/dom/bus'
+import FieldDataSet from './FieldDataSet';
 import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT, SensorReg } from '../../../src/dom/constants';
-import { throttle } from '../../../src/dom/utils';
+import { EVENT } from '../../../src/dom/constants';
+import { arrayConcatMany, throttle } from '../../../src/dom/utils';
 import DeviceActions from './DeviceActions';
 import useGridBreakpoints from './useGridBreakpoints';
-import ServiceManagerContext from './ServiceManagerContext';
 import DataSetGrid from './DataSetGrid';
+import { JDRegister } from '../../../src/dom/register';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -71,14 +70,10 @@ const palette = [
 ]
 
 const LIVE_HORIZON = 24
-function createDataSet(fields: JDField[], name: string, live: boolean) {
-    const headers = fields.map(field => field.prettyName)
-    const units = fields.map(field => field.unit)
-    const colors = fields.map((_, index) => palette[index % palette.length])
-    const set = new DataSet(name,
-        colors,
-        headers,
-        units)
+function createDataSet(bus: JDBus, registers: JDRegister[], name: string, live: boolean) {
+    const fields = arrayConcatMany(registers.map(reg => reg.fields))
+    const colors = fields.map((f, i) => palette[i % palette.length])
+    const set = new FieldDataSet(bus, name, fields, colors)
     if (live)
         set.maxRows = LIVE_HORIZON + 4
     return set;
@@ -87,26 +82,25 @@ function createDataSet(fields: JDField[], name: string, live: boolean) {
 export default function Collector(props: {}) {
     const { } = props;
     const { bus, connectionState } = useContext(JACDACContext)
-    const { fileStorage } = useContext(ServiceManagerContext)
     const classes = useStyles();
     const gridBreakpoints = useGridBreakpoints()
-    const [fieldIdsChecked, setFieldIdsChecked] = useState<string[]>([])
+    const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
-    const [tables, setTables] = useState<DataSet[]>([])
+    const [tables, setTables] = useState<FieldDataSet[]>([])
     const [, setRecordingLength] = useState(0)
     const [prefix, setPrefix] = useState("data")
     const [samplingIntervalDelay, setSamplingIntervalDelay] = useState("100")
     const [samplingDuration, setSamplingDuration] = useState("10")
-    const [liveDataSet, setLiveDataSet] = useState<DataSet>(undefined)
+    const [liveDataSet, setLiveDataSet] = useState<FieldDataSet>(undefined)
     const [, setLiveDataTimestamp] = useState(0)
     const [triggerEventId, setTriggerEventId] = useState<string>("")
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
-            .services().find(srv => canStream(srv))
+            .services().find(srv => isSensor(srv))
             ?.readingRegister
         ).filter(reg => !!reg))
-    const recordingFields = fieldIdsChecked.map(id => bus.node(id) as JDField)
-        .filter(f => !!f)
+    const recordingRegisters = readingRegisters
+        .filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
@@ -124,34 +118,40 @@ export default function Collector(props: {}) {
             //console.log(`unmount trigger`)
             if (un) un()
         }
-    }, [triggerEvent, recording, fieldIdsChecked, liveDataSet])
+    }, [triggerEvent, recording, registerIdsChecked, liveDataSet])
 
-    const newDataSet = (live: boolean) => fieldIdsChecked.length ? createDataSet(fieldIdsChecked.map(id => bus.node(id) as JDField).filter(f => !!f), `${prefix || "data"}${tables.length}`, live) : undefined
-    const handleCheck = (field: JDField) => () => {
-        const i = fieldIdsChecked.indexOf(field.id)
+    const newDataSet = (registerIds: string[], live: boolean) => registerIds.length
+        ? createDataSet(
+            bus,
+            readingRegisters.filter(reg => registerIds.indexOf(reg.id) > -1),
+            `${prefix || "data"}${tables.length}`,
+            live)
+        : undefined
+    const handleCheck = (reg: JDRegister) => () => {
+        const i = registerIdsChecked.indexOf(reg.id)
         if (i > -1) {
-            fieldIdsChecked.splice(i, 1)
-            setStreamingAsync(field.register.service, false)
+            registerIdsChecked.splice(i, 1)
+            setStreamingAsync(reg.service, false)
         }
         else {
-            fieldIdsChecked.push(field.id)
-            setStreamingAsync(field.register.service, true)
-            field.register.sendGetAsync() // at least some data
+            registerIdsChecked.push(reg.id)
+            setStreamingAsync(reg.service, true)
+            reg.sendGetAsync() // at least some data
         }
-        fieldIdsChecked.sort()
-        setFieldIdsChecked([...fieldIdsChecked])
-        setLiveDataSet(newDataSet(true))
+        registerIdsChecked.sort()
+        setRegisterIdsChecked([...registerIdsChecked])
+        setLiveDataSet(newDataSet(registerIdsChecked, true))
     }
     const stopRecording = () => {
         if (recording) {
             setTables([liveDataSet, ...tables])
-            setLiveDataSet(newDataSet(true))
+            setLiveDataSet(newDataSet(registerIdsChecked, true))
             setRecording(false)
         }
     }
     const startRecording = () => {
-        if (!recording && recordingFields.length) {
-            setLiveDataSet(newDataSet(false))
+        if (!recording && recordingRegisters.length) {
+            setLiveDataSet(newDataSet(registerIdsChecked, false))
             setRecording(true)
         }
     }
@@ -171,7 +171,7 @@ export default function Collector(props: {}) {
         setPrefix(event.target.value.trim())
     }
     const handleTriggerChange = (eventId: string) => setTriggerEventId(eventId)
-    const handleDeleteTable = (table: DataSet) => () => {
+    const handleDeleteTable = (table: FieldDataSet) => {
         const i = tables.indexOf(table)
         if (i > -1) {
             tables.splice(i, 1)
@@ -188,10 +188,7 @@ export default function Collector(props: {}) {
     // interval add data entry
     const addRow = () => {
         if (!liveDataSet) return;
-
-        const row = recordingFields.map(f => f.value)
-        liveDataSet.addExample(bus.timestamp, row)
-
+        liveDataSet.addRow()
         if (recording && liveDataSet.length >= samplingCount) {
             // stop recording
             updateLiveData()
@@ -203,16 +200,14 @@ export default function Collector(props: {}) {
     // setting interval
     useEffect(() => {
         if (!error)
-            recordingFields.map(field => field.register.service.register(SensorReg.StreamingInterval))
-                .filter(reg => !!reg)
-                .forEach(reg => reg.sendSetIntAsync(samplingIntervalDelayi));
-    }, [samplingIntervalDelayi, fieldIdsChecked, errorSamplingIntervalDelay])
+            recordingRegisters.forEach(reg => reg.sendSetIntAsync(samplingIntervalDelayi));
+    }, [samplingIntervalDelayi, registerIdsChecked, errorSamplingIntervalDelay])
     // collecting
     useEffect(() => {
         if (error) return undefined;
         const interval = setInterval(() => addRow(), samplingIntervalDelayi);
         return () => clearInterval(interval);
-    }, [recording, samplingIntervalDelayi, samplingCount, fieldIdsChecked]);
+    }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked]);
 
     return (<div className={classes.root}>
         <div key="sensors">
@@ -220,29 +215,27 @@ export default function Collector(props: {}) {
             <h3>Choose sensors</h3>
             {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
             {!!readingRegisters.length && <Grid container spacing={2}>
-                {readingRegisters.map(register =>
-                    <Grid item {...gridBreakpoints} key={'source' + register.id}>
+                {readingRegisters.map(register => {
+                    const registerChecked = registerIdsChecked.indexOf(register.id) > -1;
+                    return <Grid item {...gridBreakpoints} key={'source' + register.id}>
                         <Card>
                             <CardHeader subheader={register.service.name}
                                 title={`${register.service.device.name}/${register.name}`}
                                 action={<DeviceActions device={register.service.device} reset={true} />} />
                             <CardContent>
+                                {register.fields.map((field) => <span key={field.id}>
+                                    <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({
+                                        color: registerChecked ? liveDataSet.colorOf(field) : "#ccc"
+                                    })} />
+                                    {field.name}
+                                </span>)}
                             </CardContent>
                             <CardActions>
-                                <FormGroup>
-                                    {register.fields.map(field =>
-                                        <FormControlLabel key={field.id}
-                                            control={<Switch disabled={recording} onChange={handleCheck(field)} checked={fieldIdsChecked.indexOf(field.id) > -1} />}
-                                            label={<React.Fragment>
-                                                {field.name}
-                                                {!!prettyUnit(field.unit) && ` (${prettyUnit(field.unit)})`}
-                                                {(liveDataSet && fieldIdsChecked.indexOf(field.id) > -1) && <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({ color: liveDataSet.colors[fieldIdsChecked.indexOf(field.id)] })} />}
-                                            </React.Fragment>}
-                                        />)}
-                                </FormGroup>
+                                <Switch disabled={recording} onChange={handleCheck(register)} checked={registerChecked} />
                             </CardActions>
                         </Card>
-                    </Grid>)}
+                    </Grid>;
+                })}
             </Grid>}
         </div>
         <div key="record">
@@ -255,7 +248,7 @@ export default function Collector(props: {}) {
                     title="start/stop recording"
                     onClick={toggleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
-                    disabled={!recordingFields?.length}
+                    disabled={!recordingRegisters?.length}
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
             <div className={classes.row}>

@@ -2,7 +2,6 @@ import { Card, CardActions, CardContent, CardHeader, Grid, IconButton } from "@m
 import { Button } from "gatsby-theme-material-ui";
 import React, { useContext } from "react";
 import { prettyDuration } from "../../../src/dom/pretty";
-import { DataSet } from "./DataSet";
 import ServiceManagerContext from "./ServiceManagerContext";
 import Trend from "./Trend";
 import useGridBreakpoints from './useGridBreakpoints';
@@ -10,18 +9,20 @@ import useGridBreakpoints from './useGridBreakpoints';
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
+import FieldDataSet from "./FieldDataSet";
 
 
-export default function DataSetGrid(props: { tables: DataSet[], handleDeleteTable?: (table: Table) => void }) {
+export default function DataSetGrid(props: { tables: FieldDataSet[], handleDeleteTable?: (table: FieldDataSet) => void }) {
     const { tables, handleDeleteTable } = props;
     const { fileStorage } = useContext(ServiceManagerContext)
     const gridBreakpoints = useGridBreakpoints()
 
-    const handleDownload = (table: DataSet) => () => {
+    const handleDownload = (table: FieldDataSet) => () => {
         const sep = ','
         const csv = table.toCSV(sep)
         fileStorage.saveText(`${table.name}.csv`, csv)
     }
+    const handelDelete = (table: FieldDataSet) => () => handleDeleteTable(table)
     return <Grid container spacing={2}>
         {tables.map((table) =>
             <Grid item {...gridBreakpoints} key={`result` + table.id}>
@@ -41,7 +42,7 @@ export default function DataSetGrid(props: { tables: DataSet[], handleDeleteTabl
                             Save
                         </Button>
                         {handleDeleteTable &&
-                            <IconButton onClick={handleDeleteTable(table)}>
+                            <IconButton onClick={handelDelete(table)}>
                                 <DeleteIcon />
                             </IconButton>}
                     </CardActions>
