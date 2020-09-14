@@ -114,9 +114,9 @@ export class TFLiteClient {
             () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
     }
 
-    onResults(handler: (sample: number[]) => void) {
+    subscribeResults(handler: (sample: number[]) => void): () => void {
         const reg = this.service.register(TFLiteReg.Outputs)
-        reg.on(REPORT_RECEIVE, () => {
+        return reg.subscribe(REPORT_RECEIVE, () => {
             handler(bufferToArray(reg.data, NumberFormat.Float32LE))
         })
     }
@@ -224,12 +224,12 @@ export async function testTF(bus: JDBus, model: Uint8Array) {
         freeze: acc.length > 1
     })
 
-    tf.onSample(sample => {
+    tf.subscribeSample(sample => {
         console.log("SAMPLE", sample)
     })
 
     const classNames = ['noise', 'punch', 'left', 'right'];
-    tf.onResults(outp => {
+    tf.subscribeResults(outp => {
         for (let i = 0; i < outp.length; ++i) {
             if (outp[i] > 0.7) {
                 console.log(outp[i].toFixed(3) + " " + classNames[i])
