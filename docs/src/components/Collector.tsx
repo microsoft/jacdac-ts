@@ -10,10 +10,6 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import SaveAltIcon from '@material-ui/icons/SaveAlt';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import DeleteIcon from '@material-ui/icons/Delete';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
@@ -31,6 +27,7 @@ import { throttle } from '../../../src/dom/utils';
 import DeviceActions from './DeviceActions';
 import useGridBreakpoints from './useGridBreakpoints';
 import ServiceManagerContext from './ServiceManagerContext';
+import DataSetGrid from './DataSetGrid';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -173,11 +170,7 @@ export default function Collector(props: {}) {
     const handlePrefixChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPrefix(event.target.value.trim())
     }
-    const handleDownload = (table: DataSet) => () => {
-        const sep = ','
-        const csv = table.toCSV(sep)
-        fileStorage.saveText(`${table.name}.csv`, csv)
-    }
+    const handleTriggerChange = (eventId: string) => setTriggerEventId(eventId)
     const handleDeleteTable = (table: DataSet) => () => {
         const i = tables.indexOf(table)
         if (i > -1) {
@@ -185,8 +178,6 @@ export default function Collector(props: {}) {
             setTables([...tables])
         }
     }
-    const handleTriggerChange = (eventId: string) => setTriggerEventId(eventId)
-
     const updateLiveData = () => {
         setLiveDataSet(liveDataSet);
         setRecordingLength(liveDataSet.rows.length)
@@ -303,31 +294,7 @@ export default function Collector(props: {}) {
         {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
         {!!tables.length && <div key="recordings">
             <h3>Recordings</h3>
-            <Grid container spacing={2}>
-                {tables.map((table) =>
-                    <Grid item {...gridBreakpoints} key={`result` + table.id}>
-                        <Card>
-                            <CardHeader
-                                subheader={`${table.rows.length} rows, ${prettyDuration(table.duration)}`} />
-                            <CardContent>
-                                <div>{table.headers.join(', ')}</div>
-                                <Trend dataSet={table} height={8} mini={true} />
-                            </CardContent>
-                            <CardActions>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    startIcon={<SaveAltIcon />}
-                                    onClick={handleDownload(table)}>
-                                    Save
-                                </Button>
-                                <IconButton onClick={handleDeleteTable(table)}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </CardActions>
-                        </Card>
-                    </Grid>)}
-            </Grid>
+            <DataSetGrid tables={tables} handleDeleteTable={handleDeleteTable} />
         </div>}
     </div >
     )
