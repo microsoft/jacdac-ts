@@ -18,7 +18,7 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import { prettyDuration, prettyUnit } from '../../../src/dom/pretty'
 import useChange from '../jacdac/useChange';
 import ConnectButton from '../jacdac/ConnectButton';
-import { setStreamingAsync } from '../../../src/dom/sensor';
+import { canStream, setStreamingAsync } from '../../../src/dom/sensor';
 import { BusState } from '../../../src/dom/bus'
 import { DataSet } from './DataSet';
 import Trend from './Trend';
@@ -105,7 +105,7 @@ export default function Collector(props: {}) {
     const [triggerEventId, setTriggerEventId] = useState<string>("")
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
-            .services().find(srv => srv.readingRegister)
+            .services().find(srv => canStream(srv))
             ?.readingRegister
         ).filter(reg => !!reg))
     const recordingFields = fieldIdsChecked.map(id => bus.node(id) as JDField)

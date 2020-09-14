@@ -1,5 +1,15 @@
 import { JDService } from "./service";
-import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, REPORT_RECEIVE } from "./constants";
+import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, REPORT_RECEIVE, REG_STREAMING_INTERVAL, SensorReg } from "./constants";
+
+/**
+ * Indicates if the service can stream data
+ * @param service 
+ */
+export function canStream(service: JDService): boolean {
+    return !!service.readingRegister
+        && !!service.register(SensorReg.IsStreaming)
+        && !!service.register(SensorReg.StreamingInterval);
+}
 
 export function setStreamingAsync(service: JDService, on: boolean) {
     const register = service.register(REG_IS_STREAMING);
