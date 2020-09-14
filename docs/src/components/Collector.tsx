@@ -212,10 +212,9 @@ export default function Collector(props: {}) {
     // setting interval
     useEffect(() => {
         if (!error)
-            recordingFields.forEach(field => field.register.service
-                .register(SensorReg.StreamingInterval)
-                .sendSetIntAsync(samplingIntervalDelayi)
-            )
+            recordingFields.map(field => field.register.service.register(SensorReg.StreamingInterval))
+                .filter(reg => !!reg)
+                .forEach(reg => reg.sendSetIntAsync(samplingIntervalDelayi));
     }, [samplingIntervalDelayi, fieldIdsChecked, errorSamplingIntervalDelay])
     // collecting
     useEffect(() => {
