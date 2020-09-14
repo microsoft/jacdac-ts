@@ -110,7 +110,7 @@ export class TFLiteClient {
 
     subscribeSample(handler: (sample: number[]) => void): () => void {
         const reg = this.service.register(TFLiteReg.CurrentSample)
-        return reg.subscribe(REPORT_RECEIVE, 
+        return reg.subscribe(REPORT_RECEIVE,
             () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
     }
 
@@ -196,6 +196,7 @@ export function stableSortServices(services: JDService[]) {
 }
 
 
+/*
 export async function testTF(bus: JDBus, model: Uint8Array) {
     const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
     if (!tfService) {
@@ -248,3 +249,4 @@ export async function testTF(bus: JDBus, model: Uint8Array) {
         prev = st.numSamples
     }
 }
+*/
