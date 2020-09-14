@@ -19,7 +19,7 @@ import Trend from './Trend';
 import Alert from '@material-ui/lab/Alert';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT, SRV_TFLITE } from '../../../src/dom/constants';
+import { EVENT, SRV_TFLITE, TFLiteReg } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
@@ -222,7 +222,7 @@ export default function Collector(props: {}) {
         </div>
         {!!tfliteDevices.length && <div key="tflite">
             <h3>TensorFlow Lite Devices</h3>
-            <DeviceList devices={tfliteDevices} serviceClass={SRV_TFLITE} />
+            <DeviceList serviceClass={SRV_TFLITE} registerIdentifier={TFLiteReg.LastError} />
         </div>}
         <div key="record">
             <h3>Record data</h3>

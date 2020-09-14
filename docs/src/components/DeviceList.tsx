@@ -40,7 +40,7 @@ export default function DeviceList(props: {
             spacing={2}
             className={classes.root}
         >
-            {!hasServiceClass && devices.map(device => <Grid key={device.id} item xs={12} sm={6} md={4}>
+            {!hasServiceClass && devices.map(device => <Grid key={device.id} item {...gridBreakpoints}>
                 <DeviceCard
                     device={device}
                     showDescription={true}

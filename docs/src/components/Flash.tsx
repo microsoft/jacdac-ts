@@ -78,7 +78,7 @@ export default function Flash() {
     const devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices())
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
-        if (flashing > 0 || scanning || connectionState != BusState.Connected)
+        if (!blobs?.length || flashing > 0 || scanning || connectionState != BusState.Connected)
             return;
         try {
             setScanning(true)
