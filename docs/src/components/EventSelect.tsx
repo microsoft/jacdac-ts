@@ -15,6 +15,8 @@ import { JDEvent } from '../../../src/dom/event';
 import JACDACContext from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import clsx from 'clsx';
+import { arrayConcatMany } from '../../../src/dom/utils';
+import { JDDevice } from '../../../src/dom/device';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -37,13 +39,11 @@ export default function EventSelect(props: {
     const { eventId, onChange, label, filter, className } = props
     const { bus } = useContext(JACDACContext)
     const classes = useStyles();
-    const events = useChange(bus, () => bus.devices()
-        .map(device => device.services()
-            .map(service => service.events)
-            .reduce((l, r) => l.concat(r), [])
+    const events: JDEvent[] = useChange(bus, () => arrayConcatMany(arrayConcatMany(
+        bus.devices().map((device: JDDevice) => device.services()
+            .map(service => service.events.filter(event => !filter || filter(event)))
         )
-        .reduce((l, r) => l.concat(r), [])
-    ).filter(event => !filter || filter(event))
+    )))
     const selectedEvent = bus.node(eventId) as JDEvent
 
     const handleChange = (ev: React.ChangeEvent<{ value: string }>) => {
@@ -52,15 +52,16 @@ export default function EventSelect(props: {
 
     return (
         <FormControl variant="outlined" className={clsx(className, classes.formControl)}>
-            <InputLabel>{label}</InputLabel>
+            <InputLabel key="label">{label}</InputLabel>
             <Select
+                key="select"
                 value={selectedEvent ? eventId : ""}
                 onChange={handleChange}
                 label={selectedEvent?.qualifiedName}>
-                <MenuItem value={""}>
+                <MenuItem key={"none"} value={""}>
                     <em>None</em>
                 </MenuItem>
-                {events.map(ev => <MenuItem key={ev.id} value={ev.id}>{ev.qualifiedName}</MenuItem>)}
+                {events.map(ev => <MenuItem key={ev.id} value={ev.id}>{ev.prettyName}</MenuItem>)}
             </Select>
         </FormControl>
     );

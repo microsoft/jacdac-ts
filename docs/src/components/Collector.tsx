@@ -81,7 +81,6 @@ export default function Collector(props: {}) {
     const { } = props;
     const { bus, connectionState } = useContext(JACDACContext)
     const classes = useStyles();
-    const gridBreakpoints = useGridBreakpoints()
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<FieldDataSet[]>([])

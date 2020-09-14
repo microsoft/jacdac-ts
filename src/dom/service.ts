@@ -60,7 +60,7 @@ export class JDService extends JDNode {
     }
 
     get events() {
-        return this.specification?.packets.filter(isEvent).map(info => this.event(info.identifier))
+        return this.specification?.packets.filter(isEvent).map(info => this.event(info.identifier)) || [];
     }
 
     toString() {
@@ -68,9 +68,10 @@ export class JDService extends JDNode {
     }
 
     register(address: number | { address: number }): JDRegister {
-        const a = (typeof address == "number" ? address : address?.address);
+        let a = (typeof address == "number" ? address : address?.address);
         if (a === undefined)
             return undefined;
+        a |= 0
 
         if (!this._registers)
             this._registers = [];
@@ -86,13 +87,23 @@ export class JDService extends JDNode {
         return register;
     }
 
-    event(address: number): JDEvent {
-        address = address | 0;
+    event(address: number | { address: number }): JDEvent {
+        let a = (typeof address == "number" ? address : address?.address);
+        if (a === undefined)
+            return undefined;
+        a |= 0
+
         if (!this._events)
             this._events = [];
-        let event = this._events.find(ev => ev.address === address);
-        if (!event)
-            this._events.push(event = new JDEvent(this, address));
+        let event = this._events.find(ev => ev.address === a);
+        if (!event) {
+            const spec = this.specification;
+            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === a)) {
+                this.log(`warn`, `attempting to access event 0x${a.toString(16)}`)
+                return undefined;
+            }
+            this._events.push(event = new JDEvent(this, a));
+        }
         return event;
     }
 
