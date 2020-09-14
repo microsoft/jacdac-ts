@@ -61,9 +61,10 @@ export default class FieldDataSet {
         return this.colors[this.indexOf(field)]
     }
 
-    addRow() {
+    addRow(data?: number[]) {
         const timestamp = this.bus.timestamp;
-        const data = this.fields.map(f => f.value)
+        if (!data)
+            data = this.fields.map(f => f.value)
         this.addExample(timestamp, data)
     }
 
@@ -108,8 +109,9 @@ export default class FieldDataSet {
 
     toCSV(sep: string = ",") {
         const allheaders = ["time", ...this.headers].join(sep)
+        const allunits = ["ms", ...this.units]
         const start = this.startTimestamp
-        let csv = [allheaders]
+        let csv = [allheaders, allunits]
         this.rows.forEach(row => csv.push(
             row.toVector(start).map(cell => cell !== undefined ? cell.toString() : "").join(sep)
         ))

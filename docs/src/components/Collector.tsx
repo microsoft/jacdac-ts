@@ -111,6 +111,7 @@ export default function Collector(props: {}) {
     const tfliteMode = !!tfliteDevices.length
     const startEnabled = !!recordingRegisters?.length
         && (!tfliteMode || tfliteDeviceId)
+    const tfliteDevice = tfliteDevices.find(dev => dev.id == tfliteDeviceId)
 
     useEffect(() => {
         //console.log(`trigger event`, triggerEventId, triggerEvent)
@@ -207,9 +208,10 @@ export default function Collector(props: {}) {
     const throttleUpdate = throttle(() => updateLiveData(), 30)
     // data collection
     // interval add data entry
-    const addRow = () => {
+    const addRow = (values?: number[]) => {
         if (!liveDataSet) return;
-        liveDataSet.addRow()
+        console.log(values)
+        liveDataSet.addRow(values)
         if (recording && liveDataSet.length >= samplingCount) {
             // stop recording
             updateLiveData()
@@ -225,10 +227,18 @@ export default function Collector(props: {}) {
     }, [samplingIntervalDelayi, registerIdsChecked, errorSamplingIntervalDelay])
     // collecting
     useEffect(() => {
-        if (error) return undefined;
+        if (error || (tfliteDevice && recording)) return undefined;
         const interval = setInterval(() => addRow(), samplingIntervalDelayi);
         return () => clearInterval(interval);
-    }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked]);
+    }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked, tfliteDevice]);
+    useEffect(() => {
+        const tfliteService = (tfliteDevice?.services({ serviceClass: SRV_TFLITE }) || [])[0]
+        if (tfliteService) {
+            const client = new TFLiteClient(tfliteService)
+            return client.subscribeSample(values => addRow(values))
+        }
+        return () => { }
+    }, [recording, liveDataSet, registerIdsChecked, tfliteDevice])
 
     return (<div className={classes.root}>
         <div key="sensors">

@@ -108,11 +108,10 @@ export class TFLiteClient {
             .sendSetIntAsync(numSamples)
     }
 
-    onSample(handler: (sample: number[]) => void) {
+    subscribeSample(handler: (sample: number[]) => void): () => void {
         const reg = this.service.register(TFLiteReg.CurrentSample)
-        reg.on(REPORT_RECEIVE, () => {
-            handler(bufferToArray(reg.data, NumberFormat.Float32LE))
-        })
+        return reg.subscribe(REPORT_RECEIVE, 
+            () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
     }
 
     onResults(handler: (sample: number[]) => void) {
