@@ -24,7 +24,8 @@ import { arrayConcatMany, throttle } from '../../../src/dom/utils';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
-import DeviceList from './DeviceList';
+import DeviceCardHeader from './DeviceCardHeader';
+import { JDDevice } from '../../../src/dom/device';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -82,6 +83,7 @@ export default function Collector(props: {}) {
     const { bus, connectionState } = useContext(JACDACContext)
     const classes = useStyles();
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
+    const [tfliteDeviceId, setTfliteDeviceId] = useState<string>("")
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<FieldDataSet[]>([])
     const [, setRecordingLength] = useState(0)
@@ -105,6 +107,9 @@ export default function Collector(props: {}) {
     const errorSamplingDuration = isNaN(samplingCount)
     const error = errorSamplingDuration || errorSamplingIntervalDelay
     const triggerEvent = bus.node(triggerEventId) as JDEvent
+    const startEnabled = !!recordingRegisters?.length
+        && (!tfliteDevices.length || tfliteDeviceId)
+
     useEffect(() => {
         //console.log(`trigger event`, triggerEventId, triggerEvent)
         const un = triggerEvent?.subscribe(EVENT, () => {
@@ -176,6 +181,10 @@ export default function Collector(props: {}) {
             setTables([...tables])
         }
     }
+    const handleTfliteChecked = (dev: JDDevice) => () => {
+        const id = dev?.id == tfliteDeviceId ? '' : dev?.id
+        setTfliteDeviceId(id);
+    }
     const updateLiveData = () => {
         setLiveDataSet(liveDataSet);
         setRecordingLength(liveDataSet.rows.length)
@@ -221,8 +230,18 @@ export default function Collector(props: {}) {
             />}
         </div>
         {!!tfliteDevices.length && <div key="tflite">
-            <h3>TensorFlow Lite Devices</h3>
-            <DeviceList serviceClass={SRV_TFLITE} registerIdentifier={TFLiteReg.LastError} />
+            <h3>Choose TensorFlow Lite Device</h3>
+            <p>The recorded data will be formatted for machine learning.</p>
+            <Grid>
+                {tfliteDevices.map(tfliteDevice => <Grid key={'tflite' + tfliteDevice.id} item xs={4}>
+                    <Card>
+                        <DeviceCardHeader device={tfliteDevice} />
+                        <CardActions>
+                            <Switch checked={tfliteDeviceId == tfliteDevice.id} onChange={handleTfliteChecked(tfliteDevice)} />
+                        </CardActions>
+                    </Card>
+                </Grid>)}
+            </Grid>
         </div>}
         <div key="record">
             <h3>Record data</h3>
@@ -234,7 +253,7 @@ export default function Collector(props: {}) {
                     title="start/stop recording"
                     onClick={toggleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
-                    disabled={!recordingRegisters?.length}
+                    disabled={!startEnabled}
                 >{recording ? "Stop" : "Start"}</Button>
             </div>
             <div className={classes.row}>
