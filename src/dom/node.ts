@@ -1,6 +1,6 @@
 import { JDEventSource } from "./eventsource";
 
-export type LogLevel = 'error' | 'warning' | 'log' | 'info' | 'debug'
+export type LogLevel = 'error' | 'warn' | 'log' | 'info' | 'debug'
 export type Log = (level: LogLevel, message: any, optionalArgs?: any[]) => void;
 
 let nextNodeId = 0
