@@ -34,10 +34,9 @@ import {
     JD_DEVICE_LOST_DELAY
 } from "./constants";
 import { serviceClass } from "./pretty";
-import { JDNode } from "./node";
+import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
-import { ConsoleLogger, ILogger } from "./domservices";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -46,7 +45,7 @@ export interface BusOptions {
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
 
-    logger?: ILogger;
+    log?: Log;
 }
 
 export interface Error {
@@ -62,6 +61,16 @@ export enum BusState {
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000
+
+function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
+    switch (level) {
+        case 'error': console.error(message, optionalArgs);
+        case 'warning': console.warn(message, optionalArgs);
+        case 'info': console.info(message, optionalArgs);
+        case 'debug': console.debug(message, optionalArgs);
+        default: console.log(message, optionalArgs)
+    }
+}
 
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
@@ -85,9 +94,7 @@ export class JDBus extends JDNode {
     constructor(public options?: BusOptions) {
         super();
         this.options = this.options || {};
-        this.domServices = {
-            logger: this.options.logger || new ConsoleLogger()
-        }
+        this.options.log = this.options.log || log;
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
@@ -101,7 +108,7 @@ export class JDBus extends JDNode {
 
     private setConnectionState(state: BusState) {
         if (this._connectionState !== state) {
-            this.log(`${this._connectionState} -> ${state}`)
+            this.log('debug', `${this._connectionState} -> ${state}`)
             console.log({
                 connect: this._connectPromise,
                 disconnect: this._disconnectPromise
@@ -159,7 +166,7 @@ export class JDBus extends JDNode {
                 case EVENT_NODE_NAME: return this.device(dev)?.service(srv)?.event(reg);
                 case FIELD_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg)?.fields[idx];
             }
-            this.log(`node ${id} not found`)
+            this.log('info', `node ${id} not found`)
             return undefined;
         }
         const node = resolve();
@@ -181,6 +188,10 @@ export class JDBus extends JDNode {
 
     get parent(): JDNode {
         return undefined;
+    }
+
+    protected get logger(): Log {
+        return this.options?.log
     }
 
     set minConsolePriority(priority: ConsolePriority) {
@@ -233,7 +244,7 @@ export class JDBus extends JDNode {
     }
 
     errorHandler(context: string, exception: any) {
-        this.log(`error ${context} ${exception?.description}`)
+        this.log('error', `error ${context} ${exception?.description}`)
         this.emit(ERROR, { context, exception })
         this.emit(CHANGE)
     }
@@ -241,7 +252,7 @@ export class JDBus extends JDNode {
     connectAsync(background?: boolean): Promise<void> {
         // already connected
         if (this.connectionState == BusState.Connected) {
-            this.log(`already connected`)
+            this.log('debug', `already connected`)
             return Promise.resolve();
         }
 
@@ -249,14 +260,14 @@ export class JDBus extends JDNode {
         if (!this._connectPromise) {
             // already disconnecting, retry when disconnected
             if (this._disconnectPromise) {
-                this.log(`queuing connect after disconnecting`)
+                this.log('debug', `queuing connect after disconnecting`)
                 const p = this._disconnectPromise
                 this._disconnectPromise = undefined;
                 this._connectPromise = p.then(() => this.connectAsync())
             }
             else {
                 // starting a fresh connection
-                this.log(`connecting`)
+                this.log('debug', `connecting`)
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
                 if (this.options.connectAsync)
@@ -267,7 +278,7 @@ export class JDBus extends JDNode {
                             this._connectPromise = undefined;
                             this.setConnectionState(BusState.Connected)
                         } else {
-                            this.log(`connection aborted in flight`)
+                            this.log('debug', `connection aborted in flight`)
                         }
                     })
                     .catch(e => {
@@ -276,12 +287,12 @@ export class JDBus extends JDNode {
                             this.setConnectionState(BusState.Disconnected)
                             this.errorHandler(CONNECT, e);
                         } else {
-                            this.log(`connection error aborted in flight`)
+                            this.log('debug', `connection error aborted in flight`)
                         }
                     })
             }
         } else {
-            this.log(`connect with existing promise`)
+            this.log('debug', `connect with existing promise`)
         }
         return this._connectPromise;
     }
@@ -294,10 +305,10 @@ export class JDBus extends JDNode {
         if (!this._disconnectPromise) {
             // connection in progress, wait and disconnect when done
             if (this._connectPromise) {
-                this.log(`cancelling connection and disconnect`)
+                this.log('debug', `cancelling connection and disconnect`)
                 this._connectPromise = undefined;
             }
-            this.log(`disconnecting`)
+            this.log('debug', `disconnecting`)
             this._disconnectPromise = Promise.resolve();
             this.setConnectionState(BusState.Disconnecting)
             if (this.options.disconnectAsync)
@@ -312,8 +323,7 @@ export class JDBus extends JDNode {
                     this.setConnectionState(BusState.Disconnected);
                 });
         } else {
-            this.log(`disconnect with existing promise`)
-            console.log(this._disconnectPromise)
+            this.log('debug', `disconnect with existing promise`)
         }
         return this._disconnectPromise;
     }
@@ -346,7 +356,7 @@ export class JDBus extends JDNode {
     device(id: string) {
         let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
-            this.log(`new device ${id}`)
+            this.log('info', `new device ${id}`)
             d = new JDDevice(this, id)
             this._devices.push(d);
             // stable sort
@@ -365,17 +375,17 @@ export class JDBus extends JDNode {
     setBackgroundFirmwareScans(enabled: boolean) {
         if (enabled) {
             if (!this._debouncedScanFirmwares) {
-                this.log(`enabling background firmware scans`)
+                this.log('debug', `enabling background firmware scans`)
                 this._debouncedScanFirmwares = debounceAsync(async () => {
                     if (this.connected) {
-                        this.log(`scanning firmwares`)
+                        this.log('info', `scanning firmwares`)
                         await scanFirmwares(this);
                     }
                 }, SCAN_FIRMWARE_INTERVAL)
                 this.on(DEVICE_ANNOUNCE, this._debouncedScanFirmwares)
             }
         } else {
-            this.log(`disabling background firmware scans`)
+            this.log('debug', `disabling background firmware scans`)
             const d = this._debouncedScanFirmwares;
             this._debouncedScanFirmwares = undefined;
             this.off(DEVICE_ANNOUNCE, d)

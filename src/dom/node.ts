@@ -1,10 +1,11 @@
-import { JDDOMServices } from "./domservices";
 import { JDEventSource } from "./eventsource";
+
+export type LogLevel = 'error' | 'warning' | 'log' | 'info' | 'debug'
+export type Log = (level: LogLevel, message: any, optionalArgs?: any[]) => void;
 
 let nextNodeId = 0
 export abstract class JDNode extends JDEventSource {
     public readonly nodeId = nextNodeId++ // debugging
-    private _domServices?: JDDOMServices;
 
     constructor() {
         super()
@@ -36,17 +37,15 @@ export abstract class JDNode extends JDEventSource {
     abstract get parent(): JDNode;
 
     /**
-     * Gets the options from the tree
+     * Gets the logger function
      */
-    protected get domServices() {
-        return this._domServices || this.parent?.domServices;
+    protected get logger(): Log {
+        return this.parent?.logger;
     }
 
-    protected set domServices(value: JDDOMServices) {
-        this._domServices = value;
-    }
-
-    protected log(msg: any) {
-        this.domServices?.logger?.log('log', `${this}: ${msg}`)
+    protected log(level: LogLevel, msg: any) {
+        const l = this.logger;
+        if (l)
+            l(level, `${this}: ${msg}`)
     }
 }
