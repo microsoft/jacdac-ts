@@ -26,6 +26,7 @@ import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
 import DeviceCardHeader from './DeviceCardHeader';
 import { JDDevice } from '../../../src/dom/device';
+import { TFLiteClient } from '../../../src/dom/tflite';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -107,8 +108,9 @@ export default function Collector(props: {}) {
     const errorSamplingDuration = isNaN(samplingCount)
     const error = errorSamplingDuration || errorSamplingIntervalDelay
     const triggerEvent = bus.node(triggerEventId) as JDEvent
+    const tfliteMode = !!tfliteDevices.length
     const startEnabled = !!recordingRegisters?.length
-        && (!tfliteDevices.length || tfliteDeviceId)
+        && (!tfliteMode || tfliteDeviceId)
 
     useEffect(() => {
         //console.log(`trigger event`, triggerEventId, triggerEvent)
@@ -152,9 +154,21 @@ export default function Collector(props: {}) {
             setRecording(false)
         }
     }
-    const startRecording = () => {
+    const startRecording = async () => {
         if (!recording && recordingRegisters.length) {
             setLiveDataSet(newDataSet(registerIdsChecked, false))
+            const tfliteDevice = tfliteMode
+                && tfliteDevices.find(dev => dev.id == tfliteDeviceId)
+            if (tfliteDevice) {
+                const client = new TFLiteClient(tfliteDevice.services({ serviceClass: SRV_TFLITE })[0])
+                await client.setInputs({
+                    samplingInterval: samplingIntervalDelayi,
+                    samplesInWindow: 10,
+                    freeze: false,
+                    inputs: recordingRegisters.map(reg => reg.service)
+                })
+                await client.collect(samplingCount)
+            }
             setRecording(true)
         }
     }

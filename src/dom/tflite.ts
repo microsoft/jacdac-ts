@@ -2,7 +2,11 @@ import * as U from "./utils"
 import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import {
-    PACKET_RECEIVE, JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE, SRV_TFLITE, SRV_ACCELEROMETER, SRV_SLIDER
+    JD_SERIAL_MAX_PAYLOAD_SIZE,
+    REPORT_RECEIVE,
+    SRV_TFLITE,
+    SRV_ACCELEROMETER,
+    SRV_SLIDER
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
@@ -95,11 +99,13 @@ export class TFLiteClient {
             error("samples won't fit in packet")
 
         inputs.unshift(pack("HHI", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
-        await this.service.register(TFLiteReg.Inputs).sendSetAsync(U.bufferConcatMany(inputs))
+        await this.service.register(TFLiteReg.Inputs)
+            .sendSetAsync(U.bufferConcatMany(inputs))
     }
 
     async collect(numSamples: number) {
-        await this.service.register(TFLiteReg.StreamSamples).sendSetIntAsync(numSamples)
+        await this.service.register(TFLiteReg.StreamSamples)
+            .sendSetIntAsync(numSamples)
     }
 
     onSample(handler: (sample: number[]) => void) {
