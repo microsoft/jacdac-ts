@@ -19,12 +19,12 @@ import Trend from './Trend';
 import Alert from '@material-ui/lab/Alert';
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT } from '../../../src/dom/constants';
+import { EVENT, SRV_TFLITE } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
-import useGridBreakpoints from './useGridBreakpoints';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
+import DeviceList from './DeviceList';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -98,6 +98,7 @@ export default function Collector(props: {}) {
         ).filter(reg => !!reg))
     const recordingRegisters = readingRegisters
         .filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
+    const tfliteDevices = useChange(bus, bus => bus.devices({ serviceClass: SRV_TFLITE }))
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
@@ -219,6 +220,10 @@ export default function Collector(props: {}) {
                 handleRegisterCheck={handleRegisterCheck}
             />}
         </div>
+        {!!tfliteDevices.length && <div key="tflite">
+            <h3>TensorFlow Lite Devices</h3>
+            <DeviceList devices={tfliteDevices} serviceClass={SRV_TFLITE} />
+        </div>}
         <div key="record">
             <h3>Record data</h3>
             <div className={classes.buttons}>

@@ -25,7 +25,7 @@ to register your own service.
 
 <ul>
     {props.data.allSpecJson.edges.map(node => <li>
-        <Link to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
+        <Link key={node.node.shortId} to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
     </li>)}
 </ul>
 
