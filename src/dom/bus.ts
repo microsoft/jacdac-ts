@@ -37,6 +37,7 @@ import { serviceClass } from "./pretty";
 import { JDNode } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
+import { ConsoleLogger, ILogger } from "./domservices";
 
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -44,6 +45,8 @@ export interface BusOptions {
     disconnectAsync?: () => Promise<void>;
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
+
+    logger?: ILogger;
 }
 
 export interface Error {
@@ -82,6 +85,9 @@ export class JDBus extends JDNode {
     constructor(public options?: BusOptions) {
         super();
         this.options = this.options || {};
+        this.domServices = {
+            logger: this.options.logger || new ConsoleLogger()
+        }
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
@@ -136,7 +142,7 @@ export class JDBus extends JDNode {
     }
 
     node(id: string): JDNode {
-        const resolve = () => {
+        const resolve = (): JDNode => {
             const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(id)
             if (!m) return undefined;
             const type = m.groups["type"]
@@ -171,6 +177,10 @@ export class JDBus extends JDNode {
 
     get minConsolePriority(): ConsolePriority {
         return this._minConsolePriority;
+    }
+
+    get parent(): JDNode {
+        return undefined;
     }
 
     set minConsolePriority(priority: ConsolePriority) {
@@ -272,7 +282,6 @@ export class JDBus extends JDNode {
             }
         } else {
             this.log(`connect with existing promise`)
-            console.log(this._connectPromise)
         }
         return this._connectPromise;
     }

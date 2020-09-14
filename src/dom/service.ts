@@ -41,6 +41,10 @@ export class JDService extends JDNode {
         return `${this.device.qualifiedName}[${this.service_number.toString(16)}]`
     }
 
+    get parent(): JDNode {
+        return this.device
+    }
+
     get readingRegister(): JDRegister {
         const pkt = this.specification?.packets.find(pkt => isReading(pkt))
         return pkt && this.register(pkt.identifier)
@@ -63,7 +67,7 @@ export class JDService extends JDNode {
         return `${this.name} ${this.id}`;
     }
 
-    register(address: number | { address: number }) {
+    register(address: number | { address: number }): JDRegister {
         const a = (typeof address == "number" ? address : address?.address);
         if (a === undefined)
             return undefined;
@@ -81,7 +85,7 @@ export class JDService extends JDNode {
         return register;
     }
 
-    event(address: number) {
+    event(address: number): JDEvent {
         address = address | 0;
         if (!this._events)
             this._events = [];

@@ -1,7 +1,7 @@
 import { JDNode } from "./node";
 import { JDService } from "./service";
 
-export abstract class JDServiceNode extends JDNode {
+export abstract class JDServiceMemberNode extends JDNode {
     private _specification: jdspec.PacketInfo;
 
     constructor(
@@ -27,5 +27,9 @@ export abstract class JDServiceNode extends JDNode {
         if (!this._specification)
             this._specification = this.service.specification?.packets.find(packet => this.isPacket(packet) && packet.identifier === this.address)
         return this._specification;
+    }
+
+    get parent(): JDNode {
+        return this.service
     }
 }

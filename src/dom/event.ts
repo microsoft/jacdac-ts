@@ -4,9 +4,9 @@ import Packet from "./packet";
 import { intOfBuffer } from "./buffer";
 import { CHANGE, EVENT, EVENT_NODE_NAME } from "./constants";
 import { isEvent } from "./spec";
-import { JDServiceNode } from "./servicenode";
+import { JDServiceMemberNode } from "./servicemembernode";
 
-export class JDEvent extends JDServiceNode {
+export class JDEvent extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _count: number = 0;
 

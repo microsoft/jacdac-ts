@@ -24,6 +24,10 @@ export class JDField extends JDNode {
         return `${this.register.qualifiedName}.${this.name}`
     }
 
+    get parent(): JDNode {
+        return this.register
+    }
+
     get prettyName() {
         const service = this.register.service
         const parts = [service.device.name]

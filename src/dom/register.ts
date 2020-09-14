@@ -8,10 +8,10 @@ import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
-import { JDServiceNode } from "./servicenode";
+import { JDServiceMemberNode } from "./servicemembernode";
 
 
-export class JDRegister extends JDServiceNode {
+export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _lastDecodedPkt: DecodedPacket;
     private _fields: JDField[];

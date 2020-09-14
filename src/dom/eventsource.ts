@@ -41,10 +41,6 @@ export class JDEventSource {
         return this;
     }
 
-    protected log(msg: any) {
-        console.log(`${this}: ${msg}`)
-    }
-
     private addListenerInternal(eventName: string, handler: EventHandler, once: boolean) {
         if (!eventName || !handler) {
             return this;

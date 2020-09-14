@@ -1,3 +1,5 @@
+import { LogLevel } from "../dom/domservices";
+
 export interface IMessage {
     id?: string;
     source: 'jacdac' | 'host',
@@ -15,15 +17,15 @@ export interface IAckMessage extends IMessage {
     }
 }
 
-export type Status = 'unknown' | 'ready'
-
 export interface ILogMessage extends IMessage {
     type: 'log',
     data: {
-        level: 'error' | 'warning' | 'info' | 'debug',
+        level?: LogLevel,
         message: any
     }
 }
+
+export type Status = 'unknown' | 'ready'
 
 export interface IStatusMessage extends IMessage {
     type: 'status',

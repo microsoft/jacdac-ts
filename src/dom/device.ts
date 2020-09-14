@@ -73,6 +73,10 @@ export class JDDevice extends JDNode {
         return this._firmwareInfo;
     }
 
+    get parent(): JDNode {
+        return this.bus
+    }
+
     set firmwareInfo(info: FirmwareInfo) {
         const changed = JSON.stringify(this._firmwareInfo) !== JSON.stringify(info);
         if (changed) {
