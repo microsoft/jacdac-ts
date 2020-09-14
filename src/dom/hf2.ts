@@ -6,7 +6,7 @@ const controlTransferSetReport = 0x09;
 const controlTransferOutReport = 0x200;
 const controlTransferInReport = 0x100;
 
-// see https://github.com/microsoft/uf2/blob/master/hf2.md for full spec
+// see https://github.com/microsoft/uf2/blob/main/hf2.md for full spec
 export const HF2_DEVICE_MAJOR = 42
 export const HF2_CMD_BININFO = 0x0001 // no arguments
 export const HF2_MODE_BOOTLOADER = 0x01
