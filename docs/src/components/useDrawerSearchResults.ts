@@ -5,8 +5,10 @@ export interface SearchResult { url: string; title: string; }
 
 export function useDrawerSearchResults(): SearchResult[] {
     // adicionar variável para língua
-    const index = (window as any).__FLEXSEARCH__.en.index
-    const store = (window as any).__FLEXSEARCH__.en.store
+    const index = typeof window !== undefined
+        && (window as any)?.__FLEXSEARCH__?.en?.index
+    const store = typeof window !== undefined
+        && (window as any)?.__FLEXSEARCH__?.en?.store
     const { searchQuery } = useContext(DrawerContext)
     if (!searchQuery || !index || searchQuery.length < 3) {
         return []
