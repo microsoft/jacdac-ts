@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { Drawer, Typography, Divider, makeStyles, createStyles } from "@material-ui/core";
-import TocBreadcrumbs from "./TocBreadcrums";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
@@ -19,6 +18,7 @@ import Mdx from "./Mdx";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import PacketsContext from "./PacketsContext";
 import PacketRecorder from "./PacketRecorder";
+import TocSearchInput from "./TocSearchInput";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -41,6 +41,9 @@ const useStyles = makeStyles((theme) => createStyles({
     },
     mdx: {
         margin: theme.spacing(2)
+    },
+    fluid: {
+        flex: 1
     }
 }));
 
@@ -89,7 +92,7 @@ export default function AppDrawer(props: {
         <div className={classes.drawerHeader}>
             {drawerType !== DrawerType.Toc && <PacketRecorder />}
             {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
-            {drawerType == DrawerType.Toc && <TocBreadcrumbs path={pagePath} />}
+            {drawerType == DrawerType.Toc && <div className={classes.fluid}><TocSearchInput /></div>}
             {drawerType === DrawerType.Packets && serviceClass !== undefined
                 && <Alert className={classes.alertButton} severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             <IconButton onClick={handleDrawerClose}>

@@ -114,6 +114,11 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
       node,
       value,
     })
+    if (node.frontmatter && !node.frontmatter.title) {
+      const heading = /#\s*([^\n]+)/.exec(node.rawBody)
+      if (heading)
+        node.frontmatter.title = heading[1].trim()
+    }
   }
 }
 
