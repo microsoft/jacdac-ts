@@ -129,4 +129,14 @@ export class JDRegister extends JDServiceMemberNode {
             this.emit(CHANGE)
         }
     }
+
+    compareTo(b: JDRegister) {
+        const a = this;
+        return a.address - b.address ||
+            a.service.compareTo(b.service);
+    }
+}
+
+export function stableSortRegisters(registers: JDRegister[]): JDRegister[] {
+    return registers?.sort((a, b) => a.compareTo(b))
 }

@@ -15,6 +15,7 @@ import { isReading } from "./spec"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
 import { JDRegister } from "./register"
+import { JDServiceClient } from "./serviceclient"
 
 export interface InputConfig {
     samplingInterval: number; // ms
@@ -46,8 +47,9 @@ export interface InputConfig {
     }
 */
 
-export class TFLiteClient {
-    constructor(private service: JDService) {
+export class TFLiteClient extends JDServiceClient {
+    constructor(service: JDService) {
+        super(service)
         this.service.registersUseAcks = true
     }
 
@@ -187,14 +189,6 @@ export interface TFModelStats {
     "outputShape": number[];
     "lastError": string;
 }
-
-export function stableSortServices(services: JDService[]) {
-    services.sort((a, b) =>
-        a.serviceClass - b.serviceClass ||
-        U.strcmp(a.device.deviceId, b.device.deviceId) ||
-        a.service_number - b.service_number)
-}
-
 
 /*
 export async function testTF(bus: JDBus, model: Uint8Array) {

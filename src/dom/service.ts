@@ -6,7 +6,7 @@ import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NA
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading, isEvent } from "./spec";
 import { JDEvent } from "./event";
-import { delay } from "./utils";
+import { delay, strcmp } from "./utils";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -162,4 +162,15 @@ export class JDService extends JDNode {
             }
         }
     }
+
+    compareTo(b: JDService): number {
+        const a = this;
+        return a.serviceClass - b.serviceClass ||
+            strcmp(a.device.deviceId, b.device.deviceId) ||
+            a.service_number - b.service_number;
+    }
+}
+
+export function stableSortServices(services: JDService[]): JDService[] {
+    return services?.sort((a, b) => a.compareTo(b))
 }
