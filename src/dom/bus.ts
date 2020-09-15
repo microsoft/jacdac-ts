@@ -40,10 +40,13 @@ import { JDService } from "./service";
 
 export type DeviceNamer = (device: JDDevice) => string;
 
-export interface BusOptions {
+export interface PacketTransport {
     sendPacketAsync?: (p: Packet) => Promise<void>;
     connectAsync?: (background?: boolean) => Promise<void>;
     disconnectAsync?: () => Promise<void>;
+}
+
+export interface BusOptions {
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
 
@@ -93,7 +96,7 @@ export class JDBus extends JDNode {
      * Creates the bus with the given transport
      * @param sendPacket 
      */
-    constructor(public options?: BusOptions) {
+    constructor(public readonly transport: PacketTransport, public options?: BusOptions) {
         super();
         this.options = this.options || {};
         this.options.log = this.options.log || log;
@@ -212,7 +215,7 @@ export class JDBus extends JDNode {
 
     sendPacketAsync(p: Packet) {
         this.emit(PACKET_SEND, p);
-        const spa = this.options.sendPacketAsync;
+        const spa = this.transport.sendPacketAsync;
         if (!spa)
             return Promise.resolve();
 
@@ -272,8 +275,9 @@ export class JDBus extends JDNode {
                 this.log('debug', `connecting`)
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
-                if (this.options.connectAsync)
-                    this._connectPromise = this._connectPromise.then(() => this.options.connectAsync(background))
+                if (this.transport.connectAsync)
+                    this._connectPromise = this._connectPromise
+                        .then(() => this.transport.connectAsync(background))
                 const p = this._connectPromise = this._connectPromise
                     .then(() => {
                         if (p == this._connectPromise) {
@@ -313,8 +317,9 @@ export class JDBus extends JDNode {
             this.log('debug', `disconnecting`)
             this._disconnectPromise = Promise.resolve();
             this.setConnectionState(BusState.Disconnecting)
-            if (this.options.disconnectAsync)
-                this._disconnectPromise = this._disconnectPromise.then(() => this.options.disconnectAsync())
+            if (this.transport.disconnectAsync)
+                this._disconnectPromise = this._disconnectPromise
+                    .then(() => this.transport.disconnectAsync())
             this._disconnectPromise = this._disconnectPromise
                 .catch(e => {
                     this._disconnectPromise = undefined;

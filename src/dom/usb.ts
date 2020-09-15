@@ -1,5 +1,5 @@
 import { Transport, Proto } from "./hf2";
-import { JDBus, BusState } from "./bus";
+import { JDBus, BusState, BusOptions } from "./bus";
 import { Packet } from "./packet";
 import { Observable } from "./observable";
 import { EventTargetObservable } from "./eventtargetobservable";
@@ -20,7 +20,7 @@ export function isWebUSBSupported(): boolean {
         && !!navigator.usb.requestDevice;
 }
 
-export function createUSBBus(options?: USBOptions): JDBus {
+export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDBus {
     console.log(`creating new JACDAC bus`)
     if (!options) {
         if (isWebUSBSupported()) {
@@ -78,9 +78,7 @@ export function createUSBBus(options?: USBOptions): JDBus {
             hf2 = undefined;
             return h ? h.disconnectAsync() : Promise.resolve();
         }
-    });
-    // auto connect
-    console.log(`usb device observed`)
+    }, busOptions);
     options?.connectObservable?.subscribe({
         next: ev => {
             console.log(`usb device event: connect, `, bus.connectionState, ev)
