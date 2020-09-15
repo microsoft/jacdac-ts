@@ -26,7 +26,7 @@ interface AckAwaiter {
 
 export class JDDevice extends JDNode {
     connected: boolean;
-    _lost: boolean;
+    private _lost: boolean;
     servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
@@ -51,7 +51,12 @@ export class JDDevice extends JDNode {
     }
 
     get name() {
-        return this.bus.lookupName(this.deviceId) || this.bus.lookupName(this.shortId) || this.shortId;
+        return this.lookupName() || this.shortId;
+    }
+
+    private lookupName() {
+        const namer = this.bus.options.deviceNamer;
+        return namer && namer(this);
     }
 
     get qualifiedName() {

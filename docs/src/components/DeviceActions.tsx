@@ -1,14 +1,16 @@
-import React from "react"
+import React, { useContext } from "react"
 import { JDDevice } from "../../../src/dom/device"
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FingerprintIcon from '@material-ui/icons/Fingerprint';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { IconButton } from "gatsby-theme-material-ui";
+import DeviceRenameButton from "./DeviceRenameDialog";
+import JACDACContext from '../../../src/react/Context';
 
-
-export default function DeviceActions(props: { device: JDDevice, reset?: boolean }) {
-    const { device, reset } = props
+export default function DeviceActions(props: { device: JDDevice, reset?: boolean, rename?: boolean }) {
+    const { device, reset, rename } = props
+    const { bus } = useContext(JACDACContext)
     const handleIdentify = (ev: React.MouseEvent<HTMLButtonElement>) => {
         ev.stopPropagation()
         device.identify()
@@ -18,11 +20,12 @@ export default function DeviceActions(props: { device: JDDevice, reset?: boolean
         device.reset()
     }
     return <React.Fragment>
-    <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify}>
-        <FingerprintIcon />
-    </IconButton>
-    {reset && <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
-        <RefreshIcon />
-    </IconButton>}
-</React.Fragment>
+        <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify}>
+            <FingerprintIcon />
+        </IconButton>
+        {reset && <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
+            <RefreshIcon />
+        </IconButton>}
+        {rename && bus.options.deviceNamer && <DeviceRenameButton device={device} />}
+    </React.Fragment>;
 }

@@ -38,6 +38,8 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
 
+export type DeviceNamer = (device: JDDevice) => string;
+
 export interface BusOptions {
     sendPacketAsync?: (p: Packet) => Promise<void>;
     connectAsync?: (background?: boolean) => Promise<void>;
@@ -46,6 +48,7 @@ export interface BusOptions {
     deviceDisconnectedDelay?: number;
 
     log?: Log;
+    deviceNamer?: DeviceNamer;
 }
 
 export interface Error {
@@ -81,7 +84,6 @@ export class JDBus extends JDNode {
     private _disconnectPromise: Promise<void>;
 
     private _devices: JDDevice[] = [];
-    private _deviceNames: SMap<string> = {};
     private _startTime: number;
     private _gcInterval: any;
     private _minConsolePriority = ConsolePriority.Log;
@@ -464,13 +466,5 @@ export class JDBus extends JDNode {
             if (pkt.is_command && pkt.service_command === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
-    }
-
-    /**
-     * Tries to find the given device by id
-     * @param id 
-     */
-    lookupName(id: string) {
-        return this._deviceNames[id];
     }
 }
