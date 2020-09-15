@@ -32,7 +32,8 @@ import {
     FIELD_NODE_NAME,
     JD_DEVICE_DISCONNECTED_DELAY,
     JD_DEVICE_LOST_DELAY,
-    JD_SERVICE_NUMBER_CRC_ACK
+    JD_SERVICE_NUMBER_CRC_ACK,
+    SELF_ANNOUNCE
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -105,6 +106,10 @@ export class JDBus extends JDNode {
         }
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
+        setInterval(() => {
+            if (this.connected)
+                this.emit(SELF_ANNOUNCE)
+        }, 499)
     }
 
     /**
@@ -450,7 +455,7 @@ export class JDBus extends JDNode {
                     const ack = Packet.onlyHeader(pkt.crc)
                     ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
                     ack.device_identifier = this.selfDeviceId
-                    this.sendPacketAsync(ack)
+                    ack.sendReportAsync(this.selfDevice)
                 }
             }
             pkt.dev.processPacket(pkt);
@@ -497,14 +502,13 @@ export class JDBus extends JDNode {
             return;
         this._announcing = true;
         let restartCounter = 0
-        setInterval(() => {
-            if (!this.connected)
-                return
+        this.on(SELF_ANNOUNCE, () => {
             // we do not support any services (at least yet)
+            if (restartCounter < 0xf) restartCounter++
             const pkt = Packet.packed(CMD_ADVERTISEMENT_DATA, "I", [restartCounter | 0x100])
             pkt.service_number = JD_SERVICE_NUMBER_CTRL
             pkt.device_identifier = this.selfDeviceId
-            this.sendPacketAsync(pkt)
-        }, 499)
+            pkt.sendReportAsync(this.selfDevice)
+        })
     }
 }

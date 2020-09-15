@@ -134,6 +134,7 @@ export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const DEVICE_RESTART = 'deviceRestart'
 export const DEVICE_CHANGE = 'deviceChange'
 export const DEVICE_FIRMWARE_INFO = 'firmwareInfo'
+export const SELF_ANNOUNCE = 'selfAnnounce'
 
 export const PACKET_SEND = 'packetSend'
 

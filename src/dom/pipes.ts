@@ -123,5 +123,3 @@ export class InPipe extends JDEventSource {
         this.bus.selfDevice.off(PACKET_RECEIVE, this._handlePacket)
     }
 }
-
-
