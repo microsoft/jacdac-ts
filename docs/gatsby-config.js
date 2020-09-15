@@ -163,7 +163,7 @@ module.exports = {
               resolution: 4,
               depth: 3
             },
-            store: true, // In case you want to make the field available in the search results.
+            store: false, // In case you want to make the field available in the search results.
           },
           {
             name: 'url',
