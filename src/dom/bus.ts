@@ -373,6 +373,10 @@ export class JDBus extends JDNode {
 
     private _debouncedScanFirmwares: () => void;
     setBackgroundFirmwareScans(enabled: boolean) {
+        const isSSR = typeof window === "undefined"
+        if (!isSSR)
+            enabled = false;
+
         if (enabled) {
             if (!this._debouncedScanFirmwares) {
                 this.log('debug', `enabling background firmware scans`)
@@ -385,10 +389,12 @@ export class JDBus extends JDNode {
                 this.on(DEVICE_ANNOUNCE, this._debouncedScanFirmwares)
             }
         } else {
-            this.log('debug', `disabling background firmware scans`)
-            const d = this._debouncedScanFirmwares;
-            this._debouncedScanFirmwares = undefined;
-            this.off(DEVICE_ANNOUNCE, d)
+            if (this._debouncedScanFirmwares) {
+                this.log('debug', `disabling background firmware scans`)
+                const d = this._debouncedScanFirmwares;
+                this._debouncedScanFirmwares = undefined;
+                this.off(DEVICE_ANNOUNCE, d)
+            }
         }
     }
 
