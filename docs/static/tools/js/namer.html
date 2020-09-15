@@ -54,12 +54,29 @@
         }
 
         let namer = null
+
         function render() {
-            const devicesDiv = document.getElementById("devices");
-            if (!namer)
-                namer = jacdac.DeviceNamerClient.create(jd, msg => {
-                    devicesDiv.innerText = msg
-                })
+            if (!namer) {
+                const devicesDiv = document.getElementById("devices");
+                namer = jacdac.DeviceNamerClient.create(jd)
+                if (namer)
+                    namer.on(jacdac.CHANGE, (devs) => {
+                        devicesDiv.innerHTML = ""
+                        for (const d of devs) {
+                            const div = document.createElement("div")
+                            devicesDiv.appendChild(div)
+                            div.innerText = d.name + (d.boundTo ? " -> " + d.boundTo.shortId : "")
+                            for (const c of d.candidates) {
+                                const btn = document.createElement("button")
+                                div.appendChild(btn)
+                                btn.innerText = c.shortId
+                                btn.onclick = () => {
+                                    d.select(c)
+                                }
+                            }
+                        }
+                    })
+            }
         }
 
         const connect = document.getElementById("connect");

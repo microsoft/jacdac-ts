@@ -63,12 +63,12 @@ export class DeviceNamerClient extends JDServiceClient {
         namer.on(CHANGE, (devs: RemoteRequestedDevice[]) => {
             let info = ""
             for (const d of devs) {
-                info += d.name
+                info += "D: " + d.name
                 if (d.boundTo)
                     info += " -> " + d.boundTo.shortId
                 info += "\n"
                 for (const c of d.candidates) {
-                    info += "  - " + c.shortId
+                    info += "  - " + c.shortId + "\n"
                 }
             }
             print(info)
@@ -97,20 +97,19 @@ export class DeviceNamerClient extends JDServiceClient {
 
     private async scanCore() {
         const inp = new InPipe(this.bus)
-        console.log("namer scan")
         await this.service.sendPacketAsync(
             inp.openCommand(DeviceNamerCmd.ListRequiredNames),
             true)
-        console.log("namer got ack")
 
         const localDevs = this.bus.devices()
         const devs: RemoteRequestedDevice[] = []
 
         const { meta, output } = await inp.readAll()
-        console.log("read all done")
 
         for (const pkt of output) {
             const buf = pkt.data
+            if (buf.length == 0)
+                continue
             const devid = toHex(buf.slice(0, 8))
             const [service_class] = unpack(buf, "I", 8)
             const name = fromUTF8(uint8ArrayToString(buf.slice(12)))
