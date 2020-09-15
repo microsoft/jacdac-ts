@@ -11,11 +11,15 @@ export enum DrawerType {
 export interface DrawerProps {
     drawerType: DrawerType,
     setDrawerType: (type: DrawerType) => void,
+    searchQuery: string,
+    setSearchQuery: (s: string) => void
 }
 
 const DrawerContext = createContext<DrawerProps>({
     drawerType: DrawerType.None,
     setDrawerType: (type) => { },
+    searchQuery: undefined,
+    setSearchQuery: (s) => { }
 });
 DrawerContext.displayName = "drawer";
 
@@ -23,11 +27,14 @@ export default DrawerContext;
 
 export const DrawerProvider = ({ children }) => {
     const [type, setType] = useState(DrawerType.None)
+    const [searchQuery, setSearchQuery] = useState('')
 
     return (
         <DrawerContext.Provider value={{
             drawerType: type,
             setDrawerType: setType,
+            searchQuery,
+            setSearchQuery
         }}>
             {children}
         </DrawerContext.Provider>
