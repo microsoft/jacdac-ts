@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { JDDevice } from "./device";
-import { SMap, debounceAsync, strcmp, arrayConcatMany } from "./utils";
+import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -31,7 +31,8 @@ import {
     REGISTER_NODE_NAME,
     FIELD_NODE_NAME,
     JD_DEVICE_DISCONNECTED_DELAY,
-    JD_DEVICE_LOST_DELAY
+    JD_DEVICE_LOST_DELAY,
+    JD_SERVICE_NUMBER_CRC_ACK
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -44,6 +45,7 @@ export interface BusOptions {
     disconnectAsync?: () => Promise<void>;
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
+    deviceId?: string;
 
     log?: Log;
 }
@@ -86,6 +88,7 @@ export class JDBus extends JDNode {
     private _gcInterval: any;
     private _minConsolePriority = ConsolePriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
+    private _announcing = false;
 
     /**
      * Creates the bus with the given transport
@@ -95,6 +98,11 @@ export class JDBus extends JDNode {
         super();
         this.options = this.options || {};
         this.options.log = this.options.log || log;
+        if (!this.options.deviceId) {
+            const devId = anyRandomUint32(8);
+            for (let i = 0; i < 8; ++i) devId[i] &= 0xff;
+            this.options.deviceId = toHex(devId);
+        }
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
@@ -437,6 +445,14 @@ export class JDBus extends JDNode {
         if (!pkt.dev) {
             // skip
         } else if (pkt.is_command) {
+            if (pkt.device_identifier == this.selfDeviceId) {
+                if (pkt.requires_ack) {
+                    const ack = Packet.onlyHeader(pkt.crc)
+                    ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
+                    ack.device_identifier = this.selfDeviceId
+                    this.sendPacketAsync(ack)
+                }
+            }
             pkt.dev.processPacket(pkt);
         } else {
             pkt.dev.lastSeen = pkt.timestamp
@@ -460,11 +476,35 @@ export class JDBus extends JDNode {
         }
     }
 
+    get selfDeviceId() {
+        return this.options.deviceId
+    }
+
+    get selfDevice() {
+        return this.device(this.selfDeviceId)
+    }
+
     /**
      * Tries to find the given device by id
      * @param id 
      */
     lookupName(id: string) {
         return this._deviceNames[id];
+    }
+
+    enableAnnounce() {
+        if (!this._announcing)
+            return;
+        this._announcing = true;
+        let restartCounter = 0
+        setInterval(() => {
+            if (!this.connected)
+                return
+            // we do not support any services (at least yet)
+            const pkt = Packet.packed(CMD_ADVERTISEMENT_DATA, "I", [restartCounter | 0x100])
+            pkt.service_number = JD_SERVICE_NUMBER_CTRL
+            pkt.device_identifier = this.selfDeviceId
+            this.sendPacketAsync(pkt)
+        }, 499)
     }
 }

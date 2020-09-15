@@ -1,4 +1,3 @@
-
 export function throwError(msg: string, cancel?: boolean) {
     const e = new Error(msg)
     if (cancel)
@@ -393,6 +392,14 @@ export function withTimeout<T>(timeout: number, p: Promise<T>) {
     })
 }
 
+export function signal() {
+    let resolve: () => void
+    return {
+        signalled: new Promise(r => { resolve = r }),
+        signal: () => resolve()
+    }
+}
+
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
     let timeOutId: any;
     return function () {
@@ -444,6 +451,21 @@ export function cryptoRandomUint32(length: number): Uint32Array {
     const vals = new Uint32Array(length)
     window.crypto.getRandomValues(vals)
     return vals;
+}
+
+export function anyRandomUint32(length: number): Uint32Array {
+    let r = cryptoRandomUint32(length);
+    if (!r) {
+        r = new Uint32Array(length)
+        for (let i = 0; i < r.length; ++i)
+            r[i] = Math.random() * 0x1_0000_0000 >>> 0
+    }
+    return r;
+}
+
+export function randomUInt(max: number) {
+    const arr = anyRandomUint32(1)
+    return arr[0] % max
 }
 
 export function JSONTryParse(src: string) {
