@@ -15,6 +15,7 @@ import { FirmwareInfo } from "./flashing";
 
 export interface PipeInfo {
     pipeType?: string;
+    localPipe?: any;
 }
 
 interface AckAwaiter {
