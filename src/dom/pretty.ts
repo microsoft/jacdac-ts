@@ -218,6 +218,10 @@ export function decodeMember(
             humanValue = scaledValue + ""
             if ((scaledValue | 0) == scaledValue && scaledValue >= 15)
                 humanValue += " (" + hexNum(scaledValue) + ")"
+            else if (scaledValue && member.storage == 8) {
+                const did = toHex(pkt.data.slice(offset, offset + 8))
+                humanValue += ` (${did} / ${shortDeviceId(did)})`
+            }
         }
     }
 
