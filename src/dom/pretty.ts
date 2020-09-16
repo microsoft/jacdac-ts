@@ -59,7 +59,6 @@ const generic_commands: SMap<number> = {
 const generic_regs: SMap<number> = {
     REG_INTENSITY: 0x01,
     REG_VALUE: 0x02,
-    REG_IS_STREAMING: 0x03,
     REG_STREAMING_INTERVAL: 0x04,
     REG_LOW_THRESHOLD: 0x05,
     REG_HIGH_THRESHOLD: 0x06,
