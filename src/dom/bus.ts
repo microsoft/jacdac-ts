@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { JDDevice } from "./device";
-import { SMap, debounceAsync, strcmp, arrayConcatMany } from "./utils";
+import { debounceAsync, strcmp, arrayConcatMany } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -49,7 +49,9 @@ export interface PacketTransport {
 export interface BusOptions {
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
+}
 
+export interface BusHost {
     log?: Log;
     deviceNamer?: DeviceNamer;
 }
@@ -92,6 +94,10 @@ export class JDBus extends JDNode {
     private _minConsolePriority = ConsolePriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
 
+    public readonly host: BusHost = {
+        log
+    }
+
     /**
      * Creates the bus with the given transport
      * @param sendPacket 
@@ -99,7 +105,6 @@ export class JDBus extends JDNode {
     constructor(public readonly transport: PacketTransport, public options?: BusOptions) {
         super();
         this.options = this.options || {};
-        this.options.log = this.options.log || log;
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
     }
@@ -196,7 +201,7 @@ export class JDBus extends JDNode {
     }
 
     protected get logger(): Log {
-        return this.options?.log
+        return this.host.log
     }
 
     set minConsolePriority(priority: ConsolePriority) {
