@@ -17,7 +17,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 import { JDDevice } from '../../../src/dom/device';
 import DeviceActions from './DeviceActions';
-import { IconButton } from '@material-ui/core';
+import { IconButton } from 'gatsby-theme-material-ui';
 
 export default function DeviceRenameButton(props: { device: JDDevice }) {
     const { device } = props
