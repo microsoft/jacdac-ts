@@ -15,6 +15,7 @@ import { FirmwareInfo } from "./flashing";
 
 export interface PipeInfo {
     pipeType?: string;
+    localPipe?: any;
 }
 
 interface AckAwaiter {
@@ -258,7 +259,7 @@ export class JDDevice extends JDNode {
 
     private initAcks() {
         this.ackAwaiting = []
-        this.on(PACKET_REPORT, rep => {
+        this.on(PACKET_REPORT, (rep: Packet) => {
             if (rep.service_number != JD_SERVICE_NUMBER_CRC_ACK)
                 return
             let numdone = 0

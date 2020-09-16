@@ -270,6 +270,9 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
             const p = Packet.fromBinary(pkt)
             p.timestamp = timestamp
             res.push(p)
+            // only set req_ack flag on first packet - otherwise we would sent multiple acks
+            if (res.length > 1)
+                p.requires_ack = false
             ptr += sz
         }
 

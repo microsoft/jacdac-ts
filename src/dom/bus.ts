@@ -1,6 +1,6 @@
 import { Packet } from "./packet";
 import { JDDevice } from "./device";
-import { debounceAsync, strcmp, arrayConcatMany } from "./utils";
+import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -31,7 +31,9 @@ import {
     REGISTER_NODE_NAME,
     FIELD_NODE_NAME,
     JD_DEVICE_DISCONNECTED_DELAY,
-    JD_DEVICE_LOST_DELAY
+    JD_DEVICE_LOST_DELAY,
+    JD_SERVICE_NUMBER_CRC_ACK,
+    SELF_ANNOUNCE
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -49,6 +51,7 @@ export interface PacketTransport {
 export interface BusOptions {
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
+    deviceId?: string;
 }
 
 export interface BusHost {
@@ -91,8 +94,10 @@ export class JDBus extends JDNode {
     private _devices: JDDevice[] = [];
     private _startTime: number;
     private _gcInterval: any;
+    private _announceInterval: any;
     private _minConsolePriority = ConsolePriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
+    private _announcing = false;
 
     public readonly host: BusHost = {
         log
@@ -105,8 +110,28 @@ export class JDBus extends JDNode {
     constructor(public readonly transport: PacketTransport, public options?: BusOptions) {
         super();
         this.options = this.options || {};
+        if (!this.options.deviceId) {
+            const devId = anyRandomUint32(8);
+            for (let i = 0; i < 8; ++i) devId[i] &= 0xff;
+            this.options.deviceId = toHex(devId);
+        }
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
+    }
+
+    private startTimers() {
+        if (!this._announceInterval)
+            this._announceInterval = setInterval(() => {
+                if (this.connected)
+                    this.emit(SELF_ANNOUNCE);
+            }, 499);
+    }
+
+    private stopTimers() {
+        if (this._announceInterval) {
+            clearInterval(this._announceInterval);
+            this._announceInterval = undefined;
+        }
     }
 
     /**
@@ -278,6 +303,7 @@ export class JDBus extends JDNode {
             else {
                 // starting a fresh connection
                 this.log('debug', `connecting`)
+                this.startTimers();
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
                 if (this.transport.connectAsync)
@@ -333,6 +359,7 @@ export class JDBus extends JDNode {
                 .finally(() => {
                     this._disconnectPromise = undefined;
                     this.setConnectionState(BusState.Disconnected);
+                    this.stopTimers();
                 });
         } else {
             this.log('debug', `disconnect with existing promise`)
@@ -455,6 +482,14 @@ export class JDBus extends JDNode {
         if (!pkt.dev) {
             // skip
         } else if (pkt.is_command) {
+            if (pkt.device_identifier == this.selfDeviceId) {
+                if (pkt.requires_ack) {
+                    const ack = Packet.onlyHeader(pkt.crc)
+                    ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
+                    ack.device_identifier = this.selfDeviceId
+                    ack.sendReportAsync(this.selfDevice)
+                }
+            }
             pkt.dev.processPacket(pkt);
         } else {
             pkt.dev.lastSeen = pkt.timestamp
@@ -476,5 +511,28 @@ export class JDBus extends JDNode {
             if (pkt.is_command && pkt.service_command === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
+    }
+
+    get selfDeviceId() {
+        return this.options.deviceId
+    }
+
+    get selfDevice() {
+        return this.device(this.selfDeviceId)
+    }
+
+    enableAnnounce() {
+        if (!this._announcing)
+            return;
+        this._announcing = true;
+        let restartCounter = 0
+        this.on(SELF_ANNOUNCE, () => {
+            // we do not support any services (at least yet)
+            if (restartCounter < 0xf) restartCounter++
+            const pkt = Packet.packed(CMD_ADVERTISEMENT_DATA, "I", [restartCounter | 0x100])
+            pkt.service_number = JD_SERVICE_NUMBER_CTRL
+            pkt.device_identifier = this.selfDeviceId
+            pkt.sendReportAsync(this.selfDevice)
+        })
     }
 }

@@ -123,6 +123,9 @@ export const EVENT = 'event'
 export const FIRMWARE_INFO = 'firmwareInfo'
 export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 
+export const DATA = 'data'
+export const CLOSE = 'close'
+
 export const DEVICE_CONNECT = 'deviceConnect'
 export const DEVICE_LOST = 'deviceLost'
 export const DEVICE_FOUND = 'deviceFound'
@@ -131,6 +134,7 @@ export const DEVICE_ANNOUNCE = 'deviceAnnounce'
 export const DEVICE_RESTART = 'deviceRestart'
 export const DEVICE_CHANGE = 'deviceChange'
 export const DEVICE_FIRMWARE_INFO = 'firmwareInfo'
+export const SELF_ANNOUNCE = 'selfAnnounce'
 
 export const PACKET_SEND = 'packetSend'
 

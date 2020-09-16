@@ -1,6 +1,10 @@
 import { JDDevice } from "./device"
-import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_NUMBER_PIPE, PIPE_METADATA_MASK } from "./constants"
+import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_NUMBER_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE } from "./constants"
 import { Packet } from "./packet"
+import { JDBus } from "./bus"
+import { randomUInt, signal, withTimeout, fromHex } from "./utils"
+import { JDEventSource } from "./eventsource"
+import { pack } from "./struct"
 
 export class OutPipe {
     private count = 0
@@ -44,6 +48,90 @@ export class OutPipe {
     }
 }
 
-// InPipe is a little more involved, as it requires coming up with
-// a device ID for the browser "client"
 
+export class InPipe extends JDEventSource {
+    private _port: number
+    private _count = 0
+
+    constructor(protected bus: JDBus) {
+        super()
+
+        this._handlePacket = this._handlePacket.bind(this)
+
+        while (true) {
+            this._port = 1 + randomUInt(511)
+            const info = this.bus.selfDevice.port(this._port)
+            if (!info.localPipe && !info.pipeType) {
+                info.localPipe = this
+                break
+            }
+        }
+
+        this.bus.enableAnnounce()
+        this.bus.selfDevice.on(PACKET_RECEIVE, this._handlePacket)
+    }
+
+    get isOpen() {
+        return this._port != null
+    }
+
+    openCommand(cmd: number) {
+        const b = pack("IIHH", [0, 0, this._port, 0])
+        b.set(fromHex(this.bus.selfDeviceId), 0)
+        return Packet.from(cmd, b)
+    }
+
+
+    private _handlePacket(pkt: Packet) {
+        if (pkt.service_number !== JD_SERVICE_NUMBER_PIPE)
+            return
+        if (pkt.service_command >> PIPE_PORT_SHIFT !== this._port)
+            return
+        if ((pkt.service_command & PIPE_COUNTER_MASK) == (this._count & PIPE_COUNTER_MASK)) {
+            this._count++
+            this.emit(DATA, pkt)
+            if (pkt.service_command & PIPE_CLOSE_MASK) {
+                this.close()
+            }
+        }
+    }
+
+    close() {
+        if (this._port == null)
+            return
+        this.emit(CLOSE)
+        this._port = null
+        this.bus.selfDevice.port(this._port).localPipe = undefined
+        this.bus.selfDevice.off(PACKET_RECEIVE, this._handlePacket)
+    }
+}
+
+export class InPipeReader extends InPipe {
+    private done = signal()
+    private meta: Packet[] = []
+    private output: Packet[] = []
+
+    constructor(bus: JDBus) {
+        super(bus)
+        this.on(DATA, (pkt: Packet) => {
+            if (pkt.service_command & PIPE_METADATA_MASK)
+                this.meta.push(pkt)
+            else
+                this.output.push(pkt)
+        })
+        this.on(CLOSE, this.done.signal)
+    }
+
+    async readData(timeout = 500) {
+        await withTimeout(timeout, this.done.signalled)
+        return this.output.map(p => p.data).filter(b => b.length > 0)
+    }
+
+    async readAll(timeout = 500) {
+        await withTimeout(timeout, this.done.signalled)
+        return {
+            meta: this.meta,
+            output: this.output
+        }
+    }
+}
