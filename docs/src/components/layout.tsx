@@ -31,6 +31,7 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import EditIcon from '@material-ui/icons/Edit';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -49,6 +50,7 @@ import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import CodeDemo from "./CodeBlock";
 import { ServiceManagerProvider } from "./ServiceManagerContext";
+import useDarkMode from "./useDarkMode";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
@@ -130,7 +132,16 @@ const mdxComponents = {
 };
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
-  const theme = responsiveFontSizes(createMuiTheme());
+  const { darkMode, toggleDarkMode, darkModeMounted } = useDarkMode()
+  console.log(`theme ${darkMode}`)
+  const theme = responsiveFontSizes(createMuiTheme({
+    palette: {
+      type: darkMode
+    }
+  }));
+
+  if (!darkModeMounted)
+    return <div />
 
   return (
     <ThemeProvider theme={theme}>
@@ -140,7 +151,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
             <PacketsProvider>
               <DbProvider>
                 <DrawerProvider>
-                  <LayoutWithContext {...props} />
+                  <LayoutWithContext {...props} toggleDarkMode={toggleDarkMode} />
                 </DrawerProvider>
               </DbProvider>
             </PacketsProvider>
@@ -152,8 +163,12 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 }
 
 
-function LayoutWithContext(props: { pageContext?: any; children: any; }) {
-  const { pageContext, children } = props;
+function LayoutWithContext(props: {
+  pageContext?: any;
+  children: any;
+  toggleDarkMode: () => void
+}) {
+  const { pageContext, children, toggleDarkMode } = props;
   const classes = useStyles();
   const { drawerType, setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
@@ -240,6 +255,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
             <EditIcon />
           </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={toggleDarkMode} aria-label="Toggle Dark Mode">
+            <SettingsBrightnessIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
