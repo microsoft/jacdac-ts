@@ -9,7 +9,7 @@ import { isReading } from "./spec";
 export function isSensor(service: JDService): boolean {
     const spec = service.specification;
     return spec?.packets.some(pkt => isReading(pkt))
-    && spec?.packets.some(pkt => pkt.identifier == SensorReg.IsStreaming)
+    && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamSamples)
     && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 
