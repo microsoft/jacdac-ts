@@ -3,14 +3,11 @@ import { JDBus } from "./bus"
 import { Packet } from "./packet"
 import {
     JD_SERIAL_MAX_PAYLOAD_SIZE,
-    REPORT_RECEIVE,
-    SRV_TFLITE,
-    SRV_ACCELEROMETER,
-    SRV_SLIDER
+    REPORT_RECEIVE, SensorAggregatorSampleType, SensorAggregatorReg
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
-import { TFLiteCmd, TFLiteSampleType, TFLiteReg } from "./constants"
+import { TFLiteCmd, TFLiteReg } from "./constants"
 import { isReading } from "./spec"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
@@ -59,12 +56,12 @@ export class TFLiteClient extends JDServiceClient {
         }
         function mapType(tp: number) {
             switch (tp) {
-                case 1: return TFLiteSampleType.U8
-                case 2: return TFLiteSampleType.U16
-                case 4: return TFLiteSampleType.U32
-                case -1: return TFLiteSampleType.I8
-                case -2: return TFLiteSampleType.I16
-                case -4: return TFLiteSampleType.I32
+                case 1: return SensorAggregatorSampleType.U8
+                case 2: return SensorAggregatorSampleType.U16
+                case 4: return SensorAggregatorSampleType.U32
+                case -1: return SensorAggregatorSampleType.I8
+                case -2: return SensorAggregatorSampleType.I16
+                case -4: return SensorAggregatorSampleType.I32
                 default:
                     error("unknown storage type")
             }
@@ -72,7 +69,7 @@ export class TFLiteClient extends JDServiceClient {
         let totalSampleSize = 0
         const inputs = cfg.inputs.map(inp => {
             const readingReg = inp.specification.packets.find(isReading)
-            let sampleType: TFLiteSampleType = undefined
+            let sampleType: SensorAggregatorSampleType = undefined
             let sampleSize = 0
             let sampleShift = 0
             for (const field of readingReg.fields) {
@@ -101,17 +98,17 @@ export class TFLiteClient extends JDServiceClient {
             error("samples won't fit in packet")
 
         inputs.unshift(pack("HHI", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
-        await this.service.register(TFLiteReg.Inputs)
+        await this.service.register(SensorAggregatorReg.Inputs)
             .sendSetAsync(U.bufferConcatMany(inputs))
     }
 
     async collect(numSamples: number) {
-        await this.service.register(TFLiteReg.StreamSamples)
+        await this.service.register(SensorAggregatorReg.StreamSamples)
             .sendSetIntAsync(numSamples)
     }
 
     subscribeSample(handler: (sample: number[]) => void): () => void {
-        const reg = this.service.register(TFLiteReg.CurrentSample)
+        const reg = this.service.register(SensorAggregatorReg.CurrentSample)
         return reg.subscribe(REPORT_RECEIVE,
             () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
     }
@@ -143,7 +140,7 @@ export class TFLiteClient extends JDServiceClient {
         await this.service.register(TFLiteReg.AutoInvokeEvery).sendSetIntAsync(everySamples)
     }
 
-    private async getReg(id: TFLiteReg, f: (v: JDRegister) => any) {
+    private async getReg(id: SensorAggregatorReg | TFLiteReg, f: (v: JDRegister) => any) {
         const reg = this.service.register(id)
         await reg.refresh()
         return f(reg)
@@ -165,8 +162,8 @@ export class TFLiteClient extends JDServiceClient {
 
     async execStats(): Promise<TFExecStats> {
         const info: any = {
-            "numSamples": this.getReg(TFLiteReg.NumSamples, r => r.intValue),
-            "sampleSize": this.getReg(TFLiteReg.SampleSize, r => r.intValue),
+            "numSamples": this.getReg(SensorAggregatorReg.NumSamples, r => r.intValue),
+            "sampleSize": this.getReg(SensorAggregatorReg.SampleSize, r => r.intValue),
             "lastRunTime": this.getReg(TFLiteReg.LastRunTime, r => r.intValue),
         }
         for (const id of Object.keys(info)) {
