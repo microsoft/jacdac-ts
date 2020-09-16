@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import Button from '@material-ui/core/Button';
 // tslint:disable-next-line: no-submodule-imports
@@ -18,10 +18,13 @@ import EditIcon from '@material-ui/icons/Edit';
 import { JDDevice } from '../../../src/dom/device';
 import DeviceActions from './DeviceActions';
 import { IconButton } from 'gatsby-theme-material-ui';
+import ServiceManagerContext from './ServiceManagerContext';
 
 export default function DeviceRenameButton(props: { device: JDDevice }) {
     const { device } = props
     const [open, setOpen] = React.useState(false);
+    const [name, setName] = useState(device.name);
+    const { deviceNames } = useContext(ServiceManagerContext);
 
     const handleClickOpen = (ev) => {
         ev.stopPropagation()
@@ -31,8 +34,12 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
         setOpen(false);
     };
     const handleClose = () => {
+        deviceNames.set(device.deviceId, name)
         setOpen(false);
-    };
+    }
+    const handleChange = (ev) => {
+        setName(ev.target.value)
+    }
 
     return <>
         <IconButton size="small" aria-label="rename device" title="rename device" onClick={handleClickOpen}>
@@ -51,13 +58,14 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
                     margin="dense"
                     id="name"
                     label="Device name"
-                    type="email"
                     fullWidth
+                    value={name}
+                    onChange={handleChange}
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleCancel} color="primary">Cancel</Button>
-                <Button onClick={handleClose} color="primary">Save</Button>
+                <Button onClick={handleCancel} variant="contained">Cancel</Button>
+                <Button onClick={handleClose} variant="contained" color="primary">Save</Button>
             </DialogActions>
         </Dialog>
     </>
