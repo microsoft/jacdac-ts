@@ -24,6 +24,7 @@ export default function ReadingFieldGrid(props: {
     const classes = useStyles();
     const gridBreakpoints = useGridBreakpoints();
     const handleCheck = (register: JDRegister) => () => handleRegisterCheck(register)
+    const deviceName = useDeviceName(register.service.device)
 
     return <Grid container spacing={2}>
         {readingRegisters.map(register => {
@@ -31,7 +32,7 @@ export default function ReadingFieldGrid(props: {
             return <Grid item {...gridBreakpoints} key={'source' + register.id}>
                 <Card>
                     <CardHeader subheader={register.service.name}
-                        title={`${register.service.device.name}/${register.name}`}
+                        title={`${deviceName}/${register.name}`}
                         action={<DeviceActions device={register.service.device} reset={true} />} />
                     <CardContent>
                         {register.fields.map((field) => <span key={field.id}>

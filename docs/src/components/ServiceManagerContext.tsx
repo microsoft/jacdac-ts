@@ -6,6 +6,7 @@ import { HTMLIFrameTransport } from "../../../src/embed/transport";
 import DarkModeContext from "./DarkModeContext";
 import JACDACContext from '../../../src/react/Context';
 import { JDDevice } from "../../../src/dom/device";
+import { IDeviceNameSettings } from "../../../src/dom/bus"
 
 export interface ISettings {
     get(key: string): string;
@@ -37,16 +38,24 @@ export class LocalStorageSettings implements ISettings {
     }
 }
 
+class LocalStorageDeviceNameSettings implements IDeviceNameSettings {
+    constructor(private readonly settings: ISettings) { }
+    resolve(device: JDDevice): string {
+        return this.settings.get(device.deviceId)
+    }
+    notifyUpdate(device: JDDevice, name: string): void {
+        this.settings.set(device.deviceId, name)
+    }
+}
+
 export interface ServiceManagerContextProps {
     isHosted: boolean;
     fileStorage: IFileStorage;
-    deviceNames: ISettings;
 }
 
 const ServiceManagerContext = createContext<ServiceManagerContextProps>({
     isHosted: false,
-    fileStorage: null,
-    deviceNames: null
+    fileStorage: null
 });
 ServiceManagerContext.displayName = "Services";
 
@@ -55,7 +64,9 @@ export const ServiceManagerProvider = ({ children }) => {
     const { bus } = useContext(JACDACContext)
     const isHosted = inIFrame();
     let fileStorage: IFileStorage = new BrowserFileStorage()
-    let deviceNames: ISettings = new LocalStorageSettings("jacdac_device_names");
+    let deviceNames = new LocalStorageDeviceNameSettings(
+        new LocalStorageSettings("jacdac_device_names")
+    );
     if (isHosted) {
         console.log(`starting hosted services`)
         const transport = new HTMLIFrameTransport()
@@ -66,8 +77,7 @@ export const ServiceManagerProvider = ({ children }) => {
     }
     const value = {
         isHosted,
-        fileStorage,
-        deviceNames
+        fileStorage
     }
 
     const handleMessage = (ev: MessageEvent<any>) => {
@@ -86,7 +96,7 @@ export const ServiceManagerProvider = ({ children }) => {
 
     // receiving messages
     useEffect(() => {
-        bus.host.deviceNamer = (device: JDDevice) => deviceNames.get(device.deviceId)
+        bus.host.deviceNameSettings = deviceNames
         window.addEventListener('message', handleMessage, false)
         return () => window.removeEventListener('message', handleMessage)
     }, [])

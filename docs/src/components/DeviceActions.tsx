@@ -26,6 +26,6 @@ export default function DeviceActions(props: { device: JDDevice, reset?: boolean
         {reset && <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
             <RefreshIcon />
         </IconButton>}
-        {rename && bus.host.deviceNamer && <DeviceRenameButton device={device} />}
+        {rename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
     </React.Fragment>;
 }

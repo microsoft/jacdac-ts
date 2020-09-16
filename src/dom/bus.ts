@@ -40,7 +40,11 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
 
-export type DeviceNamer = (device: JDDevice) => string;
+export interface IDeviceNameSettings {
+    resolve(device: JDDevice): string;
+    // notify namer that the device was renamed
+    notifyUpdate(device: JDDevice, name: string): void;
+}
 
 export interface PacketTransport {
     sendPacketAsync?: (p: Packet) => Promise<void>;
@@ -56,7 +60,7 @@ export interface BusOptions {
 
 export interface BusHost {
     log?: Log;
-    deviceNamer?: DeviceNamer;
+    deviceNameSettings?: IDeviceNameSettings;
 }
 
 export interface Error {
@@ -397,6 +401,8 @@ export class JDBus extends JDNode {
         if (!d) {
             this.log('info', `new device ${id}`)
             d = new JDDevice(this, id)
+            if (this.host.deviceNameSettings)
+                d.name = this.host.deviceNameSettings.resolve(d)
             this._devices.push(d);
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))

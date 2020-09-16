@@ -78,7 +78,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
 
     return <React.Fragment>
         {showDeviceName && <Typography component="span" key="devicenamename">
-            {register.service.device.name}/
+            <DeviceName device={register.service.device} />/
         </Typography>}
         {showName && !!decoded && <Typography component="span" key="registername" gutterBottom>
             {decoded.info.name}

@@ -24,7 +24,6 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
     const { device } = props
     const [open, setOpen] = React.useState(false);
     const [name, setName] = useState(device.name);
-    const { deviceNames } = useContext(ServiceManagerContext);
 
     const handleClickOpen = (ev) => {
         ev.stopPropagation()
@@ -34,7 +33,7 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
         setOpen(false);
     };
     const handleClose = () => {
-        deviceNames.set(device.deviceId, name)
+        device.name = name;
         setOpen(false);
     }
     const handleChange = (ev) => {

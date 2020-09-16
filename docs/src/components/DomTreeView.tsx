@@ -29,6 +29,7 @@ import useEventRaised from '../jacdac/useEventRaised';
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
 import { ellipseJoin } from '../../../src/dom/utils';
 import { Link } from 'gatsby-theme-material-ui';
+import useDeviceName from './useDeviceName';
 
 declare module 'csstype' {
     interface Properties {
@@ -171,7 +172,7 @@ interface DomTreeViewItemProps {
 function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & DomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
-    const name = device.name
+    const name = useDeviceName(device)
     const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 

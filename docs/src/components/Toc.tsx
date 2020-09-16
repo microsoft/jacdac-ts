@@ -166,7 +166,7 @@ export default function Toc() {
       key={'tocitem' + entry.path}
       nodeId={entry.path.replace(/\/$/, '')}
       label={<Link to={entry.path}>
-        <ListItemText primary={entry.name} />
+        <ListItemText primary={entry.name} primaryTypographyProps={({ color: "textPrimary" })} />
       </Link>}>
       {sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} />)}
     </TreeItem>

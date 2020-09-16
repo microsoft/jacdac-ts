@@ -6,6 +6,7 @@ import { JDDevice } from "../../../src/dom/device";
 import React from "react";
 import useRegisterValue from "../jacdac/useRegisterValue";
 import DeviceActions from "./DeviceActions";
+import DeviceName from "./DeviceName";
 
 export default function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean }) {
     const { device, showFirmware, showTemperature } = props;
@@ -16,7 +17,7 @@ export default function DeviceCardHeader(props: { device: JDDevice, showFirmware
     return <CardHeader
         action={<DeviceActions device={device} reset={true} />}
         title={<Link color="textPrimary" to="/clients/web/dom/device">
-            {device.name}
+            <DeviceName device={device} />
         </Link>}
         subheader={
             <React.Fragment>
