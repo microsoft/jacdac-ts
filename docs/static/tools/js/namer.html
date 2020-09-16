@@ -74,6 +74,14 @@
                                     d.select(c)
                                 }
                             }
+                            if (d.boundTo) {
+                                const btn = document.createElement("button")
+                                div.appendChild(btn)
+                                btn.innerText = "Clear"
+                                btn.onclick = () => {
+                                    namer.setName(d.boundTo, null)
+                                }
+                            }
                         }
                     })
             }

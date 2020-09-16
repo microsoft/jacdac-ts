@@ -3,11 +3,10 @@ import { JDBus } from "./bus";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { DEVICE_CONNECT, DeviceNamerCmd, SELF_ANNOUNCE, CHANGE } from "./constants";
+import { SRV_DEVICE_NAMER, DEVICE_CONNECT, DeviceNamerCmd, SELF_ANNOUNCE, CHANGE } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
 import { unpack } from "./struct";
 import { Packet } from "./packet";
-import { SRV_DEVICE_NAMER } from "../../jacdac-spec/dist/specconstants";
 
 export class RemoteRequestedDevice {
     services: number[] = [];
@@ -127,7 +126,7 @@ export class DeviceNamerClient extends JDServiceClient {
     }
 
     setName(dev: JDDevice, name: string) {
-        const data = bufferConcat(fromHex(dev.deviceId), stringToUint8Array(fromUTF8(name)))
+        const data = bufferConcat(fromHex(dev.deviceId), stringToUint8Array(fromUTF8(name || "")))
         return this.service.sendPacketAsync(Packet.from(DeviceNamerCmd.SetName, data), true)
     }
 }
