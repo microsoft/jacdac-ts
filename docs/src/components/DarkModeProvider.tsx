@@ -1,11 +1,8 @@
 import { PaletteType } from "@material-ui/core";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import DarkModeContext from './DarkModeContext'
 
-export default function useDarkMode(): {
-  darkMode: PaletteType,
-  toggleDarkMode: () => void,
-  darkModeMounted: boolean
-} {
+const DarkModeProvider = ({ children }) => {
   const KEY = 'darkMode'
   const [darkMode, setDarkMode] = useState<PaletteType>('light');
   const [darkModeMounted, setMounted] = useState(false);
@@ -15,12 +12,11 @@ export default function useDarkMode(): {
       window.localStorage.setItem(KEY, mode)
     setDarkMode(mode)
   }
-  const toggleDarkMode = () => {
-    if (darkMode === 'light') {
-      console.log(`toggle dark`)
+  const toggleDarkMode = (mode?: PaletteType) => {
+    mode = mode || (darkMode === 'light' ? 'dark' : 'light')
+    if (mode === 'dark') {
       setMode('dark')
     } else {
-      console.log(`toggle light`)
       setMode('light')
     }
   };
@@ -37,5 +33,9 @@ export default function useDarkMode(): {
     setMounted(true);
   }, []);
 
-  return { darkMode, toggleDarkMode, darkModeMounted }
+  return <DarkModeContext.Provider value={{ darkMode, toggleDarkMode, darkModeMounted }}>
+    {children}
+  </DarkModeContext.Provider>
 }
+
+export default DarkModeProvider

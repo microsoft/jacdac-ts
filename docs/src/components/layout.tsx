@@ -51,7 +51,8 @@ import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import CodeDemo from "./CodeBlock";
 import { ServiceManagerProvider } from "./ServiceManagerContext";
-import useDarkMode from "./useDarkMode";
+import DarkModeProvider from "./DarkModeProvider";
+import DarkModeContext from "./DarkModeContext";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
@@ -128,7 +129,13 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
-  const { darkMode, toggleDarkMode, darkModeMounted } = useDarkMode()
+  return <DarkModeProvider>
+    <LayoutWithDarkMode {...props} />
+  </DarkModeProvider>
+}
+
+function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
+  const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   if (!darkModeMounted)
     return <div />
 
@@ -151,7 +158,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
             <PacketsProvider>
               <DbProvider>
                 <DrawerProvider>
-                  <LayoutWithContext {...props} toggleDarkMode={toggleDarkMode} />
+                  <LayoutWithContext {...props} />
                 </DrawerProvider>
               </DbProvider>
             </PacketsProvider>
@@ -166,9 +173,9 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 function LayoutWithContext(props: {
   pageContext?: any;
   children: any;
-  toggleDarkMode: () => void
 }) {
-  const { pageContext, children, toggleDarkMode } = props;
+  const { toggleDarkMode } = useContext(DarkModeContext)
+  const { pageContext, children, } = props;
   const classes = useStyles();
   const { drawerType, setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
@@ -185,7 +192,7 @@ function LayoutWithContext(props: {
   const handleDrawerDom = () => {
     setDrawerType(DrawerType.Dom);
   }
-
+  const handleDarkMode = () => toggleDarkMode()
   const data = useStaticQuery(graphql`
     query {
       site {
@@ -255,7 +262,7 @@ function LayoutWithContext(props: {
             <EditIcon />
           </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
-          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={toggleDarkMode} aria-label="Toggle Dark Mode">
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
             <SettingsBrightnessIcon />
           </IconButton>
         </Toolbar>
