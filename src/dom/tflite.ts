@@ -4,13 +4,10 @@ import { Packet } from "./packet"
 import {
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     REPORT_RECEIVE,
-    SRV_TFLITE,
-    SRV_ACCELEROMETER,
-    SRV_SLIDER
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
-import { TFLiteCmd, TFLiteSampleType, TFLiteReg } from "./constants"
+import { TFLiteCmd, SensorAggregatorSampleType, SensorAggregatorReg, TFLiteReg } from "./constants"
 import { isReading } from "./spec"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
@@ -47,7 +44,7 @@ export interface InputConfig {
     }
 */
 
-export class TFLiteClient extends JDServiceClient {
+export class SensorAggregatorClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true
@@ -55,16 +52,16 @@ export class TFLiteClient extends JDServiceClient {
 
     async setInputs(cfg: InputConfig) {
         function error(msg: string) {
-            throw new Error("TFLite inputs: " + msg)
+            throw new Error("Aggregator inputs: " + msg)
         }
         function mapType(tp: number) {
             switch (tp) {
-                case 1: return TFLiteSampleType.U8
-                case 2: return TFLiteSampleType.U16
-                case 4: return TFLiteSampleType.U32
-                case -1: return TFLiteSampleType.I8
-                case -2: return TFLiteSampleType.I16
-                case -4: return TFLiteSampleType.I32
+                case 1: return SensorAggregatorSampleType.U8
+                case 2: return SensorAggregatorSampleType.U16
+                case 4: return SensorAggregatorSampleType.U32
+                case -1: return SensorAggregatorSampleType.I8
+                case -2: return SensorAggregatorSampleType.I16
+                case -4: return SensorAggregatorSampleType.I32
                 default:
                     error("unknown storage type")
             }
@@ -72,7 +69,7 @@ export class TFLiteClient extends JDServiceClient {
         let totalSampleSize = 0
         const inputs = cfg.inputs.map(inp => {
             const readingReg = inp.specification.packets.find(isReading)
-            let sampleType: TFLiteSampleType = undefined
+            let sampleType: SensorAggregatorSampleType = undefined
             let sampleSize = 0
             let sampleShift = 0
             for (const field of readingReg.fields) {
@@ -101,19 +98,43 @@ export class TFLiteClient extends JDServiceClient {
             error("samples won't fit in packet")
 
         inputs.unshift(pack("HHI", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
-        await this.service.register(TFLiteReg.Inputs)
+        await this.service.register(SensorAggregatorReg.Inputs)
             .sendSetAsync(U.bufferConcatMany(inputs))
     }
 
     async collect(numSamples: number) {
-        await this.service.register(TFLiteReg.StreamSamples)
+        await this.service.register(SensorAggregatorReg.StreamSamples)
             .sendSetIntAsync(numSamples)
     }
 
     subscribeSample(handler: (sample: number[]) => void): () => void {
-        const reg = this.service.register(TFLiteReg.CurrentSample)
+        const reg = this.service.register(SensorAggregatorReg.CurrentSample)
         return reg.subscribe(REPORT_RECEIVE,
             () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
+    }
+
+    private async getReg(id: SensorAggregatorReg, f: (v: JDRegister) => any) {
+        const reg = this.service.register(id)
+        await reg.refresh()
+        return f(reg)
+    }
+
+    async sampleStats(): Promise<AggregatorSampleStats> {
+        const info: any = {
+            "numSamples": this.getReg(SensorAggregatorReg.NumSamples, r => r.intValue),
+            "sampleSize": this.getReg(SensorAggregatorReg.SampleSize, r => r.intValue),
+        }
+        for (const id of Object.keys(info)) {
+            info[id] = await info[id]
+        }
+        return info
+    }
+}
+
+export class TFLiteClient extends JDServiceClient {
+    constructor(service: JDService) {
+        super(service)
+        this.service.registersUseAcks = true
     }
 
     subscribeResults(handler: (sample: number[]) => void): () => void {
@@ -151,23 +172,11 @@ export class TFLiteClient extends JDServiceClient {
 
     async modelStats(): Promise<TFModelStats> {
         const info: any = {
-            "model_size": this.getReg(TFLiteReg.ModelSize, r => r.intValue),
-            "arena_size": this.getReg(TFLiteReg.AllocatedArenaSize, r => r.intValue),
-            "input_shape": this.getReg(TFLiteReg.InputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
-            "output_shape": this.getReg(TFLiteReg.OutputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
-            "last_error": this.getReg(TFLiteReg.LastError, r => U.uint8ArrayToString(r.data)),
-        }
-        for (const id of Object.keys(info)) {
-            info[id] = await info[id]
-        }
-        return info
-    }
-
-    async execStats(): Promise<TFExecStats> {
-        const info: any = {
-            "numSamples": this.getReg(TFLiteReg.NumSamples, r => r.intValue),
-            "sampleSize": this.getReg(TFLiteReg.SampleSize, r => r.intValue),
-            "lastRunTime": this.getReg(TFLiteReg.LastRunTime, r => r.intValue),
+            "modelSize": this.getReg(TFLiteReg.ModelSize, r => r.intValue),
+            "arenaSize": this.getReg(TFLiteReg.AllocatedArenaSize, r => r.intValue),
+            "inputShape": this.getReg(TFLiteReg.InputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
+            "outputShape": this.getReg(TFLiteReg.OutputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
+            "lastError": this.getReg(TFLiteReg.LastError, r => U.uint8ArrayToString(r.data)),
         }
         for (const id of Object.keys(info)) {
             info[id] = await info[id]
@@ -176,10 +185,9 @@ export class TFLiteClient extends JDServiceClient {
     }
 }
 
-export interface TFExecStats {
+export interface AggregatorSampleStats {
     "numSamples": number;
     "sampleSize": number;
-    "lastRunTime": number;
 }
 
 export interface TFModelStats {
