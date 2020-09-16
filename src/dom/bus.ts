@@ -94,6 +94,7 @@ export class JDBus extends JDNode {
     private _devices: JDDevice[] = [];
     private _startTime: number;
     private _gcInterval: any;
+    private _announceInterval: any;
     private _minConsolePriority = ConsolePriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
     private _announcing = false;
@@ -116,10 +117,21 @@ export class JDBus extends JDNode {
         }
         this.resetTime();
         this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
-        setInterval(() => {
-            if (this.connected)
-                this.emit(SELF_ANNOUNCE)
-        }, 499)
+    }
+
+    private startTimers() {
+        if (!this._announceInterval)
+            this._announceInterval = setInterval(() => {
+                if (this.connected)
+                    this.emit(SELF_ANNOUNCE);
+            }, 499);
+    }
+
+    private stopTimers() {
+        if (this._announceInterval) {
+            clearInterval(this._announceInterval);
+            this._announceInterval = undefined;
+        }
     }
 
     /**
@@ -291,6 +303,7 @@ export class JDBus extends JDNode {
             else {
                 // starting a fresh connection
                 this.log('debug', `connecting`)
+                this.startTimers();
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
                 if (this.transport.connectAsync)
@@ -346,6 +359,7 @@ export class JDBus extends JDNode {
                 .finally(() => {
                     this._disconnectPromise = undefined;
                     this.setConnectionState(BusState.Disconnected);
+                    this.stopTimers();
                 });
         } else {
             this.log('debug', `disconnect with existing promise`)
