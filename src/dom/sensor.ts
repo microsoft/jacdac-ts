@@ -1,5 +1,5 @@
 import { JDService } from "./service";
-import { REG_IS_STREAMING, CMD_CALIBRATE, REG_LOW_THRESHOLD, SensorReg } from "./constants";
+import { REG_STREAM_SAMPLES, CMD_CALIBRATE, REG_LOW_THRESHOLD, SensorReg } from "./constants";
 import { isReading } from "./spec";
 
 /**
@@ -14,7 +14,7 @@ export function isSensor(service: JDService): boolean {
 }
 
 export function setStreamingAsync(service: JDService, on: boolean) {
-    const register = service.register(REG_IS_STREAMING);
+    const register = service.register(REG_STREAM_SAMPLES);
     return register?.sendSetBoolAsync(on) || Promise.resolve()
 }
 

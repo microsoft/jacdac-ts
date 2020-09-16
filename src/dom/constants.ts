@@ -11,7 +11,7 @@ export const REG_INTENSITY = 0x01
 // the primary value of actuator (eg. servo angle)
 export const REG_VALUE = 0x02
 // enable/disable streaming
-export const REG_IS_STREAMING = 0x03
+export const REG_STREAM_SAMPLES = 0x03
 // streaming interval in miliseconds
 export const REG_STREAMING_INTERVAL = 0x04
 // for analog sensors
