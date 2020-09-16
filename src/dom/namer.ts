@@ -1,6 +1,6 @@
 import { JDDevice } from "./device";
 import { JDBus } from "./bus";
-import { InPipe } from "./pipes";
+import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
 import { DEVICE_CONNECT, DeviceNamerCmd, SELF_ANNOUNCE, CHANGE } from "./constants";
@@ -96,7 +96,7 @@ export class DeviceNamerClient extends JDServiceClient {
     }
 
     private async scanCore() {
-        const inp = new InPipe(this.bus)
+        const inp = new InPipeReader(this.bus)
         await this.service.sendPacketAsync(
             inp.openCommand(DeviceNamerCmd.ListRequiredNames),
             true)
@@ -104,12 +104,7 @@ export class DeviceNamerClient extends JDServiceClient {
         const localDevs = this.bus.devices()
         const devs: RemoteRequestedDevice[] = []
 
-        const { meta, output } = await inp.readAll()
-
-        for (const pkt of output) {
-            const buf = pkt.data
-            if (buf.length == 0)
-                continue
+        for (const buf of await inp.readData()) {
             const devid = toHex(buf.slice(0, 8))
             const [service_class] = unpack(buf, "I", 8)
             const name = fromUTF8(uint8ArrayToString(buf.slice(12)))

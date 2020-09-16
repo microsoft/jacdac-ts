@@ -392,7 +392,11 @@ export function withTimeout<T>(timeout: number, p: Promise<T>) {
     })
 }
 
-export function signal() {
+export interface Signal {
+    signalled: Promise<void>
+    signal: () => void
+}
+export function signal(): Signal {
     let resolve: () => void
     return {
         signalled: new Promise(r => { resolve = r }),

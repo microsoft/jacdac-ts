@@ -53,7 +53,7 @@ export class InPipe extends JDEventSource {
     private _port: number
     private _count = 0
 
-    constructor(private bus: JDBus) {
+    constructor(protected bus: JDBus) {
         super()
 
         this._handlePacket = this._handlePacket.bind(this)
@@ -81,24 +81,6 @@ export class InPipe extends JDEventSource {
         return Packet.from(cmd, b)
     }
 
-    async readAll(timeout = 500) {
-        const output: Packet[] = []
-        const meta: Packet[] = []
-        const done = signal()
-
-        this.on(DATA, (pkt: Packet) => {
-            if (pkt.service_command & PIPE_METADATA_MASK)
-                meta.push(pkt)
-            else
-                output.push(pkt)
-        })
-
-        this.on(CLOSE, done.signal)
-
-        await withTimeout(timeout, done.signalled)
-
-        return { meta, output }
-    }
 
     private _handlePacket(pkt: Packet) {
         if (pkt.service_number !== JD_SERVICE_NUMBER_PIPE)
@@ -121,5 +103,35 @@ export class InPipe extends JDEventSource {
         this._port = null
         this.bus.selfDevice.port(this._port).localPipe = undefined
         this.bus.selfDevice.off(PACKET_RECEIVE, this._handlePacket)
+    }
+}
+
+export class InPipeReader extends InPipe {
+    private done = signal()
+    private meta: Packet[] = []
+    private output: Packet[] = []
+
+    constructor(bus: JDBus) {
+        super(bus)
+        this.on(DATA, (pkt: Packet) => {
+            if (pkt.service_command & PIPE_METADATA_MASK)
+                this.meta.push(pkt)
+            else
+                this.output.push(pkt)
+        })
+        this.on(CLOSE, this.done.signal)
+    }
+
+    async readData(timeout = 500) {
+        await withTimeout(timeout, this.done.signalled)
+        return this.output.map(p => p.data).filter(b => b.length > 0)
+    }
+
+    async readAll(timeout = 500) {
+        await withTimeout(timeout, this.done.signalled)
+        return {
+            meta: this.meta,
+            output: this.output
+        }
     }
 }
