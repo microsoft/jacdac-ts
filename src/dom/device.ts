@@ -56,7 +56,7 @@ export class JDDevice extends JDNode {
     }
 
     private lookupName() {
-        const namer = this.bus.options.deviceNamer;
+        const namer = this.bus.host.deviceNamer;
         return namer && namer(this);
     }
 
