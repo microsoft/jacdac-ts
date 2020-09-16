@@ -90,7 +90,7 @@ export default function Flash() {
     }
     // load indexed db file once
     useEffect(() => { scan() }, [flashing, firmwareFileDependencyId, connectionState])
-    useEffect(bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
     const handleFiles = async (files: FileList) => {
         const file = files.item(0)
         if (file) {

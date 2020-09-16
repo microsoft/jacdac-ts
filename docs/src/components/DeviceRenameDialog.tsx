@@ -29,10 +29,12 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
         ev.stopPropagation()
         setOpen(true);
     };
-    const handleCancel = () => {
+    const handleCancel = (ev) => {
+        ev.stopPropagation()
         setOpen(false);
     };
-    const handleClose = () => {
+    const handleClose = (ev) => {
+        ev.stopPropagation()
         device.name = name;
         setOpen(false);
     }

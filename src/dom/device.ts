@@ -63,6 +63,7 @@ export class JDDevice extends JDNode {
     set name(value: string) {
         if (value !== this._name) {
             this._name = value;
+            this.log('debug', `renamed to ${this._name}`)
             this.emit(NAME_CHANGE)
             this.bus.emit(DEVICE_NAME_CHANGE, this)
             this.emit(CHANGE)
