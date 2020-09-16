@@ -15,7 +15,9 @@ export default function FirmwareCard(props: { slug: string }) {
             setRelease(rel)
     }, [slug]);
     return <Card>
-        <CardHeader title={<Link target="_blank" to={`https://github.com/${slug}`}>{slug}</Link>} subheader={release && <Link target="_blank" to={release.html_url}>{release.name}</Link>} />
+        <CardHeader
+            title={<Link color="textPrimary" target="_blank" to={`https://github.com/${slug}`}>{slug}</Link>}
+            subheader={release && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>} />
         <CardContent>
             {!release && <CircularProgress />}
         </CardContent>

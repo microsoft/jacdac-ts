@@ -15,7 +15,7 @@ export default function DeviceCardHeader(props: { device: JDDevice, showFirmware
     const temperature = tempRegister?.intValue;
     return <CardHeader
         action={<DeviceActions device={device} reset={true} />}
-        title={<Link to="/clients/web/dom/device">
+        title={<Link color="textPrimary" to="/clients/web/dom/device">
             {device.name}
         </Link>}
         subheader={

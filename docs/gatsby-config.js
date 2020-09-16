@@ -157,10 +157,11 @@ module.exports = {
             resolver: 'rawBody',
             // Attributes for indexing logic. Check https://github.com/nextapps-de/flexsearch#presets for details.
             attributes: {
-              encode: "extra",
-              tokenize: "full",
-              threshold: 1,
-              resolution: 3
+              encode: "casei",
+              tokenize: "forward",
+              threshold: 2,
+              resolution: 4,
+              depth: 3
             },
             store: false, // In case you want to make the field available in the search results.
           },

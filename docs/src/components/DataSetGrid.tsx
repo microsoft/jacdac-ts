@@ -1,5 +1,5 @@
-import { Card, CardActions, CardContent, CardHeader, Grid, IconButton } from "@material-ui/core";
-import { Button } from "gatsby-theme-material-ui";
+import { Card, CardActions, CardContent, CardHeader, Grid } from "@material-ui/core";
+import { Button, IconButton } from "gatsby-theme-material-ui";
 import React, { useContext } from "react";
 import { prettyDuration } from "../../../src/dom/pretty";
 import ServiceManagerContext from "./ServiceManagerContext";

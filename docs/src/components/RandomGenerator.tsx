@@ -2,7 +2,7 @@
 import React, { useState } from "react"
 import { cryptoRandomUint32 } from "../../../src/dom/utils";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
-import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typography } from "@material-ui/core";
+import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typography, createStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';
 // tslint:disable-next-line: no-submodule-imports
@@ -47,7 +47,7 @@ function uniqueDeviceId() {
     return n !== undefined && toFullHex([n[0], n[1]])
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(createStyles({
     root: {
         minWidth: 275,
         marginBottom: "1rem"
@@ -55,7 +55,7 @@ const useStyles = makeStyles({
     title: {
         fontSize: 14,
     }
-})
+}))
 
 export default function RandomGenerator(props: { device?: boolean }) {
     const { device } = props
@@ -94,8 +94,8 @@ export default function RandomGenerator(props: { device?: boolean }) {
                     <Alert severity="error">Oops, unable to generate a strong random number.</Alert>}
             </CardContent>
             <CardActions>
-                <Button size="small" onClick={handleCopy}>Copy</Button>
-                <Button size="small" color="primary" onClick={handleRegenerate}>Regenerate</Button>
+                <Button size="small" variant="contained" onClick={handleCopy}>Copy</Button>
+                <Button size="small" variant="contained" color="primary" onClick={handleRegenerate}>Regenerate</Button>
             </CardActions>
         </Card>
     </NoSsr>

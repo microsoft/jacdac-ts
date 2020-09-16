@@ -31,6 +31,8 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import EditIcon from '@material-ui/icons/Edit';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -49,6 +51,8 @@ import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import CodeDemo from "./CodeBlock";
 import { ServiceManagerProvider } from "./ServiceManagerContext";
+import DarkModeProvider from "./DarkModeProvider";
+import DarkModeContext from "./DarkModeContext";
 
 export const DRAWER_WIDTH = `${40}rem`;
 
@@ -124,13 +128,27 @@ const useStyles = makeStyles((theme) => createStyles({
   }
 }));
 
-const mdxComponents = {
-  CodeDemo: (props: any) => <CodeDemo {...props} />,
-  Link
-};
-
 export default function Layout(props: { pageContext?: any; children: any; }) {
-  const theme = responsiveFontSizes(createMuiTheme());
+  return <DarkModeProvider>
+    <LayoutWithDarkMode {...props} />
+  </DarkModeProvider>
+}
+
+function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
+  const { darkMode, darkModeMounted } = useContext(DarkModeContext)
+  if (!darkModeMounted)
+    return <div />
+
+  const theme = responsiveFontSizes(createMuiTheme({
+    palette: {
+      type: darkMode
+    }
+  }));
+  const mdxComponents = {
+    CodeDemo: (props: any) => <CodeDemo {...props} />,
+    Link: (props: any) => <Link color="textPrimary" {...props} />,
+    a: (props: any) => <Link color="textPrimary" {...props} />
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -152,8 +170,12 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 }
 
 
-function LayoutWithContext(props: { pageContext?: any; children: any; }) {
-  const { pageContext, children } = props;
+function LayoutWithContext(props: {
+  pageContext?: any;
+  children: any;
+}) {
+  const { toggleDarkMode } = useContext(DarkModeContext)
+  const { pageContext, children, } = props;
   const classes = useStyles();
   const { drawerType, setDrawerType } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
@@ -170,7 +192,7 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
   const handleDrawerDom = () => {
     setDrawerType(DrawerType.Dom);
   }
-
+  const handleDarkMode = () => toggleDarkMode()
   const data = useStaticQuery(graphql`
     query {
       site {
@@ -240,6 +262,9 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
             <EditIcon />
           </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
+            <SettingsBrightnessIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
@@ -257,12 +282,14 @@ function LayoutWithContext(props: { pageContext?: any; children: any; }) {
             </Typography>
           </div>
           <footer className={classes.footer}>
-            <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
-          © {new Date().getFullYear()} Microsoft Corporation
-        </footer>
+            <Link color="textSecondary" className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
+            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
+            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
+            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
+            <Typography color="textSecondary" component="span" variant="inherit">
+              © {new Date().getFullYear()} Microsoft Corporation
+            </Typography>
+          </footer>
         </main>
       </Container>
       <ErrorSnackbar />

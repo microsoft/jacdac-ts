@@ -4,6 +4,7 @@ import { Paper, makeStyles, Theme, createStyles, Button, ButtonGroup, Typography
 import useDbValue from "./useDbValue"
 import { parseLog, replayLog } from "../../../src/dom/logparser"
 import JACDACContext from "../../../src/react/Context"
+import Alert from "@material-ui/lab/Alert"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -46,14 +47,16 @@ export default function PacketTraceImporter() {
     }
 
     return <>
-        <Typography variant="body1">
-            {!frames && "No packet trace loaded."}
+        <Typography variant="body1" className={classes.box}>
+            {!frames && <Alert severity="info">No packet trace loaded.</Alert>}
             {frames && `Packet trace with ${frames.length} frames loaded.`}
         </Typography>
-        <ButtonGroup>
-            <Button disabled={!trace} onClick={handleReplay}>Replay</Button>
-            <UploadButton text="Import trace" onFilesUploaded={handleFiles} />
-            {!!trace && <Button aria-label={"Clear packet trace"} onClick={handleClear}>clear</Button>}
-        </ButtonGroup>
+        <Typography variant="body1">
+            <ButtonGroup>
+                <Button disabled={!trace} variant="contained" onClick={handleReplay}>Replay</Button>
+                <UploadButton text="Import trace" onFilesUploaded={handleFiles} />
+                {!!trace && <Button aria-label={"Clear packet trace"} variant="contained" onClick={handleClear}>clear</Button>}
+            </ButtonGroup>
+        </Typography>
     </>
 }

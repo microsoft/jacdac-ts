@@ -18,7 +18,9 @@ import Mdx from "./Mdx";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import PacketsContext from "./PacketsContext";
 import PacketRecorder from "./PacketRecorder";
-import TocSearchInput from "./TocSearchInput";
+import DrawerSearchInput from "./DrawerSearchInput";
+import { useDrawerSearchResults } from "./useDrawerSearchResults";
+import DrawerSearchResults from "./DrawerSearchResults";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -63,6 +65,8 @@ export default function AppDrawer(props: {
         (drawerType == DrawerType.Dom || drawerType == DrawerType.Packets)
     const service = serviceClass !== undefined
         && serviceSpecificationFromClassIdentifier(serviceClass)
+    const searchResults = useDrawerSearchResults()
+    const hasSearchResults = !!searchResults?.length;
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
@@ -92,7 +96,7 @@ export default function AppDrawer(props: {
         <div className={classes.drawerHeader}>
             {drawerType !== DrawerType.Toc && <PacketRecorder />}
             {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
-            {drawerType == DrawerType.Toc && <div className={classes.fluid}><TocSearchInput /></div>}
+            {drawerType == DrawerType.Toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
             {drawerType === DrawerType.Packets && serviceClass !== undefined
                 && <Alert className={classes.alertButton} severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             <IconButton onClick={handleDrawerClose}>
@@ -102,9 +106,10 @@ export default function AppDrawer(props: {
         <Divider />
         {alertConnection && <Alert severity={"info"}>Connect to a JACDAC device to inspect the bus.
         <ConnectButton className={classes.alertButton} full={true} /></Alert>}
-        {drawerType === DrawerType.Toc && <Toc />}
-        {drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
-        {drawerType === DrawerType.Packets
+        {hasSearchResults && <DrawerSearchResults results={searchResults} />}
+        {!hasSearchResults && drawerType === DrawerType.Toc && <Toc />}
+        {!hasSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
+        {!hasSearchResults && drawerType === DrawerType.Packets
             ? <PacketList serviceClass={serviceClass} />
             : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
     </Drawer>

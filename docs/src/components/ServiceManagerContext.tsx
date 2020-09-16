@@ -1,6 +1,8 @@
-import React, { createContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../src/embed/filestorage'
+import { IThemeMessage } from "../../../src/embed/protocol";
 import { HTMLIFrameTransport } from "../../../src/embed/transport";
+import DarkModeContext from "./DarkModeContext";
 
 export interface ServiceManagerContextProps {
     isHosted: boolean;
@@ -14,6 +16,7 @@ const ServiceManagerContext = createContext<ServiceManagerContextProps>({
 ServiceManagerContext.displayName = "Services";
 
 export const ServiceManagerProvider = ({ children }) => {
+    const { toggleDarkMode } = useContext(DarkModeContext)
     const isHosted = inIFrame();
     let fileStorage: IFileStorage = new BrowserFileStorage()
     if (isHosted) {
@@ -28,6 +31,27 @@ export const ServiceManagerProvider = ({ children }) => {
         isHosted,
         fileStorage
     }
+
+    const handleMessage = (ev: MessageEvent<any>) => {
+        const msg = ev.data;
+        if (msg?.source !== 'jacdac')
+            return;
+        console.log(msg)
+        switch(msg.type) {
+            case 'theme': {
+                const themeMsg = msg as IThemeMessage
+                toggleDarkMode(themeMsg.data.type);
+                break;
+            }
+        }
+    }
+
+    // receiving messages
+    useEffect(() => {
+        window.addEventListener('message', handleMessage, false)
+        return () => window.removeEventListener('message', handleMessage)
+    }, [])
+
     return <ServiceManagerContext.Provider value={value}>
         {children}
     </ServiceManagerContext.Provider>

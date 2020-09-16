@@ -1,8 +1,7 @@
-import { LogLevel } from "../dom/domservices";
-
+/** JACDAC IFrame Message protocol */
 export interface IMessage {
     id?: string;
-    source: 'jacdac' | 'host',
+    source: 'jacdac',
     type: string;
     data: any;
     requireAck?: boolean;
@@ -16,7 +15,7 @@ export interface IAckMessage extends IMessage {
         error?: any;
     }
 }
-
+export type LogLevel = 'error' | 'warn' | 'log' | 'info' | 'debug'
 export interface ILogMessage extends IMessage {
     type: 'log',
     data: {
@@ -24,9 +23,13 @@ export interface ILogMessage extends IMessage {
         message: any
     }
 }
-
+export interface IThemeMessage extends IMessage {
+    type: 'theme',
+    data: {
+        type: 'light' | 'dark'
+    }
+}
 export type Status = 'unknown' | 'ready'
-
 export interface IStatusMessage extends IMessage {
     type: 'status',
     data: {
@@ -40,3 +43,4 @@ export interface ISaveTextMessage extends IMessage {
         data: string;
     }
 }
+/** End JACDAC protocol */

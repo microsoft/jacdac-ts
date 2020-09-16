@@ -1,20 +1,14 @@
-import React from "react"
+import React, { useContext } from "react"
 import { makeStyles, createStyles, Theme, Collapse } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
-// tslint:disable-next-line: no-submodule-imports
-import ListItem from '@material-ui/core/ListItem';
-// tslint:disable-next-line: no-submodule-imports
-import List from '@material-ui/core/List';
-// tslint:disable-next-line: no-submodule-imports
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
 // tslint:disable-next-line: no-submodule-imports
 import TreeView from '@material-ui/lab/TreeView';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-// tslint:disable-next-line: no-submodule-imports
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports
 import TreeItem from '@material-ui/lab/TreeItem';
