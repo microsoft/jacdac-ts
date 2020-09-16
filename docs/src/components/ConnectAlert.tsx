@@ -1,5 +1,6 @@
 // tslint:disable-next-line: no-submodule-imports
 import { createStyles, makeStyles } from "@material-ui/core";
+// tslint:disable-next-line: no-submodule-imports
 import Alert from "@material-ui/lab/Alert";
 import React, { useContext } from "react";
 import { BusState } from "../../../src/dom/bus";
@@ -16,7 +17,7 @@ export default function ConnectAlert() {
     const classes = useStyles()
     const { connectionState } = useContext(JACDACContext)
     if (connectionState === BusState.Disconnected)
-        return <Alert severity="info">
+        return <Alert severity="info" >
             <span>Don't forget to connect!</span>
             <ConnectButton className={classes.button} full={true} />
         </Alert>

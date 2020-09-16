@@ -31,6 +31,7 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import EditIcon from '@material-ui/icons/Edit';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
@@ -126,22 +127,21 @@ const useStyles = makeStyles((theme) => createStyles({
   }
 }));
 
-const mdxComponents = {
-  CodeDemo: (props: any) => <CodeDemo {...props} />,
-  Link
-};
-
 export default function Layout(props: { pageContext?: any; children: any; }) {
   const { darkMode, toggleDarkMode, darkModeMounted } = useDarkMode()
-  console.log(`theme ${darkMode}`)
+  if (!darkModeMounted)
+    return <div />
+
   const theme = responsiveFontSizes(createMuiTheme({
     palette: {
       type: darkMode
     }
   }));
-
-  if (!darkModeMounted)
-    return <div />
+  const mdxComponents = {
+    CodeDemo: (props: any) => <CodeDemo {...props} />,
+    Link: (props: any) => <Link color="textPrimary" {...props} />,
+    a: (props: any) => <Link color="textPrimary" {...props} />
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -275,12 +275,14 @@ function LayoutWithContext(props: {
             </Typography>
           </div>
           <footer className={classes.footer}>
-            <Link className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
-            <Link className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
-          © {new Date().getFullYear()} Microsoft Corporation
-        </footer>
+            <Link color="textSecondary" className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
+            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
+            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
+            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
+            <Typography color="textSecondary" component="span" variant="inherit">
+              © {new Date().getFullYear()} Microsoft Corporation
+            </Typography>
+          </footer>
         </main>
       </Container>
       <ErrorSnackbar />

@@ -124,7 +124,7 @@ export default function Flash() {
         }
     }).filter(fw => !!fw.firmware && !!fw.blob && !!fw.device);
     return (
-        <Paper className={classes.blobs}>
+        <div className={classes.blobs}>
             <ConnectAlert />
             <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                 <Tab label={`Firmware (${blobs?.length || 0})`} {...a11yProps(0)} />
@@ -138,7 +138,7 @@ export default function Flash() {
                     <ListItem key="importbtn">
                         {importing && <LinearProgress variant="indeterminate" />}
                         {!importing && <UploadButton text={"Import UF2 file"} onFilesUploaded={handleFiles} />}
-                        {!importing && <Button aria-label={"Clear firmwares"} onClick={handleClear}>clear</Button>}
+                        {!importing && <Button variant="outlined" aria-label={"Clear firmwares"} onClick={handleClear}>clear</Button>}
                     </ListItem>
                     {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
                         <span>{blob.name}</span> <Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
@@ -153,6 +153,6 @@ export default function Flash() {
                         </Grid>)}
                 </Grid>}
             </TabPanel>
-        </Paper>
+        </div>
     )
 }
