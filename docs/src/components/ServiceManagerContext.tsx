@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useEffect } from "react";
 import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../src/embed/filestorage'
 import { HTMLIFrameTransport } from "../../../src/embed/transport";
 
@@ -28,6 +28,20 @@ export const ServiceManagerProvider = ({ children }) => {
         isHosted,
         fileStorage
     }
+
+    const handleMessage = (ev: MessageEvent<any>) => {
+        const msg = ev.data;
+        if (msg?.source !== 'jacdac')
+            return;
+        console.log(msg)
+    }
+
+    // receiving messages
+    useEffect(() => {
+        window.addEventListener('message', handleMessage, false)
+        return () => window.removeEventListener('message', handleMessage)
+    }, [])
+
     return <ServiceManagerContext.Provider value={value}>
         {children}
     </ServiceManagerContext.Provider>
