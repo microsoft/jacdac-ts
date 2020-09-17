@@ -2,7 +2,7 @@ import { Chip, createStyles, Grid, LinearProgress, List, ListItem, makeStyles, P
 import { Button } from "gatsby-theme-material-ui";
 import React, { useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/dom/bus";
-import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
+import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE, SRV_BOOTLOADER } from "../../../src/dom/constants";
 import { JDDevice } from "../../../src/dom/device";
 import { FirmwareBlob, FirmwareInfo, flashFirmwareBlob, scanFirmwares, updateApplicable } from "../../../src/dom/flashing";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -75,7 +75,7 @@ export default function Flash() {
     const [tab, setTab] = useState(0);
     const classes = useStyles()
 
-    const devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices())
+    const devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices().filter(dev => dev.announced && !dev.hasService(SRV_BOOTLOADER)))
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (!blobs?.length || flashing > 0 || scanning || connectionState != BusState.Connected)
