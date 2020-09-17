@@ -134,15 +134,10 @@ export default function Collector(props: {}) {
         : undefined
     const handleRegisterCheck = (reg: JDRegister) => {
         const i = registerIdsChecked.indexOf(reg.id)
-        if (i > -1) {
+        if (i > -1)
             registerIdsChecked.splice(i, 1)
-            setStreamingAsync(reg.service, false)
-        }
-        else {
+        else
             registerIdsChecked.push(reg.id)
-            setStreamingAsync(reg.service, true)
-            reg.sendGetAsync() // at least some data
-        }
         registerIdsChecked.sort()
         setRegisterIdsChecked([...registerIdsChecked])
         setLiveDataSet(newDataSet(registerIdsChecked, true))
