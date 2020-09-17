@@ -15,16 +15,15 @@ export function isSensor(service: JDService): boolean {
 }
 
 export async function setStreamingAsync(service: JDService, on: boolean) {
-    // don't explicitly turn off streaming; just let it fade away
-    if (!on)
-        return;
     // check if this register is supported
     const register = service.register(SensorReg.StreamSamples);
     if (!register)
         return;
 
-    // restart streaming
-    await register.sendSetIntAsync(0xff)
+    // 25 samples at 20ms is 500ms 
+    // which gives the chance to restart the streaming
+    // from another spot
+    await register.sendSetIntAsync(on ? 0xff : 25)
 }
 
 export function calibrateAsync(service: JDService) {
