@@ -14,11 +14,17 @@ export function isSensor(service: JDService): boolean {
         && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 
-export function setStreamingAsync(service: JDService, on: boolean) {
-    const register = service.register(SensorReg.StreamSamples);
+export async function setStreamingAsync(service: JDService, on: boolean) {
     // don't explicitly turn off streaming; just let it fade away
-    // another device might me relying on streaming
-    return (on && register?.sendSetIntAsync(0xff)) || Promise.resolve()
+    if (!on)
+        return;
+    // check if this register is supported
+    const register = service.register(SensorReg.StreamSamples);
+    if (!register)
+        return;
+
+    // restart streaming
+    await register.sendSetIntAsync(0xff)
 }
 
 export function calibrateAsync(service: JDService) {
