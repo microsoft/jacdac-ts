@@ -66,25 +66,6 @@ export enum ConsolePriority {
 /** known service numbers */
 export const SRV_CTRL = 0;
 
-export const SRV_BATTERY = 0x1d2a2acd;
-export const SRV_TOUCHBUTTON = 0x130cf5be;
-export const SRV_LIGHT_SENSOR = 0x15e7a0ff;
-export const SRV_MICROPHONE = 0x1a5c5866;
-export const SRV_SWITCH = 0x14218172;
-export const SRV_PIXEL = 0x1768fbbf;
-export const SRV_HAPTIC = 0x116b14a3;
-export const SRV_KEYBOARD = 0x1ae4812d;
-export const SRV_MOUSE = 0x14bc97bf;
-export const SRV_CONTROLLER = 0x188ae4b8;
-export const SRV_LCD = 0x18d5284c;
-export const SRV_MESSAGE_BUS = 0x115cabf5;
-export const SRV_COLOR_SENSOR = 0x14d6dda2;
-export const SRV_LIGHT_SPECTRUM_SENSOR = 0x16fa0c0d;
-export const SRV_PROXIMITY = 0x14c1791b;
-export const SRV_TOUCH_BUTTONS = 0x1acb49d5;
-export const SRV_SERVOS = 0x182988d8;
-export const SRV_DNS = 0x117729bd;
-
 export const NEW_LISTENER = 'newListener'
 export const REMOVE_LISTENER = 'removeListener'
 
