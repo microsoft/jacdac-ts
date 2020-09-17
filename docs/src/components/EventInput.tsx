@@ -3,6 +3,7 @@ import { JDEvent } from "../../../src/dom/event";
 import { Typography, Badge } from "@material-ui/core";
 import KindIcon from "./KindIcon";
 import useEventCount from "../jacdac/useEventCount";
+import DeviceName from "./DeviceName";
 
 export default function EventInput(props: { event: JDEvent, showDeviceName?: boolean, showName?: boolean }) {
     const { event, showName, showDeviceName } = props;
@@ -11,7 +12,7 @@ export default function EventInput(props: { event: JDEvent, showDeviceName?: boo
 
     return <React.Fragment>
         {showDeviceName && <Typography>
-            {event.service.device.name}/
+            <DeviceName device={event.service.device} />/
         </Typography>}
         {showName && spec && <Typography gutterBottom>
             {spec.name}

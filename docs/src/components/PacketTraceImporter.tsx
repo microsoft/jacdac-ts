@@ -3,8 +3,8 @@ import UploadButton from "./UploadButton"
 import { Paper, makeStyles, Theme, createStyles, Button, ButtonGroup, Typography } from "@material-ui/core"
 import useDbValue from "./useDbValue"
 import { parseLog, replayLog } from "../../../src/dom/logparser"
-import JACDACContext from "../../../src/react/Context"
-import Alert from "@material-ui/lab/Alert"
+import JACDACContext, { JDContextProps } from "../../../src/react/Context"
+import { Alert } from "@material-ui/lab"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function PacketTraceImporter() {
     const { value: trace, setValue: setTrace } = useDbValue("packettrace", undefined)
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles()
     const [importing, setImporting] = useState(false)
     const frames = parseLog(trace)

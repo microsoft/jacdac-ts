@@ -6,12 +6,46 @@ import useGridBreakpoints from "./useGridBreakpoints";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import FieldDataSet from "./FieldDataSet";
+import useDeviceName from "./useDeviceName";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     vmiddle: {
         verticalAlign: "middle"
     }
 }));
+
+function ReadingFieldGridItem(props: {
+    register: JDRegister,
+    handleRegisterCheck: (register: JDRegister) => void,
+    recording: boolean,
+    registerChecked: boolean,
+    liveDataSet: FieldDataSet
+}) {
+    const { register, handleRegisterCheck, recording, registerChecked, liveDataSet } = props;
+    const gridBreakpoints = useGridBreakpoints();
+    const classes = useStyles();
+    const deviceName = useDeviceName(register.service.device)
+    const handleCheck = () => handleRegisterCheck(register)
+
+    return <Grid item {...gridBreakpoints} key={'source' + register.id}>
+        <Card>
+            <CardHeader subheader={register.service.name}
+                title={`${deviceName}/${register.name}`}
+                action={<DeviceActions device={register.service.device} reset={true} />} />
+            <CardContent>
+                {register.fields.map((field) => <span key={field.id}>
+                    <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({
+                        color: registerChecked ? liveDataSet.colorOf(field) : "#ccc"
+                    })} />
+                    {field.name}
+                </span>)}
+            </CardContent>
+            <CardActions>
+                <Switch disabled={recording} onChange={handleCheck} checked={registerChecked} />
+            </CardActions>
+        </Card>
+    </Grid>;
+}
 
 export default function ReadingFieldGrid(props: {
     readingRegisters: JDRegister[],
@@ -21,31 +55,17 @@ export default function ReadingFieldGrid(props: {
     liveDataSet: FieldDataSet
 }) {
     const { readingRegisters, registerIdsChecked, recording, handleRegisterCheck, liveDataSet } = props
-    const classes = useStyles();
-    const gridBreakpoints = useGridBreakpoints();
-    const handleCheck = (register: JDRegister) => () => handleRegisterCheck(register)
 
     return <Grid container spacing={2}>
         {readingRegisters.map(register => {
             const registerChecked = registerIdsChecked.indexOf(register.id) > -1;
-            return <Grid item {...gridBreakpoints} key={'source' + register.id}>
-                <Card>
-                    <CardHeader subheader={register.service.name}
-                        title={`${register.service.device.name}/${register.name}`}
-                        action={<DeviceActions device={register.service.device} reset={true} />} />
-                    <CardContent>
-                        {register.fields.map((field) => <span key={field.id}>
-                            <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({
-                                color: registerChecked ? liveDataSet.colorOf(field) : "#ccc"
-                            })} />
-                            {field.name}
-                        </span>)}
-                    </CardContent>
-                    <CardActions>
-                        <Switch disabled={recording} onChange={handleCheck(register)} checked={registerChecked} />
-                    </CardActions>
-                </Card>
-            </Grid>;
+            return <ReadingFieldGridItem
+                register={register}
+                registerChecked={registerChecked}
+                recording={recording}
+                handleRegisterCheck={handleRegisterCheck}
+                liveDataSet={liveDataSet}
+            />;
         })}
     </Grid>
 }

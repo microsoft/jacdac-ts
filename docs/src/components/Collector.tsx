@@ -1,10 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions, CardHeader, CardContent, FormGroup, FormControlLabel } from '@material-ui/core';
+import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions, CardHeader, CardContent, FormGroup, FormControlLabel, PaletteType } from '@material-ui/core';
 import { JDField } from '../../../src/dom/field';
-import JACDACContext from '../../../src/react/Context';
-import { IconButton } from 'gatsby-theme-material-ui';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -27,6 +26,8 @@ import ReadingFieldGrid from './ReadingFieldGrid';
 import DeviceCardHeader from './DeviceCardHeader';
 import { JDDevice } from '../../../src/dom/device';
 import { SensorAggregatorClient } from '../../../src/dom/tflite';
+import { TFLiteClient } from '../../../src/dom/tflite';
+import DarkModeContext from './DarkModeContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -58,19 +59,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }));
 
-const palette = [
-    "#003f5c",
-    "#ffa600",
-    "#665191",
-    "#a05195",
-    "#ff7c43",
-    "#d45087",
-    "#f95d6a",
-    "#2f4b7c",
-]
-
 const LIVE_HORIZON = 24
-function createDataSet(bus: JDBus, registers: JDRegister[], name: string, live: boolean) {
+function createDataSet(bus: JDBus, registers: JDRegister[], name: string, live: boolean, palette: string[]) {
     const fields = arrayConcatMany(registers.map(reg => reg.fields))
     const colors = fields.map((f, i) => palette[i % palette.length])
     const set = new FieldDataSet(bus, name, fields, colors)
@@ -79,9 +69,32 @@ function createDataSet(bus: JDBus, registers: JDRegister[], name: string, live: 
     return set;
 }
 
+function chartPalette(darkMode: PaletteType) {
+    if (darkMode == 'light') return [
+        "#003f5c",
+        "#ffa600",
+        "#665191",
+        "#a05195",
+        "#ff7c43",
+        "#d45087",
+        "#f95d6a",
+        "#2f4b7c",
+    ]
+    else return [
+        "#60ccfe",
+        "#ffdd9e",
+        "#c3b9d8",
+        "#dcbbd7",
+        "#fecdb7",
+        "#eebcd1",
+        "#fcc1c6",
+        "#a1b6db",
+    ]
+}
+
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus, connectionState } = useContext(JACDACContext)
+    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
     const [tfliteDeviceId, setTfliteDeviceId] = useState<string>("")
@@ -94,6 +107,7 @@ export default function Collector(props: {}) {
     const [liveDataSet, setLiveDataSet] = useState<FieldDataSet>(undefined)
     const [, setLiveDataTimestamp] = useState(0)
     const [triggerEventId, setTriggerEventId] = useState<string>("")
+    const { darkMode } = useContext(DarkModeContext)
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
             .services().find(srv => isSensor(srv))
@@ -131,19 +145,15 @@ export default function Collector(props: {}) {
             bus,
             readingRegisters.filter(reg => registerIds.indexOf(reg.id) > -1),
             `${prefix || "data"}${tables.length}`,
-            live)
+            live,
+            chartPalette(darkMode))
         : undefined
     const handleRegisterCheck = (reg: JDRegister) => {
         const i = registerIdsChecked.indexOf(reg.id)
-        if (i > -1) {
+        if (i > -1)
             registerIdsChecked.splice(i, 1)
-            setStreamingAsync(reg.service, false)
-        }
-        else {
+        else
             registerIdsChecked.push(reg.id)
-            setStreamingAsync(reg.service, true)
-            reg.sendGetAsync() // at least some data
-        }
         registerIdsChecked.sort()
         setRegisterIdsChecked([...registerIdsChecked])
         setLiveDataSet(newDataSet(registerIdsChecked, true))

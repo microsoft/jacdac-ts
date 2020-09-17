@@ -1,10 +1,10 @@
 import { useContext, useEffect } from "react";
-import JACDACContext from "../../../src/react/Context";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { useDbBlob } from "./DbContext";
 import { parseUF2 } from "../../../src/dom/flashing";
 
 export default function useFirmwareBlobs() {
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const { blob, setBlob, dependencyId } = useDbBlob("firmware.uf2")
 
     async function load(f: Blob, store: boolean) {

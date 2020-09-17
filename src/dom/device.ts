@@ -2,7 +2,7 @@ import { Packet } from "./packet"
 import {
     JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_NUMBER_CRC_ACK
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_NUMBER_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -27,6 +27,7 @@ interface AckAwaiter {
 
 export class JDDevice extends JDNode {
     connected: boolean;
+    private _name: string;
     private _lost: boolean;
     servicesData: Uint8Array
     lastSeen: number
@@ -51,13 +52,26 @@ export class JDDevice extends JDNode {
         return DEVICE_NODE_NAME
     }
 
-    get name() {
-        return this.lookupName() || this.shortId;
+    get friendlyName() {
+        return this._name || this.shortId;
     }
 
-    private lookupName() {
-        const namer = this.bus.host.deviceNamer;
-        return namer && namer(this);
+    get name() {
+        return this._name;
+    }
+
+    set name(value: string) {
+        if (value !== this._name) {
+            this._name = value;
+            this.log('debug', `renamed to ${this._name}`)
+            this.emit(NAME_CHANGE)
+            this.bus.emit(DEVICE_NAME_CHANGE, this)
+            this.emit(CHANGE)
+            this.bus.emit(CHANGE)
+
+            // notify deviceNamer of the change
+            this.bus.host.deviceNameSettings?.notifyUpdate(this, this._name);
+        }
     }
 
     get qualifiedName() {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Button } from "gatsby-theme-material-ui";
-import JACDACContext from "../../../src/react/Context";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
@@ -10,7 +10,7 @@ import KindIcon from "../components/KindIcon";
 
 export default function ConnectButton(props: { full?: boolean, className?: string }) {
     const { full, className } = props
-    const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JACDACContext)
+    const { bus, connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const [count, setCount] = useState(bus.devices().length)
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;

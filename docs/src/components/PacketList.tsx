@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles } from '@material-ui/core';
-import JACDACContext from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND, SRV_LOGGER } from '../../../src/dom/constants';
 import { decodePacketData } from '../../../src/dom/pretty'
@@ -38,7 +38,7 @@ export default function PacketList(props: {
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
     const maxItems = props.maxItems || 100
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const consoleMode = hasFlag("console")
     const skipRepeatedAnnounce = !hasFlag("announce")
 

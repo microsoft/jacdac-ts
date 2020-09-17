@@ -5,10 +5,10 @@ import Alert from '@material-ui/lab/Alert';
 import React, { useContext, useEffect, useState } from 'react';
 import { ERROR } from '../../../src/dom/constants';
 import { isCancelError } from '../../../src/dom/utils';
-import JACDACContext from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 
 export default function ErrorSnackbar() {
-  const { bus } = useContext(JACDACContext)
+  const { bus } = useContext<JDContextProps>(JACDACContext)
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<Error>(undefined)
 

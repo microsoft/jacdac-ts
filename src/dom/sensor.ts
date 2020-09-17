@@ -1,6 +1,7 @@
 import { JDService } from "./service";
-import { REG_STREAM_SAMPLES, CMD_CALIBRATE, REG_LOW_THRESHOLD, SensorReg } from "./constants";
+import { SensorReg } from "./constants";
 import { isReading } from "./spec";
+import { BaseCmd, BaseReg } from "../../jacdac-spec/dist/specconstants";
 
 /**
  * Indicates if the service can stream data
@@ -9,20 +10,28 @@ import { isReading } from "./spec";
 export function isSensor(service: JDService): boolean {
     const spec = service.specification;
     return spec?.packets.some(pkt => isReading(pkt))
-    && spec?.packets.some(pkt => pkt.identifier == SensorReg.IsStreaming)
-    && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
+        && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamSamples)
+        && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 
-export function setStreamingAsync(service: JDService, on: boolean) {
-    const register = service.register(REG_STREAM_SAMPLES);
-    return register?.sendSetBoolAsync(on) || Promise.resolve()
+export async function setStreamingAsync(service: JDService, on: boolean) {
+    // don't explicitly turn off streaming; just let it fade away
+    if (!on)
+        return;
+    // check if this register is supported
+    const register = service.register(SensorReg.StreamSamples);
+    if (!register)
+        return;
+
+    // restart streaming
+    await register.sendSetIntAsync(0xff)
 }
 
 export function calibrateAsync(service: JDService) {
-    return service.sendCmdAsync(CMD_CALIBRATE);
+    return service.sendCmdAsync(BaseCmd.Calibrate);
 }
 
 export function setThresholdAsync(service: JDService, low: boolean, value: number) {
-    const register = service.register(low ? REG_LOW_THRESHOLD : REG_LOW_THRESHOLD)
+    const register = service.register(low ? BaseReg.LowThreshold : BaseReg.HighThreshold)
     return register?.sendSetIntAsync(value) || Promise.resolve()
 }

@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import Markdown from "./Markdown"
 import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
-import JACDACContext from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import { Grid, Card, CardHeader, CardActions } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) {
     const { serviceSpec } = props
     const { classIdentifier: serviceClass } = serviceSpec
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
     const [activeStep, setActiveStep] = React.useState(0);
     const tests = [
@@ -74,19 +74,19 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                     <StepContent>
                         {!!services.length && <Grid container spacing={2}>
                             {services.map(service => <Grid item {...gridBreakpoints}><Card key={`srv${service.serviceClass}`}>
-                                <CardHeader>{service.device.name}</CardHeader>
+                                <CardHeader><DeviceName device={service.device} /></CardHeader>
                                 <CardActions>
                                     <Button variant="contained" color="primary">Select</Button>
                                 </CardActions>
                             </Card>
                             </Grid>)}
                         </Grid>}
-                        {!services.length && <Alert severity="info">Not seeing your device? Try some of the following. 
+                        {!services.length && <Alert severity="info">Not seeing your device? Try some of the following.
                         <ul>
-                            <li>Check that your device is connected</li>
-                            <li>Use the <strong>packet console</strong> to monitor packets on the bus</li>
-                            <li>Check the class identifier in your annoucement packets</li>
-                        </ul></Alert>}
+                                <li>Check that your device is connected</li>
+                                <li>Use the <strong>packet console</strong> to monitor packets on the bus</li>
+                                <li>Check the class identifier in your annoucement packets</li>
+                            </ul></Alert>}
                     </StepContent>
                 </Step>
                 {tests.map(({ label, description }) => (

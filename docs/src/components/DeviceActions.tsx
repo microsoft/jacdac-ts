@@ -6,11 +6,11 @@ import FingerprintIcon from '@material-ui/icons/Fingerprint';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { IconButton } from "gatsby-theme-material-ui";
 import DeviceRenameButton from "./DeviceRenameDialog";
-import JACDACContext from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 
 export default function DeviceActions(props: { device: JDDevice, reset?: boolean, rename?: boolean }) {
     const { device, reset, rename } = props
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const handleIdentify = (ev: React.MouseEvent<HTMLButtonElement>) => {
         ev.stopPropagation()
         device.identify()
@@ -26,6 +26,6 @@ export default function DeviceActions(props: { device: JDDevice, reset?: boolean
         {reset && <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
             <RefreshIcon />
         </IconButton>}
-        {rename && bus.options.deviceNamer && <DeviceRenameButton device={device} />}
+        {rename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
     </React.Fragment>;
 }
