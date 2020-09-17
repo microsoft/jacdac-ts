@@ -15,6 +15,8 @@ import EditIcon from '@material-ui/icons/Edit';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -60,6 +62,12 @@ export default function ToolsDrawer() {
                 <ListItem button key="updater">
                     <ListItemIcon><SystemUpdateAltIcon /></ListItemIcon>
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Firmware update"} />
+                </ListItem>
+            </Link>
+            <Link to="/tools/namer">
+                <ListItem button key="collector">
+                    <ListItemIcon><EmojiObjectsIcon /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Device Namer"} />
                 </ListItem>
             </Link>
             <Link to="/tools/collector">
