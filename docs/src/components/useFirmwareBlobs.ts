@@ -28,8 +28,8 @@ export default function useFirmwareBlobs() {
     }, [dependencyId()])
     return {
         firmwareFileDependencyId: dependencyId(),
-        setFirmwareBlob: async (f: Blob) => {
-            console.log(`import new uf2`)
+        setFirmwareBlob: async (repoSlug: string, tag: string, f: Blob) => {
+            console.log(`import new uf2 from ${repoSlug}/${tag}`)
             await load(f, true)
         }
     }

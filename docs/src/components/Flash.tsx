@@ -96,7 +96,7 @@ export default function Flash() {
         if (file) {
             try {
                 setImporting(true)
-                await setFirmwareBlob(file)
+                await setFirmwareBlob(undefined, undefined, file)
             } finally {
                 setImporting(false)
             }
@@ -105,7 +105,7 @@ export default function Flash() {
     const handleClear = async () => {
         try {
             setImporting(true)
-            await setFirmwareBlob(undefined)
+            await setFirmwareBlob(undefined, undefined, undefined)
         } finally {
             setImporting(false)
         }
