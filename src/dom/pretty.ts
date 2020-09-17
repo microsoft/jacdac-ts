@@ -6,23 +6,13 @@ import {
     JD_SERVICE_NUMBER_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_NUMBER_CRC_ACK, CMD_ADVERTISEMENT_DATA
 } from "./constants"
+import { BaseReg } from "../../jacdac-spec/dist/specconstants"
 
 const generic_commands: SMap<number> = {
     CMD_ADVERTISEMENT_DATA: 0x00,
     CMD_EVENT: 0x01,
     CMD_CALIBRATE: 0x02,
     CMD_GET_DESCRIPTION: 0x03,
-}
-
-const generic_regs: SMap<number> = {
-    REG_INTENSITY: 0x01,
-    REG_VALUE: 0x02,
-    REG_STREAM_SAMPLES: 0x03,
-    REG_STREAMING_INTERVAL: 0x04,
-    REG_LOW_THRESHOLD: 0x05,
-    REG_HIGH_THRESHOLD: 0x06,
-    REG_MAX_POWER: 0x07,
-    REG_READING: 0x101
 }
 
 export enum RegisterType {
@@ -414,7 +404,7 @@ export function commandName(n: number) {
     else if ((n & CMD_TOP_MASK) == CMD_GET_REG) pref = "GET["
     if (pref) {
         const reg = n & CMD_REG_MASK
-        return pref + reverseLookup(generic_regs, reg) + "]"
+        return pref + BaseReg[reg] + "]"
     }
     return reverseLookup(generic_commands, n)
 }
