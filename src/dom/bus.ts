@@ -377,12 +377,11 @@ export class JDBus extends JDNode {
     devices(options?: { serviceName?: string, serviceClass?: number }) {
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
-        let sc = serviceClass(options?.serviceName);
-        if (sc === undefined) sc = options?.serviceClass;
-        if (sc === undefined) sc = -1;
-        let r = this._devices.slice();
-        if (sc > -1) r = r.filter(s => s.hasService(sc))
-        return r;
+        let sc = options?.serviceClass > -1 ? options?.serviceClass : serviceClass(options?.serviceName);
+        if (sc > -1)
+            return this._devices.filter(s => s.hasService(sc));
+        else
+            return this._devices.slice();
     }
 
     /**
