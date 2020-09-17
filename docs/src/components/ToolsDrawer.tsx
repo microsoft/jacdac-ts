@@ -20,11 +20,11 @@ import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
-        width: TOOLS_DRAWER_WIDTH,
+        width: `${TOOLS_DRAWER_WIDTH}rem`,
         flexShrink: 0,
     },
     drawerPaper: {
-        width: TOOLS_DRAWER_WIDTH,
+        width: `${TOOLS_DRAWER_WIDTH}rem`,
     },
     drawerHeader: {
         display: 'flex',

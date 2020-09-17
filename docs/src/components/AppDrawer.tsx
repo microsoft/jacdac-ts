@@ -24,11 +24,11 @@ import DrawerSearchResults from "./DrawerSearchResults";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
-        width: DRAWER_WIDTH,
+        width: `${DRAWER_WIDTH}rem`,
         flexShrink: 0,
     },
     drawerPaper: {
-        width: DRAWER_WIDTH,
+        width: `${DRAWER_WIDTH}rem`,
     },
     drawerHeader: {
         display: 'flex',

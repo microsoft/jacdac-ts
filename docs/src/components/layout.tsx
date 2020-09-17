@@ -52,8 +52,8 @@ import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
 import Helmet from "react-helmet";
 
-export const DRAWER_WIDTH = `${40}rem`;
-export const TOOLS_DRAWER_WIDTH = `${18}rem`;
+export const DRAWER_WIDTH = 40;
+export const TOOLS_DRAWER_WIDTH = 18;
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {
@@ -70,8 +70,15 @@ const useStyles = makeStyles((theme) => createStyles({
     }),
   },
   appBarShift: {
-    width: `calc(100% - ${DRAWER_WIDTH})`,
-    marginLeft: DRAWER_WIDTH,
+    width: `calc(100% - ${DRAWER_WIDTH}rem)`,
+    marginLeft: `${DRAWER_WIDTH}rem`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  toolBarShift: {
+    marginLeft: `${TOOLS_DRAWER_WIDTH}rem`,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -82,13 +89,6 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   hide: {
     display: 'none',
-  },
-  drawer: {
-    width: DRAWER_WIDTH,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    width: DRAWER_WIDTH,
   },
   drawerHeader: {
     display: 'flex',
@@ -107,7 +107,7 @@ const useStyles = makeStyles((theme) => createStyles({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: `-${DRAWER_WIDTH}`,
+    marginLeft: `-${DRAWER_WIDTH + TOOLS_DRAWER_WIDTH}rem`,
   },
   mainContent: {
     flexGrow: 1
@@ -117,7 +117,13 @@ const useStyles = makeStyles((theme) => createStyles({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: 0,
+    marginLeft: `-${TOOLS_DRAWER_WIDTH}rem`,
+  },
+  toolsContentShift: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
   footer: {
     marginTop: theme.spacing(3)
@@ -177,7 +183,8 @@ function LayoutWithContext(props: {
   const { pageContext, children, } = props;
   const classes = useStyles();
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(DrawerContext)
-  const open = drawerType !== DrawerType.None
+  const drawerOpen = drawerType !== DrawerType.None
+  const toolsOpen = toolsMenu
   const serviceClass = pageContext?.node?.classIdentifier;
   const pageTitle = pageContext?.frontmatter?.title
   useFirmwareBlobs()
@@ -221,7 +228,8 @@ function LayoutWithContext(props: {
       </Helmet>
       <AppBar position="fixed"
         className={clsx(classes.appBar, {
-          [classes.appBarShift]: open,
+          [classes.appBarShift]: drawerOpen,
+          [classes.toolBarShift]: toolsOpen,
         })}
       >
         <Toolbar>
@@ -230,7 +238,7 @@ function LayoutWithContext(props: {
             aria-label="open table of contents"
             onClick={handleDrawerToc}
             edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
+            className={clsx(classes.menuButton, drawerOpen && classes.hide)}
           > <MenuIcon />
           </IconButton>
           <IconButton
@@ -238,7 +246,7 @@ function LayoutWithContext(props: {
             aria-label="open DOM tree"
             onClick={handleDrawerDom}
             edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
+            className={clsx(classes.menuButton, drawerOpen && classes.hide)}
           > <AccountTreeIcon />
           </IconButton>
           <IconButton
@@ -246,7 +254,7 @@ function LayoutWithContext(props: {
             aria-label="open console"
             onClick={handleDrawerConsole}
             edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
+            className={clsx(classes.menuButton, drawerOpen && classes.hide)}
           > <HistoryIcon />
           </IconButton>
           <Typography variant="h6">
@@ -259,21 +267,22 @@ function LayoutWithContext(props: {
           </Hidden>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
-          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
+          <div className={clsx(classes.menuButton, drawerOpen && classes.hide)}><FlashButton /></div>
+          <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
             <SettingsBrightnessIcon />
           </IconButton>
-          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
+          <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
             <MoreIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
       <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
       <ToolsDrawer />
-      <Container maxWidth={open ? "lg" : "sm"}>
+      <Container maxWidth={drawerOpen || toolsMenu ? "lg" : "sm"}>
         <main
           className={clsx(classes.content, {
-            [classes.contentShift]: open,
+            [classes.contentShift]: drawerOpen,
+            [classes.toolsContentShift]: toolsOpen,
           })}
         >
           <div className={classes.mainContent}>
