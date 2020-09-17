@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NAME_CHANGE } from "../../../src/dom/constants";
 import { JDDevice } from "../../../src/dom/device";
 
-export default function useDeviceName(device: JDDevice) {
+export default function useDeviceName(device: JDDevice, includeShortId?: boolean) {
     const [name, setName] = useState(device.friendlyName)
 
     useEffect(() => device.subscribe(NAME_CHANGE, () => {
@@ -10,5 +10,8 @@ export default function useDeviceName(device: JDDevice) {
         setName(device.friendlyName);
     }))
 
-    return name;
+    let r = name;
+    if (includeShortId && name && name !== device.shortId)
+        r += ` (${device.shortId})`
+    return r;
 }

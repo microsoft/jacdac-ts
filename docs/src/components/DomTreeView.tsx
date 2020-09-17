@@ -172,7 +172,7 @@ interface DomTreeViewItemProps {
 function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & DomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
-    const name = useDeviceName(device)
+    const name = useDeviceName(device, true)
     const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
 
