@@ -46,7 +46,7 @@ import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import CodeDemo from "./CodeBlock";
-import { ServiceManagerProvider } from "./ServiceManagerContext";
+import ServiceManagerContext, { ServiceManagerProvider } from "./ServiceManagerContext";
 import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
@@ -187,6 +187,7 @@ function LayoutWithContext(props: {
   const toolsOpen = toolsMenu
   const serviceClass = pageContext?.node?.classIdentifier;
   const pageTitle = pageContext?.frontmatter?.title
+  const { isHosted } = useContext(ServiceManagerContext)
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
@@ -268,9 +269,10 @@ function LayoutWithContext(props: {
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <div className={clsx(classes.menuButton, drawerOpen && classes.hide)}><FlashButton /></div>
-          <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
-            <SettingsBrightnessIcon />
-          </IconButton>
+          {!isHosted &&
+            <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
+              <SettingsBrightnessIcon />
+            </IconButton>}
           <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
             <MoreIcon />
           </IconButton>

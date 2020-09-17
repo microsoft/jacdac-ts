@@ -1,6 +1,7 @@
 import { JDService } from "./service";
 import { JDEventSource } from "./eventsource";
-import { Observer } from "./observable";
+import { JDDevice } from "./device";
+import { JDBus } from "./bus";
 
 export class JDServiceClient extends JDEventSource {
     private unsubscribers: (() => void)[] = []
@@ -9,11 +10,11 @@ export class JDServiceClient extends JDEventSource {
         super()
     }
 
-    protected get device() {
+    protected get device(): JDDevice {
         return this.service.device
     }
 
-    protected get bus() {
+    protected get bus(): JDBus {
         return this.device.bus
     }
 
