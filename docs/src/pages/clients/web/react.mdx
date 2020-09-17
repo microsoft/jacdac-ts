@@ -10,7 +10,7 @@ The ``JACDACContext`` provides access to the bus, and connection/disconnection f
 import { JACDACContext } from "jacdac";
 
 function myComponent() {
-    const { bus, connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JACDACContext)
 
     return <div>
             <span>{bus.devices().length} devices</span>
@@ -38,7 +38,7 @@ This hook subscribes to the ``CHANGE`` event of a [DOM](/clients/web/dom) node t
 import { JACDACContext, useChange } from "jacdac";
 
 const DeviceList = () => {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext(JACDACContext)
     // useChange will automatically re-render 
     // when bus emits a ``CHANGE`` event
     const devices = useChange(bus, n => n.devices(}))
