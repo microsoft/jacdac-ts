@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react'
-import JACDACContext from "../../../src/react/Context";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { queryAsync } from "../../../src/graphql/graphql"
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "graphiql/graphiql.min.css";
@@ -8,7 +8,7 @@ import GraphiQL from 'graphiql';
 import { FetcherParams, FetcherOpts, Fetcher } from 'graphiql/dist/components/GraphiQL';
 
 export function useFetcher() {
-    const ctx = useContext(JACDACContext)
+    const ctx = useContext<JDContextProps>(JACDACContext)
     const fetcher: Fetcher = async function (args: FetcherParams, opts?: FetcherOpts) {
         const bus = ctx.bus;
         const options = {

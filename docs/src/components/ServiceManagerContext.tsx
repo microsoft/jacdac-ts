@@ -4,7 +4,7 @@ import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../sr
 import { IThemeMessage } from "../../../src/embed/protocol";
 import { HTMLIFrameTransport } from "../../../src/embed/transport";
 import DarkModeContext from "./DarkModeContext";
-import JACDACContext from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import { JDDevice } from "../../../src/dom/device";
 import { IDeviceNameSettings } from "../../../src/dom/bus"
 
@@ -61,7 +61,7 @@ ServiceManagerContext.displayName = "Services";
 
 export const ServiceManagerProvider = ({ children }) => {
     const { toggleDarkMode } = useContext(DarkModeContext)
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const isHosted = inIFrame();
     let fileStorage: IFileStorage = new BrowserFileStorage()
     let deviceNames = new LocalStorageDeviceNameSettings(

@@ -3,14 +3,14 @@ import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 import { Badge } from "@material-ui/core";
-import JACDACContext from "../../../src/react/Context";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
 import { computeUpdates } from "../../../src/dom/flashing";
 import useChange from "../jacdac/useChange";
 
 export default function FlashButton() {
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
 
     const devices = useChange(bus, bus => bus.devices())
     const updates = useEventRaised([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO],

@@ -5,7 +5,7 @@ import { BusState } from "../../../src/dom/bus";
 import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import { JDDevice } from "../../../src/dom/device";
 import { FirmwareBlob, FirmwareInfo, flashFirmwareBlob, scanFirmwares, updateApplicable } from "../../../src/dom/flashing";
-import JACDACContext from "../../../src/react/Context";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useEventRaised from "../jacdac/useEventRaised";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
 import DeviceCard from "./DeviceCard";
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blob: FirmwareBlob, setFlashing: (b: boolean) => void }) {
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const { device, firmware, blob, setFlashing: setParentFlashing } = props
     const [flashing, setFlashing] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -66,7 +66,7 @@ function UpdateDeviceCard(props: { device: JDDevice, firmware: FirmwareInfo, blo
 }
 
 export default function Flash() {
-    const { bus, connectionState } = useContext(JACDACContext)
+    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
     const { firmwareFileDependencyId, setFirmwareBlob } = useFirmwareBlobs()
     const [importing, setImporting] = useState(false)

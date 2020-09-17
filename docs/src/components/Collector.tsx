@@ -3,8 +3,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions, CardHeader, CardContent, FormGroup, FormControlLabel } from '@material-ui/core';
 import { JDField } from '../../../src/dom/field';
-import JACDACContext from '../../../src/react/Context';
-import { IconButton } from 'gatsby-theme-material-ui';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -81,7 +80,7 @@ function createDataSet(bus: JDBus, registers: JDRegister[], name: string, live: 
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus, connectionState } = useContext(JACDACContext)
+    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
     const [tfliteDeviceId, setTfliteDeviceId] = useState<string>("")

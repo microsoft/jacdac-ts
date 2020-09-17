@@ -4,7 +4,7 @@ import { isRegister } from "../../../src/dom/spec";
 import { setStreamingAsync } from "../../../src/dom/sensor"
 import RegisterInput from "./RegisterInput";
 import { CHANGE } from "../../../src/dom/constants";
-import JACDACContext from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import { BusState } from "../../../src/dom/bus";
 import useChange from '../jacdac/useChange';
 
@@ -15,7 +15,7 @@ export default function ServiceRegisters(props: {
     registerIdentifier?: number,
     showRegisterName?: boolean
 }) {
-    const { connectionState } = useContext(JACDACContext)
+    const { connectionState } = useContext<JDContextProps>(JACDACContext)
     const { service, showConst, showRw, registerIdentifier, showRegisterName } = props;
     const spec = service.specification;
     const packets = spec.packets;
