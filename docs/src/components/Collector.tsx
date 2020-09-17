@@ -24,10 +24,10 @@ import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
 import DeviceCardHeader from './DeviceCardHeader';
-import { JDDevice } from '../../../src/dom/device';
-import { SensorAggregatorClient } from '../../../src/dom/tflite';
-import { TFLiteClient } from '../../../src/dom/tflite';
+import { SensorAggregatorClient } from '../../../src/dom/sensoraggregatorclient';
 import DarkModeContext from './DarkModeContext';
+import { Link } from 'gatsby-theme-material-ui';
+import { JDService } from '../../../src/dom/service';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -97,7 +97,7 @@ export default function Collector(props: {}) {
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
-    const [tfliteDeviceId, setTfliteDeviceId] = useState<string>("")
+    const [aggregatorId, setAggregatorId] = useState<string>("")
     const [recording, setRecording] = useState(false)
     const [tables, setTables] = useState<FieldDataSet[]>([])
     const [, setRecordingLength] = useState(0)
@@ -115,7 +115,8 @@ export default function Collector(props: {}) {
         ).filter(reg => !!reg))
     const recordingRegisters = readingRegisters
         .filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
-    const aggregators = useChange(bus, bus => bus.devices({ serviceClass: SRV_SENSOR_AGGREGATOR }))
+    const aggregators: JDService[] = useChange(bus, bus => bus.services({ serviceClass: SRV_SENSOR_AGGREGATOR }))
+    const aggregator: JDService = aggregators.find(srv => srv.id == aggregatorId)
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
@@ -124,8 +125,7 @@ export default function Collector(props: {}) {
     const triggerEvent = bus.node(triggerEventId) as JDEvent
     const aggregatorMode = !!aggregators.length
     const startEnabled = !!recordingRegisters?.length
-        && (!aggregatorMode || tfliteDeviceId)
-    const aggregator = aggregators.find(dev => dev.id == tfliteDeviceId)
+        && (!aggregatorMode || aggregatorId)
 
     useEffect(() => {
         //console.log(`trigger event`, triggerEventId, triggerEvent)
@@ -168,10 +168,8 @@ export default function Collector(props: {}) {
     const startRecording = async () => {
         if (!recording && recordingRegisters.length) {
             setLiveDataSet(newDataSet(registerIdsChecked, false))
-            const aggregator = aggregatorMode
-                && aggregators.find(dev => dev.id == tfliteDeviceId)
             if (aggregator) {
-                const client = new SensorAggregatorClient(aggregator.services({ serviceClass: SRV_SENSOR_AGGREGATOR })[0])
+                const client = new SensorAggregatorClient(aggregator)
                 await client.setInputs({
                     samplingInterval: samplingIntervalDelayi,
                     samplesInWindow: 10,
@@ -206,9 +204,9 @@ export default function Collector(props: {}) {
             setTables([...tables])
         }
     }
-    const handleTfliteChecked = (dev: JDDevice) => () => {
-        const id = dev?.id == tfliteDeviceId ? '' : dev?.id
-        setTfliteDeviceId(id);
+    const handleAggregatorChecked = (srv: JDService) => () => {
+        const id = srv?.id == aggregatorId ? '' : srv?.id
+        setAggregatorId(id);
     }
     const updateLiveData = () => {
         setLiveDataSet(liveDataSet);
@@ -242,9 +240,8 @@ export default function Collector(props: {}) {
         return () => clearInterval(interval);
     }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked, aggregator]);
     useEffect(() => {
-        const aggregatorService = (aggregator?.services({ serviceClass: SRV_SENSOR_AGGREGATOR }) || [])[0]
-        if (aggregatorService) {
-            const client = new SensorAggregatorClient(aggregatorService)
+        if (aggregator) {
+            const client = new SensorAggregatorClient(aggregator)
             return client.subscribeSample(values => addRow(values))
         }
         return () => { }
@@ -263,15 +260,15 @@ export default function Collector(props: {}) {
                 handleRegisterCheck={handleRegisterCheck}
             />}
         </div>
-        {!!aggregators.length && <div key="tflite">
-            <h3>Choose TensorFlow Lite Device</h3>
-            <p>The recorded data will be formatted for machine learning.</p>
+        {!!aggregators.length && <div key="aggregators">
+            <h3>(Optional) Choose a data aggregator</h3>
+            <p>A <Link to="/services/aggregator">data aggregator</Link> service collects collects sensor data on the bus and returns an aggregated at regular intervals.</p>
             <Grid>
-                {aggregators.map(tfliteDevice => <Grid key={'tflite' + tfliteDevice.id} item xs={4}>
+                {aggregators.map(aggregator => <Grid key={'aggregate' + aggregator.id} item xs={4}>
                     <Card>
-                        <DeviceCardHeader device={tfliteDevice} />
+                        <DeviceCardHeader device={aggregator.device} />
                         <CardActions>
-                            <Switch checked={tfliteDeviceId == tfliteDevice.id} onChange={handleTfliteChecked(tfliteDevice)} />
+                            <Switch checked={aggregatorId == aggregator.id} onChange={handleAggregatorChecked(aggregator)} />
                         </CardActions>
                     </Card>
                 </Grid>)}

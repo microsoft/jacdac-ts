@@ -60,6 +60,7 @@ export default function ReadingFieldGrid(props: {
         {readingRegisters.map(register => {
             const registerChecked = registerIdsChecked.indexOf(register.id) > -1;
             return <ReadingFieldGridItem
+                key={register.id}
                 register={register}
                 registerChecked={registerChecked}
                 recording={recording}

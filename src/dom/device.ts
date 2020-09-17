@@ -205,7 +205,7 @@ export class JDDevice extends JDNode {
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
         let sc = serviceClass(options?.serviceName);
-        if (sc === undefined) sc = options?.serviceClass;
+        if (sc === undefined || sc < 0) sc = options?.serviceClass;
         if (sc === undefined) sc = -1;
 
         this.initServices();
