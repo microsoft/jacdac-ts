@@ -75,21 +75,17 @@ export class DeviceNamerClient extends JDServiceClient {
         return namer
     }
 
-    private get bus() {
-        return this.service.device.bus
-    }
-
     constructor(service: JDService) {
         super(service)
 
-        this.bus.on(DEVICE_CONNECT, () => {
+        this.mount(this.bus.subscribe(DEVICE_CONNECT, () => {
             recomputeCandidates(this.bus, this.remoteRequestedDevices)
-        })
+        }))
 
-        this.bus.on(SELF_ANNOUNCE, () => {
+        this.mount(this.bus.subscribe(SELF_ANNOUNCE, () => {
             if (this.service.device.connected)
                 this.scanCore()
-        })
+        }))
 
         this.scanCore()
     }
@@ -118,6 +114,7 @@ export class DeviceNamerClient extends JDServiceClient {
         this.remoteRequestedDevices = devs
         recomputeCandidates(this.bus, this.remoteRequestedDevices)
 
+        console.log(`rdp changed`)
         this.emit(CHANGE, this.remoteRequestedDevices)
     }
 
