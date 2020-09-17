@@ -17,9 +17,10 @@ export class JDServiceClient extends JDEventSource {
         return this.device.bus
     }
 
-    protected mount(unsubscribe: () => void) {
+    protected mount(unsubscribe: () => void): () => void {
         if (unsubscribe)
             this.unsubscribers.push(unsubscribe)
+        return unsubscribe;
     }
 
     unmount() {

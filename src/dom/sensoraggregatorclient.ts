@@ -85,8 +85,8 @@ export class SensorAggregatorClient extends JDServiceClient {
 
     subscribeSample(handler: (sample: number[]) => void): () => void {
         const reg = this.service.register(SensorAggregatorReg.CurrentSample)
-        return reg.subscribe(REPORT_RECEIVE,
-            () => handler(bufferToArray(reg.data, NumberFormat.Float32LE)))
+        return this.mount(reg.subscribe(REPORT_RECEIVE,
+            () => handler(bufferToArray(reg.data, NumberFormat.Float32LE))))
     }
 
     private async getReg(id: SensorAggregatorReg, f: (v: JDRegister) => any) {
