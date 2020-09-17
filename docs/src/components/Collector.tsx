@@ -125,7 +125,6 @@ export default function Collector(props: {}) {
     const triggerEvent = bus.node(triggerEventId) as JDEvent
     const aggregatorMode = !!aggregators.length
     const startEnabled = !!recordingRegisters?.length
-        && (!aggregatorMode || aggregatorId)
 
     useEffect(() => {
         //console.log(`trigger event`, triggerEventId, triggerEvent)
@@ -268,7 +267,7 @@ export default function Collector(props: {}) {
                     <Card>
                         <DeviceCardHeader device={aggregator.device} />
                         <CardActions>
-                            <Switch checked={aggregatorId == aggregator.id} onChange={handleAggregatorChecked(aggregator)} />
+                            <Switch checked={aggregatorId == aggregator.id} disabled={recording} onChange={handleAggregatorChecked(aggregator)} />
                         </CardActions>
                     </Card>
                 </Grid>)}
