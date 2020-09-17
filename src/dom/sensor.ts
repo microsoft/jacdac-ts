@@ -16,7 +16,9 @@ export function isSensor(service: JDService): boolean {
 
 export function setStreamingAsync(service: JDService, on: boolean) {
     const register = service.register(SensorReg.StreamSamples);
-    return register?.sendSetIntAsync(on ? 255 : 0) || Promise.resolve()
+    // don't explicitly turn off streaming; just let it fade away
+    // another device might me relying on streaming
+    return (on && register?.sendSetIntAsync(0xff)) || Promise.resolve()
 }
 
 export function calibrateAsync(service: JDService) {
