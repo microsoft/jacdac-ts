@@ -26,13 +26,9 @@ import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import EditIcon from '@material-ui/icons/Edit';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import MoreIcon from '@material-ui/icons/MoreVert';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
@@ -53,8 +49,11 @@ import CodeDemo from "./CodeBlock";
 import { ServiceManagerProvider } from "./ServiceManagerContext";
 import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
+import ToolsDrawer from "./ToolsDrawer";
+import Helmet from "react-helmet";
 
 export const DRAWER_WIDTH = `${40}rem`;
+export const TOOLS_DRAWER_WIDTH = `${18}rem`;
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {
@@ -177,7 +176,7 @@ function LayoutWithContext(props: {
   const { toggleDarkMode } = useContext(DarkModeContext)
   const { pageContext, children, } = props;
   const classes = useStyles();
-  const { drawerType, setDrawerType } = useContext(DrawerContext)
+  const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(DrawerContext)
   const open = drawerType !== DrawerType.None
   const serviceClass = pageContext?.node?.classIdentifier;
   const pageTitle = pageContext?.frontmatter?.title
@@ -193,6 +192,8 @@ function LayoutWithContext(props: {
     setDrawerType(DrawerType.Dom);
   }
   const handleDarkMode = () => toggleDarkMode()
+  const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
+
   const data = useStaticQuery(graphql`
     query {
       site {
@@ -212,6 +213,12 @@ function LayoutWithContext(props: {
     <div className={classes.root}>
       <SEO />
       <CssBaseline />
+      <Helmet>
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
+        />
+      </Helmet>
       <AppBar position="fixed"
         className={clsx(classes.appBar, {
           [classes.appBarShift]: open,
@@ -252,22 +259,17 @@ function LayoutWithContext(props: {
           </Hidden>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/collector" aria-label="Data collection">
-            <FiberManualRecordIcon />
-          </IconButton>
-          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/player" aria-label="Replay packet trace">
-            <PlayArrowIcon />
-          </IconButton>
-          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} to="/tools/service-editor" aria-label="Service editor">
-            <EditIcon />
-          </IconButton>
           <div className={clsx(classes.menuButton, open && classes.hide)}><FlashButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
             <SettingsBrightnessIcon />
           </IconButton>
+          <IconButton color="inherit" className={clsx(classes.menuButton, open && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
+            <MoreIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
+      <ToolsDrawer />
       <Container maxWidth={open ? "lg" : "sm"}>
         <main
           className={clsx(classes.content, {

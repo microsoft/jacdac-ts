@@ -14,12 +14,15 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
 // tslint:disable-next-line: no-import-side-effect no-submodule-imports
 import "ace-builds/src-noconflict/ext-language_tools"
+// tslint:disable-next-line: no-import-side-effect no-submodule-imports
+import "ace-builds/src-noconflict/theme-dracula";
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import DrawerContext, { DrawerType } from './DrawerContext';
 import PacketsContext from './PacketsContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useDbValue from './useDbValue';
+import DarkModeContext from './DarkModeContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -44,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [, setTab] = useState(0);
+    const { darkMode } = useContext(DarkModeContext)
     const { drawerType } = useContext(DrawerContext)
     const { setServiceClass } = useContext(PacketsContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
@@ -99,6 +103,7 @@ TODO describe this register
                         editorProps={{ $blockScrolling: true }}
                         annotations={annotations}
                         minLines={48}
+                        theme={darkMode === 'light' ? 'github' : 'dracula'}
                         setOptions={{
                             enableBasicAutocompletion: true,
                             enableLiveAutocompletion: true,

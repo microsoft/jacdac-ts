@@ -17,6 +17,9 @@ export default function FlashButton() {
         bus,
         bus => computeUpdates(devices.map(d => d.firmwareInfo), bus.firmwareBlobs))
 
+    if (!updates?.length)
+        return <></>
+
     return <IconButton
         color="inherit"
         aria-label={`Firmware update ${updates.length} available`}

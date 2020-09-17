@@ -12,14 +12,18 @@ export interface DrawerProps {
     drawerType: DrawerType,
     setDrawerType: (type: DrawerType) => void,
     searchQuery: string,
-    setSearchQuery: (s: string) => void
+    setSearchQuery: (s: string) => void,
+    toolsMenu: boolean,
+    setToolsMenu: (visible: boolean) => void
 }
 
 const DrawerContext = createContext<DrawerProps>({
     drawerType: DrawerType.None,
     setDrawerType: (type) => { },
     searchQuery: undefined,
-    setSearchQuery: (s) => { }
+    setSearchQuery: (s) => { },
+    toolsMenu: false,
+    setToolsMenu: (v) => { }
 });
 DrawerContext.displayName = "drawer";
 
@@ -28,13 +32,16 @@ export default DrawerContext;
 export const DrawerProvider = ({ children }) => {
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
+    const [toolsMenu, setToolsMenu] = useState(false)
 
     return (
         <DrawerContext.Provider value={{
             drawerType: type,
             setDrawerType: setType,
             searchQuery,
-            setSearchQuery
+            setSearchQuery,
+            toolsMenu,
+            setToolsMenu
         }}>
             {children}
         </DrawerContext.Provider>

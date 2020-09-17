@@ -4,7 +4,7 @@ import TextField from '@material-ui/core/TextField';
 // tslint:disable-next-line: no-submodule-imports
 import DrawerContext from './DrawerContext';
 
-export default function AppDrawerSearchInput() {
+export default function DrawerSearchInput() {
     const { searchQuery, setSearchQuery } = useContext(DrawerContext)
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
