@@ -59,7 +59,7 @@ export default function ToolsDrawer() {
             <Link to="/tools/updater">
                 <ListItem button key="updater">
                     <ListItemIcon><SystemUpdateAltIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Firmware Update"} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Firmware update"} />
                 </ListItem>
             </Link>
             <Link to="/tools/collector">
@@ -77,7 +77,7 @@ export default function ToolsDrawer() {
             <Link to="/tools/service-editor">
                 <ListItem button key="service-editor">
                     <ListItemIcon><EditIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Service editor"} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Service specification editor"} />
                 </ListItem>
             </Link>
         </List>
