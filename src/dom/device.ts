@@ -346,3 +346,10 @@ export function isBootloaderRelated(id1: string, id2: string) {
         return (buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24)) >>> 0
     }
 }
+
+export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice) {
+    return devices.some(other =>
+        other != candidate
+        && flashing(other)
+        && isBootloaderRelated(other.deviceId, candidate.deviceId))
+}
