@@ -11,6 +11,7 @@ import Alert from '@material-ui/lab/Alert';
 import { Button } from 'gatsby-theme-material-ui';
 import { TFLiteClient } from '../../../src/dom/tflite'
 import RegisterInput from './RegisterInput';
+import CircularProgressWithLabel from './CircularProgressWithLabel'
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -29,23 +30,24 @@ function TensorFlowContent(props: { service: JDService }) {
 function TensorFlowActions(props: { service: JDService, model: Uint8Array }) {
     const { service, model } = props
     const [deploying, setDeploying] = useState(false)
+    const [progress, setProgress] = useState(0)
 
     const disabled = !model || deploying
     const handleDeploy = async () => {
         try {
             setDeploying(true)
             const client = new TFLiteClient(service)
-            await client.deployModel(model)
+            await client.deployModel(model, p => setProgress(p * 100))
         }
         finally {
             setDeploying(false)
         }
     }
 
-    return <div>
-        <Button disabled={disabled} variant="contained" color="primary" onClick={handleDeploy}>Upload</Button>
-        {deploying && <CircularProgress />}
-    </div>
+    return <>
+        {!deploying && <Button disabled={disabled} variant="contained" color="primary" onClick={handleDeploy}>Upload</Button>}
+        {deploying && <CircularProgressWithLabel value={progress} />}
+    </>
 }
 
 export default function TensorFlowUploader(props: {}) {
