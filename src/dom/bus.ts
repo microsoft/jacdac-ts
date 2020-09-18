@@ -148,10 +148,6 @@ export class JDBus extends JDNode {
     private setConnectionState(state: BusState) {
         if (this._connectionState !== state) {
             this.log('debug', `${this._connectionState} -> ${state}`)
-            console.log({
-                connect: this._connectPromise,
-                disconnect: this._disconnectPromise
-            })
             this._connectionState = state;
             this.emit(CONNECTION_STATE, this._connectionState);
             switch (this._connectionState) {
