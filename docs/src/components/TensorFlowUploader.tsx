@@ -18,7 +18,15 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
 }))
 
-function ModelUploadButton(props: { service: JDService, model: Uint8Array }) {
+function TensorFlowContent(props: { service: JDService }) {
+    const { service } = props
+    return <>
+        <RegisterInput register={service.register(TFLiteReg.ModelSize)} />
+        <RegisterInput register={service.register(TFLiteReg.LastError)} />
+    </>
+}
+
+function TensorFlowActions(props: { service: JDService, model: Uint8Array }) {
     const { service, model } = props
     const [deploying, setDeploying] = useState(false)
 
@@ -67,8 +75,8 @@ export default function TensorFlowUploader(props: {}) {
         <ConnectAlert serviceClass={SRV_TFLITE} />
         <ServiceList
             serviceClass={SRV_TFLITE}
-            content={service => <RegisterInput register={service.register(TFLiteReg.LastError)} />}
-            actions={service => <ModelUploadButton service={service} model={model} />}
+            content={service => <TensorFlowContent service={service} />}
+            actions={service => <TensorFlowActions service={service} model={model} />}
         />
     </div>
 }
