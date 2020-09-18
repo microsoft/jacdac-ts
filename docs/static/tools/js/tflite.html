@@ -42,23 +42,19 @@
         const log = console.log;
         jacdac = jacdacDom;
         const jd = jacdac.createUSBBus()
-        const speedTest = /speed/.test(document.location.search)
         jd.on(jacdac.DEVICE_CONNECT, dev => {
             console.log(`connect ${dev}`)
             connectDevice(dev)
         })
         jd.on(jacdac.DEVICE_DISCONNECT, dev => disconnectDevice(dev))
-        jd.on(jacdac.DEVICE_ANNOUNCE, render)
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function scan() {
             log('starting')
             await jd.disconnectAsync();
             await jd.connectAsync();
-            render()
             log('started')
         }
-
 
         function printServices(device) {
             let srv = ""
@@ -90,11 +86,6 @@
                 div.remove();
         }
 
-        function render() {
-            const devices = jd.devices();
-            devices.forEach(device => connect(device));
-        }
-
         const connect = document.getElementById("connect");
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
@@ -102,8 +93,8 @@
 
         const tftest = document.getElementById("tftest");
         tftest.onclick = () => {
-            scan();
-            setTimeout(() => jacdac.testTF(jd), 1000);
+            jacdac.testAGG(jd)
+            jacdac.testTF(jd)
         }
 
         function updateConnectionState() {

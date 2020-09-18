@@ -47,20 +47,25 @@ export class TFLiteClient extends JDServiceClient {
         })
     }
 
-    async deployModel(model: Uint8Array) {
+    async deployModel(model: Uint8Array, progress: (p: number) => void = () => { }) {
+        progress(0)
         const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(TFLiteCmd.SetModel, "I", [model.length]), 3000)
+        progress(0.05)
         const [pipePort] = unpack(resp.data, "H")
         if (!pipePort)
             throw new Error("wrong port " + pipePort)
         const pipe = new OutPipe(this.service.device, pipePort)
         const chunkSize = 224 // has to be divisible by 8
-        for (let i = 0; i < model.length; i += chunkSize)
+        for (let i = 0; i < model.length; i += chunkSize) {
             await pipe.send(model.slice(i, i + chunkSize))
+            progress(0.05 + (i / model.length) * 0.9)
+        }
         try {
             await pipe.close()
         } catch {
             // the device may restart before we manage to close
         }
+        progress(1)
     }
 
     async autoInvoke(everySamples = 1) {
@@ -97,6 +102,32 @@ export interface TFModelStats {
 }
 
 /*
+export async function testAGG(bus: JDBus) {
+    const aggService = bus.services({ serviceClass: SRV_SENSOR_AGGREGATOR })[0]
+    if (!aggService) {
+        console.log("no agg service")
+        return
+    }
+    const agg = new SensorAggregatorClient(aggService)
+
+    let acc = bus.services({ serviceClass: SRV_ACCELEROMETER })
+    if (acc.length == 0) {
+        console.log("no acc service")
+        return
+    }
+
+    await agg.setInputs({
+        samplesInWindow: 50,
+        samplingInterval: 20,
+        inputs: acc
+    })
+
+    agg.subscribeSample(sample => {
+        console.log("SAMPLE", sample)
+    })
+
+}
+
 export async function testTF(bus: JDBus, model: Uint8Array) {
     const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
     if (!tfService) {
@@ -106,28 +137,10 @@ export async function testTF(bus: JDBus, model: Uint8Array) {
     const tf = new TFLiteClient(tfService)
 
     if (model)
-        await tf.deployModel(model)
+        await tf.deployModel(model, p => console.log("deploy", p.toFixed(3)))
 
     const st = await tf.modelStats()
     console.log(st)
-
-    let acc = bus.services({ serviceClass: SRV_ACCELEROMETER })
-    if (acc.length == 0) {
-        console.log("no acc service")
-        return
-    }
-    acc = acc.concat(bus.services({ serviceClass: SRV_SLIDER }))
-    stableSortServices(acc)
-    await tf.setInputs({
-        samplesInWindow: 50,
-        samplingInterval: 20,
-        inputs: acc,
-        freeze: acc.length > 1
-    })
-
-    tf.subscribeSample(sample => {
-        console.log("SAMPLE", sample)
-    })
 
     const classNames = ['noise', 'punch', 'left', 'right'];
     tf.subscribeResults(outp => {
@@ -136,17 +149,12 @@ export async function testTF(bus: JDBus, model: Uint8Array) {
                 console.log(outp[i].toFixed(3) + " " + classNames[i])
             }
         }
-        // console.log("OUT", outp)
+         console.log("OUT", outp)
     })
 
     await tf.autoInvoke(8)
 
-    let prev = 0
-    while (true) {
-        await U.delay(1000)
-        const st = await tf.execStats()
-        console.log(st.numSamples - prev, st)
-        prev = st.numSamples
-    }
+    console.log("autoinvoked")
+
 }
 */

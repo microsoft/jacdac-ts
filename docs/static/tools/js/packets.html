@@ -64,7 +64,8 @@
         async function importLog(file) {
             await jd.disconnectAsync();
             const opts = {
-                skipRepeatedAnnounce: true
+                skipRepeatedAnnounce: true,
+                showTime: true
             }
             jd = new jacdac.JDBus()
             jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt, opts)))
