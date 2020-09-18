@@ -17,6 +17,8 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import EmojiNatureIcon from '@material-ui/icons/EmojiNature';
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -74,6 +76,12 @@ export default function ToolsDrawer() {
                 <ListItem button key="collector">
                     <ListItemIcon><FiberManualRecordIcon /></ListItemIcon>
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Data collection"} />
+                </ListItem>
+            </Link>
+            <Link to="/tools/tflite">
+                <ListItem button key="tflite">
+                    <ListItemIcon><EmojiNatureIcon /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy TensorFlow Lite models"} />
                 </ListItem>
             </Link>
             <Link to="/tools/player">
