@@ -51,8 +51,8 @@ export default function ServiceList(props: {
 }) {
     const { serviceClass, selected, toggleSelected, content, actions } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const gridBreakpoints = useGridBreakpoints()
     const services = useChange(bus, n => n.services({ serviceClass }))
+    const gridBreakpoints = useGridBreakpoints(services?.length)
     const classes = useStyles()
 
     const handleSelected = (service: JDService) => selected && selected(service)

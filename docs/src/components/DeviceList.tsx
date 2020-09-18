@@ -29,10 +29,10 @@ export default function DeviceList(props: {
         showDeviceName, showServiceName, showRegisterName, showFirmware, showTemperature,
         eventIdentifier, commandIdentifier } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const gridBreakpoints = useGridBreakpoints()
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const classes = useStyles()
     const hasServiceClass = serviceClass !== undefined
+    const gridBreakpoints = useGridBreakpoints(devices?.length)
 
     return (
         <Grid

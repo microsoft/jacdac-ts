@@ -15,7 +15,7 @@ import FieldDataSet from "./FieldDataSet";
 export default function DataSetGrid(props: { tables: FieldDataSet[], handleDeleteTable?: (table: FieldDataSet) => void }) {
     const { tables, handleDeleteTable } = props;
     const { fileStorage } = useContext(ServiceManagerContext)
-    const gridBreakpoints = useGridBreakpoints()
+    const gridBreakpoints = useGridBreakpoints(tables?.length)
 
     const handleDownload = (table: FieldDataSet) => () => {
         const sep = ','
