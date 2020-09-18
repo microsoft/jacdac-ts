@@ -18,12 +18,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 function ServiceListItem(props: {
     service: JDService,
-    children?: any,
+    content?: JSX.Element | JSX.Element[],
     checked?: boolean,
     checkedDisabled?: boolean
-    toggleChecked?: () => void
+    toggleChecked?: () => void,
+    actions?: JSX.Element | JSX.Element[]
 }) {
-    const { service, children, checked, checkedDisabled, toggleChecked } = props;
+    const { service, content, checked, checkedDisabled, toggleChecked, actions } = props;
     const { device } = service;
 
     const handleCheck = () => toggleChecked()
@@ -32,10 +33,11 @@ function ServiceListItem(props: {
         <DeviceCardHeader device={device} />
         <CardContent>
             <DeviceLostAlert device={device} />
-            {children}
+            {content}
         </CardContent>
         <CardActions>
             {checked !== undefined && <Switch disabled={checkedDisabled} onChange={handleCheck} checked={checked} />}
+            {actions}
         </CardActions>
     </Card>
 }
@@ -43,20 +45,31 @@ function ServiceListItem(props: {
 export default function ServiceList(props: {
     serviceClass: number,
     selected?: (service: JDService) => boolean,
-    toggleSelected?: (service: JDService) => void
+    toggleSelected?: (service: JDService) => void,
+    content?: (service: JDService) => JSX.Element | JSX.Element[],
+    actions?: (service: JDService) => JSX.Element | JSX.Element[]
 }) {
-    const { serviceClass, selected, toggleSelected } = props
+    const { serviceClass, selected, toggleSelected, content, actions } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
     const services = useChange(bus, n => n.services({ serviceClass }))
     const classes = useStyles()
 
-    const handleChecked = (service: JDService) => () => toggleSelected(service)
+    const handleSelected = (service: JDService) => selected && selected(service)
+    const handleChecked = (service: JDService) => () => toggleSelected && toggleSelected(service);
+    const serviceContent = (service: JDService) => content && content(service);
+    const serviceActions = (service: JDService) => actions && actions(service);
 
     return (
         <Grid container spacing={2} className={classes.root}>
             {services?.map(service => <Grid key={service.id} item {...gridBreakpoints}>
-                <ServiceListItem service={service} checked={selected(service)} toggleChecked={handleChecked(service)} />
+                <ServiceListItem
+                    service={service}
+                    checked={handleSelected(service)}
+                    toggleChecked={handleChecked(service)}
+                    content={serviceContent(service)}
+                    actions={serviceActions(service)}
+                />
             </Grid>)}
         </Grid>
     )

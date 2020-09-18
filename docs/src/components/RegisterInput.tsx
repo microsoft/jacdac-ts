@@ -5,6 +5,7 @@ import { REPORT_UPDATE } from "../../../src/dom/constants";
 import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/dom/pretty";
 import { debouncedPollAsync } from "../../../src/dom/utils";
 import IDChip from "./IDChip"
+import DeviceName from "./DeviceName";
 
 function MemberInput(props: { register: JDRegister, member: DecodedMember, labelledby: string }) {
     const { register, member, labelledby } = props;

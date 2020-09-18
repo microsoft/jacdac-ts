@@ -127,3 +127,24 @@ export function useDbBlob(blobName: string) {
         setBlob: async (blob: Blob) => { await db?.putBlob(blobName, blob) }
     }
 }
+
+export function useDbUint8Array(blobName: string) {
+    const { blob, setBlob, dependencyId } = useDbBlob(blobName)
+    const [model, setModel] = useState<Uint8Array>(undefined)
+
+    useEffect(() => {
+        blob().then((data: Blob) => {
+            if (!data) setModel(undefined)
+            else {
+                const fileReader = new FileReader();
+                fileReader.readAsArrayBuffer(data);
+                fileReader.onload = () => setModel(new Uint8Array(fileReader.result as ArrayBuffer))
+            }
+        })
+    }, [dependencyId()])
+
+    return {
+        data: model,
+        setBlob
+    }
+}
