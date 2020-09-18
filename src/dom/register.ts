@@ -113,9 +113,25 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     refresh() {
-        return withTimeout(100, new Promise<void>((resolve, reject) => {
-            this.once(REPORT_RECEIVE, resolve)
-            this.sendGetAsync().then(() => { }, reject)
+        return withTimeout(150, new Promise<void>((resolve, reject) => {
+            this.once(REPORT_RECEIVE, () => {
+                const f = resolve
+                resolve = null
+                f()
+            })
+            // re-send get if no answer within 20ms and 70ms
+            this.sendGetAsync()
+                .then(() => delay(20))
+                .then(() => {
+                    if (resolve)
+                        return this.sendGetAsync()
+                            .then(() => delay(50))
+                })
+                .then(() => {
+                    if (resolve)
+                        return this.sendGetAsync()
+                })
+                .then(() => { }, reject)
         }))
     }
 
