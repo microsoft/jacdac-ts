@@ -102,7 +102,7 @@ export default function PacketList(props: {
                 <ToggleButtonGroup value={flags} onChange={handleModes}>
                     <ToggleButton key="console" title={"console mode"} value={"console"}>
                         <GradientIcon />
-                        {showButtonText && "log"}
+                        {showButtonText && "log only"}
                     </ToggleButton>
                     {allKinds().map(kind => <ToggleButton key={kind} title={kindName(kind)} value={kind}>
                         <KindIcon kind={kind} />
@@ -110,7 +110,7 @@ export default function PacketList(props: {
                     </ToggleButton>)}
                     <ToggleButton key="announce" title={"all announce"} value={"announce"}>
                         <AnnouncementIcon />
-                        {showButtonText && "announce"}
+                        {showButtonText && "repeated announce"}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </ListItem>
