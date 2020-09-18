@@ -43,6 +43,10 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     sendGetAsync(): Promise<void> {
+        if (this.specification?.kind === "const" &&
+            this.data !== undefined)
+            return Promise.resolve();
+
         const cmd = CMD_GET_REG | this.address;
         return this.service.sendCmdAsync(cmd)
     }

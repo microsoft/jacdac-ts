@@ -67,7 +67,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
 
     // keep reading
     useEffect(() => debouncedPollAsync(() => {
-        if (register.specification.kind == "const" && register.data !== undefined)
+        if (register.specification?.kind === "const" && register.data !== undefined)
             return Promise.resolve();
         return register.sendGetAsync()
     }, register.data ? 5000 : 500), [register])

@@ -9,6 +9,7 @@ export abstract class JDServiceMemberNode extends JDNode {
         public readonly address: number,
         private readonly isPacket: (pkt: jdspec.PacketInfo) => boolean) {
         super()
+        this._specification = null;
     }
 
     get id() {
@@ -24,7 +25,7 @@ export abstract class JDServiceMemberNode extends JDNode {
     }
 
     get specification() {
-        if (!this._specification)
+        if (this._specification === null) // lookup once
             this._specification = this.service.specification?.packets.find(packet => this.isPacket(packet) && packet.identifier === this.address)
         return this._specification;
     }
