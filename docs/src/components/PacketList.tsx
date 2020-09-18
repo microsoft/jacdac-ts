@@ -20,6 +20,7 @@ import { IconButton } from 'gatsby-theme-material-ui';
 import GradientIcon from '@material-ui/icons/Gradient';
 import ConsoleListItem from './ConsoleListItem';
 import PacketRecorder from './PacketRecorder';
+import PacketTraceImporter from "./PacketTraceImporter"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -97,6 +98,7 @@ export default function PacketList(props: {
         <List className={classes.items} dense={true}>
             {showRecorder && <ListItem key="recorder">
                 <PacketRecorder showText={true} />
+                <PacketTraceImporter />
             </ListItem>}
             <ListItem key="filters">
                 <ToggleButtonGroup value={flags} onChange={handleModes}>

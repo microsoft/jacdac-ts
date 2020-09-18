@@ -47,16 +47,8 @@ export default function PacketTraceImporter() {
     }
 
     return <>
-        <Typography variant="body1" className={classes.box}>
-            {!frames && <Alert severity="info">No packet trace loaded.</Alert>}
-            {frames && `Packet trace with ${frames.length} frames loaded.`}
-        </Typography>
-        <Typography variant="body1">
-            <ButtonGroup>
-                <Button disabled={!trace} variant="contained" onClick={handleReplay}>Replay</Button>
-                <UploadButton text="Import trace" onFilesUploaded={handleFiles} />
-                {!!trace && <Button aria-label={"Clear packet trace"} variant="contained" onClick={handleClear}>clear</Button>}
-            </ButtonGroup>
-        </Typography>
+        <UploadButton text="Import trace" onFilesUploaded={handleFiles} />
+        {!!trace && <Button variant="contained" onClick={handleReplay}>Replay ({frames.length} frames)</Button>}
+        {!!trace && <Button aria-label={"Clear packet trace"} variant="contained" onClick={handleClear}>clear</Button>}
     </>
 }
