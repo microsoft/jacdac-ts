@@ -6,6 +6,7 @@ import { JDNode } from '../../../src/dom/node';
 import { JDService } from '../../../src/dom/service';
 import useSelectedNodes from '../jacdac/useSelectedNodes';
 import ServiceList from './ServiceList';
+import ConnectAlert from './ConnectAlert'
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -19,6 +20,7 @@ export default function TensorFlowUploader(props: {}) {
 
     return <div className={classes.root}>
         <h3>Choose the TensorFlow Lite services</h3>
+        <ConnectAlert serviceClass={SRV_TFLITE} />
         <ServiceList serviceClass={SRV_TFLITE} selected={selected} toggleSelected={toggleSelected} />
     </div>
 }

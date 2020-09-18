@@ -50,7 +50,7 @@ export default function Namer(props: {}) {
     const services = useChange(bus, () => bus.services({ serviceClass: SRV_DEVICE_NAMER }));
 
     return <div className={classes.root}>
-        {<ConnectAlert />}
+        {<ConnectAlert serviceClass={SRV_DEVICE_NAMER} />}
         {!services.length && connectionState == BusState.Connected && <Alert severity="info">We could not find any device with the device namer service on the bus!</Alert>}
         {services.map(service => <DeviceNameView key={service.id} service={service} />)}
     </div>
