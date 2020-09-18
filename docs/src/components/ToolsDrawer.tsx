@@ -19,6 +19,8 @@ import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EmojiNatureIcon from '@material-ui/icons/EmojiNature';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import HistoryIcon from '@material-ui/icons/History';
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -84,10 +86,10 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy TensorFlow Lite models"} />
                 </ListItem>
             </Link>
-            <Link to="/tools/player">
-                <ListItem button key="player">
-                    <ListItemIcon><PlayArrowIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Replay packet trace"} />
+            <Link to="/tools/packets">
+                <ListItem button key="packets">
+                    <ListItemIcon><HistoryIcon /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Packet console"} />
                 </ListItem>
             </Link>
             <Link to="/tools/service-editor">

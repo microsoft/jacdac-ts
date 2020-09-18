@@ -36,6 +36,7 @@
     "test:prod": "npm run lint && npm run test --no-cache",
     "tools": "npx http-server . -c-1",
     "installdocs": "cd docs && npm install",
+    "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "docs": "cd docs && node node_modules/gatsby/cli.js develop"
   },
   "release": {

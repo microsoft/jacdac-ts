@@ -19,6 +19,7 @@ import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import GradientIcon from '@material-ui/icons/Gradient';
 import ConsoleListItem from './ConsoleListItem';
+import PacketRecorder from './PacketRecorder';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -31,9 +32,11 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function PacketList(props: {
     maxItems?: number,
     serviceClass?: number,
-    showTime?: boolean
+    showTime?: boolean,
+    showRecorder?: boolean,
+    showButtonText?: boolean
 }) {
-    const { showTime } = props
+    const { showTime, showRecorder, showButtonText } = props
     const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, setPackets } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
@@ -90,13 +93,25 @@ export default function PacketList(props: {
     const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
         setFlags(newFlags)
     };
-    return (
+    return (<>
         <List className={classes.items} dense={true}>
+            {showRecorder && <ListItem key="recorder">
+                <PacketRecorder showText={true} />
+            </ListItem>}
             <ListItem key="filters">
                 <ToggleButtonGroup value={flags} onChange={handleModes}>
-                    <ToggleButton key="console" title={"console mode"} value={"console"}><GradientIcon /></ToggleButton>
-                    {allKinds().map(kind => <ToggleButton key={kind} title={kindName(kind)} value={kind}><KindIcon kind={kind} /></ToggleButton>)}
-                    <ToggleButton key="announce" title={"all announce"} value={"announce"}><AnnouncementIcon /></ToggleButton>
+                    <ToggleButton key="console" title={"console mode"} value={"console"}>
+                        <GradientIcon />
+                        {showButtonText && "log"}
+                    </ToggleButton>
+                    {allKinds().map(kind => <ToggleButton key={kind} title={kindName(kind)} value={kind}>
+                        <KindIcon kind={kind} />
+                        {showButtonText && kindName(kind)}
+                    </ToggleButton>)}
+                    <ToggleButton key="announce" title={"all announce"} value={"announce"}>
+                        <AnnouncementIcon />
+                        {showButtonText && "announce"}
+                    </ToggleButton>
                 </ToggleButtonGroup>
             </ListItem>
             {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
@@ -106,6 +121,6 @@ export default function PacketList(props: {
                     skipRepeatedAnnounce={skipRepeatedAnnounce}
                     showTime={showTime} />)}
         </List>
-    )
+    </>)
 
 }
