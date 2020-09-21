@@ -24,7 +24,7 @@ import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
 import DeviceCardHeader from './DeviceCardHeader';
-import { SensorAggregatorClient } from '../../../src/dom/sensoraggregatorclient';
+import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/dom/sensoraggregatorclient';
 import DarkModeContext from './DarkModeContext';
 import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
@@ -60,12 +60,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const LIVE_HORIZON = 24
-function createDataSet(bus: JDBus, registers: JDRegister[], name: string, live: boolean, palette: string[]) {
+function createDataSet(bus: JDBus,
+    registers: JDRegister[],
+    name: string,
+    live: boolean,
+    palette: string[],
+    sensorConfig?: SensorAggregatorConfig) {
     const fields = arrayConcatMany(registers.map(reg => reg.fields))
     const colors = fields.map((f, i) => palette[i % palette.length])
-    const set = new FieldDataSet(bus, name, fields, colors)
+    const set = new FieldDataSet(bus, name, fields, colors, sensorConfig)
     if (live)
         set.maxRows = LIVE_HORIZON + 4
+
+    console.log(`new dataset`, set)
     return set;
 }
 
@@ -138,13 +145,21 @@ export default function Collector(props: {}) {
         }
     }, [triggerEvent, recording, registerIdsChecked, liveDataSet])
 
-    const newDataSet = (registerIds: string[], live: boolean) => registerIds.length
+    const createSensorConfig = () => ({
+        samplingInterval: samplingIntervalDelayi,
+        samplesInWindow: 10,
+        inputs: recordingRegisters.map(reg => ({
+            serviceClass: reg.service.serviceClass
+        }))
+    })
+    const newDataSet = (registerIds: string[], live: boolean, sensorConfig?: SensorAggregatorConfig) => registerIds.length
         ? createDataSet(
             bus,
             readingRegisters.filter(reg => registerIds.indexOf(reg.id) > -1),
             `${prefix || "data"}${tables.length}`,
             live,
-            chartPalette(darkMode))
+            chartPalette(darkMode),
+            sensorConfig)
         : undefined
     const handleRegisterCheck = (reg: JDRegister) => {
         const i = registerIdsChecked.indexOf(reg.id)
@@ -158,6 +173,7 @@ export default function Collector(props: {}) {
     }
     const stopRecording = () => {
         if (recording) {
+            console.log(`stop recording`, liveDataSet)
             setTables([liveDataSet, ...tables])
             setLiveDataSet(newDataSet(registerIdsChecked, true))
             setRecording(false)
@@ -165,19 +181,14 @@ export default function Collector(props: {}) {
     }
     const startRecording = async () => {
         if (!recording && recordingRegisters.length) {
-            setLiveDataSet(newDataSet(registerIdsChecked, false))
+            const sensorConfig = aggregator && createSensorConfig()
+            setLiveDataSet(newDataSet(registerIdsChecked, false, sensorConfig))
+            setRecording(true)
             if (aggregator) {
                 const client = new SensorAggregatorClient(aggregator)
-                await client.setInputs({
-                    samplingInterval: samplingIntervalDelayi,
-                    samplesInWindow: 10,
-                    inputs: recordingRegisters.map(reg => ({
-                        serviceClass: reg.service.serviceClass
-                    }))
-                })
-                await client.collect(samplingCount)
+                await client.setInputs(sensorConfig)
+                client.collect(samplingCount)
             }
-            setRecording(true)
         }
     }
     const toggleRecording = () => {

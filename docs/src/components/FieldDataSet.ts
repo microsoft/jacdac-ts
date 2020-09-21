@@ -1,5 +1,6 @@
 import { JDBus } from "../../../src/dom/bus";
 import { JDField } from "../../../src/dom/field";
+import { SensorAggregatorConfig, sensorConfigToCSV } from "../../../src/dom/sensoraggregatorclient"
 
 export class Example {
     label: string;
@@ -31,7 +32,8 @@ export default class FieldDataSet {
         public readonly bus: JDBus,
         public readonly name: string,
         public readonly fields: JDField[],
-        public readonly colors: string[]
+        public readonly colors: string[],
+        public readonly sensorConfig?: SensorAggregatorConfig
     ) {
         this.rows = [];
         this.headers = fields.map(field => field.friendlyName)
@@ -109,9 +111,20 @@ export default class FieldDataSet {
 
     toCSV(sep: string = ",") {
         const allheaders = ["time", ...this.headers].join(sep)
-        const allunits = ["ms", ...this.units]
+        const allunits = ["ms", ...this.units].join(sep)
         const start = this.startTimestamp
-        let csv = [allheaders, allunits]
+        let csv: string[] = []
+        if (this.sensorConfig) {
+            // inline sensor configuration
+            const config = sensorConfigToCSV(this.sensorConfig)
+                .map(line => line.join(sep))
+            csv = csv.concat(config)
+            // add header
+            csv = csv.concat([])
+            csv = csv.concat(["data"])
+        }
+        csv.push(allheaders)
+        csv.push(allunits)
         this.rows.forEach(row => csv.push(
             row.toVector(start).map(cell => cell !== undefined ? cell.toString() : "").join(sep)
         ))

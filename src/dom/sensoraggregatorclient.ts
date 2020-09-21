@@ -1,3 +1,4 @@
+import { VariablesAreInputTypesRule } from "graphql"
 import { SensorAggregatorReg, SensorAggregatorSampleType } from "../../jacdac-spec/dist/specconstants"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "./constants"
@@ -19,6 +20,25 @@ export interface SensorAggregatorConfig {
     samplingInterval: number; // ms
     samplesInWindow: number;
     inputs: SensorAggregatorInputConfig[];
+}
+
+export function sensorConfigToCSV(config: SensorAggregatorConfig): string[][] {
+    if (!config) return [];
+
+    const headers = ["samplingInterval", "samplesInWindow"]
+    const data = [config.samplingInterval.toString(), config.samplesInWindow.toString()]
+    config.inputs.forEach(input => {
+        // service
+        headers.push("service")
+        data.push("0x" + input.serviceClass.toString(16))
+        headers.push("device")
+        if (input.deviceId) {
+            data.push(`${input.deviceId}[${input.serviceNumber}]`)
+        } else {
+            data.push("*")
+        }
+    })
+    return [["sensor configuration"], headers, data
 }
 
 export interface SensorAggregatorStats {
