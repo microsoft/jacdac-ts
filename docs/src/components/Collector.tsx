@@ -290,6 +290,7 @@ export default function Collector(props: {}) {
         </div>}
         <div key="record">
             <h3>Record data</h3>
+            {aggregator && <p>Record the sensor input configuration in order to up your ML model later on.</p>}
             <div className={classes.buttons}>
                 <Button
                     size="large"

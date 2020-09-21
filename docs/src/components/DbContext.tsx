@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { delay } from "../../../src/dom/utils";
+import { delay, JSONTryParse } from "../../../src/dom/utils";
 
 export interface Db {
     dependencyId: () => number,
@@ -146,5 +146,43 @@ export function useDbUint8Array(blobName: string) {
     return {
         data: model,
         setBlob
+    }
+}
+
+export function useDbString(blobName: string) {
+    const { blob, setBlob, dependencyId } = useDbBlob(blobName)
+    const [model, setModel] = useState<string>(undefined)
+
+    useEffect(() => {
+        blob().then((data: Blob) => {
+            if (!data) setModel(undefined)
+            else {
+                const fileReader = new FileReader();
+                console.log(data)
+                fileReader.readAsText(data);
+                fileReader.onload = () => {
+                    console.log(fileReader)
+                    setModel(fileReader.result as string)
+                }
+            }
+        })
+    }, [dependencyId()])
+
+    return {
+        data: model,
+        setBlob
+    }
+}
+
+export function useDbJSON<T>(blobName: string) {
+    const { data, setBlob } = useDbString(blobName);
+    const value: T = JSONTryParse(data) as T;
+    console.log(`data`, data, value)
+    return {
+        value,
+        setBlob: async (blob: Blob) => {
+            console.log(`setJSONblob`, blob);
+            await setBlob(blob)
+        }
     }
 }
