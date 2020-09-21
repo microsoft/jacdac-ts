@@ -5,7 +5,7 @@ import {
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
-import { TFLiteCmd, SensorAggregatorSampleType, SensorAggregatorReg, TFLiteReg } from "./constants"
+import { TFLiteCmd, TFLiteReg } from "./constants"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
 import { JDRegister } from "./register"
@@ -72,7 +72,7 @@ export class TFLiteClient extends JDServiceClient {
         await this.service.register(TFLiteReg.AutoInvokeEvery).sendSetIntAsync(everySamples)
     }
 
-    private async getReg(id: SensorAggregatorReg | TFLiteReg, f: (v: JDRegister) => any) {
+    private async getReg(id: TFLiteReg, f: (v: JDRegister) => any) {
         const reg = this.service.register(id)
         await reg.refresh()
         return f(reg)
