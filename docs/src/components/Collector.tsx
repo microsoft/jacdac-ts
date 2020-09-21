@@ -122,8 +122,7 @@ export default function Collector(props: {}) {
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
     const errorSamplingDuration = isNaN(samplingCount)
     const error = errorSamplingDuration || errorSamplingIntervalDelay
-    const triggerEvent = bus.node(triggerEventId) as JDEvent
-    const aggregatorMode = !!aggregators.length
+    const triggerEvent = bus.node(triggerEventId) as JDEvent;
     const startEnabled = !!recordingRegisters?.length
 
     useEffect(() => {
@@ -172,8 +171,10 @@ export default function Collector(props: {}) {
                 await client.setInputs({
                     samplingInterval: samplingIntervalDelayi,
                     samplesInWindow: 10,
-                    freeze: false,
-                    inputs: recordingRegisters.map(reg => reg.service)
+                    inputs: recordingRegisters.map(reg => ({
+                        service: reg.service,
+                        freeze: false
+                    }))
                 })
                 await client.collect(samplingCount)
             }

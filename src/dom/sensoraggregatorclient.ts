@@ -8,11 +8,15 @@ import { isReading } from "./spec"
 import { pack } from "./struct"
 import { bufferConcat, bufferConcatMany, fromHex } from "./utils"
 
+export interface SensorAggregatorInputConfig {
+    service: JDService,
+    freeze?: boolean
+}
+
 export interface SensorAggregatorConfig {
     samplingInterval: number; // ms
     samplesInWindow: number;
-    freeze?: boolean;
-    inputs: JDService[];
+    inputs: SensorAggregatorInputConfig[];
 }
 
 export interface SensorAggregatorStats {
@@ -43,8 +47,12 @@ export class SensorAggregatorClient extends JDServiceClient {
             }
         }
         let totalSampleSize = 0
-        const inputs = cfg.inputs.map(inp => {
-            const readingReg = inp.specification.packets.find(isReading)
+        const inputs = cfg.inputs.map(input => {
+            const { service, freeze } = input
+            const { device, specification } = service
+            if (!specification)
+                error(`missing specification for 0x${service.serviceClass.toString(16)}`)
+            const readingReg = specification.packets.find(isReading)
             let sampleType: SensorAggregatorSampleType = undefined
             let sampleSize = 0
             let sampleShift = 0
@@ -59,10 +67,10 @@ export class SensorAggregatorClient extends JDServiceClient {
             }
             totalSampleSize += sampleSize
             return bufferConcat(
-                cfg.freeze ? fromHex(inp.device.deviceId) : new Uint8Array(8),
+                freeze ? fromHex(device.deviceId) : new Uint8Array(8),
                 pack("IBBBb", [
-                    inp.serviceClass,
-                    cfg.freeze ? inp.service_number : 0,
+                    service.serviceClass,
+                    freeze ? service.service_number : 0,
                     sampleSize,
                     sampleType,
                     sampleShift
