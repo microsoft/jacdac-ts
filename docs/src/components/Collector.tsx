@@ -74,7 +74,6 @@ function createDataSet(bus: JDBus,
     if (live)
         set.maxRows = LIVE_HORIZON + 4
 
-    console.log(`new dataset`, set)
     return set;
 }
 
@@ -179,7 +178,7 @@ export default function Collector(props: {}) {
     }
     const stopRecording = () => {
         if (recording) {
-            console.log(`stop recording`, liveDataSet)
+            //console.log(`stop recording`, liveDataSet)
             setTables([liveDataSet, ...tables])
             setLiveDataSet(newDataSet(registerIdsChecked, true))
             setRecording(false)
@@ -233,7 +232,7 @@ export default function Collector(props: {}) {
     // interval add data entry
     const addRow = (values?: number[]) => {
         if (!liveDataSet) return;
-        console.log(values)
+        //console.log(values)
         liveDataSet.addRow(values)
         if (recording && liveDataSet.length >= samplingCount) {
             // stop recording
