@@ -53,4 +53,8 @@ export abstract class JDNode extends JDEventSource {
         if (l)
             l(level, `${this}: ${msg}`)
     }
+
+    toString() {
+        return this.friendlyName;
+    }
 }

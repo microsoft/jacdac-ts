@@ -70,10 +70,6 @@ export class JDService extends JDNode {
         return this.specification?.packets.filter(isEvent).map(info => this.event(info.identifier)) || [];
     }
 
-    toString() {
-        return `${this.name} ${this.id}`;
-    }
-
     register(address: number | { address: number }): JDRegister {
         let a = (typeof address == "number" ? address : address?.address);
         if (a === undefined)

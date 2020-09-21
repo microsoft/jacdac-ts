@@ -129,10 +129,6 @@ export class JDDevice extends JDNode {
         this.bus.emit(CHANGE)
     }
 
-    toString() {
-        return this.shortId + (this.name ? ` (${this.name})` : ``)
-    }
-
     hasService(service_class: number): boolean {
         if (!this.announced) return false;
         if (service_class === 0) return true;
