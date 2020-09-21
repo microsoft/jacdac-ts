@@ -171,6 +171,10 @@ export class JDBus extends JDNode {
         return "bus"
     }
 
+    get friendlyName(): string {
+        return this.name;
+    }
+
     get qualifiedName(): string {
         return this.name
     }
