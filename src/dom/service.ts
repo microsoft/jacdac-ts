@@ -37,6 +37,13 @@ export class JDService extends JDNode {
         return serviceName(this.serviceClass)
     }
 
+    get friendlyName() {
+        const parts = [this.device.friendlyName]
+        if (this.device.services({ serviceClass: this.serviceClass }).length > 1)
+            parts.push(`[${this.service_number.toString(16)}]`)
+        return parts.join('.')
+    }
+
     get qualifiedName() {
         return `${this.device.qualifiedName}[${this.service_number.toString(16)}]`
     }

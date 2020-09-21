@@ -61,7 +61,7 @@ export default function EventSelect(props: {
                 <MenuItem key={"none"} value={""}>
                     <em>None</em>
                 </MenuItem>
-                {events.map(ev => <MenuItem key={ev.id} value={ev.id}>{ev.prettyName}</MenuItem>)}
+                {events.map(ev => <MenuItem key={ev.id} value={ev.id}>{ev.friendlyName}</MenuItem>)}
             </Select>
         </FormControl>
     );

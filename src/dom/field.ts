@@ -28,8 +28,8 @@ export class JDField extends JDNode {
         return this.register
     }
 
-    get prettyName() {
-        const parts = [this.register.prettyName]
+    get friendlyName() {
+        const parts = [this.register.friendlyName]
         if (this.specification.name !== "_")
             parts.push(this.name)
         return parts.join('.')

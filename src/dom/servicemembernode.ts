@@ -34,12 +34,8 @@ export abstract class JDServiceMemberNode extends JDNode {
         return this.service
     }
 
-    get prettyName() {
-        const service = this.service
-        const parts = [service.device.name]
-        if (service.device.services({ serviceClass: service.serviceClass }).length > 1)
-            parts.push(`[${service.service_number.toString(16)}]`)
-        parts.push(this.name)
+    get friendlyName() {
+        const parts = [this.service.friendlyName, this.name]
         return parts.join('.')
     }
 }

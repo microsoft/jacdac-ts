@@ -27,6 +27,11 @@ export abstract class JDNode extends JDEventSource {
     abstract get name(): string;
 
     /**
+     * A human friendly name
+     */
+    abstract get friendlyName(): string;
+
+    /**
      * Gets the name including parents
      */
     abstract get qualifiedName(): string;

@@ -34,7 +34,7 @@ export default class FieldDataSet {
         public readonly colors: string[]
     ) {
         this.rows = [];
-        this.headers = fields.map(field => field.prettyName)
+        this.headers = fields.map(field => field.friendlyName)
         this.units = fields.map(field => field.unit)
     }
 
