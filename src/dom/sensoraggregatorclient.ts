@@ -38,7 +38,7 @@ export function sensorConfigToCSV(config: SensorAggregatorConfig): string[][] {
             data.push("*")
         }
     })
-    return [["sensor configuration"], headers, data
+    return [["sensor configuration"], headers, data];
 }
 
 export interface SensorAggregatorStats {
