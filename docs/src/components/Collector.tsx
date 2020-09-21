@@ -172,8 +172,7 @@ export default function Collector(props: {}) {
                     samplingInterval: samplingIntervalDelayi,
                     samplesInWindow: 10,
                     inputs: recordingRegisters.map(reg => ({
-                        service: reg.service,
-                        freeze: false
+                        serviceClass: reg.service.serviceClass
                     }))
                 })
                 await client.collect(samplingCount)

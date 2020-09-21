@@ -4,13 +4,15 @@ import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "./constants"
 import { JDRegister } from "./register"
 import { JDService } from "./service"
 import { JDServiceClient } from "./serviceclient"
-import { isReading } from "./spec"
+import { isReading, serviceSpecificationFromClassIdentifier } from "./spec"
 import { pack } from "./struct"
 import { bufferConcat, bufferConcatMany, fromHex } from "./utils"
 
 export interface SensorAggregatorInputConfig {
-    service: JDService,
-    freeze?: boolean
+    serviceClass: number;
+    // if specified, also specify serviceNumber
+    deviceId?: string;
+    serviceNumber?: number;
 }
 
 export interface SensorAggregatorConfig {
@@ -48,11 +50,16 @@ export class SensorAggregatorClient extends JDServiceClient {
         }
         let totalSampleSize = 0
         const inputs = cfg.inputs.map(input => {
-            const { service, freeze } = input
-            const { device, specification } = service
+            const { deviceId, serviceNumber, serviceClass } = input
+            if (!!deviceId !== !!serviceNumber)
+                error(`deviceId and serviceNumber must be specified together`)
+            const specification = serviceSpecificationFromClassIdentifier(serviceClass)
             if (!specification)
-                error(`missing specification for 0x${service.serviceClass.toString(16)}`)
+                error(`missing specification from service 0x${serviceClass.toString(16)}`)
+            const freeze = !!deviceId
             const readingReg = specification.packets.find(isReading)
+            if (!readingReg)
+                error(`service 0x${serviceClass.toString(16)} does not have a reading register`)
             let sampleType: SensorAggregatorSampleType = undefined
             let sampleSize = 0
             let sampleShift = 0
@@ -67,10 +74,10 @@ export class SensorAggregatorClient extends JDServiceClient {
             }
             totalSampleSize += sampleSize
             return bufferConcat(
-                freeze ? fromHex(device.deviceId) : new Uint8Array(8),
+                freeze ? fromHex(deviceId) : new Uint8Array(8),
                 pack("IBBBb", [
-                    service.serviceClass,
-                    freeze ? service.service_number : 0,
+                    serviceClass,
+                    freeze ? serviceNumber : 0,
                     sampleSize,
                     sampleType,
                     sampleShift
