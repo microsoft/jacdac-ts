@@ -8,6 +8,8 @@ import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import StopIcon from '@material-ui/icons/Stop';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import SaveIcon from '@material-ui/icons/Save';
 import useChange from '../jacdac/useChange';
 import ConnectButton from '../jacdac/ConnectButton';
 import { isSensor, setStreamingAsync } from '../../../src/dom/sensor';
@@ -28,6 +30,7 @@ import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/dom
 import DarkModeContext from './DarkModeContext';
 import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
+import ServiceManagerContext from './ServiceManagerContext';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -64,11 +67,10 @@ function createDataSet(bus: JDBus,
     registers: JDRegister[],
     name: string,
     live: boolean,
-    palette: string[],
-    sensorConfig?: SensorAggregatorConfig) {
+    palette: string[]) {
     const fields = arrayConcatMany(registers.map(reg => reg.fields))
     const colors = fields.map((f, i) => palette[i % palette.length])
-    const set = new FieldDataSet(bus, name, fields, colors, sensorConfig)
+    const set = new FieldDataSet(bus, name, fields, colors)
     if (live)
         set.maxRows = LIVE_HORIZON + 4
 
@@ -103,6 +105,7 @@ export default function Collector(props: {}) {
     const { } = props;
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
+    const { fileStorage } = useContext(ServiceManagerContext)
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
     const [aggregatorId, setAggregatorId] = useState<string>("")
     const [recording, setRecording] = useState(false)
@@ -152,14 +155,17 @@ export default function Collector(props: {}) {
             serviceClass: reg.service.serviceClass
         }))
     })
-    const newDataSet = (registerIds: string[], live: boolean, sensorConfig?: SensorAggregatorConfig) => registerIds.length
+    const saveConfig = () => {
+        const sensorConfig = JSON.stringify(createSensorConfig(), null, 2)
+        fileStorage.saveText(`${prefix || "jacdac"}-sensor-config.json`, sensorConfig)
+    }
+    const newDataSet = (registerIds: string[], live: boolean) => registerIds.length
         ? createDataSet(
             bus,
             readingRegisters.filter(reg => registerIds.indexOf(reg.id) > -1),
             `${prefix || "data"}${tables.length}`,
             live,
-            chartPalette(darkMode),
-            sensorConfig)
+            chartPalette(darkMode))
         : undefined
     const handleRegisterCheck = (reg: JDRegister) => {
         const i = registerIdsChecked.indexOf(reg.id)
@@ -181,12 +187,11 @@ export default function Collector(props: {}) {
     }
     const startRecording = async () => {
         if (!recording && recordingRegisters.length) {
-            const sensorConfig = aggregator && createSensorConfig()
-            setLiveDataSet(newDataSet(registerIdsChecked, false, sensorConfig))
+            setLiveDataSet(newDataSet(registerIdsChecked, false))
             setRecording(true)
             if (aggregator) {
                 const client = new SensorAggregatorClient(aggregator)
-                await client.setInputs(sensorConfig)
+                await client.setInputs(createSensorConfig())
                 client.collect(samplingCount)
             }
         }
@@ -296,6 +301,14 @@ export default function Collector(props: {}) {
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}
                     disabled={!startEnabled}
                 >{recording ? "Stop" : "Start"}</Button>
+                {aggregator && <Button
+                    variant="contained"
+                    title="save sensor input configuration"
+                    onClick={saveConfig}
+                    startIcon={<SaveIcon />}
+                    disabled={recording}>
+                    Save configuration
+                </Button>}
             </div>
             <div className={classes.row}>
                 <TextField
@@ -330,11 +343,13 @@ export default function Collector(props: {}) {
                 <EventSelect className={classes.field} eventId={triggerEventId} onChange={handleTriggerChange} label={"Start Event"} />
             </div>
         </div>
-        {liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
-        {!!tables.length && <div key="recordings">
-            <h3>Recordings</h3>
-            <DataSetGrid tables={tables} handleDeleteTable={handleDeleteTable} />
-        </div>}
+        { liveDataSet && <Trend key="trends" height={12} dataSet={liveDataSet} horizon={LIVE_HORIZON} dot={true} gradient={true} />}
+        {
+            !!tables.length && <div key="recordings">
+                <h3>Recordings</h3>
+                <DataSetGrid tables={tables} handleDeleteTable={handleDeleteTable} />
+            </div>
+        }
     </div >
     )
 

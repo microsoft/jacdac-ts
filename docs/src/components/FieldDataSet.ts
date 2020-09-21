@@ -32,8 +32,7 @@ export default class FieldDataSet {
         public readonly bus: JDBus,
         public readonly name: string,
         public readonly fields: JDField[],
-        public readonly colors: string[],
-        public readonly sensorConfig?: SensorAggregatorConfig
+        public readonly colors: string[]
     ) {
         this.rows = [];
         this.headers = fields.map(field => field.friendlyName)
@@ -113,18 +112,7 @@ export default class FieldDataSet {
         const allheaders = ["time", ...this.headers].join(sep)
         const allunits = ["ms", ...this.units].join(sep)
         const start = this.startTimestamp
-        let csv: string[] = []
-        if (this.sensorConfig) {
-            // inline sensor configuration
-            const config = sensorConfigToCSV(this.sensorConfig)
-                .map(line => line.join(sep))
-            csv = csv.concat(config)
-            // add header
-            csv = csv.concat([])
-            csv = csv.concat(["data"])
-        }
-        csv.push(allheaders)
-        csv.push(allunits)
+        let csv: string[] = [allheaders, allunits]
         this.rows.forEach(row => csv.push(
             row.toVector(start).map(cell => cell !== undefined ? cell.toString() : "").join(sep)
         ))

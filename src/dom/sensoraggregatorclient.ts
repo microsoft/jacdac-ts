@@ -22,25 +22,6 @@ export interface SensorAggregatorConfig {
     inputs: SensorAggregatorInputConfig[];
 }
 
-export function sensorConfigToCSV(config: SensorAggregatorConfig): string[][] {
-    if (!config) return [];
-
-    const headers = ["samplingInterval", "samplesInWindow"]
-    const data = [config.samplingInterval.toString(), config.samplesInWindow.toString()]
-    config.inputs.forEach(input => {
-        // service
-        headers.push("service")
-        data.push("0x" + input.serviceClass.toString(16))
-        headers.push("device")
-        if (input.deviceId) {
-            data.push(`${input.deviceId}[${input.serviceNumber}]`)
-        } else {
-            data.push("*")
-        }
-    })
-    return [["sensor configuration"], headers, data];
-}
-
 export interface SensorAggregatorStats {
     "numSamples": number;
     "sampleSize": number;

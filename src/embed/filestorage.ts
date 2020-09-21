@@ -7,8 +7,14 @@ export interface IFileStorage {
 }
 
 export class BrowserFileStorage implements IFileStorage {
-    saveText(name: string, data: string): Promise<void> {
-        const url = `data:text/plain;charset=utf-8,${encodeURI(data)}`
+    saveText(name: string, data: string, mimeType?: string): Promise<void> {
+        if (!mimeType) {
+            if (/\.csv/i.test(name))
+                mimeType = "text/plain"
+            else if (/\.json/i.test(name))
+                mimeType = "application/json"
+        }
+        const url = `data:${mimeType || "text/plain"};charset=utf-8,${encodeURI(data)}`
         return this.downloadUrl(name, url)
     }
 
