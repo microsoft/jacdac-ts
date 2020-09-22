@@ -1,6 +1,6 @@
 import { makeStyles, Theme, createStyles, CircularProgress } from '@material-ui/core';
 import React, { useState } from 'react';
-import { SRV_SENSOR_AGGREGATOR, SRV_TFLITE, TFLiteReg } from '../../../src/dom/constants';
+import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../../src/dom/constants';
 import { JDService } from '../../../src/dom/service';
 import ServiceList from './ServiceList';
 import ConnectAlert from './ConnectAlert'
@@ -24,8 +24,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 function TensorFlowContent(props: { service: JDService }) {
     const { service } = props
     return <>
-        <RegisterInput register={service.register(TFLiteReg.ModelSize)} />
-        <RegisterInput register={service.register(TFLiteReg.LastError)} />
+        <RegisterInput register={service.register(ModelRunnerReg.ModelSize)} />
+        <RegisterInput register={service.register(ModelRunnerReg.LastError)} />
     </>
 }
 
@@ -110,9 +110,9 @@ export default function TensorFlowUploader(props: {}) {
         {sensorConfig && <p />}
         <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} accept=".json" onFilesUploaded={handleSensorConfigFiles} />
         <h3>Deploy model to TensorFlow Lite services</h3>
-        <ConnectAlert serviceClass={SRV_TFLITE} />
+        <ConnectAlert serviceClass={SRV_MODEL_RUNNER} />
         <ServiceList
-            serviceClass={SRV_TFLITE}
+            serviceClass={SRV_MODEL_RUNNER}
             content={service => <TensorFlowContent service={service} />}
             actions={service => <TensorFlowActions
                 tfLiteService={service}

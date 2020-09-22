@@ -5,7 +5,7 @@ import {
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
-import { TFLiteCmd, TFLiteReg } from "./constants"
+import { ModelRunnerCmd, ModelRunnerReg } from "./constants"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
 import { JDRegister } from "./register"
@@ -41,7 +41,7 @@ export class TFLiteClient extends JDServiceClient {
     }
 
     subscribeResults(handler: (sample: number[]) => void): () => void {
-        const reg = this.service.register(TFLiteReg.Outputs)
+        const reg = this.service.register(ModelRunnerReg.Outputs)
         return reg.subscribe(REPORT_RECEIVE, () => {
             handler(bufferToArray(reg.data, NumberFormat.Float32LE))
         })
@@ -49,7 +49,7 @@ export class TFLiteClient extends JDServiceClient {
 
     async deployModel(model: Uint8Array, progress: (p: number) => void = () => { }) {
         progress(0)
-        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(TFLiteCmd.SetModel, "I", [model.length]), 3000)
+        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(ModelRunnerCmd.SetModel, "I", [model.length]), 3000)
         progress(0.05)
         const [pipePort] = unpack(resp.data, "H")
         if (!pipePort)
@@ -69,10 +69,10 @@ export class TFLiteClient extends JDServiceClient {
     }
 
     async autoInvoke(everySamples = 1) {
-        await this.service.register(TFLiteReg.AutoInvokeEvery).sendSetIntAsync(everySamples)
+        await this.service.register(ModelRunnerReg.AutoInvokeEvery).sendSetIntAsync(everySamples)
     }
 
-    private async getReg(id: TFLiteReg, f: (v: JDRegister) => any) {
+    private async getReg(id: ModelRunnerReg, f: (v: JDRegister) => any) {
         const reg = this.service.register(id)
         await reg.refresh()
         return f(reg)
@@ -80,11 +80,11 @@ export class TFLiteClient extends JDServiceClient {
 
     async modelStats(): Promise<TFModelStats> {
         const info: any = {
-            "modelSize": this.getReg(TFLiteReg.ModelSize, r => r.intValue),
-            "arenaSize": this.getReg(TFLiteReg.AllocatedArenaSize, r => r.intValue),
-            "inputShape": this.getReg(TFLiteReg.InputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
-            "outputShape": this.getReg(TFLiteReg.OutputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
-            "lastError": this.getReg(TFLiteReg.LastError, r => U.uint8ArrayToString(r.data)),
+            "modelSize": this.getReg(ModelRunnerReg.ModelSize, r => r.intValue),
+            "arenaSize": this.getReg(ModelRunnerReg.AllocatedArenaSize, r => r.intValue),
+            "inputShape": this.getReg(ModelRunnerReg.InputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
+            "outputShape": this.getReg(ModelRunnerReg.OutputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
+            "lastError": this.getReg(ModelRunnerReg.LastError, r => U.uint8ArrayToString(r.data)),
         }
         for (const id of Object.keys(info)) {
             info[id] = await info[id]
@@ -129,7 +129,7 @@ export async function testAGG(bus: JDBus) {
 }
 
 export async function testTF(bus: JDBus, model: Uint8Array) {
-    const tfService = bus.services({ serviceClass: SRV_TFLITE })[0]
+    const tfService = bus.services({ serviceClass: SRV_MODEL_RUNNER })[0]
     if (!tfService) {
         console.log("no tflite service")
         return
