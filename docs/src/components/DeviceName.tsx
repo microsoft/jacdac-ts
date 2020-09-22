@@ -3,8 +3,8 @@ import React from "react"
 import { JDDevice } from "../../../src/dom/device";
 import useDeviceName from "./useDeviceName";
 
-export default function DeviceName(props: { device: JDDevice }) {
-    const { device } = props
+export default function DeviceName(props: { device: JDDevice, serviceNumber?: number }) {
+    const { device, serviceNumber } = props
     const name = useDeviceName(device)
     const { shortId } = device
 
@@ -12,5 +12,6 @@ export default function DeviceName(props: { device: JDDevice }) {
         {name || shortId}
         {name && name !== shortId &&
             <Typography component="span" variant="body2"> {shortId}</Typography>}
+        {serviceNumber !== undefined && `[${serviceNumber}]`}
     </span>
 }

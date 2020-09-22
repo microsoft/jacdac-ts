@@ -13,6 +13,7 @@ import { TFLiteClient } from '../../../src/dom/tflite'
 import RegisterInput from './RegisterInput';
 import CircularProgressWithLabel from './CircularProgressWithLabel'
 import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/dom/sensoraggregatorclient';
+import SensorAggregatorConfigView from './SensorAggregatorConfigView';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -100,13 +101,13 @@ export default function TensorFlowUploader(props: {}) {
         <h3>Load a TensorFlow Lite model</h3>
         <p>TensorFlow Lite models are typically stored in a <code>.tflite</code> file.</p>
         {model && <Alert severity={'success'}>Model loaded ({model.byteLength >> 10}kb)</Alert>}
-        {model && <hr />}
+        {model && <p />}
         <UploadButton required={!model} disabled={importing} text={"Import model"} accept=".tflite" onFilesUploaded={handleTfmodelFiles} />
         <h3>Configure sensors</h3>
         <p>Sensor configuration files are stored in a <code>.json</code> file.</p>
         {sensorConfig && <Alert severity={'success'}>Sensor configuration loaded</Alert>}
-        {sensorConfig && <pre>{JSON.stringify(sensorConfig, null, 2)}</pre>}
-        {sensorConfig && <hr />}
+        {sensorConfig && <SensorAggregatorConfigView config={sensorConfig} />}
+        {sensorConfig && <p />}
         <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} accept=".json" onFilesUploaded={handleSensorConfigFiles} />
         <h3>Deploy model to TensorFlow Lite services</h3>
         <ConnectAlert serviceClass={SRV_TFLITE} />

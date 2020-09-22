@@ -53,12 +53,12 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
 function Decoded(props: { member: DecodedMember, showName?: boolean, register: JDRegister }) {
     const { member, showName, register } = props;
     const { info } = member;
-    return <React.Fragment>
+    return <>
         {info.name !== "_" && <Typography id="slider" component="span" gutterBottom>
             {info.name}
         </Typography>}
         <MemberInput member={member} labelledby={"slider"} register={register} />
-    </React.Fragment>
+    </>
 }
 
 export default function RegisterInput(props: { register: JDRegister, showDeviceName?: boolean, showName?: boolean, showMemberName?: boolean }) {
