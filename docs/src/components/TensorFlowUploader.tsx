@@ -9,7 +9,7 @@ import UploadButton from './UploadButton';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import { Button } from 'gatsby-theme-material-ui';
-import { TFLiteClient } from '../../../src/dom/tflite'
+import { ModelRunnerClient } from '../../../src/dom/modelrunner'
 import RegisterInput from './RegisterInput';
 import CircularProgressWithLabel from './CircularProgressWithLabel'
 import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/dom/sensoraggregatorclient';
@@ -49,7 +49,7 @@ function TensorFlowActions(props: {
                 await aggregator.setInputs(sensorInput)
             }
             if (tfLiteService && tfLiteModel) {
-                const tfclient = new TFLiteClient(tfLiteService)
+                const tfclient = new ModelRunnerClient(tfLiteService)
                 await tfclient.deployModel(tfLiteModel, p => setProgress(p * 100))
             }
         }

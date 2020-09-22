@@ -34,7 +34,7 @@ import { JDServiceClient } from "./serviceclient"
     }
 */
 
-export class TFLiteClient extends JDServiceClient {
+export class ModelRunnerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true
