@@ -10,10 +10,10 @@ import DeviceName from "./DeviceName";
 function MemberInput(props: { register: JDRegister, member: DecodedMember, labelledby: string }) {
     const { register, member, labelledby } = props;
     const { specification } = register
-    const serviceSpecifiction = register.service.specification
+    const serviceSpecification = register.service.specification
     const { info } = member;
     const mod = specification.kind == "rw";
-    const enumInfo = serviceSpecifiction.enums[info.type]
+    const enumInfo = serviceSpecification?.enums[info.type]
 
     const handleSwitch = () => register.sendSetBoolAsync(!register.boolValue, true)
     const handleNumChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,7 +34,7 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
             multiple={enumInfo.isFlags}
             value={enumInfo.isFlags ? valueToFlags(enumInfo, member.numValue) : member.numValue}
             onChange={handleEnumChange}>
-            {Object.keys(enumInfo.members).map(n => <MenuItem value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
+            {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
     else if (member.scaledValue !== undefined && info.unit == "frac") {

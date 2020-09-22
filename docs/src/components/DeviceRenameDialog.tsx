@@ -18,7 +18,6 @@ import EditIcon from '@material-ui/icons/Edit';
 import { JDDevice } from '../../../src/dom/device';
 import DeviceActions from './DeviceActions';
 import { IconButton } from 'gatsby-theme-material-ui';
-import ServiceManagerContext from './ServiceManagerContext';
 
 export default function DeviceRenameButton(props: { device: JDDevice }) {
     const { device } = props
@@ -46,8 +45,8 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
         <IconButton size="small" aria-label="rename device" title="rename device" onClick={handleClickOpen}>
             <EditIcon />
         </IconButton>
-        <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-            <DialogTitle id="form-dialog-title">Name your device</DialogTitle>
+        <Dialog open={open} onClose={handleClose} aria-labelledby="device-rename-dialog">
+            <DialogTitle id="device-rename-dialog">Name your device</DialogTitle>
             <DialogContent>
                 <DialogContentText>
                     <span>Give a friendly name to </span>

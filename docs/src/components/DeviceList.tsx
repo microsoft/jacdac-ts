@@ -30,6 +30,7 @@ export default function DeviceList(props: {
         eventIdentifier, commandIdentifier } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, n => n.devices({ serviceClass }))
+    const services = useChange(bus, n => n.services({ serviceClass }))
     const classes = useStyles()
     const hasServiceClass = serviceClass !== undefined
     const gridBreakpoints = useGridBreakpoints(devices?.length)
@@ -48,7 +49,7 @@ export default function DeviceList(props: {
                     showFirmware={showFirmware}
                 />
             </Grid>)}
-            {hasServiceClass && devices.map(device => device.services({ serviceClass }).map(service => {
+            {hasServiceClass && services.map(service => {
                 return <Grid key={service.id} item {...gridBreakpoints}>
                     <ServiceCard service={service}
                         linkToService={linkToService}
@@ -60,7 +61,7 @@ export default function DeviceList(props: {
                         commandIdentifier={commandIdentifier}
                     />
                 </Grid>
-            }))}
+            })}
         </Grid>
     )
 }

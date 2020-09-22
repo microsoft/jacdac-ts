@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles } from '@material-ui/core';
+import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles, withStyles } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND, SRV_LOGGER } from '../../../src/dom/constants';
@@ -30,6 +30,19 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
+const StyledToggleButtonGroup = withStyles((theme) => ({
+    grouped: {
+        margin: theme.spacing(0.5),
+        border: 'none',
+        '&:not(:first-child)': {
+            borderRadius: theme.shape.borderRadius,
+        },
+        '&:first-child': {
+            borderRadius: theme.shape.borderRadius,
+        },
+    },
+}))(ToggleButtonGroup);
+
 export default function PacketList(props: {
     maxItems?: number,
     serviceClass?: number,
@@ -45,6 +58,7 @@ export default function PacketList(props: {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const consoleMode = hasFlag("console")
     const skipRepeatedAnnounce = !hasFlag("announce")
+    const size = "small"
 
     function hasFlag(k: string) {
         return flags.indexOf(k) > -1
@@ -101,20 +115,20 @@ export default function PacketList(props: {
                 <PacketTraceImporter />
             </ListItem>}
             <ListItem key="filters">
-                <ToggleButtonGroup value={flags} onChange={handleModes}>
-                    <ToggleButton key="console" title={"console mode"} value={"console"}>
+                <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
+                    <ToggleButton size={size} key="console" aria-label={"log only"} value={"console"}>
                         <GradientIcon />
                         {showButtonText && "log only"}
                     </ToggleButton>
-                    {allKinds().map(kind => <ToggleButton key={kind} title={kindName(kind)} value={kind}>
+                    {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>
                         <KindIcon kind={kind} />
                         {showButtonText && kindName(kind)}
                     </ToggleButton>)}
-                    <ToggleButton key="announce" title={"all announce"} value={"announce"}>
+                    <ToggleButton size={size} key="announce" aria-label={"repeated announcements"} value={"announce"}>
                         <AnnouncementIcon />
                         {showButtonText && "repeated announce"}
                     </ToggleButton>
-                </ToggleButtonGroup>
+                </StyledToggleButtonGroup>
             </ListItem>
             {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
                 : <PacketListItem

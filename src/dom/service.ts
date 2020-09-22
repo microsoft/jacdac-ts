@@ -145,6 +145,8 @@ export class JDService extends JDNode {
             })
             this.sendPacketAsync(pkt)
                 .then(() => this.on(REPORT_RECEIVE, handleRes))
+                // ensure we don't leak
+                .finally(() => this.off(REPORT_RECEIVE, handleRes))
         })
     }
 

@@ -14,7 +14,7 @@ export default function ServiceCommands(props: {
     if (commandIdentifier !== undefined)
         commands = commands.filter(cmd => cmd.identifier === commandIdentifier)
 
-    return <React.Fragment>
+    return <>
         {commands.map(command => <CommandInput key={`${service.id}:${command.identifier}`} service={service} command={command} />)}
-    </React.Fragment>
+    </>
 }
