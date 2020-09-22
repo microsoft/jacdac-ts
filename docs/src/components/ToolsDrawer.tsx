@@ -80,10 +80,10 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Data collection"} />
                 </ListItem>
             </Link>
-            <Link to="/tools/tflite">
-                <ListItem button key="tflite">
+            <Link to="/tools/model-uploader">
+                <ListItem button key="model-uploader">
                     <ListItemIcon><EmojiNatureIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy TensorFlow Lite models"} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy ML models"} />
                 </ListItem>
             </Link>
             <Link to="/tools/packets">

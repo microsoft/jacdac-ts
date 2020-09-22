@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
 }))
 
-function TensorFlowContent(props: { service: JDService }) {
+function ModelContent(props: { service: JDService }) {
     const { service } = props
     return <>
         <RegisterInput register={service.register(ModelRunnerReg.ModelSize)} />
@@ -29,17 +29,17 @@ function TensorFlowContent(props: { service: JDService }) {
     </>
 }
 
-function TensorFlowActions(props: {
-    tfLiteService: JDService,
-    tfLiteModel: Uint8Array,
+function ModelActions(props: {
+    service: JDService,
+    model: Uint8Array,
     sensorAggregatorService: JDService,
     sensorInput: SensorAggregatorConfig
 }) {
-    const { tfLiteService, tfLiteModel, sensorAggregatorService, sensorInput } = props
+    const { service, model, sensorAggregatorService, sensorInput } = props
     const [deploying, setDeploying] = useState(false)
     const [progress, setProgress] = useState(0)
 
-    const modelDisabled = !tfLiteService || !tfLiteModel || deploying
+    const modelDisabled = !service || !model || deploying
 
     const handleDeployModel = async () => {
         try {
@@ -48,9 +48,9 @@ function TensorFlowActions(props: {
                 const aggregator = new SensorAggregatorClient(sensorAggregatorService)
                 await aggregator.setInputs(sensorInput)
             }
-            if (tfLiteService && tfLiteModel) {
-                const tfclient = new ModelRunnerClient(tfLiteService)
-                await tfclient.deployModel(tfLiteModel, p => setProgress(p * 100))
+            if (service && model) {
+                const runner = new ModelRunnerClient(service)
+                await runner.deployModel(model, p => setProgress(p * 100))
             }
         }
         finally {
@@ -66,7 +66,7 @@ function TensorFlowActions(props: {
     </>
 }
 
-export default function TensorFlowUploader(props: {}) {
+export default function ModelUploader(props: {}) {
     const classes = useStyles()
     const [importing, setImporting] = useState(false)
     const { data: model, setBlob: setModel } = useDbUint8Array("model.tflite")
@@ -113,10 +113,10 @@ export default function TensorFlowUploader(props: {}) {
         <ConnectAlert serviceClass={SRV_MODEL_RUNNER} />
         <ServiceList
             serviceClass={SRV_MODEL_RUNNER}
-            content={service => <TensorFlowContent service={service} />}
-            actions={service => <TensorFlowActions
-                tfLiteService={service}
-                tfLiteModel={model}
+            content={service => <ModelContent service={service} />}
+            actions={service => <ModelActions
+                service={service}
+                model={model}
                 sensorAggregatorService={service?.device.services({ serviceClass: SRV_SENSOR_AGGREGATOR })?.[0]}
                 sensorInput={sensorConfig}
             />}
