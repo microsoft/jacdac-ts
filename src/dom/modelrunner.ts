@@ -2,6 +2,7 @@ import * as U from "./utils"
 import { Packet } from "./packet"
 import {
     REPORT_RECEIVE,
+    SRV_MODEL_RUNNER
 } from "./constants"
 import { JDService } from "./service"
 import { pack, unpack } from "./struct"
@@ -10,6 +11,7 @@ import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
 import { JDRegister } from "./register"
 import { JDServiceClient } from "./serviceclient"
+import { serviceSpecificationFromClassIdentifier } from "./spec"
 
 /*
     enum SampleType : u8 {
@@ -34,10 +36,32 @@ import { JDServiceClient } from "./serviceclient"
     }
 */
 
+export function isMLModelSupported(model: Uint8Array, formatRegValue: number) {
+    return U.read32(model, 0) == formatRegValue || U.read32(model, 4) == formatRegValue
+}
+
+export function getMLModelFormatName(model: Uint8Array) {
+    const map = serviceSpecificationFromClassIdentifier(SRV_MODEL_RUNNER).enums["ModelFormat"].members
+    const m0 = U.read32(model, 0)
+    const m1 = U.read32(model, 4)
+    for (const v of Object.keys(map)) {
+        if (map[v] == m0 || map[v] == m1)
+            return v
+    }
+    return "0x" + U.toHex(model.slice(0, 8))
+}
+
 export class ModelRunnerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
         this.service.registersUseAcks = true
+    }
+
+    // TODO this should use some caching?
+    async isModelSupported(model: Uint8Array) {
+        const reg = this.service.register(ModelRunnerReg.Format)
+        await reg.refresh()
+        return reg.data == null || isMLModelSupported(model, reg.intValue >>> 0)
     }
 
     subscribeResults(handler: (sample: number[]) => void): () => void {
