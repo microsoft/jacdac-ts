@@ -53,12 +53,15 @@ export default function CommandInput(props: { service: JDService, command: jdspe
         ev.stopPropagation()
         setOpen(false);
     };
-    const handleClose = (ev) => {
+    const handleRun = async (ev) => {
         ev.stopPropagation()
-        setOpen(false);
-    };
-    const handleRun = (ev) => {
-        ev.stopPropagation()
+        try {
+            setWorking(true)
+            // todo: send args
+            await service.sendCmdAsync(command.identifier, true)
+        } finally {
+            setWorking(false)
+        }
         setOpen(false);
     }
     const handleClick = async () => {
@@ -90,7 +93,7 @@ export default function CommandInput(props: { service: JDService, command: jdspe
             {command.name}
             {working && <CircularProgress size="small" />}
         </Button>
-        <Dialog key="dialog" open={open} onClose={handleClose} aria-labelledby="command-input-title">
+        <Dialog key="dialog" open={open} aria-labelledby="command-input-title">
             <DialogTitle>
                 run command
             </DialogTitle>

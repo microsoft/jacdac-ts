@@ -9,7 +9,7 @@ export interface PacketsProps {
     flags: string[],
     setFlags: (kinds: string[]) => void,
     serviceClass?: number,
-    setServiceClass?: (serviceClass: number) => void,
+    setServiceClass?: (serviceClass: number) => void
 }
 
 const PacketsContext = createContext<PacketsProps>({
@@ -29,7 +29,7 @@ export default PacketsContext;
 export const PacketsProvider = ({ children }) => {
     const [packets, setPackets] = useState<Packet[]>([])
     const [paused, setPaused] = useState(false)
-    const [flags, setFlags] = useState(["console", "rw", "ro", "event", "command", "report"])
+    const [flags, setFlags] = useState(["rw", "ro", "event", "command", "report"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
     return (
         <PacketsContext.Provider value={{

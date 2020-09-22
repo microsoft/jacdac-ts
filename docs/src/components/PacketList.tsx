@@ -15,7 +15,6 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AnnouncementIcon from '@material-ui/icons/Announcement';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
-import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import GradientIcon from '@material-ui/icons/Gradient';
 import ConsoleListItem from './ConsoleListItem';
@@ -108,6 +107,7 @@ export default function PacketList(props: {
     const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
         setFlags(newFlags)
     };
+    console.log(packets)
     return (<>
         <List className={classes.items} dense={true}>
             {showRecorder && <ListItem key="recorder">
