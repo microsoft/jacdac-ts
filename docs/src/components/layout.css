@@ -47,6 +47,9 @@ a:active,
 a:hover {
   outline-width: 0;
 }
+.markdown a {
+  text-decoration: underline;
+}
 abbr[title] {
   border-bottom: none;
   text-decoration: underline;

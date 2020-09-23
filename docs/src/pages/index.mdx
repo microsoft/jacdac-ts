@@ -4,58 +4,63 @@ path: /
 ---
 import DeviceList from "../components/DeviceList";
 
-A single wire bus protocol from tiny devices to the web.
+
+**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a single wire broadcast protocol 
+for the plug and play of microcontrollers (MCUs) within the contexts of rapid prototyping, 
+making, and physical computing.
+
+A JACDAC [bus](/clients/web/dom/bus) is made of connected devices.
+A [device](/clients/web/dom/device) may host services.
+A [service](/clients/web/dom/service) has registers, accept commands
+and may return acks. A [register](/clients/web/dom/register) is an addressed data location, organized in [fields](/clients/web/dom/field), 
+that may be get, set or streamed.
 
 <DeviceList />
 
-* [Specification](/spec/)
-    * [Requirements](/spec/requirements)
-    * [Frames and Packets](/spec/frames-and-packets)
-    * [Physical layer](/spec/physical-layer)
-    * [Control layer](/spec/control-layer)
-    * [Commands](/spec/commands)
-    * [Single Wire Serial](/spec/single-wire-serial)
-    * [Service specification language](/spec/service-spec-language)
-* [Services](/services)
-    * [Common registers and commands](/services/_base)
-    * [Control](/services/control)
-    * [Logger](/services/logger)
-    * [Sensor](/services/_sensor)
-    * [Button](/services/button)
-    * [Motor](/services/motor)
-    * [Slider](/services/slider)
-    * ...
-* Building JACDAC devices
-    * Firmware SDK
-        * C SDK
-        * [STM32x0](https://github.com/microsoft/jacdac-stm32x0/)
-        * ...
-    * Hardware
-        * Single wire serial
-        * Power supply
-        * Connectors
-        * ...
-* [Talking to JACDAC devices](/clients)
-    * Micro-controller clients
-        * C SDK
-        * [MakeCode](/clients/hardware/makecode)
-        * MicroPython
-    * [Web](/clients/web)
-        * [IFrame embed](/clients/web/iframe)
-        * [DOM](/clients/web/dom)
-            * [Bus](/clients/web/dom/bus)
-            * [Device](/clients/web/dom/device)
-            * [Service](/clients/web/dom/service)
-            * [Register](/clients/web/dom/register)
-            * [Event](/clients/web/dom/event)
-            * [Field](/clients/web/dom/field)
-            * [Node](/clients/web/dom/node)
-        * [React Hooks](/clients/web/react)
-        * [GraphQL](/clients/web/graphql)
-* [Tools](/tools)
-    * [Collector](/tools/collector), collect sensor data to files
-    * [Updater](/tools/updater), upgrade the firmware of your modules
-    * [Service Editor](/tools/service-editor), interactive editor to specify new services
+# Motivation
+
+Widely used and highly efficient, I2C and SPI are the wired protocols of choice when connecting onboard sensors to microcontrollers. 
+Since these protocols are supported as standard by many microcontrollers, they are also the defacto way of connecting external peripheral 
+boards to microcontrollers. Wiring peripheral boards correctly is difficult for novice users and once wired, 
+the configuration of the system is static and does not support plug and play.
+
+With the wide-adoption of web technologies and the huge growth in the Internet of Things (IoT), 
+the worlds of the feature rich and highly capable modern microcontroller and the Web should be closer together, yet they are not.
+
+JACDAC is a dynamic plug and play serial protocol allowing the configuration of systems at runtime. 
+It runs over a single wire allowing a variety of connectors to be used, 
+simplifying connections between devices. Finally, WebUSB and TypeScript extends the JACDAC bus to the web browser (and the Internet), 
+enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
+reducing the gap between the Web and the microcontroller.
+
+# Specification
+
+JACDAC operates in a bus topology and requires devices have a microcontroller with UART, Timer, and GPIO interrupt capabilities.
+
+[Read the full protocol specification.](/specification)
+
+# Community
+
+We are still in the process of setting up a community area for JACDAC discussions, 
+but for now please feel free to file issues with questions [on the Github respository for this site](https://github.com/microsoft/jacdac).
+
+# Applications
+
+## Fashion
+
+JACDAC was the technology used to network microcontrollers together at the 
+[BKLYN Fashion Academy](https://www.bklynlibrary.org/bklyn-fashion-academy) in 2019.
+
+Read more about it [here](https://www.microsoft.com/en-us/research/blog/fashion-forward-researchers-designers-debut-new-tech-on-new-york-city-runway), 
+or watch the video below:
+
+https://youtu.be/TvSmYga2Pic
+
+## Gaming
+
+https://youtu.be/YKshfoeGtbM
+
+https://youtu.be/CKBXQIGQEuw
 
 ## Microsoft Open Source Code of Conduct
 

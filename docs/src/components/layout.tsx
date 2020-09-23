@@ -292,7 +292,7 @@ function LayoutWithContext(props: {
             <div className={classes.drawerHeader} />
             <Alert severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
             <WebUSBAlert />
-            <Typography component="span">
+            <Typography className={'markdown'} component="span">
               {children}
             </Typography>
           </div>
