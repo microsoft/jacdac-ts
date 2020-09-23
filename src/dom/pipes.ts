@@ -2,9 +2,9 @@ import { JDDevice } from "./device"
 import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_NUMBER_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE } from "./constants"
 import { Packet } from "./packet"
 import { JDBus } from "./bus"
-import { randomUInt, signal, withTimeout, fromHex } from "./utils"
-import { JDEventSource } from "./eventsource"
+import { randomUInt, signal, withTimeout, fromHex, throwError, warn } from "./utils"
 import { pack } from "./struct"
+import { JDClient } from "./client"
 
 export class OutPipe {
     private count = 0
@@ -25,8 +25,10 @@ export class OutPipe {
     }
 
     private async sendData(buf: Uint8Array, flags: number) {
-        if (!this.device)
+        if (!this.device) {
+            warn("sending data over closed pipe")
             return
+        }
         const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this.count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
         pkt.service_number = JD_SERVICE_NUMBER_PIPE
@@ -49,7 +51,7 @@ export class OutPipe {
 }
 
 
-export class InPipe extends JDEventSource {
+export class InPipe extends JDClient {
     private _port: number
     private _count = 0
 
@@ -68,7 +70,7 @@ export class InPipe extends JDEventSource {
         }
 
         this.bus.enableAnnounce()
-        this.bus.selfDevice.on(PACKET_RECEIVE, this._handlePacket)
+        this.mount(this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket))
     }
 
     get isOpen() {
@@ -76,6 +78,8 @@ export class InPipe extends JDEventSource {
     }
 
     openCommand(cmd: number) {
+        if (!this.isOpen)
+            throwError("trying to access a closed pipe")
         const b = pack("IIHH", [0, 0, this._port, 0])
         b.set(fromHex(this.bus.selfDeviceId), 0)
         return Packet.from(cmd, b)
@@ -102,7 +106,7 @@ export class InPipe extends JDEventSource {
         this.emit(CLOSE)
         this._port = null
         this.bus.selfDevice.port(this._port).localPipe = undefined
-        this.bus.selfDevice.off(PACKET_RECEIVE, this._handlePacket)
+        this.unmount();
     }
 }
 
@@ -113,16 +117,16 @@ export class InPipeReader extends InPipe {
 
     constructor(bus: JDBus) {
         super(bus)
-        this.on(DATA, (pkt: Packet) => {
+        this.mount(this.subscribe(DATA, (pkt: Packet) => {
             if (pkt.service_command & PIPE_METADATA_MASK)
                 this.meta.push(pkt)
             else
                 this.output.push(pkt)
-        })
-        this.on(CLOSE, this.done.signal)
+        }))
+        this.mount(this.subscribe(CLOSE, this.done.signal))
     }
 
-    async readData(timeout = 500) {
+    async readData(timeout = 500): Promise<Uint8Array[]> {
         await withTimeout(timeout, this.done.signalled)
         return this.output.map(p => p.data).filter(b => b.length > 0)
     }
