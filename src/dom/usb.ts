@@ -15,9 +15,32 @@ export interface USBOptions {
 }
 
 export function isWebUSBSupported(): boolean {
-    return typeof navigator !== "undefined"
-        && !!navigator.usb
-        && !!navigator.usb.requestDevice;
+    try {
+        return typeof navigator !== "undefined"
+            && !!navigator.usb
+            && !!navigator.usb.requestDevice
+    } catch (e) {
+        return false;
+    }
+}
+
+function usbRequestDevice(options?: USBDeviceRequestOptions): Promise<USBDevice> {
+    try {
+        return navigator?.usb?.requestDevice(options)
+    } catch (e) {
+        console.warn(e)
+        return undefined;
+    }
+}
+
+function usbGetDevices(): Promise<USBDevice[]> {
+    try {
+        return navigator?.usb?.getDevices() || Promise.resolve([])
+    }
+    catch (e) {
+        console.warn(e)
+        return Promise.resolve([]);
+    }
 }
 
 export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDBus {
@@ -25,8 +48,8 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
     if (!options) {
         if (isWebUSBSupported()) {
             options = {
-                getDevices: () => navigator.usb.getDevices(),
-                requestDevice: (filters) => navigator.usb.requestDevice(filters),
+                getDevices: usbGetDevices,
+                requestDevice: usbRequestDevice,
                 connectObservable: new EventTargetObservable(navigator.usb, "connect"),
                 disconnectObservable: new EventTargetObservable(navigator.usb, "disconnect")
             }
