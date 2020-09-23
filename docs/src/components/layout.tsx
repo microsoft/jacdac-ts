@@ -51,6 +51,7 @@ import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
 import Helmet from "react-helmet";
+import { Alert } from "@material-ui/lab";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 18;
@@ -289,6 +290,7 @@ function LayoutWithContext(props: {
         >
           <div className={classes.mainContent}>
             <div className={classes.drawerHeader} />
+            <Alert severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
             <WebUSBAlert />
             <Typography component="span">
               {children}
