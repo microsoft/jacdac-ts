@@ -34,7 +34,7 @@ export class JDDevice extends JDNode {
     lastServiceUpdate: number
     private _shortId: string
     private _services: JDService[]
-    private ports: SMap<PipeInfo>;
+    private _ports: SMap<PipeInfo>;
     private _firmwareInfo: FirmwareInfo;
     private _ackAwaiting: AckAwaiter[]
 
@@ -142,12 +142,12 @@ export class JDDevice extends JDNode {
     }
 
     port(id: number) {
-        if (!this.ports)
-            this.ports = {}
+        if (!this._ports)
+            this._ports = {}
         const key = id + ""
-        const ex = this.ports[key]
+        const ex = this._ports[key]
         if (!ex)
-            return this.ports[key] = {}
+            return this._ports[key] = {}
         return ex
     }
 

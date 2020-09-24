@@ -15,6 +15,9 @@ import Packet from "../../../src/dom/packet";
 import AppContext from "./AppContext";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 
+const ACK_RESET_DELAY = 1000
+const ERROR_RESET_DELAY = 3000
+
 export default function CommandInput(props: {
     service: JDService,
     command: jdspec.PacketInfo,
@@ -57,7 +60,9 @@ export default function CommandInput(props: {
                         true)
                     const { output } = await inp.readAll()
                     console.log("pipe response", output)
-                    setReports(output.filter(ot => !!ot.data?.length).map(ot => decodePacketData(ot)))
+                    const reports = output.filter(ot => !!ot.data?.length).map(ot => decodePacketData(ot));
+                    console.log("pipe decoded", reports)
+                    setReports(reports)
                 }
                 finally {
                     inp?.unmount();
@@ -67,14 +72,14 @@ export default function CommandInput(props: {
                 await service.sendPacketAsync(pkt, true)
             setAck(true)
             // expire hack
-            delay(1500)
+            delay(ACK_RESET_DELAY)
                 .then(() => setAck(false))
         } catch (e) {
             setError(e)
             setAppError(e)
             console.log(e)
             // expire error
-            delay(3000)
+            delay(ERROR_RESET_DELAY)
                 .then(() => setError(undefined))
         } finally {
             setWorking(false)
