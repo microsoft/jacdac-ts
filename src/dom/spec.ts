@@ -232,3 +232,7 @@ export function parseDeviceId(id: string) {
         return null
     return fromHex(id)
 }
+
+export function hasPipeReport(info:jdspec.PacketInfo) {
+    return info.fields.find(f => f.type == "pipe")
+}
