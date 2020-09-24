@@ -3,7 +3,7 @@ import { JDBus } from "./bus";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { SRV_DEVICE_NAMER, DEVICE_CONNECT, DeviceNamerCmd, SELF_ANNOUNCE, CHANGE } from "./constants";
+import { SRV_DEVICE_NAMER, DEVICE_CONNECT, DeviceNamerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
 import { unpack } from "./struct";
 import { Packet } from "./packet";
@@ -78,7 +78,7 @@ export class DeviceNamerClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
 
-        this.mount(this.bus.subscribe(DEVICE_CONNECT, () => {
+        this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, () => {
             recomputeCandidates(this.bus, this.remoteRequestedDevices)
         }))
 
