@@ -6,6 +6,8 @@ import useChange from "./useChange";
 import { debouncedPollAsync } from "../../../src/dom/utils";
 import { ANNOUNCE } from "../../../src/dom/constants";
 
+const REGISTER_VALUE_POLL_DELAY = 5000
+
 export default function useRegisterValue(device: JDDevice, serviceNumber: number, registerIdentifier: number, pollDelay?: number) {
     const service = useChange(device, () => device?.service(serviceNumber))
     const register = service?.register(registerIdentifier)
@@ -26,7 +28,7 @@ export default function useRegisterValue(device: JDDevice, serviceNumber: number
         else // poll data
             return debouncedPollAsync(
                 () => register?.sendGetAsync(),
-                pollDelay || 5000)
+                pollDelay || REGISTER_VALUE_POLL_DELAY)
     }, [register])
 
     return register

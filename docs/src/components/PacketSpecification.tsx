@@ -39,14 +39,14 @@ function MemberType(props: { member: jdspec.PacketMember }) {
         <code>{member.type}</code>
         {parts.join(', ')}
         {member.startRepeats && <strong>starts repeating</strong>}
-        </li>
+    </li>
 }
 
-function MembersType(props: { members: jdspec.PacketMember[] }) {
-    const { members } = props;
+function MembersType(props: { members: jdspec.PacketMember[], title?: string }) {
+    const { members, title } = props;
 
     const member = members[0]
-    if (members.length == 0 || (members.length == 1
+    if (!members?.length || (members.length == 1
         && member.name == "_"
         && !isSet(member.typicalMin)
         && !isSet(member.absoluteMin)
@@ -55,15 +55,15 @@ function MembersType(props: { members: jdspec.PacketMember[] }) {
         return <></>
 
     return <>
-        <h4>Fields</h4>
+        {!!title && <h4>{title}</h4>}
         <ul>
             {members.map(member => <MemberType key={`member${member.name}`} member={member} />)}
         </ul>
     </>
 }
 
-export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo }) {
-    const { serviceClass, packetInfo } = props;
+export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo, reportInfo?: jdspec.PacketInfo }) {
+    const { serviceClass, packetInfo, reportInfo } = props;
     const classes = useStyles();
     if (!packetInfo)
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
@@ -77,7 +77,8 @@ export default function PacketSpecification(props: { serviceClass: number, packe
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <Markdown source={packetInfo.description} />
-        <MembersType members={packetInfo.fields} />
+        {!!packetInfo.fields.length && <MembersType members={packetInfo.fields} title="Arguments" />}
+        {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}

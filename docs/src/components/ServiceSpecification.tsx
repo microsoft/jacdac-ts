@@ -15,8 +15,12 @@ export default function ServiceSpecification(props: {
     const registers = node.packets.filter(r => isRegister(r))
     const events = node.packets.filter(r => isEvent(r))
     const commands = node.packets.filter(r => isCommand(r))
+    const reports = node.packets.filter(r => r.secondary)
     const others = node.packets.filter(r => registers.indexOf(r) < 0
-        && events.indexOf(r) < 0 && commands.indexOf(r) < 0)
+        && events.indexOf(r) < 0 && commands.indexOf(r) < 0
+        && reports.indexOf(r) < 0)
+
+    const secondaryOf = (pkt: jdspec.PacketInfo) => pkt.kind == "command" && reports.find(sec => sec.name === pkt.name)
 
     return (<Fragment key={`servicespec${node.shortId}`}>
         <h1 key="title">{node.name}
@@ -44,7 +48,12 @@ export default function ServiceSpecification(props: {
                 <h2>{group.name}</h2>
                 {group.note && <Markdown key={`node${group.name}`} source={group.note} />}
                 {group.packets
-                    .map((pkt, i) => <PacketSpecification key={`pkt${pkt.name}`} serviceClass={node.classIdentifier} packetInfo={pkt} />)}
+                    .map((pkt, i) => <PacketSpecification
+                        key={`pkt${pkt.name}`}
+                        serviceClass={node.classIdentifier}
+                        packetInfo={pkt}
+                        reportInfo={secondaryOf(pkt)}
+                    />)}
             </Fragment>)
         }
         {showSource && <Fragment key="specs">
