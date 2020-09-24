@@ -277,7 +277,7 @@ export class JDDevice extends JDNode {
             let numdone = 0
             for (const aa of this._ackAwaiting) {
                 if (aa.pkt && aa.pkt.crc == rep.service_command) {
-                    console.log(`ack`, aa.pkt)
+                    //console.log(`ack`, aa.pkt)
                     aa.pkt = null
                     numdone++
                     aa.okCb()
@@ -296,7 +296,7 @@ export class JDDevice extends JDNode {
                         aa.errCb()
                         numdrop++
                     } else {
-                        console.log(`resend`, this)
+                        //console.log(`resend`, this)
                         aa.pkt.sendCmdAsync(this)
                     }
                 }

@@ -30,7 +30,8 @@ export default function CommandInput(props: {
     const [ack, setAck] = useState<boolean>(false)
 
     const { specification } = service;
-    const missingArguments = !!args && (!args.length || args.some(arg => arg === undefined))
+    const requiredArgLength = command.fields.length - (hasPipeReport(command) ? 1 : 0);
+    const missingArguments = (args?.length || 0) !== requiredArgLength;
     const disabled = working || missingArguments || ack || error;
     const reportSpec = command.hasReport && specification.packets.find(p => isReportOf(command, p))
     const handleClick = async () => {
@@ -54,9 +55,9 @@ export default function CommandInput(props: {
                     await service.sendPacketAsync(
                         inp.openCommand(command.identifier),
                         true)
-                    const { meta, output } = await inp.readAll()
-                    console.log("pipe response", meta, output)
-                    setReports(output.map(ot => decodePacketData(ot)))
+                    const { output } = await inp.readAll()
+                    console.log("pipe response", output)
+                    setReports(output.filter(ot => !!ot.data?.length).map(ot => decodePacketData(ot)))
                 }
                 finally {
                     inp?.unmount();

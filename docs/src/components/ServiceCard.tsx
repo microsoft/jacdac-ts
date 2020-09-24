@@ -69,8 +69,8 @@ export default function ServiceCard(props: {
                 <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
-                    {reports?.map(report => <div>
-                        {report?.decoded[0]?.humanValue}
+                    {reports?.map((report, ri) => <div key={`report${ri}`}>
+                        {JSON.stringify(report)},
                     </div>
                     )}
                 </Typography>
