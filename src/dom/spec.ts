@@ -118,3 +118,20 @@ export function numberFormatFromStorageType(tp: jdspec.StorageType) {
 export function scaleValue(v: number, info: jdspec.PacketMember) {
     return v / (1 << info.shift)
 }
+
+export function tryParseMemberValue(text: string, info: jdspec.PacketMember): { value?: any, error?: string } {
+    if (!text)
+        return {}
+
+    if (info.type == "string")
+        return { value: text }
+    else if (info.type == "pipe")
+        return {} // not supported
+    else {
+        const n = isIntegerType(info.type) ? parseInt(text) : parseFloat(text)
+        if (isNaN(n))
+            return { error: 'invalid format' }
+        else
+            return { value: n }
+    }
+}
