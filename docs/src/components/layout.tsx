@@ -40,7 +40,7 @@ import { DbProvider } from "./DbContext";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
 import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
-import DrawerContext, { DrawerProvider, DrawerType } from "./DrawerContext";
+import AppContext, { AppProvider, DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
@@ -163,9 +163,9 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
           <ServiceManagerProvider>
             <PacketsProvider>
               <DbProvider>
-                <DrawerProvider>
+                <AppProvider>
                   <LayoutWithContext {...props} />
-                </DrawerProvider>
+                </AppProvider>
               </DbProvider>
             </PacketsProvider>
           </ServiceManagerProvider>
@@ -183,7 +183,7 @@ function LayoutWithContext(props: {
   const { toggleDarkMode } = useContext(DarkModeContext)
   const { pageContext, children, } = props;
   const classes = useStyles();
-  const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(DrawerContext)
+  const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
   const drawerOpen = drawerType !== DrawerType.None
   const toolsOpen = toolsMenu
   const serviceClass = pageContext?.node?.classIdentifier;

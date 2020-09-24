@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import DrawerContext from "./DrawerContext"
+import AppContext from "./AppContext"
 
 export interface SearchResult { url: string; title: string; }
 
@@ -9,7 +9,7 @@ export function useDrawerSearchResults(): SearchResult[] {
         && (window as any)?.__FLEXSEARCH__?.en?.index
     const store = typeof window !== undefined
         && (window as any)?.__FLEXSEARCH__?.en?.store
-    const { searchQuery } = useContext(DrawerContext)
+    const { searchQuery } = useContext(AppContext)
     if (!searchQuery || !index || searchQuery.length < 3) {
         return []
     } else {

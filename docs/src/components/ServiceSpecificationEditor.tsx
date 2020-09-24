@@ -18,7 +18,7 @@ import "ace-builds/src-noconflict/ext-language_tools"
 import "ace-builds/src-noconflict/theme-dracula";
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
-import DrawerContext, { DrawerType } from './DrawerContext';
+import AppContext, { DrawerType } from './AppContext';
 import PacketsContext from './PacketsContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useDbValue from './useDbValue';
@@ -48,7 +48,7 @@ export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const [, setTab] = useState(0);
     const { darkMode } = useContext(DarkModeContext)
-    const { drawerType } = useContext(DrawerContext)
+    const { drawerType } = useContext(AppContext)
     const { setServiceClass } = useContext(PacketsContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
         `# My Service

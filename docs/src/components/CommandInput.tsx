@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Select, Switch, TextField, Typography } from "@material-ui/core";
 import { JDService } from "../../../src/dom/service";
 import { Button } from "gatsby-theme-material-ui";
@@ -11,6 +11,7 @@ import { delay } from "../../../src/dom/utils";
 import { isReportOf, packArguments } from "../../../src/dom/spec"
 import { DecodedPacket, decodePacketData } from "../../../src/dom/pretty"
 import Packet from "../../../src/dom/packet";
+import AppContext from "./AppContext";
 
 export default function CommandInput(props: {
     service: JDService,
@@ -20,13 +21,14 @@ export default function CommandInput(props: {
     setReport?: (report: DecodedPacket) => void
 }) {
     const { service, command, showDeviceName, args, setReport } = props;
+    const { setError: setAppError } = useContext(AppContext)
     const [working, setWorking] = useState(false)
     const [error, setError] = useState(undefined)
     const [ack, setAck] = useState<boolean>(false)
 
     const { specification } = service;
     const missingArguments = !!args && (!args.length || args.some(arg => arg === undefined))
-    const disabled = working || missingArguments;
+    const disabled = working || missingArguments || ack || error;
     const reportSpec = command.hasReport && specification.packets.find(p => isReportOf(command, p))
     const handleClick = async () => {
         try {
@@ -50,7 +52,11 @@ export default function CommandInput(props: {
                 .then(() => setAck(false))
         } catch (e) {
             setError(e)
+            setAppError(e)
             console.log(e)
+            // expire error
+            delay(3000)
+                .then(() => setError(undefined))
         } finally {
             setWorking(false)
         }

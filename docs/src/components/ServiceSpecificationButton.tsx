@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
-import DrawerContext, { DrawerType } from './DrawerContext';
+import AppContext, { DrawerType } from './AppContext';
 import { Button } from 'gatsby-theme-material-ui';
 
 export default function ServiceSpecificationButton() {
-    const { setDrawerType } = useContext(DrawerContext)
+    const { setDrawerType } = useContext(AppContext)
     const onShowSpec = () => {
         setDrawerType(DrawerType.ServiceSpecification)
     }

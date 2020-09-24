@@ -1,4 +1,8 @@
-import React, { createContext, useState } from "react";
+import { any } from "prop-types";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { ERROR } from "../../../src/dom/constants";
+import { isCancelError } from "../../../src/dom/utils";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 
 export enum DrawerType {
     None,
@@ -8,43 +12,57 @@ export enum DrawerType {
     ServiceSpecification
 }
 
-export interface DrawerProps {
+export interface AppProps {
     drawerType: DrawerType,
     setDrawerType: (type: DrawerType) => void,
     searchQuery: string,
     setSearchQuery: (s: string) => void,
     toolsMenu: boolean,
-    setToolsMenu: (visible: boolean) => void
+    setToolsMenu: (visible: boolean) => void,
+    error: any,
+    setError: (error: any) => void
 }
 
-const DrawerContext = createContext<DrawerProps>({
+const AppContext = createContext<AppProps>({
     drawerType: DrawerType.None,
     setDrawerType: (type) => { },
     searchQuery: undefined,
     setSearchQuery: (s) => { },
     toolsMenu: false,
-    setToolsMenu: (v) => { }
+    setToolsMenu: (v) => { },
+    error: undefined,
+    setError: (error: any) => { }
 });
-DrawerContext.displayName = "drawer";
+AppContext.displayName = "app";
 
-export default DrawerContext;
+export default AppContext;
 
-export const DrawerProvider = ({ children }) => {
+export const AppProvider = ({ children }) => {
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, setToolsMenu] = useState(false)
+    const [error, setError] = useState(undefined)
+
+    useEffect(() => bus.subscribe(ERROR, (e: { exception: Error }) => {
+        if (isCancelError(e.exception))
+            return;
+        setError(e.exception);
+    }))
 
     return (
-        <DrawerContext.Provider value={{
+        <AppContext.Provider value={{
             drawerType: type,
             setDrawerType: setType,
             searchQuery,
             setSearchQuery,
             toolsMenu,
-            setToolsMenu
+            setToolsMenu,
+            error,
+            setError
         }}>
             {children}
-        </DrawerContext.Provider>
+        </AppContext.Provider>
     )
 }
 

@@ -4,7 +4,7 @@ import { IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import { TOOLS_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import DrawerContext, { } from "./DrawerContext";
+import AppContext, { } from "./AppContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => createStyles({
 
 export default function ToolsDrawer() {
     const classes = useStyles()
-    const { toolsMenu, setToolsMenu } = useContext(DrawerContext)
+    const { toolsMenu, setToolsMenu } = useContext(AppContext)
     const handleDrawerClose = () => {
         setToolsMenu(false)
     }
