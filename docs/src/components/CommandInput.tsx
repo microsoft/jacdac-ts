@@ -27,7 +27,7 @@ export default function CommandInput(props: {
     const { specification } = service;
     const missingArguments = !!args && (!args.length || args.some(arg => arg === undefined))
     const disabled = working || missingArguments;
-    const reportSpec = specification.packets.find(p => isReportOf(command, p))
+    const reportSpec = command.hasReport && specification.packets.find(p => isReportOf(command, p))
     const handleClick = async () => {
         try {
             setWorking(true)
