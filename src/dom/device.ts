@@ -259,12 +259,12 @@ export class JDDevice extends JDNode {
 
     identify() {
         return this.service(SRV_CTRL)
-            .sendCmdAsync(CtrlCmd.Identify)
+            ?.sendCmdAsync(CtrlCmd.Identify, true)
     }
 
     reset() {
         return this.service(SRV_CTRL)
-            .sendCmdAsync(CtrlCmd.Identify)
+            ?.sendCmdAsync(CtrlCmd.Reset)
     }
 
     private initAcks() {
