@@ -27,6 +27,7 @@ export default function CommandInput(props: { service: JDService, command: jdspe
             // TODO encode args
             const pkt = !args?.length ? Packet.onlyHeader(command.identifier)
                 : packArguments(command, args)
+            console.log(`send cmd`, command, args, pkt)
             await service.sendPacketAsync(pkt, true)
             setAck(true)
             // expire hack

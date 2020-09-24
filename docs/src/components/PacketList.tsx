@@ -69,7 +69,7 @@ export default function PacketList(props: {
             bus.minConsolePriority = ConsolePriority.Debug;
     })
     // render packets
-    useEffect(() => bus.subscribe([consoleMode ? PACKET_RECEIVE : PACKET_PROCESS, PACKET_SEND],
+    useEffect(() => bus.subscribe(consoleMode ? [PACKET_RECEIVE, PACKET_SEND] : [PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
             if (paused)
                 return; // ignore
@@ -93,6 +93,12 @@ export default function PacketList(props: {
                 //console.log(`ignore ${decoded.info.kind}`)
                 return; // ignore packet type
             }
+
+            // TODO increment counter
+            // if resent, it's probably ack
+            const { key } = pkt
+            if (packets.find(p => p.key == key))
+                return;
 
             const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
             ps.unshift(pkt)
