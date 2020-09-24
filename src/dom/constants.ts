@@ -12,6 +12,8 @@ export const CMD_SET_REG = 0x2000
 export const CMD_TOP_MASK = 0xf000
 export const CMD_REG_MASK = 0x0fff
 
+export const ACK_MIN_DELAY = 90
+export const ACK_MAX_DELAY = 120
 
 // Commands 0x000-0x07f - common to all services
 // Commands 0x080-0xeff - defined per-service

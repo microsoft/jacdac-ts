@@ -17,7 +17,6 @@ export default function CommandInput(props: { service: JDService, command: jdspe
     const [error, setError] = useState(undefined)
     const [ack, setAck] = useState<boolean>(false)
 
-    console.log('command input', service, args)
     const missingArguments = !!args && (!args.length || args.some(arg => arg === undefined))
     const disabled = working || missingArguments;
     const handleClick = async () => {
