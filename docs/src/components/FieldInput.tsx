@@ -47,8 +47,10 @@ export default function FieldInput(props: { service: jdspec.ServiceSpec, field: 
             {field.startRepeats && <strong>starts repeating</strong>}
         </>
 
-    // mutate state
-    if (field.type === 'bool')
+    if (field.type === 'pipe') {
+        return <>pipe {field.name}</>
+    }
+    else if (field.type === 'bool')
         return <>
             <Switch checked={!!value} onChange={handleChecked} />
             {label}
@@ -61,7 +63,7 @@ export default function FieldInput(props: { service: jdspec.ServiceSpec, field: 
             {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
-    else
+    else // numbers or string
         return <TextField
             label={label}
             value={value || ""}

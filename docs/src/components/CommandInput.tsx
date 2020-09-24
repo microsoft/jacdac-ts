@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Select, Switch, TextField, Typography } from "@material-ui/core";
+import { InPipeReader } from "../../../src/dom/pipes";
 import { JDService } from "../../../src/dom/service";
 import { Button } from "gatsby-theme-material-ui";
 import DeviceName from "./DeviceName";
@@ -8,10 +9,11 @@ import ErrorIcon from '@material-ui/icons/Error';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/dom/utils";
-import { isReportOf, packArguments } from "../../../src/dom/spec"
+import { hasPipeReport, isReportOf, packArguments } from "../../../src/dom/spec"
 import { DecodedPacket, decodePacketData } from "../../../src/dom/pretty"
 import Packet from "../../../src/dom/packet";
 import AppContext from "./AppContext";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 
 export default function CommandInput(props: {
     service: JDService,
@@ -22,6 +24,7 @@ export default function CommandInput(props: {
 }) {
     const { service, command, showDeviceName, args, setReport } = props;
     const { setError: setAppError } = useContext(AppContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const [working, setWorking] = useState(false)
     const [error, setError] = useState(undefined)
     const [ack, setAck] = useState<boolean>(false)
@@ -44,7 +47,21 @@ export default function CommandInput(props: {
                 const reportPacket = await service.sendCmdAwaitResponseAsync(pkt)
                 const decoded = decodePacketData(reportPacket)
                 setReport(decoded)
-            } else
+            } else if (hasPipeReport(command)) {
+                let inp: InPipeReader;
+                try {
+                    inp = new InPipeReader(bus);
+                    await service.sendPacketAsync(
+                        inp.openCommand(command.identifier),
+                        true)
+                    const { meta, output } = await inp.readAll()
+                    console.log("pipe response", meta, output)
+                }
+                finally {
+                    inp?.unmount();
+                }
+            }
+            else
                 await service.sendPacketAsync(pkt, true)
             setAck(true)
             // expire hack
