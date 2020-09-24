@@ -1,4 +1,4 @@
-import { isRegister, isEvent, isCommand, tryParseMemberValue } from "../../../src/dom/spec"
+import { isRegister, isEvent, isCommand, tryParseMemberValue, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from '@material-ui/lab/Alert';
 import React, { useState } from "react";
@@ -10,14 +10,14 @@ import IDChip from "./IDChip";
 import KindChip from "./KindChip";
 import PacketMembersChip from "./PacketMembersChip";
 import Markdown from "./Markdown";
-import { prettyUnit } from "../../../src/dom/pretty";
+import FieldInput from "./FieldInput";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
         marginBottom: theme.spacing(1)
     },
     field: {
-        verticalAlign: "middle"
+        "& > div": { verticalAlign: "middle" }
     },
     chip: {
         margin: theme.spacing(0.5),
@@ -29,49 +29,17 @@ function isSet(field: any) {
     return field !== null && field !== undefined
 }
 
-function MemberType(props: { member: jdspec.PacketMember, setArg?: (arg: any) => void }) {
-    const { member, setArg } = props;
-    const [value, setValue] = useState("")
-    const [error, setError] = useState(false)
-    const classes = useStyles()
-    const name = member.name !== "_" && member.name
-    const parts: string[] = [
-        prettyUnit(member.unit),
-        isSet(member.typicalMin) && `[${member.typicalMin}, ${member.typicalMax}]`,
-        isSet(member.absoluteMin) && `absolute [${member.absoluteMin}, ${member.absoluteMax}]`,
-    ].filter(f => isSet(f) && f)
+function MemberType(props: { service: jdspec.ServiceSpec, member: jdspec.PacketMember, setArg?: (arg: any) => void }) {
+    const { service, member, setArg } = props;
+    const classes = useStyles();
 
-    const handleChange = (ev) => {
-        const newValue = ev.target.value
-        setValue(newValue)
-        const r = tryParseMemberValue(newValue, member)
-        setArg(r.error ? undefined : r.value)
-        setError(!!r.error)
-    }
-
-    if (setArg)
-        return <li>
-            <TextField
-                className={classes.field}
-                size="small"
-                label={name}
-                helperText={[member.type, ...parts].join(', ')}
-                value={value}
-                onChange={handleChange}
-                error={error}
-            />
-        </li>
-    else
-        return <li>
-            {name && <code>{name}{":"}</code>}
-            <code>{member.type}</code>
-            {parts.join(', ')}
-            {member.startRepeats && <strong>starts repeating</strong>}
-        </li>
+    return <li className={classes.field}>
+        <FieldInput service={service} field={member} setArg={setArg} />
+    </li>
 }
 
-function MembersType(props: { members: jdspec.PacketMember[], title?: string, setArg?: (index: number) => (args: any[]) => void }) {
-    const { members, title, setArg } = props;
+function MembersType(props: { service: jdspec.ServiceSpec, members: jdspec.PacketMember[], title?: string, setArg?: (index: number) => (args: any[]) => void }) {
+    const { service, members, title, setArg } = props;
 
     const member = members[0]
     if (!members?.length || (members.length == 1
@@ -84,7 +52,7 @@ function MembersType(props: { members: jdspec.PacketMember[], title?: string, se
     return <>
         {!!title && <h4>{title}</h4>}
         <ul>
-            {members.map((member, i) => <MemberType key={`member${member.name}`} member={member} setArg={setArg && setArg(i)} />)}
+            {members.map((member, i) => <MemberType key={`member${member.name}`} service={service} member={member} setArg={setArg && setArg(i)} />)}
         </ul>
     </>
 }
@@ -102,6 +70,7 @@ export default function PacketSpecification(props: {
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
     const { fields } = packetInfo;
     const isCmd = isCommand(packetInfo)
+    const service = serviceSpecificationFromClassIdentifier(serviceClass)
 
     const setArg = (index: number) => (arg: any) => {
         const c = args.slice(0)
@@ -118,9 +87,9 @@ export default function PacketSpecification(props: {
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <Markdown source={packetInfo.description} />
-        {!!fields.length && <MembersType members={fields} title={isCmd && "Arguments"} setArg={isCmd && setArg} />}
-        {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
-        {!!pipeReportInfo && <MembersType members={pipeReportInfo.fields} title="Pipe report" />}
+        {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={isCmd && setArg} />}
+        {!!reportInfo && <MembersType service={service} members={reportInfo.fields} title="Report" />}
+        {!!pipeReportInfo && <MembersType service={service} members={pipeReportInfo.fields} title="Pipe report" />}
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
