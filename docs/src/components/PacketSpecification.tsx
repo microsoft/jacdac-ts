@@ -38,7 +38,7 @@ function MemberType(props: { member: jdspec.PacketMember, setArg?: (arg: any) =>
     const parts: string[] = [
         prettyUnit(member.unit),
         isSet(member.typicalMin) && `[${member.typicalMin}, ${member.typicalMax}]`,
-        isSet(member.absoluteMin) && `absolute [${member.absoluteMin}, ${member.absoluteMin}]`,
+        isSet(member.absoluteMin) && `absolute [${member.absoluteMin}, ${member.absoluteMax}]`,
     ].filter(f => isSet(f) && f)
 
     const handleChange = (ev) => {
@@ -100,6 +100,8 @@ export default function PacketSpecification(props: {
     const classes = useStyles();
     if (!packetInfo)
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
+    const { fields } = packetInfo;
+    const isCmd = isCommand(packetInfo)
 
     const setArg = (index: number) => (arg: any) => {
         const c = args.slice(0)
@@ -116,7 +118,7 @@ export default function PacketSpecification(props: {
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <Markdown source={packetInfo.description} />
-        {!!packetInfo.fields.length && <MembersType members={packetInfo.fields} title="Arguments" setArg={setArg} />}
+        {!!fields.length && <MembersType members={fields} title={isCmd && "Arguments"} setArg={isCmd && setArg} />}
         {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType members={pipeReportInfo.fields} title="Pipe report" />}
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
