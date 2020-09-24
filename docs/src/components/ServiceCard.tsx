@@ -49,7 +49,7 @@ export default function ServiceCard(props: {
     const { service, linkToService, registerIdentifier, showDeviceName,
         showServiceName, showMemberName, eventIdentifier, commandIdentifier, commandArgs } = props;
     const { specification } = service;
-    const [report, setReport] = useState<DecodedPacket>(undefined);
+    const [reports, setReports] = useState<DecodedPacket[]>(undefined);
     const classes = useStyles();
 
     const hasCommandIdentifier = commandIdentifier !== undefined;
@@ -69,7 +69,10 @@ export default function ServiceCard(props: {
                 <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
-                    {report && report.decoded[0]?.humanValue}
+                    {reports?.map(report => <div>
+                        {report?.decoded[0]?.humanValue}
+                    </div>
+                    )}
                 </Typography>
                 <DeviceLostAlert device={service?.device} />
             </CardContent>
@@ -78,7 +81,7 @@ export default function ServiceCard(props: {
                     service={service}
                     command={command}
                     args={commandArgs}
-                    setReport={setReport} />}
+                    setReports={setReports} />}
             </CardActions>
         </Card>
     );

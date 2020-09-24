@@ -20,9 +20,9 @@ export default function CommandInput(props: {
     command: jdspec.PacketInfo,
     showDeviceName?: boolean,
     args?: any[],
-    setReport?: (report: DecodedPacket) => void
+    setReports?: (reports: DecodedPacket[]) => void
 }) {
-    const { service, command, showDeviceName, args, setReport } = props;
+    const { service, command, showDeviceName, args, setReports } = props;
     const { setError: setAppError } = useContext(AppContext)
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [working, setWorking] = useState(false)
@@ -37,17 +37,17 @@ export default function CommandInput(props: {
         try {
             setWorking(true)
             setError(undefined)
-            setReport(undefined)
+            setReports(undefined)
             setAck(false)
             // TODO encode args
             console.log(args)
             const pkt = !args?.length ? Packet.onlyHeader(command.identifier)
                 : packArguments(command, args)
-            if (reportSpec && setReport) {
+            if (setReports && reportSpec) {
                 const reportPacket = await service.sendCmdAwaitResponseAsync(pkt)
                 const decoded = decodePacketData(reportPacket)
-                setReport(decoded)
-            } else if (hasPipeReport(command)) {
+                setReports([decoded])
+            } else if (setReports && hasPipeReport(command)) {
                 let inp: InPipeReader;
                 try {
                     inp = new InPipeReader(bus);
@@ -56,6 +56,7 @@ export default function CommandInput(props: {
                         true)
                     const { meta, output } = await inp.readAll()
                     console.log("pipe response", meta, output)
+                    setReports(output.map(ot => decodePacketData(ot)))
                 }
                 finally {
                     inp?.unmount();
