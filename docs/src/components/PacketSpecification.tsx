@@ -62,8 +62,13 @@ function MembersType(props: { members: jdspec.PacketMember[], title?: string }) 
     </>
 }
 
-export default function PacketSpecification(props: { serviceClass: number, packetInfo: jdspec.PacketInfo, reportInfo?: jdspec.PacketInfo }) {
-    const { serviceClass, packetInfo, reportInfo } = props;
+export default function PacketSpecification(props: {
+    serviceClass: number,
+    packetInfo: jdspec.PacketInfo,
+    reportInfo?: jdspec.PacketInfo,
+    pipeReportInfo?: jdspec.PacketInfo
+}) {
+    const { serviceClass, packetInfo, reportInfo, pipeReportInfo } = props;
     const classes = useStyles();
     if (!packetInfo)
         return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
@@ -79,6 +84,7 @@ export default function PacketSpecification(props: { serviceClass: number, packe
         <Markdown source={packetInfo.description} />
         {!!packetInfo.fields.length && <MembersType members={packetInfo.fields} title="Arguments" />}
         {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
+        {!!pipeReportInfo && <MembersType members={pipeReportInfo.fields} title="Pipe report" />}
         {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}

@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromName, isRegister, isEvent, isCommand } from "../../../src/dom/spec"
+import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf } from "../../../src/dom/spec"
 import PacketSpecification from "../components/PacketSpecification"
 import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
@@ -12,15 +12,20 @@ export default function ServiceSpecification(props: {
     showSource?: boolean
 }) {
     const { service: node, showSource } = props;
-    const registers = node.packets.filter(r => isRegister(r))
-    const events = node.packets.filter(r => isEvent(r))
-    const commands = node.packets.filter(r => isCommand(r))
+    const registers = node.packets.filter(isRegister)
+    const events = node.packets.filter(isEvent)
+    const commands = node.packets.filter(isCommand)
     const reports = node.packets.filter(r => r.secondary)
+    const pipeReports = node.packets.filter(isPipeReport)
     const others = node.packets.filter(r => registers.indexOf(r) < 0
-        && events.indexOf(r) < 0 && commands.indexOf(r) < 0
-        && reports.indexOf(r) < 0)
+        && events.indexOf(r) < 0
+        && commands.indexOf(r) < 0
+        && reports.indexOf(r) < 0
+        && pipeReports.indexOf(r) < 0
+    )
 
-    const secondaryOf = (pkt: jdspec.PacketInfo) => pkt.kind == "command" && reports.find(sec => sec.name === pkt.name)
+    const reportOf = (pkt: jdspec.PacketInfo) => reports.find(rep => isReportOf(pkt, rep))
+    const pipeReportOf = (pkt: jdspec.PacketInfo) => pipeReports.find(rep => isPipeReportOf(pkt, rep))
 
     return (<Fragment key={`servicespec${node.shortId}`}>
         <h1 key="title">{node.name}
@@ -52,7 +57,8 @@ export default function ServiceSpecification(props: {
                         key={`pkt${pkt.name}`}
                         serviceClass={node.classIdentifier}
                         packetInfo={pkt}
-                        reportInfo={secondaryOf(pkt)}
+                        reportInfo={reportOf(pkt)}
+                        pipeReportInfo={pipeReportOf(pkt)}
                     />)}
             </Fragment>)
         }

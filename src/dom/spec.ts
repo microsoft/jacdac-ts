@@ -84,6 +84,18 @@ export function isCommand(pkt: jdspec.PacketInfo) {
     return pkt.kind == "command"
 }
 
+export function isPipeReport(pkt: jdspec.PacketInfo) {
+    return pkt.kind == "pipe_report"
+}
+
+export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo) {
+    return report.secondary && report.kind == "report" && cmd.kind == "command" && cmd.name == report.name;
+}
+
+export function isPipeReportOf(cmd: jdspec.PacketInfo, pipeReport: jdspec.PacketInfo) {
+    return pipeReport.kind == "pipe_report" && cmd.kind == "command" && cmd.pipeType && cmd.pipeType === pipeReport.pipeType;
+}
+
 export function isIntegerType(tp: string) {
     return /^[ui]\d+(\.|$)/.test(tp) || tp == "pipe_port" || tp == "bool"
 }
