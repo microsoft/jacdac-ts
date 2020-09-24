@@ -2,7 +2,7 @@
 
 import { NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer";
 import specdata from "../../jacdac-spec/dist/spec.json";
-import { SMap, stringToUint8Array, toUTF8 } from "./utils";
+import { fromHex, SMap, stringToUint8Array, toUTF8 } from "./utils";
 import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE } from "./constants";
 import Packet from "./packet";
 
@@ -178,6 +178,7 @@ export function packArguments(info: jdspec.PacketInfo, args: ArgType[]) {
     let numReps = 0
     let argIdx = 0
     let dst = 0
+
     const buf = new Uint8Array(256)
 
     for (let i = 0; i < info.fields.length; ++i) {
@@ -223,4 +224,15 @@ export function packArguments(info: jdspec.PacketInfo, args: ArgType[]) {
     if (info.kind != "report")
         pkt.is_command = true
     return pkt
+}
+
+export function parseDeviceId(id: string) {
+    id = id.replace(/\s/g, "")
+    if (id.length != 16 || !/^[a-f0-9]+$/i.test(id))
+        return null
+    return fromHex(id)
+}
+
+export function hasPipeReport(info: jdspec.PacketInfo) {
+    return info.fields.find(f => f.type == "pipe")
 }
