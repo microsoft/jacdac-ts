@@ -48,7 +48,7 @@ export default function FieldInput(props: { service: jdspec.ServiceSpec, field: 
         </>
 
     if (field.type === 'pipe') {
-        return <>pipe {field.name}</>
+        return <>pipe <code>{field.name}</code></>
     }
     else if (field.type === 'bool')
         return <>
