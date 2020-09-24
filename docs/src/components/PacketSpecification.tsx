@@ -90,7 +90,7 @@ export default function PacketSpecification(props: {
         {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={isCmd && setArg} />}
         {!!reportInfo && <MembersType service={service} members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType service={service} members={pipeReportInfo.fields} title="Pipe report" />}
-        {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} />}
+        {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} commandArgs={args} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
     </div>

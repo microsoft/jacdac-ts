@@ -5,9 +5,10 @@ import CommandInput from "./CommandInput";
 
 export default function ServiceCommands(props: {
     service: JDService,
-    commandIdentifier?: number
+    commandIdentifier?: number,
+    commandArgs?: any[]
 }) {
-    const { service, commandIdentifier } = props;
+    const { service, commandIdentifier, commandArgs } = props;
     const spec = service.specification;
     const packets = spec.packets;
     let commands = packets.filter(isCommand);
@@ -15,6 +16,6 @@ export default function ServiceCommands(props: {
         commands = commands.filter(cmd => cmd.identifier === commandIdentifier)
 
     return <>
-        {commands.map(command => <CommandInput key={`${service.id}:${command.identifier}`} service={service} command={command} />)}
+        {commands.map(command => <CommandInput key={`${service.id}:${command.identifier}`} service={service} command={command} args={commandArgs} />)}
     </>
 }

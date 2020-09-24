@@ -19,6 +19,7 @@ export default function DeviceList(props: {
     registerIdentifier?: number,
     eventIdentifier?: number,
     commandIdentifier?: number,
+    commandArgs?: any[],
     showDeviceName?: boolean,
     showServiceName?: boolean,
     showRegisterName?: boolean,
@@ -27,7 +28,7 @@ export default function DeviceList(props: {
 }) {
     const { serviceClass, linkToService, registerIdentifier,
         showDeviceName, showServiceName, showRegisterName, showFirmware, showTemperature,
-        eventIdentifier, commandIdentifier } = props
+        eventIdentifier, commandIdentifier, commandArgs } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const services = useChange(bus, n => n.services({ serviceClass }))
@@ -59,6 +60,7 @@ export default function DeviceList(props: {
                         registerIdentifier={registerIdentifier}
                         eventIdentifier={eventIdentifier}
                         commandIdentifier={commandIdentifier}
+                        commandArgs={commandArgs}
                     />
                 </Grid>
             })}

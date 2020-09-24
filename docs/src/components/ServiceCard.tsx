@@ -42,9 +42,11 @@ export default function ServiceCard(props: {
     showServiceName?: boolean,
     showMemberName?: boolean,
     eventIdentifier?: number,
-    commandIdentifier?: number
+    commandIdentifier?: number,
+    commandArgs?: any[]
 }) {
-    const { service, linkToService, registerIdentifier, showDeviceName, showServiceName, showMemberName, eventIdentifier, commandIdentifier } = props;
+    const { service, linkToService, registerIdentifier, showDeviceName, 
+        showServiceName, showMemberName, eventIdentifier, commandIdentifier, commandArgs } = props;
     const classes = useStyles();
 
     const hasCommands = service.specification?.packets.some(isCommand)
@@ -67,7 +69,7 @@ export default function ServiceCard(props: {
             </CardContent>
             {(hasCommands || hasCommandIdentifier) && (!hasRegisterIdentifier && !hasEventIdentifier) &&
                 <CardActions>
-                    <ServiceCommands service={service} commandIdentifier={commandIdentifier} />
+                    <ServiceCommands service={service} commandIdentifier={commandIdentifier} commandArgs={commandArgs} />
                 </CardActions>}
         </Card>
     );
