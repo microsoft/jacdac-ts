@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { JDService } from "../../../src/dom/service";
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles } from '@material-ui/core/styles';
@@ -13,9 +13,10 @@ import ServiceRegisters from './ServiceRegisters';
 import ServiceEvents from './ServiceEvents';
 import { isCommand } from '../../../src/dom/spec';
 import { CardActions } from '@material-ui/core';
-import ServiceCommands from './ServiceCommands';
 import DeviceCardHeader from './DeviceCardHeader';
 import { DeviceLostAlert } from './DeviceLostAlert';
+import CommandInput from './CommandInput';
+import { DecodedPacket } from '../../../src/dom/pretty';
 
 const useStyles = makeStyles({
     root: {
@@ -47,12 +48,16 @@ export default function ServiceCard(props: {
 }) {
     const { service, linkToService, registerIdentifier, showDeviceName,
         showServiceName, showMemberName, eventIdentifier, commandIdentifier, commandArgs } = props;
+    const { specification } = service;
+    const [report, setReport] = useState<DecodedPacket>(undefined);
     const classes = useStyles();
 
-    const hasCommands = service.specification?.packets.some(isCommand)
+    const hasCommandIdentifier = commandIdentifier !== undefined;
     const hasRegisterIdentifier = registerIdentifier !== undefined;
-    const hasEventIdentifier = eventIdentifier !== undefined
-    const hasCommandIdentifier = commandIdentifier !== undefined
+    const hasEventIdentifier = eventIdentifier !== undefined;
+
+    const command = commandIdentifier !== undefined
+        && specification?.packets.find(pkt => isCommand(pkt) && pkt.identifier === commandIdentifier)
 
     return (
         <Card className={classes.root}>
@@ -64,13 +69,17 @@ export default function ServiceCard(props: {
                 <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
+                    {report && report.decoded[0]?.humanValue}
                 </Typography>
                 <DeviceLostAlert device={service?.device} />
             </CardContent>
-            {(hasCommands || hasCommandIdentifier) && (!hasRegisterIdentifier && !hasEventIdentifier) &&
-                <CardActions>
-                    <ServiceCommands service={service} commandIdentifier={commandIdentifier} commandArgs={commandArgs} />
-                </CardActions>}
+            <CardActions>
+                {command && <CommandInput
+                    service={service}
+                    command={command}
+                    args={commandArgs}
+                    setReport={setReport} />}
+            </CardActions>
         </Card>
     );
 }

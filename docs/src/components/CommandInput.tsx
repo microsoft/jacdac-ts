@@ -8,32 +8,49 @@ import ErrorIcon from '@material-ui/icons/Error';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/dom/utils";
-import { packArguments } from "../../../src/dom/spec"
+import { isReportOf, packArguments } from "../../../src/dom/spec"
+import { DecodedPacket, decodePacketData } from "../../../src/dom/pretty"
 import Packet from "../../../src/dom/packet";
 
-export default function CommandInput(props: { service: JDService, command: jdspec.PacketInfo, showDeviceName?: boolean, args?: any[] }) {
-    const { service, command, showDeviceName, args } = props;
+export default function CommandInput(props: {
+    service: JDService,
+    command: jdspec.PacketInfo,
+    showDeviceName?: boolean,
+    args?: any[],
+    setReport?: (report: DecodedPacket) => void
+}) {
+    const { service, command, showDeviceName, args, setReport } = props;
     const [working, setWorking] = useState(false)
     const [error, setError] = useState(undefined)
     const [ack, setAck] = useState<boolean>(false)
 
+    const { specification } = service;
     const missingArguments = !!args && (!args.length || args.some(arg => arg === undefined))
     const disabled = working || missingArguments;
+    const reportSpec = specification.packets.find(p => isReportOf(command, p))
     const handleClick = async () => {
         try {
             setWorking(true)
             setError(undefined)
+            setReport(undefined)
             setAck(false)
             // TODO encode args
+            console.log(args)
             const pkt = !args?.length ? Packet.onlyHeader(command.identifier)
                 : packArguments(command, args)
-            await service.sendPacketAsync(pkt, true)
+            if (reportSpec && setReport) {
+                const reportPacket = await service.sendCmdAwaitResponseAsync(pkt)
+                const decoded = decodePacketData(reportPacket)
+                setReport(decoded)
+            } else
+                await service.sendPacketAsync(pkt, true)
             setAck(true)
             // expire hack
             delay(1500)
                 .then(() => setAck(false))
         } catch (e) {
             setError(e)
+            console.log(e)
         } finally {
             setWorking(false)
         }

@@ -92,7 +92,7 @@ export default function PacketList(props: {
                 return; // ignore packet type
             }
 
-            addPacket(pkt)
+            addPacket(pkt, decoded)
         }
     ))
     // clear when consoleMode changes

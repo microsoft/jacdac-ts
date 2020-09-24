@@ -50,8 +50,8 @@ function MemberInput(props: { register: JDRegister, member: DecodedMember, label
     return <Typography component="div" variant="h5">{member.humanValue}</Typography>
 }
 
-function Decoded(props: { member: DecodedMember, showName?: boolean, register: JDRegister }) {
-    const { member, showName, register } = props;
+function Decoded(props: { member: DecodedMember, register: JDRegister }) {
+    const { member, register } = props;
     const { info } = member;
     return <>
         {info.name !== "_" && <Typography id="slider" component="span" gutterBottom>
@@ -85,6 +85,6 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
             {decoded.info.name}
         </Typography>}
         {decoded && decoded.decoded.map(member =>
-            <Decoded key={`member` + member.info.name} register={register} member={member} showName={showMemberName} />)}
+            <Decoded key={`member` + member.info.name} register={register} member={member} />)}
     </React.Fragment>
 }

@@ -1,16 +1,18 @@
 import React, { createContext, useState } from "react";
 import { Packet } from "../../../src/dom/packet";
+import { DecodedPacket } from "../../../src/dom/pretty";
 
 const maxItems = 100
 export interface PacketProps {
     key: number;
     packet: Packet;
+    decoded: DecodedPacket;
     count?: number;
 }
 
 export interface PacketsProps {
     packets: PacketProps[],
-    addPacket: (pkt: Packet) => void,
+    addPacket: (pkt: Packet, decoded: DecodedPacket) => void,
     clearPackets: () => void,
     paused: boolean,
     setPaused: (paused: boolean) => void,
@@ -22,7 +24,7 @@ export interface PacketsProps {
 
 const PacketsContext = createContext<PacketsProps>({
     packets: [],
-    addPacket: (pkt) => { },
+    addPacket: (pkt, decoded) => { },
     clearPackets: () => { },
     paused: false,
     setPaused: (p) => { },
@@ -41,7 +43,7 @@ export const PacketsProvider = ({ children }) => {
     const [flags, setFlags] = useState(["rw", "ro", "event", "command", "report"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
 
-    const addPacket = (pkt: Packet) => {
+    const addPacket = (pkt: Packet, decoded: DecodedPacket) => {
         const { key } = pkt
         const old = packets.find(p => p.key == key)
         if (old) {
@@ -53,6 +55,7 @@ export const PacketsProvider = ({ children }) => {
             ps.unshift({
                 key,
                 packet: pkt,
+                decoded,
                 count: 1
             })
             setPackets(ps)
