@@ -72,6 +72,7 @@ export default function PacketSpecification(props: {
     const isCmd = isCommand(packetInfo)
     const service = serviceSpecificationFromClassIdentifier(serviceClass)
 
+    const hasArgs = isCmd && !!packetInfo.fields.length
     const setArg = (index: number) => (arg: any) => {
         const c = args.slice(0)
         c[index] = arg;
@@ -87,10 +88,10 @@ export default function PacketSpecification(props: {
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <Markdown source={packetInfo.description} />
-        {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={isCmd && setArg} />}
+        {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={hasArgs && setArg} />}
         {!!reportInfo && <MembersType service={service} members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType service={service} members={pipeReportInfo.fields} title="Pipe report" />}
-        {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} commandArgs={args} />}
+        {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
         {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
         {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
     </div>

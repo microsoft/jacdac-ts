@@ -43,17 +43,15 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 }))(ToggleButtonGroup);
 
 export default function PacketList(props: {
-    maxItems?: number,
     serviceClass?: number,
     showTime?: boolean,
     showRecorder?: boolean,
     showButtonText?: boolean
 }) {
     const { showTime, showRecorder, showButtonText } = props
-    const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, setPackets } = useContext(PacketsContext)
+    const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, addPacket, clearPackets } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
-    const maxItems = props.maxItems || 100
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const consoleMode = hasFlag("console")
     const skipRepeatedAnnounce = !hasFlag("announce")
@@ -94,26 +92,17 @@ export default function PacketList(props: {
                 return; // ignore packet type
             }
 
-            // TODO increment counter
-            // if resent, it's probably ack
-            const { key } = pkt
-            if (packets.find(p => p.key == key))
-                return;
-
-            const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
-            ps.unshift(pkt)
-            setPackets(ps)
+            addPacket(pkt)
         }
     ))
     // clear when consoleMode changes
     useEffect(() => {
-        setPackets([])
+        clearPackets()
     }, [consoleMode, JSON.stringify(flags)])
 
     const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
         setFlags(newFlags)
     };
-    console.log(packets)
     return (<>
         <List className={classes.items} dense={true}>
             {showRecorder && <ListItem key="recorder">
@@ -139,7 +128,8 @@ export default function PacketList(props: {
             {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
                 : <PacketListItem
                     key={'pkt' + packet.key}
-                    packet={packet}
+                    packet={packet.packet}
+                    count={packet.count}
                     skipRepeatedAnnounce={skipRepeatedAnnounce}
                     showTime={showTime} />)}
         </List>

@@ -17,7 +17,8 @@ export default function CommandInput(props: { service: JDService, command: jdspe
     const [error, setError] = useState(undefined)
     const [ack, setAck] = useState<boolean>(false)
 
-    const missingArguments = args?.some(arg => arg === undefined)
+    console.log('command input', service, args)
+    const missingArguments = !!args && (!args.length || args.some(arg => arg === undefined))
     const disabled = working || missingArguments;
     const handleClick = async () => {
         try {
@@ -27,7 +28,6 @@ export default function CommandInput(props: { service: JDService, command: jdspe
             // TODO encode args
             const pkt = !args?.length ? Packet.onlyHeader(command.identifier)
                 : packArguments(command, args)
-            console.log(`send cmd`, command, args, pkt)
             await service.sendPacketAsync(pkt, true)
             setAck(true)
             // expire hack

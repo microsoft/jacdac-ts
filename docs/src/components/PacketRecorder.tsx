@@ -11,10 +11,9 @@ import PacketsContext from "./PacketsContext";
 
 export default function PacketRecorder(props: { showText?: boolean }) {
     const { showText } = props
-    const { paused, setPaused, setPackets } = useContext(PacketsContext)
+    const { paused, setPaused, clearPackets } = useContext(PacketsContext)
 
     const togglePaused = () => setPaused(!paused)
-    const clearPackets = () => setPackets([])
 
     if (showText)
         return <>

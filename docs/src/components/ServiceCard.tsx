@@ -45,7 +45,7 @@ export default function ServiceCard(props: {
     commandIdentifier?: number,
     commandArgs?: any[]
 }) {
-    const { service, linkToService, registerIdentifier, showDeviceName, 
+    const { service, linkToService, registerIdentifier, showDeviceName,
         showServiceName, showMemberName, eventIdentifier, commandIdentifier, commandArgs } = props;
     const classes = useStyles();
 
