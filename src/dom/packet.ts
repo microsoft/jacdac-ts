@@ -197,6 +197,13 @@ export class Packet {
         return !!(this.frame_flags & JD_FRAME_FLAG_COMMAND)
     }
 
+    set is_command(value: boolean) {
+        if (value)
+            this._header[3] |= JD_FRAME_FLAG_COMMAND
+        else
+            this._header[3] &= ~JD_FRAME_FLAG_COMMAND
+    }
+
     get is_report() {
         return !this.is_command
     }
@@ -225,7 +232,7 @@ export class Packet {
         if (!dev)
             return Promise.resolve()
         this.device_identifier = dev.deviceId
-        this._header[3] |= JD_FRAME_FLAG_COMMAND
+        this.is_command = true
         return this.sendCoreAsync(dev.bus)
     }
 

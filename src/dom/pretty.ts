@@ -1,7 +1,7 @@
 import { Packet } from "./packet"
 import { NumberFormat } from "./buffer"
 import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray } from "./utils"
-import { isIntegerType, numberFormatFromStorageType, scaleValue, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
+import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
     JD_SERVICE_NUMBER_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_NUMBER_CRC_ACK, CMD_ADVERTISEMENT_DATA
@@ -121,7 +121,7 @@ export function decodeMember(
     } else {
         const fmt = numberFormatFromStorageType(member.storage)
         numValue = pkt.getNumber(fmt, offset)
-        value = scaledValue = scaleValue(numValue, member)
+        value = scaledValue = scaleIntToFloat(numValue, member)
         if (pkt.dev && member.type == "pipe_port")
             pkt.dev.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
         if (enumInfo) {
