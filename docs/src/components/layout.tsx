@@ -53,7 +53,7 @@ import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 
-export const DRAWER_WIDTH = 20;
+export const DRAWER_WIDTH = 26;
 export const TOOLS_DRAWER_WIDTH = 18;
 
 const useStyles = makeStyles((theme) => createStyles({
