@@ -45,7 +45,7 @@ export default function UploadButton(props: {
                 onChange={handleChange}
             />
             <label htmlFor={id}>
-                <Button variant="contained" color={required ? "primary" : "inherit"} component="span" disabled={disabled}>
+                <Button variant="outlined" color={required ? "primary" : "inherit"} component="span" disabled={disabled}>
                     {text}
                 </Button>
             </label>
