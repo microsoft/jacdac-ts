@@ -18,7 +18,7 @@ import ConnectAlert from "./ConnectAlert";
 import FirmwareCard from "./FirmwareCard";
 import useSelectedNodes from "../jacdac/useSelectedNodes"
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "@material-ui/lab/Alert";
+import Alert from "./Alert";
 
 const firmwareRepos = [
     "microsoft/jacdac-stm32x0"

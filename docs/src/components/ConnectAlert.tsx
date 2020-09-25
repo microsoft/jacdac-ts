@@ -1,7 +1,7 @@
 // tslint:disable-next-line: no-submodule-imports
 import { createStyles, makeStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "@material-ui/lab/Alert";
+import Alert from "./Alert";
 import React, { useContext } from "react";
 import { BusState } from "../../../src/dom/bus";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";

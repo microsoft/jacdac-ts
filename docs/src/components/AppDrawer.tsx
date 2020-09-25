@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Drawer, Typography, Divider, makeStyles, createStyles } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "@material-ui/lab/Alert";
+import Alert from "./Alert";
 import PacketList from "./PacketList";
 import Toc from "./Toc";
 import DomTreeView from "./DomTreeView";

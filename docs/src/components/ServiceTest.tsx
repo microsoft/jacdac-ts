@@ -14,7 +14,7 @@ import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import { Grid, Card, CardHeader, CardActions } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from '@material-ui/lab/Alert';
+import Alert from "./Alert";
 
 
 const useStyles = makeStyles((theme: Theme) =>

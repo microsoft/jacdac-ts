@@ -6,7 +6,7 @@ import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typograph
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from '@material-ui/lab/Alert';
+import Alert from "./Alert";
 import { Button } from "gatsby-theme-material-ui";
 import { NoSsr } from '@material-ui/core';
 

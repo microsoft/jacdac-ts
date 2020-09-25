@@ -7,7 +7,7 @@ import ConnectAlert from './ConnectAlert'
 import { useDbJSON, useDbUint8Array } from './DbContext'
 import UploadButton from './UploadButton';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from '@material-ui/lab/Alert';
+import Alert from "./Alert";
 import { Button } from 'gatsby-theme-material-ui';
 import { ModelRunnerClient } from '../../../src/dom/modelrunner'
 import RegisterInput from './RegisterInput';

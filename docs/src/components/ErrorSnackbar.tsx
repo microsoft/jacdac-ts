@@ -1,7 +1,7 @@
 // tslint:disable-next-line: no-submodule-imports
 import Snackbar from '@material-ui/core/Snackbar';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from '@material-ui/lab/Alert';
+import Alert from "./Alert";
 import React, { useContext, useEffect, useState } from 'react';
 import AppContext from './AppContext';
 

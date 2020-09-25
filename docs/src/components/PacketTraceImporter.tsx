@@ -4,7 +4,6 @@ import { Paper, makeStyles, Theme, createStyles, Button, ButtonGroup, Typography
 import useDbValue from "./useDbValue"
 import { parseLog, replayLog } from "../../../src/dom/logparser"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
-import { Alert } from "@material-ui/lab"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

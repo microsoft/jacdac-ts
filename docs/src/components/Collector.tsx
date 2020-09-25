@@ -17,7 +17,7 @@ import { BusState, JDBus } from '../../../src/dom/bus'
 import FieldDataSet from './FieldDataSet';
 import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from '@material-ui/lab/Alert';
+import Alert from "./Alert";
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
 import { EVENT, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';

@@ -51,7 +51,7 @@ import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
 import Helmet from "react-helmet";
-import { Alert } from "@material-ui/lab";
+import Alert from "./Alert"
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 18;
