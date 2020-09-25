@@ -57,6 +57,9 @@ export default function ToolsDrawer() {
         setToolsMenu(false)
     }
 
+    if (!toolsMenu)
+        return <></>
+
     return <Drawer
         className={classes.drawer}
         variant="persistent"

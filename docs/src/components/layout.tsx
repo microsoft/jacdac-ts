@@ -53,13 +53,13 @@ import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 
-export const DRAWER_WIDTH = 21;
+export const DRAWER_WIDTH = 20;
 export const TOOLS_DRAWER_WIDTH = 18;
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {
     display: 'flex',
-    flexGrow: 1
+    flexGrow: 1,
   },
   grow: {
     flexGrow: 1,
@@ -79,7 +79,8 @@ const useStyles = makeStyles((theme) => createStyles({
     }),
   },
   toolBarShift: {
-    marginLeft: `${TOOLS_DRAWER_WIDTH}rem`,
+    width: `calc(100% - ${TOOLS_DRAWER_WIDTH}rem)`,
+    marginRight: `${TOOLS_DRAWER_WIDTH}rem`,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -102,13 +103,14 @@ const useStyles = makeStyles((theme) => createStyles({
   content: {
     display: 'flex',
     minHeight: '100vh',
+    minWidth: '10rem',
     flexDirection: 'column',
     padding: theme.spacing(3),
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: `-${DRAWER_WIDTH + TOOLS_DRAWER_WIDTH}rem`,
+    flexGrow: 1
   },
   mainContent: {
     flexGrow: 1
@@ -118,13 +120,14 @@ const useStyles = makeStyles((theme) => createStyles({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: `-${TOOLS_DRAWER_WIDTH}rem`,
   },
   toolsContentShift: {
+    width: `calc(100% - 0.5rem)`,
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
+    marginLeft: `-${TOOLS_DRAWER_WIDTH}rem`
   },
   footer: {
     marginTop: theme.spacing(3)
@@ -276,7 +279,7 @@ function LayoutWithContext(props: {
       </AppBar>
       <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
       <ToolsDrawer />
-      <Container maxWidth={drawerOpen || toolsMenu ? "lg" : "sm"}>
+      <Container disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,

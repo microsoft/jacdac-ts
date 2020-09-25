@@ -84,6 +84,9 @@ export default function AppDrawer(props: {
         setDrawerType(DrawerType.None)
     }
 
+    if (drawerType === DrawerType.None)
+        return <></>
+
     return <Drawer
         className={classes.drawer}
         variant="persistent"
