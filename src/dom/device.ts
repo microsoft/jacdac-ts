@@ -69,7 +69,7 @@ export class JDDevice extends JDNode {
             this.emit(CHANGE)
             this.bus.emit(CHANGE)
 
-            // notify deviceNamer of the change
+            // notify role manager of the change
             this.bus.host.deviceNameSettings?.notifyUpdate(this, this._name);
         }
     }

@@ -68,10 +68,10 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Firmware update"} />
                 </ListItem>
             </Link>
-            <Link to="/tools/namer">
+            <Link to="/tools/role-manager">
                 <ListItem button key="collector">
                     <ListItemIcon><EmojiObjectsIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Device Namer"} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Role Manager"} />
                 </ListItem>
             </Link>
             <Link to="/tools/collector">

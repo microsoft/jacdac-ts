@@ -3,7 +3,7 @@ import { Card, CardActions, CardContent, CardHeader, createStyles, FormControl, 
 import useChange from "../jacdac/useChange"
 import DeviceName from "./DeviceName"
 import { JDService } from "../../../src/dom/service"
-import { DeviceNamerClient, RemoteRequestedDevice } from "../../../src/dom/namer"
+import { RoleManagerClient, RemoteRequestedDevice } from "../../../src/dom/rolemanagerclient"
 import { Button } from "gatsby-theme-material-ui"
 import { serviceName, serviceShortIdOrClass } from "../../../src/dom/pretty"
 import useGridBreakpoints from "./useGridBreakpoints"
@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }))
 
-function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: DeviceNamerClient }) {
+function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: RoleManagerClient }) {
     const { rdev, client } = props
     const [working, setWorking] = useState(false)
     const classes = useStyles()
@@ -31,7 +31,7 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: D
         if (dev && client) {
             try {
                 setWorking(true)
-                await client.setName(dev, rdev.name)
+                await client.setRole(dev, rdev.name)
                 await dev.identify()
             }
             finally {
@@ -67,9 +67,9 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: D
     </Card>
 }
 
-export function DeviceNamerService(props: { service: JDService }) {
+export function RoleManagerService(props: { service: JDService }) {
     const { service } = props
-    const [client, setClient] = useState<DeviceNamerClient>(undefined)
+    const [client, setClient] = useState<RoleManagerClient>(undefined)
     const [working, setWorking] = useState(false)
     const classes = useStyles()
     const gridBreakpoints = useGridBreakpoints()
@@ -77,7 +77,7 @@ export function DeviceNamerService(props: { service: JDService }) {
     useChange(client)
     useEffect(() => {
         console.log(`creating client`)
-        const c = new DeviceNamerClient(service)
+        const c = new RoleManagerClient(service)
         setClient(c)
         return () => c.unmount()
     }, [service])
@@ -85,10 +85,10 @@ export function DeviceNamerService(props: { service: JDService }) {
     if (!client)
         return <></> // wait till loaded
 
-    const handleClearNames = async () => {
+    const handleClearRoles = async () => {
         try {
             setWorking(true)
-            await client?.clearNames()
+            await client?.clearRoles()
         }
         finally {
             setWorking(false)
@@ -99,9 +99,9 @@ export function DeviceNamerService(props: { service: JDService }) {
             <DeviceName device={service.device} />
             {client && <Button variant="outlined" size="small"
                 className={classes.floatRight}
-                onClick={handleClearNames}
+                onClick={handleClearRoles}
                 disabled={working}>
-                Clear names
+                Clear roles
             </Button>}
         </h2>
         <Grid container spacing={2}>

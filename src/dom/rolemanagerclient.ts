@@ -3,7 +3,7 @@ import { JDBus } from "./bus";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { SRV_DEVICE_NAMER, DEVICE_CONNECT, DeviceNamerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
+import { SRV_ROLE_MANAGER, DEVICE_CONNECT, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
 import { unpack } from "./struct";
 import { Packet } from "./packet";
@@ -14,7 +14,7 @@ export class RemoteRequestedDevice {
     candidates: JDDevice[] = [];
 
     constructor(
-        public parent: DeviceNamerClient,
+        public parent: RoleManagerClient,
         public name: string
     ) { }
 
@@ -29,8 +29,8 @@ export class RemoteRequestedDevice {
             // setDevName(dev.deviceId, this.name)
         } else {
             if (this.boundTo)
-                this.parent.setName(this.boundTo, "")
-            this.parent.setName(dev, this.name)
+                this.parent.setRole(this.boundTo, "")
+            this.parent.setRole(dev, this.name)
         }
         this.boundTo = dev
     }
@@ -42,7 +42,7 @@ function recomputeCandidates(bus: JDBus, remotes: RemoteRequestedDevice[]) {
         dev.candidates = localDevs.filter(ldev => dev.isCandidate(ldev))
 }
 
-function addRequested(devs: RemoteRequestedDevice[], name: string, service_class: number, parent: DeviceNamerClient) {
+function addRequested(devs: RemoteRequestedDevice[], name: string, service_class: number, parent: RoleManagerClient) {
     let r = devs.find(d => d.name == name)
     if (!r)
         devs.push(r = new RemoteRequestedDevice(parent, name))
@@ -51,14 +51,14 @@ function addRequested(devs: RemoteRequestedDevice[], name: string, service_class
 }
 
 
-export class DeviceNamerClient extends JDServiceClient {
+export class RoleManagerClient extends JDServiceClient {
     public remoteRequestedDevices: RemoteRequestedDevice[] = []
 
     static create(bus: JDBus, print: (s: string) => void = console.log) {
-        const namers = bus.services({ serviceClass: SRV_DEVICE_NAMER })
+        const namers = bus.services({ serviceClass: SRV_ROLE_MANAGER })
         if (!namers[0])
             return null
-        const namer = new DeviceNamerClient(namers[0])
+        const namer = new RoleManagerClient(namers[0])
         namer.on(CHANGE, (devs: RemoteRequestedDevice[]) => {
             let info = ""
             for (const d of devs) {
@@ -93,7 +93,7 @@ export class DeviceNamerClient extends JDServiceClient {
     private async scanCore() {
         const inp = new InPipeReader(this.bus)
         await this.service.sendPacketAsync(
-            inp.openCommand(DeviceNamerCmd.ListRequiredNames),
+            inp.openCommand(RoleManagerCmd.ListRequiredRoles),
             true)
 
         const localDevs = this.bus.devices()
@@ -118,12 +118,12 @@ export class DeviceNamerClient extends JDServiceClient {
         this.emit(CHANGE, this.remoteRequestedDevices)
     }
 
-    clearNames() {
-        return this.service.sendCmdAsync(DeviceNamerCmd.ClearAllNames, true)
+    clearRoles() {
+        return this.service.sendCmdAsync(RoleManagerCmd.ClearAllRoles, true)
     }
 
-    setName(dev: JDDevice, name: string) {
+    setRole(dev: JDDevice, name: string) {
         const data = bufferConcat(fromHex(dev.deviceId), stringToUint8Array(fromUTF8(name || "")))
-        return this.service.sendPacketAsync(Packet.from(DeviceNamerCmd.SetName, data), true)
+        return this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
     }
 }
