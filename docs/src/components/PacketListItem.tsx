@@ -9,7 +9,6 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         item: {
             marginBottom: 0,
-            borderTop: "1px solid #ddd",
             borderBottom: "1px solid #ddd",
         }
     })

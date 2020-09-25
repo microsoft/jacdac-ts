@@ -7,7 +7,7 @@ import { decodePacketData } from '../../../src/dom/pretty'
 import Packet from '../../../src/dom/packet'
 import { isInstanceOf } from '../../../src/dom/spec';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PacketsContext from './PacketsContext';
+import PacketsContext, { PacketProps } from './PacketsContext';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ToggleButton from '@material-ui/lab/ToggleButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -20,6 +20,8 @@ import GradientIcon from '@material-ui/icons/Gradient';
 import ConsoleListItem from './ConsoleListItem';
 import PacketRecorder from './PacketRecorder';
 import PacketTraceImporter from "./PacketTraceImporter"
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -42,6 +44,35 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     },
 }))(ToggleButtonGroup);
 
+interface VirtualListData {
+    consoleMode: boolean;
+    packets: PacketProps[];
+    skipRepeatedAnnounce: boolean;
+    showTime: boolean;
+}
+
+const VirtualPacketItem = (props: { data: VirtualListData }
+    & ListChildComponentProps) => {
+    const { style, index, data } = props;
+    const { packets, consoleMode, showTime, skipRepeatedAnnounce } = data
+    const packet = packets[index];
+
+    console.log(props)
+
+    if (!packet)
+        return <div style={style}></div>
+
+    return <div style={style}>
+        {consoleMode && <ConsoleListItem packet={packet} />}
+        {!consoleMode && <PacketListItem
+            key={'pkt' + packet.key}
+            packet={packet.packet}
+            count={packet.count}
+            skipRepeatedAnnounce={skipRepeatedAnnounce}
+            showTime={showTime} />}
+    </div>
+}
+
 export default function PacketList(props: {
     serviceClass?: number,
     showTime?: boolean,
@@ -56,6 +87,12 @@ export default function PacketList(props: {
     const consoleMode = hasFlag("console")
     const skipRepeatedAnnounce = !hasFlag("announce")
     const size = "small"
+    const itemData: VirtualListData = {
+        consoleMode, 
+        skipRepeatedAnnounce, 
+        showTime, 
+        packets
+    }
 
     function hasFlag(k: string) {
         return flags.indexOf(k) > -1
@@ -66,6 +103,7 @@ export default function PacketList(props: {
         if (consoleMode)
             bus.minConsolePriority = ConsolePriority.Debug;
     }, [consoleMode])
+
     // render packets
     useEffect(() => bus.subscribe(consoleMode ? [PACKET_RECEIVE, PACKET_SEND] : [PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
@@ -103,8 +141,9 @@ export default function PacketList(props: {
     const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
         setFlags(newFlags)
     };
+
     return (<>
-        <List className={classes.items} dense={true}>
+        <List dense={true}>
             {showRecorder && <ListItem key="recorder">
                 <PacketRecorder showText={true} />
                 <PacketTraceImporter />
@@ -125,14 +164,19 @@ export default function PacketList(props: {
                     </ToggleButton>
                 </StyledToggleButtonGroup>
             </ListItem>
-            {packets?.map(packet => consoleMode ? <ConsoleListItem key={'csl' + packet.key} packet={packet} />
-                : <PacketListItem
-                    key={'pkt' + packet.key}
-                    packet={packet.packet}
-                    count={packet.count}
-                    skipRepeatedAnnounce={skipRepeatedAnnounce}
-                    showTime={showTime} />)}
         </List>
+        <AutoSizer className={classes.items}>
+            {({ height, width }) => (
+                <FixedSizeList
+                    itemCount={packets.length}
+                    itemSize={35}
+                    height={height}
+                    width={width}
+                    itemData={itemData}>
+                    {VirtualPacketItem}
+                </FixedSizeList>
+            )}
+        </AutoSizer>
     </>)
 
 }

@@ -2,7 +2,7 @@ import React, { createContext, useState } from "react";
 import { Packet } from "../../../src/dom/packet";
 import { DecodedPacket } from "../../../src/dom/pretty";
 
-const maxItems = 100
+const PACKET_MAX_ITEMS = 500
 export interface PacketProps {
     key: number;
     packet: Packet;
@@ -51,7 +51,7 @@ export const PacketsProvider = ({ children }) => {
             setPackets([...packets])
         }
         else {
-            const ps = packets.slice(0, packets.length < maxItems ? packets.length : maxItems)
+            const ps = packets.slice(0, packets.length < PACKET_MAX_ITEMS ? packets.length : PACKET_MAX_ITEMS)
             ps.unshift({
                 key,
                 packet: pkt,
