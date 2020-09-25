@@ -41,6 +41,7 @@ declare module 'csstype' {
 const useTreeItemStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
+            marginLeft: theme.spacing(1),
             color: theme.palette.text.secondary,
             '&:hover > $content': {
                 backgroundColor: theme.palette.action.hover,

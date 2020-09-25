@@ -16,6 +16,7 @@ import TreeItem from '@material-ui/lab/TreeItem';
 interface TocNode {
   name: string;
   path: string;
+  order: number;
   children?: TocNode[];
 }
 
@@ -62,10 +63,18 @@ function treeifyToc(toc: TocNode[]) {
       parts.pop();
     }
   })
-  return {
+  const r = {
     tree: tree.filter(node => !!node),
     nodes: tocNodes
   }
+
+  function sortNodes(nodes: TocNode[]) {
+    nodes.sort((l, r) => l.order - r.order)
+    nodes.forEach(node => node.children && sortNodes(node.children))
+  }
+  sortNodes(r.tree)
+
+  return r;
 }
 
 export default function Toc() {
@@ -86,6 +95,8 @@ export default function Toc() {
           }
           frontmatter {
             title
+            order
+            hideToc
           }
           excerpt
           fields {
@@ -114,25 +125,32 @@ export default function Toc() {
   let toc: TocNode[] = [{
     name: "Home",
     path: "/",
+    order: 0
   }, {
     name: "Specification",
-    path: "/spec/"
+    path: "/spec/",
+    order: 1
   }, {
     name: "Services",
-    path: "/services/"
+    path: "/services/",
+    order: 2
   }, {
     name: "Clients",
-    path: "/clients/"
+    path: "/clients/",
+    order: 3
   }, {
     name: "Tools",
-    path: "/tools/"
+    path: "/tools/",
+    order: 4
   }]
   data.allMdx.edges.map(node => node.node)
     .filter(node => !!node.frontmatter?.title || (!!node.headings.length && !/404/.test(node.headings[0].value)))
+    .filter(node => !node.frontmatter?.hideToc)
     .map(node => {
       const r = {
         name: node.frontmatter?.title || node.headings[0].value,
-        path: node.fields.slug
+        path: node.fields.slug,
+        order: node.frontmatter?.order !== undefined ? node.frontmatter?.order : 50
       }
       if (node.parent.sourceInstanceName == "specPages")
         r.path = "/spec" + r.path
