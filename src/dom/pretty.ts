@@ -27,9 +27,10 @@ export interface DecodedMember {
 }
 
 export interface DecodedPacket {
-    info: jdspec.PacketInfo
-    decoded: DecodedMember[]
-    description: string
+    service: jdspec.ServiceSpec;
+    info: jdspec.PacketInfo;
+    decoded: DecodedMember[];
+    description: string;
 }
 
 export function prettyUnit(u: jdspec.Unit): string {
@@ -272,13 +273,14 @@ function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket
         description = "SET " + description
 
     return {
+        service,
         info: regInfo,
         decoded,
         description,
     }
 }
 
-function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
+function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
     if (pkt.is_command || pkt.service_command != CMD_EVENT)
         return null
 
@@ -290,6 +292,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet) {
     let description = "EVENT " + evInfo.name + wrapDecodedMembers(decoded)
 
     return {
+        service,
         info: evInfo,
         decoded,
         description,
@@ -305,6 +308,7 @@ function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket 
     const description = (pkt.is_command ? "CMD " : "REPORT ") + cmdInfo.name + wrapDecodedMembers(decoded)
 
     return {
+        service,
         info: cmdInfo,
         decoded,
         description,
@@ -341,6 +345,7 @@ function decodePipe(pkt: Packet): DecodedPacket {
         const decoded = decodeMembers(service, cmdInfo, pkt, meta ? 4 : 0)
         const description = cmdInfo.kind.toUpperCase() + " " + cmdInfo.name + wrapDecodedMembers(decoded)
         return {
+            service,
             info: cmdInfo,
             decoded,
             description,

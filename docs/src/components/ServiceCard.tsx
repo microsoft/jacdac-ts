@@ -12,11 +12,12 @@ import { Link } from 'gatsby-theme-material-ui';
 import ServiceRegisters from './ServiceRegisters';
 import ServiceEvents from './ServiceEvents';
 import { isCommand } from '../../../src/dom/spec';
-import { CardActions } from '@material-ui/core';
+import { CardActions, List, ListItem } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import { DeviceLostAlert } from './DeviceLostAlert';
 import CommandInput from './CommandInput';
 import { DecodedPacket } from '../../../src/dom/pretty';
+import DecodedPacketItem from './DecodedPacketItem';
 
 const useStyles = makeStyles({
     root: {
@@ -69,10 +70,9 @@ export default function ServiceCard(props: {
                 <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
                     {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
-                    {reports?.map((report, ri) => <div key={`report${ri}`}>
-                        {JSON.stringify(report)},
-                    </div>
-                    )}
+                    {!!reports?.length && <List dense>
+                        {reports?.map((report, ri) => <ListItem key={`report${ri}`} ><DecodedPacketItem pkt={report} /></ListItem>)}
+                    </List>}
                 </Typography>
                 <DeviceLostAlert device={service?.device} />
             </CardContent>

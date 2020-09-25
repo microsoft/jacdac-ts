@@ -39,9 +39,7 @@ export default function CommandInput(props: {
                 await service.sendPacketAsync(cmd, true)
                 console.log(printPacket(cmd)) // keep this call, it sets up pretty to understand packages
                 const { output } = await inp.readAll()
-                console.log("pipe response", output)
                 const reports = output.filter(ot => !!ot.data?.length).map(ot => decodePacketData(ot));
-                console.log("pipe decoded", reports)
                 setReports(reports)
             }
             finally {

@@ -6,60 +6,7 @@ import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/dom/pret
 import { debouncedPollAsync } from "../../../src/dom/utils";
 import IDChip from "./IDChip"
 import DeviceName from "./DeviceName";
-
-function MemberInput(props: { register: JDRegister, member: DecodedMember, labelledby: string }) {
-    const { register, member, labelledby } = props;
-    const { specification } = register
-    const serviceSpecification = register.service.specification
-    const { info } = member;
-    const mod = specification.kind == "rw";
-    const enumInfo = serviceSpecification?.enums[info.type]
-
-    const handleSwitch = () => register.sendSetBoolAsync(!register.boolValue, true)
-    const handleNumChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const v = parseInt(event.target.value.replace(/[^\d]+$/, ''));
-        if (!isNaN(v))
-            register.sendSetIntAsync(parseInt(event.target.value), true);
-    }
-    const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
-        const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
-        register.sendSetIntAsync(v, true);
-    };
-
-    if (info.type == "bool") {
-        return <Switch checked={member.value} onClick={mod && handleSwitch} />
-    }
-    else if (enumInfo !== undefined && member.numValue !== undefined) {
-        return <Select
-            multiple={enumInfo.isFlags}
-            value={enumInfo.isFlags ? valueToFlags(enumInfo, member.numValue) : member.numValue}
-            onChange={handleEnumChange}>
-            {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
-        </Select>
-    }
-    else if (member.scaledValue !== undefined && info.unit == "frac") {
-        return <Slider value={member.scaledValue}
-            aria-labelledby={labelledby}
-            min={0} max={1}
-        />
-    }
-
-    if (member.numValue !== undefined && mod)
-        return <TextField type="number" label={member.numValue} onChange={handleNumChange} />
-
-    return <Typography component="div" variant="h5">{member.humanValue}</Typography>
-}
-
-function Decoded(props: { member: DecodedMember, register: JDRegister }) {
-    const { member, register } = props;
-    const { info } = member;
-    return <>
-        {info.name !== "_" && <Typography id="slider" component="span" gutterBottom>
-            {info.name}
-        </Typography>}
-        <MemberInput member={member} labelledby={"slider"} register={register} />
-    </>
-}
+import { DecodedMemberItem } from "./DecodedMemberItem";
 
 export default function RegisterInput(props: { register: JDRegister, showDeviceName?: boolean, showName?: boolean, showMemberName?: boolean }) {
     const { register, showName, showMemberName, showDeviceName } = props;
@@ -77,7 +24,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
         setDecoded(register.decoded)
     }))
 
-    return <React.Fragment>
+    return <>
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={register.service.device} />/
         </Typography>}
@@ -85,6 +32,6 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
             {decoded.info.name}
         </Typography>}
         {decoded && decoded.decoded.map(member =>
-            <Decoded key={`member` + member.info.name} register={register} member={member} />)}
-    </React.Fragment>
+            <DecodedMemberItem key={`member` + member.info.name} register={register} member={member} serviceSpecification={decoded.service} specification={decoded.info} />)}
+    </>
 }
