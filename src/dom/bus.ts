@@ -120,7 +120,9 @@ export class JDBus extends JDNode {
             this.options.deviceId = toHex(devId);
         }
         this.resetTime();
-        this.on(DEVICE_ANNOUNCE, () => this.pingLoggers());
+        this.pingLoggers = this.pingLoggers.bind(this)
+        const debouncedPingLoggers = debounceAsync(this.pingLoggers, 1000)
+        this.on(DEVICE_ANNOUNCE, debouncedPingLoggers);
     }
 
     private startTimers() {
@@ -240,10 +242,10 @@ export class JDBus extends JDNode {
         }
     }
 
-    private pingLoggers() {
+    private async pingLoggers() {
         if (this._minConsolePriority < ConsolePriority.Silent) {
             const pkt = Packet.packed(CMD_CONSOLE_SET_MIN_PRIORITY, "i", [this._minConsolePriority]);
-            pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
+            await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
 
