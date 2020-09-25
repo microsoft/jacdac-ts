@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export default function CmdButton(props: {
     onClick: (ev: React.MouseEvent<HTMLButtonElement>) => Promise<void>,
+    className?: string,
     title?: string,
     children?: any,
     icon?: JSX.Element,

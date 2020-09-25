@@ -6,7 +6,7 @@ import useChange from "../jacdac/useChange"
 import { BusState } from "../../../src/dom/bus"
 import ConnectAlert from "./ConnectAlert"
 import Alert from "./Alert"
-import { RoleManagerService } from "./RoleManagerService"
+import RoleManagerService from "./RoleManagerService"
 
 export default function RoleManager() {
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
@@ -16,6 +16,6 @@ export default function RoleManager() {
     return <>
         {<ConnectAlert serviceClass={SRV_ROLE_MANAGER} />}
         {!services.length && connectionState == BusState.Connected && <Alert severity="info">We could not find any device with the role manager service on the bus!</Alert>}
-        {services.map(service => <RoleManagerService key={service.id} service={service} />)}
+        {services.map(service => <RoleManagerService key={service.id} service={service} showDeviceName={true} />)}
     </>
 }

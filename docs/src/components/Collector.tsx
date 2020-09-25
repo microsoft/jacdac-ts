@@ -20,7 +20,7 @@ import Trend from './Trend';
 import Alert from "./Alert";
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';
+import { EVENT, SRV_ROLE_MANAGER, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
@@ -31,6 +31,7 @@ import DarkModeContext from './DarkModeContext';
 import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
 import ServiceManagerContext from './ServiceManagerContext';
+import RoleManagerService from './RoleManagerService'
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -126,6 +127,7 @@ export default function Collector(props: {}) {
         .filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
     const aggregators: JDService[] = useChange(bus, bus => bus.services({ serviceClass: SRV_SENSOR_AGGREGATOR }))
     const aggregator: JDService = aggregators.find(srv => srv.id == aggregatorId)
+    const roleManager: JDService = aggregator?.device.services({ serviceClass: SRV_ROLE_MANAGER })[0]
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
@@ -262,18 +264,6 @@ export default function Collector(props: {}) {
     }, [recording, liveDataSet, registerIdsChecked, aggregator])
 
     return (<div className={classes.root}>
-        <div key="sensors">
-            {connectionState == BusState.Disconnected && <p><ConnectButton /></p>}
-            <h3>Choose sensors</h3>
-            {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
-            {!!readingRegisters.length && <ReadingFieldGrid
-                readingRegisters={readingRegisters}
-                registerIdsChecked={registerIdsChecked}
-                recording={recording}
-                liveDataSet={liveDataSet}
-                handleRegisterCheck={handleRegisterCheck}
-            />}
-        </div>
         {!!aggregators.length && <div key="aggregators">
             <h3>(Optional) Choose a data aggregator</h3>
             <p>A <Link to="/services/aggregator">data aggregator</Link> service collects collects sensor data on the bus and returns an aggregated at regular intervals.</p>
@@ -287,7 +277,20 @@ export default function Collector(props: {}) {
                     </Card>
                 </Grid>)}
             </Grid>
+            {roleManager && <RoleManagerService service={roleManager} />}
         </div>}
+        <div key="sensors">
+            {connectionState == BusState.Disconnected && <p><ConnectButton /></p>}
+            <h3>Choose sensors</h3>
+            {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
+            {!!readingRegisters.length && <ReadingFieldGrid
+                readingRegisters={readingRegisters}
+                registerIdsChecked={registerIdsChecked}
+                recording={recording}
+                liveDataSet={liveDataSet}
+                handleRegisterCheck={handleRegisterCheck}
+            />}
+        </div>
         <div key="record">
             <h3>Record data</h3>
             {aggregator && <p>Record the sensor input configuration in order to up your ML model later on.</p>}

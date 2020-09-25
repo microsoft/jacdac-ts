@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Card, CardActions, CardContent, CardHeader, createStyles, FormControl, Grid, InputLabel, List, ListItem, makeStyles, MenuItem, Select, Theme } from "@material-ui/core"
+import { Card, CardActions, CardContent, CardHeader, createStyles, FormControl, Grid, InputLabel, List, ListItem, makeStyles, MenuItem, Select, Theme, Typography } from "@material-ui/core"
 import useChange from "../jacdac/useChange"
 import DeviceName from "./DeviceName"
 import { JDService } from "../../../src/dom/service"
@@ -7,9 +7,12 @@ import { RoleManagerClient, RemoteRequestedDevice } from "../../../src/dom/rolem
 import { Button } from "gatsby-theme-material-ui"
 import { serviceName, serviceShortIdOrClass } from "../../../src/dom/pretty"
 import useGridBreakpoints from "./useGridBreakpoints"
+import CmdButton from "./CmdButton"
+import { Alert } from "@material-ui/lab"
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
+        marginTop: theme.spacing(1),
         marginBottom: theme.spacing(1)
     },
     fluid: {
@@ -39,17 +42,18 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
             }
         }
     }
-    const MISSING = "Not found"
+
+    const noCandidates = !rdev.candidates?.length;
     const disabled = working;
-    const value = rdev.boundTo?.id || MISSING
-    const error = !value || value === MISSING
+    const value = rdev.boundTo?.id || ""
+    const error = !value
     return <Card>
-        <CardHeader title={label} />
+        <CardHeader title={label} subheader={"role"} />
         <CardContent>
-            {rdev.services.map(serviceClass => <Button variant="contained" to={`/services/${serviceShortIdOrClass(serviceClass)}`}>{serviceName(serviceClass)}</Button>)}
+            {rdev.services.map(serviceClass => <Button key={"srv" + serviceClass} variant="contained" to={`/services/${serviceShortIdOrClass(serviceClass)}`}>{serviceName(serviceClass)}</Button>)}
         </CardContent>
         <CardActions>
-            <FormControl variant="outlined" className={classes.fluid}>
+            {!noCandidates && <FormControl variant="outlined" className={classes.fluid}>
                 <InputLabel key="label">device</InputLabel>
                 <Select
                     disabled={disabled}
@@ -57,20 +61,22 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
                     value={value}
                     error={error}
                     onChange={handleChange}>
-                    {!rdev.candidates?.length && <MenuItem key={"none"} value={MISSING}>{MISSING}</MenuItem>}
                     {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
                         <DeviceName device={candidate} />
                     </MenuItem>)}
                 </Select>
-            </FormControl >
+            </FormControl >}
+            {noCandidates && <Alert severity="warning">Please connect a compatible device.</Alert>}
         </CardActions>
     </Card>
 }
 
-export function RoleManagerService(props: { service: JDService }) {
-    const { service } = props
+export default function RoleManagerService(props: {
+    service: JDService,
+    showDeviceName?: boolean
+}) {
+    const { service, showDeviceName } = props
     const [client, setClient] = useState<RoleManagerClient>(undefined)
-    const [working, setWorking] = useState(false)
     const classes = useStyles()
     const gridBreakpoints = useGridBreakpoints()
 
@@ -85,25 +91,16 @@ export function RoleManagerService(props: { service: JDService }) {
     if (!client)
         return <></> // wait till loaded
 
-    const handleClearRoles = async () => {
-        try {
-            setWorking(true)
-            await client?.clearRoles()
-        }
-        finally {
-            setWorking(false)
-        }
-    }
-    return <div>
-        <h2>
+    const handleClearRoles = async () => await client?.clearRoles()
+    return <div className={classes.root}>
+        {showDeviceName && <h2>
             <DeviceName device={service.device} />
-            {client && <Button variant="outlined" size="small"
+            {client && <CmdButton variant="outlined" size="small"
                 className={classes.floatRight}
-                onClick={handleClearRoles}
-                disabled={working}>
+                onClick={handleClearRoles}>
                 Clear roles
-            </Button>}
-        </h2>
+            </CmdButton>}
+        </h2>}
         <Grid container spacing={2}>
             {client?.remoteRequestedDevices.map(rdev => <Grid {...gridBreakpoints} item key={'red' + rdev.name}>
                 <RemoteRequestDeviceView rdev={rdev} client={client} />
