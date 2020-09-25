@@ -16,6 +16,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
     return <Button
+        size="small"
         variant="contained"
         color="primary"
         className={className}

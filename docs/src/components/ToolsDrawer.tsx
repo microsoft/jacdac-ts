@@ -21,6 +21,10 @@ import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 import EmojiNatureIcon from '@material-ui/icons/EmojiNature';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
+import ServiceManagerContext from "./ServiceManagerContext";
+import DarkModeContext from "./DarkModeContext";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -43,7 +47,13 @@ const useStyles = makeStyles((theme) => createStyles({
 export default function ToolsDrawer() {
     const classes = useStyles()
     const { toolsMenu, setToolsMenu } = useContext(AppContext)
+    const { isHosted } = useContext(ServiceManagerContext)
+    const { toggleDarkMode, darkMode } = useContext(DarkModeContext)
     const handleDrawerClose = () => {
+        setToolsMenu(false)
+    }
+    const handleDarkMode = () => {
+        toggleDarkMode()
         setToolsMenu(false)
     }
 
@@ -98,6 +108,12 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Service specification editor"} />
                 </ListItem>
             </Link>
+            <hr />
+            {!isHosted &&
+                <ListItem button={true} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
+                    <ListItemIcon><SettingsBrightnessIcon /></ListItemIcon>
+                    <ListItemText>{darkMode === 'light' ? "Dark Mode" : "Light mode"}</ListItemText>
+                </ListItem>}
         </List>
     </Drawer>
 }

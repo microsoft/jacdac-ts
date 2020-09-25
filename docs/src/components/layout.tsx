@@ -26,8 +26,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
@@ -52,8 +50,10 @@ import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
 import Helmet from "react-helmet";
 import Alert from "./Alert"
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import { BusState } from "../../../src/dom/bus";
 
-export const DRAWER_WIDTH = 40;
+export const DRAWER_WIDTH = 21;
 export const TOOLS_DRAWER_WIDTH = 18;
 
 const useStyles = makeStyles((theme) => createStyles({
@@ -180,15 +180,15 @@ function LayoutWithContext(props: {
   pageContext?: any;
   children: any;
 }) {
-  const { toggleDarkMode } = useContext(DarkModeContext)
   const { pageContext, children, } = props;
   const classes = useStyles();
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
+  const { connectionState } = useContext<JDContextProps>(JACDACContext)
   const drawerOpen = drawerType !== DrawerType.None
   const toolsOpen = toolsMenu
   const serviceClass = pageContext?.node?.classIdentifier;
   const pageTitle = pageContext?.frontmatter?.title
-  const { isHosted } = useContext(ServiceManagerContext)
+  const connected = connectionState === BusState.Connected
   useFirmwareBlobs()
 
   const handleDrawerToc = () => {
@@ -200,7 +200,6 @@ function LayoutWithContext(props: {
   const handleDrawerDom = () => {
     setDrawerType(DrawerType.Dom);
   }
-  const handleDarkMode = () => toggleDarkMode()
   const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
 
   const data = useStaticQuery(graphql`
@@ -243,22 +242,22 @@ function LayoutWithContext(props: {
             className={clsx(classes.menuButton, drawerOpen && classes.hide)}
           > <MenuIcon />
           </IconButton>
-          <IconButton
+          {connected && <IconButton
             color="inherit"
             aria-label="open DOM tree"
             onClick={handleDrawerDom}
             edge="start"
             className={clsx(classes.menuButton, drawerOpen && classes.hide)}
           > <AccountTreeIcon />
-          </IconButton>
-          <IconButton
+          </IconButton>}
+          {connected && <IconButton
             color="inherit"
             aria-label="open console"
             onClick={handleDrawerConsole}
             edge="start"
             className={clsx(classes.menuButton, drawerOpen && classes.hide)}
           > <HistoryIcon />
-          </IconButton>
+          </IconButton>}
           <Typography variant="h6">
             <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
           </Typography>
@@ -270,10 +269,6 @@ function LayoutWithContext(props: {
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
           <div className={clsx(classes.menuButton, drawerOpen && classes.hide)}><FlashButton /></div>
-          {!isHosted &&
-            <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
-              <SettingsBrightnessIcon />
-            </IconButton>}
           <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
             <MoreIcon />
           </IconButton>
