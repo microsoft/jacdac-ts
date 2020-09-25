@@ -108,11 +108,12 @@ export default class FieldDataSet {
         }
     }
 
-    toCSV(sep: string = ",") {
+    toCSV(sep: string = ",", options?: { units?: boolean }) {
         const allheaders = ["time", ...this.headers].join(sep)
-        const allunits = ["ms", ...this.units].join(sep)
         const start = this.startTimestamp
-        let csv: string[] = [allheaders, allunits]
+        let csv: string[] = [allheaders]
+        if (options?.units)
+            csv.push(["ms", ...this.units].join(sep))
         this.rows.forEach(row => csv.push(
             row.toVector(start).map(cell => cell !== undefined ? cell.toString() : "").join(sep)
         ))
