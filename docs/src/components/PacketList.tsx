@@ -65,7 +65,7 @@ export default function PacketList(props: {
     useEffect(() => {
         if (consoleMode)
             bus.minConsolePriority = ConsolePriority.Debug;
-    })
+    }, [consoleMode])
     // render packets
     useEffect(() => bus.subscribe(consoleMode ? [PACKET_RECEIVE, PACKET_SEND] : [PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
