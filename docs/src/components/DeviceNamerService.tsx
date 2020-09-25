@@ -5,7 +5,7 @@ import DeviceName from "./DeviceName"
 import { JDService } from "../../../src/dom/service"
 import { DeviceNamerClient, RemoteRequestedDevice } from "../../../src/dom/namer"
 import { Button } from "gatsby-theme-material-ui"
-import { serviceName } from "../../../src/dom/pretty"
+import { serviceName, serviceShortIdOrClass } from "../../../src/dom/pretty"
 import useGridBreakpoints from "./useGridBreakpoints"
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -32,6 +32,7 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: D
             try {
                 setWorking(true)
                 await client.setName(dev, rdev.name)
+                await dev.identify()
             }
             finally {
                 setWorking(false)
@@ -40,10 +41,12 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: D
     }
     const MISSING = "Not found"
     const disabled = working;
+    const value = rdev.boundTo?.id || MISSING
+    const error = !value || value === MISSING
     return <Card>
         <CardHeader title={label} />
         <CardContent>
-            {rdev.services.map(serviceClass => <Button variant="contained" to={`/services/0x${serviceClass.toString(16)}`}>{serviceName(serviceClass)}</Button>)}
+            {rdev.services.map(serviceClass => <Button variant="contained" to={`/services/${serviceShortIdOrClass(serviceClass)}`}>{serviceName(serviceClass)}</Button>)}
         </CardContent>
         <CardActions>
             <FormControl variant="outlined" className={classes.fluid}>
@@ -51,7 +54,8 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: D
                 <Select
                     disabled={disabled}
                     label={"device"}
-                    value={rdev.boundTo?.id || MISSING}
+                    value={value}
+                    error={error}
                     onChange={handleChange}>
                     {!rdev.candidates?.length && <MenuItem key={"none"} value={MISSING}>{MISSING}</MenuItem>}
                     {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>

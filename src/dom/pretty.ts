@@ -385,6 +385,13 @@ export function serviceName(n: number): string {
     return serv ? serv.name.toUpperCase() : "???"
 }
 
+export function serviceShortIdOrClass(serviceClass: number) {
+    if (serviceClass == null)
+        return "?"
+    const serv = serviceSpecificationFromClassIdentifier(serviceClass);
+    return serv?.shortId || `0x${serviceClass.toString(16)}`
+}
+
 export function deviceServiceName(pkt: Packet): string {
     const srv_class = pkt?.dev?.serviceClassAt(pkt.service_number);
     const serv_id = serviceName(srv_class);
