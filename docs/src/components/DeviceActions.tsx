@@ -7,25 +7,22 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import { IconButton } from "gatsby-theme-material-ui";
 import DeviceRenameButton from "./DeviceRenameDialog";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import AppContext from "./AppContext";
+import CmdButton from "./CmdButton";
 
 export default function DeviceActions(props: { device: JDDevice, reset?: boolean, rename?: boolean }) {
     const { device, reset, rename } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const handleIdentify = (ev: React.MouseEvent<HTMLButtonElement>) => {
-        ev.stopPropagation()
-        device.identify()
+
+    const handleIdentify = async (ev: React.MouseEvent<HTMLButtonElement>) => {
+        await device.identify()
     }
-    const handleReset = (ev: React.MouseEvent<HTMLButtonElement>) => {
-        ev.stopPropagation()
-        device.reset()
+    const handleReset = async (ev: React.MouseEvent<HTMLButtonElement>) => {
+        await device.reset()
     }
-    return <React.Fragment>
-        <IconButton size="small" aria-label="identify" title="identify" onClick={handleIdentify}>
-            <FingerprintIcon />
-        </IconButton>
-        {reset && <IconButton size="small" aria-label="reset" title="reset" onClick={handleReset}>
-            <RefreshIcon />
-        </IconButton>}
+    return <>
+        <CmdButton size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />
+        {reset && <CmdButton size="small" title="reset" onClick={handleReset} icon={<RefreshIcon />} />}
         {rename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
-    </React.Fragment>;
+    </>;
 }
