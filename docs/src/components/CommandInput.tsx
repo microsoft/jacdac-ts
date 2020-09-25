@@ -4,7 +4,7 @@ import { InPipeReader } from "../../../src/dom/pipes";
 import { JDService } from "../../../src/dom/service";
 import DeviceName from "./DeviceName";
 import { hasPipeReport, isReportOf, packArguments } from "../../../src/dom/spec"
-import { DecodedPacket, decodePacketData } from "../../../src/dom/pretty"
+import { DecodedPacket, decodePacketData, printPacket } from "../../../src/dom/pretty"
 import Packet from "../../../src/dom/packet";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 import CmdButton from "./CmdButton";
@@ -35,9 +35,9 @@ export default function CommandInput(props: {
             let inp: InPipeReader;
             try {
                 inp = new InPipeReader(bus);
-                await service.sendPacketAsync(
-                    inp.openCommand(command.identifier),
-                    true)
+                const cmd = inp.openCommand(command.identifier);
+                await service.sendPacketAsync(cmd, true)
+                console.log(printPacket(cmd)) // keep this call, it sets up pretty to understand packages
                 const { output } = await inp.readAll()
                 console.log("pipe response", output)
                 const reports = output.filter(ot => !!ot.data?.length).map(ot => decodePacketData(ot));

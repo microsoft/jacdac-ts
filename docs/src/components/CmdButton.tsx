@@ -23,9 +23,6 @@ const useStyles = makeStyles((theme: Theme) => {
         error: {
             color: getColor(theme.palette.error.main, 0.6),
             backgroundColor: getBackgroundColor(theme.palette.error.main, 0.9),
-            '& $icon': {
-                color: theme.palette.error.main,
-            },
         },
     })
 })
