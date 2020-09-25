@@ -7,6 +7,8 @@ import { BusState } from "../../../src/dom/bus";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import ConnectButton from "../jacdac/ConnectButton";
+import { isWebUSBSupported } from "../../../src/dom/usb"
+import { NoSsr } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => createStyles({
     button: {
@@ -14,11 +16,15 @@ const useStyles = makeStyles((theme) => createStyles({
     }
 }))
 
-export default function ConnectAlert(props: { serviceClass?: number }) {
+function NoSsrConnectAlert(props: { serviceClass?: number }) {
     const classes = useStyles()
     const { connectionState } = useContext<JDContextProps>(JACDACContext)
     const { serviceClass } = props
     const spec = serviceSpecificationFromClassIdentifier(serviceClass)
+    const supported = isWebUSBSupported()
+
+    if (!supported)
+        return <></>
 
     if (connectionState === BusState.Disconnected)
         return <Alert severity="info" >
@@ -28,4 +34,10 @@ export default function ConnectAlert(props: { serviceClass?: number }) {
         </Alert>
 
     return <></>
+}
+
+export default function ConnectAlert(props: { serviceClass?: number }) {
+    return <NoSsr>
+        <NoSsrConnectAlert {...props} />
+    </NoSsr>
 }

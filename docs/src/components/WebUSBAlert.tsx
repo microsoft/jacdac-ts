@@ -1,6 +1,6 @@
 import React from "react"
 import { isWebUSBSupported } from "../../../src/dom/usb"
-import { NoSsr, makeStyles, createStyles } from '@material-ui/core';
+import { NoSsr } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
 import { Link } from "gatsby-theme-material-ui";
