@@ -53,13 +53,16 @@ import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 
-export const DRAWER_WIDTH = 26;
-export const TOOLS_DRAWER_WIDTH = 18;
+export const DRAWER_WIDTH = 40;
+export const TOOLS_DRAWER_WIDTH = 22;
+export const MOBILE_DRAWER_WIDTH = 18;
+export const MOBILE_TOOLS_DRAWER_WIDTH = 18;
+export const MOBILE_BREAKPOINT = "md"
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {
     display: 'flex',
-    flexGrow: 1,
+    flexGrow: 1
   },
   grow: {
     flexGrow: 1,
@@ -73,6 +76,10 @@ const useStyles = makeStyles((theme) => createStyles({
   appBarShift: {
     width: `calc(100% - ${DRAWER_WIDTH}rem)`,
     marginLeft: `${DRAWER_WIDTH}rem`,
+    [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+      width: `calc(100% - ${MOBILE_DRAWER_WIDTH}rem)`,
+      marginLeft: `${MOBILE_DRAWER_WIDTH}rem`,
+    },
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -81,6 +88,10 @@ const useStyles = makeStyles((theme) => createStyles({
   toolBarShift: {
     width: `calc(100% - ${TOOLS_DRAWER_WIDTH}rem)`,
     marginRight: `${TOOLS_DRAWER_WIDTH}rem`,
+    [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+      width: `calc(100% - ${MOBILE_TOOLS_DRAWER_WIDTH}rem)`,
+      marginRight: `${MOBILE_TOOLS_DRAWER_WIDTH}rem`,
+    },
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -127,7 +138,10 @@ const useStyles = makeStyles((theme) => createStyles({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: `-${TOOLS_DRAWER_WIDTH}rem`
+    marginLeft: `-${TOOLS_DRAWER_WIDTH}rem`,
+    [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+      marginLeft: `-${MOBILE_TOOLS_DRAWER_WIDTH}rem`,
+    }
   },
   footer: {
     marginTop: theme.spacing(3)

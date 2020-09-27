@@ -6,7 +6,7 @@ import Alert from "./Alert";
 import PacketList from "./PacketList";
 import Toc from "./Toc";
 import DomTreeView from "./DomTreeView";
-import { DRAWER_WIDTH } from "./layout";
+import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import AppContext, { drawerTitle, DrawerType } from "./AppContext";
@@ -26,9 +26,15 @@ const useStyles = makeStyles((theme) => createStyles({
     drawer: {
         width: `${DRAWER_WIDTH}rem`,
         flexShrink: 0,
+        [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+            width: `${MOBILE_DRAWER_WIDTH}rem`,
+        }
     },
     drawerPaper: {
         width: `${DRAWER_WIDTH}rem`,
+        [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+            width: `${MOBILE_DRAWER_WIDTH}rem`,
+        }
     },
     drawerHeader: {
         display: 'flex',

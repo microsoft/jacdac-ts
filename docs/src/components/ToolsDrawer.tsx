@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Typography, ListItem } from "@material-ui/core";
 import { IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
-import { TOOLS_DRAWER_WIDTH } from "./layout";
+import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AppContext, { } from "./AppContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -30,9 +30,15 @@ const useStyles = makeStyles((theme) => createStyles({
     drawer: {
         width: `${TOOLS_DRAWER_WIDTH}rem`,
         flexShrink: 0,
+        [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+            width: `${MOBILE_TOOLS_DRAWER_WIDTH}rem`,
+        }
     },
     drawerPaper: {
         width: `${TOOLS_DRAWER_WIDTH}rem`,
+        [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
+            width: `${MOBILE_TOOLS_DRAWER_WIDTH}rem`,
+        }
     },
     drawerHeader: {
         display: 'flex',
