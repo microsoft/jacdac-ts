@@ -137,7 +137,6 @@ export class JDRegister extends JDServiceMemberNode {
     processReport(pkt: Packet) {
         const updated = !bufferEq(this.data, pkt.data)
         this._lastReportPkt = pkt;
-        this._lastDecodedPkt = undefined;
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
             this.emit(REPORT_UPDATE, this)
