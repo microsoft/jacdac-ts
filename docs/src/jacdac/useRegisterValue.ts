@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { JDDevice } from "../../../src/dom/device";
-import { startStreamingAsync } from "../../../src/dom/sensor";
+import { startStreaming } from "../../../src/dom/sensor";
 import useChange from "./useChange";
 import { debouncedPollAsync } from "../../../src/dom/utils";
 
@@ -16,7 +16,7 @@ export default function useRegisterValue(device: JDDevice, serviceNumber: number
     useEffect(() => {
         if (!register) return () => { }
         if (register.isReading)
-            return startStreamingAsync(register.service)
+            return startStreaming(register.service)
         else if (isConst) { // ensure data has been collected
             register.sendGetAsync()
             return () => { }

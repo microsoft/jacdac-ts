@@ -16,7 +16,7 @@ export interface GithubRelease {
 export async function fetchLatestRelease(slug: string): Promise<GithubRelease> {
     const uri = `${ROOT}repos/${slug}/releases/latest`;
     const resp = await fetch(uri)
-    console.log(resp)
+//    console.log(resp)
     switch (resp.status) {
         case 200:
         case 204:
