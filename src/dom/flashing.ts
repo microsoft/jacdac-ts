@@ -329,8 +329,6 @@ export interface FirmwareInfo {
     name: string;
     deviceClass: number;
     blDeviceClass: number;
-    // name of the file or repo
-    store: string;
 }
 
 export async function parseFirmwareFile(blob: Blob, store?: string): Promise<FirmwareBlob[]> {

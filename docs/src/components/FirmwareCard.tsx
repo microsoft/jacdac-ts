@@ -85,7 +85,7 @@ export default function FirmwareCard(props: { slug: string }) {
             subheader={release && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>} />
         <CardContent>
             {error && <Alert severity="error">{error}</Alert>}
-            {version && <Typography variant="body2">{version}</Typography>}
+            {version && <Typography variant="body2">version <code>{version}</code></Typography>}
             {updateAvailable && isGithubRepo && <Alert severity="info">Update available.</Alert>}
             {!!firmwareBlobs?.length && <List dense>
                 {firmwareBlobs.map(blob => <ListItem key={blob.deviceClass}>
