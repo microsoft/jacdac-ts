@@ -22,22 +22,31 @@ export class DbStore<T> extends JDEventSource {
 export class Db extends JDEventSource {
     upgrading = false;
 
+    private _db: IDBDatabase;
     readonly blobs: DbStore<Blob>;
     readonly values: DbStore<string>;
     readonly firmwares: DbStore<Blob>;
 
-    constructor(public readonly db: IDBDatabase) {
+    constructor() {
         super();
         this.blobs = new DbStore<Blob>(this, Db.STORE_BLOBS);
         this.values = new DbStore<string>(this, Db.STORE_STORAGE);
         this.firmwares = new DbStore<Blob>(this, Db.STORE_FIRMWARE_BLOBS);
-
-        this.db.onerror = (event) => {
-            this.emit(ERROR, event);
-        };
     }
 
-    static DB_VERSION = 15
+    private get db() {
+        return this._db;
+    }
+
+    private set db(idb: IDBDatabase) {
+        this._db = idb;
+        if (this._db)
+            this._db.onerror = (event) => {
+                this.emit(ERROR, event);
+            };
+    }
+
+    static DB_VERSION = 17
     static DB_NAME = "JACDAC"
     static STORE_BLOBS = "BLOBS"
     static STORE_FIRMWARE_BLOBS = "STORE_FIRMWARE_BLOBS"
@@ -46,12 +55,13 @@ export class Db extends JDEventSource {
         return new Promise((resolve, reject) => {
             // create or upgrade database
             const request = indexedDB.open(Db.DB_NAME, Db.DB_VERSION);
-            let db: Db;
+            const db: Db = new Db();
             request.onsuccess = function (event) {
-                const idb = request.result;
-                resolve(db = new Db(idb));
+                db.db = request.result
+                resolve(db);
             }
             request.onupgradeneeded = function (event) {
+                console.log(`upgrading db`)
                 db.upgrading = true;
                 try {
                     const db = request.result;
@@ -73,7 +83,7 @@ export class Db extends JDEventSource {
     }
 
     checkUpgrading() {
-        if (this.upgrading) return delay(100)
+        if (!this.db || this.upgrading) return delay(100)
         else return Promise.resolve()
     }
 
