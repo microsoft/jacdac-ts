@@ -45,5 +45,5 @@ export function kindName(kind: string) {
 }
 
 export function allKinds() {
-    return ["rw", "ro", "const", "event", "command", "report"]
+    return ["report", "rw", "ro", "const", "event", "command"]
 }

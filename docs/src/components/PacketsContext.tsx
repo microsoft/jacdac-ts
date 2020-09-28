@@ -14,6 +14,8 @@ export interface PacketsProps {
     packets: PacketProps[],
     addPacket: (pkt: Packet, decoded: DecodedPacket) => void,
     clearPackets: () => void,
+    selectedPacket: Packet,
+    setSelectedPacket: (pkt: Packet) => void,
     paused: boolean,
     setPaused: (paused: boolean) => void,
     flags: string[],
@@ -26,6 +28,8 @@ const PacketsContext = createContext<PacketsProps>({
     packets: [],
     addPacket: (pkt, decoded) => { },
     clearPackets: () => { },
+    selectedPacket: undefined,
+    setSelectedPacket: (pkt) => { },
     paused: false,
     setPaused: (p) => { },
     flags: [],
@@ -40,8 +44,9 @@ export default PacketsContext;
 export const PacketsProvider = ({ children }) => {
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [paused, setPaused] = useState(false)
-    const [flags, setFlags] = useState(["rw", "ro", "event", "command", "report"])
+    const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
+    const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
 
     const addPacket = (pkt: Packet, decoded: DecodedPacket) => {
         const { key } = pkt
@@ -61,11 +66,14 @@ export const PacketsProvider = ({ children }) => {
             setPackets(ps)
         }
     }
-    const clearPackets = () => setPackets([])
-
+    const clearPackets = () => {
+        setPackets([])
+        setSelectedPacket(undefined)
+    }
     return (
         <PacketsContext.Provider value={{
             packets, addPacket, clearPackets,
+            selectedPacket, setSelectedPacket,
             paused, setPaused,
             flags, setFlags,
             serviceClass, setServiceClass

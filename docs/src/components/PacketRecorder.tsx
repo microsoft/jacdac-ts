@@ -1,4 +1,4 @@
-import { ButtonGroup } from "@material-ui/core";
+import { ButtonGroup, useMediaQuery, useTheme } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ClearIcon from '@material-ui/icons/Clear';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -9,9 +9,11 @@ import { Button, IconButton } from "gatsby-theme-material-ui";
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
 
-export default function PacketRecorder(props: { showText?: boolean }) {
-    const { showText } = props
+export default function PacketRecorder(props: { responsive?: boolean }) {
+    const { responsive } = props;
     const { paused, setPaused, clearPackets } = useContext(PacketsContext)
+    const theme = useTheme();
+    const showText = responsive && useMediaQuery(theme.breakpoints.up('md'));
 
     const togglePaused = () => setPaused(!paused)
 

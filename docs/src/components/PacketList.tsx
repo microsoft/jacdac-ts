@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles, withStyles } from '@material-ui/core';
+import { Grid, List, TextField, ListItem, ButtonGroup, Typography, FormControlLabel, Switch, FormGroup, Tooltip, Divider, makeStyles, Theme, createStyles, withStyles, useMediaQuery, useTheme } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import PacketListItem from './PacketListItem';
 import { PACKET_RECEIVE, ConsolePriority, PACKET_PROCESS, PACKET_SEND, SRV_LOGGER } from '../../../src/dom/constants';
@@ -15,9 +15,6 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AnnouncementIcon from '@material-ui/icons/Announcement';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import GradientIcon from '@material-ui/icons/Gradient';
-import ConsoleListItem from './ConsoleListItem';
 import PacketRecorder from './PacketRecorder';
 import PacketTraceImporter from "./PacketTraceImporter"
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
@@ -32,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const StyledToggleButtonGroup = withStyles((theme) => ({
+    root: {
+        display: 'block',
+    },
     grouped: {
         margin: theme.spacing(0.5),
         border: 'none',
@@ -74,14 +74,15 @@ const VirtualPacketItem = (props: { data: VirtualListData }
 export default function PacketList(props: {
     serviceClass?: number,
     showTime?: boolean,
-    showRecorder?: boolean,
-    showButtonText?: boolean
+    showRecorder?: boolean
 }) {
-    const { showTime, showRecorder, showButtonText } = props
+    const { showTime, showRecorder } = props
     const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, addPacket, clearPackets } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
     const { bus } = useContext<JDContextProps>(JACDACContext)
+    const theme = useTheme();
+    const showText = useMediaQuery(theme.breakpoints.up('md'));
     const skipRepeatedAnnounce = !hasFlag("announce")
     const size = "small"
     const itemData: VirtualListData = {
@@ -125,29 +126,27 @@ export default function PacketList(props: {
     };
 
     return (<>
-        <List dense={true}>
-            {showRecorder && <ListItem key="recorder">
-                <PacketRecorder showText={true} />
-                <PacketTraceImporter />
-            </ListItem>}
-            <ListItem key="filters">
-                <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
-                    {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>
-                        <KindIcon kind={kind} />
-                        {showButtonText && kindName(kind)}
-                    </ToggleButton>)}
-                    <ToggleButton size={size} key="announce" aria-label={"repeated announcements"} value={"announce"}>
-                        <AnnouncementIcon />
-                        {showButtonText && "repeated announce"}
-                    </ToggleButton>
-                </StyledToggleButtonGroup>
-            </ListItem>
-        </List>
+        {showRecorder && <div key="recorder">
+            <PacketRecorder responsive={true} />
+            <PacketTraceImporter />
+        </div>}
+        <div>
+            <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
+                {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>
+                    <KindIcon kind={kind} />
+                    {showText && kindName(kind)}
+                </ToggleButton>)}
+                <ToggleButton size={size} key="announce" aria-label={"repeated announcements"} value={"announce"}>
+                    <AnnouncementIcon />
+                    {showText && "repeated announce"}
+                </ToggleButton>
+            </StyledToggleButtonGroup>
+        </div>
         <AutoSizer className={classes.items}>
             {({ height, width }) => (
                 <FixedSizeList
                     itemCount={packets.length}
-                    itemSize={47}
+                    itemSize={49}
                     height={height}
                     width={width}
                     itemData={itemData}>

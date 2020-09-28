@@ -105,10 +105,10 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy ML models"} />
                 </ListItem>
             </Link>
-            <Link to="/tools/packets">
+            <Link to="/tools/packet-inspector">
                 <ListItem button key="packets">
                     <ListItemIcon><HistoryIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Packet console"} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Packet inspector"} />
                 </ListItem>
             </Link>
             <Link to="/tools/service-editor">
