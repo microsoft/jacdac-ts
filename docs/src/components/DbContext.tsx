@@ -1,19 +1,24 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { delay, JSONTryParse } from "../../../src/dom/utils";
 
+export interface DbStore<T> {
+    get: (id: string) => Promise<T>;
+    set: (id: string, value: T) => Promise<void>;
+    list: () => Promise<string[]>;
+}
+
 export interface Db {
     dependencyId: () => number,
-    getBlob: (id: string) => Promise<Blob>;
-    putBlob: (id: string, blob: Blob) => Promise<void>;
-    listBlobs: (query?: string) => Promise<string[]>;
-    getValue: (id: string) => Promise<string>;
-    putValue: (id: string, value: string) => Promise<void>;
+    blobs: DbStore<Blob>;
+    values: DbStore<string>;
+    firmwares: DbStore<Blob>;
 }
 
 function openDbAsync(): Promise<Db> {
-    const DB_VERSION = 3
+    const DB_VERSION = 5
     const DB_NAME = "JACDAC"
     const STORE_BLOBS = "BLOBS"
+    const STORE_FIRMWARE_BLOBS = "STORE_FIRMWARE_BLOBS"
     const STORE_STORAGE = "STORAGE"
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     let db: IDBDatabase;
@@ -24,7 +29,7 @@ function openDbAsync(): Promise<Db> {
         if (upgrading) return delay(100)
         else return Promise.resolve()
     }
-    const put = (table: string, id: string, data: any) => {
+    const set = (table: string, id: string, data: any) => {
         changeId++
         return checkUpgrading().then(() => new Promise<void>((resolve, reject) => {
             try {
@@ -53,28 +58,38 @@ function openDbAsync(): Promise<Db> {
             }
         }))
     }
-    const list = (table: string, query?: string) => {
+    const list = (table: string) => {
         return checkUpgrading().then(() => new Promise<any>((resolve, reject) => {
             try {
                 const transaction = db.transaction([table], "readonly");
                 const blobs = transaction.objectStore(table)
-                const request = blobs.getAllKeys(query)
+                const request = blobs.getAllKeys()
                 request.onsuccess = (event) => resolve((event.target as any).result)
                 request.onerror = (event) => resolve((event.target as any).result)
             } catch (e) {
-                console.error(`idb: list ${table} ${query || ""} failed`)
+                console.error(`idb: list ${table} failed`)
                 reject(e)
             }
         }))
     }
 
-    const api = {
+    const api: Db = {
         dependencyId: () => changeId,
-        putBlob: (id: string, blob: Blob): Promise<void> => put(STORE_BLOBS, id, blob),
-        getBlob: (id: string): Promise<Blob> => get(STORE_BLOBS, id).then(v => v as Blob),
-        listBlobs: (query: string): Promise<string[]> => list(STORE_BLOBS, query).then(v => v as string[]),
-        putValue: (id: string, value: string): Promise<void> => put(STORE_STORAGE, id, value),
-        getValue: (id: string): Promise<string> => get(STORE_STORAGE, id).then(v => v as string),
+        blobs: {
+            set: (id: string, blob: Blob): Promise<void> => set(STORE_BLOBS, id, blob),
+            get: (id: string): Promise<Blob> => get(STORE_BLOBS, id).then(v => v as Blob),
+            list: (): Promise<string[]> => list(STORE_BLOBS).then(v => v as string[]),
+        },
+        values: {
+            set: (id: string, value: string): Promise<void> => set(STORE_STORAGE, id, value),
+            get: (id: string): Promise<string> => get(STORE_STORAGE, id).then(v => v as string),
+            list: (): Promise<string[]> => list(STORE_BLOBS).then(v => v as string[]),
+        },
+        firmwares: {
+            set: (id: string, blob: Blob): Promise<void> => set(STORE_FIRMWARE_BLOBS, id, blob),
+            get: (id: string): Promise<Blob> => get(STORE_FIRMWARE_BLOBS, id).then(v => v as Blob),
+            list: (): Promise<string[]> => list(STORE_FIRMWARE_BLOBS).then(v => v as string[]),
+        }
     }
 
     return new Promise((resolve, reject) => {
@@ -93,6 +108,8 @@ function openDbAsync(): Promise<Db> {
                 const stores = db.objectStoreNames
                 if (!stores.contains(STORE_STORAGE))
                     db.createObjectStore(STORE_STORAGE);
+                if (!stores.contains(STORE_FIRMWARE_BLOBS))
+                    db.createObjectStore(STORE_FIRMWARE_BLOBS);
                 if (!stores.contains(STORE_BLOBS))
                     db.createObjectStore(STORE_BLOBS);
                 db.onerror = function (event) {

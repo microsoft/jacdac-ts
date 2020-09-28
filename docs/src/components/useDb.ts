@@ -1,32 +1,48 @@
 import React, { useContext, useEffect, useState } from "react";
 import { JSONTryParse } from "../../../src/dom/utils";
 import DbContext from "./DbContext";
+import useEffectAsync from "./useEffectAsync";
 
 export function useDbBlob(blobName: string) {
     const { db } = useContext(DbContext);
+    const blobs = db?.blobs;
+    const [value, setValue] = useState<Blob>(undefined)
+
+    useEffectAsync(async () => {
+        const b = await blobs?.get(blobName)
+        setValue(b)
+    }, [blobs, db?.dependencyId()])
 
     return {
-        dependencyId: () => db?.dependencyId(),
-        blob: () => db?.getBlob(blobName) || Promise.resolve(undefined),
-        setBlob: async (blob: Blob) => { await db?.putBlob(blobName, blob) },
-        listBlobs: async (query?: string) => db?.listBlobs(query)
+        blob: value,
+        setBlob: async (blob: Blob) => { await blobs?.set(blobName, blob) }
     }
 }
 
 export function useDbUint8Array(blobName: string) {
-    const { blob, setBlob, dependencyId } = useDbBlob(blobName)
+    const { blob, setBlob } = useDbBlob(blobName)
     const [model, setModel] = useState<Uint8Array>(undefined)
 
-    useEffect(() => {
-        blob().then((data: Blob) => {
-            if (!data) setModel(undefined)
-            else {
+    useEffectAsync(() => {
+        if (!blob) {
+            setModel(undefined)
+            return Promise.resolve()
+        }
+        else {
+            return new Promise((resolve, reject) => {
                 const fileReader = new FileReader();
-                fileReader.readAsArrayBuffer(data);
-                fileReader.onload = () => setModel(new Uint8Array(fileReader.result as ArrayBuffer))
-            }
-        })
-    }, [dependencyId()])
+                fileReader.onload = () => {
+                    setModel(new Uint8Array(fileReader.result as ArrayBuffer))
+                    resolve()
+                }
+                fileReader.onerror = (e) => {
+                    setModel(undefined)
+                    reject(e)
+                }
+                fileReader.readAsArrayBuffer(blob);
+            })
+        }
+    }, [blob])
 
     return {
         data: model,
@@ -35,23 +51,29 @@ export function useDbUint8Array(blobName: string) {
 }
 
 export function useDbString(blobName: string) {
-    const { blob, setBlob, dependencyId } = useDbBlob(blobName)
+    const { blob, setBlob } = useDbBlob(blobName)
     const [model, setModel] = useState<string>(undefined)
 
-    useEffect(() => {
-        blob().then((data: Blob) => {
-            if (!data) setModel(undefined)
-            else {
+    useEffectAsync(() => {
+        if (!blob) {
+            setModel(undefined)
+            return Promise.resolve()
+        }
+        else {
+            return new Promise((resolve, reject) => {
                 const fileReader = new FileReader();
-                console.log(data)
-                fileReader.readAsText(data);
                 fileReader.onload = () => {
-                    console.log(fileReader)
                     setModel(fileReader.result as string)
+                    resolve();
                 }
-            }
-        })
-    }, [dependencyId()])
+                fileReader.onerror = (e) => {
+                    setModel(undefined)
+                    reject(e)
+                }
+                fileReader.readAsText(blob);
+            })
+        }
+    }, [blob])
 
     return {
         data: model,
@@ -62,11 +84,9 @@ export function useDbString(blobName: string) {
 export function useDbJSON<T>(blobName: string) {
     const { data, setBlob } = useDbString(blobName);
     const value: T = JSONTryParse(data) as T;
-    console.log(`data`, data, value)
     return {
         value,
         setBlob: async (blob: Blob) => {
-            console.log(`setJSONblob`, blob);
             await setBlob(blob)
         }
     }
