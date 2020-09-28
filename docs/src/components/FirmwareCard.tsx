@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Button, Card, CardHeader, CardActions, CircularProgress, CardContent, Chip, ListItem, List, ListItemText } from "@material-ui/core";
+import { Button, Card, CardHeader, CardActions, CircularProgress, CardContent, Chip, ListItem, List, ListItemText, Typography } from "@material-ui/core";
 import { fetchLatestRelease, GithubRelease } from "./github";
 import useEffectAsync from "./useEffectAsync";
 import { Link } from "gatsby-theme-material-ui";
@@ -13,20 +13,32 @@ export default function FirmwareCard(props: { slug: string }) {
     const { slug } = props
     const [release, setRelease] = useState<GithubRelease>(undefined)
     const [downloading, setDownloading] = useState(false)
+    const [error, setError] = useState("")
     const { setFirmwareFile, firmwareBlobs } = useFirmwareBlob(slug)
     const tag = release?.tag_name;
     const disabled = downloading;
     const version = firmwareBlobs?.[0].version
-    const updated = !!tag && !!version && tag.slice(1) === version.substr(0, tag.length - 1)
+    const updateAvailable = !!tag && !!version && tag.slice(1) !== version.substr(0, tag.length - 1)
     const isGithubRepo = slug !== LOCAL_FILE_SLUG
     const indeterminate = downloading && !isGithubRepo
-    const downloadColor = updated ? "inherit" : "primary"
-    const downloadVariant = updated ? "text" : "contained"
+    const downloadColor = updateAvailable ? "primary" : "inherit"
+    const downloadVariant = updateAvailable ? "contained" : "text"
 
     useEffectAsync(async (mounted) => {
-        const rel = await fetchLatestRelease(slug)
-        if (mounted())
-            setRelease(rel)
+        if (slug == LOCAL_FILE_SLUG)
+            return;
+        try {
+            setError("")
+            setDownloading(true)
+            const rel = await fetchLatestRelease(slug)
+            if (mounted())
+                setRelease(rel)
+        } catch (e) {
+            setError(e.message)
+        }
+        finally {
+            setDownloading(false)
+        }
     }, [slug]);
 
     const handleFiles = async (files: FileList) => {
@@ -43,6 +55,7 @@ export default function FirmwareCard(props: { slug: string }) {
 
     const handleGitHubReleaseDownload = async () => {
         try {
+            setError("")
             setDownloading(true)
             const downloadUrl = `https://raw.githubusercontent.com/${slug}/${tag}/dist/firmware.uf2`
             const req = await fetch(downloadUrl, { headers: { "Accept": "application/octet-stream" } })
@@ -57,6 +70,7 @@ export default function FirmwareCard(props: { slug: string }) {
     }
     const handleClear = async () => {
         try {
+            setError("")
             setDownloading(true)
             setFirmwareFile(tag, undefined)
         }
@@ -70,20 +84,21 @@ export default function FirmwareCard(props: { slug: string }) {
             title={isGithubRepo ? <Link color="textPrimary" target="_blank" to={`https://github.com/${slug}`}>{slug}</Link> : slug}
             subheader={release && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>} />
         <CardContent>
-            {(version && !updated) && <Chip label={version} />}
-            {updated && <Alert severity="success">Up to date!</Alert>}
+            {error && <Alert severity="error">{error}</Alert>}
+            {version && <Typography variant="body2">{version}</Typography>}
+            {updateAvailable && isGithubRepo && <Alert severity="info">Update available.</Alert>}
             {!!firmwareBlobs?.length && <List dense>
                 {firmwareBlobs.map(blob => <ListItem key={blob.deviceClass}>
-                    <ListItemText primary={blob.name} secondary={blob.deviceClass} />
+                    <ListItemText primary={blob.name} secondary={`0x${blob.deviceClass.toString(16)}`} />
                 </ListItem>)}
-                </List>}
+            </List>}
         </CardContent>
         <CardActions>
             {!downloading && release && isGithubRepo && <Button disabled={downloading} color={downloadColor} variant={downloadVariant} aria-label={`Download last release from ${slug}`} onClick={handleGitHubReleaseDownload}>
                 Download
             </Button>}
             {!downloading && !isGithubRepo && <UploadButton text={"Import UF2 file"} accept=".uf2" onFilesUploaded={handleFiles} />}
-            {!downloading && <Button disabled={disabled} variant="text" arial-label={"Clear"} onClick={handleClear}>
+            {!downloading && firmwareBlobs?.length && <Button disabled={disabled} variant="text" arial-label={"Clear"} onClick={handleClear}>
                 Clear
             </Button>}
             {indeterminate && <CircularProgress size="1rem" />}
