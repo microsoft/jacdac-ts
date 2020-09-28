@@ -4,7 +4,7 @@ import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../.
 import { JDService } from '../../../src/dom/service';
 import ServiceList from './ServiceList';
 import ConnectAlert from './ConnectAlert'
-import { useDbJSON, useDbUint8Array } from './DbContext'
+import { useDbJSON, useDbUint8Array } from './useDb'
 import UploadButton from './UploadButton';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";

@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { useDbBlob } from "./DbContext";
+import { useDbBlob } from "./useDb";
 import { parseUF2 } from "../../../src/dom/flashing";
 
 export default function useFirmwareBlobs() {
@@ -26,6 +26,7 @@ export default function useFirmwareBlobs() {
         console.log(`import stored uf2`)
         blob().then(f => load(f, false))
     }, [dependencyId()])
+
     return {
         firmwareFileDependencyId: dependencyId(),
         setFirmwareBlob: async (repoSlug: string, tag: string, f: Blob) => {
