@@ -111,7 +111,7 @@ export class JDService extends JDNode {
     }
 
     sendPacketAsync(pkt: Packet, ack?: boolean) {
-        pkt.dev = this.device;
+        pkt.device = this.device;
         pkt.service_number = this.service_number;
         if (ack !== undefined)
             pkt.requires_ack = !!ack

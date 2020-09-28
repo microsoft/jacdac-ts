@@ -12,7 +12,7 @@ export interface PacketProps {
 
 export interface PacketsProps {
     packets: PacketProps[],
-    addPacket: (pkt: Packet, decoded: DecodedPacket) => void,
+    addPacket: (pkt: Packet) => void,
     clearPackets: () => void,
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
@@ -26,7 +26,7 @@ export interface PacketsProps {
 
 const PacketsContext = createContext<PacketsProps>({
     packets: [],
-    addPacket: (pkt, decoded) => { },
+    addPacket: (pkt) => { },
     clearPackets: () => { },
     selectedPacket: undefined,
     setSelectedPacket: (pkt) => { },
@@ -48,7 +48,7 @@ export const PacketsProvider = ({ children }) => {
     const [serviceClass, setServiceClass] = useState<number>(undefined)
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
 
-    const addPacket = (pkt: Packet, decoded: DecodedPacket) => {
+    const addPacket = (pkt: Packet) => {
         const { key } = pkt
         const old = packets.find(p => p.key == key)
         if (old) {
@@ -60,7 +60,7 @@ export const PacketsProvider = ({ children }) => {
             ps.unshift({
                 key,
                 packet: pkt,
-                decoded,
+                decoded: pkt.decoded,
                 count: 1
             })
             setPackets(ps)

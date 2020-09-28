@@ -56,8 +56,6 @@ const VirtualPacketItem = (props: { data: VirtualListData }
     const { packets, showTime, skipRepeatedAnnounce } = data
     const packet = packets[index];
 
-    console.log(props)
-
     if (!packet)
         return <div style={style}></div>
 
@@ -107,13 +105,13 @@ export default function PacketList(props: {
             if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
                 return;
 
-            const decoded = decodePacketData(pkt);
+            const decoded = pkt.decoded;
             if (decoded && !hasFlag(decoded.info.kind)) {
                 //console.log(`ignore ${decoded.info.kind}`)
                 return; // ignore packet type
             }
 
-            addPacket(pkt, decoded)
+            addPacket(pkt)
         }
     ))
 
@@ -146,7 +144,7 @@ export default function PacketList(props: {
             {({ height, width }) => (
                 <FixedSizeList
                     itemCount={packets.length}
-                    itemSize={49}
+                    itemSize={54}
                     height={height}
                     width={width}
                     itemData={itemData}>

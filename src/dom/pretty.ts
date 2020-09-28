@@ -110,8 +110,8 @@ export function decodeMember(
             const port = read16(buf, 8)
             humanValue = "pipe to " + shortDeviceId(devid) + " port:" + port
             // + " [" + toHex(buf.slice(10)) + "]"
-            if (pkt?.dev?.bus) {
-                const trg = pkt.dev.bus.device(devid)
+            if (pkt?.device?.bus) {
+                const trg = pkt.device.bus.device(devid)
                 trg.port(port).pipeType = service.shortId + "." + pktInfo.pipeType + ".report"
             }
         } else {
@@ -123,8 +123,8 @@ export function decodeMember(
         const fmt = numberFormatFromStorageType(member.storage)
         numValue = pkt.getNumber(fmt, offset)
         value = scaledValue = scaleIntToFloat(numValue, member)
-        if (pkt.dev && member.type == "pipe_port")
-            pkt.dev.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
+        if (pkt.device && member.type == "pipe_port")
+            pkt.device.port(value).pipeType = service.shortId + "." + pktInfo.pipeType + ".command"
         if (enumInfo) {
             if (enumInfo.isFlags) {
                 humanValue = ""
@@ -323,7 +323,7 @@ function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 
 function decodePipe(pkt: Packet): DecodedPacket {
     const cmd = pkt.service_command
-    const pinfo = pkt.dev.port(cmd >> PIPE_PORT_SHIFT)
+    const pinfo = pkt.device.port(cmd >> PIPE_PORT_SHIFT)
     if (!pinfo.pipeType)
         return null
 
@@ -356,13 +356,13 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.dev && pkt.service_number == JD_SERVICE_NUMBER_PIPE) {
+    if (pkt.device && pkt.service_number == JD_SERVICE_NUMBER_PIPE) {
         const info = decodePipe(pkt)
         if (info)
             return info
     }
 
-    const srv_class = pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number);
+    const srv_class = pkt?.multicommand_class || pkt?.device?.serviceClassAt(pkt.service_number);
     const service = serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null
@@ -398,9 +398,9 @@ export function serviceShortIdOrClass(serviceClass: number) {
 }
 
 export function deviceServiceName(pkt: Packet): string {
-    const srv_class = pkt?.dev?.serviceClassAt(pkt.service_number);
+    const srv_class = pkt?.device?.serviceClassAt(pkt.service_number);
     const serv_id = serviceName(srv_class);
-    return `${pkt?.dev?.shortId || "?"}/${serv_id}:${pkt.service_number}`
+    return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.service_number}`
 }
 
 export function commandName(n: number) {
@@ -471,20 +471,20 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         pdesc = `[ack:${hexNum(pkt.crc)}] ` + pdesc
 
     const d = pkt.data
-    if (pkt.dev && pkt.service_number == 0 && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
-        if (pkt.dev.lastServiceUpdate < pkt.timestamp) {
+    if (pkt.device && pkt.service_number == 0 && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+        if (pkt.device.lastServiceUpdate < pkt.timestamp) {
             if (opts.skipRepeatedAnnounce)
                 return ""
             else
                 pdesc = " ====== " + pdesc
         } else {
             const services = []
-            for (const sc of pkt.dev.serviceClasses)
+            for (const sc of pkt.device.serviceClasses)
                 services.push(serviceName(sc))
             pdesc += "; " + "Announce services: " + services.join(", ")
         }
     } else {
-        const decoded = decodePacketData(pkt)
+        const decoded = pkt.decoded
         if (decoded) {
             pdesc += "; " + decoded.description
         } else if (pkt.service_command == CMD_EVENT) {

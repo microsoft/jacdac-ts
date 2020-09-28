@@ -60,7 +60,7 @@ class FlashClient {
         this.pageSize = d[1]
         this.flashSize = d[2]
         this.dev_class = d[3]
-        this.device = adpkt.dev
+        this.device = adpkt.device
         this.handlePacket = this.handlePacket.bind(this)
     }
 

@@ -29,7 +29,7 @@ export default function CommandInput(props: {
             : packArguments(command, args)
         if (setReports && reportSpec) {
             const reportPacket = await service.sendCmdAwaitResponseAsync(pkt)
-            const decoded = decodePacketData(reportPacket)
+            const decoded = reportPacket?.decoded
             setReports([decoded])
         } else if (setReports && hasPipeReport(command)) {
             let inp: InPipeReader;
@@ -39,7 +39,7 @@ export default function CommandInput(props: {
                 await service.sendPacketAsync(cmd, true)
                 console.log(printPacket(cmd)) // keep this call, it sets up pretty to understand packages
                 const { output } = await inp.readAll()
-                const reports = output.filter(ot => !!ot.data?.length).map(ot => decodePacketData(ot));
+                const reports = output.filter(ot => !!ot.data?.length).map(ot => ot?.decoded);
                 setReports(reports)
             }
             finally {

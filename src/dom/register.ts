@@ -13,7 +13,6 @@ import { JDServiceMemberNode } from "./servicemembernode";
 
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
-    private _lastDecodedPkt: DecodedPacket;
     private _fields: JDField[];
 
     constructor(
@@ -109,11 +108,7 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     get decoded(): DecodedPacket {
-        if (!this._lastDecodedPkt) {
-            this._lastDecodedPkt = this._lastReportPkt
-                && decodePacketData(this._lastReportPkt);
-        }
-        return this._lastDecodedPkt;
+        return this._lastReportPkt?.decoded;
     }
 
     refresh() {

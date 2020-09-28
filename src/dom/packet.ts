@@ -16,14 +16,15 @@ import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
 import { JDBus } from "./bus";
-import { commandName, serviceName } from "./pretty";
+import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
 
 export class Packet {
     _header: Uint8Array;
     _data: Uint8Array;
     timestamp: number
-    dev: JDDevice
+    device: JDDevice
     readonly key: number;
+    private _decoded: DecodedPacket;
 
     private static _nextKey = 1;
     private constructor() {
@@ -53,6 +54,10 @@ export class Packet {
         return bufferConcat(this._header, this._data)
     }
 
+    get header() {
+        return this._header.slice(0)
+    }
+
     get device_identifier() {
         return toHex(this._header.slice(4, 4 + 8))
     }
@@ -61,6 +66,7 @@ export class Packet {
         if (idb.length != 8)
             throwError("Invalid id")
         this._header.set(idb, 4)
+        this._decoded = undefined;
     }
 
     get frame_flags() { return this._header[3] }
@@ -81,6 +87,7 @@ export class Packet {
     set requires_ack(ack: boolean) {
         if (ack != this.requires_ack)
             this._header[3] ^= JD_FRAME_FLAG_ACK_REQUESTED
+        this._decoded = undefined;
     }
 
     get service_number(): number {
@@ -90,11 +97,12 @@ export class Packet {
         if (service_number == null)
             throw new Error("service_number not set")
         this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | service_number;
+        this._decoded = undefined;
     }
 
     get service_class(): number {
-        if (this.dev)
-            return this.dev.serviceClassAt(this.service_number)
+        if (this.device)
+            return this.device.serviceClassAt(this.service_number)
         return undefined
     }
 
@@ -107,6 +115,7 @@ export class Packet {
     }
     set service_command(cmd: number) {
         write16(this._header, 14, cmd)
+        this._decoded = undefined;
     }
 
     get is_reg_set() {
@@ -130,6 +139,7 @@ export class Packet {
             throw Error("Too big")
         this._header[12] = buf.length
         this._data = buf
+        this._decoded = undefined;
     }
 
     get uintData() {
@@ -163,10 +173,16 @@ export class Packet {
     }
 
     get isRepeatedAnnounce() {
-        return this.dev
+        return this.device
             && this.service_number == 0
             && this.service_command == CMD_ADVERTISEMENT_DATA
-            && this.dev.lastServiceUpdate < this.timestamp
+            && this.device.lastServiceUpdate < this.timestamp
+    }
+
+    get decoded() {
+        if (!this._decoded)
+            this._decoded = decodePacketData(this);
+        return this._decoded;
     }
 
     compress(stripped: Uint8Array[]) {
@@ -185,6 +201,7 @@ export class Packet {
             sz += s.length
         }
         this._data = data
+        this._decoded = undefined;
     }
 
     withFrameStripped() {
@@ -204,6 +221,7 @@ export class Packet {
             this._header[3] |= JD_FRAME_FLAG_COMMAND
         else
             this._header[3] &= ~JD_FRAME_FLAG_COMMAND
+        this._decoded = undefined;
     }
 
     get is_report() {
@@ -257,7 +275,7 @@ export class Packet {
     get friendlyDeviceName(): string {
         if (this.frame_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
             return "[multicmd]";
-        return this.dev?.friendlyName || this.device_identifier
+        return this.device?.friendlyName || this.device_identifier
     }
     get friendlyServiceName(): string {
         let service_name: string;
@@ -266,7 +284,7 @@ export class Packet {
         } else if (this.service_number == JD_SERVICE_NUMBER_PIPE) {
             service_name = "PIPE"
         } else {
-            const serv_id = serviceName(this.multicommand_class || this.dev?.serviceClassAt(this.service_number))
+            const serv_id = serviceName(this.multicommand_class || this.device?.serviceClassAt(this.service_number))
             service_name = `${serv_id} (${this.service_number})`
         }
         return service_name;

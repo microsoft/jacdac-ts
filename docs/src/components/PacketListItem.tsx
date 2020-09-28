@@ -4,6 +4,7 @@ import { Packet } from '../../../src/dom/packet';
 import { printPacket, decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
 import KindIcon from './KindIcon';
 import PacketsContext from './PacketsContext';
+import PacketBadge from './PacketBadge';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -22,8 +23,6 @@ export default function PacketListItem(props: {
 }) {
     const { packet, skipRepeatedAnnounce, showTime, count } = props;
     const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
-    const decoded = decodePacketData(packet);
-    const text = printPacket(packet, { skipRepeatedAnnounce, showTime })
     const classes = useStyles()
 
     const handleClick = () => setSelectedPacket(packet)
@@ -32,11 +31,9 @@ export default function PacketListItem(props: {
     const primary = `${packet.friendlyCommandName}`
     const secondary = `${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
-    return <ListItem className={classes.item} dense={true} onClick={handleClick} selected={selected}>
+    return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
         <ListItemIcon>
-            {count > 1 ? <Badge badgeContent={count}>
-                <KindIcon kind={decoded?.info.kind} />
-            </Badge> : <KindIcon kind={decoded?.info.kind} />}
+            <PacketBadge packet={packet} count={count} />
         </ListItemIcon>
         <ListItemText
             primary={primary}

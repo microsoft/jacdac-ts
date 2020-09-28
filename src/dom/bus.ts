@@ -250,6 +250,7 @@ export class JDBus extends JDNode {
     }
 
     sendPacketAsync(p: Packet) {
+        p.timestamp = this.timestamp;
         this.emit(PACKET_SEND, p);
         const spa = this.transport.sendPacketAsync;
         if (!spa)
@@ -483,10 +484,10 @@ export class JDBus extends JDNode {
      */
     processPacket(pkt: Packet) {
         if (!pkt.multicommand_class)
-            pkt.dev = this.device(pkt.device_identifier)
+            pkt.device = this.device(pkt.device_identifier)
         this.emit(PACKET_PROCESS, pkt)
         let isAnnounce = false
-        if (!pkt.dev) {
+        if (!pkt.device) {
             // skip
         } else if (pkt.is_command) {
             if (pkt.device_identifier == this.selfDeviceId) {
@@ -497,16 +498,16 @@ export class JDBus extends JDNode {
                     ack.sendReportAsync(this.selfDevice)
                 }
             }
-            pkt.dev.processPacket(pkt);
+            pkt.device.processPacket(pkt);
         } else {
-            pkt.dev.lastSeen = pkt.timestamp
+            pkt.device.lastSeen = pkt.timestamp
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
-                    pkt.dev.processAnnouncement(pkt)
+                    pkt.device.processAnnouncement(pkt)
                 }
             }
-            pkt.dev.processPacket(pkt)
+            pkt.device.processPacket(pkt)
         }
         // don't spam with duplicate advertisement events
         if (isAnnounce) {
