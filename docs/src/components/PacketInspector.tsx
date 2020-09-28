@@ -20,9 +20,9 @@ export default function PacketInspector() {
 
     return <>
         <h2>{`${packet.friendlyCommandName} ${packet.is_command ? "to" : "from"} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`}</h2>
-        <p>
+        <div>
             {packet.timestamp}ms, <KindChip kind={decoded?.info?.kind} />, size {packet.size}
-        </p>
+        </div>
         {info && <PacketSpecification
             serviceClass={packet.service_class}
             packetInfo={info}

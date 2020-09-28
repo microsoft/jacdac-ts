@@ -5,6 +5,7 @@ import { printPacket, decodePacketData, deviceServiceName } from '../../../src/d
 import KindIcon from './KindIcon';
 import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
+import { navigate } from 'gatsby';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -25,7 +26,10 @@ export default function PacketListItem(props: {
     const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
     const classes = useStyles()
 
-    const handleClick = () => setSelectedPacket(packet)
+    const handleClick = () => {
+        setSelectedPacket(packet)
+        navigate('/tools/packet-inspector')
+    }
     const selected = packet === selectedPacket
 
     const primary = `${packet.friendlyCommandName}`
