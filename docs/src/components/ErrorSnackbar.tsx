@@ -8,10 +8,10 @@ import AppContext from './AppContext';
 export default function ErrorSnackbar() {
   const { error, setError } = useContext(AppContext)
   const [open, setOpen] = useState(false);
-  
+
   useEffect(() => {
     setOpen(!!error)
-  }, error)
+  }, [error])
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {

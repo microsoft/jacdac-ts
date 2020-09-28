@@ -12,7 +12,7 @@ import StopIcon from '@material-ui/icons/Stop';
 import SaveIcon from '@material-ui/icons/Save';
 import useChange from '../jacdac/useChange';
 import ConnectButton from '../jacdac/ConnectButton';
-import { isSensor, setStreamingAsync } from '../../../src/dom/sensor';
+import { isSensor, startStreaming } from '../../../src/dom/sensor';
 import { BusState, JDBus } from '../../../src/dom/bus'
 import FieldDataSet from './FieldDataSet';
 import Trend from './Trend';
@@ -197,6 +197,14 @@ export default function Collector(props: {}) {
             }
         }
     }
+    const startStreamingRegisters = () => {
+        console.log(`start streaming`)
+        const streamers = recordingRegisters?.map(reg => startStreaming(reg.service))
+        return () => {
+            console.log(`stop streaming`)
+            streamers.map(streamer => streamer())
+        }
+    }
     const toggleRecording = () => {
         if (recording)
             stopRecording()
@@ -246,14 +254,19 @@ export default function Collector(props: {}) {
     }
     // setting interval
     useEffect(() => {
-        if (!error)
-            recordingRegisters.forEach(reg => reg.sendSetIntAsync(samplingIntervalDelayi));
+        if (error) return;
+        console.log(`set interval to ${samplingIntervalDelayi}`)
+        recordingRegisters.forEach(reg => reg.sendSetIntAsync(samplingIntervalDelayi));
     }, [samplingIntervalDelayi, registerIdsChecked, errorSamplingIntervalDelay])
     // collecting
     useEffect(() => {
         if (error || (aggregator && recording)) return undefined;
         const interval = setInterval(() => addRow(), samplingIntervalDelayi);
-        return () => clearInterval(interval);
+        const stopStreaming = startStreamingRegisters()
+        return () => {
+            clearInterval(interval);
+            stopStreaming();
+        }
     }, [recording, samplingIntervalDelayi, samplingCount, registerIdsChecked, aggregator]);
     useEffect(() => {
         if (aggregator) {

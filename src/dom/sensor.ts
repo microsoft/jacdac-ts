@@ -2,6 +2,7 @@ import { JDService } from "./service";
 import { SensorReg } from "./constants";
 import { isReading } from "./spec";
 import { BaseCmd, BaseReg } from "../../jacdac-spec/dist/specconstants";
+import { BusState } from "./bus";
 
 /**
  * Indicates if the service can stream data
@@ -14,16 +15,29 @@ export function isSensor(service: JDService): boolean {
         && spec?.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 
-export async function setStreamingAsync(service: JDService, on: boolean) {
+export function startStreaming(service: JDService): () => void {
     // check if this register is supported
     const register = service.register(SensorReg.StreamSamples);
     if (!register)
-        return;
+        return () => { };
 
-    // 25 samples at 20ms is 500ms 
-    // which gives the chance to restart the streaming
-    // from another spot
-    await register.sendSetIntAsync(on ? 0xff : 25)
+    const intervalRegister = service.register(SensorReg.StreamingInterval)
+    const samplingTime = intervalRegister?.intValue || 20;
+    const intervalTime = Math.max(500, samplingTime * (0xff >> 1));
+
+    const ping = () => {
+        if (register.service.device.bus.connectionState === BusState.Connected) {
+            console.log(`ping streaming ${register}`)
+            register.sendSetIntAsync(0xff);
+        }
+    }
+
+    let interval = setInterval(ping, intervalTime);
+    ping();
+
+    return () => {
+        clearInterval(interval);
+    }
 }
 
 export function calibrateAsync(service: JDService) {

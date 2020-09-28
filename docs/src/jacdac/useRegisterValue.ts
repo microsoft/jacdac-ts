@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
 import { JDDevice } from "../../../src/dom/device";
-import { setStreamingAsync } from "../../../src/dom/sensor";
-import useEventRaised from "./useEventRaised";
+import { startStreamingAsync } from "../../../src/dom/sensor";
 import useChange from "./useChange";
 import { debouncedPollAsync } from "../../../src/dom/utils";
-import { ANNOUNCE } from "../../../src/dom/constants";
 
 const REGISTER_VALUE_POLL_DELAY = 5000
 
@@ -16,14 +14,12 @@ export default function useRegisterValue(device: JDDevice, serviceNumber: number
 
     useChange(register);
     useEffect(() => {
-        if (!register) return () => {}
-        if (register.isReading) {
-            setStreamingAsync(register.service, true)
-            return () => {}
-        }
+        if (!register) return () => { }
+        if (register.isReading)
+            return startStreamingAsync(register.service)
         else if (isConst) { // ensure data has been collected
             register.sendGetAsync()
-            return () => {}
+            return () => { }
         }
         else // poll data
             return debouncedPollAsync(
