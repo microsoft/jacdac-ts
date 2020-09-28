@@ -262,6 +262,12 @@ export interface MutableArrayLike<T> {
     [n: number]: T;
 }
 
+export function hexNum(n: number) {
+    if (n < 0)
+        return "-" + hexNum(-n)
+    return "0x" + n.toString(16)
+}
+
 export function write32(buf: MutableArrayLike<number>, pos: number, v: number) {
     buf[pos + 0] = (v >> 0) & 0xff;
     buf[pos + 1] = (v >> 8) & 0xff;

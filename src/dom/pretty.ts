@@ -1,6 +1,6 @@
 import { Packet } from "./packet"
 import { NumberFormat } from "./buffer"
-import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray } from "./utils"
+import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum } from "./utils"
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
     JD_SERVICE_NUMBER_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
@@ -414,12 +414,6 @@ export function commandName(n: number) {
     return BaseCmd[n]
 }
 
-function hexNum(n: number) {
-    if (n < 0)
-        return "-" + hexNum(-n)
-    return "0x" + n.toString(16)
-}
-
 function num2str(n: number) {
     return n + " (0x" + n.toString(16) + ")"
 }
@@ -462,29 +456,10 @@ export function hexDump(d: ArrayLike<number>): string {
 }
 
 export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string {
-    const frame_flags = pkt._header[3]
-
-    let devname = pkt.dev ? pkt.dev.name || pkt.dev.shortId : pkt.device_identifier
-
-    if (frame_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
-        devname = "[multicmd]"
-
-    const serv_id = serviceName(pkt?.multicommand_class || pkt?.dev?.serviceClassAt(pkt.service_number))
-    let service_name = `${serv_id} (${pkt.service_number})`
-    const cmd = pkt.service_command
-    let cmdname = commandName(cmd)
-    if (pkt.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
-        service_name = "CRC-ACK"
-        cmdname = hexNum(cmd)
-    }
-    if (pkt.service_number == JD_SERVICE_NUMBER_PIPE) {
-        service_name = "PIPE"
-        cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
-        if (cmd & PIPE_METADATA_MASK)
-            cmdname += " meta"
-        if (cmd & PIPE_CLOSE_MASK)
-            cmdname += " close"
-    }
+    const frame_flags = pkt.frame_flags
+    const devname = pkt.friendlyDeviceName
+    const service_name = pkt.friendlyServiceName
+    const cmdname = pkt.friendlyCommandName
 
     let pdesc = `${devname}/${service_name}: ${cmdname}; sz=${pkt.size}`
 

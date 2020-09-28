@@ -1,4 +1,4 @@
-import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, throwError, read32, read16, write32 } from "./utils";
+import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, throwError, read32, read16, write32, hexNum } from "./utils";
 import {
     JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -10,11 +10,13 @@ import {
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT,
+    JD_SERVICE_NUMBER_CRC_ACK, JD_SERVICE_NUMBER_PIPE, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_METADATA_MASK, PIPE_CLOSE_MASK
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
 import { JDBus } from "./bus";
+import { commandName, serviceName } from "./pretty";
 
 export class Packet {
     _header: Uint8Array;
@@ -249,6 +251,40 @@ export class Packet {
 
     static packed(service_command: number, fmt: string, nums: number[]) {
         return Packet.from(service_command, pack(fmt, nums))
+    }
+
+    // helpers
+    get friendlyDeviceName(): string {
+        if (this.frame_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+            return "[multicmd]";
+        return this.dev?.friendlyName || this.device_identifier
+    }
+    get friendlyServiceName(): string {
+        let service_name: string;
+        if (this.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
+            service_name = "CRC-ACK"
+        } else if (this.service_number == JD_SERVICE_NUMBER_PIPE) {
+            service_name = "PIPE"
+        } else {
+            const serv_id = serviceName(this.multicommand_class || this.dev?.serviceClassAt(this.service_number))
+            service_name = `${serv_id} (${this.service_number})`
+        }
+        return service_name;
+    }
+    get friendlyCommandName(): string {
+        const cmd = this.service_command
+        let cmdname = commandName(cmd)
+        if (this.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
+            cmdname = hexNum(cmd)
+        }
+        else if (this.service_number == JD_SERVICE_NUMBER_PIPE) {
+            cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
+            if (cmd & PIPE_METADATA_MASK)
+                cmdname += " meta"
+            if (cmd & PIPE_CLOSE_MASK)
+                cmdname += " close"
+        }
+        return cmdname;
     }
 }
 

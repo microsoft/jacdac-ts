@@ -45,7 +45,6 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 }))(ToggleButtonGroup);
 
 interface VirtualListData {
-    consoleMode: boolean;
     packets: PacketProps[];
     skipRepeatedAnnounce: boolean;
     showTime: boolean;
@@ -54,7 +53,7 @@ interface VirtualListData {
 const VirtualPacketItem = (props: { data: VirtualListData }
     & ListChildComponentProps) => {
     const { style, index, data } = props;
-    const { packets, consoleMode, showTime, skipRepeatedAnnounce } = data
+    const { packets, showTime, skipRepeatedAnnounce } = data
     const packet = packets[index];
 
     console.log(props)
@@ -63,13 +62,12 @@ const VirtualPacketItem = (props: { data: VirtualListData }
         return <div style={style}></div>
 
     return <div style={style}>
-        {consoleMode && <ConsoleListItem packet={packet} />}
-        {!consoleMode && <PacketListItem
+        <PacketListItem
             key={'pkt' + packet.key}
             packet={packet.packet}
             count={packet.count}
             skipRepeatedAnnounce={skipRepeatedAnnounce}
-            showTime={showTime} />}
+            showTime={showTime} />
     </div>
 }
 
@@ -84,13 +82,11 @@ export default function PacketList(props: {
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const consoleMode = hasFlag("console")
     const skipRepeatedAnnounce = !hasFlag("announce")
     const size = "small"
     const itemData: VirtualListData = {
-        consoleMode, 
-        skipRepeatedAnnounce, 
-        showTime, 
+        skipRepeatedAnnounce,
+        showTime,
         packets
     }
 
@@ -98,14 +94,8 @@ export default function PacketList(props: {
         return flags.indexOf(k) > -1
     }
 
-    // enable logging
-    useEffect(() => {
-        if (consoleMode)
-            bus.minConsolePriority = ConsolePriority.Debug;
-    }, [consoleMode])
-
     // render packets
-    useEffect(() => bus.subscribe(consoleMode ? [PACKET_RECEIVE, PACKET_SEND] : [PACKET_PROCESS, PACKET_SEND],
+    useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
             if (paused)
                 return; // ignore
@@ -116,16 +106,8 @@ export default function PacketList(props: {
             if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
                 return;
 
-            if (consoleMode && (pkt.service_class !== SRV_LOGGER || pkt.service_command < 0x80 || pkt.service_command > 0x83))
-                return;
-
             const decoded = decodePacketData(pkt);
-            if (consoleMode) {
-                if (!decoded) {
-                    return; // ignore            
-                }
-            }
-            else if (decoded && !hasFlag(decoded.info.kind)) {
+            if (decoded && !hasFlag(decoded.info.kind)) {
                 //console.log(`ignore ${decoded.info.kind}`)
                 return; // ignore packet type
             }
@@ -133,10 +115,10 @@ export default function PacketList(props: {
             addPacket(pkt, decoded)
         }
     ))
-    // clear when consoleMode changes
+
     useEffect(() => {
         clearPackets()
-    }, [consoleMode, JSON.stringify(flags)])
+    }, [JSON.stringify(flags)])
 
     const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
         setFlags(newFlags)
@@ -150,10 +132,6 @@ export default function PacketList(props: {
             </ListItem>}
             <ListItem key="filters">
                 <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
-                    <ToggleButton size={size} key="console" aria-label={"log only"} value={"console"}>
-                        <GradientIcon />
-                        {showButtonText && "log only"}
-                    </ToggleButton>
                     {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>
                         <KindIcon kind={kind} />
                         {showButtonText && kindName(kind)}
@@ -169,7 +147,7 @@ export default function PacketList(props: {
             {({ height, width }) => (
                 <FixedSizeList
                     itemCount={packets.length}
-                    itemSize={35}
+                    itemSize={47}
                     height={height}
                     width={width}
                     itemData={itemData}>
