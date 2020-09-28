@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
-import Button from '@material-ui/core/Button';
+import Button, { ButtonProps } from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -24,8 +24,8 @@ export default function UploadButton(props: {
     disabled?: boolean,
     multiple?: boolean,
     accept?: string
-}) {
-    const { text, onFilesUploaded, disabled, required, multiple, accept } = props;
+} & ButtonProps ) {
+    const { text, onFilesUploaded, disabled, required, multiple, accept, ...others } = props;
     const [id] = useState('button-file' + Math.random().toString())
     const classes = useStyles();
 
@@ -45,7 +45,7 @@ export default function UploadButton(props: {
                 onChange={handleChange}
             />
             <label htmlFor={id}>
-                <Button variant="outlined" color={required ? "primary" : "inherit"} component="span" disabled={disabled}>
+                <Button variant="outlined" component="span" disabled={disabled} {...others}>
                     {text}
                 </Button>
             </label>

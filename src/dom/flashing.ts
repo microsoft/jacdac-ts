@@ -31,6 +31,8 @@ export interface FirmwareBlob {
     pageSize: number;
     name: string;
     version: string;
+    // name of the file or repo
+    store: string;
 }
 
 function timestamp() {
@@ -251,7 +253,7 @@ const UF2_MAGIC_START0 = 0x0A324655;
 const UF2_MAGIC_START1 = 0x9E5D5157;
 const UF2_MAGIC_END = 0x0AB16F30;
 
-export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
+export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
     const blobs: FirmwareBlob[] = []
     let currBlob: FirmwareBlob
     for (let off = 0; off < uf2.length; off += 512) {
@@ -269,7 +271,8 @@ export function parseUF2(uf2: Uint8Array): FirmwareBlob[] {
                 deviceClass: familyID,
                 version: "",
                 pageSize: 1024,
-                name: "FW " + familyID.toString(16)
+                name: "FW " + familyID.toString(16),
+                store
             }
         }
         if (flags & 0x8000)
@@ -326,6 +329,15 @@ export interface FirmwareInfo {
     name: string;
     deviceClass: number;
     blDeviceClass: number;
+    // name of the file or repo
+    store: string;
+}
+
+export async function parseFirmwareFile(blob: Blob, store?: string): Promise<FirmwareBlob[]> {
+    const data = await blob.arrayBuffer();
+    const buf = new Uint8Array(data);
+    const uf2Blobs = parseUF2(buf, store);
+    return uf2Blobs;
 }
 
 async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {

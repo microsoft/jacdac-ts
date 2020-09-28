@@ -15,7 +15,7 @@ export interface Db {
 }
 
 function openDbAsync(): Promise<Db> {
-    const DB_VERSION = 5
+    const DB_VERSION = 15
     const DB_NAME = "JACDAC"
     const STORE_BLOBS = "BLOBS"
     const STORE_FIRMWARE_BLOBS = "STORE_FIRMWARE_BLOBS"
@@ -29,8 +29,8 @@ function openDbAsync(): Promise<Db> {
         if (upgrading) return delay(100)
         else return Promise.resolve()
     }
-    const set = (table: string, id: string, data: any) => {
-        changeId++
+    const put = (table: string, id: string, data: any) => {
+        changeId++;
         return checkUpgrading().then(() => new Promise<void>((resolve, reject) => {
             try {
                 const transaction = db.transaction([table], "readwrite");
@@ -76,17 +76,17 @@ function openDbAsync(): Promise<Db> {
     const api: Db = {
         dependencyId: () => changeId,
         blobs: {
-            set: (id: string, blob: Blob): Promise<void> => set(STORE_BLOBS, id, blob),
+            set: (id: string, blob: Blob): Promise<void> => put(STORE_BLOBS, id, blob),
             get: (id: string): Promise<Blob> => get(STORE_BLOBS, id).then(v => v as Blob),
             list: (): Promise<string[]> => list(STORE_BLOBS).then(v => v as string[]),
         },
         values: {
-            set: (id: string, value: string): Promise<void> => set(STORE_STORAGE, id, value),
+            set: (id: string, value: string): Promise<void> => put(STORE_STORAGE, id, value),
             get: (id: string): Promise<string> => get(STORE_STORAGE, id).then(v => v as string),
             list: (): Promise<string[]> => list(STORE_BLOBS).then(v => v as string[]),
         },
         firmwares: {
-            set: (id: string, blob: Blob): Promise<void> => set(STORE_FIRMWARE_BLOBS, id, blob),
+            set: (id: string, blob: Blob): Promise<void> => put(STORE_FIRMWARE_BLOBS, id, blob),
             get: (id: string): Promise<Blob> => get(STORE_FIRMWARE_BLOBS, id).then(v => v as Blob),
             list: (): Promise<string[]> => list(STORE_FIRMWARE_BLOBS).then(v => v as string[]),
         }

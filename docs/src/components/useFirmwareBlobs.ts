@@ -1,37 +1,50 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { useDbBlob } from "./useDb";
-import { parseUF2 } from "../../../src/dom/flashing";
+import { FirmwareBlob, parseFirmwareFile, parseUF2 } from "../../../src/dom/flashing";
 import useEffectAsync from "./useEffectAsync";
+import DbContext, { DbContextProps } from "./DbContext";
 
 export default function useFirmwareBlobs() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const { blob, setBlob } = useDbBlob("firmware.uf2")
+    const { db } = useContext<DbContextProps>(DbContext)
+    const firmwares = db?.firmwares;
 
-    async function load(f: Blob, store: boolean) {
-        if (f) {
-            const buf = new Uint8Array(await f.arrayBuffer())
-            const bls = parseUF2(buf);
-            // success, store and save in bus
-            if (store)
-                await setBlob(f)
-            bus.firmwareBlobs = bls
-        } else {
-            // delete entry
-            if (store)
-                await setBlob(undefined)
-            bus.firmwareBlobs = undefined
-        }
-    }
     useEffectAsync(async () => {
         console.log(`import stored uf2`)
-        await load(blob, false)
-    }, [blob])
+        const names = await firmwares?.list()
+        let uf2s: FirmwareBlob[] = [];
+        if (names?.length) {
+            for (const name of names) {
+                const blob = await firmwares?.get(name)
+                const uf2Blobs = await parseFirmwareFile(blob, name)
+                uf2Blobs?.forEach(uf2Blob => {
+                    uf2s.push(uf2Blob)
+                })
+            }
+        }
+        bus.firmwareBlobs = uf2s;
+    }, [firmwares, db?.dependencyId()])
+}
+
+export function useFirmwareBlob(repoSlug: string) {
+    const { db } = useContext<DbContextProps>(DbContext)
+    const firmwares = db?.firmwares;
+    const [blobs, setBlobs] = useState<FirmwareBlob[]>(undefined)
+
+    useEffectAsync(async () => {
+        const blob = await firmwares?.get(repoSlug)
+        if (!blob) {
+            setBlobs(undefined)
+        } else {
+            const uf2Blobs = await parseFirmwareFile(blob, repoSlug)
+            setBlobs(uf2Blobs)
+        }
+    }, [firmwares, db?.dependencyId()])
 
     return {
-        setFirmwareBlob: async (repoSlug: string, tag: string, f: Blob) => {
-            console.log(`import new uf2 from ${repoSlug}/${tag}`)
-            await load(f, true)
+        firmwareBlobs: blobs,
+        setFirmwareFile: async (tag: string, f: Blob) => {
+            firmwares?.set(repoSlug, f)
         }
     }
 }

@@ -12,16 +12,17 @@ import DeviceCard from "./DeviceCard";
 import IDChip from "./IDChip";
 import TabPanel, { a11yProps } from './TabPanel';
 import UploadButton from "./UploadButton";
-import useFirmwareBlobs from "./useFirmwareBlobs";
+import { useFirmwareBlob } from "./useFirmwareBlobs";
 import useGridBreakpoints from "./useGridBreakpoints";
 import ConnectAlert from "./ConnectAlert";
-import FirmwareCard from "./FirmwareCard";
+import FirmwareCard, { LOCAL_FILE_SLUG } from "./FirmwareCard";
 import useSelectedNodes from "../jacdac/useSelectedNodes"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
 
 const firmwareRepos = [
-    "microsoft/jacdac-stm32x0"
+    "microsoft/jacdac-stm32x0",
+    LOCAL_FILE_SLUG
 ]
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -73,8 +74,6 @@ function UpdateDeviceCard(props: {
 export default function Flash() {
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
-    const { firmwareFileDependencyId, setFirmwareBlob } = useFirmwareBlobs()
-    const [importing, setImporting] = useState(false)
     const [scanning, setScanning] = useState(false)
     const [tab, setTab] = useState(0);
     const classes = useStyles()
@@ -85,7 +84,6 @@ export default function Flash() {
     devices = devices.filter(dev => !isBootloaderFlashing(devices, isDeviceFlashing, dev))
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
-        console.log(allFlashing)
         if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
             return;
         console.log(`start scanning bus`)
@@ -98,27 +96,8 @@ export default function Flash() {
         }
     }
     // load indexed db file once
-    useEffect(() => { scan() }, [isFlashing, firmwareFileDependencyId, connectionState])
+    useEffect(() => { scan() }, [isFlashing, connectionState])
     useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
-    const handleFiles = async (files: FileList) => {
-        const file = files.item(0)
-        if (file) {
-            try {
-                setImporting(true)
-                await setFirmwareBlob(undefined, undefined, file)
-            } finally {
-                setImporting(false)
-            }
-        }
-    }
-    const handleClear = async () => {
-        try {
-            setImporting(true)
-            await setFirmwareBlob(undefined, undefined, undefined)
-        } finally {
-            setImporting(false)
-        }
-    }
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
@@ -139,19 +118,11 @@ export default function Flash() {
                 <Tab label={`Updates (${updates?.filter(up => updateApplicable(up.firmware, up.blob)).length || 0})`} {...a11yProps(1)} />
             </Tabs>
             <TabPanel value={tab} index={0}>
-                <List>
-                    {firmwareRepos.map(firmwareRepo => <ListItem key={`firmwarerepo${firmwareRepo}`}>
+                <Grid container spacing={2}>
+                    {firmwareRepos.map(firmwareRepo => <Grid {...gridBreakpoints} item key={`firmwarerepo${firmwareRepo}`}>
                         <FirmwareCard slug={firmwareRepo} />
-                    </ListItem>)}
-                    <ListItem key="importbtn">
-                        {importing && <LinearProgress variant="indeterminate" />}
-                        {!importing && <UploadButton text={"Import UF2 file"} onFilesUploaded={handleFiles} />}
-                        {!importing && <Button variant="outlined" aria-label={"Clear firmwares"} onClick={handleClear}>clear</Button>}
-                    </ListItem>
-                    {blobs?.map(blob => <ListItem key={`blob${blob.deviceClass}`}>
-                        <span>{blob.name}</span>&nbsp;<Chip size="small" label={blob.version} /> <IDChip id={blob.deviceClass} />
-                    </ListItem>)}
-                </List>
+                    </Grid>)}
+                </Grid>
             </TabPanel>
             <TabPanel value={tab} index={1}>
                 <Grid container spacing={2}>
