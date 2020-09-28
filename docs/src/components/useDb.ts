@@ -1,18 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
 import { JSONTryParse } from "../../../src/dom/utils";
+import useChange, { useChangeAsync } from "../jacdac/useChange";
 import DbContext from "./DbContext";
 import useEffectAsync from "./useEffectAsync";
 
 export function useDbBlob(blobName: string) {
     const { db } = useContext(DbContext);
     const blobs = db?.blobs;
-    const [value, setValue] = useState<Blob>(undefined)
 
-    useEffectAsync(async () => {
-        const b = await blobs?.get(blobName)
-        setValue(b)
-    }, [blobs, db?.dependencyId()])
-
+    const value = useChangeAsync(blobs, b => b?.get(blobName))
     return {
         blob: value,
         setBlob: async (blob: Blob) => { await blobs?.set(blobName, blob) }

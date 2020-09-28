@@ -1,127 +1,141 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
+import { CHANGE, ERROR } from "../../../src/dom/constants";
+import { JDEventSource } from "../../../src/dom/eventsource";
 import { delay, JSONTryParse } from "../../../src/dom/utils";
 
-export interface DbStore<T> {
-    get: (id: string) => Promise<T>;
-    set: (id: string, value: T) => Promise<void>;
-    list: () => Promise<string[]>;
+export class DbStore<T> extends JDEventSource {
+    constructor(public readonly db: Db, public readonly name: string) {
+        super();
+    }
+    get(id: string): Promise<T> {
+        return this.db.get(this.name, id);
+    }
+    set(id: string, value: T): Promise<void> {
+        return this.db.set(this.name, id, value)
+            .then(() => { this.emit(CHANGE) })
+    }
+    list(): Promise<string[]> {
+        return this.db.list(this.name)
+    }
 }
 
-export interface Db {
-    dependencyId: () => number,
-    blobs: DbStore<Blob>;
-    values: DbStore<string>;
-    firmwares: DbStore<Blob>;
-}
+export class Db extends JDEventSource {
+    upgrading = false;
 
-function openDbAsync(): Promise<Db> {
-    const DB_VERSION = 15
-    const DB_NAME = "JACDAC"
-    const STORE_BLOBS = "BLOBS"
-    const STORE_FIRMWARE_BLOBS = "STORE_FIRMWARE_BLOBS"
-    const STORE_STORAGE = "STORAGE"
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    let db: IDBDatabase;
-    let changeId = 0;
-    let upgrading = false;
+    readonly blobs: DbStore<Blob>;
+    readonly values: DbStore<string>;
+    readonly firmwares: DbStore<Blob>;
 
-    const checkUpgrading = () => {
-        if (upgrading) return delay(100)
+    constructor(public readonly db: IDBDatabase) {
+        super();
+        this.blobs = new DbStore<Blob>(this, Db.STORE_BLOBS);
+        this.values = new DbStore<string>(this, Db.STORE_STORAGE);
+        this.firmwares = new DbStore<Blob>(this, Db.STORE_FIRMWARE_BLOBS);
+
+        this.db.onerror = (event) => {
+            this.emit(ERROR, event);
+        };
+    }
+
+    static DB_VERSION = 15
+    static DB_NAME = "JACDAC"
+    static STORE_BLOBS = "BLOBS"
+    static STORE_FIRMWARE_BLOBS = "STORE_FIRMWARE_BLOBS"
+    static STORE_STORAGE = "STORAGE"
+    public static create(): Promise<Db> {
+        return new Promise((resolve, reject) => {
+            // create or upgrade database
+            const request = indexedDB.open(Db.DB_NAME, Db.DB_VERSION);
+            let db: Db;
+            request.onsuccess = function (event) {
+                const idb = request.result;
+                resolve(db = new Db(idb));
+            }
+            request.onupgradeneeded = function (event) {
+                db.upgrading = true;
+                try {
+                    const db = request.result;
+                    const stores = db.objectStoreNames
+                    if (!stores.contains(Db.STORE_STORAGE))
+                        db.createObjectStore(Db.STORE_STORAGE);
+                    if (!stores.contains(Db.STORE_FIRMWARE_BLOBS))
+                        db.createObjectStore(Db.STORE_FIRMWARE_BLOBS);
+                    if (!stores.contains(Db.STORE_BLOBS))
+                        db.createObjectStore(Db.STORE_BLOBS);
+                    db.onerror = function (event) {
+                        console.log("idb error", event);
+                    };
+                } finally {
+                    db.upgrading = false;
+                }
+            };
+        })
+    }
+
+    checkUpgrading() {
+        if (this.upgrading) return delay(100)
         else return Promise.resolve()
     }
-    const put = (table: string, id: string, data: any) => {
-        changeId++;
-        return checkUpgrading().then(() => new Promise<void>((resolve, reject) => {
+
+    list(table: string): Promise<string[]> {
+        return this.checkUpgrading().then(() => new Promise<string[]>((resolve, reject) => {
             try {
-                const transaction = db.transaction([table], "readwrite");
-                const blobs = transaction.objectStore(table)
-                const request = data !== undefined ? blobs.put(data, id) : blobs.delete(id);;
-                request.onsuccess = (event) => resolve()
-                request.onerror = (event) => resolve()
-            } catch (e) {
-                console.error(`idb: put ${id} failed`)
-                reject(e)
-            }
-        }))
-    }
-    const get = (table: string, id: string) => {
-        return checkUpgrading().then(() => new Promise<any>((resolve, reject) => {
-            try {
-                const transaction = db.transaction([table], "readonly");
-                const blobs = transaction.objectStore(table)
-                const request = blobs.get(id);
-                request.onsuccess = (event) => resolve((event.target as any).result)
-                request.onerror = (event) => resolve((event.target as any).result)
-            } catch (e) {
-                console.error(`idb: get ${id} failed`)
-                reject(e)
-            }
-        }))
-    }
-    const list = (table: string) => {
-        return checkUpgrading().then(() => new Promise<any>((resolve, reject) => {
-            try {
-                const transaction = db.transaction([table], "readonly");
+                const transaction = this.db.transaction([table], "readonly");
                 const blobs = transaction.objectStore(table)
                 const request = blobs.getAllKeys()
                 request.onsuccess = (event) => resolve((event.target as any).result)
-                request.onerror = (event) => resolve((event.target as any).result)
+                request.onerror = (event) => {
+                    this.emit(ERROR, event)
+                    resolve(undefined)
+                }
             } catch (e) {
-                console.error(`idb: list ${table} failed`)
+                this.emit(ERROR, e)
                 reject(e)
             }
         }))
     }
 
-    const api: Db = {
-        dependencyId: () => changeId,
-        blobs: {
-            set: (id: string, blob: Blob): Promise<void> => put(STORE_BLOBS, id, blob),
-            get: (id: string): Promise<Blob> => get(STORE_BLOBS, id).then(v => v as Blob),
-            list: (): Promise<string[]> => list(STORE_BLOBS).then(v => v as string[]),
-        },
-        values: {
-            set: (id: string, value: string): Promise<void> => put(STORE_STORAGE, id, value),
-            get: (id: string): Promise<string> => get(STORE_STORAGE, id).then(v => v as string),
-            list: (): Promise<string[]> => list(STORE_BLOBS).then(v => v as string[]),
-        },
-        firmwares: {
-            set: (id: string, blob: Blob): Promise<void> => put(STORE_FIRMWARE_BLOBS, id, blob),
-            get: (id: string): Promise<Blob> => get(STORE_FIRMWARE_BLOBS, id).then(v => v as Blob),
-            list: (): Promise<string[]> => list(STORE_FIRMWARE_BLOBS).then(v => v as string[]),
-        }
+    get<T>(table: string, id: string): Promise<T> {
+        return this.checkUpgrading().then(() => new Promise<any>((resolve, reject) => {
+            try {
+                const transaction = this.db.transaction([table], "readonly");
+                const blobs = transaction.objectStore(table)
+                const request = blobs.get(id);
+                request.onsuccess = (event) => resolve((event.target as any).result)
+                request.onerror = (event) => {
+                    this.emit(ERROR, event)
+                    resolve(undefined)
+                }
+            } catch (e) {
+                this.emit(ERROR, e)
+                reject(e)
+            }
+        }))
     }
 
-    return new Promise((resolve, reject) => {
-        // create or upgrade database
-        request.onsuccess = function (event) {
-            db = request.result;
-            db.onerror = function (event) {
-                console.log("idb error", event);
-            };
-            resolve(api);
-        }
-        request.onupgradeneeded = function (event) {
-            upgrading = true;
-            try {
-                db = request.result;
-                const stores = db.objectStoreNames
-                if (!stores.contains(STORE_STORAGE))
-                    db.createObjectStore(STORE_STORAGE);
-                if (!stores.contains(STORE_FIRMWARE_BLOBS))
-                    db.createObjectStore(STORE_FIRMWARE_BLOBS);
-                if (!stores.contains(STORE_BLOBS))
-                    db.createObjectStore(STORE_BLOBS);
-                db.onerror = function (event) {
-                    console.log("idb error", event);
-                };
-            } finally {
-                upgrading = false;
-            }
-        };
-    })
-}
+    set<T>(table: string, id: string, data: T): Promise<void> {
+        return this.checkUpgrading()
+            .then(() => new Promise<void>((resolve, reject) => {
+                try {
+                    const transaction = this.db.transaction([table], "readwrite");
+                    const blobs = transaction.objectStore(table)
+                    const request = data !== undefined ? blobs.put(data, id) : blobs.delete(id);;
+                    request.onsuccess = (event) => {
+                        this.emit(CHANGE)
+                        resolve()
+                    }
+                    request.onerror = (event) => {
+                        this.emit(ERROR, event)
+                        resolve()
+                    }
+                } catch (e) {
+                    this.emit(ERROR, e)
+                    reject(e)
+                }
+            }));
+    }
 
+}
 
 export interface DbContextProps {
     db: Db,
@@ -140,7 +154,7 @@ export const DbProvider = ({ children }) => {
     const [db, SetDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
     useEffect(() => {
-        openDbAsync()
+        Db.create()
             .then(d => SetDb(d))
             .catch(e => setError(error))
     }, []);
