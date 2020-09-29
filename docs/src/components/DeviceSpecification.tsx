@@ -1,11 +1,11 @@
 import React from "react"
 import IDChip from "./IDChip";
 import { Link } from 'gatsby-theme-material-ui';
-import ServiceSpecification from "./ServiceSpecification"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
 import ServiceSpecificationCard from "./ServiceSpecificationCard";
 import { Grid } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
+import Markdown from "./Markdown";
 
 export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }) {
     const { device } = props;
@@ -20,7 +20,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }
         </h2>
         {device.image && <img key="image" alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
         <p key="description">
-            {device.description}
+            {device.description && <Markdown source={device.description} />}
         </p>
         <ul>
             <li>repo: <Link to={device.repo}>{device.repo}</Link></li>
