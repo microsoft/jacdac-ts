@@ -3,9 +3,14 @@ import IDChip from "./IDChip";
 import { Link } from 'gatsby-theme-material-ui';
 import ServiceSpecification from "./ServiceSpecification"
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
+import ServiceSpecificationCard from "./ServiceSpecificationCard";
+import { Grid } from "@material-ui/core";
+import useGridBreakpoints from "./useGridBreakpoints";
 
 export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }) {
     const { device } = props;
+    const gridBreakpoints = useGridBreakpoints();
+
     return <>
         <h2 key="title">
             {device.name}
@@ -21,12 +26,16 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }
             <li>repo: <Link to={device.repo}>{device.repo}</Link></li>
             <li>link: <Link to={device.link}>{device.link}</Link></li>
         </ul>
+        {!!device.firmwares.length && <><h3>Firmware identifiers</h3>
+            <ul>
+                {device.firmwares.map(fw => <li key={fw}>0x{fw.toString(16)}</li>)}
+            </ul></>}
         <h3>Services</h3>
-        <ul>
+        <Grid container spacing={2}>
             {device.services.map(sc => serviceSpecificationFromClassIdentifier(sc))
-                .map(spec => <li>
-                    <Link to={`/services/${spec.shortId}`}>{spec.name}</Link>
-                </li>)}
-        </ul>
+                .map(spec => <Grid item {...gridBreakpoints}>
+                    <ServiceSpecificationCard key={spec.shortId} specification={spec} />
+                </Grid>)}
+        </Grid>
     </>
 }

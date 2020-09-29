@@ -39,7 +39,7 @@ export function deviceSpecificationFromClassIdenfitier(deviceClass: number): jds
 }
 
 export function deviceSpecificationFromIdentifier(id: string): jdspec.DeviceSpec {
-    if (!id) return undefined;
+    if (id === undefined) return undefined;
 
     const spec = deviceRegistry.find(spec => spec.id === id);
     return spec;

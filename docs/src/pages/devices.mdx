@@ -5,6 +5,7 @@ title: Devices
 import { Grid } from '@material-ui/core';
 import { Link } from "gatsby"
 import { graphql } from "gatsby"
+import DeviceSpecificationCard from "../components/DeviceSpecificationCard"
 
 export const query = graphql`
   query {
@@ -19,11 +20,11 @@ export const query = graphql`
 
 Known devices are specified in [https://github.com/microsoft/jacdac/tree/main/devices](https://github.com/microsoft/jacdac/tree/main/devices).
 
-<ul>
-    {props.data.allDevicesJson.nodes.map(node => <li>
-        <Link key={node.id} to={`/devices/${node.id}`}>{node.name}</Link>
-    </li>)}
-</ul>
+<Grid container spacing={2}>
+    {props.data.allDevicesJson.nodes.map(node => <Grid xs={6} sm={4} lg={3} item key={node.id}>
+      <DeviceSpecificationCard specificationIdentifier={node.id} />
+    </Grid>)}
+</Grid>
 
 ## See also
 

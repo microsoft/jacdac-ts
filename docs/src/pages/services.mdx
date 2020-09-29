@@ -4,15 +4,16 @@ title: Services
 
 import { Link } from "gatsby"
 import { graphql } from "gatsby"
+import { Grid } from '@material-ui/core';
+import ServiceSpecificationCard from "../components/ServiceSpecificationCard"
 
 export const query = graphql`
   query {
     allServicesJson {
-      edges {
-        node {
-          shortId
-          name
-        }
+      nodes {
+        shortId
+        name
+        classIdentifier
       }
     }
   }
@@ -23,11 +24,11 @@ using [this format](https://github.com/microsoft/jacdac/tree/main/spectool).
 Use the [Service Editor](/tools/service-editor) and send us a pull request 
 to register your own service.
 
-<ul>
-    {props.data.allServicesJson.edges.map(node => <li>
-        <Link key={node.node.shortId} to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
-    </li>)}
-</ul>
+<Grid container spacing={2}>
+    {props.data.allServicesJson.nodes.map(node => <Grid xs={6} sm={4} lg={3} item key={node.id}>
+      <ServiceSpecificationCard serviceClass={node.classIdentifier} />
+    </Grid>)}
+</Grid>
 
 ## See also
 
