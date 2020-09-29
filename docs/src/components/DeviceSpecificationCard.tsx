@@ -31,6 +31,10 @@ export default function DeviceSpecificationCard(props: { deviceIdentifier?: numb
             image={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${spec.image}`}
             title={spec.name}
         />}
+        <CardContent>
+            {spec.services.map(service => serviceSpecificationFromClassIdentifier(service)).filter(sp => !!sp)
+                .map(sspec => <Button to={`/services/${sspec.shortId}`}>{sspec.name}</Button>)}
+        </CardContent>
         <CardActions>
             <Button to={`/devices/${spec.id}`}>More...</Button>
             <IconButton to={spec.link} size="small">
