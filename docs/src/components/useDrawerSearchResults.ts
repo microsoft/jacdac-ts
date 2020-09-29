@@ -10,8 +10,8 @@ export function useDrawerSearchResults(): SearchResult[] {
     const store = typeof window !== undefined
         && (window as any)?.__FLEXSEARCH__?.en?.store
     const { searchQuery } = useContext(AppContext)
-    if (!searchQuery || !index || searchQuery.length < 3) {
-        return []
+    if (!searchQuery || !index) {
+        return undefined
     } else {
         let results = []
         // search the indexed fields

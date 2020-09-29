@@ -72,7 +72,7 @@ export default function AppDrawer(props: {
     const service = serviceClass !== undefined
         && serviceSpecificationFromClassIdentifier(serviceClass)
     const searchResults = useDrawerSearchResults()
-    const hasSearchResults = !!searchResults?.length;
+    const showSearchResults = !!searchResults;
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
@@ -115,10 +115,10 @@ export default function AppDrawer(props: {
         <Divider />
         {alertConnection && <Alert severity={"info"}>Connect to a JACDAC device to inspect the bus.
         <ConnectButton className={classes.alertButton} full={true} /></Alert>}
-        {hasSearchResults && <DrawerSearchResults results={searchResults} />}
-        {!hasSearchResults && drawerType === DrawerType.Toc && <Toc />}
-        {!hasSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
-        {!hasSearchResults && drawerType === DrawerType.Packets
+        {showSearchResults && <DrawerSearchResults results={searchResults} />}
+        {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
+        {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
+        {!showSearchResults && drawerType === DrawerType.Packets
             ? <PacketList serviceClass={serviceClass} />
             : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
     </Drawer>

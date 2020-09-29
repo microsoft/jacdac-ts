@@ -10,7 +10,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
 
 import { SearchResult } from "./useDrawerSearchResults";
-import { createStyles, ListItemText, makeStyles, Theme } from "@material-ui/core";
+import { createStyles, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -31,12 +31,15 @@ export default function DrawerSearchResults(props: { results?: SearchResult[] })
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
     >
+        {!results.length && <TreeItem
+            key={'nosearch'}
+            nodeId={'nosearch'}
+            label={<ListItem><ListItemText primary={"no result found"} /></ListItem>} />}
         {results.map(result => <TreeItem
             key={'search' + result.url}
             nodeId={result.url.replace(/\/$/, '')}
             label={<Link to={result.url}>
                 <ListItemText primary={result.title} />
-            </Link>}>
-        </TreeItem>)}
+            </Link>} />)}
     </TreeView>
 }
