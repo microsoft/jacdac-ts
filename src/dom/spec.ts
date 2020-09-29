@@ -45,6 +45,11 @@ export function deviceSpecificationFromIdentifier(id: string): jdspec.DeviceSpec
     return spec;
 }
 
+export function deviceSpecificationsForService(serviceClass: number): jdspec.DeviceSpec[] {
+    if (serviceClass === undefined) return undefined;
+    return deviceRegistry.filter(spec => spec.services.indexOf(serviceClass) > -1);
+}
+
 export function deviceSpecifications(): jdspec.DeviceSpec[] {
     return deviceRegistry.slice(0)
 }

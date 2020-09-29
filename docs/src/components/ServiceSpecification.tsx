@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf } from "../../../src/dom/spec"
+import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf, deviceSpecificationsForService } from "../../../src/dom/spec"
 import PacketSpecification from "../components/PacketSpecification"
 import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
@@ -26,6 +26,7 @@ export default function ServiceSpecification(props: {
 
     const reportOf = (pkt: jdspec.PacketInfo) => reports.find(rep => isReportOf(pkt, rep))
     const pipeReportOf = (pkt: jdspec.PacketInfo) => pipeReports.find(rep => isPipeReportOf(pkt, rep))
+    const deviceSpecs = deviceSpecificationsForService(node.classIdentifier)
 
     return (<Fragment key={`servicespec${node.shortId}`}>
         <h1 key="title">{node.name}
@@ -62,6 +63,14 @@ export default function ServiceSpecification(props: {
                     />)}
             </Fragment>)
         }
+        {<Fragment key="devices">
+            <h2>Registered Devices</h2>
+            <ul>
+                {deviceSpecs.map(deviceSpec => <li>
+                    <Link to={`/devices/${deviceSpec.id}`}>{deviceSpec.name}</Link>
+                </li>)}
+            </ul>
+        </Fragment>}
         {showSource && <Fragment key="specs">
             <h2 key="spech2">Specification</h2>
             <ServiceSpecificationSource key="source"
