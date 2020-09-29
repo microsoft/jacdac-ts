@@ -10,7 +10,7 @@ import Packet from "./packet";
 const serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
 
-const deviceRegistry: SMap<jdspec.DeviceSpec> = deviceRegistryData;
+const deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData;
 
 /**
  * Adds a custom service specification
@@ -31,13 +31,15 @@ export function serviceMap(): SMap<jdspec.ServiceSpec> {
     return m;
 }
 
-export function deviceSpecificationFromClassIdenfitier(deviceClass: number) {
+export function deviceSpecificationFromClassIdenfitier(deviceClass: number): jdspec.DeviceSpec {
     if (deviceClass === undefined) return undefined;
 
-    // normalize
-    const id = deviceClass.toString(16).toLowerCase().replace(/^0x/, '')
+    const spec = deviceRegistry.find(spec => spec.firmwares.indexOf(deviceClass) < -1);
+    return spec;
+}
 
-    return deviceRegistry[id]
+export function deviceSpecifications(): jdspec.DeviceSpec[] {
+    return deviceRegistry.slice(0)
 }
 
 /**

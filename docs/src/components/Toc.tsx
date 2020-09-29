@@ -118,6 +118,12 @@ export default function Toc() {
       }
     }
 
+    allDevicesJson {
+      nodes {
+        id
+        name
+      }
+    }
   }
 `)
 
@@ -141,7 +147,7 @@ export default function Toc() {
   }, {
     name: "Clients",
     path: "/clients/",
-    order: 5
+    order: 4
   }, {
     name: "Tools",
     path: "/tools/",
@@ -166,6 +172,13 @@ export default function Toc() {
     return {
       name: node.name,
       path: `/services/${node.shortId}`
+    }
+  }).forEach(node => toc.push(node))
+
+  data.allDevicesJson.nodes.map(node => {
+    return {
+      name: node.name,
+      path: `/devices/${node.id}`
     }
   }).forEach(node => toc.push(node))
 

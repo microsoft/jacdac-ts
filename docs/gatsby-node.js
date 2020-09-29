@@ -54,6 +54,42 @@ async function createServicePages(graphql, actions, reporter) {
   }) 
 }
 
+async function createDevicePages(graphql, actions, reporter) {
+  const { createPage, createRedirect } = actions
+  const result = await graphql(`
+{
+  allDevicesJson {
+    nodes {
+      id
+      name
+    }
+  }
+}
+`)
+
+  if (result.errors) {
+    reporter.panicOnBuild('🚨  ERROR: Loading "createPages" query')
+    return
+  }
+
+  // Create image post pages.
+  const deviceTemplate = path.resolve(`src/templates/device.mdx`)
+  // We want to create a detailed page for each
+  // Instagram post. Since the scraped Instagram data
+  // already includes an ID field, we just use that for
+  // each page's path.
+  result.data.allDevicesJson.nodes.forEach(node => {
+    const p = `/devices/${node.id}/`;
+    createPage({
+      path: p,
+      component: slash(deviceTemplate),
+      context: {
+        node
+      },
+    })
+  }) 
+}
+
 async function createSpecPages(graphql, actions, reporter) {
   const { createPage } = actions
   const result = await graphql(`
@@ -102,6 +138,7 @@ async function createSpecPages(graphql, actions, reporter) {
 exports.createPages = async ({ graphql, actions, reporter }) => {
   await createServicePages(graphql, actions, reporter)
   await createSpecPages(graphql, actions, reporter)
+  await createDevicePages(graphql, actions, reporter)
 }
 
 exports.onCreateNode = ({ node, actions, getNode }) => {
