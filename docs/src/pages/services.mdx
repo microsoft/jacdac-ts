@@ -7,7 +7,7 @@ import { graphql } from "gatsby"
 
 export const query = graphql`
   query {
-    allSpecJson {
+    allServicesJson {
       edges {
         node {
           shortId
@@ -24,7 +24,7 @@ Use the [Service Editor](/tools/service-editor) and send us a pull request
 to register your own service.
 
 <ul>
-    {props.data.allSpecJson.edges.map(node => <li>
+    {props.data.allServicesJson.edges.map(node => <li>
         <Link key={node.node.shortId} to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
     </li>)}
 </ul>

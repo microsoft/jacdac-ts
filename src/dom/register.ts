@@ -111,7 +111,15 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastReportPkt?.decoded;
     }
 
-    refresh() {
+    refresh(skipIfValue?: boolean): Promise<void> {
+        // don't refetch if already data
+        if (skipIfValue && !!this.data)
+            return;
+
+        // don't refetch consts
+        if (!!this.data && this.specification?.kind === "const")
+            return;
+
         return withTimeout(150, new Promise<void>((resolve, reject) => {
             this.once(REPORT_RECEIVE, () => {
                 const f = resolve

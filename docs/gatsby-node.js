@@ -6,7 +6,7 @@ async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
   const result = await graphql(`
 {
-  allSpecJson {
+  allServicesJson {
     nodes {
       name
       shortName
@@ -29,7 +29,7 @@ async function createServicePages(graphql, actions, reporter) {
   // Instagram post. Since the scraped Instagram data
   // already includes an ID field, we just use that for
   // each page's path.
-  result.data.allSpecJson.nodes.forEach(node => {
+  result.data.allServicesJson.nodes.forEach(node => {
     const p = `/services/${node.shortId}/`;
     const ptest = `${p}test/`
     const r = `/services/0x${node.classIdentifier.toString(16)}`

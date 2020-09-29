@@ -111,7 +111,7 @@ export default function Toc() {
       }
     }
 
-    allSpecJson {
+    allServicesJson {
       nodes {
         name
         shortId
@@ -158,7 +158,7 @@ export default function Toc() {
     })
     .forEach(node => toc.push(node))
 
-  data.allSpecJson.nodes.map(node => {
+  data.allServicesJson.nodes.map(node => {
     return {
       name: node.name,
       path: `/services/${node.shortId}`

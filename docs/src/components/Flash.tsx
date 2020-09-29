@@ -19,11 +19,7 @@ import FirmwareCard, { LOCAL_FILE_SLUG } from "./FirmwareCard";
 import useSelectedNodes from "../jacdac/useSelectedNodes"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
-
-const firmwareRepos = [
-    "microsoft/jacdac-stm32x0",
-    LOCAL_FILE_SLUG
-]
+import useFirmwareRepos from "./useFirmwareRepos";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -82,6 +78,10 @@ export default function Flash() {
     let devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices().filter(dev => dev.announced))
     // filter out bootloader while flashing
     devices = devices.filter(dev => !isBootloaderFlashing(devices, isDeviceFlashing, dev))
+
+    // collect firmware repoes
+    const firmwareRepos = useFirmwareRepos()
+
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
@@ -114,7 +114,7 @@ export default function Flash() {
         <div className={classes.blobs}>
             <ConnectAlert />
             <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
-                <Tab label={`Firmware (${blobs?.length || 0})`} {...a11yProps(0)} />
+                <Tab label={`Firmwares`} {...a11yProps(0)} />
                 <Tab label={`Updates (${updates?.filter(up => updateApplicable(up.firmware, up.blob)).length || 0})`} {...a11yProps(1)} />
             </Tabs>
             <TabPanel value={tab} index={0}>

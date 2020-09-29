@@ -25,7 +25,7 @@ export default function FirmwareCard(props: { slug: string }) {
     const downloadVariant = updateAvailable ? "contained" : "text"
 
     useEffectAsync(async (mounted) => {
-        if (slug == LOCAL_FILE_SLUG)
+        if (slug == LOCAL_FILE_SLUG || !mounted())
             return;
         try {
             setError("")

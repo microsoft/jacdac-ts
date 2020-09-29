@@ -1,13 +1,16 @@
 /// <reference path="../../jacdac-spec/spectool/jdspec.d.ts" />
 
 import { NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer";
-import specdata from "../../jacdac-spec/dist/spec.json";
+import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
+import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap, stringToUint8Array, toUTF8 } from "./utils";
 import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE } from "./constants";
 import Packet from "./packet";
 
-const serviceSpecifications: jdspec.ServiceSpec[] = specdata as any;
+const serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
+
+const deviceRegistry: SMap<jdspec.DeviceSpec> = deviceRegistryData;
 
 /**
  * Adds a custom service specification
@@ -26,6 +29,15 @@ export function serviceMap(): SMap<jdspec.ServiceSpec> {
     const m: SMap<jdspec.ServiceSpec> = {};
     serviceSpecifications.forEach(spec => m[spec.shortId] = spec)
     return m;
+}
+
+export function deviceSpecificationFromClassIdenfitier(deviceClass: number) {
+    if (deviceClass === undefined) return undefined;
+
+    // normalize
+    const id = deviceClass.toString(16).toLowerCase().replace(/^0x/, '')
+
+    return deviceRegistry[id]
 }
 
 /**
