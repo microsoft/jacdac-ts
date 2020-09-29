@@ -44,6 +44,7 @@
 
     <script src="/dist/jacdac-dom.umd.js"></script>
     <script>
+        const jacdac = jacdacDom
         // webusb
         const jd = jacdac.createUSBBus()
         // jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
@@ -130,6 +131,7 @@
             const buf = new Uint8Array(await file.arrayBuffer())
             startUpdate()
             blobs = jacdac.parseUF2(buf)
+            console.log(jacdac.generateDeviceList(buf))
         }
 
         // binding ui

@@ -323,6 +323,10 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
     }
 }
 
+export function generateDeviceList(uf2: Uint8Array) {
+    return parseUF2(uf2, "").map(b => `* \`\`0x${b.deviceClass.toString(16)}\`\` ${b.name}`).join("\n")
+}
+
 export interface FirmwareInfo {
     deviceId: string;
     version: string;
