@@ -6,6 +6,8 @@ import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
 import Markdown from "./Markdown";
 import EnumSpecification from "./EnumSpecification";
+import { Grid } from "@material-ui/core";
+import DeviceSpecificationCard from "./DeviceSpecificationCard";
 
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
@@ -65,11 +67,11 @@ export default function ServiceSpecification(props: {
         }
         {<Fragment key="devices">
             <h2>Registered Devices</h2>
-            <ul>
-                {deviceSpecs.map(deviceSpec => <li>
-                    <Link to={`/devices/${deviceSpec.id}`}>{deviceSpec.name}</Link>
-                </li>)}
-            </ul>
+            <Grid container spacing={2}>
+                {deviceSpecs.map(deviceSpec => <Grid item key={deviceSpec.id}>
+                    <DeviceSpecificationCard specification={deviceSpec} />
+                </Grid>)}
+            </Grid>
         </Fragment>}
         {showSource && <Fragment key="specs">
             <h2 key="spech2">Specification</h2>
