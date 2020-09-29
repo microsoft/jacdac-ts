@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import useChange from "../jacdac/useChange";
 import useEffectAsync from "./useEffectAsync";
 import { unique } from "../../../src/dom/utils";
 import { LOCAL_FILE_SLUG } from "./FirmwareCard";
