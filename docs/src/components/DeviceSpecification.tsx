@@ -13,7 +13,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }
                 {device.firmwares.map(firmware => <IDChip key={firmware} id={firmware} />)}
             </span>
         </h2>
-        <img key="image" alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />
+        {device.image && <img key="image" alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
         <p key="description">
             {device.description}
         </p>
