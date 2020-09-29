@@ -1,0 +1,31 @@
+---
+title: Devices
+---
+
+import { Link } from "gatsby"
+import { graphql } from "gatsby"
+
+export const query = graphql`
+  query {
+    allServicesJson {
+      edges {
+        node {
+          shortId
+          name
+        }
+      }
+    }
+  }
+`
+
+Known devices are specified in [https://github.com/microsoft/jacdac/tree/main/devices](https://github.com/microsoft/jacdac/tree/main/devices).
+
+<ul>
+    {props.data.allServicesJson.edges.map(node => <li>
+        <Link key={node.node.shortId} to={`/services/${node.node.shortId}`}>{node.node.name}</Link>
+    </li>)}
+</ul>
+
+## See also
+
+* [Services](/tools/services)
