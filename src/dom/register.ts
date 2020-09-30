@@ -1,12 +1,12 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1, REGISTER_REFRESH_RETRY_0 } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1, REGISTER_REFRESH_RETRY_0, CtrlReg } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
-import { isRegister, isReading } from "./spec";
+import { isRegister, isReading, deviceSpecificationFromClassIdenfitier } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
 
@@ -111,13 +111,17 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastReportPkt?.decoded;
     }
 
-    refresh(skipIfValue?: boolean): Promise<void> {
-        // don't refetch if already data
-        if (skipIfValue && !!this.data)
-            return;
+    async resolveDeviceClass() {
+        const deviceClassRegister = this.service.device.service(0)
+            .register(CtrlReg.DeviceClass);
+        await deviceClassRegister?.refresh(true)
+        return deviceClassRegister?.intValue;
+    }
 
+    refresh(skipIfValue?: boolean): Promise<void> {
         // don't refetch consts
-        if (!!this.data && this.specification?.kind === "const")
+        // don't refetch if already data
+        if (!!this.data && (skipIfValue || this.specification?.kind === "const"))
             return;
 
         const bus = this.service.device.bus;

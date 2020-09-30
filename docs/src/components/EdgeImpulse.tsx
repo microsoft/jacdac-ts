@@ -12,9 +12,10 @@ import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
-import { CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT } from "../../../src/dom/constants";
+import { CONNECT, CONNECTING, CONNECTION_STATE, CtrlReg, DISCONNECT, ERROR, PACKET_REPORT } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
 import FieldDataSet from "./FieldDataSet";
+import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -52,7 +53,7 @@ class EdgeImpulseClient extends JDEventSource {
             finally {
                 this.setConnectionState(DISCONNECT);
             }
-        }        
+        }
     }
 
     private setConnectionState(state: string) {
@@ -73,16 +74,21 @@ class EdgeImpulseClient extends JDEventSource {
         this._ws?.send(JSON.stringify(msg))
     }
 
-    private handleOpen() {
+    private async handleOpen() {
         const { service } = this.register;
         const { device } = service;
+
+        // fetch device spec
+        const deviceClass = await this.register.resolveDeviceClass();
+        const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass);
+
         this.send({
             "hello": {
                 "version": 2,
                 "apiKey": this.apiKey,
                 "deviceId": device.deviceId,
-                "deviceType": "demo",
-                "connection": "ip",
+                "deviceType": deviceSpec?.name || deviceClass || "JACDAC device",
+                "connection": "ip", // direct connection
                 "sensors": [
                     {
                         "name": service.name,
@@ -135,10 +141,10 @@ class EdgeImpulseClient extends JDEventSource {
         // start register
         const fields = this.register.fields;
         this._dataSet = new FieldDataSet(
-            this.register.service.device.bus, 
-            this.register.name, 
+            this.register.service.device.bus,
+            this.register.name,
             fields
-            );
+        );
         this._stopStreaming = startStreaming(this.register.service)
         // start sampling
         this.send({ "sample": true })
