@@ -3,7 +3,7 @@ import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGIST
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay, withTimeout } from "./utils";
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
 import { bufferOfInt } from "./struct";
 import { decodePacketData, DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
