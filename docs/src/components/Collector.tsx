@@ -32,6 +32,7 @@ import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
 import ServiceManagerContext from './ServiceManagerContext';
 import RoleManagerService from './RoleManagerService'
+import { useChartPalette } from './useChartPalette';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -78,29 +79,6 @@ function createDataSet(bus: JDBus,
     return set;
 }
 
-function chartPalette(darkMode: PaletteType) {
-    if (darkMode == 'light') return [
-        "#003f5c",
-        "#ffa600",
-        "#665191",
-        "#a05195",
-        "#ff7c43",
-        "#d45087",
-        "#f95d6a",
-        "#2f4b7c",
-    ]
-    else return [
-        "#60ccfe",
-        "#ffdd9e",
-        "#c3b9d8",
-        "#dcbbd7",
-        "#fecdb7",
-        "#eebcd1",
-        "#fcc1c6",
-        "#a1b6db",
-    ]
-}
-
 export default function Collector(props: {}) {
     const { } = props;
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
@@ -117,7 +95,7 @@ export default function Collector(props: {}) {
     const [liveDataSet, setLiveDataSet] = useState<FieldDataSet>(undefined)
     const [, setLiveDataTimestamp] = useState(0)
     const [triggerEventId, setTriggerEventId] = useState<string>("")
-    const { darkMode } = useContext(DarkModeContext)
+    const chartPalette = useChartPalette()
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
             .services().find(srv => isSensor(srv))
@@ -166,7 +144,7 @@ export default function Collector(props: {}) {
             readingRegisters.filter(reg => registerIds.indexOf(reg.id) > -1),
             `${prefix || "data"}${tables.length}`,
             live,
-            chartPalette(darkMode))
+            chartPalette)
         : undefined
     const handleRegisterCheck = (reg: JDRegister) => {
         const i = registerIdsChecked.indexOf(reg.id)

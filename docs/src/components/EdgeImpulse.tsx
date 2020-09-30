@@ -7,25 +7,324 @@ import { isSensor, startStreaming } from "../../../src/dom/sensor";
 import useChange from "../jacdac/useChange";
 import useGridBreakpoints from "./useGridBreakpoints";
 import { JDRegister } from "../../../src/dom/register";
+import { JDClient } from "../../../src/dom/client";
 import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
-import { PACKET_REPORT } from "../../../src/dom/constants";
+import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE } from "../../../src/dom/constants";
+import { JDEventSource } from "../../../src/dom/eventsource";
+import FieldDataSet from "./FieldDataSet";
+import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
+import CircularProgressWithLabel from "./CircularProgressWithLabel";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
-const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
 
-function fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
-    const url = `${API_ROOT}${path}`
-    const options: RequestInit = {
-        method,
-        headers: {
-            "Accept": "application/json",
-            "x-api-key": apiKey
+const IDLE = "idle";
+const STARTING = "starting";
+const SAMPLING = "sampling";
+const UPLOADING = "uploading";
+
+const SAMPLING_STATE = "samplingState";
+
+interface EdgeImpulseHello {
+    hello?: boolean;
+    err?: any;
+}
+
+interface EdgeImpulseDevice {
+    version: number;
+    apiKey: string;
+    deviceId: string;
+    deviceType: string;
+    connection: string;
+    sensors: {
+        "name": string,
+        "maxSampleLengthS": number,
+        "frequencies": number[]
+    }[]
+}
+
+interface EdgeImpulseSample {
+    "label": string;
+    "length": number;
+    "path": string;
+    "hmacKey": string;
+    "interval": number;
+    "sensor": string;
+
+    startTimestamp?: number;
+    lastProgressTimestamp?: number;
+}
+
+/*
+A client for the EdgeImpulse remote management
+https://docs.edgeimpulse.com/reference#remote-management
+*/
+class EdgeImpulseClient extends JDClient {
+    private _ws: WebSocket;
+    private _stopStreaming: () => void;
+    private _dataSet: FieldDataSet;
+    public connectionState = DISCONNECT;
+    public samplingState = IDLE;
+    private _hello: EdgeImpulseDevice;
+    private _sample: EdgeImpulseSample;
+
+    constructor(private readonly apiKey: string, private readonly register: JDRegister) {
+        super()
+
+        this.handleMessage = this.handleMessage.bind(this);
+        this.handleOpen = this.handleOpen.bind(this)
+        this.handleError = this.handleError.bind(this);
+        this.handleReport = this.handleReport.bind(this);
+
+        // make sure to clean up
+        this.mount(this.register.subscribe(REPORT_RECEIVE, this.handleReport));
+        this.mount(() => this.disconnect());
+    }
+
+    disconnect() {
+        this.stopSampling();
+        // stop socket
+        if (this._ws) {
+            const w = this._ws;
+            this._ws = undefined;
+            try {
+                w.close();
+            }
+            catch (e) {
+            }
+            finally {
+                this.setConnectionState(DISCONNECT);
+            }
         }
     }
-    return fetch(url, options)
+
+    private setConnectionState(state: string) {
+        if (this.connectionState !== state) {
+            this.connectionState = state;
+            this.emit(CONNECTION_STATE, this.connectionState);
+            console.log(`ei conn`, this.connectionState)
+        }
+    }
+
+    private setSamplingState(state: string) {
+        if (this.samplingState !== state) {
+            this.samplingState = state;
+            this.emit(SAMPLING_STATE, this.samplingState)
+            console.log(`ei sampling`, this.samplingState)
+        }
+    }
+
+    private send(msg: any) {
+        this._ws?.send(JSON.stringify(msg))
+    }
+
+    private async handleOpen() {
+        console.log(`ws: open`)
+        const { service } = this.register;
+        const { device } = service;
+
+        // fetch device spec
+        const deviceClass = await this.register.service.device.resolveDeviceClass();
+        const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass);
+
+        this._hello = {
+            "version": 2,
+            "apiKey": this.apiKey,
+            "deviceId": device.deviceId,
+            "deviceType": deviceSpec?.name || deviceClass.toString(16) || "JACDAC device",
+            "connection": "ip", // direct connection
+            "sensors": [
+                {
+                    "name": service.name,
+                    "maxSampleLengthS": 10000,
+                    "frequencies": [30, 60]
+                }
+            ]
+        };
+        this.send({
+            "hello": this._hello
+        })
+    }
+
+    private handleMessage(msg: any) {
+        const data = JSON.parse(msg.data)
+        console.log(`msg`, data)
+        if (data.hello !== undefined) {
+            const hello = data as EdgeImpulseHello;
+            if (!hello.hello) {
+                this.emit(ERROR, hello.err)
+                this.disconnect();
+            } else {
+                this.setConnectionState(CONNECT);
+            }
+        } else if (data.sample) {
+            const sample = data.sample as EdgeImpulseSample;
+            this.startSampling(sample);
+        }
+    }
+
+    get connected() {
+        return this.connectionState === CONNECT;
+    }
+
+    get sampling() {
+        return this.samplingState !== IDLE;
+    }
+
+    private handleReport() {
+        if (!this.connected) return; // ignore
+
+        const timestamp = this.register.service.device.bus.timestamp;
+        // first sample, notify we're started
+        if (this.samplingState == STARTING) {
+            this._sample.startTimestamp = this._sample.lastProgressTimestamp = timestamp;
+            this.send({ "sampleStarted": true });
+            this.setSamplingState(SAMPLING);
+        }
+        // store sample
+        if (this.samplingState == SAMPLING) {
+            this._dataSet.addRow();
+            this.emit(REPORT_RECEIVE);
+
+            // debounced progress update
+            if (timestamp - this._sample.lastProgressTimestamp > 200) {
+                this._sample.lastProgressTimestamp = timestamp;
+                this.emit(PROGRESS, this.progress)
+            }
+
+            if (timestamp - this._sample.startTimestamp >= this._sample.length) {
+                // first stop the sampling
+                this._stopStreaming?.();
+                // we're done!
+                this.setSamplingState(UPLOADING);
+                this.emit(PROGRESS, this.progress)
+                const payload = {
+                    "protected": {
+                        "ver": "v1",
+                        "alg": "none",
+                        "iat": Date.now()
+                    },
+                    "signature": "",
+                    "payload": {
+                        "device_name": this._hello.deviceId,
+                        "device_type": this._hello.deviceType,
+                        "interval_ms": this._sample.interval,
+                        "sensors": this._dataSet.headers.map((h, i) => ({
+                            "name": this._dataSet.headers[i], "units": this._dataSet.units[i]
+                        })
+                        ),
+                        "values": this._dataSet.rows.map(ex => ex.data)
+                    }
+                }
+                console.log(`payload`, payload)
+                // upload dataset
+                // https://docs.edgeimpulse.com/reference#ingestion-api
+                fetch(`https://ingestion.edgeimpulse.com${this._sample.path}`, {
+                    method: "POST",
+                    headers: {
+                        "x-api-key": this.apiKey,
+                        "x-label": this._sample.label,
+                        "x-file-name": this._sample.label + ".csv",
+                        "x-disallow-duplicates": "true",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }).then(async (resp) => {
+                    // response contains the filename
+                    const respjs = await resp.json();
+                    console.log(respjs)
+                }).finally(() => {
+                    this.send({
+                        "sampleFinished": true
+                    })
+                    this.setSamplingState(IDLE);
+                })
+            }
+        }
+    }
+
+    private handleError(ev: Event) {
+        this.emit(ERROR, ev)
+        this.disconnect();
+    }
+
+    private startSampling(sample: EdgeImpulseSample) {
+        const { service, fields } = this.register;
+        this._sample = sample;
+        this._dataSet = new FieldDataSet(
+            this.register.service.device.bus,
+            this.register.name,
+            fields
+        );
+        this.send({ "sample": true })
+        this.setSamplingState(STARTING);
+
+        // set interval
+        const streamingIntervalRegister = service.register(BaseReg.StreamingInterval);
+        // TODO ack
+        streamingIntervalRegister.sendSetIntAsync(this._sample.interval);
+
+        // start sampling
+        this._stopStreaming = startStreaming(this.register.service)
+    }
+
+    private stopSampling() {
+        // cleanup streaming
+        this._sample = undefined;
+        this._hello = undefined;
+        if (this._stopStreaming) {
+            try {
+                this._stopStreaming();
+            }
+            catch (e) {
+            }
+            finally {
+                this._stopStreaming = undefined;
+                this.setSamplingState(IDLE);
+            }
+        }
+    }
+
+    connect() {
+        if (this._ws) return; // already connected
+
+        console.log(`ei: connect`)
+        this.setConnectionState(CONNECTING)
+        this._ws = new WebSocket("wss://remote-mgmt.edgeimpulse.com")
+        this._ws.onmessage = this.handleMessage;
+        this._ws.onopen = this.handleOpen;
+        this._ws.onerror = this.handleError;
+    }
+
+    get progress() {
+        const timestamp = this.register.service.device.bus.timestamp;
+        return this.samplingState !== IDLE
+            && (timestamp - this._sample.startTimestamp) / this._sample.length;
+    }
+
+    static async checkAPIKeyValid(apiKey: string): Promise<boolean> {
+        if (!apiKey) return false;
+
+        const r = await EdgeImpulseClient.fetchEdgeImpulse("GET", "projects", apiKey);
+        if (r.status == 200) return true;
+        else if (r.status == 403) return false;
+        else return undefined;
+    }
+
+    static async fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
+        const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
+        const url = `${API_ROOT}${path}`
+        const options: RequestInit = {
+            method,
+            headers: {
+                "Accept": "application/json",
+                "x-api-key": apiKey
+            }
+        }
+        return fetch(url, options)
+    }
 }
 
 function ApiKeyManager() {
@@ -33,16 +332,21 @@ function ApiKeyManager() {
     const [key, setKey] = useState("")
     const [validated, setValidated] = useState(false)
 
-    useEffectAsync(async () => {
-        if (!apiKey)
-            setValidated(false)
+    useEffectAsync(async (mounted) => {
+        if (!apiKey) {
+            if (mounted())
+                setValidated(false)
+        }
         else {
-            const r = await fetchEdgeImpulse("GET", "projects", apiKey);
-            if (r.status == 200) {
-                setValidated(true)
+            const r = await EdgeImpulseClient.checkAPIKeyValid(apiKey)
+            if (!mounted())
+                return;
+            if (r) {
+                setValidated(r)
             } else {
                 setValidated(false)
-                setApiKey(undefined)
+                if (r === false)
+                    setApiKey(undefined)
             }
         }
     }, [apiKey])
@@ -88,137 +392,47 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const { device } = service;
     const theme = useTheme();
 
-    const [wss, setWss] = useState<WebSocket>(undefined)
-    const [sampling, setSampling] = useState(false);
-    const [state, setState] = useState<"" | "connected">("")
+    const [client, setClient] = useState<EdgeImpulseClient>(undefined)
     const [error, setError] = useState("")
-    const connected = state === "connected"
-
-    // start top sampling
+    const [connectionState, setConnectionState] = useState(DISCONNECT)
+    const [samplingState, setSamplingState] = useState(IDLE)
+    const [samplingProgress, setSamplingProgress] = useState(0)
     useEffect(() => {
-        if (sampling) {
-            console.log(`ei: start sampling`, register.id)
-            const stopStreaming = startStreaming(register.service)
-            return stopStreaming;
-        } else {
-            // send result to socket
-            console.log(`ei: stop sampling`, register.id, wss)
-            if (wss) {
-                // tell we are uploading
-                wss.send(JSON.stringify({
-                    "sampleUploading": true
-                }))
-                // POST
-                // done
-                wss.send(JSON.stringify({
-                    "sampleFinished": true
-                }))
-            }
+        if (!apiKey || !register) {
+            setClient(undefined);
+            setError(undefined);
+            return undefined;
         }
-        return undefined
-    }, [register, apiKey, sampling])
-
-    // record reports
-    useEventRaised(PACKET_REPORT, register, r => {
-        console.log(`report`, register.id, register.intValue)
-        if (wss && sampling) {
-            // store data
+        else {
+            console.log(`start client`)
+            const c = new EdgeImpulseClient(apiKey, register)
+            c.connect();
+            setClient(c);
+            setError(undefined);
+            return () => c.unmount();
         }
-    })
-
-    // https://docs.edgeimpulse.com/reference#remote-management
-    useEffectAsync(async () => new Promise((resolve, reject) => {
-        console.log(`ei: opening socket`, register.id)
-
-        setError("");
-
-        const ws = new WebSocket("wss://remote-mgmt.edgeimpulse.com")
-        ws.onmessage = (msg) => {
-            const data = JSON.parse(msg.data)
-            console.log(`ei: msg`, register.id, data)
-            if (data.hello !== undefined) {
-                if (!data.hello) {
-                    setState("");
-                    setError(data.err)
-                    ws.close();
-                    console.log(`ei: hello error ${data.err}`, register.id)
-                } else {
-                    setState("connected");
-                    console.log(`ei: connected`, register.id)
-                }
-            } else if (data.sample) {
-                // start sampling
-                console.log(`ei: sampling`, register.id);
-                ws.send(JSON.stringify({
-                    "sample": true
-                }))
-                ws.send(JSON.stringify({
-                    "sampleStarted": true
-                }))
-                // start recording
-                setSampling(true);
-                setTimeout(() => setSampling(false), 5000);
-            }
-        }
-        ws.onopen = () => {
-            console.log(`ei: send hello`, register.id)
-            ws.send(JSON.stringify({
-                "hello": {
-                    "version": 2,
-                    "apiKey": apiKey,
-                    "deviceId": device.deviceId,
-                    "deviceType": "demo",
-                    "connection": "ip",
-                    "sensors": [
-                        {
-                            "name": service.name,
-                            "maxSampleLengthS": 10000,
-                            "frequencies": [30, 60]
-                        }
-                    ]
-                }
-            }))
-            if (resolve) {
-                const r = resolve;
-                resolve = undefined;
-                reject = undefined;
-                r();
-            }
-        }
-        ws.onerror = (error) => {
-            if (reject) {
-                const r = reject;
-                resolve = undefined;
-                reject = undefined;
-                r(error);
-
-                setError(error.toString())
-                setState("")
-            }
-        }
-        ws.onclose = () => {
-            setState("");
-        }
-
-        setWss(ws);
-
-        return () => {
-            try {
-                ws.close();
-                setWss(undefined);
-            }
-            catch (e) {
-                console.log(`ignored`, e)
-            }
-        }
-    }), [register, apiKey])
+    }, [register, apiKey])
+    // subscribe to client changes
+    useEffect(() => client?.subscribe(CONNECTION_STATE,
+        (v: string) => setConnectionState(v))
+        , [client])
+    // subscribe to client changes
+    useEffect(() => client?.subscribe(SAMPLING_STATE,
+        (v: string) => setSamplingState(v))
+        , [client])
+    // listen to errors
+    useEffect(() => client?.subscribe(ERROR, (e: string) => setError(e))
+        , [client])
+    // progress
+    useEffect(() => client?.subscribe(PROGRESS, (p: number) => setSamplingProgress(p * 100))
+        , [client])
 
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
-            {connected && <Alert severity={"success"}>Connected</Alert>}
-            {sampling && <CircularProgress size={theme.spacing(2)} />}
+            {connectionState === CONNECT && <Alert severity={"success"}>Connected</Alert>}
+            {samplingState !== IDLE && <CircularProgressWithLabel value={samplingProgress} />}
         </CardContent>
     </Card>
 }

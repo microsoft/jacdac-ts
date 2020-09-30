@@ -1,6 +1,5 @@
 import { JDBus } from "../../../src/dom/bus";
 import { JDField } from "../../../src/dom/field";
-import { SensorAggregatorConfig, sensorConfigToCSV } from "../../../src/dom/sensoraggregatorclient"
 
 export class Example {
     label: string;
@@ -32,7 +31,7 @@ export default class FieldDataSet {
         public readonly bus: JDBus,
         public readonly name: string,
         public readonly fields: JDField[],
-        public readonly colors: string[]
+        public readonly colors: string[] = ["#000"]
     ) {
         this.rows = [];
         this.headers = fields.map(field => field.friendlyName)
