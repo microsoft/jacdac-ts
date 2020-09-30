@@ -6,6 +6,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     media: {
         height: 0,
         paddingTop: '75%', // 4:3
+    }
+}));
+
+/*
         [theme.breakpoints.down('lg')]: {
             paddingTop: '56.72%', // 16:9
         },
@@ -15,8 +19,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         [theme.breakpoints.down('md')]: { // 6:3
             paddingTop: '50%',
         }
-    }
-}));
+*/
 
 export default function CardMediaWithSkeleton(props: CardMediaProps) {
     const { image, src, className, ...others } = props;
