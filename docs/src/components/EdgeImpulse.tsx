@@ -99,14 +99,14 @@ class EdgeImpulseClient extends JDClient {
     private setConnectionState(state: string) {
         if (this.connectionState !== state) {
             this.connectionState = state;
-            this.emit(CONNECTION_STATE);
+            this.emit(CONNECTION_STATE, this.connectionState);
         }
     }
 
     private setSamplingState(state: string) {
         if (this.samplingState !== state) {
             this.samplingState = state;
-            this.emit(SAMPLING_STATE)
+            this.emit(SAMPLING_STATE, this.samplingState)
         }
     }
 
@@ -305,11 +305,15 @@ function ApiKeyManager() {
     const [key, setKey] = useState("")
     const [validated, setValidated] = useState(false)
 
-    useEffectAsync(async () => {
-        if (!apiKey)
-            setValidated(false)
+    useEffectAsync(async (mounted) => {
+        if (!apiKey) {
+            if (mounted())
+                setValidated(false)
+        }
         else {
             const r = await EdgeImpulseClient.checkAPIKeyValid(apiKey)
+            if (!mounted())
+                return;
             if (r) {
                 setValidated(r)
             } else {
@@ -365,34 +369,34 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const [error, setError] = useState("")
     const [connectionState, setConnectionState] = useState(DISCONNECT)
     const [samplingState, setSamplingState] = useState(IDLE)
-
     useEffect(() => {
-        if (!apiKey) {
+        if (!apiKey || !register) {
             setClient(undefined);
             setError(undefined);
             return undefined;
         }
         else {
+            console.log(`start client`)
             const c = new EdgeImpulseClient(apiKey, register)
             c.connect();
             setClient(c);
             setError(undefined);
-            return c.unmount();
+            return () => c.unmount();
         }
     }, [register, apiKey])
-
     // subscribe to client changes
-    useEffect(client?.subscribe(CONNECTION_STATE,
+    useEffect(() => client?.subscribe(CONNECTION_STATE,
         (v: string) => setConnectionState(v))
         , [client])
     // subscribe to client changes
-    useEffect(client?.subscribe(SAMPLING_STATE,
+    useEffect(() => client?.subscribe(SAMPLING_STATE,
         (v: string) => setSamplingState(v))
         , [client])
     // listen to errors
-    useEffect(client?.subscribe(ERROR, (e: string) => setError(e))
+    useEffect(() => client?.subscribe(ERROR, (e: string) => setError(e))
         , [client])
 
+    console.log('ei', connectionState, samplingState)
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
