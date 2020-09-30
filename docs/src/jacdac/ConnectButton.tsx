@@ -20,12 +20,11 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
         variant="contained"
         color="primary"
         className={className}
-        startIcon={showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />}
+        startIcon={inProgress ? <CircularProgress /> : showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />}
         disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
         onClick={showDisconnect ? disconnectAsync : connectAsync}>
         {!full && <Hidden mdDown>{showDisconnect ? "disconnect" : "connect"}</Hidden>}
         {full && (showDisconnect ? "disconnect" : "connect")}
         {count > 0 && ` (${count})`}
-        {inProgress && <CircularProgress />}
     </Button>
 }

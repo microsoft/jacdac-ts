@@ -85,6 +85,7 @@ export const EVENT = 'event'
 export const FIRMWARE_INFO = 'firmwareInfo'
 export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 export const NAME_CHANGE = 'nameChange'
+export const LATE = 'late'
 
 export const DATA = 'data'
 export const CLOSE = 'close'
@@ -101,6 +102,7 @@ export const DEVICE_NAME_CHANGE = 'deviceNameChange'
 export const SELF_ANNOUNCE = 'selfAnnounce'
 
 export const PACKET_SEND = 'packetSend'
+export const PACKET_SEND_DISCONNECT = 'packetSendDisconnect'
 
 export const PACKET_PROCESS = 'packetProcess'
 export const PACKET_RECEIVE = 'packetReceive'
@@ -112,6 +114,8 @@ export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'
 
 export const ERROR = 'error'
+export const TIMEOUT = 'timeout'
+export const TIMEOUT_DISCONNECT = 'timeoutDisconnect'
 
 export const PACKET_KIND_RW = "rw"
 export const PACKET_KIND_RO = "ro"
@@ -124,5 +128,9 @@ export const DEVICE_NODE_NAME = "device"
 export const BUS_NODE_NAME = "bus"
 export const COMMAND_NODE_NAME = "command"
 export const FIELD_NODE_NAME = "field"
+
+export const REGISTER_REFRESH_TIMEOUT = 150
+export const REGISTER_REFRESH_RETRY_0 = 30
+export const REGISTER_REFRESH_RETRY_1 = 80
 
 export * from "../../jacdac-spec/dist/specconstants";

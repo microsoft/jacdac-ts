@@ -33,7 +33,11 @@ import {
     JD_DEVICE_DISCONNECTED_DELAY,
     JD_DEVICE_LOST_DELAY,
     JD_SERVICE_NUMBER_CRC_ACK,
-    SELF_ANNOUNCE
+    SELF_ANNOUNCE,
+    TIMEOUT,
+    LATE,
+    PACKET_SEND_DISCONNECT,
+    TIMEOUT_DISCONNECT
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -252,10 +256,14 @@ export class JDBus extends JDNode {
     sendPacketAsync(p: Packet) {
         p.timestamp = this.timestamp;
         this.emit(PACKET_SEND, p);
+
+        if (!this.connected) {
+            this.emit(PACKET_SEND_DISCONNECT, p);
+            return Promise.resolve();
+        }
         const spa = this.transport.sendPacketAsync;
         if (!spa)
             return Promise.resolve();
-
         return spa(p);
     }
 
@@ -541,6 +549,48 @@ export class JDBus extends JDNode {
             pkt.service_number = JD_SERVICE_NUMBER_CTRL
             pkt.device_identifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)
+        })
+    }
+
+    /**
+     * Runs a promise with a timeout. Returns undefined if timeout happens before of disconnection.
+     * @param timeout 
+     * @param p 
+     */
+    withTimeout<T>(timeout: number, p: Promise<T>): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            let done = false
+            let tid = setTimeout(() => {
+                if (!done) {
+                    done = true
+                    if (!this.connected) {
+                        // the bus got disconnected so all operation will
+                        // time out going further
+                        this.emit(TIMEOUT_DISCONNECT)
+                        resolve(undefined);
+                    }
+                    else {
+                        // the command timed out
+                        this.emit(TIMEOUT)
+                        this.emit(ERROR, "Timeout (" + timeout + "ms)");
+                        resolve(undefined);
+                    }
+                }
+            }, timeout)
+            p.then(v => {
+                if (!done) {
+                    done = true
+                    resolve(v)
+                } else {
+                    // we already gave up
+                    this.emit(LATE)
+                }
+            }, e => {
+                if (!done) {
+                    done = true
+                    reject(e)
+                }
+            })
         })
     }
 }

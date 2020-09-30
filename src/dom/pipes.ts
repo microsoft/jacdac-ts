@@ -127,12 +127,12 @@ export class InPipeReader extends InPipe {
     }
 
     async readData(timeout = 500): Promise<Uint8Array[]> {
-        await withTimeout(timeout, this.done.signalled)
-        return this.output.map(p => p.data).filter(b => b.length > 0)
+        await this.bus.withTimeout(timeout, this.done.signalled)
+        return this.output.map(p => p.data).filter(b => !!b?.length)
     }
 
     async readAll(timeout = 500) {
-        await withTimeout(timeout, this.done.signalled)
+        await this.bus.withTimeout(timeout, this.done.signalled)
         return {
             meta: this.meta,
             output: this.output

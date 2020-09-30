@@ -1,5 +1,5 @@
 import { Packet } from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME } from "./constants";
+import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1, REGISTER_REFRESH_RETRY_0 } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { JDNode } from "./node";
@@ -120,25 +120,26 @@ export class JDRegister extends JDServiceMemberNode {
         if (!!this.data && this.specification?.kind === "const")
             return;
 
-        return withTimeout(150, new Promise<void>((resolve, reject) => {
+        const bus = this.service.device.bus;
+        return bus.withTimeout(REGISTER_REFRESH_TIMEOUT, new Promise<void>((resolve, reject) => {
             this.once(REPORT_RECEIVE, () => {
                 const f = resolve
                 resolve = null
                 f()
             })
-            // re-send get if no answer within 20ms and 70ms
+            // re-send get if no answer within 40ms and 90ms
             this.sendGetAsync()
-                .then(() => delay(20))
+                .then(() => delay(REGISTER_REFRESH_RETRY_0))
                 .then(() => {
                     if (resolve)
                         return this.sendGetAsync()
-                            .then(() => delay(50))
+                            .then(() => delay(REGISTER_REFRESH_RETRY_1))
                 })
                 .then(() => {
                     if (resolve)
                         return this.sendGetAsync()
                 })
-                .then(() => { }, reject)
+                .catch(e => reject(e));
         }))
     }
 
