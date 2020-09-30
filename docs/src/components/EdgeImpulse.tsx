@@ -359,6 +359,8 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
 
     const [client, setClient] = useState<EdgeImpulseClient>(undefined)
     const [error, setError] = useState("")
+    const [connectionState, setConnectionState] = useState(DISCONNECT)
+    const [samplingState, setSamplingState] = useState(IDLE)
 
     useEffect(() => {
         if (!apiKey) {
@@ -373,12 +375,21 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
         }
     }, [register, apiKey])
 
+    // subscribe to client changes
+    useEffect(client?.subscribe(CONNECTION_STATE,
+        (v: string) => setConnectionState(v))
+        , [client])
+    // subscribe to client changes
+    useEffect(client?.subscribe(SAMPLING_STATE,
+        (v: string) => setSamplingState(v))
+        , [client])
+
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
-            {client?.connected && <Alert severity={"success"}>Connected</Alert>}
-            {client?.sampling && <CircularProgress size={theme.spacing(2)} />}
+            {connectionState === CONNECT && <Alert severity={"success"}>Connected</Alert>}
+            {samplingState !== IDLE && <CircularProgress size={theme.spacing(2)} />}
         </CardContent>
     </Card>
 }
