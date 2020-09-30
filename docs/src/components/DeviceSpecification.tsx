@@ -6,9 +6,10 @@ import ServiceSpecificationCard from "./ServiceSpecificationCard";
 import { Grid } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
 import Markdown from "./Markdown";
+import DeviceSpecificationSource from "./DeviceSpecificationSource";
 
-export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }) {
-    const { device } = props;
+export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, showSource?: string }) {
+    const { device, showSource } = props;
     const gridBreakpoints = useGridBreakpoints();
 
     return <>
@@ -37,5 +38,9 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec }
                     <ServiceSpecificationCard key={spec.shortId} specification={spec} />
                 </Grid>)}
         </Grid>
+        {showSource && <>
+            <h2>Specification</h2>
+            <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} />
+        </>}
     </>
 }
