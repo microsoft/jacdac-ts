@@ -7,25 +7,151 @@ import { isSensor, startStreaming } from "../../../src/dom/sensor";
 import useChange from "../jacdac/useChange";
 import useGridBreakpoints from "./useGridBreakpoints";
 import { JDRegister } from "../../../src/dom/register";
+import { JDClient } from "../../../src/dom/client";
 import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
-import { PACKET_REPORT } from "../../../src/dom/constants";
+import { CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT } from "../../../src/dom/constants";
+import { JDEventSource } from "../../../src/dom/eventsource";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
-const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
 
-function fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
-    const url = `${API_ROOT}${path}`
-    const options: RequestInit = {
-        method,
-        headers: {
-            "Accept": "application/json",
-            "x-api-key": apiKey
+const SAMPLING = "sampling";
+
+class EdgeImpulseClient extends JDEventSource {
+    private _ws: WebSocket;
+    private _stopStreaming: () => void;
+    private connectionState = DISCONNECT;
+
+    constructor(private readonly apiKey: string, private readonly register: JDRegister) {
+        super()
+
+        this.handleMessage = this.handleMessage.bind(this);
+        this.handleOpen = this.handleOpen.bind(this)
+        this.handleError = this.handleError.bind(this);
+    }
+
+    disconnect() {
+        this.stopSampling();
+        // stop socket
+        if (this._ws) {
+            const w = this._ws;
+            this._ws = undefined;
+            try {
+                w.close();
+            }
+            catch (e) {
+            }
+            finally {
+                this.emit(DISCONNECT);
+            }
         }
     }
-    return fetch(url, options)
+
+    private setConnectionState(state: string) {
+        if (this.connectionState !== state) {
+            this.connectionState = state;
+            this.emit(this.connectionState);
+            this.emit(CONNECTION_STATE);
+        }
+    }
+
+    private send(msg: any) {
+        this._ws?.send(JSON.stringify(msg))
+    }
+
+    private handleOpen() {
+        const { service } = this.register;
+        const { device } = service;
+        this.send({
+            "hello": {
+                "version": 2,
+                "apiKey": this.apiKey,
+                "deviceId": device.deviceId,
+                "deviceType": "demo",
+                "connection": "ip",
+                "sensors": [
+                    {
+                        "name": service.name,
+                        "maxSampleLengthS": 10000,
+                        "frequencies": [30, 60]
+                    }
+                ]
+            }
+        })
+    }
+
+    private handleMessage(msg: any) {
+        const data = JSON.parse(msg.data)
+        if (data.hello !== undefined) {
+            if (!data.hello) {
+                this.emit(ERROR, data.err)
+                this.disconnect();
+            } else {
+                this.setConnectionState(CONNECT);
+            }
+        } else if (data.sample) {
+            this.startSampling();
+        }
+    }
+
+    private handleError(ev: Event) {
+        this.emit(ERROR, ev)
+        this.disconnect();
+    }
+
+    private startSampling() {
+        // start register
+        this._stopStreaming = startStreaming(this.register.service)
+        // start sampling
+        this.send({ "sample": true })
+        this.emit(SAMPLING);
+        this.send({ "sampleStarted": true })
+    }
+
+    private stopSampling() {
+        // cleanup streaming
+        if (this._stopStreaming) {
+            try {
+                this._stopStreaming();
+            } catch (e) {
+            }
+            finally {
+                this._stopStreaming = undefined;
+            }
+        }
+    }
+
+    connect() {
+        if (this._ws) return; // already connected
+
+        this.setConnectionState(CONNECTING)
+        this._ws = new WebSocket("wss://remote-mgmt.edgeimpulse.com")
+        this._ws.onmessage = this.handleMessage;
+        this._ws.onopen = this.handleOpen;
+        this._ws.onerror = this.handleError;
+    }
+
+    static async checkAPIKeyValid(apiKey: string): Promise<boolean> {
+        if (!apiKey) return false;
+
+        const r = await this.fetchEdgeImpulse("GET", "projects", apiKey);
+        return r.status == 200;
+    }
+
+    static async fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
+        const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
+        const url = `${API_ROOT}${path}`
+        const options: RequestInit = {
+            method,
+            headers: {
+                "Accept": "application/json",
+                "x-api-key": apiKey
+            }
+        }
+        return fetch(url, options)
+    }
 }
 
 function ApiKeyManager() {
@@ -37,9 +163,9 @@ function ApiKeyManager() {
         if (!apiKey)
             setValidated(false)
         else {
-            const r = await fetchEdgeImpulse("GET", "projects", apiKey);
-            if (r.status == 200) {
-                setValidated(true)
+            const r = await EdgeImpulseClient.checkAPIKeyValid(apiKey)
+            if (r) {
+                setValidated(r)
             } else {
                 setValidated(false)
                 setApiKey(undefined)
