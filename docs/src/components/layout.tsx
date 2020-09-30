@@ -52,6 +52,7 @@ import Helmet from "react-helmet";
 import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
+import GitHubButton from "./GitHubButton"
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -285,6 +286,7 @@ function LayoutWithContext(props: {
           </Hidden>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
+          <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hide)} repo={"microsoft/jacdac-ts"} />
           <div className={clsx(classes.menuButton, drawerOpen && classes.hide)}><FlashButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
             <MoreIcon />
