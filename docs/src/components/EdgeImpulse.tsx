@@ -253,6 +253,7 @@ class EdgeImpulseClient extends JDClient {
     private stopSampling() {
         // cleanup streaming
         this._sample = undefined;
+        this._hello = undefined;
         if (this._stopStreaming) {
             try {
                 this._stopStreaming();
