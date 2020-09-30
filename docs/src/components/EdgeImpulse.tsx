@@ -12,7 +12,7 @@ import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
-import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT } from "../../../src/dom/constants";
+import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, REPORT_RECEIVE } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
@@ -75,7 +75,7 @@ class EdgeImpulseClient extends JDClient {
         this.handleReport = this.handleReport.bind(this);
 
         // make sure to clean up
-        this.mount(this.register.subscribe(PACKET_REPORT, this.handleReport));
+        this.mount(this.register.subscribe(REPORT_RECEIVE, this.handleReport));
         this.mount(() => this.disconnect());
     }
 
@@ -159,6 +159,10 @@ class EdgeImpulseClient extends JDClient {
 
     get connected() {
         return this.connectionState === CONNECT;
+    }
+
+    get sampling() {
+        return this.samplingState !== IDLE;
     }
 
     private handleReport() {
@@ -353,137 +357,28 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const { device } = service;
     const theme = useTheme();
 
-    const [wss, setWss] = useState<WebSocket>(undefined)
-    const [sampling, setSampling] = useState(false);
-    const [state, setState] = useState<"" | "connected">("")
+    const [client, setClient] = useState<EdgeImpulseClient>(undefined)
     const [error, setError] = useState("")
-    const connected = state === "connected"
 
-    // start top sampling
     useEffect(() => {
-        if (sampling) {
-            console.log(`ei: start sampling`, register.id)
-            const stopStreaming = startStreaming(register.service)
-            return stopStreaming;
-        } else {
-            // send result to socket
-            console.log(`ei: stop sampling`, register.id, wss)
-            if (wss) {
-                // tell we are uploading
-                wss.send(JSON.stringify({
-                    "sampleUploading": true
-                }))
-                // POST
-                // done
-                wss.send(JSON.stringify({
-                    "sampleFinished": true
-                }))
-            }
+        if (!apiKey) {
+            setClient(undefined);
+            return undefined;
         }
-        return undefined
-    }, [register, apiKey, sampling])
-
-    // record reports
-    useEventRaised(PACKET_REPORT, register, r => {
-        console.log(`report`, register.id, register.intValue)
-        if (wss && sampling) {
-            // store data
+        else {
+            const c = new EdgeImpulseClient(apiKey, register)
+            c.connect();
+            setClient(c);
+            return c.unmount();
         }
-    })
-
-    // https://docs.edgeimpulse.com/reference#remote-management
-    useEffectAsync(async () => new Promise((resolve, reject) => {
-        console.log(`ei: opening socket`, register.id)
-
-        setError("");
-
-        const ws = new WebSocket("wss://remote-mgmt.edgeimpulse.com")
-        ws.onmessage = (msg) => {
-            const data = JSON.parse(msg.data)
-            console.log(`ei: msg`, register.id, data)
-            if (data.hello !== undefined) {
-                if (!data.hello) {
-                    setState("");
-                    setError(data.err)
-                    ws.close();
-                    console.log(`ei: hello error ${data.err}`, register.id)
-                } else {
-                    setState("connected");
-                    console.log(`ei: connected`, register.id)
-                }
-            } else if (data.sample) {
-                // start sampling
-                console.log(`ei: sampling`, register.id);
-                ws.send(JSON.stringify({
-                    "sample": true
-                }))
-                ws.send(JSON.stringify({
-                    "sampleStarted": true
-                }))
-                // start recording
-                setSampling(true);
-                setTimeout(() => setSampling(false), 5000);
-            }
-        }
-        ws.onopen = () => {
-            console.log(`ei: send hello`, register.id)
-            ws.send(JSON.stringify({
-                "hello": {
-                    "version": 2,
-                    "apiKey": apiKey,
-                    "deviceId": device.deviceId,
-                    "deviceType": "demo",
-                    "connection": "ip",
-                    "sensors": [
-                        {
-                            "name": service.name,
-                            "maxSampleLengthS": 10000,
-                            "frequencies": [30, 60]
-                        }
-                    ]
-                }
-            }))
-            if (resolve) {
-                const r = resolve;
-                resolve = undefined;
-                reject = undefined;
-                r();
-            }
-        }
-        ws.onerror = (error) => {
-            if (reject) {
-                const r = reject;
-                resolve = undefined;
-                reject = undefined;
-                r(error);
-
-                setError(error.toString())
-                setState("")
-            }
-        }
-        ws.onclose = () => {
-            setState("");
-        }
-
-        setWss(ws);
-
-        return () => {
-            try {
-                ws.close();
-                setWss(undefined);
-            }
-            catch (e) {
-                console.log(`ignored`, e)
-            }
-        }
-    }), [register, apiKey])
+    }, [register, apiKey])
 
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
-            {connected && <Alert severity={"success"}>Connected</Alert>}
-            {sampling && <CircularProgress size={theme.spacing(2)} />}
+            {client?.connected && <Alert severity={"success"}>Connected</Alert>}
+            {client?.sampling && <CircularProgress size={theme.spacing(2)} />}
         </CardContent>
     </Card>
 }
