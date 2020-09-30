@@ -19,6 +19,7 @@ export default function useFirmwareBlobs() {
         if (!names) return;
 
         const missingSlugs = unique(deviceSpecifications()
+            .filter(spec => !!spec?.firmwares.length) // needs some firmwares
             .map(spec => spec.repo)
             .filter(repo => /^https:\/\/github.com\//.test(repo))
             .map(repo => repo.substr("https://github.com/".length))
