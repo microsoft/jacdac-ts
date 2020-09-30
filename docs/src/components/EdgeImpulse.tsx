@@ -16,7 +16,7 @@ import { PACKET_REPORT } from "../../../src/dom/constants";
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
 
-async function requestJSON<T>(method: "GET" | "POST", path: string, apiKey: string): Promise<T> {
+function fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
     const url = `${API_ROOT}${path}`
     const options: RequestInit = {
         method,
@@ -25,19 +25,27 @@ async function requestJSON<T>(method: "GET" | "POST", path: string, apiKey: stri
             "x-api-key": apiKey
         }
     }
-    const resp = await fetch(url, options)
-    switch (resp.status) {
-        case 200:
-            const payload = await resp.json();
-            return payload as T;
-        default:
-            throw Error(`request failed (${resp.status})`)
-    }
+    return fetch(url, options)
 }
 
 function ApiKeyManager() {
     const { value: apiKey, setValue: setApiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
     const [key, setKey] = useState("")
+    const [validated, setValidated] = useState(false)
+
+    useEffectAsync(async () => {
+        if (!apiKey)
+            setValidated(false)
+        else {
+            const r = await fetchEdgeImpulse("GET", "projects", apiKey);
+            if (r.status == 200) {
+                setValidated(true)
+            } else {
+                setValidated(false)
+                setApiKey(undefined)
+            }
+        }
+    }, [apiKey])
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setKey(event.target.value)
@@ -55,6 +63,7 @@ function ApiKeyManager() {
             title="API Key Configuration"
         />
         <CardContent>
+            {validated && <Alert severity={"success"}>API key ready!</Alert>}
             <p>To get an <b>API key</b>, navigate to &nbsp;
             <Link to="https://studio.edgeimpulse.com/" target="_blank">https://studio.edgeimpulse.com/</Link>;
             select your project, click <b>Keys</b> and generate a new key.</p>
@@ -84,7 +93,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const connected = state === "connected"
 
     // start top streaming
-    useEffect(() => streaming && startStreaming(register.service)
+    useEffect(() => streaming ? startStreaming(register.service) : undefined
         , [register, apiKey, streaming])
 
     // record reports
