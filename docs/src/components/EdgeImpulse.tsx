@@ -12,7 +12,7 @@ import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
-import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, REPORT_RECEIVE } from "../../../src/dom/constants";
+import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
@@ -54,6 +54,7 @@ interface EdgeImpulseSample {
     "sensor": string;
 
     startTimestamp?: number;
+    lastProgressTimestamp?: number;
 }
 
 /*
@@ -178,7 +179,7 @@ class EdgeImpulseClient extends JDClient {
         const timestamp = this.register.service.device.bus.timestamp;
         // first sample, notify we're started
         if (this.samplingState == STARTING) {
-            this._sample.startTimestamp = timestamp;
+            this._sample.startTimestamp = this._sample.lastProgressTimestamp = timestamp;
             this.send({ "sampleStarted": true });
             this.setSamplingState(SAMPLING);
         }
@@ -188,12 +189,17 @@ class EdgeImpulseClient extends JDClient {
             this.emit(REPORT_RECEIVE);
 
             // debounced progress update
+            if (timestamp - this._sample.lastProgressTimestamp > 200) {
+                this._sample.lastProgressTimestamp = timestamp;
+                this.emit(PROGRESS, this.progress)
+            }
 
             if (timestamp - this._sample.startTimestamp >= this._sample.length) {
                 // first stop the sampling
                 this._stopStreaming?.();
                 // we're done!
                 this.setSamplingState(UPLOADING);
+                this.emit(PROGRESS, this.progress)
                 const payload = {
                     "protected": {
                         "ver": "v1",
@@ -295,7 +301,7 @@ class EdgeImpulseClient extends JDClient {
     get progress() {
         const timestamp = this.register.service.device.bus.timestamp;
         return this.samplingState !== IDLE
-            && (timestamp - this._sample.startTimestamp) / this._sample.length * 100;
+            && (timestamp - this._sample.startTimestamp) / this._sample.length;
     }
 
     static async checkAPIKeyValid(apiKey: string): Promise<boolean> {
@@ -390,6 +396,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const [error, setError] = useState("")
     const [connectionState, setConnectionState] = useState(DISCONNECT)
     const [samplingState, setSamplingState] = useState(IDLE)
+    const [samplingProgress, setSamplingProgress] = useState(0)
     useEffect(() => {
         if (!apiKey || !register) {
             setClient(undefined);
@@ -416,14 +423,16 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     // listen to errors
     useEffect(() => client?.subscribe(ERROR, (e: string) => setError(e))
         , [client])
+    // progress
+    useEffect(() => client?.subscribe(PROGRESS, (p: number) => setSamplingProgress(p * 100))
+        , [client])
 
-    console.log('ei render:', connectionState, samplingState)
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
             {connectionState === CONNECT && <Alert severity={"success"}>Connected</Alert>}
-            {samplingState !== IDLE && <CircularProgressWithLabel size={theme.spacing(2)} value={client?.progress} />}
+            {samplingState !== IDLE && <CircularProgressWithLabel value={samplingProgress} />}
         </CardContent>
     </Card>
 }
