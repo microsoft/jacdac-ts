@@ -34,10 +34,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     pos: {
         marginBottom: 12,
     },
-    media: {
-        height: 0,
-        paddingTop: '18%',
-    }
 }));
 
 function navigateToService(service: JDService) {
@@ -70,12 +66,10 @@ export default function DeviceCard(props: {
     const deviceClass = useRegisterValue(device, SRV_CTRL, CtrlReg.DeviceClass);
     const deviceSpecification = deviceSpecificationFromClassIdenfitier(deviceClass?.intValue);
     const imageUrl = imageDeviceOf(deviceSpecification);
-    console.log('fw', deviceClass, deviceSpecification)
 
     return (
         <Card className={classes.root}>
             <CardMediaWithSkeleton
-                className={classes.media}
                 image={imageUrl}
                 title={deviceSpecification?.name}
             />

@@ -8,13 +8,6 @@ import { Button, IconButton } from "gatsby-theme-material-ui";
 import HomeIcon from '@material-ui/icons/Home';
 import CardMediaWithSkeleton from "./CardMediaWithSkeleton"
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-    media: {
-        height: 0,
-        paddingTop: '40%',
-    },
-}));
-
 export default function DeviceSpecificationCard(props: {
     deviceIdentifier?: number,
     specificationIdentifier?: string,
@@ -26,12 +19,10 @@ export default function DeviceSpecificationCard(props: {
         spec = deviceSpecificationFromClassIdenfitier(deviceIdentifier)
     if (!spec && specificationIdentifier !== undefined)
         spec = deviceSpecificationFromIdentifier(specificationIdentifier)
-    const classes = useStyles();
     const imageUrl = imageDeviceOf(spec)
 
     return <Card>
         <CardMediaWithSkeleton
-            className={classes.media}
             image={imageUrl}
             title={spec?.name}
         />
