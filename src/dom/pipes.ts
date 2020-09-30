@@ -2,7 +2,7 @@ import { JDDevice } from "./device"
 import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_NUMBER_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE } from "./constants"
 import { Packet } from "./packet"
 import { JDBus } from "./bus"
-import { randomUInt, signal, withTimeout, fromHex, throwError, warn } from "./utils"
+import { randomUInt, signal, fromHex, throwError, warn } from "./utils"
 import { pack } from "./struct"
 import { JDClient } from "./client"
 
