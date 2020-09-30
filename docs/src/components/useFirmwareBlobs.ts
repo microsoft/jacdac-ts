@@ -4,11 +4,44 @@ import { FirmwareBlob, parseFirmwareFile, parseUF2 } from "../../../src/dom/flas
 import useEffectAsync from "./useEffectAsync";
 import DbContext, { DbContextProps } from "./DbContext";
 import { useChangeAsync } from "../jacdac/useChange";
+import { deviceSpecifications } from "../../../src/dom/spec";
+import { delay, unique } from "../../../src/dom/utils";
+import { fetchLatestRelease, fetchReleaseBinary } from "./github";
 
 export default function useFirmwareBlobs() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { db } = useContext<DbContextProps>(DbContext)
     const firmwares = db?.firmwares;
+
+    // run once, go through known firmware repoes and load version
+    useEffectAsync(async () => {
+        const names = await firmwares?.list()
+        if (!names) return;
+
+        const missingSlugs = unique(deviceSpecifications()
+            .map(spec => spec.repo)
+            .filter(repo => /^https:\/\/github.com\//.test(repo))
+            .map(repo => repo.substr("https://github.com/".length))
+            .filter(slug => names.indexOf(slug) < 0)
+        );
+        for (const slug of missingSlugs) {
+            console.log(`fetch latest release of ${slug}`)
+            const rel = await fetchLatestRelease(slug, { ignoreThrottled: true })
+            if (!rel?.tag_name) {
+                console.warn(`release not found`)
+                return;
+            }
+
+            console.log(`fetch binary release ${slug}#${rel.tag_name}`)
+            const fw = await fetchReleaseBinary(slug, rel.tag_name)
+            if (fw) {
+                console.log(`binary release ${slug}#${rel.tag_name} downloaded`)
+                firmwares.set(slug, fw);
+            }
+            // throttle github queries
+            await delay(5000)
+        }
+    }, [db])
 
     useChangeAsync(firmwares, async (fw) => {
         console.log(`import stored uf2`)

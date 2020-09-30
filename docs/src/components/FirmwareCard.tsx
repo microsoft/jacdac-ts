@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Button, Card, CardHeader, CardActions, CircularProgress, CardContent, Chip, ListItem, List, ListItemText, Typography } from "@material-ui/core";
-import { fetchLatestRelease, GithubRelease } from "./github";
+import { fetchLatestRelease, fetchReleaseBinary, GithubRelease } from "./github";
 import useEffectAsync from "./useEffectAsync";
 import { Link } from "gatsby-theme-material-ui";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
@@ -57,12 +57,9 @@ export default function FirmwareCard(props: { slug: string }) {
         try {
             setError("")
             setDownloading(true)
-            const downloadUrl = `https://raw.githubusercontent.com/${slug}/${tag}/dist/firmware.uf2`
-            const req = await fetch(downloadUrl, { headers: { "Accept": "application/octet-stream" } })
-            if (req.status == 200) {
-                const firmware = await req.blob()
+            const firmware = await fetchReleaseBinary(slug, tag);
+            if (firmware)
                 setFirmwareFile(tag, firmware)
-            }
         }
         finally {
             setDownloading(false)
