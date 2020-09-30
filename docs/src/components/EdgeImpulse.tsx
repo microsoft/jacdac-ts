@@ -269,6 +269,7 @@ class EdgeImpulseClient extends JDClient {
     connect() {
         if (this._ws) return; // already connected
 
+        console.log(`ei: connect`)
         this.setConnectionState(CONNECTING)
         this._ws = new WebSocket("wss://remote-mgmt.edgeimpulse.com")
         this._ws.onmessage = this.handleMessage;
@@ -280,7 +281,9 @@ class EdgeImpulseClient extends JDClient {
         if (!apiKey) return false;
 
         const r = await EdgeImpulseClient.fetchEdgeImpulse("GET", "projects", apiKey);
-        return r.status == 200;
+        if (r.status == 200) return true;
+        else if (r.status == 403) return false;
+        else return undefined;
     }
 
     static async fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
@@ -311,7 +314,8 @@ function ApiKeyManager() {
                 setValidated(r)
             } else {
                 setValidated(false)
-                setApiKey(undefined)
+                if (r === false)
+                    setApiKey(undefined)
             }
         }
     }, [apiKey])
@@ -365,12 +369,14 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     useEffect(() => {
         if (!apiKey) {
             setClient(undefined);
+            setError(undefined);
             return undefined;
         }
         else {
             const c = new EdgeImpulseClient(apiKey, register)
             c.connect();
             setClient(c);
+            setError(undefined);
             return c.unmount();
         }
     }, [register, apiKey])
@@ -382,6 +388,9 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     // subscribe to client changes
     useEffect(client?.subscribe(SAMPLING_STATE,
         (v: string) => setSamplingState(v))
+        , [client])
+    // listen to errors
+    useEffect(client?.subscribe(ERROR, (e: string) => setError(e))
         , [client])
 
     return <Card>
