@@ -111,13 +111,6 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastReportPkt?.decoded;
     }
 
-    async resolveDeviceClass() {
-        const deviceClassRegister = this.service.device.service(0)
-            .register(CtrlReg.DeviceClass);
-        await deviceClassRegister?.refresh(true)
-        return deviceClassRegister?.intValue;
-    }
-
     refresh(skipIfValue?: boolean): Promise<void> {
         // don't refetch consts
         // don't refetch if already data

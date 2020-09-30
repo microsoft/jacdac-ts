@@ -16,6 +16,7 @@ import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACK
 import { JDEventSource } from "../../../src/dom/eventsource";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
+import CircularProgressWithLabel from "./CircularProgressWithLabel";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -51,6 +52,8 @@ interface EdgeImpulseSample {
     "hmacKey": string;
     "interval": number;
     "sensor": string;
+
+    startTimestamp?: number;
 }
 
 /*
@@ -100,6 +103,7 @@ class EdgeImpulseClient extends JDClient {
         if (this.connectionState !== state) {
             this.connectionState = state;
             this.emit(CONNECTION_STATE, this.connectionState);
+            console.log(`ei conn`, this.connectionState)
         }
     }
 
@@ -107,6 +111,7 @@ class EdgeImpulseClient extends JDClient {
         if (this.samplingState !== state) {
             this.samplingState = state;
             this.emit(SAMPLING_STATE, this.samplingState)
+            console.log(`ei sampling`, this.samplingState)
         }
     }
 
@@ -115,11 +120,12 @@ class EdgeImpulseClient extends JDClient {
     }
 
     private async handleOpen() {
+        console.log(`ws: open`)
         const { service } = this.register;
         const { device } = service;
 
         // fetch device spec
-        const deviceClass = await this.register.resolveDeviceClass();
+        const deviceClass = await this.register.service.device.resolveDeviceClass();
         const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass);
 
         this._hello = {
@@ -143,8 +149,9 @@ class EdgeImpulseClient extends JDClient {
 
     private handleMessage(msg: any) {
         const data = JSON.parse(msg.data)
+        console.log(`msg`, data)
         if (data.hello !== undefined) {
-            const hello = data.hello as EdgeImpulseHello;
+            const hello = data as EdgeImpulseHello;
             if (!hello.hello) {
                 this.emit(ERROR, hello.err)
                 this.disconnect();
@@ -168,15 +175,21 @@ class EdgeImpulseClient extends JDClient {
     private handleReport() {
         if (!this.connected) return; // ignore
 
+        const timestamp = this.register.service.device.bus.timestamp;
         // first sample, notify we're started
         if (this.samplingState == STARTING) {
-            this.send({ "sampleStarted": true })
+            this._sample.startTimestamp = timestamp;
+            this.send({ "sampleStarted": true });
             this.setSamplingState(SAMPLING);
         }
         // store sample
         if (this.samplingState == SAMPLING) {
             this._dataSet.addRow();
-            if (this._dataSet.length >= this._sample.length) {
+            this.emit(REPORT_RECEIVE);
+
+            // debounced progress update
+
+            if (timestamp - this._sample.startTimestamp >= this._sample.length) {
                 // first stop the sampling
                 this._stopStreaming?.();
                 // we're done!
@@ -202,13 +215,14 @@ class EdgeImpulseClient extends JDClient {
                 console.log(`payload`, payload)
                 // upload dataset
                 // https://docs.edgeimpulse.com/reference#ingestion-api
-                fetch("https://ingestion.edgeimpulse.com/api/training/data", {
+                fetch(`https://ingestion.edgeimpulse.com${this._sample.path}`, {
                     method: "POST",
                     headers: {
                         "x-api-key": this.apiKey,
                         "x-label": this._sample.label,
                         "x-file-name": this._sample.label + ".csv",
-                        "x-disallow-duplicates": "true"
+                        "x-disallow-duplicates": "true",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify(payload)
                 }).then(async (resp) => {
@@ -276,6 +290,12 @@ class EdgeImpulseClient extends JDClient {
         this._ws.onmessage = this.handleMessage;
         this._ws.onopen = this.handleOpen;
         this._ws.onerror = this.handleError;
+    }
+
+    get progress() {
+        const timestamp = this.register.service.device.bus.timestamp;
+        return this.samplingState !== IDLE
+            && (timestamp - this._sample.startTimestamp) / this._sample.length * 100;
     }
 
     static async checkAPIKeyValid(apiKey: string): Promise<boolean> {
@@ -397,13 +417,13 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     useEffect(() => client?.subscribe(ERROR, (e: string) => setError(e))
         , [client])
 
-    console.log('ei', connectionState, samplingState)
+    console.log('ei render:', connectionState, samplingState)
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
             {connectionState === CONNECT && <Alert severity={"success"}>Connected</Alert>}
-            {samplingState !== IDLE && <CircularProgress size={theme.spacing(2)} />}
+            {samplingState !== IDLE && <CircularProgressWithLabel size={theme.spacing(2)} value={client?.progress} />}
         </CardContent>
     </Card>
 }

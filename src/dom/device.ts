@@ -267,6 +267,13 @@ export class JDDevice extends JDNode {
             ?.sendCmdAsync(CtrlCmd.Reset)
     }
 
+    async resolveDeviceClass(): Promise<number> {
+        const deviceClassRegister = this.service(0)
+            .register(CtrlReg.DeviceClass);
+        await deviceClassRegister?.refresh(true)
+        return deviceClassRegister?.intValue;
+    }
+
     private initAcks() {
         if (this._ackAwaiting) return;
 
