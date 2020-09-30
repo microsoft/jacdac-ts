@@ -4,7 +4,7 @@ import { CircularProgressProps, Box, CircularProgress, Typography } from "@mater
 export default function CircularProgressWithLabel(props: CircularProgressProps & { value: number }) {
     return (
         <Box position="relative" display="inline-flex">
-            <CircularProgress variant="static" {...props} />
+            <CircularProgress disableShrink variant="static" {...props} />
             <Box
                 top={0}
                 left={0}
