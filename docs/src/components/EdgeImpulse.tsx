@@ -14,15 +14,21 @@ import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
 import { CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
+import FieldDataSet from "./FieldDataSet";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
+const IDLE = "idle";
+const STARTING = "starting";
 const SAMPLING = "sampling";
+const SAMPLING_STATE = "samplingState";
 
 class EdgeImpulseClient extends JDEventSource {
     private _ws: WebSocket;
     private _stopStreaming: () => void;
-    private connectionState = DISCONNECT;
+    private _dataSet: FieldDataSet;
+    public connectionState = DISCONNECT;
+    public samplingState = IDLE;
 
     constructor(private readonly apiKey: string, private readonly register: JDRegister) {
         super()
@@ -44,16 +50,22 @@ class EdgeImpulseClient extends JDEventSource {
             catch (e) {
             }
             finally {
-                this.emit(DISCONNECT);
+                this.setConnectionState(DISCONNECT);
             }
-        }
+        }        
     }
 
     private setConnectionState(state: string) {
         if (this.connectionState !== state) {
             this.connectionState = state;
-            this.emit(this.connectionState);
             this.emit(CONNECTION_STATE);
+        }
+    }
+
+    private setSamplingState(state: string) {
+        if (this.samplingState !== state) {
+            this.samplingState = state;
+            this.emit(SAMPLING_STATE)
         }
     }
 
@@ -96,6 +108,24 @@ class EdgeImpulseClient extends JDEventSource {
         }
     }
 
+    get connected() {
+        return this.connectionState === CONNECT;
+    }
+
+    private handleReport() {
+        if (!this.connected) return; // ignore
+
+        // first sample, notify we're started
+        if (this.samplingState == STARTING) {
+            this.send({ "sampleStarted": true })
+            this.setSamplingState(SAMPLING);
+        }
+        // store sample
+        if (this.samplingState == SAMPLING) {
+            this._dataSet.addRow();
+        }
+    }
+
     private handleError(ev: Event) {
         this.emit(ERROR, ev)
         this.disconnect();
@@ -103,11 +133,16 @@ class EdgeImpulseClient extends JDEventSource {
 
     private startSampling() {
         // start register
+        const fields = this.register.fields;
+        this._dataSet = new FieldDataSet(
+            this.register.service.device.bus, 
+            this.register.name, 
+            fields
+            );
         this._stopStreaming = startStreaming(this.register.service)
         // start sampling
         this.send({ "sample": true })
-        this.emit(SAMPLING);
-        this.send({ "sampleStarted": true })
+        this.setSamplingState(STARTING);
     }
 
     private stopSampling() {
@@ -119,6 +154,7 @@ class EdgeImpulseClient extends JDEventSource {
             }
             finally {
                 this._stopStreaming = undefined;
+                this.setSamplingState(IDLE);
             }
         }
     }
