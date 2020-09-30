@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react"
-import { Card, CardActions, CardContent, CardHeader, Grid, TextField, useEventCallback } from '@material-ui/core';
+import { Card, CardActions, CardContent, CardHeader, CircularProgress, Grid, TextField, useEventCallback, useTheme } from '@material-ui/core';
 import { Button, Link } from 'gatsby-theme-material-ui';
 import useDbValue from "./useDbValue";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -86,19 +86,44 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const { register, apiKey } = props
     const { service } = register;
     const { device } = service;
+    const theme = useTheme();
 
+    const [wss, setWss] = useState<WebSocket>(undefined)
+    const [sampling, setSampling] = useState(false);
     const [state, setState] = useState<"" | "connected">("")
     const [error, setError] = useState("")
-    const [streaming, setStreaming] = useState(false)
     const connected = state === "connected"
 
-    // start top streaming
-    useEffect(() => streaming ? startStreaming(register.service) : undefined
-        , [register, apiKey, streaming])
+    // start top sampling
+    useEffect(() => {
+        if (sampling) {
+            console.log(`ei: start sampling`, register.id)
+            const stopStreaming = startStreaming(register.service)
+            return stopStreaming;
+        } else {
+            // send result to socket
+            console.log(`ei: stop sampling`, register.id, wss)
+            if (wss) {
+                // tell we are uploading
+                wss.send(JSON.stringify({
+                    "sampleUploading": true
+                }))
+                // POST
+                // done
+                wss.send(JSON.stringify({
+                    "sampleFinished": true
+                }))
+            }
+        }
+        return undefined
+    }, [register, apiKey, sampling])
 
     // record reports
     useEventRaised(PACKET_REPORT, register, r => {
         console.log(`report`, register.id, register.intValue)
+        if (wss && sampling) {
+            // store data
+        }
     })
 
     // https://docs.edgeimpulse.com/reference#remote-management
@@ -130,6 +155,9 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
                 ws.send(JSON.stringify({
                     "sampleStarted": true
                 }))
+                // start recording
+                setSampling(true);
+                setTimeout(() => setSampling(false), 5000);
             }
         }
         ws.onopen = () => {
@@ -172,9 +200,12 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
             setState("");
         }
 
+        setWss(ws);
+
         return () => {
             try {
                 ws.close();
+                setWss(undefined);
             }
             catch (e) {
                 console.log(`ignored`, e)
@@ -187,6 +218,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
             {connected && <Alert severity={"success"}>Connected</Alert>}
+            {sampling && <CircularProgress size={theme.spacing(2)} />}
         </CardContent>
     </Card>
 }
