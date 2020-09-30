@@ -13,12 +13,14 @@ import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
-import { CardActions } from '@material-ui/core';
+import { CardActions, CardMedia, createStyles, Theme } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import { DeviceLostAlert } from './DeviceLostAlert';
+import { deviceSpecificationFromClassIdenfitier, imageDeviceOf } from '../../../src/dom/spec';
+import CardMediaWithSkeleton from "./CardMediaWithSkeleton"
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
     },
     bullet: {
@@ -31,8 +33,12 @@ const useStyles = makeStyles({
     },
     pos: {
         marginBottom: 12,
+    },
+    media: {
+        height: 0,
+        paddingTop: '18%',
     }
-});
+}));
 
 function navigateToService(service: JDService) {
     const spec = service.specification;
@@ -61,9 +67,18 @@ export default function DeviceCard(props: {
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
+    const deviceClass = useRegisterValue(device, SRV_CTRL, CtrlReg.DeviceClass);
+    const deviceSpecification = deviceSpecificationFromClassIdenfitier(deviceClass?.intValue);
+    const imageUrl = imageDeviceOf(deviceSpecification);
+    console.log('fw', deviceClass, deviceSpecification)
 
     return (
         <Card className={classes.root}>
+            <CardMediaWithSkeleton
+                className={classes.media}
+                image={imageUrl}
+                title={deviceSpecification?.name}
+            />
             <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} />
             {(showDescription || content) &&
                 <CardContent>

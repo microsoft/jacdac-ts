@@ -34,7 +34,7 @@ export function serviceMap(): SMap<jdspec.ServiceSpec> {
 export function deviceSpecificationFromClassIdenfitier(deviceClass: number): jdspec.DeviceSpec {
     if (deviceClass === undefined) return undefined;
 
-    const spec = deviceRegistry.find(spec => spec.firmwares.indexOf(deviceClass) < -1);
+    const spec = deviceRegistry.find(spec => spec.firmwares.indexOf(deviceClass) > -1);
     return spec;
 }
 
@@ -52,6 +52,10 @@ export function deviceSpecificationsForService(serviceClass: number): jdspec.Dev
 
 export function deviceSpecifications(): jdspec.DeviceSpec[] {
     return deviceRegistry.slice(0)
+}
+
+export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
+    return spec?.image && `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${spec.image}`
 }
 
 /**

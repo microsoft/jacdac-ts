@@ -1,19 +1,19 @@
 import React from "react"
 import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
-import { deviceSpecificationFromClassIdenfitier, deviceSpecificationFromIdentifier, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { deviceSpecificationFromClassIdenfitier, deviceSpecificationFromIdentifier, imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import GitHubButton from "./GitHubButton"
 import IDChip from "./IDChip";
 import { Button, IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import HomeIcon from '@material-ui/icons/Home';
+import CardMediaWithSkeleton from "./CardMediaWithSkeleton"
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        media: {
-            height: 0,
-            paddingTop: '56.25%', // 16:9
-        },
-    }));
+const useStyles = makeStyles((theme: Theme) => createStyles({
+    media: {
+        height: 0,
+        paddingTop: '40%',
+    },
+}));
 
 export default function DeviceSpecificationCard(props: {
     deviceIdentifier?: number,
@@ -27,17 +27,18 @@ export default function DeviceSpecificationCard(props: {
     if (!spec && specificationIdentifier !== undefined)
         spec = deviceSpecificationFromIdentifier(specificationIdentifier)
     const classes = useStyles();
+    const imageUrl = imageDeviceOf(spec)
 
     return <Card>
+        <CardMediaWithSkeleton
+            className={classes.media}
+            image={imageUrl}
+            title={spec?.name}
+        />
         <CardHeader
             title={spec?.name || "???"}
             subheader={<>{spec?.firmwares.map(fw => <IDChip key={fw} id={fw} />)}</>}
         />
-        {spec?.image && <CardMedia
-            className={classes.media}
-            image={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${spec.image}`}
-            title={spec.name}
-        />}
         {spec && <CardContent>
             {spec.services.map(service => serviceSpecificationFromClassIdentifier(service)).filter(sp => !!sp)
                 .map(sspec => <Button key={sspec.shortId} to={`/services/${sspec.shortId}`}>{sspec.name}</Button>)}
