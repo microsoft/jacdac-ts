@@ -31,6 +31,19 @@ interface EdgeImpulseHello {
     err?: any;
 }
 
+interface EdgeImpulseDevice {
+    version: number;
+    apiKey: string;
+    deviceId: string;
+    deviceType: string;
+    connection: string;
+    sensors: {
+        "name": string,
+        "maxSampleLengthS": number,
+        "frequencies": number[]
+    }[]
+}
+
 interface EdgeImpulseSample {
     "label": string;
     "length": number;
@@ -50,6 +63,7 @@ class EdgeImpulseClient extends JDClient {
     private _dataSet: FieldDataSet;
     public connectionState = DISCONNECT;
     public samplingState = IDLE;
+    private _hello: EdgeImpulseDevice;
     private _sample: EdgeImpulseSample;
 
     constructor(private readonly apiKey: string, private readonly register: JDRegister) {
@@ -108,21 +122,22 @@ class EdgeImpulseClient extends JDClient {
         const deviceClass = await this.register.resolveDeviceClass();
         const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass);
 
+        this._hello = {
+            "version": 2,
+            "apiKey": this.apiKey,
+            "deviceId": device.deviceId,
+            "deviceType": deviceSpec?.name || deviceClass.toString(16) || "JACDAC device",
+            "connection": "ip", // direct connection
+            "sensors": [
+                {
+                    "name": service.name,
+                    "maxSampleLengthS": 10000,
+                    "frequencies": [30, 60]
+                }
+            ]
+        };
         this.send({
-            "hello": {
-                "version": 2,
-                "apiKey": this.apiKey,
-                "deviceId": device.deviceId,
-                "deviceType": deviceSpec?.name || deviceClass || "JACDAC device",
-                "connection": "ip", // direct connection
-                "sensors": [
-                    {
-                        "name": service.name,
-                        "maxSampleLengthS": 10000,
-                        "frequencies": [30, 60]
-                    }
-                ]
-            }
+            "hello": this._hello
         })
     }
 
@@ -158,13 +173,49 @@ class EdgeImpulseClient extends JDClient {
         if (this.samplingState == SAMPLING) {
             this._dataSet.addRow();
             if (this._dataSet.length >= this._sample.length) {
+                // first stop the sampling
+                this._stopStreaming?.();
                 // we're done!
                 this.setSamplingState(UPLOADING);
+                const payload = {
+                    "protected": {
+                        "ver": "v1",
+                        "alg": "none",
+                        "iat": Date.now()
+                    },
+                    "signature": "",
+                    "payload": {
+                        "device_name": this._hello.deviceId,
+                        "device_type": this._hello.deviceType,
+                        "interval_ms": this._sample.interval,
+                        "sensors": this._dataSet.headers.map((h, i) => ({
+                            "name": this._dataSet.headers[i], "units": this._dataSet.units[i]
+                        })
+                        ),
+                        "values": this._dataSet.rows.map(ex => ex.data)
+                    }
+                }
+                console.log(`payload`, payload)
                 // upload dataset
+                // https://docs.edgeimpulse.com/reference#ingestion-api
                 fetch("https://ingestion.edgeimpulse.com/api/training/data", {
                     method: "POST",
-                }).then(resp => {
-
+                    headers: {
+                        "x-api-key": this.apiKey,
+                        "x-label": this._sample.label,
+                        "x-file-name": this._sample.label + ".csv",
+                        "x-disallow-duplicates": "true"
+                    },
+                    body: JSON.stringify(payload)
+                }).then(async (resp) => {
+                    // response contains the filename
+                    const respjs = await resp.json();
+                    console.log(respjs)
+                }).finally(() => {
+                    this.send({
+                        "sampleFinished": true
+                    })
+                    this.setSamplingState(IDLE);
                 })
             }
         }
@@ -201,7 +252,8 @@ class EdgeImpulseClient extends JDClient {
         if (this._stopStreaming) {
             try {
                 this._stopStreaming();
-            } catch (e) {
+            }
+            catch (e) {
             }
             finally {
                 this._stopStreaming = undefined;
