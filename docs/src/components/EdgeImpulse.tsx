@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react"
-import { Card, CardActions, CardContent, CardHeader, CircularProgress, Grid, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
+import { Box, Card, CardActions, CardContent, CardHeader, CircularProgress, Collapse, Grid, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
 import { Button, Link } from 'gatsby-theme-material-ui';
 import useDbValue from "./useDbValue";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -16,6 +16,17 @@ import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
 import Trend from "./Trend"
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import GetAppIcon from '@material-ui/icons/GetApp';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import Accordion from '@material-ui/core/Accordion';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import { AccordionActions } from '@material-ui/core';
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -56,6 +67,20 @@ interface EdgeImpulseSample {
     startTimestamp?: number;
     lastProgressTimestamp?: number;
     generatedFilename?: string;
+}
+
+interface EdgeImpulseProject {
+    success: boolean;
+    project: {
+        id: number;
+        name: string;
+    }
+    downloads: {
+        name: string;
+        type: string;
+        size: string;
+        link: string;
+    }[];
 }
 
 /*
@@ -325,24 +350,50 @@ class EdgeImpulseClient extends JDClient {
             && (timestamp - this._sample.startTimestamp) / this._sample.length;
     }
 
-    static async checkAPIKeyValid(apiKey: string): Promise<boolean> {
-        if (!apiKey) return false;
+    static async currentProjectInfo(apiKey: string): Promise<{
+        valid: boolean,
+        errorStatus?: number,
+        project?: EdgeImpulseProject
+    }> {
+        if (!apiKey) return { valid: false };
 
-        const r = await EdgeImpulseClient.fetchEdgeImpulse("GET", "projects", apiKey);
-        if (r.status == 200) {
-            const rsj = await r.json()
-            console.log(`ei: project`, rsj)
-            return !!rsj?.success;
+        const r = await EdgeImpulseClient.fetchEdgeImpulse("projects", apiKey);
+        if (r.status != 200) {
+            return {
+                valid: false,
+                errorStatus: r.status
+            }
         }
-        else if (r.status == 403) return false;
-        else return undefined;
+
+        const rsj = await r.json()
+        const projectId = rsj?.projects?.[0]?.id;
+        if (!rsj?.success || projectId === undefined) {
+            return {
+                valid: false,
+                errorStatus: 402
+            }
+        }
+
+        const projectResp = await EdgeImpulseClient.fetchEdgeImpulse(projectId, apiKey);
+        if (projectResp.status != 200) {
+            return {
+                valid: false,
+                errorStatus: projectResp.status
+            }
+        }
+
+        const project: EdgeImpulseProject = await projectResp.json();
+        return {
+            valid: !!project?.success,
+            project
+        }
     }
 
-    static async fetchEdgeImpulse(method: "GET" | "POST", path: string, apiKey: string) {
+    static async fetchEdgeImpulse(path: string, apiKey: string) {
         const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
         const url = `${API_ROOT}${path}`
         const options: RequestInit = {
-            method,
+            method: "GET",
             headers: {
                 "Accept": "application/json",
                 "x-api-key": apiKey
@@ -355,6 +406,7 @@ class EdgeImpulseClient extends JDClient {
 function ApiKeyManager() {
     const { value: apiKey, setValue: setApiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
     const [key, setKey] = useState("")
+    const [expanded, setExpanded] = useState(false)
     const [validated, setValidated] = useState(false)
 
     useEffectAsync(async (mounted) => {
@@ -363,20 +415,21 @@ function ApiKeyManager() {
                 setValidated(false)
         }
         else {
-            const r = await EdgeImpulseClient.checkAPIKeyValid(apiKey)
+            const r = await EdgeImpulseClient.currentProjectInfo(apiKey)
             if (!mounted())
                 return;
-            if (r) {
-                setValidated(r)
+            if (r?.valid) {
+                setValidated(true);
+                setExpanded(false);
             } else {
                 setValidated(false)
-                if (r === false)
+                if (r.errorStatus === 403) // invalid key
                     setApiKey(undefined)
             }
         }
     }, [apiKey])
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleApiChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setKey(event.target.value)
     }
     const handleSave = () => {
@@ -387,11 +440,15 @@ function ApiKeyManager() {
         setApiKey("")
     }
 
-    return <Card>
-        <CardHeader
-            title="API Key Configuration"
-        />
-        <CardContent>
+    const handleExpanded = () => {
+        setExpanded(!expanded)
+    }
+
+    return <Accordion expanded={expanded} onChange={handleExpanded}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="body">API Key Configuration</Typography>
+        </AccordionSummary>
+        <AccordionDetails style={({ display: "block" })}>
             {validated && <Alert severity={"success"}>API key ready!</Alert>}
             <p>To get an <b>API key</b>, navigate to &nbsp;
             <Link to="https://studio.edgeimpulse.com/" target="_blank">https://studio.edgeimpulse.com/</Link>;
@@ -401,14 +458,58 @@ function ApiKeyManager() {
                 label="API key"
                 fullWidth
                 value={key}
-                onChange={handleChange}
+                onChange={handleApiChange}
             />
-        </CardContent>
-        <CardActions>
+        </AccordionDetails>
+        <AccordionActions>
             <Button disabled={!key} variant="contained" color="primary" onClick={handleSave}>Save</Button>
             <Button disabled={!apiKey} variant="contained" onClick={handleReset}>Clear</Button>
+        </AccordionActions>
+    </Accordion >
+}
+
+function ProjectInfo(props: { apiKey: string }) {
+    const { apiKey } = props;
+    const [info, setInfo] = useState<EdgeImpulseProject>(undefined);
+
+    useEffectAsync(async (mounted) => {
+        if (!apiKey) {
+            if (mounted())
+                setInfo(undefined);
+        } else {
+            const r = await EdgeImpulseClient.currentProjectInfo(apiKey)
+            if (mounted())
+                setInfo(r?.project);
+        }
+    }, [apiKey])
+
+    if (!info) return <></>;
+
+    const handleDownload = (url: string) => async () => {
+        const resp = await fetch(url, {
+            headers: {
+                "x-api-key": apiKey
+            }
+        })
+        console.log(`rep`, resp.status)
+        const res = await resp.blob()
+        console.log(`res`, res)
+        // TODO: do something with this
+    }
+
+    return <Card>
+        <CardHeader title={
+            <Link to={`https://studio.edgeimpulse.com/studio/${info.project.id}/`} target="_blank">{info.project.name}</Link>}
+            subheader={"current project on edgeimpulse"}
+        />
+        <CardActions>
+            {info?.downloads.filter(download => download.name === "NN Classifier model")
+                .map(download => <Button
+                    key={download.link}
+                    startIcon={<GetAppIcon />}
+                    onClick={handleDownload(`https://studio.edgeimpulse.com${download.link}`)}>{download.type}</Button>)}
         </CardActions>
-    </Card>
+    </Card >
 }
 
 function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
@@ -481,13 +582,16 @@ export default function EdgeImpulse(props: {}) {
         ).filter(reg => !!reg))
 
     return <>
+        <Box m={1} />
         {apiKey &&
             <Grid container spacing={2}>
                 {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
                     <ReadingRegister register={reg} apiKey={apiKey} />
                 </Grid>)}
             </Grid>}
-        <p></p>
+        <Box m={1} />
+        {apiKey && <ProjectInfo apiKey={apiKey} />}
+        <Box m={1} />
         <ApiKeyManager />
     </>
 }
