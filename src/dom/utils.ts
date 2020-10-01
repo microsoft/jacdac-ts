@@ -387,6 +387,20 @@ export function signal(): Signal {
     }
 }
 
+export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+        const fileReader = new FileReader();
+        fileReader.onload = () => {
+            resolve(new Uint8Array(fileReader.result as ArrayBuffer))
+        }
+        fileReader.onerror = (e) => {
+            console.log(e)
+            reject(e)
+        }
+        fileReader.readAsArrayBuffer(blob);
+    })
+}
+
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
     let timeOutId: any;
     return function () {

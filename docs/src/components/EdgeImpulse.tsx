@@ -27,12 +27,11 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import { AccordionActions } from '@material-ui/core';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ServiceList from "./ServiceList";
-import { JDService } from "../../../src/dom/service";
 import { ModelActions, ModelContent } from "./ModelUploader";
-import { Skeleton } from "@material-ui/lab";
-import { useDbUint8Array } from "./useDb";
+import { readBlobToUint8Array } from "../../../src/dom/utils";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -452,7 +451,7 @@ function ApiKeyManager() {
 
     return <Accordion expanded={expanded} onChange={handleExpanded}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body">API Key Configuration</Typography>
+            <Typography variant="body1">API Key Configuration</Typography>
             {validated && <Box ml={1} color="success.main"><CheckCircleOutlineIcon /></Box>}
         </AccordionSummary>
         <AccordionDetails style={({ display: "block" })}>
@@ -492,16 +491,24 @@ function useEdgeImpulseProjectInfo(apiKey: string) {
     return info;
 }
 
-function ProjectInfo(props: { apiKey: string }) {
-    const { apiKey } = props;
+function ProjectInfo(props: { apiKey: string, info: EdgeImpulseProject }) {
+    const { apiKey, info } = props;
+
+    return <Card>
+        <CardHeader title={
+            info ? <Link to={`https://studio.edgeimpulse.com/studio/${info?.project?.id}/`} target="_blank">{info.project.name}</Link>
+                : "..."}
+            subheader={apiKey ? "current project on edgeimpulse" : "configure API key to access EdgeImpulse"}
+        />
+    </Card >
+}
+
+function ModelDownloadButton(props: { apiKey: string, info: EdgeImpulseProject, setModel: (blob: Uint8Array) => void }) {
+    const { apiKey, info, setModel } = props;
     const theme = useTheme();
-    const info = useEdgeImpulseProjectInfo(apiKey);
-    const { data, setBlob } = useDbUint8Array("edgeimpulse.tflite")
     const [downloading, setDownloading] = useState(false)
     const [error, setError] = useState("")
-
-    if (!info)
-        return <Skeleton height="18rem" width="100%" />
+    const download = info?.downloads.find(download => download.type === "TensorFlow Lite (float32)");
 
     const handleDownload = (url: string) => async () => {
         try {
@@ -513,9 +520,11 @@ function ProjectInfo(props: { apiKey: string }) {
                 }
             })
             const res = await resp.blob()
-            setBlob(res)
+            const bytes = await readBlobToUint8Array(res);
+            setModel(bytes)
         }
         catch (e) {
+            console.log(e)
             setError("Oops, download failed.")
         }
         finally {
@@ -523,23 +532,14 @@ function ProjectInfo(props: { apiKey: string }) {
         }
     }
 
-    return <Card>
-        <CardHeader title={
-            <Link to={`https://studio.edgeimpulse.com/studio/${info.project.id}/`} target="_blank">{info.project.name}</Link>}
-            subheader={"current project on edgeimpulse"}
-        />
-        <CardContent>
-            {error && <Alert severity="error">{error}</Alert>}
-        </CardContent>
-        <CardActions>
-            {info?.downloads.filter(download => download.type === "TensorFlow Lite (float32)")
-                .map(download => <Button
-                    key={download.link}
-                    disabled={downloading}
-                    startIcon={downloading ? <CircularProgress indeterminate size={theme.spacing(2)} /> : <GetAppIcon />}
-                    onClick={handleDownload(`https://studio.edgeimpulse.com${download.link}`)}>{download.type}</Button>)}
-        </CardActions>
-    </Card >
+    return <Box mb={1}>
+        {error && <Alert severity="error">{error}</Alert>}
+        <Button
+            variant="contained"
+            disabled={!download || downloading}
+            startIcon={downloading ? <CircularProgress size={theme.spacing(2)} /> : <GetAppIcon />}
+            onClick={handleDownload(`https://studio.edgeimpulse.com${download?.link}`)}>DOWNLOAD MODEL</Button>
+    </Box>
 }
 
 function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
@@ -603,8 +603,9 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
 export default function EdgeImpulse(props: {}) {
     const { value: apiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
     const { bus } = useContext<JDContextProps>(JACDACContext);
-    const { data: model } = useDbUint8Array("edgeimpulse.tflite")
+    const [model, setModel] = useState<Uint8Array>(undefined)
     const gridBreakPoints = useGridBreakpoints()
+    const info = useEdgeImpulseProjectInfo(apiKey);
 
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
@@ -615,7 +616,7 @@ export default function EdgeImpulse(props: {}) {
     return <>
         <ApiKeyManager />
         <Box mb={1} />
-        <ProjectInfo apiKey={apiKey} />
+        <ProjectInfo apiKey={apiKey} info={info} />
         <h3>Data acquisition</h3>
         {!readingRegisters.length && <Alert severity="info">No sensor found...</Alert>}
         <Grid container spacing={2}>
@@ -624,6 +625,8 @@ export default function EdgeImpulse(props: {}) {
             </Grid>)}
         </Grid>
         <h3>Deployment</h3>
+        {model && <Box mb={1}><Alert severity="success">Model downloaded!</Alert></Box>}
+        <ModelDownloadButton apiKey={apiKey} info={info} setModel={setModel} />
         <ServiceList
             serviceClass={SRV_MODEL_RUNNER}
             content={service => <ModelContent service={service} />}
