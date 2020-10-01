@@ -494,20 +494,33 @@ function useEdgeImpulseProjectInfo(apiKey: string) {
 
 function ProjectInfo(props: { apiKey: string }) {
     const { apiKey } = props;
+    const theme = useTheme();
     const info = useEdgeImpulseProjectInfo(apiKey);
-    const { setBlob } = useDbUint8Array("edgeimpulse.tflite")
+    const { data, setBlob } = useDbUint8Array("edgeimpulse.tflite")
+    const [downloading, setDownloading] = useState(false)
+    const [error, setError] = useState("")
 
     if (!info)
         return <Skeleton height="18rem" width="100%" />
 
     const handleDownload = (url: string) => async () => {
-        const resp = await fetch(url, {
-            headers: {
-                "x-api-key": apiKey
-            }
-        })
-        const res = await resp.blob()
-        setBlob(res)
+        try {
+            setDownloading(true)
+            setError("")
+            const resp = await fetch(url, {
+                headers: {
+                    "x-api-key": apiKey
+                }
+            })
+            const res = await resp.blob()
+            setBlob(res)
+        }
+        catch (e) {
+            setError("Oops, download failed.")
+        }
+        finally {
+            setDownloading(false)
+        }
     }
 
     return <Card>
@@ -515,11 +528,15 @@ function ProjectInfo(props: { apiKey: string }) {
             <Link to={`https://studio.edgeimpulse.com/studio/${info.project.id}/`} target="_blank">{info.project.name}</Link>}
             subheader={"current project on edgeimpulse"}
         />
+        <CardContent>
+            {error && <Alert severity="error">{error}</Alert>}
+        </CardContent>
         <CardActions>
             {info?.downloads.filter(download => download.type === "TensorFlow Lite (float32)")
                 .map(download => <Button
                     key={download.link}
-                    startIcon={<GetAppIcon />}
+                    disabled={downloading}
+                    startIcon={downloading ? <CircularProgress indeterminate size={theme.spacing(2)} /> : <GetAppIcon />}
                     onClick={handleDownload(`https://studio.edgeimpulse.com${download.link}`)}>{download.type}</Button>)}
         </CardActions>
     </Card >
@@ -600,10 +617,8 @@ export default function EdgeImpulse(props: {}) {
         <Box mb={1} />
         <ProjectInfo apiKey={apiKey} />
         <h3>Data acquisition</h3>
+        {!readingRegisters.length && <Alert severity="info">No sensor found...</Alert>}
         <Grid container spacing={2}>
-            {!readingRegisters.length && <Grid item key="none">
-                <Alert severity="info">No sensor found...</Alert>
-            </Grid>}
             {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
                 <ReadingRegister register={reg} apiKey={apiKey} />
             </Grid>)}
@@ -616,6 +631,7 @@ export default function EdgeImpulse(props: {}) {
                 service={service}
                 model={model}
             />}
+            alertMissing={"No model runner found..."}
         />
     </>
 }

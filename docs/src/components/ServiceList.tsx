@@ -1,6 +1,6 @@
 
 import React, { useContext } from 'react';
-import { Grid, makeStyles, Theme, createStyles, CardContent, Card, CardActions, Switch } from '@material-ui/core';
+import { Grid, makeStyles, Theme, createStyles, CardContent, Card, CardActions, Switch, Box } from '@material-ui/core';
 import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
@@ -9,12 +9,8 @@ import DeviceCardHeader from './DeviceCardHeader';
 import { JDService } from '../../../src/dom/service';
 import { DeviceLostAlert } from './DeviceLostAlert';
 import { JDDevice } from '../../../src/dom/device';
+import Alert from './Alert';
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-    root: {
-        marginBottom: theme.spacing(1)
-    },
-}))
 
 function ServiceListItem(props: {
     service: JDService,
@@ -47,21 +43,24 @@ export default function ServiceList(props: {
     selected?: (service: JDService) => boolean,
     toggleSelected?: (service: JDService) => void,
     content?: (service: JDService) => JSX.Element | JSX.Element[],
-    actions?: (service: JDService) => JSX.Element | JSX.Element[]
+    actions?: (service: JDService) => JSX.Element | JSX.Element[],
+    alertMissing?: string
 }) {
-    const { serviceClass, selected, toggleSelected, content, actions } = props
+    const { serviceClass, selected, toggleSelected, content, actions, alertMissing } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const services = useChange(bus, n => n.services({ serviceClass }))
     const gridBreakpoints = useGridBreakpoints(services?.length)
-    const classes = useStyles()
 
     const handleSelected = (service: JDService) => selected && selected(service)
     const handleChecked = (service: JDService) => () => toggleSelected && toggleSelected(service);
     const serviceContent = (service: JDService) => content && content(service);
     const serviceActions = (service: JDService) => actions && actions(service);
 
-    return (
-        <Grid container spacing={2} className={classes.root}>
+    if (alertMissing && !services?.length)
+        return <Alert severity="info">{alertMissing}</Alert>
+
+    return (<Box mb={1}>
+        <Grid container spacing={2}>
             {services?.map(service => <Grid key={service.id} item {...gridBreakpoints}>
                 <ServiceListItem
                     service={service}
@@ -71,6 +70,6 @@ export default function ServiceList(props: {
                     actions={serviceActions(service)}
                 />
             </Grid>)}
-        </Grid>
+        </Grid></Box>
     )
 }
