@@ -505,7 +505,7 @@ function ProjectInfo(props: { apiKey: string }) {
             subheader={"current project on edgeimpulse"}
         />
         <CardActions>
-            {info?.downloads.filter(download => download.name === "NN Classifier model")
+            {info?.downloads.filter(download => download.type === "TensorFlow Lite (float32)")
                 .map(download => <Button
                     key={download.link}
                     startIcon={<GetAppIcon />}
