@@ -591,7 +591,7 @@ export default function EdgeImpulse(props: {}) {
                     <ReadingRegister register={reg} apiKey={apiKey} />
                 </Grid>)}
             </Grid>}
-        <Box m={1} />
+        <Box mb={2} />
         {apiKey && <ProjectInfo apiKey={apiKey} />}
         <Box m={1} />
         <ApiKeyManager />
