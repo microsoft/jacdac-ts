@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react"
-import { Card, CardActions, CardContent, CardHeader, CircularProgress, Grid, TextField, useEventCallback, useTheme } from '@material-ui/core';
+import { Card, CardActions, CardContent, CardHeader, CircularProgress, Grid, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
 import { Button, Link } from 'gatsby-theme-material-ui';
 import useDbValue from "./useDbValue";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -54,8 +54,10 @@ interface EdgeImpulseSample {
     "interval": number;
     "sensor": string;
 
+    dataSet?: FieldDataSet;
     startTimestamp?: number;
     lastProgressTimestamp?: number;
+    generatedFilename?: string;
 }
 
 /*
@@ -65,7 +67,6 @@ https://docs.edgeimpulse.com/reference#remote-management
 class EdgeImpulseClient extends JDClient {
     private _ws: WebSocket;
     private _stopStreaming: () => void;
-    private _dataSet: FieldDataSet;
     public connectionState = DISCONNECT;
     public samplingState = IDLE;
     private _hello: EdgeImpulseDevice;
@@ -85,7 +86,7 @@ class EdgeImpulseClient extends JDClient {
     }
 
     get dataSet() {
-        return this._dataSet;
+        return this._sample?.dataSet;
     }
 
     disconnect() {
@@ -184,6 +185,10 @@ class EdgeImpulseClient extends JDClient {
         return this.samplingState !== IDLE;
     }
 
+    get generatedSampleName() {
+        return this._sample?.generatedFilename;
+    }
+
     private handleReport() {
         if (!this.connected) return; // ignore
 
@@ -196,7 +201,8 @@ class EdgeImpulseClient extends JDClient {
         }
         // store sample
         if (this.samplingState == SAMPLING) {
-            this._dataSet.addRow();
+            const ds = this.dataSet;
+            ds.addRow();
             this.emit(REPORT_RECEIVE);
 
             // debounced progress update
@@ -209,52 +215,57 @@ class EdgeImpulseClient extends JDClient {
                 // first stop the sampling
                 this._stopStreaming?.();
                 // we're done!
-                this.setSamplingState(UPLOADING);
                 this.emit(PROGRESS, this.progress)
-                const payload = {
-                    "protected": {
-                        "ver": "v1",
-                        "alg": "none",
-                        "iat": Date.now()
-                    },
-                    "signature": "",
-                    "payload": {
-                        "device_name": this._hello.deviceId,
-                        "device_type": this._hello.deviceType,
-                        "interval_ms": this._sample.interval,
-                        "sensors": this._dataSet.headers.map((h, i) => ({
-                            "name": this._dataSet.headers[i],
-                            "units": this._dataSet.units[i] || "/"
-                        })
-                        ),
-                        "values": this._dataSet.rows.map(ex => ex.data)
-                    }
-                }
-                console.log(`payload`, payload)
-                // upload dataset
-                // https://docs.edgeimpulse.com/reference#ingestion-api
-                fetch(`https://ingestion.edgeimpulse.com${this._sample.path}`, {
-                    method: "POST",
-                    headers: {
-                        "x-api-key": this.apiKey,
-                        "x-label": this._sample.label,
-                        "x-file-name": this._dataSet.name,
-                        "x-disallow-duplicates": "true",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                }).then(async (resp) => {
-                    // response contains the filename
-                    const filename = await resp.text();
-                    console.log(filename)
-                }).finally(() => {
-                    this.send({
-                        "sampleFinished": true
-                    })
-                    this.setSamplingState(IDLE);
-                })
+                this.uploadData();
             }
         }
+    }
+
+    private uploadData(): Promise<void> {
+        this.setSamplingState(UPLOADING);
+        const ds = this.dataSet;
+        const payload = {
+            "protected": {
+                "ver": "v1",
+                "alg": "none",
+                "iat": Date.now()
+            },
+            "signature": "",
+            "payload": {
+                "device_name": this._hello.deviceId,
+                "device_type": this._hello.deviceType,
+                "interval_ms": this._sample.interval,
+                "sensors": ds.headers.map((h, i) => ({
+                    "name": ds.headers[i],
+                    "units": ds.units[i] || "/"
+                })
+                ),
+                "values": ds.rows.map(ex => ex.data)
+            }
+        }
+        console.log(`payload`, payload)
+        // upload dataset
+        // https://docs.edgeimpulse.com/reference#ingestion-api
+        return fetch(`https://ingestion.edgeimpulse.com${this._sample.path}`, {
+            method: "POST",
+            headers: {
+                "x-api-key": this.apiKey,
+                "x-label": this._sample.label,
+                "x-file-name": ds.name,
+                "x-disallow-duplicates": "true",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        }).then(async (resp) => {
+            // response contains the filename
+            const filename = await resp.text();
+            this._sample.generatedFilename = filename;
+        }).finally(() => {
+            this.send({
+                "sampleFinished": true
+            })
+            this.setSamplingState(IDLE);
+        })
     }
 
     private handleError(ev: Event) {
@@ -265,7 +276,7 @@ class EdgeImpulseClient extends JDClient {
     private startSampling(sample: EdgeImpulseSample) {
         const { service, fields } = this.register;
         this._sample = sample;
-        this._dataSet = new FieldDataSet(
+        this._sample.dataSet = new FieldDataSet(
             this.register.service.device.bus,
             this._sample.label,
             fields
@@ -402,7 +413,6 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const { register, apiKey } = props
     const { service } = register;
     const { device } = service;
-    const theme = useTheme();
 
     const [client, setClient] = useState<EdgeImpulseClient>(undefined)
     const [error, setError] = useState("")
@@ -412,6 +422,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const connected = connectionState === CONNECT;
     const sampling = samplingState !== IDLE
     const dataSet = client?.dataSet;
+    const generatedSampleName = client?.generatedSampleName;
 
     useEffect(() => {
         if (!apiKey || !register) {
@@ -451,6 +462,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
             {sampling && <Alert severity={"info"}>Sampling...</Alert>}
             {!!dataSet && <Trend dataSet={dataSet} />}
             {sampling && <CircularProgressWithLabel value={samplingProgress} />}
+            {generatedSampleName && <Typography variant="body2">sample name: {generatedSampleName}</Typography>}
         </CardContent>
     </Card>
 }
