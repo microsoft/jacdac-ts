@@ -9,7 +9,7 @@ export default function GitHubButton(props: { repo: string, size?: "small" | "me
     if (!/^https:\/\// && !/^https:\/\/github.com\//.test(url)) {
         url = "https://github.com/" + repo;
     }
-    return <IconButton to={url} size={size} className={className}>
+    return <IconButton to={url} size={size} className={className} color="inherit">
         <GitHubIcon />
     </IconButton>;
 }
