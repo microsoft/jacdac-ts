@@ -457,8 +457,8 @@ function ApiKeyManager() {
         <AccordionDetails style={({ display: "block" })}>
             {validated && <Alert severity={"success"}>API key ready!</Alert>}
             <p>To get an <b>API key</b>, navigate to &nbsp;
-            <Link to="https://studio.edgeimpulse.com/" target="_blank">https://studio.edgeimpulse.com/</Link>;
-            select your project, click <b>Keys</b> and generate a new key.</p>
+            <Link to="https://studio.edgeimpulse.com/studio/8698/keys" target="_blank">https://studio.edgeimpulse.com/studio/8698/keys</Link>
+            and generate a new key.</p>
             <TextField
                 autoFocus
                 label="API key"
