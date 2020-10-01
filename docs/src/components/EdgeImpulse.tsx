@@ -12,11 +12,12 @@ import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import useEventRaised from "../jacdac/useEventRaised";
-import { BaseReg, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE } from "../../../src/dom/constants";
+import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
+import Trend from "./Trend"
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -83,6 +84,10 @@ class EdgeImpulseClient extends JDClient {
         this.mount(() => this.disconnect());
     }
 
+    get dataSet() {
+        return this._dataSet;
+    }
+
     disconnect() {
         this.stopSampling();
         // stop socket
@@ -112,6 +117,7 @@ class EdgeImpulseClient extends JDClient {
         if (this.samplingState !== state) {
             this.samplingState = state;
             this.emit(SAMPLING_STATE, this.samplingState)
+            this.emit(CHANGE)
             console.log(`ei: sampling state changed`, this.samplingState)
         }
     }
@@ -403,6 +409,8 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const [connectionState, setConnectionState] = useState(DISCONNECT)
     const [samplingState, setSamplingState] = useState(IDLE)
     const [samplingProgress, setSamplingProgress] = useState(0)
+    const dataSet = client?.dataSet;
+
     useEffect(() => {
         if (!apiKey || !register) {
             setClient(undefined);
@@ -438,6 +446,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
             {connectionState === CONNECT && <Alert severity={"success"}>Connected</Alert>}
+            {!!dataSet && <Trend dataSet={dataSet} />}
             {samplingState !== IDLE && <CircularProgressWithLabel value={samplingProgress} />}
         </CardContent>
     </Card>
