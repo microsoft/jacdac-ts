@@ -11,7 +11,7 @@ import { JDClient } from "../../../src/dom/client";
 import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
-import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE } from "../../../src/dom/constants";
+import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../../../src/dom/constants";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
@@ -28,6 +28,11 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import { AccordionActions } from '@material-ui/core';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import ServiceList from "./ServiceList";
+import { JDService } from "../../../src/dom/service";
+import { ModelActions, ModelContent } from "./ModelUploader";
+import { Skeleton } from "@material-ui/lab";
+import { useDbUint8Array } from "./useDb";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -470,8 +475,7 @@ function ApiKeyManager() {
     </Accordion >
 }
 
-function ProjectInfo(props: { apiKey: string }) {
-    const { apiKey } = props;
+function useEdgeImpulseProjectInfo(apiKey: string) {
     const [info, setInfo] = useState<EdgeImpulseProject>(undefined);
 
     useEffectAsync(async (mounted) => {
@@ -485,7 +489,16 @@ function ProjectInfo(props: { apiKey: string }) {
         }
     }, [apiKey])
 
-    if (!info) return <></>;
+    return info;
+}
+
+function ProjectInfo(props: { apiKey: string }) {
+    const { apiKey } = props;
+    const info = useEdgeImpulseProjectInfo(apiKey);
+    const { setBlob } = useDbUint8Array("edgeimpulse.tflite")
+
+    if (!info)
+        return <Skeleton height="18rem" width="100%" />
 
     const handleDownload = (url: string) => async () => {
         const resp = await fetch(url, {
@@ -493,10 +506,8 @@ function ProjectInfo(props: { apiKey: string }) {
                 "x-api-key": apiKey
             }
         })
-        console.log(`rep`, resp.status)
         const res = await resp.blob()
-        console.log(`res`, res)
-        // TODO: do something with this
+        setBlob(res)
     }
 
     return <Card>
@@ -575,6 +586,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
 export default function EdgeImpulse(props: {}) {
     const { value: apiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
     const { bus } = useContext<JDContextProps>(JACDACContext);
+    const { data: model } = useDbUint8Array("edgeimpulse.tflite")
     const gridBreakPoints = useGridBreakpoints()
 
     const readingRegisters = useChange(bus, bus =>
@@ -584,16 +596,26 @@ export default function EdgeImpulse(props: {}) {
         ).filter(reg => !!reg))
 
     return <>
-        <Box m={1} />
-        {apiKey &&
-            <Grid container spacing={2}>
-                {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
-                    <ReadingRegister register={reg} apiKey={apiKey} />
-                </Grid>)}
-            </Grid>}
-        <Box mb={2} />
-        {apiKey && <ProjectInfo apiKey={apiKey} />}
-        <Box m={1} />
         <ApiKeyManager />
+        <Box mb={1} />
+        <ProjectInfo apiKey={apiKey} />
+        <h3>Data acquisition</h3>
+        <Grid container spacing={2}>
+            {!readingRegisters.length && <Grid item key="none">
+                <Alert severity="info">No sensor found...</Alert>
+            </Grid>}
+            {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
+                <ReadingRegister register={reg} apiKey={apiKey} />
+            </Grid>)}
+        </Grid>
+        <h3>Deployment</h3>
+        <ServiceList
+            serviceClass={SRV_MODEL_RUNNER}
+            content={service => <ModelContent service={service} />}
+            actions={service => <ModelActions
+                service={service}
+                model={model}
+            />}
+        />
     </>
 }

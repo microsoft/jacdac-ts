@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     },
 }))
 
-function ModelContent(props: { service: JDService }) {
+export function ModelContent(props: { service: JDService }) {
     const { service } = props
     return <>
         <RegisterInput register={service.register(ModelRunnerReg.ModelSize)} />
@@ -29,11 +29,11 @@ function ModelContent(props: { service: JDService }) {
     </>
 }
 
-function ModelActions(props: {
+export function ModelActions(props: {
     service: JDService,
     model: Uint8Array,
-    sensorAggregatorService: JDService,
-    sensorInput: SensorAggregatorConfig
+    sensorAggregatorService?: JDService,
+    sensorInput?: SensorAggregatorConfig
 }) {
     const { service, model, sensorAggregatorService, sensorInput } = props
     const [deploying, setDeploying] = useState(false)
@@ -60,7 +60,7 @@ function ModelActions(props: {
 
     return <>
         {!deploying && <Button disabled={modelDisabled} variant="contained" color="primary" onClick={handleDeployModel}>
-            {sensorInput ? "Upload model and configuration" : "Upload model"}
+            {sensorInput ? "Deploy model and configuration" : "Deploy model"}
         </Button>}
         {deploying && <CircularProgressWithLabel value={progress} />}
     </>
