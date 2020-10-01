@@ -245,8 +245,8 @@ class EdgeImpulseClient extends JDClient {
                     body: JSON.stringify(payload)
                 }).then(async (resp) => {
                     // response contains the filename
-                    const respjs = await resp.json();
-                    console.log(respjs)
+                    const filename = await resp.text();
+                    console.log(filename)
                 }).finally(() => {
                     this.send({
                         "sampleFinished": true
@@ -409,6 +409,8 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const [connectionState, setConnectionState] = useState(DISCONNECT)
     const [samplingState, setSamplingState] = useState(IDLE)
     const [samplingProgress, setSamplingProgress] = useState(0)
+    const connected = connectionState === CONNECT;
+    const sampling = samplingState !== IDLE
     const dataSet = client?.dataSet;
 
     useEffect(() => {
@@ -445,7 +447,8 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
         <DeviceCardHeader device={device} />
         <CardContent>
             {error && <Alert severity={"error"}>{error}</Alert>}
-            {connectionState === CONNECT && <Alert severity={"success"}>Connected</Alert>}
+            {connected && !sampling && <Alert severity={"success"}>Connected</Alert>}
+            {sampling && <Alert severity={"info"}>Sampling...</Alert>}
             {!!dataSet && <Trend dataSet={dataSet} />}
             {samplingState !== IDLE && <CircularProgressWithLabel value={samplingProgress} />}
         </CardContent>
