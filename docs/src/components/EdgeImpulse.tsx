@@ -200,7 +200,7 @@ class EdgeImpulseClient extends JDClient {
             this.emit(REPORT_RECEIVE);
 
             // debounced progress update
-            if (timestamp - this._sample.lastProgressTimestamp > 200) {
+            if (timestamp - this._sample.lastProgressTimestamp > 100) {
                 this._sample.lastProgressTimestamp = timestamp;
                 this.emit(PROGRESS, this.progress)
             }
@@ -238,7 +238,7 @@ class EdgeImpulseClient extends JDClient {
                     headers: {
                         "x-api-key": this.apiKey,
                         "x-label": this._sample.label,
-                        "x-file-name": this._sample.label + ".csv",
+                        "x-file-name": this._dataSet.name,
                         "x-disallow-duplicates": "true",
                         "Content-Type": "application/json"
                     },
@@ -267,7 +267,7 @@ class EdgeImpulseClient extends JDClient {
         this._sample = sample;
         this._dataSet = new FieldDataSet(
             this.register.service.device.bus,
-            this.register.name,
+            this._sample.label,
             fields
         );
         this.send({ "sample": true })
@@ -450,7 +450,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
             {connected && !sampling && <Alert severity={"success"}>Connected</Alert>}
             {sampling && <Alert severity={"info"}>Sampling...</Alert>}
             {!!dataSet && <Trend dataSet={dataSet} />}
-            {samplingState !== IDLE && <CircularProgressWithLabel value={samplingProgress} />}
+            {sampling && <CircularProgressWithLabel value={samplingProgress} />}
         </CardContent>
     </Card>
 }
