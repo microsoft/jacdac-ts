@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Typography, ListItem } from "@material-ui/core";
+import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Typography, ListItem, Divider } from "@material-ui/core";
 import { IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
@@ -23,6 +23,8 @@ import EmojiNatureIcon from '@material-ui/icons/EmojiNature';
 import HistoryIcon from '@material-ui/icons/History';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import LineWeightIcon from '@material-ui/icons/LineWeight';
 import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./DarkModeContext";
 
@@ -81,12 +83,6 @@ export default function ToolsDrawer() {
             </IconButton>
         </div>
         <List>
-            <Link to="/tools/updater">
-                <ListItem button key="updater">
-                    <ListItemIcon><SystemUpdateAltIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Firmware update"} />
-                </ListItem>
-            </Link>
             <Link to="/tools/role-manager">
                 <ListItem button key="collector">
                     <ListItemIcon><EmojiObjectsIcon /></ListItemIcon>
@@ -105,6 +101,19 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy ML models"} />
                 </ListItem>
             </Link>
+            <Link to="/tools/edge-impulse">
+                <ListItem button key="edge-impulse">
+                    <ListItemIcon><LineWeightIcon /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Edge Impulse"} />
+                </ListItem>
+            </Link>
+            <Divider />
+            <Link to="/tools/updater">
+                <ListItem button key="updater">
+                    <ListItemIcon><SystemUpdateAltIcon /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Firmware update"} />
+                </ListItem>
+            </Link>
             <Link to="/tools/packet-inspector">
                 <ListItem button key="packets">
                     <ListItemIcon><HistoryIcon /></ListItemIcon>
@@ -117,7 +126,7 @@ export default function ToolsDrawer() {
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Service specification editor"} />
                 </ListItem>
             </Link>
-            <hr />
+            <Divider />
             {!isHosted &&
                 <ListItem button={true} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
                     <ListItemIcon><SettingsBrightnessIcon /></ListItemIcon>
