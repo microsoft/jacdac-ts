@@ -329,7 +329,11 @@ class EdgeImpulseClient extends JDClient {
         if (!apiKey) return false;
 
         const r = await EdgeImpulseClient.fetchEdgeImpulse("GET", "projects", apiKey);
-        if (r.status == 200) return true;
+        if (r.status == 200) {
+            const rsj = await r.json()
+            console.log(`ei: project`, rsj)
+            return !!rsj?.success;
+        }
         else if (r.status == 403) return false;
         else return undefined;
     }
