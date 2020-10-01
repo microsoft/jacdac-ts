@@ -144,7 +144,7 @@ class EdgeImpulseClient extends JDClient {
                 {
                     "name": service.name,
                     "maxSampleLengthS": 10000,
-                    "frequencies": [30, 60]
+                    "frequencies": [50, 30, 20, 10]
                 }
             ]
         };
