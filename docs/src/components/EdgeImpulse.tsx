@@ -133,7 +133,7 @@ class EdgeImpulseClient extends JDClient {
             "version": 2,
             "apiKey": this.apiKey,
             "deviceId": device.deviceId,
-            "deviceType": deviceSpec?.name || deviceClass.toString(16) || "JACDAC device",
+            "deviceType": deviceSpec?.name || deviceClass?.toString(16) || "JACDAC device",
             "connection": "ip", // direct connection
             "sensors": [
                 {
@@ -450,7 +450,7 @@ export default function EdgeImpulse(props: {}) {
 
     return <>
         {apiKey &&
-            <Grid container>
+            <Grid container spacing={2}>
                 {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
                     <ReadingRegister register={reg} apiKey={apiKey} />
                 </Grid>)}

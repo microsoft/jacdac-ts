@@ -98,7 +98,7 @@ export default function FirmwareCard(props: { slug: string }) {
             {!downloading && firmwareBlobs?.length && <Button disabled={disabled} variant="text" arial-label={"Clear"} onClick={handleClear}>
                 Clear
             </Button>}
-            {indeterminate && <CircularProgress disableShrink size="1rem" />}
+            {indeterminate && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
         </CardActions>
     </Card>
 }
