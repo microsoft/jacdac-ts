@@ -53,6 +53,13 @@ export default class FieldDataSet {
         return this.rows.length
     }
 
+    data(flatten?: boolean) {
+        if (flatten && this.headers.length == 1)
+            return this.rows.map(row => row.data[0])
+        else
+            return this.rows.map(row => row.data);
+    }
+
     indexOf(field: JDField) {
         return this.fields.indexOf(field)
     }

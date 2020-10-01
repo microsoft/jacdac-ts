@@ -240,7 +240,7 @@ class EdgeImpulseClient extends JDClient {
                     "units": ds.units[i] || "/"
                 })
                 ),
-                "values": ds.rows.map(ex => ex.data)
+                "values": ds.data(true)
             }
         }
         console.log(`payload`, payload)
