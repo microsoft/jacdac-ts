@@ -27,6 +27,7 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import { AccordionActions } from '@material-ui/core';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -447,6 +448,7 @@ function ApiKeyManager() {
     return <Accordion expanded={expanded} onChange={handleExpanded}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="body">API Key Configuration</Typography>
+            {validated && <Box ml={1} color="success.main"><CheckCircleOutlineIcon /></Box>}
         </AccordionSummary>
         <AccordionDetails style={({ display: "block" })}>
             {validated && <Alert severity={"success"}>API key ready!</Alert>}
