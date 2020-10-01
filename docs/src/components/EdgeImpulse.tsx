@@ -104,7 +104,7 @@ class EdgeImpulseClient extends JDClient {
         if (this.connectionState !== state) {
             this.connectionState = state;
             this.emit(CONNECTION_STATE, this.connectionState);
-            console.log(`ei conn`, this.connectionState)
+            console.log(`ei: connection state changed`, this.connectionState)
         }
     }
 
@@ -112,7 +112,7 @@ class EdgeImpulseClient extends JDClient {
         if (this.samplingState !== state) {
             this.samplingState = state;
             this.emit(SAMPLING_STATE, this.samplingState)
-            console.log(`ei sampling`, this.samplingState)
+            console.log(`ei: sampling state changed`, this.samplingState)
         }
     }
 
@@ -146,6 +146,11 @@ class EdgeImpulseClient extends JDClient {
         this.send({
             "hello": this._hello
         })
+    }
+
+    private reconnect() {
+        this.disconnect();
+        this.connect();
     }
 
     private handleMessage(msg: any) {
@@ -212,7 +217,8 @@ class EdgeImpulseClient extends JDClient {
                         "device_type": this._hello.deviceType,
                         "interval_ms": this._sample.interval,
                         "sensors": this._dataSet.headers.map((h, i) => ({
-                            "name": this._dataSet.headers[i], "units": this._dataSet.units[i]
+                            "name": this._dataSet.headers[i],
+                            "units": this._dataSet.units[i] || "/"
                         })
                         ),
                         "values": this._dataSet.rows.map(ex => ex.data)
@@ -247,7 +253,7 @@ class EdgeImpulseClient extends JDClient {
 
     private handleError(ev: Event) {
         this.emit(ERROR, ev)
-        this.disconnect();
+        this.reconnect();
     }
 
     private startSampling(sample: EdgeImpulseSample) {
