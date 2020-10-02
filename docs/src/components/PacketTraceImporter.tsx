@@ -5,18 +5,9 @@ import useDbValue from "./useDbValue"
 import { parseLog, replayLog } from "../../../src/dom/logparser"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        box: {
-            marginBottom: theme.spacing(2)
-        }
-    })
-);
-
 export default function PacketTraceImporter() {
     const { value: trace, setValue: setTrace } = useDbValue("packettrace", undefined)
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const classes = useStyles()
     const [importing, setImporting] = useState(false)
     const frames = parseLog(trace)
 
@@ -47,7 +38,7 @@ export default function PacketTraceImporter() {
 
     return <>
         <UploadButton text="Import trace" onFilesUploaded={handleFiles} />
-        {!!trace && <Button variant="contained" onClick={handleReplay}>Replay ({frames.length} frames)</Button>}
-        {!!trace && <Button aria-label={"Clear packet trace"} variant="contained" onClick={handleClear}>clear</Button>}
+        {!!trace && <Button disabled={importing} variant="contained" onClick={handleReplay}>Replay ({frames.length} frames)</Button>}
+        {!!trace && <Button disabled={importing} aria-label={"Clear packet trace"} variant="contained" onClick={handleClear}>clear</Button>}
     </>
 }
