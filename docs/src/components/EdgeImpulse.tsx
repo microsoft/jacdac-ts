@@ -47,7 +47,7 @@ interface EdgeImpulseHello {
     err?: any;
 }
 
-interface EdgeImpulseDevice {
+interface EdgeImpulseDeviceInfo {
     version: number;
     apiKey: string;
     deviceId: string;
@@ -67,11 +67,14 @@ interface EdgeImpulseSample {
     "hmacKey": string;
     "interval": number;
     "sensor": string;
+}
 
+interface EdgeImpulseSampling extends EdgeImpulseSample {
     dataSet?: FieldDataSet;
     startTimestamp?: number;
     lastProgressTimestamp?: number;
     generatedFilename?: string;
+    unsubscribers?: (() => void)[];
 }
 
 interface EdgeImpulseProject {
@@ -94,11 +97,11 @@ https://docs.edgeimpulse.com/reference#remote-management
 */
 class EdgeImpulseClient extends JDClient {
     private _ws: WebSocket;
-    private _stopStreaming: () => void;
     public connectionState = DISCONNECT;
     public samplingState = IDLE;
-    private _hello: EdgeImpulseDevice;
-    private _sample: EdgeImpulseSample;
+    private _hello: EdgeImpulseDeviceInfo;
+    private _sample: EdgeImpulseSampling;
+    private _pingInterval: any;
 
     constructor(private readonly apiKey: string, private readonly register: JDRegister) {
         super()
@@ -109,7 +112,6 @@ class EdgeImpulseClient extends JDClient {
         this.handleReport = this.handleReport.bind(this);
 
         // make sure to clean up
-        this.mount(this.register.subscribe(REPORT_RECEIVE, this.handleReport));
         this.mount(() => this.disconnect());
     }
 
@@ -118,7 +120,11 @@ class EdgeImpulseClient extends JDClient {
     }
 
     disconnect() {
-        this.stopSampling();
+        this.clearSampling();
+        if (this._pingInterval) {
+            clearInterval(this._pingInterval)
+            this._pingInterval = undefined;
+        }
         // stop socket
         if (this._ws) {
             const w = this._ws;
@@ -220,7 +226,8 @@ class EdgeImpulseClient extends JDClient {
     private handleReport() {
         if (!this.connected) return; // ignore
 
-        const timestamp = this.register.service.device.bus.timestamp;
+        const { bus } = this.register.service.device
+        const { timestamp } = bus;
         // first sample, notify we're started
         if (this.samplingState == STARTING) {
             this._sample.startTimestamp = this._sample.lastProgressTimestamp = timestamp;
@@ -241,9 +248,10 @@ class EdgeImpulseClient extends JDClient {
 
             if (timestamp - this._sample.startTimestamp >= this._sample.length) {
                 // first stop the sampling
-                this._stopStreaming?.();
+                this.stopSampling();
                 // we're done!
                 this.emit(PROGRESS, this.progress)
+                // and upload...
                 this.uploadData();
             }
         }
@@ -309,6 +317,7 @@ class EdgeImpulseClient extends JDClient {
             this._sample.label,
             fields
         );
+        this._sample.unsubscribers = [];
         this.send({ "sample": true })
         this.setSamplingState(STARTING);
 
@@ -318,23 +327,32 @@ class EdgeImpulseClient extends JDClient {
         streamingIntervalRegister.sendSetIntAsync(this._sample.interval);
 
         // start sampling
-        this._stopStreaming = startStreaming(this.register.service)
+        this._sample.unsubscribers.push(startStreaming(this.register.service));
+        const collectInterval = setInterval(this.handleReport, this._sample.interval)
+        this._sample.unsubscribers.push(() => clearInterval(collectInterval))
     }
 
     private stopSampling() {
-        // cleanup streaming
-        this._sample = undefined;
-        this._hello = undefined;
-        if (this._stopStreaming) {
-            try {
-                this._stopStreaming();
-            }
-            catch (e) {
-            }
-            finally {
-                this._stopStreaming = undefined;
-                this.setSamplingState(IDLE);
-            }
+        const sample = this._sample;
+        if (sample) {
+            sample.unsubscribers.forEach(unsub => {
+                try {
+                    unsub();
+                }
+                catch (e) {
+                    console.log(e)
+                }
+            })
+            sample.unsubscribers = [];
+        }
+    }
+
+    private clearSampling() {
+        this.stopSampling();
+        if (this._sample) {
+            this._sample = undefined;
+            this._hello = undefined;
+            this.setSamplingState(IDLE);
         }
     }
 
@@ -347,6 +365,8 @@ class EdgeImpulseClient extends JDClient {
         this._ws.onmessage = this.handleMessage;
         this._ws.onopen = this.handleOpen;
         this._ws.onerror = this.handleError;
+
+        this._pingInterval = setInterval(() => this._ws?.send("ping"), 3000);
     }
 
     get progress() {
