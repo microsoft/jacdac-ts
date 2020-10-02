@@ -1,3 +1,5 @@
+import { stringify } from "querystring";
+
 const ROOT = "https://api.github.com/"
 
 export interface GithubRelease {
@@ -13,8 +15,12 @@ export interface GithubRelease {
     }[]
 }
 
+export function normalizeSlug(slug: string): string {
+    return slug.replace(/^https:\/\/github.com\//, "")
+}
+
 export async function fetchLatestRelease(slug: string, options?: { ignoreThrottled?: boolean }): Promise<GithubRelease> {
-    const uri = `${ROOT}repos/${slug}/releases/latest`;
+    const uri = `${ROOT}repos/${normalizeSlug(slug)}/releases/latest`;
     const resp = await fetch(uri)
     //    console.log(resp)
     switch (resp.status) {
@@ -35,7 +41,7 @@ export async function fetchLatestRelease(slug: string, options?: { ignoreThrottl
 }
 
 export async function fetchReleaseBinary(slug: string, tag: string): Promise<Blob> {
-    const downloadUrl = `https://raw.githubusercontent.com/${slug}/${tag}/dist/firmware.uf2`
+    const downloadUrl = `https://raw.githubusercontent.com/${normalizeSlug(slug)}/${tag}/dist/firmware.uf2`
     const req = await fetch(downloadUrl, { headers: { "Accept": "application/octet-stream" } })
     if (req.status == 200) {
         const firmware = await req.blob()

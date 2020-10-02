@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Button, Card, CardHeader, CardActions, CircularProgress, CardContent, Chip, ListItem, List, ListItemText, Typography } from "@material-ui/core";
-import { fetchLatestRelease, fetchReleaseBinary, GithubRelease } from "./github";
+import { fetchLatestRelease, fetchReleaseBinary, GithubRelease, normalizeSlug } from "./github";
 import useEffectAsync from "./useEffectAsync";
 import { Link } from "gatsby-theme-material-ui";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
@@ -78,7 +78,7 @@ export default function FirmwareCard(props: { slug: string }) {
 
     return <Card>
         <CardHeader
-            title={isGithubRepo ? <Link color="textPrimary" target="_blank" to={`https://github.com/${slug}`}>{slug}</Link> : slug}
+            title={isGithubRepo ? <Link color="textPrimary" target="_blank" to={`https://github.com/${slug}`}>{normalizeSlug(slug)}</Link> : slug}
             subheader={release && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>} />
         <CardContent>
             {error && <Alert severity="error">{error}</Alert>}
