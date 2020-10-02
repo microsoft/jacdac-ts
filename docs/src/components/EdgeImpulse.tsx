@@ -32,6 +32,7 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ServiceList from "./ServiceList";
 import { ModelActions, ModelContent } from "./ModelUploader";
 import { readBlobToUint8Array } from "../../../src/dom/utils";
+import useDeviceName from "./useDeviceName";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -69,7 +70,7 @@ interface EdgeImpulseRemoteManagementInfo {
     sensors: EdgeImpulseSensorInfo[]
 }
 
-interface EdgeImpulseDeviceInfo extends EdgeImpulseResponse {
+interface EdgeImpulseDeviceInfo {
     id: number;
     deviceId: string;
     name: string;
@@ -77,6 +78,10 @@ interface EdgeImpulseDeviceInfo extends EdgeImpulseResponse {
     lastSeen: string;
     deviceType: string;
     sensors: EdgeImpulseSensorInfo[]
+}
+
+interface EdgeImpulseDeviceResponse extends EdgeImpulseResponse {
+    device?: EdgeImpulseDeviceInfo;
 }
 
 interface EdgeImpulseSample extends EdgeImpulseResponse {
@@ -97,7 +102,7 @@ interface EdgeImpulseSampling extends EdgeImpulseSample {
 }
 
 interface EdgeImpulseProjectInfo {
-    id: string;
+    id: number;
     name: string;
     logo?: string;
 }
@@ -105,6 +110,16 @@ interface EdgeImpulseProjectInfo {
 interface EdgeImpulseProject extends EdgeImpulseResponse {
     project: EdgeImpulseProjectInfo,
     devices: EdgeImpulseDeviceInfo[],
+    impulse: {
+        created: boolean;
+        configured: boolean;
+        complete: boolean;
+    },
+    dataSummary: {
+        totalLengthMs: number;
+        labels: string[];
+        dataCount: number;
+    },
     downloads: {
         name: string;
         type: string;
@@ -438,18 +453,20 @@ class EdgeImpulseClient extends JDClient {
         }
     }
 
-    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string, body?: string): Promise<T> {
+    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string, body?: any): Promise<T> {
         const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
         const url = `${API_ROOT}${path}`
         const options: RequestInit = {
             method: body ? "POST" : "GET",
             headers: {
-                "x-api-key": apiKey
+                "x-api-key": apiKey,
+                "Accept": "application/json"
             },
-            body
+            body: body
         }
-        if (options.method === "GET")
-            options.headers["Accept"] = "application/json"
+        if (options.method === "POST")
+            options.headers["Content-Type"] = "application/json"
+
         const resp = await fetch(url, options)
         if (resp.status !== 200)
             return {
@@ -469,12 +486,12 @@ class EdgeImpulseClient extends JDClient {
         }
     }
 
-    static async deviceInfo(apiKey: string, deviceId: string): Promise<EdgeImpulseDeviceInfo> {
-        return await EdgeImpulseClient.apiFetch<EdgeImpulseDeviceInfo>(apiKey, `${projectId}/devices/${deviceId}`)
+    static async deviceInfo(apiKey: string, projectId: number, deviceId: string): Promise<EdgeImpulseDeviceResponse> {
+        return await EdgeImpulseClient.apiFetch<EdgeImpulseDeviceResponse>(apiKey, `${projectId}/device/${deviceId}`)
     }
 
-    static async renameDevice(apiKey: string, projectId: string, deviceId: string, name: string): Promise<EdgeImpulseResponse> {
-        return await EdgeImpulseClient.apiFetch<EdgeImpulseResponse>(apiKey, `${projectId}/devices/${deviceId}/rename`, name)
+    static async renameDevice(apiKey: string, projectId: number, deviceId: string, name: string): Promise<EdgeImpulseResponse> {
+        return await EdgeImpulseClient.apiFetch<EdgeImpulseResponse>(apiKey, `${projectId}/devices/${deviceId}/rename`, { name })
     }
 }
 
@@ -612,8 +629,8 @@ function ModelDownloadButton(props: { apiKey: string, info: EdgeImpulseProject, 
     </Box>
 }
 
-function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
-    const { register, apiKey } = props
+function ReadingRegister(props: { register: JDRegister, apiKey: string, info: EdgeImpulseProjectInfo }) {
+    const { register, apiKey, info } = props
     const { service } = register;
     const { device } = service;
 
@@ -622,6 +639,11 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     const [connectionState, setConnectionState] = useState(DISCONNECT)
     const [samplingState, setSamplingState] = useState(IDLE)
     const [samplingProgress, setSamplingProgress] = useState(0)
+    const [deviceInfo, setDeviceInfo] = useState<EdgeImpulseDeviceInfo>(undefined);
+    const { deviceId } = device;
+    const deviceName = useDeviceName(device, false);
+    const projectId = info?.id;
+
     const connected = connectionState === CONNECT;
     const sampling = samplingState !== IDLE
     const dataSet = client?.dataSet;
@@ -657,6 +679,31 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string }) {
     useEffect(() => client?.subscribe(PROGRESS, (p: number) => setSamplingProgress(p * 100))
         , [client])
 
+    // name checking
+    useEffectAsync(async () => {
+        if (!apiKey || projectId === undefined) {
+            setDeviceInfo(undefined)
+        } else {
+            const resp = await EdgeImpulseClient.deviceInfo(apiKey, projectId, deviceId);
+            const info = resp.success && resp.device;
+            if (info && info.name !== deviceName) {
+                // no name assigned, use current
+                if (info.name === deviceId) {
+                    console.log(`ei: sync name`)
+                    const rename = await EdgeImpulseClient.renameDevice(apiKey, projectId, deviceId, deviceName)
+                    if (rename.success) {
+                        info.name = deviceName;
+                    }
+                } else {
+                    // name assigned in EI, pull it in
+                    console.log(`ei: pull name`)
+                    device.name = info.name;
+                }
+            }
+            setDeviceInfo(info)
+        }
+    }, [apiKey, projectId, deviceName])
+
     return <Card>
         <DeviceCardHeader device={device} />
         <CardContent>
@@ -691,7 +738,7 @@ export default function EdgeImpulse(props: {}) {
         {!readingRegisters.length && <Alert severity="info">No sensor found...</Alert>}
         <Grid container spacing={2}>
             {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
-                <ReadingRegister register={reg} apiKey={apiKey} />
+                <ReadingRegister register={reg} apiKey={apiKey} info={info?.project} />
             </Grid>)}
         </Grid>
         <h3>Deployment</h3>
