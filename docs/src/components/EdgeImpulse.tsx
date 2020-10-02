@@ -42,25 +42,44 @@ const UPLOADING = "uploading";
 
 const SAMPLING_STATE = "samplingState";
 
+interface EdgeImpulseResponse {
+    success: boolean;
+    error?: string;
+    // HTTP status code
+    errorStatus?: number;
+}
+
 interface EdgeImpulseHello {
     hello?: boolean;
     err?: any;
 }
 
-interface EdgeImpulseDeviceInfo {
+interface EdgeImpulseSensorInfo {
+    "name": string,
+    "maxSampleLengthS": number,
+    "frequencies": number[]
+}
+
+interface EdgeImpulseRemoteManagementInfo {
     version: number;
     apiKey: string;
     deviceId: string;
     deviceType: string;
     connection: string;
-    sensors: {
-        "name": string,
-        "maxSampleLengthS": number,
-        "frequencies": number[]
-    }[]
+    sensors: EdgeImpulseSensorInfo[]
 }
 
-interface EdgeImpulseSample {
+interface EdgeImpulseDeviceInfo extends EdgeImpulseResponse {
+    id: number;
+    deviceId: string;
+    name: string;
+    created: string;
+    lastSeen: string;
+    deviceType: string;
+    sensors: EdgeImpulseSensorInfo[]
+}
+
+interface EdgeImpulseSample extends EdgeImpulseResponse {
     "label": string;
     "length": number;
     "path": string;
@@ -77,18 +96,25 @@ interface EdgeImpulseSampling extends EdgeImpulseSample {
     unsubscribers?: (() => void)[];
 }
 
-interface EdgeImpulseProject {
-    success: boolean;
-    project: {
-        id: number;
-        name: string;
-    }
+interface EdgeImpulseProjectInfo {
+    id: string;
+    name: string;
+    logo?: string;
+}
+
+interface EdgeImpulseProject extends EdgeImpulseResponse {
+    project: EdgeImpulseProjectInfo,
+    devices: EdgeImpulseDeviceInfo[],
     downloads: {
         name: string;
         type: string;
         size: string;
         link: string;
     }[];
+}
+
+interface EdgeImpulseProjects extends EdgeImpulseResponse {
+    projects: EdgeImpulseProjectInfo[];
 }
 
 /*
@@ -99,7 +125,7 @@ class EdgeImpulseClient extends JDClient {
     private _ws: WebSocket;
     public connectionState = DISCONNECT;
     public samplingState = IDLE;
-    private _hello: EdgeImpulseDeviceInfo;
+    private _hello: EdgeImpulseRemoteManagementInfo;
     private _sample: EdgeImpulseSampling;
     private _pingInterval: any;
 
@@ -195,8 +221,13 @@ class EdgeImpulseClient extends JDClient {
     }
 
     private handleMessage(msg: any) {
+        // response to ping?
+        if (msg.data === "pong") {
+            // TODO handle pong
+            return;
+        }
+
         const data = JSON.parse(msg.data)
-        console.log(`msg`, data)
         if (data.hello !== undefined) {
             const hello = data as EdgeImpulseHello;
             if (!hello.hello) {
@@ -382,49 +413,68 @@ class EdgeImpulseClient extends JDClient {
     }> {
         if (!apiKey) return { valid: false };
 
-        const r = await EdgeImpulseClient.fetchEdgeImpulse("projects", apiKey);
-        if (r.status != 200) {
+        const rsj = await EdgeImpulseClient.apiFetch<EdgeImpulseProjects>(apiKey, "projects");
+        if (!rsj.success) {
             return {
                 valid: false,
-                errorStatus: r.status
+                errorStatus: rsj.errorStatus
             }
         }
 
-        const rsj = await r.json()
-        const projectId = rsj?.projects?.[0]?.id;
+        // the API returns the current project when using the API key
+        const projectId = rsj.projects?.[0]?.id;
         if (!rsj?.success || projectId === undefined) {
             return {
-                valid: false,
+                valid: true,
                 errorStatus: 402
             }
         }
 
-        const projectResp = await EdgeImpulseClient.fetchEdgeImpulse(projectId, apiKey);
-        if (projectResp.status != 200) {
-            return {
-                valid: false,
-                errorStatus: projectResp.status
-            }
-        }
-
-        const project: EdgeImpulseProject = await projectResp.json();
+        const project = await EdgeImpulseClient.apiFetch<EdgeImpulseProject>(apiKey, projectId);
         return {
-            valid: !!project?.success,
+            valid: true,
+            errorStatus: project.errorStatus,
             project
         }
     }
 
-    static async fetchEdgeImpulse(path: string, apiKey: string) {
+    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string, body?: string): Promise<T> {
         const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
         const url = `${API_ROOT}${path}`
         const options: RequestInit = {
-            method: "GET",
+            method: body ? "POST" : "GET",
             headers: {
-                "Accept": "application/json",
                 "x-api-key": apiKey
-            }
+            },
+            body
         }
-        return fetch(url, options)
+        if (options.method === "GET")
+            options.headers["Accept"] = "application/json"
+        const resp = await fetch(url, options)
+        if (resp.status !== 200)
+            return {
+                success: false,
+                errorStatus: resp.status,
+                error: resp.statusText
+            } as T;
+        try {
+            const payload = await resp.json() as T;
+            return payload;
+        } catch (e) {
+            return {
+                success: false,
+                errorStatus: 500,
+                error: e.message
+            } as T;
+        }
+    }
+
+    static async deviceInfo(apiKey: string, deviceId: string): Promise<EdgeImpulseDeviceInfo> {
+        return await EdgeImpulseClient.apiFetch<EdgeImpulseDeviceInfo>(apiKey, `${projectId}/devices/${deviceId}`)
+    }
+
+    static async renameDevice(apiKey: string, projectId: string, deviceId: string, name: string): Promise<EdgeImpulseResponse> {
+        return await EdgeImpulseClient.apiFetch<EdgeImpulseResponse>(apiKey, `${projectId}/devices/${deviceId}/rename`, name)
     }
 }
 
