@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react"
-import { Box, Card, CardActions, CardContent, CardHeader, CircularProgress, Collapse, Grid, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
-import { Button, Link } from 'gatsby-theme-material-ui';
+import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Collapse, Grid, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
+import { Link } from 'gatsby-theme-material-ui';
 import useDbValue from "./useDbValue";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { isSensor, startStreaming } from "../../../src/dom/sensor";
@@ -470,7 +470,7 @@ class EdgeImpulseClient extends JDClient {
         }
     }
 
-    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string, body?: any): Promise<T> {
+    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string | number, body?: any): Promise<T> {
         const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
         const url = `${API_ROOT}${path}`
         const options: RequestInit = {
@@ -562,7 +562,7 @@ function ApiKeyManager() {
             {validated && <Alert severity={"success"}>API key ready!</Alert>}
             <p>To get an <b>API key</b>, navigate to &nbsp;
             <Link to="https://studio.edgeimpulse.com/studio/8698/keys" target="_blank">https://studio.edgeimpulse.com/studio/8698/keys</Link>
-            and generate a new key.</p>
+            &nbsp; and generate a new key.</p>
             <TextField
                 autoFocus
                 label="API key"
@@ -597,13 +597,16 @@ function useEdgeImpulseProjectInfo(apiKey: string) {
 
 function ProjectInfo(props: { apiKey: string, info: EdgeImpulseProject }) {
     const { apiKey, info } = props;
+    const disabled = !info?.success;
 
     return <Card>
-        <CardHeader title={
-            info ? <Link to={`https://studio.edgeimpulse.com/studio/${info?.project?.id}/`} target="_blank">{info.project.name}</Link>
-                : "..."}
-            subheader={apiKey ? "current project on edgeimpulse" : "configure API key to access EdgeImpulse"}
+        <CardHeader title={info?.project?.name || "..."}
+            subheader={info?.dataSummary && `${info?.dataSummary?.dataCount} samples`}
         />
+        {info?.project?.logo && <CardMedia image={info?.project?.logo} />}
+        <CardActions>
+            <Button disabled={disabled} target="_blank" href={`https://studio.edgeimpulse.com/studio/${info?.project?.id}/`} variant="contained" color="primary">Open EdgeImpulse</Button>
+        </CardActions>
     </Card >
 }
 
