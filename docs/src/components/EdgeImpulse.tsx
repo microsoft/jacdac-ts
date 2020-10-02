@@ -143,6 +143,7 @@ class EdgeImpulseClient extends JDClient {
     private _hello: EdgeImpulseRemoteManagementInfo;
     private _sample: EdgeImpulseSampling;
     private _pingInterval: any;
+    private pong: boolean;
 
     constructor(private readonly apiKey: string, private readonly register: JDRegister) {
         super()
@@ -151,6 +152,7 @@ class EdgeImpulseClient extends JDClient {
         this.handleOpen = this.handleOpen.bind(this)
         this.handleError = this.handleError.bind(this);
         this.handleReport = this.handleReport.bind(this);
+        this.handlePing = this.handlePing.bind(this);
 
         // make sure to clean up
         this.mount(() => this.disconnect());
@@ -238,7 +240,7 @@ class EdgeImpulseClient extends JDClient {
     private handleMessage(msg: any) {
         // response to ping?
         if (msg.data === "pong") {
-            // TODO handle pong
+            this.pong = true;
             return;
         }
 
@@ -412,7 +414,22 @@ class EdgeImpulseClient extends JDClient {
         this._ws.onopen = this.handleOpen;
         this._ws.onerror = this.handleError;
 
-        this._pingInterval = setInterval(() => this._ws?.send("ping"), 3000);
+        this.pong = true;
+        this._pingInterval = setInterval(this.handlePing, 3000);
+    }
+
+    private handlePing() {
+        if (!this.connected) return;
+
+        if (!this.pong) {
+            // the socket did not response
+            console.log(`missing pong`)
+            this.reconnect();
+        } else {
+            // send a new ping and wait for pong
+            this.pong = false;
+            this._ws.send("ping");
+        }
     }
 
     get progress() {
