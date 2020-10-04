@@ -40,6 +40,7 @@
     "docs": "cd docs && node node_modules/gatsby/cli.js develop"
   },
   "release": {
+    "branch": "main",
     "branches": [
       "main"
     ],
