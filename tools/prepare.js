@@ -14,7 +14,7 @@ async function patchDocs() {
   for (const suffix of ["", "-graphql", "-react"]) {
     const fn = `jacdac${suffix}.umd.js`
     await patch({
-      files: './docs/static/tools/*.html',
+      files: './docs/static/tools/js/*.html',
       from: `/dist/${fn}`,
       to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}/dist/${fn}`
     })
