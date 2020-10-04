@@ -16,14 +16,6 @@ The rest of this page is for developers of the jacdac-ts library.
 
 You can do ``npm run watch`` to watch/build bundles. Bundles are placed under the ``dist`` folder.
 
-### HTML tools
-
-Launch a small web server and try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/console.html . These tools load the files under ``dist`` so you'll want to also run watch on the side.
-
-```
-npm run tools
-```
-
 ### Gatsby build
 
 Launch the gatsbdy develop mode and navigate to http://localhost:8000 . This build does not require to load dist as the library is compiled directly into the web site.
@@ -40,6 +32,24 @@ npm run installdocs
 ```
 npm run docs
 ```
+
+### HTML tools
+
+Launch a small web server and 
+try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/js/console.html . These tools load the files under ``dist`` so you'll want 
+to also run ``npm run watch`` on the side.
+
+```
+npm run tools
+```
+
+* console http://localhost:8080/docs/static/tools/js/console.html
+* devices http://localhost:8080/docs/static/tools/js/devices.html
+* flashing http://localhost:8080/docs/static/tools/js/flashing.html
+* namer http://localhost:8080/docs/static/tools/js/namer.html
+* tfite http://localhost:8080/docs/static/tools/js/tflite.html
+* streaming http://localhost:8080/docs/static/tools/js/streaming.html
+* streaming-rickshaw: http://localhost:8080/docs/static/tools/js/streaming-rickshaw.html
 
 ### Commits create releases
 
