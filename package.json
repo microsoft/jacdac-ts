@@ -108,7 +108,8 @@
       [
         "@qiwi/semantic-release-gh-pages-plugin",
         {
-          "src": "./docs/public"
+          "src": "./docs/public",
+          "pullTagsBranch": "main"
         }
       ]
     ]
