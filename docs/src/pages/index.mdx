@@ -14,8 +14,6 @@ A [service](/clients/web/dom/service) has registers, accept commands
 and may return acks. A [register](/clients/web/dom/register) is an addressed data location, organized in [fields](/clients/web/dom/field), 
 that may be get, set or streamed.
 
-<DeviceList />
-
 ## Motivation
 
 Widely used and highly efficient, I2C and SPI are the wired protocols of choice when connecting onboard sensors to microcontrollers. 
@@ -36,7 +34,20 @@ reducing the gap between the Web and the microcontroller.
 
 JACDAC operates in a bus topology and requires devices have a microcontroller with UART, Timer, and GPIO interrupt capabilities.
 
-[Read the full protocol specification.](/specification)
+[Read the full protocol specification.](/spec)
+
+## Services
+
+The [list of known service specifications](/services) provides a set of 
+standaridized JACDAC modules. Additional modules can be specified in the [specification](/spec) repository.
+
+## Device Catalog
+
+The JACDAC project contains a catalog of known devices that 
+can be automatically detected on the bus. Once a device is detected, 
+the catalog information provides vendor information, pictures and firmware information.
+
+<DeviceList />
 
 ## Community
 
