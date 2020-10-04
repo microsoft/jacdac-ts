@@ -106,11 +106,9 @@
         }
       ],
       [
-        "@qiwi/semantic-release-gh-pages-plugin",
+        "@semantic-release/exec",
         {
-          "src": "docs/public",
-          "branch": "branch",
-          "pullTagsBranch": "main"
+          "publishCmd": "node ./tools/publish.js ${nextRelease.version}"
         }
       ]
     ]
@@ -130,13 +128,13 @@
   "devDependencies": {
     "@microsoft/api-documenter": "^7.8.36",
     "@microsoft/api-extractor": "^7.9.11",
-    "@qiwi/semantic-release-gh-pages-plugin": "^5.0.0",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "colors": "^1.3.2",
     "commitizen": "^3.0.0",
     "coveralls": "^3.0.2",
     "cross-env": "^5.2.0",
+    "gh-pages": "^3.1.0",
     "graphiql": "^1.0.3",
     "jest": "^23.6.0",
     "jest-config": "^23.6.0",
