@@ -17,8 +17,7 @@ import { CardActions, CardMedia, createStyles, Theme } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import useRegisterValue from '../jacdac/useRegisterValue';
 import { DeviceLostAlert } from './DeviceLostAlert';
-import { deviceSpecificationFromClassIdenfitier, imageDeviceOf } from '../../../src/dom/spec';
-import CardMediaWithSkeleton from "./CardMediaWithSkeleton"
+import DeviceCardMedia from './DeviceCardMedia';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -63,16 +62,10 @@ export default function DeviceCard(props: {
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
-    const deviceClass = useRegisterValue(device, SRV_CTRL, CtrlReg.DeviceClass);
-    const deviceSpecification = deviceSpecificationFromClassIdenfitier(deviceClass?.intValue);
-    const imageUrl = imageDeviceOf(deviceSpecification);
 
     return (
         <Card className={classes.root}>
-            <CardMediaWithSkeleton
-                image={imageUrl}
-                title={deviceSpecification?.name}
-            />
+            <DeviceCardMedia device={device} />
             <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} />
             {(showDescription || content) &&
                 <CardContent>
