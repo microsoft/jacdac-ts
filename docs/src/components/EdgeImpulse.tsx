@@ -36,7 +36,7 @@ import useDeviceName from "./useDeviceName";
 import { JDService } from "../../../src/dom/service";
 import ReadingFieldGrid from "./ReadingFieldGrid";
 import useChartPalette from './useChartPalette';
-import { SensorAggregatorClient } from "../../../src/dom/sensoraggregatorclient";
+import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../src/dom/sensoraggregatorclient";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -377,14 +377,17 @@ class EdgeImpulseClient extends JDClient {
         this.setSamplingState(STARTING);
 
         // prepare configuration
-        const inputConfiguration = {
+        const inputConfiguration: SensorAggregatorConfig = {
             samplingInterval: this._sample.interval,
             samplesInWindow: 10,
             inputs: this.inputRegisters.map(reg => ({
-                serviceClass: reg.service.serviceClass
+                serviceClass: reg.service.serviceClass,
+                deviceId: reg.service.device.deviceId,
+                serviceNumber: reg.service.service_number
             }))
         }
 
+        console.log(`ei: input`, inputConfiguration)
         // setup aggregator client
         await this.aggregatorClient.setInputs(inputConfiguration)
         // schedule data collection
@@ -784,6 +787,7 @@ export default function EdgeImpulse(props: {}) {
             .services().find(srv => isSensor(srv))
             ?.readingRegister
         ).filter(reg => !!reg))
+    const inputs = readingRegisters.filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
 
     const handleAggregatorChecked = (srv: JDService) => () => {
         const id = srv?.id == aggregatorId ? '' : srv?.id
@@ -823,7 +827,7 @@ export default function EdgeImpulse(props: {}) {
         </Grid>
         <h4>Acquisition status</h4>
         {!currentAggregator && <Alert severity="info">No data aggregator selected...</Alert>}
-        {currentAggregator && <Acquisition aggregator={currentAggregator} inputs={readingRegisters} apiKey={apiKey} info={info?.project} />}
+        {currentAggregator && <Acquisition aggregator={currentAggregator} inputs={inputs} apiKey={apiKey} info={info?.project} />}
         <h3>Deployment</h3>
         {model && <Box mb={1}><Alert severity="success">Model downloaded!</Alert></Box>}
         <ModelDownloadButton apiKey={apiKey} info={info} setModel={setModel} />
