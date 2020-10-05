@@ -104,6 +104,7 @@ interface EdgeImpulseSampling extends EdgeImpulseSample {
     startTimestamp?: number;
     lastProgressTimestamp?: number;
     generatedFilename?: string;
+    aggregatorConfig?: SensorAggregatorConfig;
     unsubscribers?: (() => void)[];
 }
 
@@ -284,6 +285,10 @@ class EdgeImpulseClient extends JDClient {
         return this._sample?.generatedFilename;
     }
 
+    get aggregatorConfig() {
+        return this._sample?.aggregatorConfig;
+    }
+
     private handleReport(row: number[]) {
         console.log(`ei: aggregator report`, this.connected, this.sampling)
         if (!this.connected) return; // ignore
@@ -383,7 +388,7 @@ class EdgeImpulseClient extends JDClient {
         this.setSamplingState(STARTING);
 
         // prepare configuration
-        const inputConfiguration: SensorAggregatorConfig = {
+        this._sample.aggregatorConfig = {
             samplingInterval: this._sample.interval,
             samplesInWindow: 10,
             inputs: this.inputRegisters.map(reg => ({
@@ -393,9 +398,9 @@ class EdgeImpulseClient extends JDClient {
             }))
         }
 
-        console.log(`ei: input`, inputConfiguration)
+        console.log(`ei: input`, this._sample.aggregatorConfig)
         // setup aggregator client
-        await this.aggregatorClient.setInputs(inputConfiguration)
+        await this.aggregatorClient.setInputs(this._sample.aggregatorConfig)
         // schedule data collection, ask a few more samples
         await this.aggregatorClient.collect(this._sample.length * 1.1);
     }
@@ -711,6 +716,7 @@ function Acquisition(props: {
     const sampling = samplingState !== IDLE
     const dataSet = client?.dataSet;
     const generatedSampleName = client?.generatedSampleName;
+    const aggregatorConfig = client?.aggregatorConfig;
 
     useEffect(() => {
         if (!apiKey || !aggregator || !inputs?.length) {
@@ -776,6 +782,7 @@ function Acquisition(props: {
         </Alert>}
         {!!dataSet && <Trend dataSet={dataSet} />}
         {generatedSampleName && <Typography variant="body2">sample name: {generatedSampleName}</Typography>}
+        {aggregatorConfig && <pre>{JSON.stringify(aggregatorConfig, null, 2)}</pre>}
     </Box>
 }
 

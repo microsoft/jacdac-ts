@@ -1,7 +1,9 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { CHANGE, ERROR } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
-import { delay, JSONTryParse } from "../../../src/dom/utils";
+import { delay } from "../../../src/dom/utils";
+
+export const DB_VALUE_CHANGE = "dbValueChange"
 
 export class DbStore<T> extends JDEventSource {
     constructor(public readonly db: Db, public readonly name: string) {
@@ -12,7 +14,10 @@ export class DbStore<T> extends JDEventSource {
     }
     set(id: string, value: T): Promise<void> {
         return this.db.set(this.name, id, value)
-            .then(() => { this.emit(CHANGE) })
+            .then(() => {
+                this.emit(DB_VALUE_CHANGE, id)
+                this.emit(CHANGE)
+            })
     }
     list(): Promise<string[]> {
         return this.db.list(this.name)
