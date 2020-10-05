@@ -26,7 +26,7 @@ function ServiceListItem(props: {
     const handleCheck = () => toggleChecked()
 
     return <Card>
-        <DeviceCardHeader device={device} />
+        <DeviceCardHeader device={device} showMedia={true} />
         <CardContent>
             <DeviceLostAlert device={device} />
             {content}

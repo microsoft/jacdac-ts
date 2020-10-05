@@ -82,7 +82,7 @@ export default function RoleManagerService(props: {
 
     const handleClearRoles = async () => await client?.clearRoles()
     return <Card>
-        <DeviceCardHeader device={service.device} />
+        <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
             {client?.remoteRequestedDevices.map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={client} />)}
         </CardContent>

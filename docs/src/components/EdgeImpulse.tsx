@@ -680,7 +680,7 @@ function AggregatorCard(props: {
     const handleChecked = () => onChecked();
 
     return <Card>
-        <DeviceCardHeader device={device} />
+        <DeviceCardHeader device={device} showMedia={true} />
         <CardContent>
             <Switch checked={selected} onChange={handleChecked} />
         </CardContent>

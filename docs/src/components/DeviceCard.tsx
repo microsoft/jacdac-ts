@@ -65,8 +65,7 @@ export default function DeviceCard(props: {
 
     return (
         <Card className={classes.root}>
-            <DeviceCardMedia device={device} />
-            <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} />
+            <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} showMedia={true} />
             {(showDescription || content) &&
                 <CardContent>
                     {<DeviceLostAlert device={device} />}

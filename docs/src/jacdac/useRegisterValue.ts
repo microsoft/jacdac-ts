@@ -7,7 +7,7 @@ import { debouncedPollAsync } from "../../../src/dom/utils";
 const REGISTER_VALUE_POLL_DELAY = 5000
 
 export default function useRegisterValue(device: JDDevice, serviceNumber: number, registerIdentifier: number, pollDelay?: number) {
-    const service = useChange(device, () => device?.service(serviceNumber))
+    const service = useChange(device, d => d?.service(serviceNumber))
     const register = service?.register(registerIdentifier)
     const spec = register?.specification
     const isConst = spec?.kind == "const"
@@ -18,7 +18,7 @@ export default function useRegisterValue(device: JDDevice, serviceNumber: number
         if (register.isReading)
             return startStreaming(register.service)
         else if (isConst) { // ensure data has been collected
-            register.sendGetAsync()
+            register.refresh(true)
             return () => { }
         }
         else // poll data

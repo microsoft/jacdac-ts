@@ -259,7 +259,7 @@ export default function Collector(props: {}) {
             <Grid container>
                 {aggregators.map(aggregator => <Grid key={'aggregate' + aggregator.id} item xs={4}>
                     <Card>
-                        <DeviceCardHeader device={aggregator.device} />
+                        <DeviceCardHeader device={aggregator.device} showMedia={true} />
                         <CardActions>
                             <Switch checked={aggregatorId == aggregator.id} disabled={recording} onChange={handleAggregatorChecked(aggregator)} />
                         </CardActions>
