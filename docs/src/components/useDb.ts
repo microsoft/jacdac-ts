@@ -1,17 +1,36 @@
 import React, { useContext, useEffect, useState } from "react";
 import { JSONTryParse } from "../../../src/dom/utils";
-import useChange, { useChangeAsync } from "../jacdac/useChange";
-import DbContext from "./DbContext";
+import DbContext, { DB_VALUE_CHANGE } from "./DbContext";
 import useEffectAsync from "./useEffectAsync";
 
-export function useDbBlob(blobName: string) {
-    const { db } = useContext(DbContext);
-    const blobs = db?.blobs;
+export function useDbBlob(id: string) {
+    const { db } = useContext(DbContext)
+    const [_value, _setValue] = useState<Blob>(undefined)
+    const values = db?.blobs
+    let _mounted = true;
 
-    const value = useChangeAsync(blobs, b => b?.get(blobName))
+    // listen to change
+    useEffect(() => values?.subscribe(DB_VALUE_CHANGE, async (changed) => {
+        if (changed === id) {
+            const v = await values.get(id)
+            if (_mounted && v !== _value) {
+                _setValue(v);
+            }
+        }
+        return () => {
+            _mounted = false;
+        }
+    }), [values])
+
+    // load intial value
+    useEffectAsync(async (mounted) => {
+        const v = await values?.get(id);
+        if (mounted())
+           _setValue(v)
+    })
     return {
-        blob: value,
-        setBlob: async (blob: Blob) => { await blobs?.set(blobName, blob) }
+        blob: _value,
+        setBlob: async (blob: Blob) => { await values?.set(id, blob) }
     }
 }
 
