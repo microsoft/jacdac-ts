@@ -40,11 +40,6 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
         if (!isNaN(v))
             await register.sendSetIntAsync(parseInt(event.target.value), true);
     })
-    const handleBytesChange = handeler(async (event: React.ChangeEvent<HTMLInputElement>) => {
-        // TODO
-        //const v = 
-        //    await register.sendSetIntAsync(parseInt(event.target.value), true);
-    })
     const handleEnumChange = handeler(async (event: React.ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
         await register.sendSetIntAsync(v, true);
