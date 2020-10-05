@@ -51,7 +51,7 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetAsync(bufferOfInt(value), autoRefresh)
+        return this.sendSetAsync(bufferOfInt(value | 0), autoRefresh)
     }
 
     sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void> {

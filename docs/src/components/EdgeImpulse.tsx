@@ -37,6 +37,7 @@ import { JDService } from "../../../src/dom/service";
 import ReadingFieldGrid from "./ReadingFieldGrid";
 import useChartPalette from './useChartPalette';
 import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../src/dom/sensoraggregatorclient";
+import { AlertTitle } from "@material-ui/lab";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -286,6 +287,10 @@ class EdgeImpulseClient extends JDClient {
         console.log(`ei: aggregator report`, this.connected, this.sampling)
         if (!this.connected) return; // ignore
 
+        // partial data? ignore
+        if (row.some(r => r === undefined))
+            return;
+
         const { bus } = this.aggregator.device
         const { timestamp } = bus;
         // first sample, notify we're started
@@ -390,8 +395,8 @@ class EdgeImpulseClient extends JDClient {
         console.log(`ei: input`, inputConfiguration)
         // setup aggregator client
         await this.aggregatorClient.setInputs(inputConfiguration)
-        // schedule data collection
-        await this.aggregatorClient.collect(this._sample.length);
+        // schedule data collection, ask a few more samples
+        await this.aggregatorClient.collect(this._sample.length * 1.1);
     }
 
     private stopSampling() {
@@ -762,11 +767,13 @@ function Acquisition(props: {
     }, [apiKey, projectId, deviceName])
 
     return <Box>
-        {connected && !sampling && <Alert severity={"success"}>Connected</Alert>}
+        {connected && <Alert severity={"success"}>Connected to EdgeImpulse</Alert>}
         {error && <Alert severity={"error"}>{error}</Alert>}
-        {sampling && <Alert severity={"info"}>Sampling...</Alert>}
+        {sampling && <Alert severity={"info"}>
+            <AlertTitle>Sampling...</AlertTitle>
+            <CircularProgressWithLabel value={samplingProgress} />
+        </Alert>}
         {!!dataSet && <Trend dataSet={dataSet} />}
-        {sampling && <CircularProgressWithLabel value={samplingProgress} />}
         {generatedSampleName && <Typography variant="body2">sample name: {generatedSampleName}</Typography>}
     </Box>
 }
@@ -808,14 +815,14 @@ export default function EdgeImpulse(props: {}) {
         <Box mb={1} />
         <ProjectInfo apiKey={apiKey} info={info} />
         <h3>Data</h3>
-        <h4>Sensors</h4>
+        <h4>Select Sensors</h4>
         {!readingRegisters?.length && <Alert severity="info">No sensor found...</Alert>}
         {!!readingRegisters.length && <ReadingFieldGrid
             readingRegisters={readingRegisters}
             registerIdsChecked={registerIdsChecked}
             handleRegisterCheck={handleRegisterCheck}
         />}
-        <h4>Aggregators</h4>
+        <h4>Select Sensor Aggregator</h4>
         {!aggregators?.length && <Alert severity="info">No data aggregator found...</Alert>}
         <Grid container spacing={2}>
             {aggregators.map(aggregator => <Grid key={aggregator.id} item {...gridBreakPoints}>
@@ -827,7 +834,8 @@ export default function EdgeImpulse(props: {}) {
         </Grid>
         <h4>Acquisition status</h4>
         {!currentAggregator && <Alert severity="info">No data aggregator selected...</Alert>}
-        {currentAggregator && <Acquisition aggregator={currentAggregator} inputs={inputs} apiKey={apiKey} info={info?.project} />}
+        {!inputs?.length && <Alert severity="info">Select sensors to collect data from...</Alert>}
+        {currentAggregator && !!inputs?.length && <Acquisition aggregator={currentAggregator} inputs={inputs} apiKey={apiKey} info={info?.project} />}
         <h3>Deployment</h3>
         {model && <Box mb={1}><Alert severity="success">Model downloaded!</Alert></Box>}
         <ModelDownloadButton apiKey={apiKey} info={info} setModel={setModel} />
