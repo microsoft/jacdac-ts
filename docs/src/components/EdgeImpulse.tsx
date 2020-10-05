@@ -38,6 +38,7 @@ import ReadingFieldGrid from "./ReadingFieldGrid";
 import useChartPalette from './useChartPalette';
 import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../src/dom/sensoraggregatorclient";
 import { AlertTitle } from "@material-ui/lab";
+import { serviceName } from "../../../src/dom/pretty";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -234,7 +235,7 @@ class EdgeImpulseClient extends JDClient {
             "deviceType": deviceSpec?.name || deviceClass?.toString(16) || "JACDAC device",
             "connection": "ip", // direct connection
             "sensors": [{
-                "name": "sensors",
+                "name": this.inputRegisters.map(reg => serviceName(reg.service.serviceClass)).join(','),
                 "maxSampleLengthS": 10000,
                 "frequencies": [50, 30, 20, 10]
             }]
