@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react"
-import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Collapse, Grid, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
+import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Collapse, Grid, Switch, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 import useDbValue from "./useDbValue";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -11,7 +11,7 @@ import { JDClient } from "../../../src/dom/client";
 import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
-import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SRV_MODEL_RUNNER } from "../../../src/dom/constants";
+import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../src/dom/constants";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
@@ -33,6 +33,10 @@ import ServiceList from "./ServiceList";
 import { ModelActions, ModelContent } from "./ModelUploader";
 import { readBlobToUint8Array } from "../../../src/dom/utils";
 import useDeviceName from "./useDeviceName";
+import { JDService } from "../../../src/dom/service";
+import ReadingFieldGrid from "./ReadingFieldGrid";
+import useChartPalette from './useChartPalette';
+import { SensorAggregatorClient } from "../../../src/dom/sensoraggregatorclient";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -144,8 +148,14 @@ class EdgeImpulseClient extends JDClient {
     private _sample: EdgeImpulseSampling;
     private _pingInterval: any;
     private pong: boolean;
+    private aggregatorClient: SensorAggregatorClient;
 
-    constructor(private readonly apiKey: string, private readonly register: JDRegister) {
+    constructor(
+        private readonly apiKey: string,
+        private readonly aggregator: JDService,
+        private readonly inputRegisters: JDRegister[],
+        private readonly palette: string[]
+    ) {
         super()
 
         this.handleMessage = this.handleMessage.bind(this);
@@ -154,8 +164,11 @@ class EdgeImpulseClient extends JDClient {
         this.handleReport = this.handleReport.bind(this);
         this.handlePing = this.handlePing.bind(this);
 
-        // make sure to clean up
+        this.aggregatorClient = new SensorAggregatorClient(this.aggregator);
+        this.aggregatorClient.subscribeSample(this.handleReport);
+
         this.mount(() => this.disconnect());
+        this.mount(() => this.aggregatorClient.unmount());
     }
 
     get dataSet() {
@@ -206,11 +219,11 @@ class EdgeImpulseClient extends JDClient {
 
     private async handleOpen() {
         console.log(`ws: open`)
-        const { service } = this.register;
+        const service = this.aggregator;
         const { device } = service;
 
         // fetch device spec
-        const deviceClass = await this.register.service.device.resolveDeviceClass();
+        const deviceClass = await service.device.resolveDeviceClass();
         const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass);
 
         this._hello = {
@@ -219,13 +232,11 @@ class EdgeImpulseClient extends JDClient {
             "deviceId": device.deviceId,
             "deviceType": deviceSpec?.name || deviceClass?.toString(16) || "JACDAC device",
             "connection": "ip", // direct connection
-            "sensors": [
-                {
-                    "name": service.name,
-                    "maxSampleLengthS": 10000,
-                    "frequencies": [50, 30, 20, 10]
-                }
-            ]
+            "sensors": [{
+                "name": "sensors",
+                "maxSampleLengthS": 10000,
+                "frequencies": [50, 30, 20, 10]
+            }]
         };
         this.send({
             "hello": this._hello
@@ -271,10 +282,11 @@ class EdgeImpulseClient extends JDClient {
         return this._sample?.generatedFilename;
     }
 
-    private handleReport() {
+    private handleReport(row: number[]) {
+        console.log(`ei: aggregator report`, this.connected, this.sampling)
         if (!this.connected) return; // ignore
 
-        const { bus } = this.register.service.device
+        const { bus } = this.aggregator.device
         const { timestamp } = bus;
         // first sample, notify we're started
         if (this.samplingState == STARTING) {
@@ -285,7 +297,7 @@ class EdgeImpulseClient extends JDClient {
         // store sample
         if (this.samplingState == SAMPLING) {
             const ds = this.dataSet;
-            ds.addRow();
+            ds.addRow(row);
             this.emit(REPORT_RECEIVE);
 
             // debounced progress update
@@ -357,27 +369,26 @@ class EdgeImpulseClient extends JDClient {
         this.reconnect();
     }
 
-    private startSampling(sample: EdgeImpulseSample) {
-        const { service, fields } = this.register;
+    private async startSampling(sample: EdgeImpulseSample) {
         this._sample = sample;
-        this._sample.dataSet = new FieldDataSet(
-            this.register.service.device.bus,
-            this._sample.label,
-            fields
-        );
+        this._sample.dataSet = FieldDataSet.create(this.aggregator.device.bus, this.inputRegisters, "sample", this.palette)
         this._sample.unsubscribers = [];
         this.send({ "sample": true })
         this.setSamplingState(STARTING);
 
-        // set interval
-        const streamingIntervalRegister = service.register(BaseReg.StreamingInterval);
-        // TODO ack
-        streamingIntervalRegister.sendSetIntAsync(this._sample.interval);
+        // prepare configuration
+        const inputConfiguration = {
+            samplingInterval: this._sample.interval,
+            samplesInWindow: 10,
+            inputs: this.inputRegisters.map(reg => ({
+                serviceClass: reg.service.serviceClass
+            }))
+        }
 
-        // start sampling
-        this._sample.unsubscribers.push(startStreaming(this.register.service));
-        const collectInterval = setInterval(this.handleReport, this._sample.interval)
-        this._sample.unsubscribers.push(() => clearInterval(collectInterval))
+        // setup aggregator client
+        await this.aggregatorClient.setInputs(inputConfiguration)
+        // schedule data collection
+        await this.aggregatorClient.collect(this._sample.length);
     }
 
     private stopSampling() {
@@ -433,7 +444,7 @@ class EdgeImpulseClient extends JDClient {
     }
 
     get progress() {
-        const timestamp = this.register.service.device.bus.timestamp;
+        const timestamp = this.aggregator.device.bus.timestamp;
         return this.samplingState !== IDLE
             && (timestamp - this._sample.startTimestamp) / this._sample.length;
     }
@@ -649,11 +660,33 @@ function ModelDownloadButton(props: { apiKey: string, info: EdgeImpulseProject, 
     </Box>
 }
 
-function ReadingRegister(props: { register: JDRegister, apiKey: string, info: EdgeImpulseProjectInfo }) {
-    const { register, apiKey, info } = props
-    const { service } = register;
-    const { device } = service;
+function AggregatorCard(props: {
+    aggregator: JDService,
+    selected: boolean,
+    onChecked: () => void
+}) {
+    const { aggregator, selected, onChecked } = props;
+    const { device } = aggregator;
 
+    const handleChecked = () => onChecked();
+
+    return <Card>
+        <DeviceCardHeader device={device} />
+        <CardContent>
+            <Switch checked={selected} onChange={handleChecked} />
+        </CardContent>
+    </Card>
+}
+
+function Acquisition(props: {
+    aggregator: JDService,
+    inputs: JDRegister[],
+    apiKey: string,
+    info: EdgeImpulseProjectInfo
+}) {
+    const { aggregator, inputs, apiKey, info } = props;
+
+    const { device } = aggregator;
     const [client, setClient] = useState<EdgeImpulseClient>(undefined)
     const [error, setError] = useState("")
     const [connectionState, setConnectionState] = useState(DISCONNECT)
@@ -663,6 +696,7 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string, info: Ed
     const { deviceId } = device;
     const deviceName = useDeviceName(device, false);
     const projectId = info?.id;
+    const palette = useChartPalette()
 
     const connected = connectionState === CONNECT;
     const sampling = samplingState !== IDLE
@@ -670,20 +704,20 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string, info: Ed
     const generatedSampleName = client?.generatedSampleName;
 
     useEffect(() => {
-        if (!apiKey || !register) {
+        if (!apiKey || !aggregator || !inputs?.length) {
             setClient(undefined);
             setError(undefined);
             return undefined;
         }
         else {
-            console.log(`start client`)
-            const c = new EdgeImpulseClient(apiKey, register)
+            console.log(`ei: start client`)
+            const c = new EdgeImpulseClient(apiKey, aggregator, inputs, palette)
             c.connect();
             setClient(c);
             setError(undefined);
             return () => c.unmount();
         }
-    }, [register, apiKey])
+    }, [apiKey, aggregator, inputs?.map(ip => ip.id).join(",")])
     // subscribe to client changes
     useEffect(() => client?.subscribe(CONNECTION_STATE,
         (v: string) => setConnectionState(v))
@@ -724,43 +758,72 @@ function ReadingRegister(props: { register: JDRegister, apiKey: string, info: Ed
         }
     }, [apiKey, projectId, deviceName])
 
-    return <Card>
-        <DeviceCardHeader device={device} />
-        <CardContent>
-            {error && <Alert severity={"error"}>{error}</Alert>}
-            {connected && !sampling && <Alert severity={"success"}>Connected</Alert>}
-            {sampling && <Alert severity={"info"}>Sampling...</Alert>}
-            {!!dataSet && <Trend dataSet={dataSet} />}
-            {sampling && <CircularProgressWithLabel value={samplingProgress} />}
-            {generatedSampleName && <Typography variant="body2">sample name: {generatedSampleName}</Typography>}
-        </CardContent>
-    </Card>
+    return <Box>
+        {connected && !sampling && <Alert severity={"success"}>Connected</Alert>}
+        {error && <Alert severity={"error"}>{error}</Alert>}
+        {sampling && <Alert severity={"info"}>Sampling...</Alert>}
+        {!!dataSet && <Trend dataSet={dataSet} />}
+        {sampling && <CircularProgressWithLabel value={samplingProgress} />}
+        {generatedSampleName && <Typography variant="body2">sample name: {generatedSampleName}</Typography>}
+    </Box>
 }
 
 export default function EdgeImpulse(props: {}) {
     const { value: apiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
     const { bus } = useContext<JDContextProps>(JACDACContext);
     const [model, setModel] = useState<Uint8Array>(undefined)
+    const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
+    const [aggregatorId, setAggregatorId] = useState<string>("")
     const gridBreakPoints = useGridBreakpoints()
     const info = useEdgeImpulseProjectInfo(apiKey);
 
+    const aggregators: JDService[] = useChange(bus, bus => bus.services({ serviceClass: SRV_SENSOR_AGGREGATOR }))
+    const currentAggregator: JDService = aggregators.find(srv => srv.id == aggregatorId) || aggregators[0]
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
             .services().find(srv => isSensor(srv))
             ?.readingRegister
         ).filter(reg => !!reg))
 
+    const handleAggregatorChecked = (srv: JDService) => () => {
+        const id = srv?.id == aggregatorId ? '' : srv?.id
+        setAggregatorId(id);
+    }
+    const handleRegisterCheck = (reg: JDRegister) => {
+        const i = registerIdsChecked.indexOf(reg.id)
+        if (i > -1)
+            registerIdsChecked.splice(i, 1)
+        else
+            registerIdsChecked.push(reg.id)
+        registerIdsChecked.sort()
+        setRegisterIdsChecked([...registerIdsChecked])
+    }
+
     return <>
         <ApiKeyManager />
         <Box mb={1} />
         <ProjectInfo apiKey={apiKey} info={info} />
-        <h3>Data acquisition</h3>
-        {!readingRegisters.length && <Alert severity="info">No sensor found...</Alert>}
+        <h3>Data</h3>
+        <h4>Sensors</h4>
+        {!readingRegisters?.length && <Alert severity="info">No sensor found...</Alert>}
+        {!!readingRegisters.length && <ReadingFieldGrid
+            readingRegisters={readingRegisters}
+            registerIdsChecked={registerIdsChecked}
+            handleRegisterCheck={handleRegisterCheck}
+        />}
+        <h4>Aggregators</h4>
+        {!aggregators?.length && <Alert severity="info">No data aggregator found...</Alert>}
         <Grid container spacing={2}>
-            {readingRegisters.map(reg => <Grid item key={reg.id} {...gridBreakPoints}>
-                <ReadingRegister register={reg} apiKey={apiKey} info={info?.project} />
+            {aggregators.map(aggregator => <Grid key={aggregator.id} item {...gridBreakPoints}>
+                <AggregatorCard
+                    aggregator={aggregator}
+                    selected={currentAggregator === aggregator}
+                    onChecked={handleAggregatorChecked(aggregator)} />
             </Grid>)}
         </Grid>
+        <h4>Acquisition status</h4>
+        {!currentAggregator && <Alert severity="info">No data aggregator selected...</Alert>}
+        {currentAggregator && <Acquisition aggregator={currentAggregator} inputs={readingRegisters} apiKey={apiKey} info={info?.project} />}
         <h3>Deployment</h3>
         {model && <Box mb={1}><Alert severity="success">Model downloaded!</Alert></Box>}
         <ModelDownloadButton apiKey={apiKey} info={info} setModel={setModel} />

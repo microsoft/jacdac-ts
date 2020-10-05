@@ -31,7 +31,7 @@ import DarkModeContext from './DarkModeContext';
 import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
 import ServiceManagerContext from './ServiceManagerContext';
-import { useChartPalette } from './useChartPalette';
+import useChartPalette from './useChartPalette';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -256,7 +256,7 @@ export default function Collector(props: {}) {
         {!!aggregators.length && <div key="aggregators">
             <h3>(Optional) Choose a data aggregator</h3>
             <p>A <Link to="/services/aggregator">data aggregator</Link> service collects collects sensor data on the bus and returns an aggregated at regular intervals.</p>
-            <Grid>
+            <Grid container>
                 {aggregators.map(aggregator => <Grid key={'aggregate' + aggregator.id} item xs={4}>
                     <Card>
                         <DeviceCardHeader device={aggregator.device} />

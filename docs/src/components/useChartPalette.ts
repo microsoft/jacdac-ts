@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import DarkModeContext from "./DarkModeContext";
 
-export function useChartPalette(): string[] {
+export default function useChartPalette(): string[] {
     const { darkMode } = useContext(DarkModeContext);
     if (darkMode == 'light') return [
         "#003f5c",

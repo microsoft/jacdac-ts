@@ -1,5 +1,7 @@
 import { JDBus } from "../../../src/dom/bus";
 import { JDField } from "../../../src/dom/field";
+import { JDRegister } from "../../../src/dom/register";
+import { arrayConcatMany } from "../../../src/dom/utils";
 
 export class Example {
     label: string;
@@ -26,6 +28,19 @@ export default class FieldDataSet {
     // maintain computed min/max to avoid recomputation
     mins: number[];
     maxs: number[];
+
+    static create(bus: JDBus,
+        registers: JDRegister[],
+        name: string,
+        palette: string[],
+        maxRows?: number): FieldDataSet {
+        const fields = arrayConcatMany(registers.map(reg => reg.fields))
+        const colors = fields.map((f, i) => palette[i % palette.length])
+        const set = new FieldDataSet(bus, name, fields, colors)
+        if (maxRows !== undefined)
+            set.maxRows = maxRows
+        return set;
+    }
 
     constructor(
         public readonly bus: JDBus,

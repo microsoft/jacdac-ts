@@ -68,9 +68,9 @@ export default function ServiceCard(props: {
                     <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/dom/service"}>{service.name}</Link>
                 </Typography>}
                 <Typography variant="body2" component="div">
-                    {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
-                    {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
-                    {!!reports?.length && <List dense>
+                    {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters key={'reg' + service.id} service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
+                    {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents key={'ev' + service.id} service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
+                    {!!reports?.length && <List key={"reports"} dense>
                         {reports?.map((report, ri) => <ListItem key={`report${ri}`} ><DecodedPacketItem pkt={report} /></ListItem>)}
                     </List>}
                 </Typography>
