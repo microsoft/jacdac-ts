@@ -479,7 +479,7 @@ class EdgeImpulseClient extends JDClient {
                 "x-api-key": apiKey,
                 "Accept": "application/json"
             },
-            body: body
+            body: body && JSON.stringify(body)
         }
         if (options.method === "POST")
             options.headers["Content-Type"] = "application/json"
