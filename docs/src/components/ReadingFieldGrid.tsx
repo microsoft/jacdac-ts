@@ -19,7 +19,7 @@ function ReadingFieldGridItem(props: {
     handleRegisterCheck: (register: JDRegister) => void,
     recording: boolean,
     registerChecked: boolean,
-    liveDataSet: FieldDataSet
+    liveDataSet?: FieldDataSet
 }) {
     const { register, handleRegisterCheck, recording, registerChecked, liveDataSet } = props;
     const gridBreakpoints = useGridBreakpoints();
@@ -35,7 +35,7 @@ function ReadingFieldGridItem(props: {
             <CardContent>
                 {register.fields.map((field) => <span key={field.id}>
                     <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({
-                        color: registerChecked ? liveDataSet.colorOf(field) : "#ccc"
+                        color: (registerChecked && liveDataSet?.colorOf(field)) || "#ccc"
                     })} />
                     {field.name}
                 </span>)}
@@ -52,7 +52,7 @@ export default function ReadingFieldGrid(props: {
     registerIdsChecked: string[],
     recording?: boolean,
     handleRegisterCheck: (register: JDRegister) => void,
-    liveDataSet: FieldDataSet
+    liveDataSet?: FieldDataSet
 }) {
     const { readingRegisters, registerIdsChecked, recording, handleRegisterCheck, liveDataSet } = props
 

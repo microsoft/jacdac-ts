@@ -69,7 +69,10 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     if (member.numValue !== undefined && mod)
         return <TextField type="number" label={member.numValue + workingIndicator} onChange={handleNumChange} disabled={readOnly} />
 
-    return <Typography component="div" variant="h5">{member.humanValue + workingIndicator}</Typography>
+    if (info.type === "bytes")
+        return <pre>{member.value}</pre>
+
+    return <Typography component="div" variant="body2">{member.humanValue + workingIndicator}</Typography>
 }
 
 export function DecodedMemberItem(props: { member: DecodedMember, serviceSpecification: jdspec.ServiceSpec, specification: jdspec.PacketInfo, register?: JDRegister }) {
