@@ -31,7 +31,6 @@ import DarkModeContext from './DarkModeContext';
 import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
 import ServiceManagerContext from './ServiceManagerContext';
-import RoleManagerService from './RoleManagerService'
 import { useChartPalette } from './useChartPalette';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -105,7 +104,6 @@ export default function Collector(props: {}) {
         .filter(reg => registerIdsChecked.indexOf(reg.id) > -1)
     const aggregators: JDService[] = useChange(bus, bus => bus.services({ serviceClass: SRV_SENSOR_AGGREGATOR }))
     const aggregator: JDService = aggregators.find(srv => srv.id == aggregatorId)
-    const roleManager: JDService = aggregator?.device.services({ serviceClass: SRV_ROLE_MANAGER })[0]
     const samplingIntervalDelayi = parseInt(samplingIntervalDelay)
     const samplingCount = Math.ceil(parseFloat(samplingDuration) * 1000 / samplingIntervalDelayi)
     const errorSamplingIntervalDelay = isNaN(samplingIntervalDelayi) || !/\d+/.test(samplingIntervalDelay)
@@ -268,7 +266,6 @@ export default function Collector(props: {}) {
                     </Card>
                 </Grid>)}
             </Grid>
-            {roleManager && <RoleManagerService service={roleManager} />}
         </div>}
         <div key="sensors">
             {connectionState == BusState.Disconnected && <p><ConnectButton /></p>}
