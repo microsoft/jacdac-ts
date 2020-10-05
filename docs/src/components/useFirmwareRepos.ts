@@ -17,7 +17,7 @@ export default function useFirmwareRepos() {
     useEffectAsync(async () => {
         const repos: string[] = [];
         for (const register of registers) {
-            await register.sendGetAsync()
+            await register.refresh(true)
             const deviceClass = register.intValue;
             const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass)
             if (deviceSpec)
