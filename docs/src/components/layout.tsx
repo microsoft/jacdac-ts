@@ -101,8 +101,10 @@ const useStyles = makeStyles((theme) => createStyles({
   menuButton: {
     marginRight: theme.spacing(1),
   },
-  hide: {
-    display: 'none',
+  hideMobile: {
+    [theme.breakpoints.down('md')]: {
+      display: 'none',
+    }
   },
   drawerHeader: {
     display: 'flex',
@@ -257,7 +259,7 @@ function LayoutWithContext(props: {
             aria-label="open table of contents"
             onClick={handleDrawerToc}
             edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hide)}
+            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
           > <MenuIcon />
           </IconButton>
           {connected && <IconButton
@@ -265,7 +267,7 @@ function LayoutWithContext(props: {
             aria-label="open DOM tree"
             onClick={handleDrawerDom}
             edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hide)}
+            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
           > <AccountTreeIcon />
           </IconButton>}
           {connected && <IconButton
@@ -273,7 +275,7 @@ function LayoutWithContext(props: {
             aria-label="open console"
             onClick={handleDrawerConsole}
             edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hide)}
+            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
           > <HistoryIcon />
           </IconButton>}
           <Typography variant="h6">
@@ -286,9 +288,9 @@ function LayoutWithContext(props: {
           </Hidden>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hide)} repo={"microsoft/jacdac-ts"} />
-          <div className={clsx(classes.menuButton, drawerOpen && classes.hide)}><FlashButton /></div>
-          <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hide)} onClick={toggleToolsMenu} aria-label="More">
+          <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac-ts"} />
+          <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
+          <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
             <MoreIcon />
           </IconButton>
         </Toolbar>
