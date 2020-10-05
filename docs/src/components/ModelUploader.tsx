@@ -83,17 +83,31 @@ export default function ModelUploader(props: {}) {
             }
         }
     }
-
+    const handleClearModel = async () => {
+        try {
+            setImporting(true)
+            await setModel(undefined)
+        } finally {
+            setImporting(false)
+        }
+    }
     const handleSensorConfigFiles = async (files: FileList) => {
         const file = files.item(0)
         if (file) {
             try {
                 setImporting(true)
-                console.log(file)
                 await setSensorConfig(file)
             } finally {
                 setImporting(false)
             }
+        }
+    }
+    const handleClearConfiguration = async () => {
+        try {
+            setImporting(true)
+            await setSensorConfig(undefined)
+        } finally {
+            setImporting(false)
         }
     }
 
@@ -103,12 +117,14 @@ export default function ModelUploader(props: {}) {
         {model && <Alert severity={'success'}>Model loaded ({model.byteLength >> 10}kb)</Alert>}
         {model && <p />}
         <UploadButton required={!model} disabled={importing} text={"Import model"} accept=".tflite" onFilesUploaded={handleTfmodelFiles} />
+        <Button disabled={importing} onClick={handleClearModel}>clear model</Button>
         <h3>Configure sensors</h3>
         <p>Sensor configuration files are stored in a <code>.json</code> file.</p>
         {sensorConfig && <Alert severity={'success'}>Sensor configuration loaded</Alert>}
         {sensorConfig && <SensorAggregatorConfigView config={sensorConfig} />}
         {sensorConfig && <p />}
         <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} accept=".json" onFilesUploaded={handleSensorConfigFiles} />
+        <Button disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
         <h3>Deploy model to TensorFlow Lite services</h3>
         <ConnectAlert serviceClass={SRV_MODEL_RUNNER} />
         <ServiceList
