@@ -26,9 +26,8 @@
     "lint": "node node_modules/tslint/bin/tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "predist": "rm -rf dist",
     "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
-    "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean",
+    "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean && cd .. && node ./tools/prepare.js",
     "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths",
-    "postdistdocs": "node ./tools/prepare.js",
     "apidocs": "node node_modules/@microsoft/api-extractor/bin/api-extractor run --local",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
@@ -37,8 +36,7 @@
     "tools": "npx http-server . -c-1",
     "installdocs": "cd docs && npm install",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
-    "docs": "cd docs && node node_modules/gatsby/cli.js develop",
-    "patchtools": "node .tools/prepare.js"
+    "docs": "cd docs && node node_modules/gatsby/cli.js develop"
   },
   "release": {
     "branch": "main",
