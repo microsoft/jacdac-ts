@@ -12,7 +12,7 @@ import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
 import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../src/dom/constants";
 import FieldDataSet from "./FieldDataSet";
-import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
+import { deviceSpecificationFromClassIdenfitier, isSensor } from "../../../src/dom/spec";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
 import Trend from "./Trend"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
