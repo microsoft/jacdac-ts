@@ -19,7 +19,7 @@ import { JDService } from '../../../src/dom/service';
 import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent, isReading } from '../../../src/dom/spec';
-import { Switch } from '@material-ui/core';
+import { Switch, useMediaQuery, useTheme } from '@material-ui/core';
 import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
@@ -176,6 +176,8 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     const name = useDeviceName(device, true)
     const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
+    const theme = useTheme()
+    const showActions = useMediaQuery(theme.breakpoints.up('sm'))
 
     const readings = ellipseJoin(services
         .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
@@ -190,7 +192,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
         kind={"device"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
-        actions={<DeviceActions device={device} reset={true} rename={true} />}
+        actions={showActions && <DeviceActions device={device} reset={true} rename={true} />}
     >
         {services?.map(service => <ServiceTreeItem
             key={service.id}
