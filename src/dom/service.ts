@@ -153,9 +153,10 @@ export class JDService extends JDNode {
                 reject(new Error(`timeout (${timeout}ms) waiting for response to ${pkt}`))
             })
             this.sendPacketAsync(pkt)
-                .then(() => this.on(REPORT_RECEIVE, handleRes))
-                // ensure we don't leak
-                .finally(() => this.off(REPORT_RECEIVE, handleRes))
+                .then(() => {
+                    this.on(REPORT_RECEIVE, handleRes)
+                })
+                // the handler remove either upon timeout, or on first invocation of handleRes()
         })
     }
 
