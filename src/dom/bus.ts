@@ -612,7 +612,7 @@ export class JDBus extends JDNode {
                 }
             } // regular register, ping if data is old
             else {
-                const age = this.timestamp - (register.lastDataTimestamp || 0);
+                const age = this.timestamp - register.lastGetTimestamp;
                 if (age > REGISTER_POLL_REPORT_INTERVAL) {
                     //console.log(`auto-refresh - poll`, register)
                     await register.sendGetAsync();
