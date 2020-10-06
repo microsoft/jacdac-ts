@@ -36,6 +36,6 @@ export default class IFrameBridgeClient extends JDClient {
 
     get supported(): boolean {
         return typeof window !== "undefined"
-            && window.parent === window;
+            && window.parent !== window;
     }
 }
