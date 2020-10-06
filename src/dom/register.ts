@@ -2,11 +2,10 @@ import { Packet } from "./packet";
 import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1, REGISTER_REFRESH_RETRY_0, CtrlReg } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
-import { JDNode } from "./node";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
 import { bufferOfInt } from "./struct";
-import { decodePacketData, DecodedPacket } from "./pretty";
-import { isRegister, isReading, deviceSpecificationFromClassIdenfitier } from "./spec";
+import { DecodedPacket } from "./pretty";
+import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
 
@@ -14,7 +13,7 @@ import { JDServiceMemberNode } from "./servicemembernode";
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _fields: JDField[];
-    private _autoRefresh: number = 0;
+    private _lastSetTimestamp: number = -Infinity;
 
     constructor(
         service: JDService,
@@ -32,10 +31,15 @@ export class JDRegister extends JDServiceMemberNode {
         return this._fields;
     }
 
+    get lastSetTimestamp() {
+        return this._lastSetTimestamp;
+    }
+
     // send a message to set the register value
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
         const pkt = Packet.from(cmd, data)
+        this._lastSetTimestamp = this.service.device.bus.timestamp;
         let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
         if (autoRefresh)
             p = delay(50).then(() => this.sendGetAsync())

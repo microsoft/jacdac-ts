@@ -590,7 +590,6 @@ export class JDBus extends JDNode {
 
         //console.log(`auto-refresh`, registers)
         for (const register of registers) {
-            const age = this.timestamp - (register.lastDataTimestamp || 0);
             // streaming register? use streaming sample
             if (isReading(register.specification) && isSensor(register.service.specification)) {
                 // compute refresh interval
@@ -602,16 +601,22 @@ export class JDBus extends JDNode {
                     interval = 50;
                     await intervalRegister.sendGetAsync();
                 }
+                const samplesRegister = register.service.register(SensorReg.StreamSamples);
+                const age = this.timestamp - samplesRegister.lastSetTimestamp;
+                // need to figure out when we asked for streaming
+                const midAge = interval * 0xff / 2;
                 // compute if half aged
-                if (age > interval / 2) {
+                if (age > midAge) {
                     //console.log(`auto-refresh - restream`, register)
-                    const samplesRegister = register.service.register(SensorReg.StreamSamples);
                     await samplesRegister.sendSetIntAsync(0xff);
                 }
             } // regular register, ping if data is old
-            else if (age > REGISTER_POLL_REPORT_INTERVAL) {
-                //console.log(`auto-refresh - poll`, register)
-                await register.sendGetAsync();
+            else {
+                const age = this.timestamp - (register.lastDataTimestamp || 0);
+                if (age > REGISTER_POLL_REPORT_INTERVAL) {
+                    //console.log(`auto-refresh - poll`, register)
+                    await register.sendGetAsync();
+                }
             }
         }
     }
