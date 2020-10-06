@@ -14,6 +14,7 @@ export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _fields: JDField[];
     private _lastSetTimestamp: number = -Infinity;
+    private _lastGetTimestamp: number = -Infinity;
 
     constructor(
         service: JDService,
@@ -35,6 +36,10 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastSetTimestamp;
     }
 
+    get lastGetTimestamp() {
+        return this._lastGetTimestamp;
+    }
+
     // send a message to set the register value
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
         const cmd = CMD_SET_REG | this.address;
@@ -51,6 +56,7 @@ export class JDRegister extends JDServiceMemberNode {
             this.data !== undefined)
             return Promise.resolve();
 
+        this._lastGetTimestamp = this.service.device.bus.timestamp;
         const cmd = CMD_GET_REG | this.address;
         return this.service.sendCmdAsync(cmd)
     }
