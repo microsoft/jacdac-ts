@@ -133,5 +133,6 @@ export const FIELD_NODE_NAME = "field"
 export const REGISTER_REFRESH_TIMEOUT = 150
 export const REGISTER_REFRESH_RETRY_0 = 30
 export const REGISTER_REFRESH_RETRY_1 = 80
+export const REGISTER_POLL_REPORT_INTERVAL = 1000
 
 export * from "../../jacdac-spec/dist/specconstants";

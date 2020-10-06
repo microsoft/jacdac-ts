@@ -4,7 +4,7 @@ import { CardHeader, Chip, Typography } from "@material-ui/core";
 import { Link } from 'gatsby-theme-material-ui';
 import { JDDevice } from "../../../src/dom/device";
 import React from "react";
-import useRegisterValue from "../jacdac/useRegisterValue";
+import { useRegisterIntValue, useRegisterStringValue } from "../jacdac/useRegisterValue";
 import DeviceActions from "./DeviceActions";
 import DeviceName from "./DeviceName";
 import DeviceCardMedia from "./DeviceCardMedia"
@@ -12,15 +12,15 @@ import useDeviceSpecification from "../jacdac/useDeviceSpecification";
 
 function DeviceFirmwareChip(props: { device: JDDevice }) {
     const { device } = props;
-    const firmwareRegister = useRegisterValue(device, 0, CtrlReg.FirmwareVersion)
-    const firmware = firmwareRegister?.stringValue;
+    const firmwareRegister = device?.service(0)?.register(CtrlReg.FirmwareVersion)
+    const firmware = useRegisterStringValue(firmwareRegister);
     return (firmware && <Chip size="small" label={firmware} />) || <></>
 }
 
 function DeviceTemperatureChip(props: { device: JDDevice }) {
     const { device } = props;
-    const tempRegister = useRegisterValue(device, 0, CtrlReg.Temperature)
-    const temperature = tempRegister?.intValue;
+    const tempRegister = device?.service(0)?.register(CtrlReg.Temperature)
+    const temperature = useRegisterIntValue(tempRegister);
     return (temperature !== undefined && <Chip size="small" label={`${temperature}°`} />) || <></>
 }
 

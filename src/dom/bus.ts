@@ -37,12 +37,14 @@ import {
     TIMEOUT,
     LATE,
     PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT
+    TIMEOUT_DISCONNECT, REPORT_UPDATE, REGISTER_POLL_REPORT_INTERVAL
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
+import { isConstRegister, isReading, isSensor } from "./spec";
+import { SensorReg } from "../../jacdac-spec/dist/specconstants";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -103,6 +105,7 @@ export class JDBus extends JDNode {
     private _startTime: number;
     private _gcInterval: any;
     private _announceInterval: any;
+    private _refreshRegistersInterval: any;
     private _minConsolePriority = ConsolePriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
     private _announcing = false;
@@ -123,7 +126,10 @@ export class JDBus extends JDNode {
             for (let i = 0; i < 8; ++i) devId[i] &= 0xff;
             this.options.deviceId = toHex(devId);
         }
+
         this.resetTime();
+
+        // ping loggers when device connects
         this.pingLoggers = this.pingLoggers.bind(this)
         const debouncedPingLoggers = debounceAsync(this.pingLoggers, 1000)
         this.on(DEVICE_ANNOUNCE, debouncedPingLoggers);
@@ -134,13 +140,20 @@ export class JDBus extends JDNode {
             this._announceInterval = setInterval(() => {
                 if (this.connected)
                     this.emit(SELF_ANNOUNCE);
+                this.refreshRegisters();
             }, 499);
+        if (!this._refreshRegistersInterval)
+            this._refreshRegistersInterval = setInterval(() => this.refreshRegisters(), 50);
     }
 
     private stopTimers() {
         if (this._announceInterval) {
             clearInterval(this._announceInterval);
             this._announceInterval = undefined;
+        }
+        if (this._refreshRegistersInterval) {
+            clearInterval(this._refreshRegistersInterval)
+            this._refreshRegistersInterval = undefined;
         }
     }
 
@@ -550,6 +563,57 @@ export class JDBus extends JDNode {
             pkt.device_identifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)
         })
+    }
+
+    /**
+     * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
+     */
+    private async refreshRegisters() {
+        // not connected, don't try
+        if (!this.connected)
+            return;
+        const devices = this.devices()
+            .filter(device => !device.lost); // don't try lost devices
+        // collect registers
+        const registers = arrayConcatMany(devices
+            .map(device => arrayConcatMany(
+                device.services()
+                    .map(service => service.registers()
+                        // someone is listening for reports
+                        .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
+                        // ask if data is missing or non-const
+                        .filter(reg => !reg.data || !isConstRegister(reg.specification))
+                    )
+            )
+            )
+        )
+
+        //console.log(`auto-refresh`, registers)
+        for (const register of registers) {
+            const age = this.timestamp - (register.lastDataTimestamp || 0);
+            // streaming register? use streaming sample
+            if (isReading(register.specification) && isSensor(register.service.specification)) {
+                // compute refresh interval
+                const intervalRegister = register.service.register(SensorReg.StreamingInterval);
+                let interval = intervalRegister.intValue;
+                if (!interval) {
+                    // console.log(`auto-refresh - update interval`, register)
+                    // no interval data, ask register again
+                    interval = 50;
+                    await intervalRegister.sendGetAsync();
+                }
+                // compute if half aged
+                if (age > interval / 2) {
+                    //console.log(`auto-refresh - restream`, register)
+                    const samplesRegister = register.service.register(SensorReg.StreamSamples);
+                    await samplesRegister.sendSetIntAsync(0xff);
+                }
+            } // regular register, ping if data is old
+            else if (age > REGISTER_POLL_REPORT_INTERVAL) {
+                //console.log(`auto-refresh - poll`, register)
+                await register.sendGetAsync();
+            }
+        }
     }
 
     /**

@@ -3,7 +3,6 @@ import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, Cir
 import { Link } from 'gatsby-theme-material-ui';
 import useDbValue from "./useDbValue";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { isSensor, startStreaming } from "../../../src/dom/sensor";
 import useChange from "../jacdac/useChange";
 import useGridBreakpoints from "./useGridBreakpoints";
 import { JDRegister } from "../../../src/dom/register";
@@ -799,7 +798,7 @@ export default function EdgeImpulse(props: {}) {
     const currentAggregator: JDService = aggregators.find(srv => srv.id == aggregatorId) || aggregators[0]
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
-            .services().find(srv => isSensor(srv))
+            .services().find(srv => isSensor(srv.specification))
             ?.readingRegister
         ).filter(reg => !!reg))
     const inputs = readingRegisters.filter(reg => registerIdsChecked.indexOf(reg.id) > -1)

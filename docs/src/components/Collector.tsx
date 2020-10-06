@@ -12,7 +12,6 @@ import StopIcon from '@material-ui/icons/Stop';
 import SaveIcon from '@material-ui/icons/Save';
 import useChange from '../jacdac/useChange';
 import ConnectButton from '../jacdac/ConnectButton';
-import { isSensor, startStreaming } from '../../../src/dom/sensor';
 import { BusState, JDBus } from '../../../src/dom/bus'
 import FieldDataSet from './FieldDataSet';
 import Trend from './Trend';
@@ -20,7 +19,7 @@ import Trend from './Trend';
 import Alert from "./Alert";
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT, SRV_ROLE_MANAGER, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';
+import { EVENT, REPORT_UPDATE, SRV_ROLE_MANAGER, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
@@ -32,6 +31,7 @@ import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
 import ServiceManagerContext from './ServiceManagerContext';
 import useChartPalette from './useChartPalette';
+import { isSensor } from '../../../src/dom/spec';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -97,7 +97,7 @@ export default function Collector(props: {}) {
     const chartPalette = useChartPalette()
     const readingRegisters = useChange(bus, bus =>
         bus.devices().map(device => device
-            .services().find(srv => isSensor(srv))
+            .services().find(srv => isSensor(srv.specification))
             ?.readingRegister
         ).filter(reg => !!reg))
     const recordingRegisters = readingRegisters
@@ -175,7 +175,7 @@ export default function Collector(props: {}) {
     }
     const startStreamingRegisters = () => {
         console.log(`start streaming`)
-        const streamers = recordingRegisters?.map(reg => startStreaming(reg.service))
+        const streamers = recordingRegisters?.map(reg => reg.subscribe(REPORT_UPDATE, () => {}))
         return () => {
             console.log(`stop streaming`)
             streamers.map(streamer => streamer())

@@ -13,11 +13,10 @@ import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/dom/service';
-import { CardActions, CardMedia, createStyles, Theme } from '@material-ui/core';
+import { CardActions, createStyles, Theme } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
-import useRegisterValue from '../jacdac/useRegisterValue';
+import { useRegisterStringValue } from '../jacdac/useRegisterValue';
 import { DeviceLostAlert } from './DeviceLostAlert';
-import DeviceCardMedia from './DeviceCardMedia';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -43,8 +42,9 @@ function navigateToService(service: JDService) {
 
 function DeviceDescription(props: { device: JDDevice }) {
     const { device } = props;
-    const register = useRegisterValue(device, 0, CtrlReg.DeviceDescription)
-    return <span>{register?.stringValue || ""}</span>
+    const register = device.service(0).register(CtrlReg.DeviceDescription)
+    const description = useRegisterStringValue(register)
+    return <span>{description || ""}</span>
 }
 
 export default function DeviceCard(props: {

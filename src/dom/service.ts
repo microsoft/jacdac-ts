@@ -70,15 +70,24 @@ export class JDService extends JDNode {
         return this.specification?.packets.filter(isEvent).map(info => this.event(info.identifier)) || [];
     }
 
+    registers() {
+        if (!this._registers) {
+            const spec = this.specification;
+            this._registers = (spec?.packets || []).filter(isRegister).map(pkt => new JDRegister(this, pkt.identifier));
+        }
+        return this._registers.slice(0);
+    }
+
     register(address: number | { address: number }): JDRegister {
         let a = (typeof address == "number" ? address : address?.address);
         if (a === undefined)
             return undefined;
         a |= 0
 
-        if (!this._registers)
-            this._registers = [];
+        // cache known registers
+        this.registers()
         let register = this._registers.find(reg => reg.address === a);
+        // we may not have a spec
         if (!register) {
             const spec = this.specification;
             if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === a)) {

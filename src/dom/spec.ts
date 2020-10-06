@@ -4,7 +4,7 @@ import { NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap, stringToUint8Array, toUTF8 } from "./utils";
-import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE } from "./constants";
+import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE, SensorReg } from "./constants";
 import Packet from "./packet";
 
 const serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
@@ -99,12 +99,23 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
         || customServiceSpecifications[classIdentifier]
 }
 
+export function isSensor(spec: jdspec.ServiceSpec): boolean {
+    return spec
+        && spec.packets.some(pkt => isReading(pkt))
+        && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamSamples)
+        && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
+}
+
 export function isRegister(pkt: jdspec.PacketInfo) {
-    return pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw"
+    return pkt && (pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw")
 }
 
 export function isReading(pkt: jdspec.PacketInfo) {
-    return pkt.kind == "ro" && pkt.identifier == BaseReg.Reading
+    return pkt && (pkt.kind == "ro" && pkt.identifier == BaseReg.Reading)
+}
+
+export function isConstRegister(pkt: jdspec.PacketInfo) {
+    return pkt?.kind == "const"
 }
 
 export function isEvent(pkt: jdspec.PacketInfo) {

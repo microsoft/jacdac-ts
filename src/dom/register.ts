@@ -14,6 +14,7 @@ import { JDServiceMemberNode } from "./servicemembernode";
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _fields: JDField[];
+    private _autoRefresh: number = 0;
 
     constructor(
         service: JDService,

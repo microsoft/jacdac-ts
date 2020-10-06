@@ -20,7 +20,7 @@ import { JDRegister } from '../../../src/dom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent, isReading } from '../../../src/dom/spec';
 import { Switch } from '@material-ui/core';
-import useRegisterValue from '../jacdac/useRegisterValue';
+import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
 import { LOST, FOUND, SRV_CTRL, SRV_LOGGER } from '../../../src/dom/constants';
@@ -215,14 +215,14 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
     const events = packets?.filter(isEvent)
         .map(info => service.event(info.identifier))
         .filter(ev => !eventFilter || eventFilter(ev))
-    const readingPacket = packets?.find(reg => isReading(reg))
-    const reading = useRegisterValue(service.device, service.service_number, readingPacket?.identifier)
+    const readingRegister = service.readingRegister;
+    const reading = useRegisterHumanValue(readingRegister)
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
-        labelInfo={reading?.humanValue}
+        labelInfo={reading}
         kind={"service"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
@@ -252,7 +252,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
 function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps & DomTreeViewProps) {
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
-    useRegisterValue(register.service.device, register.service.service_number, register.address, 500)
+    const humanValue = useRegisterHumanValue(register)
 
     const handleChecked = c => {
         setChecked(id, c)
@@ -260,7 +260,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
     return <StyledTreeItem
         nodeId={id}
         labelText={specification?.name || register.id}
-        labelInfo={register.humanValue}
+        labelInfo={humanValue}
         kind={specification?.kind || "register"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
