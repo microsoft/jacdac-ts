@@ -12,7 +12,7 @@ export default function useFirmwareRepos() {
     const [repos, setRepos] = useState<string[]>([])
 
     const devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices().filter(dev => dev.announced))
-    const registers = devices.map(device => device.service(0)?.register(CtrlReg.DeviceClass))
+    const registers = devices.map(device => device?.service(0)?.register(CtrlReg.DeviceClass))
         .filter(reg => !!reg);
     useEffectAsync(async (mounted) => {
         const repos: string[] = [];

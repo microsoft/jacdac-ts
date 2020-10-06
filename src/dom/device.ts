@@ -268,9 +268,8 @@ export class JDDevice extends JDNode {
     }
 
     async resolveDeviceClass(): Promise<number> {
-        const deviceClassRegister = this.service(0)
-            .register(CtrlReg.DeviceClass);
-        await deviceClassRegister?.refresh(true)
+        const deviceClassRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        await deviceClassRegister?.refresh(true);
         return deviceClassRegister?.intValue;
     }
 

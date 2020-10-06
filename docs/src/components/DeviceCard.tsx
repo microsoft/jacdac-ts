@@ -42,7 +42,7 @@ function navigateToService(service: JDService) {
 
 function DeviceDescription(props: { device: JDDevice }) {
     const { device } = props;
-    const register = device.service(0).register(CtrlReg.DeviceDescription)
+    const register = device?.service(0)?.register(CtrlReg.DeviceDescription)
     const description = useRegisterStringValue(register)
     return <span>{description || ""}</span>
 }
