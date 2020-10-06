@@ -2,29 +2,13 @@
 title: Devices
 ---
 
-import { Grid } from '@material-ui/core';
-import { Link } from "gatsby"
-import { graphql } from "gatsby"
-import DeviceSpecificationCard from "../components/DeviceSpecificationCard"
+import DeviceSpecificationList from "../components/DeviceSpecificationList"
 
-export const query = graphql`
-  query {
-    allDevicesJson {
-      nodes {
-        id
-        name
-      }
-    }
-  }
-`
 
-Known devices are specified in [https://github.com/microsoft/jacdac/tree/main/devices](https://github.com/microsoft/jacdac/tree/main/devices).
+<DeviceSpecificationList count={20} shuffle={true} />
 
-<Grid container spacing={2}>
-    {props.data.allDevicesJson.nodes.map(node => <Grid xs={6} sm={4} lg={3} item key={node.id}>
-      <DeviceSpecificationCard specificationIdentifier={node.id} />
-    </Grid>)}
-</Grid>
+Known devices are specified in the [device catalog repository](/spec/device-catalog).
+
 
 ## See also
 

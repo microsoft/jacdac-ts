@@ -1,7 +1,7 @@
 
 import React, { useState } from "react"
 import { cryptoRandomUint32 } from "../../../src/dom/utils";
-import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { deviceSpecificationFromClassIdenfitier, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typography, createStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';
@@ -47,6 +47,14 @@ function uniqueDeviceId() {
     return n !== undefined && toFullHex([n[0], n[1]])
 }
 
+function uniqueFirmwareId() {
+    let id = cryptoRandomUint32(1)
+    while (id !== undefined && (!looksRandom(id) || deviceSpecificationFromClassIdenfitier(id))) {
+        id = cryptoRandomUint32(1)
+    }
+    return id !== undefined && toFullHex([id])
+}
+
 const useStyles = makeStyles(createStyles({
     root: {
         minWidth: 275,
@@ -57,14 +65,14 @@ const useStyles = makeStyles(createStyles({
     }
 }))
 
-export default function RandomGenerator(props: { device?: boolean }) {
-    const { device } = props
+export default function RandomGenerator(props: { device?: boolean, firmware?: boolean }) {
+    const { device, firmware } = props
     const classes = useStyles()
     const [value, setValue] = useState(device ? uniqueDeviceId() : uniqueServiceId())
     const [copySuccess, setCopySuccess] = useState(false);
 
     const handleRegenerate = () => {
-        const v = device ? uniqueDeviceId() : uniqueServiceId()
+        const v = device ? uniqueDeviceId() : firmware ? uniqueFirmwareId() : uniqueServiceId()
         setValue(v)
         setCopySuccess(false)
     }
@@ -81,8 +89,8 @@ export default function RandomGenerator(props: { device?: boolean }) {
         <Card className={classes.root}>
             <CardContent>
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    {device ? "Random Device Identifier" : "Random Service Identifier"}
-            </Typography>
+                    {device ? "Random Device Identifier" : firmware ? "Random Firmware Identifier" : "Random Service Identifier"}
+                </Typography>
                 {value !== undefined &&
                     <Typography variant="h5" component="h2">
                         <TextField value={value} InputProps={{
