@@ -7,10 +7,9 @@ import { fromHex, SMap, stringToUint8Array, toUTF8 } from "./utils";
 import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE, SensorReg } from "./constants";
 import Packet from "./packet";
 
-const serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
-let customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
-
-const deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any;
+const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
+let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
+const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any;
 
 /**
  * Adds a custom service specification
@@ -18,40 +17,44 @@ const deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any;
  */
 export function addCustomServiceSpecification(service: jdspec.ServiceSpec) {
     if (service && service.classIdentifier)
-        customServiceSpecifications[service.classIdentifier] = service;
+        _customServiceSpecifications[service.classIdentifier] = service;
 }
 
 export function clearCustomServiceSpecifications() {
-    customServiceSpecifications = {}
+    _customServiceSpecifications = {}
 }
 
 export function serviceMap(): SMap<jdspec.ServiceSpec> {
     const m: SMap<jdspec.ServiceSpec> = {};
-    serviceSpecifications.forEach(spec => m[spec.shortId] = spec)
+    _serviceSpecifications.forEach(spec => m[spec.shortId] = spec)
     return m;
+}
+
+export function serviceSpecifications() {
+    return _serviceSpecifications.slice(0);
 }
 
 export function deviceSpecificationFromClassIdenfitier(deviceClass: number): jdspec.DeviceSpec {
     if (deviceClass === undefined) return undefined;
 
-    const spec = deviceRegistry.find(spec => spec.firmwares.indexOf(deviceClass) > -1);
+    const spec = _deviceRegistry.find(spec => spec.firmwares.indexOf(deviceClass) > -1);
     return spec;
 }
 
 export function deviceSpecificationFromIdentifier(id: string): jdspec.DeviceSpec {
     if (id === undefined) return undefined;
 
-    const spec = deviceRegistry.find(spec => spec.id === id);
+    const spec = _deviceRegistry.find(spec => spec.id === id);
     return spec;
 }
 
 export function deviceSpecificationsForService(serviceClass: number): jdspec.DeviceSpec[] {
     if (serviceClass === undefined) return undefined;
-    return deviceRegistry.filter(spec => spec.services.indexOf(serviceClass) > -1);
+    return _deviceRegistry.filter(spec => spec.services.indexOf(serviceClass) > -1);
 }
 
 export function deviceSpecifications(): jdspec.DeviceSpec[] {
-    return deviceRegistry.slice(0)
+    return _deviceRegistry.slice(0)
 }
 
 export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
@@ -84,8 +87,8 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
  */
 export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
     const k = (name || "").toLowerCase().trim()
-    return serviceSpecifications.find(s => s.shortId == name)
-        || Object.values(customServiceSpecifications).find(ser => ser.shortId == name)
+    return _serviceSpecifications.find(s => s.shortId == name)
+        || Object.values(_customServiceSpecifications).find(ser => ser.shortId == name)
 }
 
 /**
@@ -95,8 +98,8 @@ export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
 export function serviceSpecificationFromClassIdentifier(classIdentifier: number): jdspec.ServiceSpec {
     if (classIdentifier === null || classIdentifier === undefined)
         return undefined;
-    return serviceSpecifications.find(s => s.classIdentifier === classIdentifier)
-        || customServiceSpecifications[classIdentifier]
+    return _serviceSpecifications.find(s => s.classIdentifier === classIdentifier)
+        || _customServiceSpecifications[classIdentifier]
 }
 
 export function isSensor(spec: jdspec.ServiceSpec): boolean {

@@ -33,7 +33,7 @@ function arrayShuffle<T>(a: T[]): T[] {
 
 export default function DeviceSpecificationList(props: {
     count?: number,
-    shuffle?: boolean
+    shuffle?: boolean,
     requiredServiceClasses?: number[]
 }) {
     const { count, shuffle, requiredServiceClasses } = props;
@@ -48,7 +48,7 @@ export default function DeviceSpecificationList(props: {
     if (count !== undefined)
         specs = specs.slice(0, count)
     // filter by services
-    if (requiredServiceClasses !== undefined)
+    if (requiredServiceClasses)
         specs = specs.filter(spec => spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
     if (shuffle)
         arrayShuffle(specs)
@@ -58,7 +58,7 @@ export default function DeviceSpecificationList(props: {
             <img src={imageDeviceOf(spec)} alt={spec.name} />
             <GridListTileBar
                 title={spec.name}
-                subtitle={<Markdown className={classes.ellipsis} source={spec.description} />}
+                subtitle={<Markdown className={classes.ellipsis} source={spec.description.split('.', 1)[0]} />}
                 actionIcon={<>
                     <IconButton to={`/devices/${spec.id}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
                         <InfoIcon />
