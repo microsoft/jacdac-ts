@@ -6,8 +6,8 @@ import React from "react";
 export default function GitHubButton(props: { repo: string, size?: "small" | "medium", className?: string }) {
     const { repo, size, className } = props;
     let url = repo;
-    if (!/^https:\/\// && !/^https:\/\/github.com\//.test(url)) {
-        url = "https://github.com/" + repo;
+    if (!/^https:\/\//.test(url) && !/^https:\/\/github.com\//.test(url)) {
+        url = "https://github.com/" + url;
     }
     return <IconButton to={url} size={size} className={className} color="inherit">
         <GitHubIcon />
