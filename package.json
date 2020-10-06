@@ -37,7 +37,8 @@
     "tools": "npx http-server . -c-1",
     "installdocs": "cd docs && npm install",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
-    "docs": "cd docs && node node_modules/gatsby/cli.js develop"
+    "docs": "cd docs && node node_modules/gatsby/cli.js develop",
+    "patchtools": "node .tools/prepare.js"
   },
   "release": {
     "branch": "main",
