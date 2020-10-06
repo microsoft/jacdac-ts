@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme } from '@material-ui/core';
+import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
 import { deviceSpecifications, imageDeviceOf } from '../../../src/dom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import InfoIcon from '@material-ui/icons/Info';
@@ -14,9 +14,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         overflow: 'hidden',
         backgroundColor: theme.palette.background.paper,
     },
-    gridList: {
-        width: 500,
-        height: 450,
+    ellipsis: {
+        textOverflow: 'ellipsis',
     },
     icon: {
         color: 'rgba(255, 255, 255, 0.54)',
@@ -38,8 +37,13 @@ export default function DeviceSpecificationList(props: {
     requiredServiceClasses?: number[]
 }) {
     const { count, shuffle, requiredServiceClasses } = props;
+    const theme = useTheme();
     const classes = useStyles();
     let specs = deviceSpecifications();
+    const mobile = useMediaQuery(theme.breakpoints.down('xs'));
+    const medium = useMediaQuery(theme.breakpoints.down('md'));
+    const cols = mobile ? 1 : medium ? 3 : 4;
+
     // apply filters
     if (count !== undefined)
         specs = specs.slice(0, count)
@@ -49,12 +53,12 @@ export default function DeviceSpecificationList(props: {
     if (shuffle)
         arrayShuffle(specs)
 
-    return <GridList cols={4}>
+    return <GridList className={classes.root} cols={cols}>
         {specs.map(spec => <GridListTile key={spec.id}>
             <img src={imageDeviceOf(spec)} alt={spec.name} />
             <GridListTileBar
                 title={spec.name}
-                subtitle={<Markdown source={spec.description.split('.', 2)[0] + '...'} />}
+                subtitle={<Markdown className={classes.ellipsis} source={spec.description} />}
                 actionIcon={<>
                     <IconButton to={`/devices/${spec.id}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
                         <InfoIcon />
