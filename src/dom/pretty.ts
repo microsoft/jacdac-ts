@@ -94,7 +94,25 @@ export function decodeMember(
     const enumInfo = service.enums[member.type]
     const isInt = isIntegerType(member.type) || !!enumInfo
 
-    if (!isInt) {
+    if (member.isFloat && (size == 4 || size == 8)) {
+        if (size == 4)
+            numValue = pkt.getNumber(NumberFormat.Float32LE, offset)
+        else
+            numValue = pkt.getNumber(NumberFormat.Float64LE, offset)
+        value = scaledValue = numValue
+
+        if (Math.abs(value) < 10)
+            humanValue = value.toFixed(5)
+        else if (Math.abs(value) < 1000)
+            humanValue = value.toFixed(3)
+        else if (Math.abs(value) < 100000)
+            humanValue = value.toFixed(2)
+        else
+            humanValue = "" + value
+
+        if (member.unit)
+            humanValue += prettyUnit(member.unit)
+    } else if (!isInt) {
         const buf = size ? pkt.data.slice(offset, offset + size) : pkt.data.slice(offset)
         if (member.type == "string") {
             try {

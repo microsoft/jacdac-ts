@@ -26,6 +26,8 @@ export function ModelContent(props: { service: JDService }) {
     return <>
         <RegisterInput register={service.register(ModelRunnerReg.ModelSize)} />
         <RegisterInput register={service.register(ModelRunnerReg.LastError)} />
+        <RegisterInput showName register={service.register(ModelRunnerReg.AutoInvokeEvery)} />
+        <RegisterInput showName register={service.register(ModelRunnerReg.Outputs)} />
     </>
 }
 
@@ -112,11 +114,11 @@ export default function ModelUploader(props: {}) {
     }
 
     return <div className={classes.root}>
-        <h3>Load a TensorFlow Lite model</h3>
-        <p>TensorFlow Lite models are typically stored in a <code>.tflite</code> file.</p>
+        <h3>Load a machine learning model</h3>
+        <p>Machine learning models are typically stored in a <code>.tflite</code> file.</p>
         {model && <Alert severity={'success'}>Model loaded ({model.byteLength >> 10}kb)</Alert>}
         {model && <p />}
-        <UploadButton required={!model} disabled={importing} text={"Import model"} accept=".tflite" onFilesUploaded={handleTfmodelFiles} />
+        <UploadButton required={!model} disabled={importing} text={"Import model"} onFilesUploaded={handleTfmodelFiles} />
         <Button disabled={importing} onClick={handleClearModel}>clear model</Button>
         <h3>Configure sensors</h3>
         <p>Sensor configuration files are stored in a <code>.json</code> file.</p>
@@ -125,7 +127,7 @@ export default function ModelUploader(props: {}) {
         {sensorConfig && <p />}
         <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} accept=".json" onFilesUploaded={handleSensorConfigFiles} />
         <Button disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
-        <h3>Deploy model to TensorFlow Lite services</h3>
+        <h3>Deploy model to machine learning services</h3>
         <ConnectAlert serviceClass={SRV_MODEL_RUNNER} />
         <ServiceList
             serviceClass={SRV_MODEL_RUNNER}
