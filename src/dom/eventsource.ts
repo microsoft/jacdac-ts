@@ -17,8 +17,8 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
 }
 
 export class JDEventSource {
-    readonly listeners: SMap<Listener[]> = {};
-    changeId = 0;
+    private readonly listeners: SMap<Listener[]> = {};
+    readonly stats: SMap<number> = {};
 
     constructor() {
     }
@@ -84,10 +84,8 @@ export class JDEventSource {
     emit(eventName: string, ...args): boolean {
         if (!eventName) return false;
 
-        if (eventName === CHANGE) {
-            this.changeId++;
-            //console.info(`node ${this.id} changed to ${this.changeId}`)
-        }
+        // track event stats
+        this.stats[eventName] = (this.stats[eventName] || 0) + 1;
 
         const eventListeners = this.listeners[eventName];
         if (!eventListeners || eventListeners.length == 0) {
@@ -144,6 +142,10 @@ export class JDEventSource {
     subscribe<T>(eventName: string | string[], next: (value: T) => void): () => void {
         const observer = this.observe<T>(eventName);
         return observer.subscribe({ next }).unsubscribe
+    }
+
+    get changeId() {
+        return this.stats[CHANGE] || 0;
     }
 }
 
