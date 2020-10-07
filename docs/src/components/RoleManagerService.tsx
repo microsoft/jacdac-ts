@@ -4,20 +4,14 @@ import useChange from "../jacdac/useChange"
 import DeviceName from "./DeviceName"
 import { JDService } from "../../../src/dom/service"
 import { RoleManagerClient, RemoteRequestedDevice } from "../../../src/dom/rolemanagerclient"
-import { Button } from "gatsby-theme-material-ui"
-import { serviceName, serviceShortIdOrClass } from "../../../src/dom/pretty"
-import useGridBreakpoints from "./useGridBreakpoints"
+import { serviceName } from "../../../src/dom/pretty"
 import CmdButton from "./CmdButton"
 import { Alert, AlertTitle } from "@material-ui/lab"
 import DeviceCardHeader from "./DeviceCardHeader"
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
-}))
-
 function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: RoleManagerClient }) {
     const { rdev, client } = props
     const [working, setWorking] = useState(false)
-    const classes = useStyles()
     const label = rdev.name;
     const handleChange = async (ev: React.ChangeEvent<{ value: string }>) => {
         const value: string = ev.target.value;
