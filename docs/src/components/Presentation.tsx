@@ -87,7 +87,6 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         note?: JSX.Element[];
     }[] = [];
     children?.forEach(child => {
-        console.log(child.props?.originalType)
         if (child.props?.originalType === "h1" || !slides.length)
             slides.push({ content: [] });
 
