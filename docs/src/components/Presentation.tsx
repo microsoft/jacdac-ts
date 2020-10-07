@@ -1,4 +1,6 @@
-import React from "react"
+import { useTheme } from "@material-ui/core";
+import { PaletteColor } from "@material-ui/core/styles/createPalette";
+import React, { useContext } from "react"
 import {
     Box,
     Deck,
@@ -8,33 +10,39 @@ import {
     Progress,
     Slide,
 } from 'spectacle';
-
-// SPECTACLE_CLI_THEME_START
-const deckTheme = {
-    fonts: {
-    }
-};
-
-const template = () => (
-    <FlexBox
-        justifyContent="space-between"
-        position="absolute"
-        bottom={0}
-        width={1}
-    >
-        <Box padding="0 1em">
-            <FullScreen color="primary" size={1} />
-        </Box>
-        <Box padding="1em">
-            <Progress color="primary" size={1} />
-        </Box>
-    </FlexBox>
-);
+import DarkModeContext from "./DarkModeContext";
 
 export default function Presentation(props: { children: JSX.Element[] }) {
     const { children } = props
+    const theme = useTheme();
+    const { darkMode } = useContext(DarkModeContext)
 
-    // split children
+    const controlColor = darkMode === "dark" ? "#fff" : "#000"
+    const backgroundColor = darkMode === "dark" ? "#000" : "#fff"
+    const deckTheme = {
+        colors: {
+            primary: theme.palette.text,
+            secondary: theme.palette.grey
+        },
+        space: [16, 24, 32]
+    };
+    const template = () => (
+        <FlexBox
+            justifyContent="space-between"
+            position="absolute"
+            bottom={0}
+            width={1}
+        >
+            <Box padding="0 1em">
+                <FullScreen color={controlColor} size={theme.spacing(5)} />
+            </Box>
+            <Box padding="1em">
+                <Progress color={controlColor} size={theme.spacing(5)} />
+            </Box>
+        </FlexBox>
+    )
+
+    // split children in pages
     const slides: {
         content: JSX.Element[];
         note?: JSX.Element[];
@@ -53,14 +61,14 @@ export default function Presentation(props: { children: JSX.Element[] }) {
         else slide.content.push(child);
     })
 
-    console.log('mdx slides', children, slides)
+    // assemble in deck
     return <Deck theme={deckTheme} template={template} transitionEffect="slide">
         {slides.map((slide, i) =>
-            <Slide key={i}>
+            <Slide key={i} backgroundColor={backgroundColor}>
                 <FlexBox height="100%" flexDirection="column">
                     {slide.content}
                 </FlexBox>
-                {slide.note && <Notes>{slide.note}</Notes>}
+                <Notes>{slide.note || <></>}</Notes>
             </Slide>)}
     </Deck>
 }
