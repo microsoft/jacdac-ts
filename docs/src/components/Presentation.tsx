@@ -73,10 +73,10 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
             width={1}
         >
             {browser && <spectable.Box padding="0 1em">
-                <spectable.FullScreen color={controlColor} size={theme.spacing(5)} />
+                <spectable.FullScreen color={controlColor} size={theme.spacing(3)} />
             </spectable.Box>}
             <spectable.Box padding="1em">
-                <spectable.Progress color={controlColor} size={theme.spacing(5)} />
+                <spectable.Progress color={controlColor} size={theme.spacing(3)} />
             </spectable.Box>
         </spectable.FlexBox>
     )
