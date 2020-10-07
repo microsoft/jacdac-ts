@@ -1,4 +1,4 @@
-import { Box, CircularProgress, createStyles, makeStyles, NoSsr, useTheme } from "@material-ui/core";
+import { Box, CircularProgress, createStyles, Grow, makeStyles, NoSsr, useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect, useState } from "react"
 
 import useEffectAsync from "./useEffectAsync"
@@ -111,12 +111,12 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
             {slides.map((slide, i) =>
                 <spectable.Slide key={i} backgroundColor={backgroundColor}>
                     <spectable.FlexBox height="100%" flexDirection="column">
-                        {slide.content}
+                        {slide.content.map((el, i) => <Grow in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
                     </spectable.FlexBox>
                     <spectable.Notes>{slide.note || <></>}</spectable.Notes>
                 </spectable.Slide>)}
         </spectable.Deck>
-        </Box>
+    </Box>
 }
 
 export default function Presentation(props: { children: JSX.Element[] }) {
