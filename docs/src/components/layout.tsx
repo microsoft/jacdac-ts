@@ -43,8 +43,8 @@ import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
-import CodeDemo from "./CodeBlock";
-import ServiceManagerContext, { ServiceManagerProvider } from "./ServiceManagerContext";
+import CodeDemo from "./CodeDemo";
+import { ServiceManagerProvider } from "./ServiceManagerContext";
 import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
@@ -53,6 +53,7 @@ import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import GitHubButton from "./GitHubButton"
+import CodeBlock from './CodeBlock'
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -173,7 +174,9 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   const mdxComponents = {
     CodeDemo: (props: any) => <CodeDemo {...props} />,
     Link: (props: any) => <Link color="textPrimary" {...props} />,
-    a: (props: any) => <Link color="textPrimary" {...props} />
+    a: (props: any) => <Link color="textPrimary" {...props} />,
+    pre: props => <div {...props} />,
+    code: CodeBlock
   };
 
   return (

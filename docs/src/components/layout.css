@@ -48,7 +48,12 @@ a:hover {
   outline-width: 0;
 }
 .markdown p a,
-.markdown li a 
+.markdown li a,
+.markdown h2 a,
+.markdown h3 a,
+.markdown h4 a,
+.markdown h5 a, 
+.markdown h6 a
 {
   text-decoration: underline;
 }
