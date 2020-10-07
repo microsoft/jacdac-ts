@@ -1,5 +1,4 @@
 import { useTheme } from "@material-ui/core";
-import { PaletteColor } from "@material-ui/core/styles/createPalette";
 import React, { useContext } from "react"
 import {
     Box,
@@ -22,7 +21,11 @@ export default function Presentation(props: { children: JSX.Element[] }) {
     const deckTheme = {
         colors: {
             primary: theme.palette.text,
-            secondary: theme.palette.grey
+            secondary: theme.palette.grey,
+            backgroundColor: backgroundColor
+        },
+        fonts: {
+            fontFamily: theme.typography.fontFamily
         },
         space: [16, 24, 32]
     };
