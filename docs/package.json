@@ -50,7 +50,8 @@
     "react-markdown": "^4.3.1",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
-    "slug": "^3.3.2"
+    "slug": "^3.3.2",
+    "spectacle": "^6.2.0"
   },
   "keywords": [
     "jacdac"
