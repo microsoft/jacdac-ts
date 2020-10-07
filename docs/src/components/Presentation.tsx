@@ -76,7 +76,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
                 <spectable.FullScreen color={controlColor} size={theme.spacing(3)} />
             </spectable.Box>}
             <spectable.Box padding="1em">
-                <spectable.Progress color={controlColor} size={theme.spacing(3)} />
+                <spectable.Progress color={controlColor} size={theme.spacing(2)} />
             </spectable.Box>
         </spectable.FlexBox>
     )
@@ -109,9 +109,9 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
             backgroundColor={backgroundColor}>
             {slides.map((slide, i) =>
                 <spectable.Slide key={i} backgroundColor={backgroundColor}>
-                    <spectable.FlexBox height="100%" flexDirection="column">
+                    <>
                         {slide.content.map((el, i) => <Grow key={i} in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
-                    </spectable.FlexBox>
+                    </>
                     <spectable.Notes>{slide.note || <></>}</spectable.Notes>
                 </spectable.Slide>)}
         </spectable.Deck>

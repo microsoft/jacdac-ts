@@ -630,3 +630,7 @@ footer {
 .gatsby-highlight {
   margin-bottom: 1rem;
 }
+
+.gatsby-resp-image-wrapper {
+  max-width: 100% !important;
+}
