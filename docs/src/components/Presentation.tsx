@@ -111,7 +111,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
             {slides.map((slide, i) =>
                 <spectable.Slide key={i} backgroundColor={backgroundColor}>
                     <spectable.FlexBox height="100%" flexDirection="column">
-                        {slide.content.map((el, i) => <Grow in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
+                        {slide.content.map((el, i) => <Grow key={i} in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
                     </spectable.FlexBox>
                     <spectable.Notes>{slide.note || <></>}</spectable.Notes>
                 </spectable.Slide>)}
