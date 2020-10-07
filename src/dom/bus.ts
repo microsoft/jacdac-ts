@@ -447,7 +447,6 @@ export class JDBus extends JDNode {
 
         if (enabled) {
             if (!this._debouncedScanFirmwares) {
-                this.log('debug', `enabling background firmware scans`)
                 this._debouncedScanFirmwares = debounceAsync(async () => {
                     if (this.connected) {
                         this.log('info', `scanning firmwares`)

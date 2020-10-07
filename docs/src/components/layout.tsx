@@ -53,7 +53,8 @@ import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import GitHubButton from "./GitHubButton"
-import CodeBlock from './CodeBlock'
+import Presentation from "./Presentation";
+import useMdxComponents from "./useMdxComponents";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -162,22 +163,18 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 }
 
 function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
+  const { pageContext } = props;
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   if (!darkModeMounted)
     return <div />
 
-  const theme = responsiveFontSizes(createMuiTheme({
+  const rawTheme = createMuiTheme({
     palette: {
       type: darkMode
     }
-  }));
-  const mdxComponents = {
-    CodeDemo: (props: any) => <CodeDemo {...props} />,
-    Link: (props: any) => <Link color="textPrimary" {...props} />,
-    a: (props: any) => <Link color="textPrimary" {...props} />,
-    pre: props => <div {...props} />,
-    code: CodeBlock
-  };
+  })
+  const theme = responsiveFontSizes(rawTheme);
+  const mdxComponents = useMdxComponents()
 
   return (
     <ThemeProvider theme={theme}>
@@ -210,7 +207,9 @@ function LayoutWithContext(props: {
   const drawerOpen = drawerType !== DrawerType.None
   const toolsOpen = toolsMenu
   const serviceClass = pageContext?.node?.classIdentifier;
-  const pageTitle = pageContext?.frontmatter?.title
+  const pageTitle = pageContext?.frontmatter?.title;
+  const pagePath = pageContext?.frontmatter?.path;
+  const pageDeck = !!pageContext?.frontmatter?.deck;
   const connected = connectionState === BusState.Connected
   useFirmwareBlobs()
 
@@ -298,9 +297,12 @@ function LayoutWithContext(props: {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
+      <AppDrawer pagePath={pagePath} serviceClass={serviceClass} />
       <ToolsDrawer />
-      <Container disableGutters={true}>
+      {pageDeck && <Presentation>
+        {children}
+      </Presentation>}
+      {!pageDeck && <Container disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
@@ -325,7 +327,7 @@ function LayoutWithContext(props: {
             </Typography>
           </footer>
         </main>
-      </Container>
+      </Container>}
       <ErrorSnackbar />
     </div>
   )
