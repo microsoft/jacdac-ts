@@ -290,7 +290,7 @@ function LayoutWithContext(props: {
           </Hidden>}
           <div className={classes.grow} />
           <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac-ts"} />
+          <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
           <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
           <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
             <MoreIcon />
