@@ -1,20 +1,32 @@
-import { NoSsr, useTheme } from "@material-ui/core";
-import React, { useContext, useLayoutEffect } from "react"
-import {
-    Box,
-    Deck,
-    FlexBox,
-    FullScreen,
-    Notes,
-    Progress,
-    Slide,
-} from 'spectacle';
+import { CircularProgress, NoSsr, useTheme } from "@material-ui/core";
+import React, { useContext, useLayoutEffect, useState } from "react"
+
+
+import useEffectAsync from "./useEffectAsync"
 import DarkModeContext from "./DarkModeContext";
 
 function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const { children } = props
     const theme = useTheme();
     const { darkMode } = useContext(DarkModeContext)
+    const [spectable, setSpectable] = useState(undefined)
+
+    useEffectAsync(async () => {
+        const s = await import('spectacle');
+        setSpectable(s);
+    }, [])
+    useLayoutEffect(() => {
+        // don't override theme background
+        if (browser)
+            document.body.style.background = backgroundColor;
+        return () => {
+            if (browser)
+                document.body.style.background = ''
+        }
+    })
+
+    if (!spectable)
+        return <><CircularProgress /></>
 
     const browser = typeof window !== "undefined"
     const controlColor = darkMode === "dark" ? "#fff" : "#000"
@@ -30,19 +42,19 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         space: [16, 24, 32]
     };
     const template = () => (
-        <FlexBox
+        <spectable.FlexBox
             justifyContent="space-between"
             position="absolute"
             bottom={0}
             width={1}
         >
-            {browser && <Box padding="0 1em">
-                <FullScreen color={controlColor} size={theme.spacing(5)} />
-            </Box>}
-            <Box padding="1em">
-                <Progress color={controlColor} size={theme.spacing(5)} />
-            </Box>
-        </FlexBox>
+            {browser && <spectable.Box padding="0 1em">
+                <spectable.FullScreen color={controlColor} size={theme.spacing(5)} />
+            </spectable.Box>}
+            <spectable.Box padding="1em">
+                <spectable.Progress color={controlColor} size={theme.spacing(5)} />
+            </spectable.Box>
+        </spectable.FlexBox>
     )
 
     // split children in pages
@@ -64,36 +76,26 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         else slide.content.push(child);
     })
 
-    useLayoutEffect(() => {
-        // don't override theme background
-        if (browser)
-            document.body.style.background = backgroundColor;
-        return () => {
-            if (browser)
-                document.body.style.background = ''
-        }
-    })
-
     // assemble in deck
-    return <Deck
+    console.log("spectable", spectable)
+    return <spectable.Deck
         theme={deckTheme}
         template={template}
         transitionEffect="slide"
         animationsWhenGoingBack={true}
         backgroundColor={backgroundColor}>
         {slides.map((slide, i) =>
-            <Slide key={i} backgroundColor={backgroundColor}>
-                <FlexBox height="100%" flexDirection="column">
+            <spectable.Slide key={i} backgroundColor={backgroundColor}>
+                <spectable.FlexBox height="100%" flexDirection="column">
                     {slide.content}
-                </FlexBox>
-                <Notes>{slide.note || <></>}</Notes>
-            </Slide>)}
-    </Deck>
+                </spectable.FlexBox>
+                <spectable.Notes>{slide.note || <></>}</spectable.Notes>
+            </spectable.Slide>)}
+    </spectable.Deck>
 }
 
 export default function Presentation(props: { children: JSX.Element[] }) {
-    // Spectacle modifies document.... directly, disabling SSR
     return <NoSsr>
-         <PresentationNoSsr {...props} />
-   </NoSsr>
+        <PresentationNoSsr {...props} />
+    </NoSsr>
 }
