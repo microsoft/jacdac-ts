@@ -1,15 +1,39 @@
-import { CircularProgress, NoSsr, useTheme } from "@material-ui/core";
+import { Box, CircularProgress, createStyles, makeStyles, NoSsr, useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect, useState } from "react"
-
 
 import useEffectAsync from "./useEffectAsync"
 import DarkModeContext from "./DarkModeContext";
+
+const useStyles = makeStyles((theme) => createStyles({
+    root: {
+        fontSize: theme.spacing(4),
+        "& h1": {
+            fontSize: theme.spacing(10)
+        },
+        "& h2": {
+            fontSize: theme.spacing(9)
+        },
+        "& h3": {
+            fontSize: theme.spacing(8)
+        },
+        "& h4": {
+            fontSize: theme.spacing(7)
+        },
+        "& h5": {
+            fontSize: theme.spacing(5)
+        },
+        "& h6": {
+            fontSize: theme.spacing(5)
+        },
+    },
+}));
 
 function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const { children } = props
     const theme = useTheme();
     const { darkMode } = useContext(DarkModeContext)
     const [spectable, setSpectable] = useState(undefined)
+    const classes = useStyles()
 
     useEffectAsync(async () => {
         const s = await import('spectacle');
@@ -77,21 +101,22 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     })
 
     // assemble in deck
-    console.log("spectable", spectable)
-    return <spectable.Deck
-        theme={deckTheme}
-        template={template}
-        transitionEffect="slide"
-        animationsWhenGoingBack={true}
-        backgroundColor={backgroundColor}>
-        {slides.map((slide, i) =>
-            <spectable.Slide key={i} backgroundColor={backgroundColor}>
-                <spectable.FlexBox height="100%" flexDirection="column">
-                    {slide.content}
-                </spectable.FlexBox>
-                <spectable.Notes>{slide.note || <></>}</spectable.Notes>
-            </spectable.Slide>)}
-    </spectable.Deck>
+    return <Box className={classes.root}>
+        <spectable.Deck
+            theme={deckTheme}
+            template={template}
+            transitionEffect="slide"
+            animationsWhenGoingBack={true}
+            backgroundColor={backgroundColor}>
+            {slides.map((slide, i) =>
+                <spectable.Slide key={i} backgroundColor={backgroundColor}>
+                    <spectable.FlexBox height="100%" flexDirection="column">
+                        {slide.content}
+                    </spectable.FlexBox>
+                    <spectable.Notes>{slide.note || <></>}</spectable.Notes>
+                </spectable.Slide>)}
+        </spectable.Deck>
+        </Box>
 }
 
 export default function Presentation(props: { children: JSX.Element[] }) {

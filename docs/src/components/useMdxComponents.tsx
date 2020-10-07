@@ -4,7 +4,7 @@ import CodeDemo from "./CodeDemo";
 import CodeBlock from './CodeBlock';
 import { useTheme } from "@material-ui/core";
 
-export default function useMdxComponents(deck?: boolean) {
+export default function useMdxComponents() {
   const theme = useTheme();
   const mdxComponents: any = {
     CodeDemo: (props: any) => <CodeDemo {...props} />,
@@ -13,10 +13,6 @@ export default function useMdxComponents(deck?: boolean) {
     pre: props => <div {...props} />,
     code: CodeBlock
   };
-
-  // override with spectable elements
-  if (deck) {
-  }
 
   return mdxComponents;
 }

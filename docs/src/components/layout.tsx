@@ -168,13 +168,13 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   if (!darkModeMounted)
     return <div />
 
-  const theme = responsiveFontSizes(createMuiTheme({
+  const rawTheme = createMuiTheme({
     palette: {
       type: darkMode
     }
-  }));
-  const pageDeck = !!pageContext?.frontmatter?.deck;
-  const mdxComponents = useMdxComponents(pageDeck)
+  })
+  const theme = responsiveFontSizes(rawTheme);
+  const mdxComponents = useMdxComponents()
 
   return (
     <ThemeProvider theme={theme}>
