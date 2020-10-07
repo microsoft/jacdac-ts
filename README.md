@@ -10,11 +10,20 @@ The rest of this page is for developers of the jacdac-ts library.
 
 ### Setup
 
-* run ``npm install``
+* pull all submodules
+* install node.js
+* install dependencies
+```
+npm install
+```
 
 ### Build watch
 
 You can do ``npm run watch`` to watch/build bundles. Bundles are placed under the ``dist`` folder.
+
+```
+npm run watch
+```
 
 ### Gatsby build
 
