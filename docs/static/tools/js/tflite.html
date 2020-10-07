@@ -111,7 +111,7 @@
         updateConnectionState()
 
         async function importTF(file) {
-            const buf = new Uint8Array(await file.arrayBuffer())
+            const buf = await jacdac.readBlobToUint8Array(file)
             scan();
             setTimeout(() => jacdac.testTF(jd, buf), 1000);
         }

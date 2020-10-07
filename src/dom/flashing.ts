@@ -4,7 +4,7 @@ import { Packet } from "./packet"
 import { JDDevice } from "./device"
 import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, CtrlReg, PACKET_REPORT } from "./constants"
 import { unpack, pack } from "./struct"
-import { assert, delay, bufferConcat, bufferToString, SMap, strcmp } from "./utils"
+import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array } from "./utils"
 
 const BL_CMD_PAGE_DATA = 0x80
 const BL_CMD_SET_SESSION = 0x81
@@ -336,7 +336,7 @@ export interface FirmwareInfo {
 }
 
 export async function parseFirmwareFile(blob: Blob, store?: string): Promise<FirmwareBlob[]> {
-    const data = await blob.arrayBuffer();
+    const data = await readBlobToUint8Array(blob);
     const buf = new Uint8Array(data);
     const uf2Blobs = parseUF2(buf, store);
     return uf2Blobs;

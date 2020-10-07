@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { JSONTryParse } from "../../../src/dom/utils";
+import { JSONTryParse, readBlobToText, readBlobToUint8Array } from "../../../src/dom/utils";
 import DbContext, { DB_VALUE_CHANGE } from "./DbContext";
 import useEffectAsync from "./useEffectAsync";
 
@@ -38,24 +38,13 @@ export function useDbUint8Array(blobName: string) {
     const { blob, setBlob } = useDbBlob(blobName)
     const [model, setModel] = useState<Uint8Array>(undefined)
 
-    useEffectAsync(() => {
+    useEffectAsync(async () => {
         if (!blob) {
             setModel(undefined)
-            return Promise.resolve()
         }
         else {
-            return new Promise((resolve, reject) => {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                    setModel(new Uint8Array(fileReader.result as ArrayBuffer))
-                    resolve()
-                }
-                fileReader.onerror = (e) => {
-                    setModel(undefined)
-                    reject(e)
-                }
-                fileReader.readAsArrayBuffer(blob);
-            })
+            const buf = await readBlobToUint8Array(blob);
+            setModel(buf);
         }
     }, [blob])
 
@@ -69,24 +58,13 @@ export function useDbString(blobName: string) {
     const { blob, setBlob } = useDbBlob(blobName)
     const [model, setModel] = useState<string>(undefined)
 
-    useEffectAsync(() => {
+    useEffectAsync(async () => {
         if (!blob) {
             setModel(undefined)
-            return Promise.resolve()
         }
         else {
-            return new Promise((resolve, reject) => {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                    setModel(fileReader.result as string)
-                    resolve();
-                }
-                fileReader.onerror = (e) => {
-                    setModel(undefined)
-                    reject(e)
-                }
-                fileReader.readAsText(blob);
-            })
+            const t = await readBlobToText(blob);
+            setModel(t);
         }
     }, [blob])
 
