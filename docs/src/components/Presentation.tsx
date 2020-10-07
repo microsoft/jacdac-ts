@@ -1,4 +1,4 @@
-import { useTheme } from "@material-ui/core";
+import { NoSsr, useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect } from "react"
 import {
     Box,
@@ -11,11 +11,12 @@ import {
 } from 'spectacle';
 import DarkModeContext from "./DarkModeContext";
 
-export default function Presentation(props: { children: JSX.Element[] }) {
+function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const { children } = props
     const theme = useTheme();
     const { darkMode } = useContext(DarkModeContext)
 
+    const browser = typeof window !== "undefined"
     const controlColor = darkMode === "dark" ? "#fff" : "#000"
     const backgroundColor = darkMode === "dark" ? "#000" : "#fff"
     const deckTheme = {
@@ -35,9 +36,9 @@ export default function Presentation(props: { children: JSX.Element[] }) {
             bottom={0}
             width={1}
         >
-            <Box padding="0 1em">
+            {browser && <Box padding="0 1em">
                 <FullScreen color={controlColor} size={theme.spacing(5)} />
-            </Box>
+            </Box>}
             <Box padding="1em">
                 <Progress color={controlColor} size={theme.spacing(5)} />
             </Box>
@@ -65,8 +66,12 @@ export default function Presentation(props: { children: JSX.Element[] }) {
 
     useLayoutEffect(() => {
         // don't override theme background
-        document.body.style.background = backgroundColor;
-        return () => document.body.style.background = ''
+        if (browser)
+            document.body.style.background = backgroundColor;
+        return () => {
+            if (browser)
+                document.body.style.background = ''
+        }
     })
 
     // assemble in deck
@@ -84,4 +89,11 @@ export default function Presentation(props: { children: JSX.Element[] }) {
                 <Notes>{slide.note || <></>}</Notes>
             </Slide>)}
     </Deck>
+}
+
+export default function Presentation(props: { children: JSX.Element[] }) {
+    // Spectacle modifies document.... directly, disabling SSR
+    return <NoSsr>
+        <Presentation {...props} />
+    </NoSsr>
 }

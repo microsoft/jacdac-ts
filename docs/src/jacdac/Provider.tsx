@@ -8,7 +8,6 @@ import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
 const bus = createUSBBus();
 bus.setBackgroundFirmwareScans(true)
 const iframeBridge = new IFrameBridgeClient(bus, "*");
-console.log(`iframe fridge supported ${iframeBridge.supported}`)
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
