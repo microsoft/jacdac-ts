@@ -1,4 +1,4 @@
-import { Paper, useTheme } from "@material-ui/core";
+import { useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect } from "react"
 import {
     Box,
