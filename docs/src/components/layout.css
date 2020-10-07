@@ -210,6 +210,9 @@ body {
   -webkit-font-feature-settings: "kern", "liga", "clig", "calt";
   font-feature-settings: "kern", "liga", "clig", "calt";
 }
+body {
+	transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 img {
   max-width: 100%;
   margin-left: 0;
