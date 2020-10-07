@@ -163,11 +163,7 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 }
 
 function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
-  const { pageContext } = props;
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
-  if (!darkModeMounted)
-    return <div />
-
   const rawTheme = createMuiTheme({
     palette: {
       type: darkMode
@@ -175,6 +171,9 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   })
   const theme = responsiveFontSizes(rawTheme);
   const mdxComponents = useMdxComponents()
+
+  if (!darkModeMounted)
+    return <div />
 
   return (
     <ThemeProvider theme={theme}>
@@ -204,6 +203,7 @@ function LayoutWithContext(props: {
   const classes = useStyles();
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { connectionState } = useContext<JDContextProps>(JACDACContext)
+  useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
   const toolsOpen = toolsMenu
   const serviceClass = pageContext?.node?.classIdentifier;
@@ -211,8 +211,7 @@ function LayoutWithContext(props: {
   const pagePath = pageContext?.frontmatter?.path;
   const pageDeck = !!pageContext?.frontmatter?.deck;
   const connected = connectionState === BusState.Connected
-  useFirmwareBlobs()
-
+  const appBarColor = pageDeck ? "transparent" : undefined;
   const handleDrawerToc = () => {
     setDrawerType(DrawerType.Toc)
   }
@@ -250,6 +249,7 @@ function LayoutWithContext(props: {
         />
       </Helmet>
       <AppBar position="fixed"
+        color={appBarColor}
         className={clsx(classes.appBar, {
           [classes.appBarShift]: drawerOpen,
           [classes.toolBarShift]: toolsOpen,

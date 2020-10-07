@@ -6,9 +6,9 @@ import DarkModeContext from "./DarkModeContext";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
-        fontSize: theme.spacing(4),
+        fontSize: theme.spacing(6),
         "& h1": {
-            fontSize: theme.spacing(10)
+            fontSize: theme.spacing(9)
         },
         "& h2": {
             fontSize: theme.spacing(9)
@@ -20,10 +20,10 @@ const useStyles = makeStyles((theme) => createStyles({
             fontSize: theme.spacing(7)
         },
         "& h5": {
-            fontSize: theme.spacing(5)
+            fontSize: theme.spacing(6)
         },
         "& h6": {
-            fontSize: theme.spacing(5)
+            fontSize: theme.spacing(6)
         },
     },
 }));

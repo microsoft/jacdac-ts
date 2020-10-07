@@ -4,6 +4,7 @@ title: JACDAC
 ---
 
 import DeviceSpecificationList from "../../components/DeviceSpecificationList"
+import { serviceSpecificationFromName } from "../../../../src/dom/spec"
 
 
 # JACDAC
@@ -13,6 +14,14 @@ import DeviceSpecificationList from "../../components/DeviceSpecificationList"
 ---
 
 This is a note
+
+# Service Specification
+
+Define Packets in Markdown
+
+<pre>
+    <code className="language-markdown">{serviceSpecificationFromName("accelerometer").source}</code>
+</pre>
 
 # Device Catalog
 
