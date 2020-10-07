@@ -10,7 +10,7 @@ The rest of this page is for developers of the jacdac-ts library.
 
 ### Codespaces
 
-Open and run ``npm run docs`` from a terminal; then open the devevelopment server.
+Gatsby development server is not yet supported in codespaces.
 
 ### Setup
 
