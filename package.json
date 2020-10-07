@@ -23,6 +23,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
+    "pullsubmodules": "git submodule update --init --recursive",
     "lint": "node node_modules/tslint/bin/tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "predist": "rm -rf dist",
     "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
@@ -35,7 +36,7 @@
     "test:prod": "npm run lint && npm run test --no-cache",
     "tools": "npx http-server . -c-1",
     "installdocs": "cd docs && npm install",
-    "installdev": "node run install && node run installdocs",
+    "installdev": "npm run pullsubmodules && npm install && npm run installdocs",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "docs": "cd docs && node node_modules/gatsby/cli.js develop",
     "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0"

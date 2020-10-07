@@ -8,6 +8,10 @@ The rest of this page is for developers of the jacdac-ts library.
 
 ## Developer setup
 
+### Codespaces
+
+Open and run ``npm run docs`` from a terminal; then open the devevelopment server.
+
 ### Setup
 
 * pull all submodules
