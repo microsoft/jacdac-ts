@@ -94,6 +94,6 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
 export default function Presentation(props: { children: JSX.Element[] }) {
     // Spectacle modifies document.... directly, disabling SSR
     return <NoSsr>
-        <Presentation {...props} />
-    </NoSsr>
+         <PresentationNoSsr {...props} />
+   </NoSsr>
 }

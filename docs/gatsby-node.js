@@ -159,7 +159,7 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
   }
 }
 
-exports.onCreateWebpackConfig = ({ stage, actions }) => {
+exports.onCreateWebpackConfig = ({ stage, actions, getConfig }) => {
   if (stage.startsWith("develop")) {
     actions.setWebpackConfig({
       resolve: {
@@ -169,4 +169,10 @@ exports.onCreateWebpackConfig = ({ stage, actions }) => {
       },
     })
   }
+
+  // enable verbose logging
+  const config = getConfig()
+  config.stats = 'verbose'
+  config.performance.hints = "warning";
+  actions.replaceWebpackConfig(config)
 }
