@@ -1,5 +1,5 @@
-import { useTheme } from "@material-ui/core";
-import React, { useContext } from "react"
+import { Paper, useTheme } from "@material-ui/core";
+import React, { useContext, useLayoutEffect } from "react"
 import {
     Box,
     Deck,
@@ -22,7 +22,6 @@ export default function Presentation(props: { children: JSX.Element[] }) {
         colors: {
             primary: theme.palette.text,
             secondary: theme.palette.grey,
-            backgroundColor: backgroundColor
         },
         fonts: {
             fontFamily: theme.typography.fontFamily
@@ -64,8 +63,19 @@ export default function Presentation(props: { children: JSX.Element[] }) {
         else slide.content.push(child);
     })
 
+    useLayoutEffect(() => {
+        // don't override theme background
+        document.body.style.background = backgroundColor;
+        return () => document.body.style.background = ''
+    })
+
     // assemble in deck
-    return <Deck theme={deckTheme} template={template} transitionEffect="slide">
+    return <Deck
+        theme={deckTheme}
+        template={template}
+        transitionEffect="slide"
+        animationsWhenGoingBack={true}
+        backgroundColor={backgroundColor}>
         {slides.map((slide, i) =>
             <Slide key={i} backgroundColor={backgroundColor}>
                 <FlexBox height="100%" flexDirection="column">
