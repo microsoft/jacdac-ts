@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -224,6 +224,7 @@ function MainAppBar(props: { pageContext?: any }) {
   const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
 
   return <AppBar position="fixed"
+    elevation={pageDeck ? 0 : 2}
     color={appBarColor}
     className={clsx(classes.appBar, {
       [classes.appBarShift]: drawerOpen,

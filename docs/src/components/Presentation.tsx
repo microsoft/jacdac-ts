@@ -3,6 +3,7 @@ import React, { useContext, useLayoutEffect, useState } from "react"
 
 import useEffectAsync from "./useEffectAsync"
 import DarkModeContext from "./DarkModeContext";
+import Footer from "./Footer";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -25,6 +26,11 @@ const useStyles = makeStyles((theme) => createStyles({
         "& h6": {
             fontSize: theme.spacing(6)
         },
+        "& footer": {
+            position: "absolute",
+            bottom: theme.spacing(0.5),
+            right: theme.spacing(0.5)
+        }
     },
 }));
 
@@ -114,6 +120,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
                     <spectable.Notes>{slide.note || <></>}</spectable.Notes>
                 </spectable.Slide>)}
         </spectable.Deck>
+        <Footer />
     </Box>
 }
 
