@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import Packet from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
+import { PACKET_PROCESS, PACKET_SEND } from "../../../src/dom/constants";
 
 const PACKET_MAX_ITEMS = 500
 export interface PacketProps {
@@ -24,14 +25,14 @@ export interface PacketsProps {
     clearPackets: () => void,
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
-    paused: boolean,
-    setPaused: (paused: boolean) => void,
     flags: string[],
     setFlags: (kinds: string[]) => void,
     serviceClass?: number,
     setServiceClass?: (serviceClass: number) => void,
-    trace?: Trace,
-    setTrace?: (frames: Frame[], videoUrl?: string) => void
+    trace: Trace,
+    setTrace: (frames: Frame[], videoUrl?: string) => void,
+    recording: boolean,
+    toggleRecording: () => void
 }
 
 const PacketsContext = createContext<PacketsProps>({
@@ -40,14 +41,14 @@ const PacketsContext = createContext<PacketsProps>({
     clearPackets: () => { },
     selectedPacket: undefined,
     setSelectedPacket: (pkt) => { },
-    paused: false,
-    setPaused: (p) => { },
     flags: [],
     setFlags: (k) => { },
     serviceClass: undefined,
     setServiceClass: (srv) => { },
     trace: undefined,
-    setTrace: (frames, videoUrl) => { }
+    setTrace: (frames, videoUrl) => { },
+    recording: false,
+    toggleRecording: () => { }
 });
 PacketsContext.displayName = "packets";
 
@@ -56,11 +57,20 @@ export default PacketsContext;
 export const PacketsProvider = ({ children }) => {
     const { bus, connectionState, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
-    const [paused, setPaused] = useState(false)
     const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const [trace, _setTrace] = useState<Trace>(undefined)
+    const [recording, setRecording] = useState(false)
+
+    // recording packets
+    useEffect(() => {
+        if (!recording)
+            return () => { }
+        else
+            return bus.subscribe([PACKET_PROCESS, PACKET_SEND],
+                (pkt: Packet) => trace.packets.push(pkt));
+    }, [recording]);
 
     const addPacket = (pkt: Packet) => {
         const { key } = pkt
@@ -89,9 +99,6 @@ export const PacketsProvider = ({ children }) => {
         if (!pkts?.length)
             _setTrace(undefined);
         else {
-            // disconnect live data first
-            if (connectionState !== BusState.Disconnected)
-                await disconnectAsync();
             clearPackets();
             bus.clear();
             _setTrace({
@@ -100,14 +107,25 @@ export const PacketsProvider = ({ children }) => {
             });
         }
     }
+    const toggleRecording = () => {
+        if (recording) {
+            setRecording(false)
+        } else {
+            _setTrace({
+                packets: []
+            })
+            setRecording(true);
+        }
+    }
+
     return (
         <PacketsContext.Provider value={{
             packets, addPacket, clearPackets,
             selectedPacket, setSelectedPacket,
-            paused, setPaused,
             flags, setFlags,
             serviceClass, setServiceClass,
-            trace, setTrace
+            trace, setTrace,
+            recording, toggleRecording
         }}>
             {children}
         </PacketsContext.Provider>

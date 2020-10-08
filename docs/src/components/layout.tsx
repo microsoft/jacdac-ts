@@ -59,7 +59,7 @@ import HideOnScroll from "./HideOnScroll";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
-export const MOBILE_DRAWER_WIDTH = 18;
+export const MOBILE_DRAWER_WIDTH = 20;
 export const MOBILE_TOOLS_DRAWER_WIDTH = 18;
 export const MOBILE_BREAKPOINT = "md"
 

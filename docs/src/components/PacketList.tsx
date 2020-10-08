@@ -96,9 +96,8 @@ export default function PacketList(props: {
     showTime?: boolean
 }) {
     const { showTime } = props
-    const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, addPacket, clearPackets } = useContext(PacketsContext)
+    const { flags, setFlags, serviceClass: globalServiceClass, packets, addPacket, clearPackets } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
-    const classes = useStyles()
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const theme = useTheme();
     const showText = useMediaQuery(theme.breakpoints.up('md'));
@@ -112,8 +111,6 @@ export default function PacketList(props: {
     // render packets
     useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
-            if (paused)
-                return; // ignore
             // don't repeat announce
             if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
                 return;

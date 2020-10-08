@@ -5,8 +5,8 @@ import PacketsContext from "./PacketsContext"
 import Packet from "../../../src/dom/packet";
 import { arrayConcatMany } from "../../../src/dom/utils";
 
-export default function TraceImportButton(props: { icon?: boolean }) {
-    const { icon } = props;
+export default function TraceImportButton(props: { icon?: boolean, disabled?: boolean }) {
+    const { icon, disabled } = props;
     const { setTrace } = useContext(PacketsContext)
     const [importing, setImporting] = useState(false)
 
@@ -26,5 +26,5 @@ export default function TraceImportButton(props: { icon?: boolean }) {
         }
     }
 
-    return <UploadButton icon={icon} disabled={importing} text="Import Trace File" onFilesUploaded={handleFiles} />
+    return <UploadButton icon={icon} disabled={importing || disabled} text="Import Trace File" onFilesUploaded={handleFiles} />
 }

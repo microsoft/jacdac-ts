@@ -115,8 +115,6 @@ export default function AppDrawer(props: {
             </IconButton>
         </div>
         <Divider />
-        {alertConnection && <Alert severity={"info"}>Connect to a JACDAC device to inspect the bus.
-        <ConnectButton className={classes.alertButton} full={true} /></Alert>}
         {showSearchResults && <DrawerSearchResults results={searchResults} />}
         {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
