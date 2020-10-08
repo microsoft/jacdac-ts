@@ -43,10 +43,10 @@ export default class FramePlayer extends JDEventSource {
     }
 
     private tick() {
-        const busElapsed = this.bus.timestamp - this._busStartTimestamp;
+        const busElapsed = (this.bus.timestamp - this._busStartTimestamp) * this.speed;
         while (this._frameIndex < this.frames.length) {
             const frame = this.frames[this._frameIndex];
-            const frameElapsed = (frame.timestamp - this.frames[0].timestamp) * this.speed;
+            const frameElapsed = (frame.timestamp - this.frames[0].timestamp);
             if (frameElapsed > busElapsed)
                 break; // wait to catch up
             this.emit(FRAME_PROCESS, frame);
