@@ -1,6 +1,5 @@
-import { IconButton } from "@material-ui/core";
+import { IconButton, Tooltip } from "@material-ui/core";
 import React, { useContext } from "react";
-import JACDACContext from "../../../src/react/Context";
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import SaveIcon from '@material-ui/icons/Save';
 import ServiceManagerContext from "./ServiceManagerContext";
@@ -20,8 +19,10 @@ export default function SaveTraceButton(props: { disabled?: boolean }) {
 ${text}
 `)
     }
-    return <IconButton disabled={disabled || recording || !trace?.packets.length}
-        size="small" key="save" title="save trace" onClick={saveTrace}>
-        <SaveIcon />
-    </IconButton>
+    return <Tooltip title="save trace">
+        <IconButton disabled={disabled || recording || !trace?.packets.length}
+            size="small" key="save" onClick={saveTrace}>
+            <SaveIcon />
+        </IconButton>
+    </Tooltip>;
 }

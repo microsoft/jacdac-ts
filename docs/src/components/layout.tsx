@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden, Box } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box, Tooltip } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -232,30 +232,33 @@ function MainAppBar(props: { pageContext?: any }) {
     })}
   >
     <Toolbar>
-      <IconButton
-        color="inherit"
-        aria-label="open table of contents"
-        onClick={handleDrawerToc}
-        edge="start"
-        className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-      > <MenuIcon />
-      </IconButton>
-      <IconButton
-        color="inherit"
-        aria-label="open DOM tree"
-        onClick={handleDrawerDom}
-        edge="start"
-        className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-      > <AccountTreeIcon />
-      </IconButton>
-      <IconButton
-        color="inherit"
-        aria-label="open console"
-        onClick={handleDrawerConsole}
-        edge="start"
-        className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-      > <HistoryIcon />
-      </IconButton>
+      <Tooltip aria-label="open table of contents" title="open table of contents">
+        <IconButton
+          color="inherit"
+          onClick={handleDrawerToc}
+          edge="start"
+          className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+        > <MenuIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip aria-label="open device tree" title="open DOM tree">
+        <IconButton
+          color="inherit"
+          onClick={handleDrawerDom}
+          edge="start"
+          className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+        > <AccountTreeIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip aria-label="open packet console" title="open packet console">
+        <IconButton
+          color="inherit"
+          onClick={handleDrawerConsole}
+          edge="start"
+          className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+        > <HistoryIcon />
+        </IconButton>
+      </Tooltip>
       <Typography variant="h6">
         <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
       </Typography>

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
-import Button, { ButtonProps } from '@material-ui/core/Button';
+import Button from '@material-ui/core/Button';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
-import { IconButton } from '@material-ui/core';
+import { IconButton, Tooltip } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -49,7 +49,9 @@ export default function UploadButton(props: {
                 onChange={handleChange}
             />
             <label htmlFor={id}>
-                {icon && <IconButton size="small" component="span" aria-label={text} title={text}><OpenInBrowserIcon /></IconButton>}
+                {icon && <Tooltip aria-label={text} title={text}>
+                    <IconButton size="small" component="span" ><OpenInBrowserIcon /></IconButton>
+                </Tooltip>}
                 {!icon && <Button variant="outlined" component="span" disabled={disabled} {...others}>
                     {text}
                 </Button>}

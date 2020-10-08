@@ -1,4 +1,4 @@
-import { Box, ButtonGroup, CircularProgress, createStyles, Divider, LinearProgress, makeStyles, Theme, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { Box, ButtonGroup, CircularProgress, createStyles, Divider, LinearProgress, makeStyles, Theme, Tooltip, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ClearIcon from '@material-ui/icons/Clear';
@@ -62,9 +62,15 @@ export default function PacketRecorder(props: {}) {
         <TraceImportButton icon={true} disabled={tracing || recording} />
         <SaveTraceButton disabled={disableSave} />
         |
-        <IconButton disabled={disableTrace} size="small" key="replay" title="restart trace packets" onClick={toggleTrace}>{tracing ? <StopIcon /> : <PlayArrowIcon />}</IconButton>
+        <Tooltip title={tracing ? "Stop trace" : "Play trace"}>
+            <IconButton disabled={disableTrace} size="small" key="replay" onClick={toggleTrace}>{tracing ? <StopIcon /> : <PlayArrowIcon />}</IconButton>
+        </Tooltip>
         |
-        <IconButton disabled={disableRecord} size="small" key="record" title="start/stop recording packets" onClick={toggleRecord}>{recording ? <StopIcon /> : <FiberManualRecordIcon />}</IconButton>
-        <IconButton size="small" key="clear" title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
+        <Tooltip title={recording ? "Stop recording" : "Record trace"}>
+            <IconButton disabled={disableRecord} size="small" key="record" onClick={toggleRecord}>{recording ? <StopIcon /> : <FiberManualRecordIcon />}</IconButton>
+        </Tooltip>
+        <Tooltip title="Clear">
+            <IconButton size="small" key="clear" onClick={clearPackets}><ClearIcon /></IconButton>
+        </Tooltip>
     </>
 }
