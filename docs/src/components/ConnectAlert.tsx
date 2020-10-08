@@ -27,7 +27,7 @@ function NoSsrConnectAlert(props: { serviceClass?: number }) {
         return <></>
 
     if (connectionState === BusState.Disconnected)
-        return <Alert severity="info" >
+        return <Alert severity="info" closeable={true}>
             {!spec && <span>Don't forget to connect!</span>}
             {spec && <span>Don't forget to connect some {spec.name} devices!</span>}
             <ConnectButton className={classes.button} full={true} />

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ListItem, Typography, ListItemIcon, Theme, makeStyles, createStyles, Chip } from '@material-ui/core';
-import { Packet } from '../../../src/dom/packet';
+import Packet from '../../../src/dom/packet';
 import { decodePacketData } from '../../../src/dom/pretty'
 import clsx from 'clsx';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports

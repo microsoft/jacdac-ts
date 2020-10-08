@@ -1,8 +1,14 @@
-import { Alert as MaterialAlert } from '@material-ui/lab';
-import { styled } from '@material-ui/core';
+import { Box, Collapse } from '@material-ui/core';
+import { Alert as MaterialAlert, AlertProps } from '@material-ui/lab';
+import React, { useState } from 'react';
 
-const Alert = styled(MaterialAlert)(({ theme }) => ({
-    marginBottom: theme.spacing(2)
-}));
-
-export default Alert;
+export default function Alert(props: { closeable?: boolean; } & AlertProps) {
+    const { closeable, ...others } = props;
+    const [open, setOpen] = useState(true)
+    const handleClose = () => setOpen(false)
+    return <Box mb={2}>
+        <Collapse in={open}>
+            <MaterialAlert onClose={closeable && handleClose} {...others} />
+        </Collapse>
+    </Box>
+}

@@ -4,7 +4,7 @@ import { deviceSpecificationFromClassIdenfitier, imageDeviceOf } from "../../../
 import { useRegisterIntValue } from "./useRegisterValue";
 
 export default function useDeviceSpecification(device: JDDevice) {
-    const deviceClassRegister = device?.service(0).register(CtrlReg.DeviceClass);
+    const deviceClassRegister = device?.service(0)?.register(CtrlReg.DeviceClass);
     const deviceClass = useRegisterIntValue(deviceClassRegister);
     const specification = deviceSpecificationFromClassIdenfitier(deviceClass);
     const imageUrl = imageDeviceOf(specification);

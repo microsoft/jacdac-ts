@@ -47,7 +47,14 @@ a:active,
 a:hover {
   outline-width: 0;
 }
-.markdown p a {
+.markdown p a,
+.markdown li a,
+.markdown h2 a,
+.markdown h3 a,
+.markdown h4 a,
+.markdown h5 a, 
+.markdown h6 a
+{
   text-decoration: underline;
 }
 abbr[title] {
@@ -207,6 +214,9 @@ body {
   -ms-font-feature-settings: "kern", "liga", "clig", "calt";
   -webkit-font-feature-settings: "kern", "liga", "clig", "calt";
   font-feature-settings: "kern", "liga", "clig", "calt";
+}
+body {
+	transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 img {
   max-width: 100%;
@@ -619,4 +629,8 @@ footer {
 }
 .gatsby-highlight {
   margin-bottom: 1rem;
+}
+
+.gatsby-resp-image-wrapper {
+  max-width: 100% !important;
 }

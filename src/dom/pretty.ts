@@ -1,4 +1,4 @@
-import { Packet } from "./packet"
+import Packet from "./packet"
 import { NumberFormat } from "./buffer"
 import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum } from "./utils"
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"

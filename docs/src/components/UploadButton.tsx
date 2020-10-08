@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
 import Button, { ButtonProps } from '@material-ui/core/Button';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
+import { IconButton } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -18,14 +21,15 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export default function UploadButton(props: {
+    icon?: boolean,
     text: string,
     onFilesUploaded: (files: FileList) => void,
     required?: boolean,
     disabled?: boolean,
     multiple?: boolean,
     accept?: string
-} & ButtonProps ) {
-    const { text, onFilesUploaded, disabled, required, multiple, accept, ...others } = props;
+}) {
+    const { text, onFilesUploaded, disabled, required, multiple, accept, icon, ...others } = props;
     const [id] = useState('button-file' + Math.random().toString())
     const classes = useStyles();
 
@@ -45,9 +49,10 @@ export default function UploadButton(props: {
                 onChange={handleChange}
             />
             <label htmlFor={id}>
-                <Button variant="outlined" component="span" disabled={disabled} {...others}>
+                {icon && <IconButton size="small" component="span" aria-label={text} title={text}><OpenInBrowserIcon /></IconButton>}
+                {!icon && <Button variant="outlined" component="span" disabled={disabled} {...others}>
                     {text}
-                </Button>
+                </Button>}
             </label>
         </span>
     );

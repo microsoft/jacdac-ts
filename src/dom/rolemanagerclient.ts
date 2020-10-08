@@ -6,7 +6,7 @@ import { JDServiceClient } from "./serviceclient";
 import { SRV_ROLE_MANAGER, DEVICE_CONNECT, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
 import { unpack } from "./struct";
-import { Packet } from "./packet";
+import Packet from "./packet";
 
 export class RemoteRequestedDevice {
     services: number[] = [];

@@ -12,14 +12,16 @@ import useGridBreakpoints from "./useGridBreakpoints"
 export default function RoleManager() {
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
 
-    const services = useChange(bus, () => bus.services({ serviceClass: SRV_ROLE_MANAGER }));
+    const services = useChange(bus, b => b.services({ serviceClass: SRV_ROLE_MANAGER }));
     const gridBreakpoints = useGridBreakpoints();
 
     return <>
         {<ConnectAlert serviceClass={SRV_ROLE_MANAGER} />}
         {!services.length && connectionState == BusState.Connected && <Alert severity="info">We could not find any device with the role manager service on the bus!</Alert>}
-        <Grid container>
-            {services.map(service => <Grid key={service.id} item {...gridBreakpoints}><RoleManagerService key={service.id} service={service} /></Grid>)}
+        <Grid container spacing={2}>
+            {services.map(service => <Grid key={service.id} item {...gridBreakpoints}>
+                <RoleManagerService key={service.id} service={service} />
+            </Grid>)}
         </Grid>
     </>
 }

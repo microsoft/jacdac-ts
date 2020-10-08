@@ -69,9 +69,9 @@ export const AppProvider = ({ children }) => {
 export function drawerTitle(type: DrawerType) {
     switch (type) {
         case DrawerType.Dom:
-            return "Connected devices"
+            return "Devices"
         case DrawerType.Packets:
-            return "Packet console"
+            return "Packets"
         case DrawerType.ServiceSpecification:
             return "Service Specification"
         default: return undefined

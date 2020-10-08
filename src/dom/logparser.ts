@@ -1,17 +1,13 @@
-import { fromHex } from "./utils"
+import { arrayConcatMany, fromHex } from "./utils"
 import { JDBus } from "./bus"
-import { Packet } from "./packet"
+import Packet from "./packet"
+import TracePlayer from "./traceplayer"
+import Frame from "./frame"
 
-export interface ParsedFrame {
-    timestamp: number
-    data: Uint8Array
-    info?: string
-}
+export function parseLog(logcontents: string): Frame[] {
+    if (!logcontents) return []
 
-export function parseLog(logcontents: string): ParsedFrame[] {
-    if (!logcontents) return undefined
-
-    const res: ParsedFrame[] = []
+    const res: Frame[] = []
     let frameBytes = []
     let lastTime = 0
     for (let ln of logcontents.split(/\r?\n/)) {
@@ -89,12 +85,8 @@ Time [s],Value,Parity Error,Framing Error
     return res
 }
 
-export function replayLog(bus: JDBus, frames: ParsedFrame[]): void {
-    frames?.forEach((frame) => {
-        if (frame.info)
-            console.warn("FRM: " + frame.info)
-        for (const p of Packet.fromFrame(frame.data, frame.timestamp)) {
-            bus.processPacket(p)
-        }
-    })
+export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void {
+    const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
+    const player = new TracePlayer(bus, packets, speed);
+    player.start();
 }

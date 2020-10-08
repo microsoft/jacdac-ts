@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -43,8 +43,7 @@ import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
-import CodeDemo from "./CodeBlock";
-import ServiceManagerContext, { ServiceManagerProvider } from "./ServiceManagerContext";
+import { ServiceManagerProvider } from "./ServiceManagerContext";
 import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
@@ -53,10 +52,14 @@ import Alert from "./Alert"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import GitHubButton from "./GitHubButton"
+import Presentation from "./Presentation";
+import useMdxComponents from "./useMdxComponents";
+import Footer from "./Footer";
+import HideOnScroll from "./HideOnScroll";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
-export const MOBILE_DRAWER_WIDTH = 18;
+export const MOBILE_DRAWER_WIDTH = 20;
 export const MOBILE_TOOLS_DRAWER_WIDTH = 18;
 export const MOBILE_BREAKPOINT = "md"
 
@@ -146,12 +149,6 @@ const useStyles = makeStyles((theme) => createStyles({
       marginLeft: `-${MOBILE_TOOLS_DRAWER_WIDTH}rem`,
     }
   },
-  footer: {
-    marginTop: theme.spacing(3)
-  },
-  footerLink: {
-    marginRight: theme.spacing(0.5)
-  }
 }));
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
@@ -162,19 +159,16 @@ export default function Layout(props: { pageContext?: any; children: any; }) {
 
 function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
-  if (!darkModeMounted)
-    return <div />
-
-  const theme = responsiveFontSizes(createMuiTheme({
+  const rawTheme = createMuiTheme({
     palette: {
       type: darkMode
     }
-  }));
-  const mdxComponents = {
-    CodeDemo: (props: any) => <CodeDemo {...props} />,
-    Link: (props: any) => <Link color="textPrimary" {...props} />,
-    a: (props: any) => <Link color="textPrimary" {...props} />
-  };
+  })
+  const theme = responsiveFontSizes(rawTheme);
+  const mdxComponents = useMdxComponents()
+
+  if (!darkModeMounted)
+    return <div />
 
   return (
     <ThemeProvider theme={theme}>
@@ -195,21 +189,28 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   )
 }
 
-
-function LayoutWithContext(props: {
-  pageContext?: any;
-  children: any;
-}) {
-  const { pageContext, children, } = props;
+function MainAppBar(props: { pageContext?: any }) {
+  const { pageContext } = props;
   const classes = useStyles();
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { connectionState } = useContext<JDContextProps>(JACDACContext)
+  const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
-  const toolsOpen = toolsMenu
-  const serviceClass = pageContext?.node?.classIdentifier;
-  const pageTitle = pageContext?.frontmatter?.title
+  const pageTitle = pageContext?.frontmatter?.title;
+  const pageDeck = !!pageContext?.frontmatter?.deck;
   const connected = connectionState === BusState.Connected
-  useFirmwareBlobs()
+  const appBarColor = pageDeck ? "transparent" : darkMode === "dark" ? "inherit" : undefined;
+
+  const data = useStaticQuery(graphql`
+    query {
+      site {
+        siteMetadata {
+          title
+        }
+      }
+    }
+  `)
+  const title = data.site.siteMetadata.title;
 
   const handleDrawerToc = () => {
     setDrawerType(DrawerType.Toc)
@@ -222,20 +223,70 @@ function LayoutWithContext(props: {
   }
   const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
 
-  const data = useStaticQuery(graphql`
-    query {
-      site {
-        siteMetadata {
-          title
-        }
-      }
-      allJacdacTsJson {
-        nodes {
-          version
-        }
-      }
-    }
-  `)
+  return <AppBar position="fixed"
+    elevation={pageDeck ? 0 : 2}
+    color={appBarColor}
+    className={clsx(classes.appBar, {
+      [classes.appBarShift]: drawerOpen,
+      [classes.toolBarShift]: toolsMenu,
+    })}
+  >
+    <Toolbar>
+      <IconButton
+        color="inherit"
+        aria-label="open table of contents"
+        onClick={handleDrawerToc}
+        edge="start"
+        className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+      > <MenuIcon />
+      </IconButton>
+      <IconButton
+        color="inherit"
+        aria-label="open DOM tree"
+        onClick={handleDrawerDom}
+        edge="start"
+        className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+      > <AccountTreeIcon />
+      </IconButton>
+      <IconButton
+        color="inherit"
+        aria-label="open console"
+        onClick={handleDrawerConsole}
+        edge="start"
+        className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+      > <HistoryIcon />
+      </IconButton>
+      <Typography variant="h6">
+        <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
+      </Typography>
+      {pageTitle && pageTitle !== "JACDAC" && <Hidden mdDown={true}>
+        <Typography variant="h5">
+          {"/"} {pageTitle}
+        </Typography>
+      </Hidden>}
+      <div className={classes.grow} />
+      <div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div>
+      <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
+      <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
+      <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
+        <MoreIcon />
+      </IconButton>
+    </Toolbar>
+  </AppBar>
+}
+
+function LayoutWithContext(props: {
+  pageContext?: any;
+  children: any;
+}) {
+  const { pageContext, children, } = props;
+  const classes = useStyles();
+  const { drawerType, toolsMenu } = useContext(AppContext)
+  useFirmwareBlobs();
+  const drawerOpen = drawerType !== DrawerType.None
+  const serviceClass = pageContext?.node?.classIdentifier;
+  const pagePath = pageContext?.frontmatter?.path;
+  const pageDeck = !!pageContext?.frontmatter?.deck;
 
   return (
     <div className={classes.root}>
@@ -247,82 +298,32 @@ function LayoutWithContext(props: {
           content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
         />
       </Helmet>
-      <AppBar position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: drawerOpen,
-          [classes.toolBarShift]: toolsOpen,
-        })}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open table of contents"
-            onClick={handleDrawerToc}
-            edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-          > <MenuIcon />
-          </IconButton>
-          {connected && <IconButton
-            color="inherit"
-            aria-label="open DOM tree"
-            onClick={handleDrawerDom}
-            edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-          > <AccountTreeIcon />
-          </IconButton>}
-          {connected && <IconButton
-            color="inherit"
-            aria-label="open console"
-            onClick={handleDrawerConsole}
-            edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-          > <HistoryIcon />
-          </IconButton>}
-          <Typography variant="h6">
-            <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{data.site.siteMetadata.title}</Link>
-          </Typography>
-          {pageTitle && pageTitle !== "JACDAC" && <Hidden mdDown={true}>
-            <Typography variant="h5">
-              {"/"} {pageTitle}
-            </Typography>
-          </Hidden>}
-          <div className={classes.grow} />
-          <div className={clsx(classes.menuButton)}><ConnectButton /></div>
-          <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac-ts"} />
-          <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
-          <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
-            <MoreIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <AppDrawer pagePath={pageContext?.frontmatter?.path} serviceClass={serviceClass} />
+      <HideOnScroll>
+        <div><MainAppBar pageContext={pageContext} /></div>
+      </HideOnScroll>
+      <AppDrawer pagePath={pagePath} serviceClass={serviceClass} />
       <ToolsDrawer />
-      <Container disableGutters={true}>
+      {pageDeck && <Presentation>
+        {children}
+      </Presentation>}
+      {!pageDeck && <Container disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
-            [classes.toolsContentShift]: toolsOpen,
+            [classes.toolsContentShift]: toolsMenu,
           })}
         >
           <div className={classes.mainContent}>
             <div className={classes.drawerHeader} />
-            <Alert severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
+            <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
             <WebUSBAlert />
             <Typography className={'markdown'} component="span">
               {children}
             </Typography>
           </div>
-          <footer className={classes.footer}>
-            <Link color="textSecondary" className={classes.footerLink} target="_blank" to={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</Link>
-            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/privacy" target="_blank" rel="noopener">Privacy &amp; Cookies</Link>
-            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/termsofuse" target="_blank" rel="noopener">Terms Of Use</Link>
-            <Link color="textSecondary" className={classes.footerLink} to="https://makecode.com/trademarks" target="_blank" rel="noopener">Trademarks</Link>
-            <Typography color="textSecondary" component="span" variant="inherit">
-              © {new Date().getFullYear()} Microsoft Corporation
-            </Typography>
-          </footer>
+          <Footer />
         </main>
-      </Container>
+      </Container>}
       <ErrorSnackbar />
     </div>
   )

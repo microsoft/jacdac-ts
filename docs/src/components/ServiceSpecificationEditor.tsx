@@ -92,7 +92,6 @@ TODO describe this register
                     <AceEditor
                         className={classes.editor}
                         mode="markdown"
-                        theme="github"
                         width="100%"
                         height="42rem"
                         value={source}

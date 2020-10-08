@@ -388,6 +388,11 @@ export function signal(): Signal {
 }
 
 export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
+    if (!!blob.arrayBuffer) {
+        return blob.arrayBuffer()
+            .then(data => new Uint8Array(data));
+    }
+
     return new Promise((resolve, reject) => {
         const fileReader = new FileReader();
         fileReader.onload = () => {
@@ -399,6 +404,34 @@ export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
         }
         fileReader.readAsArrayBuffer(blob);
     })
+}
+
+export function readBlobToText(blob: Blob): Promise<string> {
+    if (!!blob.text) {
+        return blob.text()
+    }
+
+    return new Promise((resolve, reject) => {
+        const fileReader = new FileReader();
+        fileReader.onload = () => resolve(fileReader.result as string)
+        fileReader.onerror = (e) => {
+            console.log(e)
+            reject(e)
+        }
+        fileReader.readAsText(blob);
+    })
+}
+
+export function debounce(handler: () => void, delay: number): () => void {
+    let timeOutId: any;
+    return function () {
+        if (timeOutId) {
+            clearTimeout(timeOutId);
+        }
+        timeOutId = setTimeout(async () => {
+            handler();
+        }, delay);
+    }
 }
 
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
@@ -470,6 +503,9 @@ export function randomUInt(max: number) {
 }
 
 export function JSONTryParse(src: string) {
+    if (src === undefined || src === null)
+        return src;
+
     try {
         return JSON.parse(src)
     }

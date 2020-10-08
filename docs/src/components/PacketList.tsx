@@ -16,7 +16,6 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import AnnouncementIcon from '@material-ui/icons/Announcement';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketRecorder from './PacketRecorder';
-import PacketTraceImporter from "./PacketTraceImporter"
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer'
 
@@ -69,25 +68,41 @@ const VirtualPacketItem = (props: { data: VirtualListData }
     </div>
 }
 
-export default function PacketList(props: {
-    serviceClass?: number,
-    showTime?: boolean,
-    showRecorder?: boolean
-}) {
-    const { showTime, showRecorder } = props
-    const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, addPacket, clearPackets } = useContext(PacketsContext)
-    const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
+function VirtualPacketList(props: { skipRepeatedAnnounce?: boolean, showTime?: boolean }) {
+    const { skipRepeatedAnnounce, showTime } = props;
     const classes = useStyles()
-    const { bus } = useContext<JDContextProps>(JACDACContext)
-    const theme = useTheme();
-    const showText = useMediaQuery(theme.breakpoints.up('md'));
-    const skipRepeatedAnnounce = !hasFlag("announce")
-    const size = "small"
+    const { packets } = useContext(PacketsContext)
     const itemData: VirtualListData = {
         skipRepeatedAnnounce,
         showTime,
         packets
     }
+    return <AutoSizer className={classes.items}>
+        {({ height, width }) => (
+            <FixedSizeList
+                itemCount={packets.length}
+                itemSize={54}
+                height={height}
+                width={width}
+                itemData={itemData}>
+                {VirtualPacketItem}
+            </FixedSizeList>
+        )}
+    </AutoSizer>
+}
+
+export default function PacketList(props: {
+    serviceClass?: number,
+    showTime?: boolean
+}) {
+    const { showTime } = props
+    const { flags, setFlags, serviceClass: globalServiceClass, packets, addPacket, clearPackets } = useContext(PacketsContext)
+    const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
+    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const theme = useTheme();
+    const showText = useMediaQuery(theme.breakpoints.up('md'));
+    const skipRepeatedAnnounce = !hasFlag("announce")
+    const size = "small"
 
     function hasFlag(k: string) {
         return flags.indexOf(k) > -1
@@ -96,8 +111,6 @@ export default function PacketList(props: {
     // render packets
     useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
-            if (paused)
-                return; // ignore
             // don't repeat announce
             if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
                 return;
@@ -124,10 +137,6 @@ export default function PacketList(props: {
     };
 
     return (<>
-        {showRecorder && <div key="recorder">
-            <PacketRecorder responsive={true} />
-            <PacketTraceImporter />
-        </div>}
         <div>
             <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
                 {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>
@@ -140,18 +149,6 @@ export default function PacketList(props: {
                 </ToggleButton>
             </StyledToggleButtonGroup>
         </div>
-        <AutoSizer className={classes.items}>
-            {({ height, width }) => (
-                <FixedSizeList
-                    itemCount={packets.length}
-                    itemSize={54}
-                    height={height}
-                    width={width}
-                    itemData={itemData}>
-                    {VirtualPacketItem}
-                </FixedSizeList>
-            )}
-        </AutoSizer>
+        <VirtualPacketList skipRepeatedAnnounce={skipRepeatedAnnounce} showTime={showTime} />
     </>)
-
 }

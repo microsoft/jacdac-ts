@@ -3,7 +3,8 @@ import { Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogCon
 import { InPipeReader } from "../../../src/dom/pipes";
 import { JDService } from "../../../src/dom/service";
 import DeviceName from "./DeviceName";
-import { hasPipeReport, isReportOf, packArguments } from "../../../src/dom/spec"
+import { hasPipeReport, isReportOf } from "../../../src/dom/spec"
+import { packArguments } from "../../../src/dom/command"
 import { DecodedPacket, decodePacketData, printPacket } from "../../../src/dom/pretty"
 import Packet from "../../../src/dom/packet";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"

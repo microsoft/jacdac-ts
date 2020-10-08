@@ -1,5 +1,5 @@
 import * as U from "./utils"
-import { Packet } from "./packet"
+import Packet from "./packet"
 import {
     REPORT_RECEIVE,
     SRV_MODEL_RUNNER

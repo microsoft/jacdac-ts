@@ -4,12 +4,12 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
-import { CircularProgress, Hidden, useTheme } from "@material-ui/core";
+import { CircularProgress, Hidden, PropTypes, useTheme } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
 import KindIcon from "../components/KindIcon";
 
-export default function ConnectButton(props: { full?: boolean, className?: string }) {
-    const { full, className } = props
+export default function ConnectButton(props: { full?: boolean, className?: string, transparent?: boolean }) {
+    const { full, className, transparent } = props
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const theme = useTheme()
     const [count, setCount] = useState(bus.devices().length)
@@ -18,8 +18,8 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
     return <Button
         size="small"
-        variant="contained"
-        color="primary"
+        variant={transparent ? "outlined" : "contained"}
+        color={transparent ? "inherit" : "primary"}
         className={className}
         startIcon={inProgress ? <CircularProgress size={theme.spacing(2)} disableShrink /> : showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />}
         disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}

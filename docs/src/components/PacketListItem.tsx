@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { ListItem, Typography, ListItemIcon, makeStyles, Theme, createStyles, Badge, ListItemText } from '@material-ui/core';
-import { Packet } from '../../../src/dom/packet';
+import Packet from '../../../src/dom/packet';
 import { printPacket, decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
 import KindIcon from './KindIcon';
 import PacketsContext from './PacketsContext';

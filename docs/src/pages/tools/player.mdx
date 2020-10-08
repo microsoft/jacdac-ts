@@ -2,15 +2,17 @@
 title: Packet Player
 ---
 
-import PacketTraceImporter from "../../components/PacketTraceImporter"
+import TraceImportButton from "../../components/TraceImportButton"
 
 Record traces in your logic analyser and replay them to test your services.
 
-## Traces
-
-<PacketTraceImporter />
+* open the packet console
+* click on the import button to load a trace
+* click on the replay button to start running the trace
 
 ## Collecting traces
+
+<TraceImportButton />
 
 ### Saleae LOGIC
 
@@ -19,3 +21,4 @@ Use [Saleae LOGIC](https://www.saleae.com/) analyser to record trace on the JACD
 * Add an ``Async Serial`` protocol analyser
 * Select ``1Mbit``
 * Export to ``CSV/hex``.
+

@@ -41,22 +41,22 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         flexGrow: 1
     },
     field: {
-        marginLeft: theme.spacing(1)
+        marginRight: theme.spacing(1),
+        marginBottom: theme.spacing(1.5)
     },
     segment: {
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2)
     },
     row: {
-        margin: theme.spacing(0.5)
+        marginBottom: theme.spacing(0.5)
     },
     buttons: {
-        margin: theme.spacing(0.5),
-        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
         marginBottom: theme.spacing(2)
     },
     trend: {
-        width: "10rem"
+        width: theme.spacing(10)
     },
     vmiddle: {
         verticalAlign: "middle"
@@ -175,7 +175,7 @@ export default function Collector(props: {}) {
     }
     const startStreamingRegisters = () => {
         console.log(`start streaming`)
-        const streamers = recordingRegisters?.map(reg => reg.subscribe(REPORT_UPDATE, () => {}))
+        const streamers = recordingRegisters?.map(reg => reg.subscribe(REPORT_UPDATE, () => { }))
         return () => {
             console.log(`stop streaming`)
             streamers.map(streamer => streamer())

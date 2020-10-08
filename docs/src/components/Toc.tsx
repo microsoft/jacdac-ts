@@ -152,6 +152,10 @@ export default function Toc() {
     name: "Tools",
     path: "/tools/",
     order: 5
+  }, {
+    name: "Decks",
+    path: "/decks/",
+    order: 6
   }]
   data.allMdx.edges.map(node => node.node)
     .filter(node => !!node.frontmatter?.title || (!!node.headings.length && !/404/.test(node.headings[0].value)))

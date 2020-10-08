@@ -128,7 +128,7 @@
         }
 
         async function importUF2(file) {
-            const buf = new Uint8Array(await file.arrayBuffer())
+            const buf = await jacdac.readBlobToUint8Array(file)
             startUpdate()
             blobs = jacdac.parseUF2(buf)
             console.log(jacdac.generateDeviceList(buf))

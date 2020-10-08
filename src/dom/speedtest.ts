@@ -1,6 +1,6 @@
 import * as U from "./utils"
 import { JDBus } from "./bus"
-import { Packet } from "./packet"
+import Packet from "./packet"
 import { JDDevice } from "./device"
 import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE } from "./constants"
 

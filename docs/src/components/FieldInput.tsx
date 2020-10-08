@@ -10,7 +10,7 @@ function isSet(field: any) {
 
 export default function FieldInput(props: { service: jdspec.ServiceSpec, field: jdspec.PacketMember, setArg: (v: any) => void }) {
     const { service, field, setArg } = props;
-    const enumInfo = service.enums?.[field.type]
+    const enumInfo = service?.enums?.[field.type]
     const [value, setValue] = useState<any>("")
     const [error, setError] = useState(false)
     const name = field.name !== "_" ? field.name : ""
