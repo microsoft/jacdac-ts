@@ -1,4 +1,4 @@
-import { Box, ButtonGroup, Divider, useMediaQuery, useTheme } from "@material-ui/core";
+import { Box, ButtonGroup, Divider, LinearProgress, useMediaQuery, useTheme } from "@material-ui/core";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ClearIcon from '@material-ui/icons/Clear';
@@ -16,24 +16,31 @@ import PacketsContext from "./PacketsContext";
 import FramePlayer from "../../../src/dom/frameplayer"
 import useChange from "../jacdac/useChange";
 import TraceImportButton from "./TraceImportButton";
+import { PROGRESS } from "../../../src/dom/constants";
 
 export default function PacketRecorder(props: {}) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const { paused, setPaused, clearPackets, trace, setTrace } = useContext(PacketsContext)
+    const { paused, setPaused, clearPackets, trace } = useContext(PacketsContext)
     const [player, setPlayer] = useState<FramePlayer>(undefined);
+    const [progress, setProgress] = useState(0)
+    const running = useChange(player, p => !!p?.running);
 
     useEffect(() => {
         const p = trace && new FramePlayer(bus, trace?.frames);
         setPlayer(p);
         return () => p?.stop();
     }, [trace]);
-    const running = useChange(player, p => !!p?.running);
+    useEffect(() => player?.subscribe(PROGRESS, (p: number) => {
+        console.log(`packet player progress ${p} ${player?.elapsed}`)
+        setProgress(p * 100)
+    }), [player]);
 
     const toggleTrace = () => {
         console.log(`toggle trace`, player?.running)
         if (player?.running) {
             player?.stop();
         } else {
+            setProgress(undefined);
             player?.start();
         }
     }
@@ -44,5 +51,6 @@ export default function PacketRecorder(props: {}) {
         <IconButton disabled={!player} size="small" key="replay" title="restart trace packets" onClick={toggleTrace}>{running ? <StopIcon /> : <ReplayIcon />}</IconButton>
         <IconButton size="small" key="start" title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
         <IconButton size="small" key="clear" title="clear all packets" onClick={clearPackets}><ClearIcon /></IconButton>
+        {progress !== undefined && <LinearProgress variant="determinate" value={progress} />}
     </>
 }
