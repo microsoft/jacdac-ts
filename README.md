@@ -26,11 +26,21 @@ git pull
 npm install
 ```
 
+### VS Code
+
+You are welcome to use any editor you want!!!
+
+* open [Visual Studio Code](https://code.visualstudio.com/)
+```
+code .
+```
+* in the Git view, click on the ``jacdac`` branch and select ``main`` so that changes are automatically synched
+* install MDX support in VS Code https://marketplace.visualstudio.com/items?itemName=silvenon.mdx
+
 ### Docs build
 
 Launch the gatsbdy develop mode and navigate to http://localhost:8000 . This build does not require to load dist as the library is compiled directly into the web site.
 
-* install MDX support in VS Code https://marketplace.visualstudio.com/items?itemName=silvenon.mdx
 * install the docs packages
 
 ```
