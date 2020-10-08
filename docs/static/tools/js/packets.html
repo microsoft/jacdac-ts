@@ -73,7 +73,7 @@
             const logDiv = document.getElementById("log");
             logDiv.innerHTML = ''
             const text = await file.text();
-            jacdac.replayLog(jd, jacdac.parseLog(text), Number.POSITIVE_INFINITY);
+            jacdac.replayLog(jd, jacdac.parseLogicLog(text), Number.POSITIVE_INFINITY);
         }
 
         // binding ui

@@ -31,10 +31,12 @@ export class Packet {
         this.key = Packet._nextKey++;
     }
 
-    static fromBinary(buf: Uint8Array) {
+    static fromBinary(buf: Uint8Array, timestamp?: number) {
         const p = new Packet()
         p._header = buf.slice(0, JD_SERIAL_HEADER_SIZE)
         p._data = buf.slice(JD_SERIAL_HEADER_SIZE)
+        if (timestamp !== undefined)
+            p.timestamp = timestamp;
         return p
     }
 
@@ -186,7 +188,8 @@ export class Packet {
     }
 
     clone() {
-        return Packet.fromBinary(this.toBuffer());
+        const pkt = Packet.fromBinary(this.toBuffer(), this.timestamp);
+        return pkt;
     }
 
     compress(stripped: Uint8Array[]) {

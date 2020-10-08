@@ -1,13 +1,15 @@
 import React, { useState, useContext } from "react"
 import UploadButton from "./UploadButton"
-import { parseLog } from "../../../src/dom/logparser"
+import { parseLogicLog, parseTraceLog } from "../../../src/dom/logparser"
 import PacketsContext from "./PacketsContext"
 import Packet from "../../../src/dom/packet";
 import { arrayConcatMany } from "../../../src/dom/utils";
+import AppContext from "./AppContext"
 
 export default function TraceImportButton(props: { icon?: boolean, disabled?: boolean }) {
     const { icon, disabled } = props;
     const { setTrace } = useContext(PacketsContext)
+    const { setError } = useContext(AppContext)
     const [importing, setImporting] = useState(false)
 
     const handleFiles = async (files: FileList) => {
@@ -16,10 +18,32 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
             try {
                 setImporting(true)
                 const txt = await file.text()
-                const frames = parseLog(txt) // ensure format is ok
-                console.log(`loaded ${frames?.length} frames`)
-                const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
-                setTrace(packets);
+
+                let packets: Packet[];
+                // let's try a few format and see if we're lucky
+                try {
+                    packets = parseTraceLog(txt)
+                } catch (e) {
+                    console.log(`trace parse error`, e)
+                }
+
+                // try logic format
+                if (!packets) {
+                    try {
+                        const frames = parseLogicLog(txt) // ensure format is ok
+                        packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
+                    } catch (e) {
+                        console.log(`logic parse error`, e)
+                    }
+                }
+
+                // found anything?
+                if (packets) {
+                    console.log(`importing ${packets.length} packets`)
+                    setTrace(packets);
+                }
+                else
+                    setError("could not parse file")
             } finally {
                 setImporting(false)
             }

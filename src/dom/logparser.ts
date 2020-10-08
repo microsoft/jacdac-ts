@@ -3,9 +3,33 @@ import { JDBus } from "./bus"
 import Packet from "./packet"
 import TracePlayer from "./traceplayer"
 import Frame from "./frame"
+import { TRACE_FILE_LINE_HEADER } from "./constants"
 
-export function parseLog(logcontents: string): Frame[] {
-    if (!logcontents) return []
+export function parseTraceLog(contents: string): Packet[] {
+    let foundHeader = false;
+    let packets: Packet[] = []
+    for (let ln of contents.split(/\r?\n/)) {
+        // look for header first
+        if (!foundHeader) {
+            if (ln === TRACE_FILE_LINE_HEADER)
+                foundHeader = true;
+            continue;
+        }
+        // parse data
+        const m = /\s*(\d+)\s+([a-f0-9]+)/i.exec(ln)
+        if (!m)
+            continue;
+
+        const timestamp = parseInt(m[1])
+        const data = fromHex(m[2])
+        // add to array
+        packets.push(Packet.fromBinary(data, timestamp))
+    }
+    return foundHeader && packets;
+}
+
+export function parseLogicLog(logcontents: string): Frame[] {
+    if (!logcontents) return undefined
 
     const res: Frame[] = []
     let frameBytes = []
