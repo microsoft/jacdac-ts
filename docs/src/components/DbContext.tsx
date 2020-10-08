@@ -170,9 +170,13 @@ export const DbProvider = ({ children }) => {
     const [db, setDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
     useEffectAsync(async (mounted) => {
+        if (db)
+            return;
         try {
-            if (mounted())
-                setDb(await Db.create());
+            const r = await Db.create();
+            if (mounted()) {
+                setDb(r);
+            }
         }
         catch (e) {
             if (mounted())

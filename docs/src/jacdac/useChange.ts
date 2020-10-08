@@ -22,15 +22,20 @@ export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode,
     const valuePromise = query ? query(node) : undefined
 
     useEffect(() => node?.subscribe(CHANGE, () => {
-        //console.log(`change ${node} ${version}->${node.changeId}`)
+        console.log(`change ${node} ${version}->${node.changeId}`)
         setVersion(node.changeId)
     }), [node, version])
 
-    useEffectAsync(async () => {
-        if (!valuePromise)
-            setValue(undefined)
-        else
-            setValue(await valuePromise);
+    useEffectAsync(async (mounted) => {
+        if (!valuePromise) {
+            if (mounted())
+                setValue(undefined)
+        }
+        else {
+            const d = await valuePromise;
+            if (mounted())
+                setValue(d)
+        }
     }, [valuePromise]);
 
     return value;
