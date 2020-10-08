@@ -456,7 +456,7 @@ export class JDBus extends JDNode {
     private _debouncedScanFirmwares: () => void;
     setBackgroundFirmwareScans(enabled: boolean) {
         const isSSR = typeof window === "undefined"
-        if (!isSSR)
+        if (isSSR)
             enabled = false;
 
         if (enabled) {
