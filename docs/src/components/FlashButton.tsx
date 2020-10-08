@@ -2,7 +2,7 @@ import React, { useContext } from "react"
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
-import { Badge } from "@material-ui/core";
+import { Badge, Tooltip } from "@material-ui/core";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
@@ -20,12 +20,16 @@ export default function FlashButton() {
     if (!updates?.length)
         return <></>
 
-    return <IconButton
-        color="inherit"
-        aria-label={`Firmware update ${updates.length} available`}
-        to="/tools/updater">
-        <Badge badgeContent={updates.length} color="secondary">
-            <SystemUpdateAltIcon />
-        </Badge>
-    </IconButton>
+    const title = `Firmware update ${updates.length} available`;
+    return <Tooltip aria-label={title} title={title}>
+        <span>
+            <IconButton
+                color="inherit"
+                to="/tools/updater">
+                <Badge badgeContent={updates.length} color="secondary">
+                    <SystemUpdateAltIcon />
+                </Badge>
+            </IconButton>
+        </span>
+    </Tooltip>
 }

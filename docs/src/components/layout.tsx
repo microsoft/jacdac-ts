@@ -233,31 +233,37 @@ function MainAppBar(props: { pageContext?: any }) {
   >
     <Toolbar>
       <Tooltip aria-label="open table of contents" title="open table of contents">
-        <IconButton
-          color="inherit"
-          onClick={handleDrawerToc}
-          edge="start"
-          className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-        > <MenuIcon />
-        </IconButton>
+        <span>
+          <IconButton
+            color="inherit"
+            onClick={handleDrawerToc}
+            edge="start"
+            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+          > <MenuIcon />
+          </IconButton>
+        </span>
       </Tooltip>
       <Tooltip aria-label="open device tree" title="open DOM tree">
-        <IconButton
-          color="inherit"
-          onClick={handleDrawerDom}
-          edge="start"
-          className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-        > <AccountTreeIcon />
-        </IconButton>
+        <span>
+          <IconButton
+            color="inherit"
+            onClick={handleDrawerDom}
+            edge="start"
+            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+          > <AccountTreeIcon />
+          </IconButton>
+        </span>
       </Tooltip>
       <Tooltip aria-label="open packet console" title="open packet console">
-        <IconButton
-          color="inherit"
-          onClick={handleDrawerConsole}
-          edge="start"
-          className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
-        > <HistoryIcon />
-        </IconButton>
+        <span>
+          <IconButton
+            color="inherit"
+            onClick={handleDrawerConsole}
+            edge="start"
+            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
+          > <HistoryIcon />
+          </IconButton>
+        </span>
       </Tooltip>
       <Typography variant="h6">
         <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
