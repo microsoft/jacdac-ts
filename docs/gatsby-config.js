@@ -63,7 +63,12 @@ module.exports = {
     `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
-    `gatsby-remark-images`,
+    {
+      resolve: `gatsby-remark-images`,
+      options: {
+        linkImagesToOriginal: false
+      }
+    },
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
@@ -96,6 +101,7 @@ module.exports = {
               // the content container as this plugin uses this as the
               // base for generating different widths of each image.
               maxWidth: maxImageWidth,
+              linkImagesToOriginal: false
             }
           },
           'gatsby-remark-static-images',
@@ -117,6 +123,7 @@ module.exports = {
               // the content container as this plugin uses this as the
               // base for generating different widths of each image.
               maxWidth: maxImageWidth,
+              linkImagesToOriginal: false
             }
           },
           'gatsby-remark-static-images'
