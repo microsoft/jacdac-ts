@@ -274,7 +274,7 @@ export class JDBus extends JDNode {
             this.emit(PACKET_SEND_DISCONNECT, p);
             return Promise.resolve();
         }
-        const spa = this.transport.sendPacketAsync;
+        const spa = this.transport?.sendPacketAsync;
         if (!spa)
             return Promise.resolve();
         return spa(p);
@@ -334,7 +334,7 @@ export class JDBus extends JDNode {
                 this.startTimers();
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
-                if (this.transport.connectAsync)
+                if (this.transport?.connectAsync)
                     this._connectPromise = this._connectPromise
                         .then(() => this.transport.connectAsync(background))
                 const p = this._connectPromise = this._connectPromise
@@ -376,7 +376,7 @@ export class JDBus extends JDNode {
             this.log('debug', `disconnecting`)
             this._disconnectPromise = Promise.resolve();
             this.setConnectionState(BusState.Disconnecting)
-            if (this.transport.disconnectAsync)
+            if (this.transport?.disconnectAsync)
                 this._disconnectPromise = this._disconnectPromise
                     .then(() => this.transport.disconnectAsync())
             this._disconnectPromise = this._disconnectPromise

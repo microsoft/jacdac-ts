@@ -5,7 +5,6 @@ import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap, stringToUint8Array, toUTF8 } from "./utils";
 import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE, SensorReg } from "./constants";
-import Packet from "./packet";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
@@ -214,60 +213,6 @@ export function tryParseMemberValue(text: string, info: jdspec.PacketMember): { 
         else
             return { value: n }
     }
-}
-
-export type ArgType = number | boolean | string | Uint8Array
-export function packArguments(info: jdspec.PacketInfo, args: ArgType[]) {
-    let repeatIdx = -1
-    let numReps = 0
-    let argIdx = 0
-    let dst = 0
-
-    const buf = new Uint8Array(256)
-
-    for (let i = 0; i < info.fields.length; ++i) {
-        if (argIdx >= args.length && numReps > 0)
-            break
-        const arg0 = argIdx < args.length ? args[argIdx] : 0
-        const fld = info.fields[i]
-
-        if (repeatIdx == -1 && fld.startRepeats)
-            repeatIdx = i
-
-        const arg = typeof arg0 == "boolean" ? (arg0 ? 1 : 0)
-            : typeof arg0 == "string" ? stringToUint8Array(toUTF8(arg0)) : arg0
-
-        if (typeof arg == "number") {
-            const intVal = scaleFloatToInt(arg, fld)
-            if (fld.storage == 0)
-                throw new Error(`expecting ${fld.type} got number`)
-
-            const fmt = numberFormatFromStorageType(fld.storage)
-            setNumber(buf, fmt, dst, clampToStorage(intVal, fld.storage))
-            dst += sizeOfNumberFormat(fmt)
-        } else {
-            if (fld.storage == 0 || Math.abs(fld.storage) == arg.length) {
-                buf.set(arg, dst)
-                dst += arg.length
-            } else {
-                throw new Error(`expecting ${Math.abs(fld.storage)} bytes; got ${arg.length}`)
-            }
-        }
-
-        if (dst >= JD_SERIAL_MAX_PAYLOAD_SIZE)
-            throw new Error("packet too big")
-
-        if (repeatIdx != -1 && i + 1 >= info.fields.length) {
-            i = repeatIdx - 1
-            numReps++
-        }
-    }
-
-    const cmd = isRegister(info) ? info.identifier | CMD_SET_REG : info.identifier
-    const pkt = Packet.from(cmd, buf.slice(0, dst))
-    if (info.kind != "report")
-        pkt.is_command = true
-    return pkt
 }
 
 export function parseDeviceId(id: string) {

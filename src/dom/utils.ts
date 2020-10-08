@@ -422,6 +422,18 @@ export function readBlobToText(blob: Blob): Promise<string> {
     })
 }
 
+export function debounce(handler: () => void, delay: number): () => void {
+    let timeOutId: any;
+    return function () {
+        if (timeOutId) {
+            clearTimeout(timeOutId);
+        }
+        timeOutId = setTimeout(async () => {
+            handler();
+        }, delay);
+    }
+}
+
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void {
     let timeOutId: any;
     return function () {
