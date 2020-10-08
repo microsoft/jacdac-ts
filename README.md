@@ -14,7 +14,11 @@ Gatsby development server is not yet supported in codespaces.
 
 ### Setup
 
-* pull all submodules
+* clone this repository and pull all submodules
+```
+git clone https://github.com/microsoft/jacdac-ts
+git submodule update --init --recursive
+```
 * install node.js
 * install dependencies
 ```
