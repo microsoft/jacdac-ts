@@ -20,9 +20,9 @@ ${text}
 `)
     }
     return <Tooltip title="save trace">
-        <IconButton disabled={disabled || recording || !trace?.packets.length}
+        <span><IconButton disabled={disabled || recording || !trace?.packets.length}
             size="small" key="save" onClick={saveTrace}>
             <SaveIcon />
-        </IconButton>
+        </IconButton></span>
     </Tooltip>;
 }

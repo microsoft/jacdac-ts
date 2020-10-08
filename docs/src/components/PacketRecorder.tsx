@@ -63,14 +63,14 @@ export default function PacketRecorder(props: {}) {
         <SaveTraceButton disabled={disableSave} />
         |
         <Tooltip title={tracing ? "Stop trace" : "Play trace"}>
-            <IconButton disabled={disableTrace} size="small" key="replay" onClick={toggleTrace}>{tracing ? <StopIcon /> : <PlayArrowIcon />}</IconButton>
+            <span><IconButton disabled={disableTrace} size="small" key="replay" onClick={toggleTrace}>{tracing ? <StopIcon /> : <PlayArrowIcon />}</IconButton></span>
         </Tooltip>
         |
         <Tooltip title={recording ? "Stop recording" : "Record trace"}>
-            <IconButton disabled={disableRecord} size="small" key="record" onClick={toggleRecord}>{recording ? <StopIcon /> : <FiberManualRecordIcon />}</IconButton>
+            <span><IconButton disabled={disableRecord} size="small" key="record" onClick={toggleRecord}>{recording ? <StopIcon /> : <FiberManualRecordIcon />}</IconButton></span>
         </Tooltip>
         <Tooltip title="Clear">
-            <IconButton size="small" key="clear" onClick={clearPackets}><ClearIcon /></IconButton>
+            <span><IconButton size="small" key="clear" onClick={clearPackets}><ClearIcon /></IconButton></span>
         </Tooltip>
     </>
 }
