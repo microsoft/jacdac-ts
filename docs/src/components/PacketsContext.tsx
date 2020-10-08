@@ -5,6 +5,8 @@ import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 import { PACKET_PROCESS, PACKET_SEND } from "../../../src/dom/constants";
+import { throttle } from "../../../src/dom/utils";
+import { isInstanceOf } from "../../../src/dom/spec";
 
 const PACKET_MAX_ITEMS = 500
 export interface PacketProps {
@@ -21,10 +23,9 @@ export interface Trace {
 
 export interface PacketsProps {
     packets: PacketProps[],
-    addPacket: (pkt: Packet) => void,
-    clearPackets: () => void,
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
+    clearPackets: () => void,
     flags: string[],
     setFlags: (kinds: string[]) => void,
     serviceClass?: number,
@@ -37,10 +38,9 @@ export interface PacketsProps {
 
 const PacketsContext = createContext<PacketsProps>({
     packets: [],
-    addPacket: (pkt) => { },
-    clearPackets: () => { },
     selectedPacket: undefined,
     setSelectedPacket: (pkt) => { },
+    clearPackets: () => { },
     flags: [],
     setFlags: (k) => { },
     serviceClass: undefined,
@@ -55,76 +55,101 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus, connectionState, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
+    const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
-    const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
-    const [trace, _setTrace] = useState<Trace>(undefined)
-    const [recording, setRecording] = useState(false)
 
-    // recording packets
-    useEffect(() => {
-        if (!recording)
-            return () => { }
-        else
-            return bus.subscribe([PACKET_PROCESS, PACKET_SEND],
-                (pkt: Packet) => trace.packets.push(pkt));
-    }, [recording]);
+    const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
+    const [recordingTrace, setRecordingTrace] = useState<Trace>(undefined)
 
+    const recording = !!recordingTrace;
+    const hasFlag = (k: string) => flags.indexOf(k) > -1
+    const skipRepeatedAnnounce = !hasFlag("announce");
+    const throttledSetPackets = throttle(() => {
+        const ps = packets.slice(0,
+            packets.length < PACKET_MAX_ITEMS
+                ? packets.length : PACKET_MAX_ITEMS);
+        setPackets(ps);
+    }, 200);
+
+    const clearPackets = () => {
+        setPackets([])
+        setSelectedPacket(undefined)
+        bus.clear();
+    }
     const addPacket = (pkt: Packet) => {
-        const { key } = pkt
+        // don't repeat announce
+        if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
+            return;
+        // not matching service class
+        if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
+            return;
+
+        const decoded = pkt.decoded;
+        if (decoded && !hasFlag(decoded.info.kind)) {
+            //console.log(`ignore ${decoded.info.kind}`)
+            return; // ignore packet type
+        }
+        const { key } = pkt;
         const old = packets.find(p => p.key == key)
         if (old) {
             old.count++;
             setPackets([...packets])
         }
         else {
-            const ps = packets.slice(0, packets.length < PACKET_MAX_ITEMS ? packets.length : PACKET_MAX_ITEMS)
-            ps.unshift({
+            packets.unshift({
                 key,
                 packet: pkt,
                 decoded: pkt.decoded,
                 count: 1
             })
-            setPackets(ps)
         }
-    }
-    const clearPackets = () => {
-        setPackets([])
-        setSelectedPacket(undefined)
-        bus.clear();
+        // eventually refresh ui
+        throttledSetPackets();
     }
     const setTrace = async (pkts: Packet[], videoUrl?: string) => {
-        if (!pkts?.length)
-            _setTrace(undefined);
-        else {
-            clearPackets();
-            bus.clear();
-            _setTrace({
-                packets: pkts,
-                videoUrl,
-            });
-        }
+        if (!pkts?.length) return;
+
+        clearPackets();
+        setRecordingTrace(undefined);
+        setReplayTrace({
+            packets: pkts,
+            videoUrl,
+        });
     }
     const toggleRecording = () => {
         if (recording) {
-            setRecording(false)
+            setReplayTrace(recordingTrace)
+            setRecordingTrace(undefined)
         } else {
-            _setTrace({
+            setRecordingTrace({
                 packets: []
             })
-            setRecording(true);
+            setReplayTrace(undefined);
         }
     }
+    // recording packets
+    useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
+        (pkt: Packet) => {
+            // record all packets if recording
+            recordingTrace?.packets.push(pkt)
+            // add packet to live list
+            addPacket(pkt);
+        }), [recordingTrace]);
+    // reset packets when filters change
+    useEffect(() => {
+        clearPackets()
+    }, [flags.join(',')])
 
     return (
         <PacketsContext.Provider value={{
-            packets, addPacket, clearPackets,
+            packets, clearPackets,
             selectedPacket, setSelectedPacket,
             flags, setFlags,
             serviceClass, setServiceClass,
-            trace, setTrace,
+            trace: replayTrace || recordingTrace, setTrace,
             recording, toggleRecording
         }}>
             {children}

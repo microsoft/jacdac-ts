@@ -47,7 +47,6 @@ export default function PacketRecorder(props: {}) {
             await disconnectAsync();
             setProgress(undefined);
             clearPackets();
-            bus.clear();
             player?.start();
         }
     }
