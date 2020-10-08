@@ -1,5 +1,6 @@
 import React, { createContext, useState } from "react";
-import { Packet } from "../../../src/dom/packet";
+import Packet from "../../../src/dom/packet";
+import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
 
 const PACKET_MAX_ITEMS = 500
@@ -8,6 +9,11 @@ export interface PacketProps {
     packet: Packet;
     decoded: DecodedPacket;
     count?: number;
+}
+
+export interface Trace {
+    frames: Frame[];
+    videoUrl?: string;
 }
 
 export interface PacketsProps {
@@ -21,7 +27,9 @@ export interface PacketsProps {
     flags: string[],
     setFlags: (kinds: string[]) => void,
     serviceClass?: number,
-    setServiceClass?: (serviceClass: number) => void
+    setServiceClass?: (serviceClass: number) => void,
+    trace?: Trace,
+    setTrace?: (frames: Frame[], videoUrl?: string) => void
 }
 
 const PacketsContext = createContext<PacketsProps>({
@@ -36,6 +44,8 @@ const PacketsContext = createContext<PacketsProps>({
     setFlags: (k) => { },
     serviceClass: undefined,
     setServiceClass: (srv) => { },
+    trace: undefined,
+    setTrace: (frames, videoUrl) => { }
 });
 PacketsContext.displayName = "packets";
 
@@ -47,6 +57,7 @@ export const PacketsProvider = ({ children }) => {
     const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
+    const [ trace, _setTrace ] = useState<Trace>(undefined)
 
     const addPacket = (pkt: Packet) => {
         const { key } = pkt
@@ -70,13 +81,24 @@ export const PacketsProvider = ({ children }) => {
         setPackets([])
         setSelectedPacket(undefined)
     }
+    const setTrace = (frames: Frame[], videoUrl?: string) => {
+        if (!frames?.length)
+            _setTrace(undefined);
+        else {
+            _setTrace({
+                frames,
+                videoUrl,
+            });
+        }
+    }
     return (
         <PacketsContext.Provider value={{
             packets, addPacket, clearPackets,
             selectedPacket, setSelectedPacket,
             paused, setPaused,
             flags, setFlags,
-            serviceClass, setServiceClass
+            serviceClass, setServiceClass,
+            trace, setTrace
         }}>
             {children}
         </PacketsContext.Provider>

@@ -1,6 +1,6 @@
 import { setBus } from "../src/bus"
 import { printPacket } from "../src/pretty"
-import { Packet } from "../src/packet";
+import Packet from "../src/packet";
 import { getDevices } from "../src/device";
 
 class TestBus {

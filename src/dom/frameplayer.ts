@@ -1,12 +1,12 @@
 import { JDBus } from "./bus";
-import { FRAME_PROCESS, PROGRESS, START, STOP } from "./constants";
+import { CHANGE, FRAME_PROCESS, PROGRESS } from "./constants";
 import { JDEventSource } from "./eventsource";
-import { Frame } from "./frame";
+import Frame from "./frame";
 import Packet from "./packet";
 import { debounce } from "./utils";
 
 export default class FramePlayer extends JDEventSource {
-    private _busStartTimestamp: number;
+    private _busStartTimestamp: number = 0;
     private _frameIndex: number = 0;
     private _interval: any;
 
@@ -23,6 +23,13 @@ export default class FramePlayer extends JDEventSource {
         return !!this._interval;
     }
 
+    /**
+     * Gets the adjusted timestamp
+     */
+    get elapsed() {
+        return (this.bus.timestamp - this._busStartTimestamp) * this.speed;
+    }
+
     start() {
         if (this._interval) return; // already running
 
@@ -30,7 +37,7 @@ export default class FramePlayer extends JDEventSource {
         this._busStartTimestamp = this.bus.timestamp;
         this._frameIndex = 0;
         this._interval = setInterval(this.tick, 10);
-        this.emit(START);
+        this.emit(CHANGE);
         this.emitProgress();
     }
 
@@ -38,12 +45,12 @@ export default class FramePlayer extends JDEventSource {
         if (this._interval) {
             clearInterval(this._interval);
             this.emitProgress();
-            this.emit(STOP);
+            this.emit(CHANGE);
         }
     }
 
     private tick() {
-        const busElapsed = (this.bus.timestamp - this._busStartTimestamp) * this.speed;
+        const busElapsed = this.elapsed;
         while (this._frameIndex < this.frames.length) {
             const frame = this.frames[this._frameIndex];
             const frameElapsed = (frame.timestamp - this.frames[0].timestamp);

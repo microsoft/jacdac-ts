@@ -1,4 +1,4 @@
-import { Packet } from "./packet";
+import Packet from "./packet";
 import { JDDevice } from "./device";
 import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {

@@ -1,8 +1,8 @@
 import { fromHex } from "./utils"
 import { JDBus } from "./bus"
-import { Packet } from "./packet"
+import Packet from "./packet"
 import FramePlayer from "./frameplayer"
-import { Frame } from "./frame"
+import Frame from "./frame"
 
 export function parseLog(logcontents: string): Frame[] {
     if (!logcontents) return undefined

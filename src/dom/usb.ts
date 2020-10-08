@@ -1,6 +1,6 @@
 import { Transport, Proto } from "./hf2";
 import { JDBus, BusState, BusOptions } from "./bus";
-import { Packet } from "./packet";
+import Packet from "./packet";
 import { Observable } from "./observable";
 import { EventTargetObservable } from "./eventtargetobservable";
 import { delay } from "./utils";

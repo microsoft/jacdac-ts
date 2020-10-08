@@ -27,7 +27,7 @@ export function useDbBlob(id: string) {
         const v = await values?.get(id);
         if (mounted())
            _setValue(v)
-    })
+    }, [values])
     return {
         blob: _value,
         setBlob: async (blob: Blob) => { await values?.set(id, blob) }

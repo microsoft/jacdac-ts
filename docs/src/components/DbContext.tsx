@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import { CHANGE, ERROR } from "../../../src/dom/constants";
 import { JDEventSource } from "../../../src/dom/eventsource";
 import { delay } from "../../../src/dom/utils";
+import useEffectAsync from "./useEffectAsync";
 
 export const DB_VALUE_CHANGE = "dbValueChange"
 
@@ -166,12 +167,17 @@ DbContext.displayName = "db";
 export default DbContext;
 
 export const DbProvider = ({ children }) => {
-    const [db, SetDb] = useState<Db>(undefined)
+    const [db, setDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
-    useEffect(() => {
-        Db.create()
-            .then(d => SetDb(d))
-            .catch(e => setError(error))
+    useEffectAsync(async (mounted) => {
+        try {
+            if (mounted())
+                setDb(await Db.create());
+        }
+        catch (e) {
+            if (mounted())
+                setError(e)
+        }
     }, []);
     return (
         <DbContext.Provider value={{ db, error }}>

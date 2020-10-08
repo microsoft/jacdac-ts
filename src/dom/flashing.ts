@@ -1,6 +1,6 @@
 import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
-import { Packet } from "./packet"
+import Packet from "./packet"
 import { JDDevice } from "./device"
 import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, CtrlReg, PACKET_REPORT } from "./constants"
 import { unpack, pack } from "./struct"

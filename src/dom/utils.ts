@@ -503,6 +503,9 @@ export function randomUInt(max: number) {
 }
 
 export function JSONTryParse(src: string) {
+    if (src === undefined || src === null)
+        return src;
+
     try {
         return JSON.parse(src)
     }

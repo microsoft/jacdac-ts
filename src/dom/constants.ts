@@ -119,9 +119,7 @@ export const ERROR = 'error'
 export const TIMEOUT = 'timeout'
 export const TIMEOUT_DISCONNECT = 'timeoutDisconnect'
 
-export const START = 'start'
 export const PROGRESS = 'progress'
-export const STOP = 'stop'
 
 export const PACKET_KIND_RW = "rw"
 export const PACKET_KIND_RO = "ro"

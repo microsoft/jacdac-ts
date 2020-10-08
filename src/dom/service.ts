@@ -1,5 +1,5 @@
 import { JDDevice } from "./device";
-import { Packet } from "./packet";
+import Packet from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
 import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NAME, REPORT_RECEIVE } from "./constants";
