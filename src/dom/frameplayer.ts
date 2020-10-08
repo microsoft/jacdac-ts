@@ -44,6 +44,7 @@ export default class FramePlayer extends JDEventSource {
     stop() {
         if (this._interval) {
             clearInterval(this._interval);
+            this._interval = undefined;
             this.emitProgress();
             this.emit(CHANGE);
         }

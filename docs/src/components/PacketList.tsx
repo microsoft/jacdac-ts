@@ -16,7 +16,6 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import AnnouncementIcon from '@material-ui/icons/Announcement';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketRecorder from './PacketRecorder';
-import PacketTraceImporter from "./PacketTraceImporter"
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer'
 
@@ -71,10 +70,9 @@ const VirtualPacketItem = (props: { data: VirtualListData }
 
 export default function PacketList(props: {
     serviceClass?: number,
-    showTime?: boolean,
-    showRecorder?: boolean
+    showTime?: boolean
 }) {
-    const { showTime, showRecorder } = props
+    const { showTime } = props
     const { flags, setFlags, serviceClass: globalServiceClass, paused, packets, addPacket, clearPackets } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const classes = useStyles()
@@ -124,10 +122,6 @@ export default function PacketList(props: {
     };
 
     return (<>
-        {showRecorder && <div key="recorder">
-            <PacketRecorder responsive={true} />
-            <PacketTraceImporter />
-        </div>}
         <div>
             <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
                 {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>

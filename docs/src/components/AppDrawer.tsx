@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Drawer, Typography, Divider, makeStyles, createStyles } from "@material-ui/core";
+import { Drawer, Typography, Divider, makeStyles, createStyles, useMediaQuery, useTheme } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
@@ -60,6 +60,7 @@ export default function AppDrawer(props: {
     serviceClass?: number
 }) {
     const { pagePath } = props
+    const theme = useTheme()
     const classes = useStyles()
     const { serviceClass: globalServiceClass } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
@@ -73,6 +74,7 @@ export default function AppDrawer(props: {
         && serviceSpecificationFromClassIdentifier(serviceClass)
     const searchResults = useDrawerSearchResults()
     const showSearchResults = !!searchResults;
+    const showTitle = useMediaQuery(theme.breakpoints.up('md'))
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
@@ -104,7 +106,7 @@ export default function AppDrawer(props: {
     >
         <div className={classes.drawerHeader}>
             {drawerType !== DrawerType.Toc && <PacketRecorder />}
-            {<Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
+            {showTitle && <Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
             {drawerType == DrawerType.Toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
             {drawerType === DrawerType.Packets && serviceClass !== undefined
                 && <Alert className={classes.alertButton} severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}

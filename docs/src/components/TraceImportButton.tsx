@@ -3,7 +3,8 @@ import UploadButton from "./UploadButton"
 import { parseLog } from "../../../src/dom/logparser"
 import PacketsContext from "./PacketsContext"
 
-export default function UploadTraceFile() {
+export default function TraceImportButton(props: { icon?: boolean }) {
+    const { icon } = props;
     const { setTrace } = useContext(PacketsContext)
     const [importing, setImporting] = useState(false)
 
@@ -22,5 +23,5 @@ export default function UploadTraceFile() {
         }
     }
 
-    return <UploadButton disabled={importing} text="Import File" onFilesUploaded={handleFiles} />
+    return <UploadButton icon={icon} disabled={importing} text="Import Trace File" onFilesUploaded={handleFiles} />
 }
