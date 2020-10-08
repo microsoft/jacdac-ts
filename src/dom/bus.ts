@@ -144,6 +144,8 @@ export class JDBus extends JDNode {
             }, 499);
         if (!this._refreshRegistersInterval)
             this._refreshRegistersInterval = setInterval(() => this.refreshRegisters(), 50);
+        if (!this._gcInterval)
+            this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
     }
 
     private stopTimers() {
@@ -154,6 +156,10 @@ export class JDBus extends JDNode {
         if (this._refreshRegistersInterval) {
             clearInterval(this._refreshRegistersInterval)
             this._refreshRegistersInterval = undefined;
+        }
+        if (this._gcInterval) {
+            clearInterval(this._gcInterval)
+            this._gcInterval = undefined;
         }
     }
 
@@ -432,9 +438,6 @@ export class JDBus extends JDNode {
             this.emit(DEVICE_CONNECT, d);
             this.emit(DEVICE_CHANGE, d);
             this.emit(CHANGE)
-
-            if (!this._gcInterval)
-                this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
         }
         return d
     }
@@ -470,6 +473,11 @@ export class JDBus extends JDNode {
         const DISCONNECTED_DELAY = this.options?.deviceDisconnectedDelay || JD_DEVICE_DISCONNECTED_DELAY
         const lostCutoff = this.timestamp - LOST_DELAY
         const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY;
+
+        // don't GC if bus is disconnected
+        if (!this.connected)
+            return;
+
         // cycle through events and disconnect devices that are long gone
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
@@ -480,13 +488,6 @@ export class JDBus extends JDNode {
             }
             else if (dev.lastSeen < lostCutoff) {
                 dev.lost = true
-            }
-        }
-        // stop cleanup if all gone
-        if (!this._devices.length) {
-            if (this._gcInterval) {
-                clearInterval(this._gcInterval)
-                this._gcInterval = undefined;
             }
         }
     }
