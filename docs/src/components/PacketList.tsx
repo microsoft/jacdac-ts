@@ -68,6 +68,29 @@ const VirtualPacketItem = (props: { data: VirtualListData }
     </div>
 }
 
+function VirtualPacketList(props: { skipRepeatedAnnounce?: boolean, showTime?: boolean }) {
+    const { skipRepeatedAnnounce, showTime } = props;
+    const classes = useStyles()
+    const { packets } = useContext(PacketsContext)
+    const itemData: VirtualListData = {
+        skipRepeatedAnnounce,
+        showTime,
+        packets
+    }
+    return <AutoSizer className={classes.items}>
+        {({ height, width }) => (
+            <FixedSizeList
+                itemCount={packets.length}
+                itemSize={54}
+                height={height}
+                width={width}
+                itemData={itemData}>
+                {VirtualPacketItem}
+            </FixedSizeList>
+        )}
+    </AutoSizer>
+}
+
 export default function PacketList(props: {
     serviceClass?: number,
     showTime?: boolean
@@ -81,11 +104,6 @@ export default function PacketList(props: {
     const showText = useMediaQuery(theme.breakpoints.up('md'));
     const skipRepeatedAnnounce = !hasFlag("announce")
     const size = "small"
-    const itemData: VirtualListData = {
-        skipRepeatedAnnounce,
-        showTime,
-        packets
-    }
 
     function hasFlag(k: string) {
         return flags.indexOf(k) > -1
@@ -134,18 +152,6 @@ export default function PacketList(props: {
                 </ToggleButton>
             </StyledToggleButtonGroup>
         </div>
-        <AutoSizer className={classes.items}>
-            {({ height, width }) => (
-                <FixedSizeList
-                    itemCount={packets.length}
-                    itemSize={54}
-                    height={height}
-                    width={width}
-                    itemData={itemData}>
-                    {VirtualPacketItem}
-                </FixedSizeList>
-            )}
-        </AutoSizer>
+        <VirtualPacketList skipRepeatedAnnounce={skipRepeatedAnnounce} showTime={showTime} />
     </>)
-
 }
