@@ -1,11 +1,11 @@
-import { fromHex } from "./utils"
+import { arrayConcatMany, fromHex } from "./utils"
 import { JDBus } from "./bus"
 import Packet from "./packet"
-import FramePlayer from "./frameplayer"
+import TracePlayer from "./traceplayer"
 import Frame from "./frame"
 
 export function parseLog(logcontents: string): Frame[] {
-    if (!logcontents) return undefined
+    if (!logcontents) return []
 
     const res: Frame[] = []
     let frameBytes = []
@@ -86,6 +86,7 @@ Time [s],Value,Parity Error,Framing Error
 }
 
 export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void {
-    const player = new FramePlayer(bus, frames, speed);
+    const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
+    const player = new TracePlayer(bus, packets, speed);
     player.start();
 }

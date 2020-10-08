@@ -185,6 +185,10 @@ export class Packet {
         return this._decoded;
     }
 
+    clone() {
+        return Packet.fromBinary(this.toBuffer());
+    }
+
     compress(stripped: Uint8Array[]) {
         if (stripped.length == 0)
             return

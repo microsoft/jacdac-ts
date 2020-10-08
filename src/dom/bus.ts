@@ -185,6 +185,17 @@ export class JDBus extends JDNode {
         }
     }
 
+    clear() {
+        const devs = this._devices;
+        this._devices = [];
+        devs.forEach(dev => {
+            dev.disconnect();
+            this.emit(DEVICE_DISCONNECT, dev);
+            this.emit(DEVICE_CHANGE, dev)
+        })
+        this.emit(CHANGE);
+    }
+
     /**
      * Gets a unique identifier for this node in the JACDAC DOM.
      */

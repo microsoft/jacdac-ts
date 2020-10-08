@@ -1,19 +1,17 @@
 import { JDBus } from "./bus";
-import { CHANGE, FRAME_PROCESS, PROGRESS } from "./constants";
+import { CHANGE, PROGRESS } from "./constants";
 import { JDEventSource } from "./eventsource";
-import Frame from "./frame";
 import Packet from "./packet";
-import { debounce } from "./utils";
 
-export default class FramePlayer extends JDEventSource {
+export default class TracePlayer extends JDEventSource {
     private _busStartTimestamp: number = 0;
-    private _frameIndex: number = 0;
+    private _index: number = 0;
     private _interval: any;
     private _lastProgressEmit: number = 0;
 
     constructor(
         public readonly bus: JDBus,
-        public readonly frames: Frame[],
+        public readonly packets: Packet[],
         public speed: number = 1
     ) {
         super();
@@ -32,7 +30,7 @@ export default class FramePlayer extends JDEventSource {
     }
 
     get duration() {
-        return this.frames[this.frames.length - 1].timestamp - this.frames[0].timestamp;
+        return this.packets[this.packets.length - 1].timestamp - this.packets[0].timestamp;
     }
 
     get progress() {
@@ -42,12 +40,16 @@ export default class FramePlayer extends JDEventSource {
         ));
     }
 
+    get length() {
+        return this.packets.length;
+    }
+
     start() {
         if (this._interval) return; // already running
 
         // this is the reference start time of this run
         this._busStartTimestamp = this.bus.timestamp;
-        this._frameIndex = 0;
+        this._index = 0;
         this._interval = setInterval(this.tick, 50);
         this.emit(CHANGE);
         this.emitProgress(true);
@@ -64,31 +66,27 @@ export default class FramePlayer extends JDEventSource {
 
     private tick() {
         const busElapsed = this.elapsed;
-        const frameStart = this.frames[0].timestamp;
+        const packetStart = this.packets[0].timestamp;
 
         let nframes = 0;
         let npackets = 0;
 
-        while (this._frameIndex < this.frames.length) {
-            const frame = this.frames[this._frameIndex];
-            const frameElapsed = frame.timestamp - frameStart;
-            if (frameElapsed > busElapsed)
+        while (this._index < this.packets.length) {
+            const packet = this.packets[this._index];
+            const packetElapsed = packet.timestamp - packetStart;
+            if (packetElapsed > busElapsed)
                 break; // wait to catch up
-            this.emit(FRAME_PROCESS, frame);
-            const t = this._busStartTimestamp + frameElapsed;
-            const packets = Packet.fromFrame(frame.data, t);
-            if (packets?.length) {
-                npackets += packets.length
-                for (const p of packets)
-                    this.bus.processPacket(p)
-            }
-            this._frameIndex++;
+            // clone packet and send
+            const pkt = packet.clone();
+            pkt.timestamp = this._busStartTimestamp + packetElapsed;
+            this.bus.processPacket(pkt)
+            this._index++;
             nframes++;
         }
 
-        console.log(`replay ${this._frameIndex} ${nframes} frames, ${npackets} packets`)
+        console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)
         this.emitProgress();
-        if (this._frameIndex >= this.frames.length)
+        if (this._index >= this.packets.length)
             this.stop();
     }
 

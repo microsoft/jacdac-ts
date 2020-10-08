@@ -1,7 +1,9 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import Packet from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import { BusState } from "../../../src/dom/bus";
 
 const PACKET_MAX_ITEMS = 500
 export interface PacketProps {
@@ -12,7 +14,7 @@ export interface PacketProps {
 }
 
 export interface Trace {
-    frames: Frame[];
+    packets: Packet[];
     videoUrl?: string;
 }
 
@@ -52,12 +54,13 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
+    const { bus, connectionState, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [paused, setPaused] = useState(false)
     const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
-    const [ trace, _setTrace ] = useState<Trace>(undefined)
+    const [trace, _setTrace] = useState<Trace>(undefined)
 
     const addPacket = (pkt: Packet) => {
         const { key } = pkt
@@ -80,13 +83,19 @@ export const PacketsProvider = ({ children }) => {
     const clearPackets = () => {
         setPackets([])
         setSelectedPacket(undefined)
+        bus.clear();
     }
-    const setTrace = (frames: Frame[], videoUrl?: string) => {
-        if (!frames?.length)
+    const setTrace = async (pkts: Packet[], videoUrl?: string) => {
+        if (!pkts?.length)
             _setTrace(undefined);
         else {
+            // disconnect live data first
+            if (connectionState !== BusState.Disconnected)
+                await disconnectAsync();
+            clearPackets();
+            bus.clear();
             _setTrace({
-                frames,
+                packets: pkts,
                 videoUrl,
             });
         }

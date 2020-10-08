@@ -13,7 +13,7 @@ import StopIcon from '@material-ui/icons/Stop';
 import { IconButton } from "gatsby-theme-material-ui";
 import React, { useContext, useEffect, useState } from "react";
 import PacketsContext from "./PacketsContext";
-import FramePlayer from "../../../src/dom/frameplayer"
+import TracePlayer from "../../../src/dom/traceplayer"
 import useChange from "../jacdac/useChange";
 import TraceImportButton from "./TraceImportButton";
 import { PROGRESS } from "../../../src/dom/constants";
@@ -22,12 +22,12 @@ import CircularProgressWithLabel from "./CircularProgressWithLabel";
 export default function PacketRecorder(props: {}) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { paused, setPaused, clearPackets, trace } = useContext(PacketsContext)
-    const [player, setPlayer] = useState<FramePlayer>(undefined);
+    const [player, setPlayer] = useState<TracePlayer>(undefined);
     const [progress, setProgress] = useState(0)
     const running = useChange(player, p => !!p?.running);
 
     useEffect(() => {
-        const p = trace && new FramePlayer(bus, trace?.frames);
+        const p = trace && new TracePlayer(bus, trace?.packets);
         setPlayer(p);
         return () => p?.stop();
     }, [trace]);
@@ -40,6 +40,7 @@ export default function PacketRecorder(props: {}) {
         } else {
             setProgress(undefined);
             clearPackets();
+            bus.clear();
             player?.start();
         }
     }

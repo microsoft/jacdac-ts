@@ -2,6 +2,8 @@ import React, { useState, useContext } from "react"
 import UploadButton from "./UploadButton"
 import { parseLog } from "../../../src/dom/logparser"
 import PacketsContext from "./PacketsContext"
+import Packet from "../../../src/dom/packet";
+import { arrayConcatMany } from "../../../src/dom/utils";
 
 export default function TraceImportButton(props: { icon?: boolean }) {
     const { icon } = props;
@@ -16,7 +18,8 @@ export default function TraceImportButton(props: { icon?: boolean }) {
                 const txt = await file.text()
                 const frames = parseLog(txt) // ensure format is ok
                 console.log(`loaded ${frames?.length} frames`)
-                setTrace(frames)
+                const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
+                setTrace(packets);
             } finally {
                 setImporting(false)
             }
