@@ -240,22 +240,22 @@ function MainAppBar(props: { pageContext?: any }) {
         className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
       > <MenuIcon />
       </IconButton>
-      {connected && <IconButton
+      <IconButton
         color="inherit"
         aria-label="open DOM tree"
         onClick={handleDrawerDom}
         edge="start"
         className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
       > <AccountTreeIcon />
-      </IconButton>}
-      {connected && <IconButton
+      </IconButton>
+      <IconButton
         color="inherit"
         aria-label="open console"
         onClick={handleDrawerConsole}
         edge="start"
         className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
       > <HistoryIcon />
-      </IconButton>}
+      </IconButton>
       <Typography variant="h6">
         <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
       </Typography>
