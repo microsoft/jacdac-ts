@@ -194,11 +194,12 @@ function MainAppBar(props: { pageContext?: any }) {
   const classes = useStyles();
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { connectionState } = useContext<JDContextProps>(JACDACContext)
+  const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
   const pageTitle = pageContext?.frontmatter?.title;
   const pageDeck = !!pageContext?.frontmatter?.deck;
   const connected = connectionState === BusState.Connected
-  const appBarColor = pageDeck ? "transparent" : undefined;
+  const appBarColor = pageDeck ? "transparent" : darkMode === "dark" ? "inherit" : undefined;
 
   const data = useStaticQuery(graphql`
     query {
@@ -263,7 +264,7 @@ function MainAppBar(props: { pageContext?: any }) {
         </Typography>
       </Hidden>}
       <div className={classes.grow} />
-      <div className={clsx(classes.menuButton)}><ConnectButton /></div>
+      <div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div>
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
       <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
       <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
