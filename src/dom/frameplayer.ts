@@ -63,9 +63,12 @@ export default class FramePlayer extends JDEventSource {
     }
 
     private tick() {
-        console.log(`tick`, this._frameIndex)
         const busElapsed = this.elapsed;
         const frameStart = this.frames[0].timestamp;
+
+        let nframes = 0;
+        let npackets = 0;
+
         while (this._frameIndex < this.frames.length) {
             const frame = this.frames[this._frameIndex];
             const frameElapsed = frame.timestamp - frameStart;
@@ -74,12 +77,16 @@ export default class FramePlayer extends JDEventSource {
             this.emit(FRAME_PROCESS, frame);
             const t = this._busStartTimestamp + frameElapsed;
             const packets = Packet.fromFrame(frame.data, t);
-            console.log(`frame`, frameElapsed, frame, packets)
-            if (packets?.length)
+            if (packets?.length) {
+                npackets += packets.length
                 for (const p of packets)
                     this.bus.processPacket(p)
+            }
             this._frameIndex++;
+            nframes++;
         }
+
+        console.log(`replay ${this._frameIndex} ${nframes} frames, ${npackets} packets`)
         this.emitProgress();
         if (this._frameIndex >= this.frames.length)
             this.stop();

@@ -32,10 +32,7 @@ export default function PacketRecorder(props: {}) {
         setPlayer(p);
         return () => p?.stop();
     }, [trace]);
-    useEffect(() => player?.subscribe(PROGRESS, (p: number) => {
-        console.log(`packet player progress ${p} ${player?.elapsed}`)
-        setProgress(p)
-    }), [player]);
+    useEffect(() => player?.subscribe(PROGRESS, (p: number) => setProgress(p)), [player]);
 
     const toggleTrace = () => {
         console.log(`toggle trace`, player?.running)
