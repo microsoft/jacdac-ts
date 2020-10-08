@@ -105,7 +105,6 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
             theme={deckTheme}
             template={template}
             transitionEffect="slide"
-            animationsWhenGoingBack={true}
             backgroundColor={backgroundColor}>
             {slides.map((slide, i) =>
                 <spectable.Slide key={i} backgroundColor={backgroundColor}>
