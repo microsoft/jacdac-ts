@@ -30,6 +30,10 @@ export default class FramePlayer extends JDEventSource {
         return (this.bus.timestamp - this._busStartTimestamp) * this.speed;
     }
 
+    get progress() {
+        return this._frameIndex / this.frames.length
+    }
+
     start() {
         if (this._interval) return; // already running
 
@@ -68,6 +72,6 @@ export default class FramePlayer extends JDEventSource {
     }
 
     private emitProgress() {
-        this.emit(PROGRESS, this._frameIndex / this.frames.length);
+        this.emit(PROGRESS, this.progress);
     }
 }

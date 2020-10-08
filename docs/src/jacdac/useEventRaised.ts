@@ -1,7 +1,7 @@
-import { JDNode } from "../../../src/dom/node";
 import { useState, useEffect } from "react";
+import { JDEventSource } from "../../../src/dom/eventsource";
 
-export default function useEventRaised<TNode extends JDNode, TValue>(eventName: string | string[], node: TNode, query?: (n: TNode) => TValue): TValue {
+export default function useEventRaised<TEventSource extends JDEventSource, TValue>(eventName: string | string[], node: TEventSource, query?: (n: TEventSource) => TValue): TValue {
     const [version, setVersion] = useState(0)
     const value = query ? query(node) : undefined
 
