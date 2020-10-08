@@ -25,7 +25,6 @@ export default function PacketRecorder(props: {}) {
     const [player, setPlayer] = useState<FramePlayer>(undefined);
     const [progress, setProgress] = useState(0)
     const running = useChange(player, p => !!p?.running);
-    const theme = useTheme();
 
     useEffect(() => {
         const p = trace && new FramePlayer(bus, trace?.frames);
@@ -47,7 +46,7 @@ export default function PacketRecorder(props: {}) {
     const togglePaused = () => setPaused(!paused)
 
     return <>
-        {progress !== undefined && progress > 0 && <CircularProgressWithLabel value={progress * 100} />}
+        {running && <CircularProgressWithLabel value={progress * 100} />}
         <TraceImportButton icon={true} />
         <IconButton disabled={!player} size="small" key="replay" title="restart trace packets" onClick={toggleTrace}>{running ? <StopIcon /> : <ReplayIcon />}</IconButton>
         <IconButton size="small" key="start" title="start/stop recording packets" onClick={togglePaused}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
