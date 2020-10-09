@@ -202,7 +202,6 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
 function MainAppBar(props: { pageContext?: any }) {
   const { pageContext } = props;
   const classes = useStyles();
-  const { recording, trace } = useContext(PacketsContext)
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None

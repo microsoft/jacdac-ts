@@ -68,13 +68,11 @@ export default function AppDrawer(props: {
     const { connectionState } = useContext<JDContextProps>(JACDACContext)
     const open = drawerType !== DrawerType.None
     const connected = connectionState == BusState.Connected
-    const alertConnection = !connected &&
-        (drawerType == DrawerType.Dom || drawerType == DrawerType.Packets)
     const service = serviceClass !== undefined
         && serviceSpecificationFromClassIdentifier(serviceClass)
     const searchResults = useDrawerSearchResults()
     const showSearchResults = !!searchResults;
-    const showTitle = useMediaQuery(theme.breakpoints.up('md'))
+    const showTitle = useMediaQuery(theme.breakpoints.up('lg'))
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
