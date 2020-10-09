@@ -41,8 +41,8 @@ export default function FirmwareCard(props: { slug: string }) {
         }
     }, [slug]);
 
-    const handleFiles = async (files: FileList) => {
-        const file = files.item(0)
+    const handleFiles = async (files: File[]) => {
+        const file = files[0]
         if (file) {
             try {
                 setDownloading(true)

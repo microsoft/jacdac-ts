@@ -16,7 +16,6 @@ export class DbStore<T> extends JDEventSource {
     set(id: string, value: T): Promise<void> {
         return this.db.set(this.name, id, value)
             .then(() => {
-                console.log(`db table ${id} change`)
                 this.emit(DB_VALUE_CHANGE, id)
                 this.emit(CHANGE)
             })

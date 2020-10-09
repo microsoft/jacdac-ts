@@ -7,30 +7,35 @@ export function useDbBlob(id: string) {
     const { db } = useContext(DbContext)
     const [_value, _setValue] = useState<Blob>(undefined)
     const values = db?.blobs
-    let _mounted = true;
 
     // listen to change
-    useEffect(() => values?.subscribe(DB_VALUE_CHANGE, async (changed) => {
-        if (changed === id) {
-            const v = await values.get(id)
-            if (_mounted && v !== _value) {
-                _setValue(v);
+    useEffect(() => {
+        let _mounted = true;
+        return values?.subscribe(DB_VALUE_CHANGE, async (changed) => {
+            if (changed === id) {
+                const v = await values.get(id)
+                if (_mounted) {
+                    _setValue(v);
+                }
             }
-        }
-        return () => {
-            _mounted = false;
-        }
-    }), [values])
+            return () => {
+                _mounted = false;
+            }
+        })
+    }, [values])
 
     // load intial value
     useEffectAsync(async (mounted) => {
         const v = await values?.get(id);
         if (mounted())
-           _setValue(v)
+            _setValue(v)
     }, [values])
+
     return {
         blob: _value,
-        setBlob: async (blob: Blob) => { await values?.set(id, blob) }
+        setBlob: async (blob: Blob) => {
+            await values?.set(id, blob)
+        }
     }
 }
 
@@ -38,13 +43,14 @@ export function useDbUint8Array(blobName: string) {
     const { blob, setBlob } = useDbBlob(blobName)
     const [model, setModel] = useState<Uint8Array>(undefined)
 
-    useEffectAsync(async () => {
+    useEffectAsync(async (mounted) => {
         if (!blob) {
             setModel(undefined)
         }
         else {
             const buf = await readBlobToUint8Array(blob);
-            setModel(buf);
+            if (mounted())
+                setModel(buf);
         }
     }, [blob])
 

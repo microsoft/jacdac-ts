@@ -74,8 +74,8 @@ export default function ModelUploader(props: {}) {
     const { data: model, setBlob: setModel } = useDbUint8Array("model.tflite")
     const { value: sensorConfig, setBlob: setSensorConfig } = useDbJSON<SensorAggregatorConfig>("sensor-input.json")
 
-    const handleTfmodelFiles = async (files: FileList) => {
-        const file = files.item(0)
+    const handleTfmodelFiles = async (files: File[]) => {
+        const file = files[0]
         if (file) {
             try {
                 setImporting(true)
@@ -93,8 +93,8 @@ export default function ModelUploader(props: {}) {
             setImporting(false)
         }
     }
-    const handleSensorConfigFiles = async (files: FileList) => {
-        const file = files.item(0)
+    const handleSensorConfigFiles = async (files: File[]) => {
+        const file = files[0]
         if (file) {
             try {
                 setImporting(true)

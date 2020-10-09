@@ -13,7 +13,7 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
     const [importing, setImporting] = useState(false)
 
     const handleFiles = async (files: FileList) => {
-        const file = files.item(0)
+        const file = files[0]
         if (file) {
             try {
                 setImporting(true)
