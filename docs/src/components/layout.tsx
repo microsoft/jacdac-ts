@@ -9,7 +9,7 @@ import React, { useContext } from "react"
 import clsx from 'clsx';
 import { makeStyles, Container, Hidden, Box, Tooltip } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import { Link, IconButton } from 'gatsby-theme-material-ui';
+import { Link, IconButton, Fab } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import CssBaseline from '@material-ui/core/CssBaseline';
 // tslint:disable-next-line: no-submodule-imports
@@ -151,6 +151,14 @@ const useStyles = makeStyles((theme) => createStyles({
       marginLeft: `-${MOBILE_TOOLS_DRAWER_WIDTH}rem`,
     }
   },
+  fab: {
+    position: 'absolute',
+    bottom: theme.spacing(3),
+    right: theme.spacing(3),
+    "& > *": {
+      margin: theme.spacing(1)
+    }
+  },
 }));
 
 export default function Layout(props: { pageContext?: any; children: any; }) {
@@ -263,8 +271,6 @@ function MainAppBar(props: { pageContext?: any }) {
           </IconButton>
         </span>
       </Tooltip>
-      {!drawerOpen && recording && <TraceRecordButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />}
-      {!drawerOpen && trace && <TracePlayButton color="inherit" progressColor={"inherit"} className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />}
       {!drawerOpen && !toolsMenu && <Hidden mdDown={true}>
         <Typography variant="h6">
           <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
@@ -334,6 +340,14 @@ function LayoutWithContext(props: {
           <Footer />
         </main>
       </Container>}
+      <div className={classes.fab}>
+        <Fab color="primary" aria-label="play trace">
+          <TracePlayButton color="inherit" progressColor="inherit" />
+        </Fab>
+        <Fab color="secondary" aria-label="record trace">
+          <TraceRecordButton color="inherit" progressColor="inherit" />
+        </Fab>
+      </div>
       <ErrorSnackbar />
     </div>
   )

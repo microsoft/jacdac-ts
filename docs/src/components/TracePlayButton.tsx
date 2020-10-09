@@ -8,14 +8,14 @@ import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButto
 
 export default function TracePlayButton(props: {} & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
-    const { toggleTrace, tracing, recording } = useContext(PacketsContext)
+    const { toggleTrace, tracing, recording, trace } = useContext(PacketsContext)
 
 
     return <IconButtonWithProgress
         {...others}
-        disabled={disabled || recording}
+        disabled={disabled || recording || !trace}
         indeterminate={tracing}
-        title={tracing ? "Stop trace" : "Play trace"}
+        title={!trace ? "Load or record a trace to replay it" : tracing ? "Stop trace" : "Play trace"}
         onClick={toggleTrace}
     >
         {tracing ? <StopIcon /> : <PlayArrowIcon />}

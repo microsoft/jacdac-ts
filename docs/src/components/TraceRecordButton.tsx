@@ -19,7 +19,7 @@ export default function TraceRecordButton(props: {} & IconButtonWithProgressProp
 
     return <IconButtonWithProgress
         {...others}
-        title={recording ? "Stop recording" : "Record trace"}
+        title={!connected ? "Connect to record a trace" : recording ? "Stop recording" : "Record trace"}
         indeterminate={recording}
         disabled={disabled || !connected || tracing}
         onClick={toggleRecording}
