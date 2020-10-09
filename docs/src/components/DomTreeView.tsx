@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+import { Badge } from "@material-ui/core"
 import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/dom/device';
 import { JDEvent } from '../../../src/dom/event';
@@ -127,9 +128,9 @@ function StyledTreeItem(props: TreeItemProps & {
                     <Typography variant="body2" className={classes.labelText}>
                         {labelText}
                     </Typography>
-                    {alert && <NotificationImportantIcon color="secondary" />}
+                    {alert && <NotificationImportantIcon />}
                     <Typography variant="caption" color="inherit">
-                        {alert && <Typography component="span" color="secondary">
+                        {alert && <Typography component="span">
                             {alert}
                         </Typography>}
                         {labelInfo}
@@ -264,6 +265,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
         labelText={specification?.name || register.id}
         labelInfo={humanValue}
         kind={specification?.kind || "register"}
+        alert={register.lastGetAttempts > 2 && "???"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
     />
