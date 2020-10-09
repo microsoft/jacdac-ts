@@ -1,6 +1,7 @@
-import { any } from "prop-types";
+import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { ERROR } from "../../../src/dom/constants";
+import { BusState } from "../../../src/dom/bus";
+import { CONNECTION_STATE, ERROR } from "../../../src/dom/constants";
 import { isCancelError } from "../../../src/dom/utils";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 
@@ -19,7 +20,6 @@ export interface AppProps {
     setSearchQuery: (s: string) => void,
     toolsMenu: boolean,
     setToolsMenu: (visible: boolean) => void,
-    error: any,
     setError: (error: any) => void
 }
 
@@ -30,7 +30,6 @@ const AppContext = createContext<AppProps>({
     setSearchQuery: (s) => { },
     toolsMenu: false,
     setToolsMenu: (v) => { },
-    error: undefined,
     setError: (error: any) => { }
 });
 AppContext.displayName = "app";
@@ -42,13 +41,30 @@ export const AppProvider = ({ children }) => {
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, setToolsMenu] = useState(false)
-    const [error, setError] = useState(undefined)
+    const { enqueueSnackbar } = useSnackbar();
 
+    const setError = (e: any) => {
+        const msg = e?.message || (e + "");
+        enqueueSnackbar(msg, {
+            variant: 'error'
+        })
+    }
+
+    // notify errors
     useEffect(() => bus.subscribe(ERROR, (e: { exception: Error }) => {
         if (isCancelError(e.exception))
             return;
-        setError(e.exception);
-    }))
+        setError(e.exception.message)
+    }), [bus])
+
+    useEffect(() => bus.subscribe(CONNECTION_STATE, cs => {
+        switch (cs) {
+            case BusState.Connected:
+                enqueueSnackbar("connected...", {
+                    variant: "info"
+                })
+        }
+    }), [bus])
 
     return (
         <AppContext.Provider value={{
@@ -58,7 +74,6 @@ export const AppProvider = ({ children }) => {
             setSearchQuery,
             toolsMenu,
             setToolsMenu,
-            error,
             setError
         }}>
             {children}

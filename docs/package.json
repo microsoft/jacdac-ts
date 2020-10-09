@@ -41,6 +41,7 @@
     "gatsby-transformer-sharp": "^2.5.6",
     "graphiql": "^1.0.3",
     "material-ui-dropzone": "^3.5.0",
+    "notistack": "^1.0.1",
     "prettier": "2.0.5",
     "prism-react-renderer": "^1.1.1",
     "prop-types": "^15.7.2",
