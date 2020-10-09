@@ -98,7 +98,7 @@ export default function ToolsDrawer() {
             <Link to="/tools/model-uploader">
                 <ListItem button key="model-uploader">
                     <ListItemIcon><EmojiNatureIcon /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Deploy ML models"} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={"Model Uploader"} />
                 </ListItem>
             </Link>
             <Link to="/tools/edge-impulse">
