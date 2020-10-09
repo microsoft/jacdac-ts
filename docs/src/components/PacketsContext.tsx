@@ -3,10 +3,10 @@ import Packet from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { BusState } from "../../../src/dom/bus";
-import { PACKET_PROCESS, PACKET_SEND } from "../../../src/dom/constants";
+import { PACKET_PROCESS, PACKET_SEND, PROGRESS } from "../../../src/dom/constants";
 import { throttle } from "../../../src/dom/utils";
 import { isInstanceOf } from "../../../src/dom/spec";
+import TracePlayer from "../../../src/dom/traceplayer";
 
 const PACKET_MAX_ITEMS = 500
 export interface PacketProps {
@@ -33,29 +33,35 @@ export interface PacketsProps {
     trace: Trace,
     setTrace: (frames: Frame[], videoUrl?: string) => void,
     recording: boolean,
-    toggleRecording: () => void
+    toggleRecording: () => void,
+    tracing: boolean,
+    toggleTrace: () => void,
+    progress: number
 }
 
 const PacketsContext = createContext<PacketsProps>({
     packets: [],
     selectedPacket: undefined,
-    setSelectedPacket: (pkt) => { },
+    setSelectedPacket: () => { },
     clearPackets: () => { },
     flags: [],
-    setFlags: (k) => { },
+    setFlags: () => { },
     serviceClass: undefined,
-    setServiceClass: (srv) => { },
+    setServiceClass: () => { },
     trace: undefined,
-    setTrace: (frames, videoUrl) => { },
+    setTrace: () => { },
     recording: false,
-    toggleRecording: () => { }
+    toggleRecording: () => { },
+    tracing: false,
+    toggleTrace: () => { },
+    progress: undefined
 });
 PacketsContext.displayName = "packets";
 
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
@@ -63,6 +69,9 @@ export const PacketsProvider = ({ children }) => {
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
     const [recordingTrace, setRecordingTrace] = useState<Trace>(undefined)
+
+    const [player, setPlayer] = useState<TracePlayer>(undefined);
+    const [progress, setProgress] = useState(0)
 
     const recording = !!recordingTrace;
     const hasFlag = (k: string) => flags.indexOf(k) > -1
@@ -124,10 +133,18 @@ export const PacketsProvider = ({ children }) => {
             setReplayTrace(recordingTrace)
             setRecordingTrace(undefined)
         } else {
-            setRecordingTrace({
-                packets: []
-            })
+            setRecordingTrace({ packets: [] })
             setReplayTrace(undefined);
+        }
+    }
+    const toggleTrace = async () => {
+        if (player?.running) {
+            player?.stop();
+        } else {
+            await disconnectAsync();
+            setProgress(undefined);
+            clearPackets();
+            player?.start();
         }
     }
     // recording packets
@@ -142,7 +159,13 @@ export const PacketsProvider = ({ children }) => {
     useEffect(() => {
         clearPackets()
     }, [flags.join(',')])
-
+    useEffect(() => {
+        const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);
+        setPlayer(p);
+        return () => p?.stop();
+    }, [replayTrace]);
+    useEffect(() => player?.subscribe(PROGRESS, (p: number) => setProgress(p))
+        , [player]);
     return (
         <PacketsContext.Provider value={{
             packets, clearPackets,
@@ -150,7 +173,10 @@ export const PacketsProvider = ({ children }) => {
             flags, setFlags,
             serviceClass, setServiceClass,
             trace: replayTrace || recordingTrace, setTrace,
-            recording, toggleRecording
+            recording, toggleRecording,
+            tracing: !!player?.running,
+            toggleTrace,
+            progress: progress
         }}>
             {children}
         </PacketsContext.Provider>

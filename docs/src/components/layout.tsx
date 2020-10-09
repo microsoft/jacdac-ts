@@ -57,6 +57,7 @@ import useMdxComponents from "./useMdxComponents";
 import Footer from "./Footer";
 import HideOnScroll from "./HideOnScroll";
 import TraceRecordButton from "./TraceRecordButton"
+import TracePlayButton from "./TracePlayButton";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -232,40 +233,38 @@ function MainAppBar(props: { pageContext?: any }) {
     })}
   >
     <Toolbar>
-      <Tooltip aria-label="open table of contents" title="open table of contents">
+      <Tooltip aria-label="open table of contents" title="open table of contents" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
         <span>
           <IconButton
             color="inherit"
             onClick={handleDrawerToc}
             edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
           > <MenuIcon />
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip aria-label="open device tree" title="open DOM tree">
+      <Tooltip aria-label="open device tree" title="open DOM tree" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
         <span>
           <IconButton
             color="inherit"
             onClick={handleDrawerDom}
             edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
           > <AccountTreeIcon />
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip aria-label="open packet console" title="open packet console">
+      <Tooltip aria-label="open packet console" title="open packet console" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
         <span>
           <IconButton
             color="inherit"
             onClick={handleDrawerConsole}
             edge="start"
-            className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}
           > <HistoryIcon />
           </IconButton>
         </span>
       </Tooltip>
-      {recording && <TraceRecordButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />}
+      {!drawerOpen && recording && <TraceRecordButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />}
+      {!drawerOpen && trace && <TracePlayButton color="inherit" progressColor={"inherit"} className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />}
       {!drawerOpen && !toolsMenu && <Hidden mdDown={true}>
         <Typography variant="h6">
           <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
