@@ -29,7 +29,7 @@ export default function useMdxComponents() {
     ServiceSpecificationList: props => <ServiceSpecificationList {...props} />,
     PacketsPreview: props => <PacketsPreview {...props} />,
     UpdateDeviceList: props => <UpdateDeviceList {...props} />,
-    FlashButon: props => <FlashButton {...props} />
+    FlashButton: props => <FlashButton {...props} />
   };
 
   return mdxComponents;
