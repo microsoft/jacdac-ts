@@ -51,7 +51,7 @@ export default function UploadButton(props: {
             <label htmlFor={id}>
                 {icon && <Tooltip aria-label={text} title={text}>
                     <span>
-                        <IconButton size="small" component="span" ><OpenInBrowserIcon /></IconButton>
+                        <IconButton disabled={disabled} size="small" component="span" ><OpenInBrowserIcon /></IconButton>
                     </span>
                 </Tooltip>}
                 {!icon && <Button variant="outlined" component="span" disabled={disabled} {...others}>

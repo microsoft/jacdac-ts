@@ -8,7 +8,7 @@ import AppContext from "./AppContext"
 
 export default function TraceImportButton(props: { icon?: boolean, disabled?: boolean }) {
     const { icon, disabled } = props;
-    const { setTrace } = useContext(PacketsContext)
+    const { recording, setTrace } = useContext(PacketsContext)
     const { setError } = useContext(AppContext)
     const [importing, setImporting] = useState(false)
 
@@ -50,5 +50,8 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
         }
     }
 
-    return <UploadButton icon={icon} disabled={importing || disabled} text="Import Trace File" onFilesUploaded={handleFiles} />
+    return <UploadButton icon={icon} disabled={importing || recording || disabled}
+        text="Import Trace File"
+        accept=".txt,.csv"
+        onFilesUploaded={handleFiles} />
 }

@@ -32,7 +32,7 @@ import JACDACProvider from "../jacdac/Provider"
 import ErrorSnackbar from "./ErrorSnackbar"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import { PacketsProvider } from "./PacketsContext";
+import PacketsContext, { PacketsProvider } from "./PacketsContext";
 import SEO from "./seo";
 import { DbProvider } from "./DbContext";
 import FlashButton from "./FlashButton";
@@ -56,6 +56,7 @@ import Presentation from "./Presentation";
 import useMdxComponents from "./useMdxComponents";
 import Footer from "./Footer";
 import HideOnScroll from "./HideOnScroll";
+import TraceRecordButton from "./TraceRecordButton"
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -192,13 +193,12 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
 function MainAppBar(props: { pageContext?: any }) {
   const { pageContext } = props;
   const classes = useStyles();
+  const { recording, trace } = useContext(PacketsContext)
   const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
-  const { connectionState } = useContext<JDContextProps>(JACDACContext)
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
   const pageTitle = pageContext?.frontmatter?.title;
   const pageDeck = !!pageContext?.frontmatter?.deck;
-  const connected = connectionState === BusState.Connected
   const appBarColor = pageDeck ? "transparent" : darkMode === "dark" ? "inherit" : undefined;
 
   const data = useStaticQuery(graphql`
@@ -265,13 +265,15 @@ function MainAppBar(props: { pageContext?: any }) {
           </IconButton>
         </span>
       </Tooltip>
-      <Typography variant="h6">
-        <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
-      </Typography>
-      {pageTitle && pageTitle !== "JACDAC" && <Hidden mdDown={true}>
-        <Typography variant="h5">
-          {"/"} {pageTitle}
+      {recording && <TraceRecordButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />}
+      {!drawerOpen && !toolsMenu && <Hidden mdDown={true}>
+        <Typography variant="h6">
+          <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
         </Typography>
+        {pageTitle && pageTitle !== "JACDAC" &&
+          <Typography variant="h5">
+            {"/"} {pageTitle}
+          </Typography>}
       </Hidden>}
       <div className={classes.grow} />
       <div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div>
