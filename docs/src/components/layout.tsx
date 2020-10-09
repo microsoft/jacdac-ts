@@ -37,7 +37,7 @@ import SEO from "./seo";
 import { DbProvider } from "./DbContext";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
-import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles } from '@material-ui/core/styles';
+import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles, useTheme } from '@material-ui/core/styles';
 import AppContext, { AppProvider, DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
@@ -293,17 +293,18 @@ function MainAppBar(props: { pageContext?: any }) {
 
 function FabBar() {
   const classes = useStyles();
+  const theme = useTheme();
   const { trace } = useContext(PacketsContext)
 
   return <div className={classes.fab}>
     {trace && <Zoom in={true}>
       <Fab color="primary" aria-label="play trace">
-        <TracePlayButton color="inherit" progressColor="inherit" />
+        <TracePlayButton color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
       </Fab>
     </Zoom>}
     <Zoom in={true}>
       <Fab color="secondary" aria-label="record trace">
-        <TraceRecordButton color="inherit" progressColor="inherit" />
+        <TraceRecordButton color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
       </Fab>
     </Zoom>
   </div>
