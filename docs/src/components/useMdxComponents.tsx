@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "gatsby-theme-material-ui";
 import CodeDemo from "./CodeDemo";
 import CodeBlock from './CodeBlock';
-import { useTheme } from "@material-ui/core";
+import { Box } from "@material-ui/core";
 import RandomGenerator from "./RandomGenerator"
 import DeviceList from "./DeviceList"
 import ServiceList from "./ServiceList"
@@ -18,7 +18,7 @@ export default function useMdxComponents() {
     pre: props => <div {...props} />,
     code: CodeBlock,
 
-    RandomGenerator: props => <RandomGenerator {...props} />,
+    RandomGenerator: props => <Box displayPrint="none"><RandomGenerator {...props} /></Box>,
     DeviceList: props => <DeviceList {...props} />,
     ServiceList: props => <ServiceList {...props} />,
     DeviceSpecificationList: props => <DeviceSpecificationList {...props} />,
