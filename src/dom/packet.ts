@@ -291,14 +291,14 @@ export class Packet {
         } else if (this.service_number == JD_SERVICE_NUMBER_PIPE) {
             service_name = "PIPE"
         } else {
-            const serv_id = serviceName(this.multicommand_class || this.device?.serviceClassAt(this.service_number))
+            const serv_id = serviceName(this.multicommand_class || this.serviceClass)
             service_name = `${serv_id} (${this.service_number})`
         }
         return service_name;
     }
     get friendlyCommandName(): string {
         const cmd = this.service_command
-        let cmdname = commandName(cmd)
+        let cmdname = commandName(cmd, this.serviceClass)
         if (this.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
             cmdname = hexNum(cmd)
         }
@@ -310,6 +310,9 @@ export class Packet {
                 cmdname += " close"
         }
         return cmdname;
+    }
+    get serviceClass() {
+        return this.device?.serviceClassAt(this.service_number);
     }
 }
 

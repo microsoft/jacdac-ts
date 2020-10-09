@@ -6,7 +6,7 @@ import {
     JD_SERVICE_NUMBER_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_NUMBER_CRC_ACK, CMD_ADVERTISEMENT_DATA
 } from "./constants"
-import { BaseCmd, BaseReg } from "../../jacdac-spec/dist/specconstants"
+import { BaseCmd, BaseReg, CtrlReg, SensorReg } from "../../jacdac-spec/dist/specconstants"
 
 export enum RegisterType {
     UInt, // default
@@ -421,13 +421,18 @@ export function deviceServiceName(pkt: Packet): string {
     return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.service_number}`
 }
 
-export function commandName(n: number) {
+export function commandName(n: number, serviceClass?: number) {
     let pref = ""
     if ((n & CMD_TOP_MASK) == CMD_SET_REG) pref = "SET["
     else if ((n & CMD_TOP_MASK) == CMD_GET_REG) pref = "GET["
     if (pref) {
         const reg = n & CMD_REG_MASK
-        return pref + BaseReg[reg] + "]"
+        let regName = BaseReg[reg]; // try reserved registers first, fast path
+        if (regName === undefined) {
+            const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
+            regName = serviceSpec?.packets.find(pkt => pkt.identifier === reg)?.name
+        }
+        return pref + (regName !== undefined ? regName : `x${reg.toString(16)}` ) + "]"
     }
     return BaseCmd[n]
 }
