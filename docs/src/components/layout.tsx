@@ -293,17 +293,15 @@ function MainAppBar(props: { pageContext?: any }) {
 
 function FabBar() {
   const classes = useStyles();
-  const { connectionState } = useContext<JDContextProps>(JACDACContext)
   const { trace } = useContext(PacketsContext)
-  const connected = connectionState === BusState.Connected;
 
   return <div className={classes.fab}>
-    <Zoom in={!!trace}>
+    {trace && <Zoom in={true}>
       <Fab color="primary" aria-label="play trace">
         <TracePlayButton color="inherit" progressColor="inherit" />
       </Fab>
-    </Zoom>
-    <Zoom in={connected}>
+    </Zoom>}
+    <Zoom in={true}>
       <Fab color="secondary" aria-label="record trace">
         <TraceRecordButton color="inherit" progressColor="inherit" />
       </Fab>
@@ -337,7 +335,6 @@ function LayoutWithContext(props: {
       <HideOnScroll>
         <div><MainAppBar pageContext={pageContext} /></div>
       </HideOnScroll>
-      <FabBar />
       <AppDrawer pagePath={pagePath} serviceClass={serviceClass} />
       <ToolsDrawer />
       {pageDeck && <Presentation>
@@ -362,6 +359,7 @@ function LayoutWithContext(props: {
         </main>
       </Container>}
       <ErrorSnackbar />
+      <FabBar />
     </div>
   </>
   )

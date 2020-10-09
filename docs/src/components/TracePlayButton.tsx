@@ -5,15 +5,18 @@ import StopIcon from '@material-ui/icons/Stop';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
 import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButtonWithProgress";
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import { BusState } from '../../../src/dom/bus';
 
 export default function TracePlayButton(props: {} & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
+    const { connectionState } = useContext<JDContextProps>(JACDACContext)
     const { toggleTrace, tracing, recording, trace } = useContext(PacketsContext)
-
+    const connecting = connectionState === BusState.Connecting || connectionState == BusState.Disconnecting;
 
     return <IconButtonWithProgress
         {...others}
-        disabled={disabled || recording || !trace}
+        disabled={disabled || recording || !trace || connecting}
         indeterminate={tracing}
         title={!trace ? "Load or record a trace to replay it" : tracing ? "Stop trace" : "Play trace"}
         onClick={toggleTrace}

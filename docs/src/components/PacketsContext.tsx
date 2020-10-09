@@ -61,7 +61,7 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const { bus, disconnectAsync, connectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
@@ -128,11 +128,12 @@ export const PacketsProvider = ({ children }) => {
             videoUrl,
         });
     }
-    const toggleRecording = () => {
+    const toggleRecording = async () => {
         if (recording) {
             setReplayTrace(recordingTrace)
             setRecordingTrace(undefined)
         } else {
+            await connectAsync()
             setRecordingTrace({ packets: [] })
             setReplayTrace(undefined);
         }
