@@ -179,7 +179,10 @@ export class JDBus extends JDNode {
                 case BusState.Connected: this.emit(CONNECT); break;
                 case BusState.Connecting: this.emit(CONNECTING); break;
                 case BusState.Disconnecting: this.emit(DISCONNECTING); break;
-                case BusState.Disconnected: this.emit(DISCONNECT); break;
+                case BusState.Disconnected:
+                    this.clear();
+                    this.emit(DISCONNECT);
+                    break;
             }
             this.emit(CHANGE)
         }
@@ -187,13 +190,15 @@ export class JDBus extends JDNode {
 
     clear() {
         const devs = this._devices;
-        this._devices = [];
-        devs.forEach(dev => {
-            dev.disconnect();
-            this.emit(DEVICE_DISCONNECT, dev);
-            this.emit(DEVICE_CHANGE, dev)
-        })
-        this.emit(CHANGE);
+        if (devs?.length) {
+            this._devices = [];
+            devs.forEach(dev => {
+                dev.disconnect();
+                this.emit(DEVICE_DISCONNECT, dev);
+                this.emit(DEVICE_CHANGE, dev)
+            })
+            this.emit(CHANGE);
+        }
     }
 
     /**

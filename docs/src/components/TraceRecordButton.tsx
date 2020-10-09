@@ -11,7 +11,7 @@ import PacketsContext from "./PacketsContext";
 import { BusState } from "../../../src/dom/bus";
 import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButtonWithProgress";
 
-export default function TraceRecordButton(props: {} & IconButtonWithProgressProps) {
+export default function TraceRecordButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
     const { recording, tracing, toggleRecording } = useContext(PacketsContext)
     const { connectionState } = useContext<JDContextProps>(JACDACContext)

@@ -232,7 +232,8 @@ function MainAppBar(props: { pageContext?: any }) {
   }
   const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
 
-  return <AppBar position="fixed"
+  return <Box displayPrint="none"><AppBar
+    position="fixed"
     elevation={pageDeck ? 0 : 2}
     color={appBarColor}
     className={clsx(classes.appBar, {
@@ -288,7 +289,7 @@ function MainAppBar(props: { pageContext?: any }) {
         <MoreIcon />
       </IconButton>
     </Toolbar>
-  </AppBar>
+  </AppBar></Box>
 }
 
 function FabBar() {
@@ -296,7 +297,7 @@ function FabBar() {
   const theme = useTheme();
   const { trace } = useContext(PacketsContext)
 
-  return <div className={classes.fab}>
+  return <Box className={classes.fab} displayPrint="none">
     {trace && <Zoom in={true}>
       <Fab color="primary" aria-label="play trace">
         <TracePlayButton component="span" color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
@@ -307,7 +308,7 @@ function FabBar() {
         <TraceRecordButton component="span" color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
       </Fab>
     </Zoom>}
-  </div>
+  </Box>
 }
 
 function LayoutWithContext(props: {
