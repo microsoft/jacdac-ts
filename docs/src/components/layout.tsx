@@ -49,8 +49,6 @@ import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
 import Helmet from "react-helmet";
 import Alert from "./Alert"
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { BusState } from "../../../src/dom/bus";
 import GitHubButton from "./GitHubButton"
 import Presentation from "./Presentation";
 import useMdxComponents from "./useMdxComponents";
@@ -58,6 +56,7 @@ import Footer from "./Footer";
 import HideOnScroll from "./HideOnScroll";
 import TraceRecordButton from "./TraceRecordButton"
 import TracePlayButton from "./TracePlayButton";
+import PrintButton from "./PrintButton";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -283,6 +282,7 @@ function MainAppBar(props: { pageContext?: any }) {
       <div className={classes.grow} />
       <div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div>
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
+      <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />
       <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
       <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
         <MoreIcon />
