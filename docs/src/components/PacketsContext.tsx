@@ -5,6 +5,7 @@ import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { PACKET_PROCESS, PACKET_SEND, PROGRESS } from "../../../src/dom/constants";
 import { throttle } from "../../../src/dom/utils";
+import Trace from "../../../src/dom/trace";
 import { isInstanceOf } from "../../../src/dom/spec";
 import TracePlayer from "../../../src/dom/traceplayer";
 
@@ -15,11 +16,6 @@ export interface PacketProps {
     packet: Packet;
     decoded: DecodedPacket;
     count?: number;
-}
-
-export interface Trace {
-    packets: Packet[];
-    videoUrl?: string;
 }
 
 export interface PacketsProps {
@@ -125,10 +121,7 @@ export const PacketsProvider = ({ children }) => {
 
         clearPackets();
         setRecordingTrace(undefined);
-        setReplayTrace({
-            packets: pkts,
-            videoUrl,
-        });
+        setReplayTrace(new Trace(pkts, videoUrl))
     }
     const toggleRecording = async () => {
         if (recording) {
@@ -136,7 +129,7 @@ export const PacketsProvider = ({ children }) => {
             setRecordingTrace(undefined)
         } else {
             await connectAsync()
-            setRecordingTrace({ packets: [] })
+            setRecordingTrace(new Trace([]))
             setReplayTrace(undefined);
             setProgress(undefined);
         }

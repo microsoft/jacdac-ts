@@ -427,14 +427,20 @@ export function commandName(n: number, serviceClass?: number) {
     else if ((n & CMD_TOP_MASK) == CMD_GET_REG) pref = "GET["
     if (pref) {
         const reg = n & CMD_REG_MASK
-        let regName = BaseReg[reg]; // try reserved registers first, fast path
+        let regName = BaseReg[reg]?.toLowerCase() // try reserved registers first, fast path
         if (regName === undefined) {
             const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
             regName = serviceSpec?.packets.find(pkt => pkt.identifier === reg)?.name
         }
         return pref + (regName !== undefined ? regName : `x${reg.toString(16)}` ) + "]"
     }
-    return BaseCmd[n]
+
+    let r = BaseCmd[n]?.toLowerCase()
+    if (r === undefined) {
+        const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
+        r = serviceSpec?.packets.find(pkt => pkt.identifier === n)?.name
+    }
+    return n;
 }
 
 function num2str(n: number) {
