@@ -7,6 +7,8 @@ import RandomGenerator from "./RandomGenerator"
 import DeviceList from "./DeviceList"
 import ServiceList from "./ServiceList"
 import DeviceSpecificationList from "./DeviceSpecificationList"
+import FilteredDeviceSpecificationList from "./FilteredDeviceSpecificationList"
+import ServiceSpecificationList from "./ServiceSpecificationList"
 
 export default function useMdxComponents() {
   const mdxComponents: any = {
@@ -19,7 +21,9 @@ export default function useMdxComponents() {
     RandomGenerator: props => <RandomGenerator {...props} />,
     DeviceList: props => <DeviceList {...props} />,
     ServiceList: props => <ServiceList {...props} />,
-    DeviceSpecificationList: props => <DeviceSpecificationList {...props} />
+    DeviceSpecificationList: props => <DeviceSpecificationList {...props} />,
+    FilteredDeviceSpecificationList: props => <FilteredDeviceSpecificationList {...props} />,
+    ServiceSpecificationList: props => <ServiceSpecificationList {...props} />
   };
 
   return mdxComponents;
