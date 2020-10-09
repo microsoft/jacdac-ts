@@ -3,7 +3,7 @@ deck: true
 title: JACDAC
 ---
 
-import { serviceSpecificationFromName } from "../../../../src/dom/spec"
+import { serviceSpecificationFromName, deviceSpecificationFromClassIdenfitier } from "../../../../src/dom/spec"
 
 # JACDAC
 
@@ -32,9 +32,9 @@ import { serviceSpecificationFromName } from "../../../../src/dom/spec"
 | 14 | 2	|`service_command`	| A number that specifies an operation and code combination.	|
 | 16 | 1 * packet_size	|`payload`	| The packet data payload destined for a particular service.	|
 
-# Service Specification
+# Service specification
 
-Define Packets in Markdown
+Define registers, events, commands.
 
 <pre>
     <code className="language-markdown">{serviceSpecificationFromName("slider").source}</code>
@@ -46,9 +46,17 @@ Discover registers, events, and commands on the fly.
 
 <ServiceSpecificationList count={3} shuffle={true} />
 
-# Device Catalog
+# Device specification
 
-Discover metadata and firmware updates on the fly.
+Define metadata, services and firmware identifiers.
+
+<pre>
+    <code className="language-markdown">{deviceSpecificationFromClassIdenfitier(0x30838b8e).source}</code>
+</pre>
+
+# Device catalog
+
+Identify device, discover metadata and firmware updates.
 
 <DeviceSpecificationList count={4} shuffle={true} />
 
