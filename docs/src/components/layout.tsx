@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden, Box, Tooltip } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box, Tooltip, Zoom } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton, Fab } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -152,7 +152,7 @@ const useStyles = makeStyles((theme) => createStyles({
     }
   },
   fab: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: theme.spacing(3),
     right: theme.spacing(3),
     "& > *": {
@@ -291,6 +291,26 @@ function MainAppBar(props: { pageContext?: any }) {
   </AppBar>
 }
 
+function FabBar() {
+  const classes = useStyles();
+  const { connectionState } = useContext<JDContextProps>(JACDACContext)
+  const { trace } = useContext(PacketsContext)
+  const connected = connectionState === BusState.Connected;
+
+  return <div className={classes.fab}>
+    <Zoom in={!!trace}>
+      <Fab color="primary" aria-label="play trace">
+        <TracePlayButton color="inherit" progressColor="inherit" />
+      </Fab>
+    </Zoom>
+    <Zoom in={connected}>
+      <Fab color="secondary" aria-label="record trace">
+        <TraceRecordButton color="inherit" progressColor="inherit" />
+      </Fab>
+    </Zoom>
+  </div>
+}
+
 function LayoutWithContext(props: {
   pageContext?: any;
   children: any;
@@ -304,7 +324,7 @@ function LayoutWithContext(props: {
   const pagePath = pageContext?.frontmatter?.path;
   const pageDeck = !!pageContext?.frontmatter?.deck;
 
-  return (
+  return (<>
     <div className={classes.root}>
       <SEO />
       <CssBaseline />
@@ -317,6 +337,7 @@ function LayoutWithContext(props: {
       <HideOnScroll>
         <div><MainAppBar pageContext={pageContext} /></div>
       </HideOnScroll>
+      <FabBar />
       <AppDrawer pagePath={pagePath} serviceClass={serviceClass} />
       <ToolsDrawer />
       {pageDeck && <Presentation>
@@ -340,15 +361,8 @@ function LayoutWithContext(props: {
           <Footer />
         </main>
       </Container>}
-      <div className={classes.fab}>
-        <Fab color="primary" aria-label="play trace">
-          <TracePlayButton color="inherit" progressColor="inherit" />
-        </Fab>
-        <Fab color="secondary" aria-label="record trace">
-          <TraceRecordButton color="inherit" progressColor="inherit" />
-        </Fab>
-      </div>
       <ErrorSnackbar />
     </div>
+  </>
   )
 }
