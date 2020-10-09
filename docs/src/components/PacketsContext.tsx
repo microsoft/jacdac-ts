@@ -9,6 +9,7 @@ import { isInstanceOf } from "../../../src/dom/spec";
 import TracePlayer from "../../../src/dom/traceplayer";
 
 const PACKET_MAX_ITEMS = 500
+const RECORDING_TRACE_MAX_ITEMS = 100000;
 export interface PacketProps {
     key: number;
     packet: Packet;
@@ -152,7 +153,12 @@ export const PacketsProvider = ({ children }) => {
     useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
             // record all packets if recording
-            recordingTrace?.packets.push(pkt)
+            if (recordingTrace) {
+                recordingTrace.packets.push(pkt)
+                if (recordingTrace.packets.length > RECORDING_TRACE_MAX_ITEMS * 1.1) { // 10% overshoot of max
+                    recordingTrace.packets = recordingTrace.packets.slice(-RECORDING_TRACE_MAX_ITEMS)
+                }
+            }
             // add packet to live list
             addPacket(pkt);
         }), [recordingTrace]);

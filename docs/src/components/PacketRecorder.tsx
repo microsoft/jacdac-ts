@@ -21,9 +21,9 @@ export default function PacketRecorder() {
         <TraceImportButton icon={true} disabled={tracing || recording} />
         <SaveTraceButton disabled={disableSave} />
         |
-        <TracePlayButton />
+        <TracePlayButton size="small" />
         |
-        <TraceRecordButton />
+        <TraceRecordButton size="small" />
         <Tooltip title="Clear">
             <span><IconButton size="small" key="clear" onClick={clearPackets}><ClearIcon /></IconButton></span>
         </Tooltip>

@@ -14,7 +14,7 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
     const theme = useTheme()
 
     return <Tooltip title={title}>
-        <span><IconButton {...others} size="small">
+        <span><IconButton {...others}>
             {!indeterminate && children}
             {indeterminate && <Box position="relative" display="inline-flex">
                 <CircularProgress variant="indeterminate" disableShrink size={progressSize || theme.spacing(3)} color={progressColor} style={progressStyle} />

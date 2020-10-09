@@ -299,12 +299,12 @@ function FabBar() {
   return <div className={classes.fab}>
     {trace && <Zoom in={true}>
       <Fab color="primary" aria-label="play trace">
-        <TracePlayButton color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
+        <TracePlayButton component="span" color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
       </Fab>
     </Zoom>}
     <Zoom in={true}>
       <Fab color="secondary" aria-label="record trace">
-        <TraceRecordButton color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
+        <TraceRecordButton component="span" color="inherit" progressColor="inherit" progressSize={theme.spacing(6)} />
       </Fab>
     </Zoom>
   </div>
