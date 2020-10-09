@@ -37,7 +37,7 @@ import {
     TIMEOUT,
     LATE,
     PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT, REPORT_UPDATE, REGISTER_POLL_REPORT_INTERVAL
+    TIMEOUT_DISCONNECT, REPORT_UPDATE, REGISTER_POLL_REPORT_INTERVAL, REGISTER_POLL_REPORT_MAX_INTERVAL
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -629,8 +629,10 @@ export class JDBus extends JDNode {
             } // regular register, ping if data is old
             else {
                 const age = this.timestamp - register.lastGetTimestamp;
-                if (age > REGISTER_POLL_REPORT_INTERVAL) {
-                    //console.log(`auto-refresh - poll`, register)
+                const backoff = register.lastGetAttempts;
+                const expiration = Math.min(REGISTER_POLL_REPORT_MAX_INTERVAL, REGISTER_POLL_REPORT_INTERVAL * (1 << backoff))
+                if (age > expiration) {
+                    //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
                     await register.sendGetAsync();
                 }
             }
