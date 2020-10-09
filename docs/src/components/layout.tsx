@@ -276,7 +276,7 @@ function MainAppBar(props: { pageContext?: any }) {
           <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
         </Typography>
         {pageTitle && pageTitle !== "JACDAC" &&
-          <Typography variant="h5">
+          <Typography variant="h6">
             {"/"} {pageTitle}
           </Typography>}
       </Hidden>}
