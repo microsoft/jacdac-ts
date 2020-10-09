@@ -242,8 +242,8 @@ function MainAppBar(props: { pageContext?: any }) {
     })}
   >
     <Toolbar>
-      <Tooltip aria-label="open table of contents" title="open table of contents" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
-        <span>
+      <Tooltip aria-label="open table of contents" title="open table of contents">
+        <span className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
           <IconButton
             color="inherit"
             onClick={handleDrawerToc}
@@ -252,8 +252,8 @@ function MainAppBar(props: { pageContext?: any }) {
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip aria-label="open device tree" title="open DOM tree" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
-        <span>
+      <Tooltip aria-label="open device tree" title="open DOM tree">
+        <span className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
           <IconButton
             color="inherit"
             onClick={handleDrawerDom}
@@ -262,8 +262,8 @@ function MainAppBar(props: { pageContext?: any }) {
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip aria-label="open packet console" title="open packet console" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
-        <span>
+      <Tooltip aria-label="open packet console" title="open packet console">
+        <span className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
           <IconButton
             color="inherit"
             onClick={handleDrawerConsole}
