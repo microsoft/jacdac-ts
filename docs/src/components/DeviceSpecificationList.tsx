@@ -5,6 +5,7 @@ import { deviceSpecifications, imageDeviceOf } from '../../../src/dom/spec';
 import InfoIcon from '@material-ui/icons/Info';
 import Markdown from "./Markdown"
 import { IconButton } from "gatsby-theme-material-ui";
+import { arrayShuffle } from '../../../src/dom/utils';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -23,14 +24,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }),
 );
 
-function arrayShuffle<T>(a: T[]): T[] {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
-
 export default function DeviceSpecificationList(props: {
     count?: number,
     shuffle?: boolean,
@@ -44,14 +37,12 @@ export default function DeviceSpecificationList(props: {
     const medium = useMediaQuery(theme.breakpoints.down('md'));
     const cols = mobile ? 1 : medium ? 3 : 4;
 
-    // apply filters
-    if (count !== undefined)
-        specs = specs.slice(0, count)
-    // filter by services
     if (requiredServiceClasses)
         specs = specs.filter(spec => spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
     if (shuffle)
         arrayShuffle(specs)
+    if (count !== undefined)
+        specs = specs.slice(0, count)
 
     return <GridList className={classes.root} cols={cols}>
         {specs.map(spec => <GridListTile key={spec.id}>

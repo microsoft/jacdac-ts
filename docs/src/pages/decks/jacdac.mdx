@@ -3,8 +3,6 @@ deck: true
 title: JACDAC
 ---
 
-import DeviceSpecificationList from "../../components/DeviceSpecificationList"
-import DeviceList from "../../components/DeviceList"
 import { serviceSpecificationFromName } from "../../../../src/dom/spec"
 
 # JACDAC
@@ -41,6 +39,12 @@ Define Packets in Markdown
 <pre>
     <code className="language-markdown">{serviceSpecificationFromName("slider").source}</code>
 </pre>
+
+# Services Catalog
+
+Discover registers, events, and commands on the fly.
+
+<ServiceSpecificationList count={3} shuffle={true} />
 
 # Device Catalog
 
