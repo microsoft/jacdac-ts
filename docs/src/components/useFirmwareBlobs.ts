@@ -12,9 +12,9 @@ export default function useFirmwareBlobs() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { db } = useContext<DbContextProps>(DbContext)
     const firmwares = db?.firmwares;
-
     // run once, go through known firmware repoes and load version
     useEffectAsync(async () => {
+        console.log(`firmware: load`)
         const names = await firmwares?.list()
         if (!names) return;
 
@@ -26,17 +26,17 @@ export default function useFirmwareBlobs() {
             .filter(slug => names.indexOf(slug) < 0)
         );
         for (const slug of missingSlugs) {
-            console.log(`fetch latest release of ${slug}`)
+            console.log(`db: fetch latest release of ${slug}`)
             const rel = await fetchLatestRelease(slug, { ignoreThrottled: true })
             if (!rel?.tag_name) {
                 console.warn(`release not found`)
                 return;
             }
 
-            console.log(`fetch binary release ${slug}#${rel.tag_name}`)
+            console.log(`db: fetch binary release ${slug}#${rel.tag_name}`)
             const fw = await fetchReleaseBinary(slug, rel.tag_name)
             if (fw) {
-                console.log(`binary release ${slug}#${rel.tag_name} downloaded`)
+                console.log(`db: binary release ${slug}#${rel.tag_name} downloaded`)
                 firmwares.set(slug, fw);
             }
             // throttle github queries
@@ -45,6 +45,7 @@ export default function useFirmwareBlobs() {
     }, [db])
 
     useChangeAsync(firmwares, async (fw) => {
+        console.log(`firmwares: change`)
         const names = await fw?.list()
         console.log(`import stored uf2`, names)
         let uf2s: FirmwareBlob[] = [];

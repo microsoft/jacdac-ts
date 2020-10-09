@@ -16,6 +16,7 @@ export class DbStore<T> extends JDEventSource {
     set(id: string, value: T): Promise<void> {
         return this.db.set(this.name, id, value)
             .then(() => {
+                console.log(`db table ${id} change`)
                 this.emit(DB_VALUE_CHANGE, id)
                 this.emit(CHANGE)
             })
@@ -59,6 +60,7 @@ export class Db extends JDEventSource {
     static STORE_STORAGE = "STORAGE"
     public static create(): Promise<Db> {
         return new Promise((resolve, reject) => {
+            console.log(`db: open`)
             // create or upgrade database
             const request = indexedDB.open(Db.DB_NAME, Db.DB_VERSION);
             const db: Db = new Db();
@@ -67,7 +69,7 @@ export class Db extends JDEventSource {
                 resolve(db);
             }
             request.onupgradeneeded = function (event) {
-                console.log(`upgrading db`)
+                console.log(`db: upgrade`)
                 db.upgrading = true;
                 try {
                     const db = request.result;
@@ -166,14 +168,16 @@ DbContext.displayName = "db";
 
 export default DbContext;
 
+let theDb: Db;
+
 export const DbProvider = ({ children }) => {
-    const [db, setDb] = useState<Db>(undefined)
+    const [db, setDb] = useState<Db>(theDb)
     const [error, setError] = useState(undefined)
     useEffectAsync(async (mounted) => {
         if (db)
             return;
         try {
-            const r = await Db.create();
+            const r = theDb = await Db.create();
             if (mounted()) {
                 setDb(r);
             }

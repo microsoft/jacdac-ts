@@ -19,14 +19,13 @@ export default function useChange<TNode extends JDEventSource, TValue>(node: TNo
 export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode, query?: (n: TNode) => Promise<TValue>): TValue {
     const [version, setVersion] = useState(node?.changeId || 0)
     const [value, setValue] = useState(undefined);
-    const valuePromise = query ? query(node) : undefined
 
     useEffect(() => node?.subscribe(CHANGE, () => {
-        console.log(`change ${node} ${version}->${node.changeId}`)
         setVersion(node.changeId)
     }), [node, version])
 
     useEffectAsync(async (mounted) => {
+        const valuePromise = query ? query(node) : undefined
         if (!valuePromise) {
             if (mounted())
                 setValue(undefined)
@@ -36,7 +35,7 @@ export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode,
             if (mounted())
                 setValue(d)
         }
-    }, [valuePromise]);
+    }, [version]);
 
     return value;
 }
