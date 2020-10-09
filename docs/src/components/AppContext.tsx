@@ -40,7 +40,7 @@ export const AppProvider = ({ children }) => {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
-    const [toolsMenu, setToolsMenu] = useState(false)
+    const [toolsMenu, _setToolsMenu] = useState(false)
     const { enqueueSnackbar } = useSnackbar();
 
     const setError = (e: any) => {
@@ -48,6 +48,18 @@ export const AppProvider = ({ children }) => {
         enqueueSnackbar(msg, {
             variant: 'error'
         })
+    }
+
+    const setDrawerType = (type: DrawerType) => {
+        if (type !== DrawerType.None)
+            _setToolsMenu(false);
+        setType(type)
+    }
+
+    const setToolsMenu = (open: boolean) => {
+        if (open)
+            setType(DrawerType.None)
+        _setToolsMenu(open)
     }
 
     // notify errors
@@ -69,7 +81,7 @@ export const AppProvider = ({ children }) => {
     return (
         <AppContext.Provider value={{
             drawerType: type,
-            setDrawerType: setType,
+            setDrawerType,
             searchQuery,
             setSearchQuery,
             toolsMenu,
