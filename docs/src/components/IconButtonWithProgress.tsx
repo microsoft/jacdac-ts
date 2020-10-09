@@ -4,20 +4,27 @@ import React from "react";
 
 export type IconButtonWithProgressProps = {
     indeterminate?: boolean,
+    progress?: number;
     progressSize?: React.ReactText,
     progressColor?: "inherit" | "primary" | "secondary",
     progressStyle?: React.CSSProperties
 } & IconButtonProps;
 
 export default function IconButtonWithProgress(props: IconButtonWithProgressProps) {
-    const { indeterminate, title, children, progressColor, progressStyle, progressSize, ...others } = props;
+    const { indeterminate, progress, title, children, progressColor, progressStyle, progressSize, ...others } = props;
     const theme = useTheme()
+    const hasProgress = progress !== undefined;
 
     return <Tooltip title={title}>
         <span><IconButton {...others}>
             {!indeterminate && children}
             {indeterminate && <Box position="relative" display="inline-flex">
-                <CircularProgress variant="indeterminate" disableShrink size={progressSize || theme.spacing(3)} color={progressColor} style={progressStyle} />
+                <CircularProgress variant={hasProgress ? "static" : "indeterminate"}
+                    disableShrink={!hasProgress}
+                    value={progress}
+                    size={progressSize || theme.spacing(3)}
+                    color={progressColor}
+                    style={progressStyle} />
                 <Box
                     top={0}
                     left={0}

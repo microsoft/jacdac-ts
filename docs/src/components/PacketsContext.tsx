@@ -87,6 +87,7 @@ export const PacketsProvider = ({ children }) => {
     const clearPackets = () => {
         setPackets([])
         setSelectedPacket(undefined)
+        setProgress(undefined)
         bus.clear();
     }
     const addPacket = (pkt: Packet) => {
@@ -137,6 +138,7 @@ export const PacketsProvider = ({ children }) => {
             await connectAsync()
             setRecordingTrace({ packets: [] })
             setReplayTrace(undefined);
+            setProgress(undefined);
         }
     }
     const toggleTrace = async () => {
@@ -169,6 +171,7 @@ export const PacketsProvider = ({ children }) => {
     useEffect(() => {
         const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);
         setPlayer(p);
+        setProgress(undefined)
         return () => p?.stop();
     }, [replayTrace]);
     useEffect(() => player?.subscribe(PROGRESS, (p: number) => setProgress(p))
