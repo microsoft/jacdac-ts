@@ -12,7 +12,7 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
     const { setError } = useContext(AppContext)
     const [importing, setImporting] = useState(false)
 
-    const handleFiles = async (files: FileList) => {
+    const handleFiles = async (files: File[]) => {
         const file = files[0]
         if (file) {
             try {
@@ -52,6 +52,5 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
 
     return <UploadButton icon={icon} disabled={importing || recording || disabled}
         text="Import Trace File"
-        accept=".txt,.csv"
         onFilesUploaded={handleFiles} />
 }
