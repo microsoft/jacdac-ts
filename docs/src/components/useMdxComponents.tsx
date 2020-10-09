@@ -9,6 +9,7 @@ import ServiceList from "./ServiceList"
 import DeviceSpecificationList from "./DeviceSpecificationList"
 import FilteredDeviceSpecificationList from "./FilteredDeviceSpecificationList"
 import ServiceSpecificationList from "./ServiceSpecificationList"
+import PacketsPreview from "./PacketsPreview"
 
 export default function useMdxComponents() {
   const mdxComponents: any = {
@@ -23,7 +24,8 @@ export default function useMdxComponents() {
     ServiceList: props => <ServiceList {...props} />,
     DeviceSpecificationList: props => <DeviceSpecificationList {...props} />,
     FilteredDeviceSpecificationList: props => <FilteredDeviceSpecificationList {...props} />,
-    ServiceSpecificationList: props => <ServiceSpecificationList {...props} />
+    ServiceSpecificationList: props => <ServiceSpecificationList {...props} />,
+    PacketsPreview: props => <PacketsPreview {...props} />
   };
 
   return mdxComponents;
