@@ -10,6 +10,8 @@ import DeviceSpecificationList from "./DeviceSpecificationList"
 import FilteredDeviceSpecificationList from "./FilteredDeviceSpecificationList"
 import ServiceSpecificationList from "./ServiceSpecificationList"
 import PacketsPreview from "./PacketsPreview"
+import UpdateDeviceList from "./UpdateDeviceList";
+import FlashButton from "./FlashButton";
 
 export default function useMdxComponents() {
   const mdxComponents: any = {
@@ -25,7 +27,9 @@ export default function useMdxComponents() {
     DeviceSpecificationList: props => <DeviceSpecificationList {...props} />,
     FilteredDeviceSpecificationList: props => <FilteredDeviceSpecificationList {...props} />,
     ServiceSpecificationList: props => <ServiceSpecificationList {...props} />,
-    PacketsPreview: props => <PacketsPreview {...props} />
+    PacketsPreview: props => <PacketsPreview {...props} />,
+    UpdateDeviceList: props => <UpdateDeviceList {...props} />,
+    FlashButon: props => <FlashButton {...props} />
   };
 
   return mdxComponents;
