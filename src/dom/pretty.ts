@@ -421,7 +421,7 @@ export function deviceServiceName(pkt: Packet): string {
     return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.service_number}`
 }
 
-export function commandName(n: number, serviceClass?: number) {
+export function commandName(n: number, serviceClass?: number): string {
     let pref = ""
     if ((n & CMD_TOP_MASK) == CMD_SET_REG) pref = "SET["
     else if ((n & CMD_TOP_MASK) == CMD_GET_REG) pref = "GET["
@@ -440,7 +440,7 @@ export function commandName(n: number, serviceClass?: number) {
         const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
         r = serviceSpec?.packets.find(pkt => pkt.identifier === n)?.name
     }
-    return n;
+    return r;
 }
 
 function num2str(n: number) {
