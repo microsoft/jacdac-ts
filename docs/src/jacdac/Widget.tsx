@@ -1,13 +1,12 @@
 import React from "react"
-import { Paper, Divider, Box } from "@material-ui/core";
+import { Box, Paper, useTheme } from "@material-ui/core";
 
-const style = {
-    margin: "1rem"
+export default function Widget(props: { children: any }) {
+    const {children} = props;
+    const theme= useTheme();
+    return <Paper>
+        <Box mx={1} p={theme.spacing(0.5)}>
+            {props.children}
+        </Box>
+    </Paper>
 }
-
-const Widget = (props: { children }) =>
-    <Box style={style}>
-        {props.children}
-    </Box>
-
-export default Widget

@@ -12,6 +12,8 @@ import ServiceSpecificationList from "./ServiceSpecificationList"
 import PacketsPreview from "./PacketsPreview"
 import UpdateDeviceList from "./UpdateDeviceList";
 import FlashButton from "./FlashButton";
+import Widget from "../jacdac/Widget";
+import ConnectButton from "../jacdac/ConnectButton"
 
 export default function useMdxComponents() {
   const theme = useTheme();
@@ -39,7 +41,9 @@ export default function useMdxComponents() {
     ServiceSpecificationList: props => <ServiceSpecificationList {...props} />,
     PacketsPreview: props => <PacketsPreview {...props} />,
     UpdateDeviceList: props => <UpdateDeviceList {...props} />,
-    FlashButton: props => <FlashButton {...props} />
+    FlashButton: props => <FlashButton {...props} />,
+    Widget: props => <Widget {...props} />,
+    ConnectButton: props => <ConnectButton {...props} />
   };
 
   return mdxComponents;
