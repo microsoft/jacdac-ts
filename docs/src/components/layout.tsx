@@ -57,6 +57,7 @@ import HideOnScroll from "./HideOnScroll";
 import TraceRecordButton from "./TraceRecordButton"
 import TracePlayButton from "./TracePlayButton";
 import PrintButton from "./PrintButton";
+import WebUSBSupported from "./WebUSBSupported";
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -280,7 +281,7 @@ function MainAppBar(props: { pageContext?: any }) {
           </Typography>}
       </Hidden>}
       <div className={classes.grow} />
-      <div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div>
+      <WebUSBSupported><div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div></WebUSBSupported>
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
       <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />
       <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
