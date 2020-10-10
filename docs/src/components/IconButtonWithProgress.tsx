@@ -1,9 +1,10 @@
-import { Box, CircularProgress, IconButtonProps, Tooltip, useTheme } from "@material-ui/core";
+import { Badge, Box, CircularProgress, IconButtonProps, Tooltip, useTheme } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 import React from "react";
 
 export type IconButtonWithProgressProps = {
     indeterminate?: boolean,
+    badgeCount?: number;
     progress?: number;
     progressSize?: React.ReactText,
     progressColor?: "inherit" | "primary" | "secondary",
@@ -11,13 +12,19 @@ export type IconButtonWithProgressProps = {
 } & IconButtonProps;
 
 export default function IconButtonWithProgress(props: IconButtonWithProgressProps) {
-    const { indeterminate, progress, title, children, progressColor, progressStyle, progressSize, ...others } = props;
+    const { indeterminate, progress, title, children, progressColor, progressStyle, progressSize, badgeCount, ...others } = props;
     const theme = useTheme()
     const hasProgress = progress !== undefined;
 
+    const badge = <Badge color="secondary" 
+        badgeContent={badgeCount}
+        invisible={!badgeCount}>
+        {children}
+    </Badge>
+
     return <Tooltip title={title}>
         <span><IconButton {...others}>
-            {!indeterminate && children}
+            {!indeterminate && badge}
             {indeterminate && <Box position="relative" display="inline-flex">
                 <CircularProgress variant={hasProgress ? "static" : "indeterminate"}
                     disableShrink={!hasProgress}
@@ -35,7 +42,7 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
                     alignItems="center"
                     justifyContent="center"
                 >
-                    {children}
+                    {badge}
                 </Box>
             </Box>}
         </IconButton></span>

@@ -5,5 +5,5 @@ export default function WebUSBSupported(props: { children: any }) {
     const { children } = props;
     if (!isWebUSBSupported())
         return <></>
-    return { children }
+    return <>{ children }</>
 }

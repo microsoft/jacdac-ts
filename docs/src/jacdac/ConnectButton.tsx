@@ -4,9 +4,10 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/dom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
-import { CircularProgress, Hidden, PropTypes, useTheme } from "@material-ui/core";
+import { useMediaQuery, useTheme } from "@material-ui/core";
 import { DEVICE_CHANGE } from "../../../src/dom/constants";
 import KindIcon from "../components/KindIcon";
+import IconButtonWithProgress from "../components/IconButtonWithProgress"
 
 export default function ConnectButton(props: { full?: boolean, className?: string, transparent?: boolean }) {
     const { full, className, transparent } = props
@@ -16,16 +17,35 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
-    return <Button
-        size="small"
-        variant={transparent ? "outlined" : "contained"}
-        color={transparent ? "inherit" : "primary"}
-        className={className}
-        startIcon={inProgress ? <CircularProgress size={theme.spacing(2)} disableShrink /> : showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />}
-        disabled={connectionState != BusState.Connected && connectionState != BusState.Disconnected}
-        onClick={showDisconnect ? disconnectAsync : connectAsync}>
-        {!full && <Hidden mdDown>{showDisconnect ? "disconnect" : "connect"}</Hidden>}
-        {full && (showDisconnect ? "disconnect" : "connect")}
-        {count > 0 && ` (${count})`}
-    </Button>
+    const small = useMediaQuery(theme.breakpoints.down("md"))
+    const disabled = connectionState != BusState.Connected && connectionState != BusState.Disconnected
+    const onClick = showDisconnect ? disconnectAsync : connectAsync;
+    const icon = showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />
+    const title = showDisconnect ? "disconnect" : "connect";
+
+    if (small || !full)
+        return <span><IconButtonWithProgress
+            size="small"
+            title={title}
+            color={transparent ? "inherit" : "primary"}
+            className={className}
+            disabled={disabled}
+            indeterminate={inProgress}
+            onClick={onClick}
+            badgeCount={count}
+        >
+            {icon}
+        </IconButtonWithProgress></span>
+    else
+        return <Button
+            size="small"
+            variant={transparent ? "outlined" : "contained"}
+            color={transparent ? "inherit" : "primary"}
+            className={className}
+            startIcon={icon}
+            disabled={disabled}
+            onClick={onClick}>
+            {title}
+            {count > 0 && ` (${count})`}
+        </Button>
 }
