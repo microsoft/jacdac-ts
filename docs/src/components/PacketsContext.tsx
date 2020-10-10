@@ -61,7 +61,7 @@ export const PacketsProvider = ({ children }) => {
     const { bus, disconnectAsync, connectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
-    const [flags, setFlags] = useState(["report", "rw", "ro", "event", "command", "const"])
+    const [flags, setFlags] = useState<string[]>([])
     const [serviceClass, setServiceClass] = useState<number>(undefined)
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
@@ -71,7 +71,7 @@ export const PacketsProvider = ({ children }) => {
     const [progress, setProgress] = useState(0)
 
     const recording = !!recordingTrace;
-    const hasFlag = (k: string) => flags.indexOf(k) > -1
+    const hasFlag = (k: string) => !flags.length || flags.indexOf(k) > -1
     const skipRepeatedAnnounce = !hasFlag("announce");
     const throttledSetPackets = throttle(() => {
         const ps = packets.slice(0,

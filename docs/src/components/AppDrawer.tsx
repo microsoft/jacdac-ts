@@ -65,9 +65,7 @@ export default function AppDrawer(props: {
     const { serviceClass: globalServiceClass } = useContext(PacketsContext)
     const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const { drawerType, setDrawerType } = useContext(AppContext)
-    const { connectionState } = useContext<JDContextProps>(JACDACContext)
     const open = drawerType !== DrawerType.None
-    const connected = connectionState == BusState.Connected
     const service = serviceClass !== undefined
         && serviceSpecificationFromClassIdentifier(serviceClass)
     const searchResults = useDrawerSearchResults()
@@ -106,8 +104,6 @@ export default function AppDrawer(props: {
             {drawerType !== DrawerType.Toc && <PacketRecorder />}
             {showTitle && <Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
             {drawerType == DrawerType.Toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
-            {drawerType === DrawerType.Packets && serviceClass !== undefined
-                && <Alert className={classes.alertButton} severity="info">{`Filtered for ${service?.name || serviceClass.toString(16)}`}</Alert>}
             <IconButton onClick={handleDrawerClose}>
                 <ChevronLeftIcon />
             </IconButton>

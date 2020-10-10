@@ -12,6 +12,7 @@ import AnnouncementIcon from '@material-ui/icons/Announcement';
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer'
+import PacketFilter from './PacketFilter';
 
 const useStyles = makeStyles(() =>
     createStyles({
@@ -88,28 +89,9 @@ export default function PacketList(props: {
     showTime?: boolean
 }) {
     const { showTime } = props
-    const { flags, setFlags, serviceClass: globalServiceClass } = useContext(PacketsContext)
-    const theme = useTheme();
-    const showText = useMediaQuery(theme.breakpoints.up('md'));
-    const size = "small"
-
-    const handleModes = (event: React.MouseEvent<HTMLElement>, newFlags: string[]) => {
-        setFlags(newFlags)
-    };
 
     return (<>
-        <div>
-            <StyledToggleButtonGroup size={size} value={flags} onChange={handleModes}>
-                {allKinds().map(kind => <ToggleButton key={kind} size={size} aria-label={kindName(kind)} value={kind}>
-                    <KindIcon kind={kind} />
-                    {showText && kindName(kind)}
-                </ToggleButton>)}
-                <ToggleButton size={size} key="announce" aria-label={"repeated announcements"} value={"announce"}>
-                    <AnnouncementIcon />
-                    {showText && "repeated announce"}
-                </ToggleButton>
-            </StyledToggleButtonGroup>
-        </div>
+        <PacketFilter />
         <VirtualPacketList showTime={showTime} />
     </>)
 }
