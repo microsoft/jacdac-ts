@@ -29,7 +29,6 @@ import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
-import ErrorSnackbar from "./ErrorSnackbar"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
 import PacketsContext, { PacketsProvider } from "./PacketsContext";
@@ -58,6 +57,7 @@ import TraceRecordButton from "./TraceRecordButton"
 import TracePlayButton from "./TracePlayButton";
 import PrintButton from "./PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
+import { SnackbarProvider } from 'notistack';
 
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
@@ -183,17 +183,19 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   return (
     <ThemeProvider theme={theme}>
       <MDXProvider components={mdxComponents}>
-        <JACDACProvider>
-          <ServiceManagerProvider>
-            <PacketsProvider>
-              <DbProvider>
-                <AppProvider>
-                  <LayoutWithContext {...props} />
-                </AppProvider>
-              </DbProvider>
-            </PacketsProvider>
-          </ServiceManagerProvider>
-        </JACDACProvider>
+        <SnackbarProvider maxSnack={3}>
+          <JACDACProvider>
+            <ServiceManagerProvider>
+              <PacketsProvider>
+                <DbProvider>
+                  <AppProvider>
+                    <LayoutWithContext {...props} />
+                  </AppProvider>
+                </DbProvider>
+              </PacketsProvider>
+            </ServiceManagerProvider>
+          </JACDACProvider>
+        </SnackbarProvider>
       </MDXProvider>
     </ThemeProvider>
   )
@@ -360,7 +362,6 @@ function LayoutWithContext(props: {
           <Footer />
         </main>
       </Container>}
-      <ErrorSnackbar />
       <FabBar />
     </div>
   </>

@@ -2,13 +2,16 @@ import React from "react";
 import { Link } from "gatsby-theme-material-ui";
 import CodeDemo from "./CodeDemo";
 import CodeBlock from './CodeBlock';
-import { useTheme } from "@material-ui/core";
+import { Box } from "@material-ui/core";
 import RandomGenerator from "./RandomGenerator"
 import DeviceList from "./DeviceList"
 import ServiceList from "./ServiceList"
 import DeviceSpecificationList from "./DeviceSpecificationList"
 import FilteredDeviceSpecificationList from "./FilteredDeviceSpecificationList"
 import ServiceSpecificationList from "./ServiceSpecificationList"
+import PacketsPreview from "./PacketsPreview"
+import UpdateDeviceList from "./UpdateDeviceList";
+import FlashButton from "./FlashButton";
 
 export default function useMdxComponents() {
   const mdxComponents: any = {
@@ -18,12 +21,15 @@ export default function useMdxComponents() {
     pre: props => <div {...props} />,
     code: CodeBlock,
 
-    RandomGenerator: props => <RandomGenerator {...props} />,
+    RandomGenerator: props => <Box displayPrint="none"><RandomGenerator {...props} /></Box>,
     DeviceList: props => <DeviceList {...props} />,
     ServiceList: props => <ServiceList {...props} />,
     DeviceSpecificationList: props => <DeviceSpecificationList {...props} />,
     FilteredDeviceSpecificationList: props => <FilteredDeviceSpecificationList {...props} />,
-    ServiceSpecificationList: props => <ServiceSpecificationList {...props} />
+    ServiceSpecificationList: props => <ServiceSpecificationList {...props} />,
+    PacketsPreview: props => <PacketsPreview {...props} />,
+    UpdateDeviceList: props => <UpdateDeviceList {...props} />,
+    FlashButton: props => <FlashButton {...props} />
   };
 
   return mdxComponents;

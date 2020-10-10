@@ -1,6 +1,7 @@
-import { any } from "prop-types";
+import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { ERROR } from "../../../src/dom/constants";
+import { BusState } from "../../../src/dom/bus";
+import { CONNECTION_STATE, ERROR } from "../../../src/dom/constants";
 import { isCancelError } from "../../../src/dom/utils";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 
@@ -19,7 +20,6 @@ export interface AppProps {
     setSearchQuery: (s: string) => void,
     toolsMenu: boolean,
     setToolsMenu: (visible: boolean) => void,
-    error: any,
     setError: (error: any) => void
 }
 
@@ -30,7 +30,6 @@ const AppContext = createContext<AppProps>({
     setSearchQuery: (s) => { },
     toolsMenu: false,
     setToolsMenu: (v) => { },
-    error: undefined,
     setError: (error: any) => { }
 });
 AppContext.displayName = "app";
@@ -41,24 +40,52 @@ export const AppProvider = ({ children }) => {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
-    const [toolsMenu, setToolsMenu] = useState(false)
-    const [error, setError] = useState(undefined)
+    const [toolsMenu, _setToolsMenu] = useState(false)
+    const { enqueueSnackbar } = useSnackbar();
 
+    const setError = (e: any) => {
+        const msg = e?.message || (e + "");
+        enqueueSnackbar(msg, {
+            variant: 'error'
+        })
+    }
+
+    const setDrawerType = (type: DrawerType) => {
+        if (type !== DrawerType.None)
+            _setToolsMenu(false);
+        setType(type)
+    }
+
+    const setToolsMenu = (open: boolean) => {
+        if (open)
+            setType(DrawerType.None)
+        _setToolsMenu(open)
+    }
+
+    // notify errors
     useEffect(() => bus.subscribe(ERROR, (e: { exception: Error }) => {
         if (isCancelError(e.exception))
             return;
-        setError(e.exception);
-    }))
+        setError(e.exception.message)
+    }), [bus])
+
+    useEffect(() => bus.subscribe(CONNECTION_STATE, cs => {
+        switch (cs) {
+            case BusState.Connected:
+                enqueueSnackbar("connected...", {
+                    variant: "info"
+                })
+        }
+    }), [bus])
 
     return (
         <AppContext.Provider value={{
             drawerType: type,
-            setDrawerType: setType,
+            setDrawerType,
             searchQuery,
             setSearchQuery,
             toolsMenu,
             setToolsMenu,
-            error,
             setError
         }}>
             {children}

@@ -1,5 +1,5 @@
 import React from "react"
-import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
+import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Grid, makeStyles, Theme, Typography } from "@material-ui/core";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import IDChip from "./IDChip";
 import { Button } from "gatsby-theme-material-ui";
@@ -17,7 +17,11 @@ export default function ServiceSpecificationCard(props: { serviceClass?: number,
             subheader={spec && <IDChip id={spec?.classIdentifier} />}
         />
         <CardContent>
-            {spec?.notes["short"] && <Markdown source={spec?.notes["short"]} />}
+            {spec?.notes["short"] &&
+                <Typography variant="body2">
+                    <Markdown source={spec?.notes["short"]} />
+                </Typography>
+            }
         </CardContent>
         <CardActions>
             <Button to={`/services/${spec?.shortId}`}>More...</Button>
