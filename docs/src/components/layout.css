@@ -634,3 +634,10 @@ footer {
 .gatsby-resp-image-wrapper {
   max-width: 100% !important;
 }
+
+@media print {
+  * {
+    color: black !important;
+    background-color: white !important;
+  }
+}
