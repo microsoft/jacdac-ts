@@ -4,6 +4,7 @@ import React from "react";
 
 export type IconButtonWithProgressProps = {
     indeterminate?: boolean,
+    badgeColor?: "default" | "primary" | "secondary",
     badgeCount?: number;
     progress?: number;
     progressSize?: React.ReactText,
@@ -12,11 +13,11 @@ export type IconButtonWithProgressProps = {
 } & IconButtonProps;
 
 export default function IconButtonWithProgress(props: IconButtonWithProgressProps) {
-    const { indeterminate, progress, title, children, progressColor, progressStyle, progressSize, badgeCount, ...others } = props;
+    const { indeterminate, progress, title, children, progressColor, progressStyle, progressSize, badgeCount, badgeColor, ...others } = props;
     const theme = useTheme()
     const hasProgress = progress !== undefined;
 
-    const badge = <Badge color="secondary" 
+    const badge = <Badge color={badgeColor}
         badgeContent={badgeCount}
         invisible={!badgeCount}>
         {children}

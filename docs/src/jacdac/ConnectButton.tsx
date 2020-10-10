@@ -23,7 +23,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const icon = showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />
     const title = showDisconnect ? "disconnect" : "connect";
 
-    if (small || !full)
+    if (small)
         return <span><IconButtonWithProgress
             size="small"
             title={title}
