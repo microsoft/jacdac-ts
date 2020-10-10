@@ -19,9 +19,9 @@ export default function useMdxComponents() {
     CodeDemo: (props: any) => <CodeDemo {...props} />,
     Link: (props: any) => <Link color="textPrimary" {...props} />,
     a: (props: any) => <Link color="textPrimary" {...props} />,
-    pre: props => <Paper>
+    pre: props => <Box mb={theme.spacing(0.5)}><Paper>
       <div {...props} />
-    </Paper>,
+    </Paper></Box>,
     code: CodeBlock,
     table: props => <Box mb={theme.spacing(0.5)}><TableContainer component={Paper}>
       <Box m={theme.spacing(0.5)}>

@@ -635,6 +635,11 @@ footer {
   max-width: 100% !important;
 }
 
+.prism-code {
+  padding-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
 @media print {
   * {
     color: black !important;
