@@ -2,18 +2,20 @@ import { JDBus } from "./bus";
 import Packet from "./packet";
 import { isInstanceOf, serviceSpecificationFromName } from "./spec";
 
+export type PacketFilter = (pkt: Packet) => boolean;
+
 export function parsePacketFilter(bus: JDBus, text: string): {
     normalized: string;
-    filter: (pkt: Packet) => boolean
+    filter: PacketFilter
 } {
-    if (!text)
+    if (!text) {
         return {
             normalized: "",
             filter: (pkt) => true
         }
+    }
 
-    
-    let filters: ((pkt: Packet) => boolean)[] = [];
+    let filters: PacketFilter[] = [];
     let flags = new Set<string>()
     let serviceClasses = new Set<number>();
     let devices = new Set<string>();
