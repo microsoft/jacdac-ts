@@ -10,10 +10,14 @@ import FilterListIcon from '@material-ui/icons/FilterList';
 import { Box, Button, Chip, FormControl, InputLabel, ListItemIcon, Menu, MenuItem, Select, TextField, Tooltip, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useContext, useState } from "react";
 import { serviceName } from "../../../src/dom/pretty";
-import { unique } from "../../../src/dom/utils";
+import { arrayConcatMany, unique } from "../../../src/dom/utils";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext";
-import { parsePacketFilter } from '../../../src/dom/packet';
+import { parsePacketFilter } from '../../../src/dom/packetfilter';
+import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import useChange from '../jacdac/useChange';
+import DeviceName from './DeviceName';
+import { JDDevice } from '../../../src/dom/device';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -34,15 +38,16 @@ const useStyles = makeStyles((theme: Theme) =>
 
 function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: string, handleAddFilter: (k: string) => void }) {
     const { text, icon, className, handleAddFilter } = props;
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const theme = useTheme();
     const kinds = allKinds()
+
+    const devices = useChange(bus, b => b.devices());
 
     const handleKind = (kind: string) => () => {
         handleAddFilter(kind)
         setAnchorEl(null)
     };
-
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -67,14 +72,23 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={handleClose}>
-                {kinds.map(kind => <MenuItem key={kind} value={kind} onClick={handleKind(`kind:${kind}`)}>
+                {kinds.map(kind => <MenuItem key={kind} onClick={handleKind(`kind:${kind}`)}>
                     <ListItemIcon>
                         <KindIcon kind={kind} />
                     </ListItemIcon>
                     {kindName(kind)}
                 </MenuItem>)}
                 <MenuItem key="announce" value={"announce"} onClick={handleKind("announce")}>
+                    <ListItemIcon>
+                        <KindIcon kind={"announce"} />
+                    </ListItemIcon>
                     Repeated Announce</MenuItem>
+                {devices?.map(device => <MenuItem key={device.id} onClick={handleKind(`dev:${device.shortId}`)}>
+                    <ListItemIcon>
+                        <KindIcon kind={"device"} />
+                    </ListItemIcon>
+                    <DeviceName device={device} />
+                </MenuItem>)}
             </Menu>
         </Box>
     );
@@ -82,13 +96,14 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 
 export default function PacketFilter() {
     const { filter, setFilter } = useContext(PacketsContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
 
     const handleChange = (ev) => {
         setFilter(ev.target.value)
     }
     const handleAddFilter = (k: string) => {
-        setFilter(parsePacketFilter(filter + " " + k).normalized);
+        setFilter(parsePacketFilter(bus, filter + " " + k).normalized);
     }
     return <Paper square elevation={1}>
         <Box display="flex">

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import Packet, { parsePacketFilter } from "../../../src/dom/packet";
+import Packet from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -8,6 +8,7 @@ import { throttle, unique } from "../../../src/dom/utils";
 import Trace from "../../../src/dom/trace";
 import { isInstanceOf, serviceSpecificationFromName } from "../../../src/dom/spec";
 import TracePlayer from "../../../src/dom/traceplayer";
+import { parsePacketFilter } from "../../../src/dom/packetfilter";
 
 const PACKET_MAX_ITEMS = 500
 const RECORDING_TRACE_MAX_ITEMS = 100000;
@@ -25,8 +26,6 @@ export interface PacketsProps {
     clearPackets: () => void,
     filter: string,
     setFilter: (filter: string) => void,
-    serviceClass?: number,
-    setServiceClass?: (serviceClass: number) => void,
     trace: Trace,
     setTrace: (frames: Frame[], videoUrl?: string) => void,
     recording: boolean,
@@ -43,8 +42,6 @@ const PacketsContext = createContext<PacketsProps>({
     clearPackets: () => { },
     filter: "",
     setFilter: (filter: string) => { },
-    serviceClass: undefined,
-    setServiceClass: () => { },
     trace: undefined,
     setTrace: () => { },
     recording: false,
@@ -62,7 +59,6 @@ export const PacketsProvider = ({ children }) => {
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const [filter, setFilter] = useState("")
-    const [serviceClass, setServiceClass] = useState<number>(undefined)
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
     const [recordingTrace, setRecordingTrace] = useState<Trace>(undefined)
@@ -71,7 +67,7 @@ export const PacketsProvider = ({ children }) => {
     const [progress, setProgress] = useState(0)
 
     const recording = !!recordingTrace;
-    const { filter: packetFilter } = parsePacketFilter(filter)
+    const { filter: packetFilter } = parsePacketFilter(bus, filter)
     const throttledSetPackets = throttle(() => {
         const ps = packets.slice(0,
             packets.length < PACKET_MAX_ITEMS
@@ -164,7 +160,6 @@ export const PacketsProvider = ({ children }) => {
             packets, clearPackets,
             selectedPacket, setSelectedPacket,
             filter, setFilter,
-            serviceClass, setServiceClass,
             trace: replayTrace || recordingTrace, setTrace,
             recording, toggleRecording,
             tracing: !!player?.running,

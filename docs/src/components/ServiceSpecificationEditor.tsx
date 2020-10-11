@@ -46,10 +46,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
-    const [, setTab] = useState(0);
     const { darkMode } = useContext(DarkModeContext)
     const { drawerType } = useContext(AppContext)
-    const { setServiceClass } = useContext(PacketsContext)
     const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
         `# My Service
 
@@ -69,11 +67,7 @@ TODO describe this register
     useEffect(() => {
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
-            setServiceClass(json.classIdentifier)
-        return () => {
-            setServiceClass(undefined)
             clearCustomServiceSpecifications();
-        }
     }, [source])
     const annotations = json?.errors?.map(error => ({
         row: error.line,
