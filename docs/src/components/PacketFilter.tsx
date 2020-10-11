@@ -1,23 +1,16 @@
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import InputBase from '@material-ui/core/InputBase';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import SearchIcon from '@material-ui/icons/Search';
-import DirectionsIcon from '@material-ui/icons/Directions';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { Box, Button, Chip, FormControl, InputLabel, ListItemIcon, Menu, MenuItem, Select, TextField, Tooltip, useMediaQuery, useTheme } from "@material-ui/core";
-import React, { useContext, useState } from "react";
-import { serviceName } from "../../../src/dom/pretty";
-import { arrayConcatMany, unique } from "../../../src/dom/utils";
+import { Box, ListItemIcon, Menu, MenuItem, Tooltip } from "@material-ui/core";
+import React, { useContext, useEffect, useState } from "react";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext";
-import { parsePacketFilter } from '../../../src/dom/packetfilter';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
-import { JDDevice } from '../../../src/dom/device';
+import useDebounce from './useDebounce';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -96,14 +89,26 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 
 export default function PacketFilter() {
     const { filter, setFilter } = useContext(PacketsContext)
-    const { bus } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
+    const [text, setText] = useState(filter);
+    const debouncedText = useDebounce(text, 1000);
+
+    console.log('filter', filter, debouncedText)
+
+    // background filter update
+    useEffect(() => setText(filter), [filter])
+
+    // set filter once bounced
+    useEffect(() => {
+        setFilter(debouncedText);
+    }, [debouncedText]);
 
     const handleChange = (ev) => {
-        setFilter(ev.target.value)
+        const newText = ev.target.value;
+        setText(newText)
     }
     const handleAddFilter = (k: string) => {
-        setFilter(parsePacketFilter(bus, filter + " " + k).normalized);
+        setText(text + " " + k);
     }
     return <Paper square elevation={1}>
         <Box display="flex">
@@ -112,9 +117,9 @@ export default function PacketFilter() {
             </span>
             <InputBase
                 className={classes.input}
-                placeholder=""
+                placeholder="Filter packets"
                 inputProps={{ 'aria-label': 'filter packets' }}
-                value={filter}
+                value={text}
                 onChange={handleChange}
             />
         </Box>
