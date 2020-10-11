@@ -362,7 +362,7 @@ export function parsePacketFilter(text: string) {
     let serviceClasses = new Set<number>();
     let skipRepeatedAnounce = true;
     text.split(/\s+/g).forEach(part => {
-        const [match, prefix, value] = /([a-z]+)(:([^\s]+))?/.exec(part) || [];
+        const [match, prefix, _, value] = /([a-z]+)(:([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
             case "kind":
                 flags.add(value.toLowerCase())

@@ -58,7 +58,7 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <IconButton aria-controls="simple-menu"
                         aria-haspopup="true"
                         onClick={handleClick}>
-                        {icon || <MenuIcon />}
+                        {icon || <FilterListIcon />}
                     </IconButton>
                 </span>
             </Tooltip>
@@ -90,16 +90,18 @@ export default function PacketFilter() {
     const handleAddFilter = (k: string) => {
         setFilter(parsePacketFilter(filter + " " + k).normalized);
     }
-    return <Box display="flex">
-        <span>
-            <SimpleMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
-        </span>
-        <InputBase
-            className={classes.input}
-            placeholder="kind:report kind:command kind:event"
-            inputProps={{ 'aria-label': 'filter packets' }}
-            value={filter}
-            onChange={handleChange}
-        />
-    </Box>
+    return <Paper square elevation={1}>
+        <Box display="flex">
+            <span>
+                <SimpleMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
+            </span>
+            <InputBase
+                className={classes.input}
+                placeholder=""
+                inputProps={{ 'aria-label': 'filter packets' }}
+                value={filter}
+                onChange={handleChange}
+            />
+        </Box>
+    </Paper>
 }
