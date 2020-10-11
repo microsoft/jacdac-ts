@@ -116,6 +116,7 @@ export default function PacketFilter() {
                 <SimpleMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
             </span>
             <InputBase
+                multiline={true}
                 className={classes.input}
                 placeholder="Filter packets"
                 inputProps={{ 'aria-label': 'filter packets' }}
