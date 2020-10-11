@@ -1,6 +1,6 @@
 import { JDBus } from "./bus";
 import Packet from "./packet";
-import { serviceSpecificationFromName } from "./spec";
+import { isInstanceOf, serviceSpecificationFromName } from "./spec";
 
 export function parsePacketFilter(bus: JDBus, text: string) {
     let filters: ((pkt: Packet) => boolean)[] = [];
