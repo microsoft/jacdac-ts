@@ -1,14 +1,46 @@
-import { Box, Button, Chip, FormControl, InputLabel, ListItemIcon, Menu, MenuItem, Select, useMediaQuery, useTheme } from "@material-ui/core";
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import SearchIcon from '@material-ui/icons/Search';
+import DirectionsIcon from '@material-ui/icons/Directions';
+import FilterListIcon from '@material-ui/icons/FilterList';
+import { Box, Button, Chip, FormControl, InputLabel, ListItemIcon, Menu, MenuItem, Select, TextField, Tooltip, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useContext, useState } from "react";
 import { serviceName } from "../../../src/dom/pretty";
 import { unique } from "../../../src/dom/utils";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext";
 
-function SimpleMenu(props: { text: string, children: any }) {
-    const { text, children } = props;
+
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        input: {
+            marginLeft: theme.spacing(1),
+            flex: 1,
+        },
+        iconButton: {
+            padding: 10,
+        },
+        divider: {
+            height: 28,
+            margin: 4,
+        },
+    }),
+);
+
+function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: string, handleAddFilter: (k: string) => void }) {
+    const { text, icon, className, handleAddFilter } = props;
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const theme = useTheme();
+    const kinds = allKinds()
+
+    const handleKind = (kind: string) => () => {
+        handleAddFilter(`kind:${kind}`)
+        setAnchorEl(null)
+    };
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -19,61 +51,56 @@ function SimpleMenu(props: { text: string, children: any }) {
     };
 
     return (
-        <Box component="span" m={theme.spacing(0.2)}>
-            <Button aria-controls="simple-menu"
-                aria-haspopup="true"
-                variant="outlined"
-                onClick={handleClick}>
-                {text}
-            </Button>
+        <Box className={className} component="span">
+            <Tooltip title={text}>
+                <span>
+                    <IconButton aria-controls="simple-menu"
+                        aria-haspopup="true"
+                        onClick={handleClick}>
+                        {icon || <MenuIcon />}
+                    </IconButton>
+                </span>
+            </Tooltip>
             <Menu
                 anchorEl={anchorEl}
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={handleClose}>
-                {children}
+                {kinds.map(kind => <MenuItem key={kind} value={kind} onClick={handleKind(kind)}>
+                    <ListItemIcon>
+                        <KindIcon kind={kind} />
+                    </ListItemIcon>
+                    {kindName(kind)}
+                </MenuItem>)}
+                <MenuItem key="announce" value={"announce"} onClick={handleKind("announce")}>
+                    Repeated Announce</MenuItem>
             </Menu>
         </Box>
     );
 }
 
 export default function PacketFilter() {
-    const { flags, setFlags, serviceClass, setServiceClass } = useContext(PacketsContext)
-    const kinds = allKinds()
-    const theme = useTheme();
+    const { filter, setFilter, serviceClass, setServiceClass } = useContext(PacketsContext)
+    const [textFilter, setTextFilter] = useState(filter);
+    const classes = useStyles();
 
-    const handleKind = (kind: string) => () => {
-        setFlags(unique([...flags, kind]));
-    };
-    const handleDelete = (flag: string) => () => {
-        flags.splice(flags.indexOf(flag), 1)
-        setFlags(flags.slice(0))
+    const handleChange = (ev) => {
+        setTextFilter(ev.target.value)
     }
-    const handleDeleteServiceClass = () => setServiceClass(undefined)
-
-    return <Box>
-        <SimpleMenu text="Filters">
-            {kinds.map(kind => <MenuItem key={kind} value={kind} onClick={handleKind(kind)}>
-                <ListItemIcon>
-                    <KindIcon kind={kind} />
-                </ListItemIcon>
-                {kindName(kind)}
-            </MenuItem>)}
-            <MenuItem key="annoucement" value={"announcement"}>
-                Repeated Announce</MenuItem>
-        </SimpleMenu>
-        {flags.map(flag => <Box component="span" mr={theme.spacing(0.1)}><Chip
-            icon={<KindIcon kind={flag} />}
-            label={kindName(flag)}
-            color="primary"
-            onDelete={handleDelete(flag)} /></Box>)}
-        {serviceClass !== undefined &&
-            <Chip
-                icon={<KindIcon kind="service" />}
-                label={serviceName(serviceClass)}
-                color="secondary"
-                onDelete={handleDeleteServiceClass}
-                />
-                }
+    const handleAddFilter = (k: string) => {
+        setTextFilter(textFilter + " " + k);
+        // debounce update to filters
+    }
+    return <Box display="flex">
+        <span>
+            <SimpleMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
+        </span>
+        <InputBase
+            className={classes.input}
+            placeholder="kind:report kind:command kind:event"
+            inputProps={{ 'aria-label': 'filter packets' }}
+            value={textFilter}
+            onChange={handleChange}
+        />
     </Box>
 }

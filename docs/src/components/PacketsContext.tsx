@@ -4,9 +4,9 @@ import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { PACKET_PROCESS, PACKET_SEND, PROGRESS } from "../../../src/dom/constants";
-import { throttle } from "../../../src/dom/utils";
+import { throttle, unique } from "../../../src/dom/utils";
 import Trace from "../../../src/dom/trace";
-import { isInstanceOf } from "../../../src/dom/spec";
+import { isInstanceOf, serviceSpecificationFromName } from "../../../src/dom/spec";
 import TracePlayer from "../../../src/dom/traceplayer";
 
 const PACKET_MAX_ITEMS = 500
@@ -18,13 +18,47 @@ export interface PacketProps {
     count?: number;
 }
 
+function parseFilter(text: string): (pkt: Packet) => boolean {
+    let filters: ((pkt: Packet) => boolean)[] = [];
+    let flags: string[] = [];
+    let skipRepeatedAnounce = true;
+    text.split(/\s+/g).forEach(part => {
+        const [match, prefix, value] = /([a-z]+):([^\s]+)/.exec(part) || [];
+        switch (prefix || "") {
+            case "kind":
+                flags.push(value.toLowerCase())
+                break;
+            case "service":
+                const service = serviceSpecificationFromName(value)
+                const serviceClass = service?.classIdentifier || parseInt(value);
+                if (serviceClass !== undefined)
+                    filters.push(pkt => isInstanceOf(pkt.service_class, serviceClass));
+                break;
+            case "announce":
+                skipRepeatedAnounce = false;
+                break;
+        }
+    });
+    if (!skipRepeatedAnounce)
+        filters.push(pkt => !pkt.isRepeatedAnnounce)
+    flags = unique(flags)
+    if (flags.length)
+        filters.push(pkt => hasAnyFlag(pkt))
+    return (pkt: Packet) => filters.every(filter => filter(pkt));
+
+    function hasAnyFlag(pkt: Packet) {
+        const k = pkt.decoded?.info.kind;
+        return k && flags.indexOf(k) > -1;
+    }
+}
+
 export interface PacketsProps {
     packets: PacketProps[],
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
     clearPackets: () => void,
-    flags: string[],
-    setFlags: (kinds: string[]) => void,
+    filter: string,
+    setFilter: (filter: string) => void,
     serviceClass?: number,
     setServiceClass?: (serviceClass: number) => void,
     trace: Trace,
@@ -41,8 +75,8 @@ const PacketsContext = createContext<PacketsProps>({
     selectedPacket: undefined,
     setSelectedPacket: () => { },
     clearPackets: () => { },
-    flags: [],
-    setFlags: () => { },
+    filter: "",
+    setFilter: (filter: string) => { },
     serviceClass: undefined,
     setServiceClass: () => { },
     trace: undefined,
@@ -61,7 +95,7 @@ export const PacketsProvider = ({ children }) => {
     const { bus, disconnectAsync, connectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
-    const [flags, setFlags] = useState<string[]>([])
+    const [filter, setFilter] = useState("")
     const [serviceClass, setServiceClass] = useState<number>(undefined)
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
@@ -71,8 +105,7 @@ export const PacketsProvider = ({ children }) => {
     const [progress, setProgress] = useState(0)
 
     const recording = !!recordingTrace;
-    const hasFlag = (k: string) => !flags.length || flags.indexOf(k) > -1
-    const skipRepeatedAnnounce = !hasFlag("announce");
+    const packetFilter = parseFilter(filter)
     const throttledSetPackets = throttle(() => {
         const ps = packets.slice(0,
             packets.length < PACKET_MAX_ITEMS
@@ -87,24 +120,15 @@ export const PacketsProvider = ({ children }) => {
         bus.clear();
     }
     const addPacket = (pkt: Packet) => {
-        // don't repeat announce
-        if (skipRepeatedAnnounce && pkt.isRepeatedAnnounce)
-            return;
-        // not matching service class
-        if (serviceClass !== undefined && !isInstanceOf(pkt.service_class, serviceClass))
+        // apply filter
+        if (!packetFilter(pkt))
             return;
 
-        const decoded = pkt.decoded;
-        if (decoded && !hasFlag(decoded.info.kind)) {
-            //console.log(`ignore ${decoded.info.kind}`)
-            return; // ignore packet type
-        }
+        // detect duplicate at the tail of the packets
         const { key } = pkt;
-        const old = packets.find(p => p.key == key)
-        if (old) {
+        const old = packets.slice(-15).find(p => p.key == key)
+        if (old)
             old.count++;
-            setPackets([...packets])
-        }
         else {
             packets.unshift({
                 key,
@@ -160,7 +184,7 @@ export const PacketsProvider = ({ children }) => {
     // reset packets when filters change
     useEffect(() => {
         clearPackets()
-    }, [flags.join(',')])
+    }, [filter])
     useEffect(() => {
         const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);
         setPlayer(p);
@@ -173,7 +197,7 @@ export const PacketsProvider = ({ children }) => {
         <PacketsContext.Provider value={{
             packets, clearPackets,
             selectedPacket, setSelectedPacket,
-            flags, setFlags,
+            filter, setFilter,
             serviceClass, setServiceClass,
             trace: replayTrace || recordingTrace, setTrace,
             recording, toggleRecording,
