@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import Packet from "../../../src/dom/packet";
+import Packet, { parsePacketFilter } from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -16,40 +16,6 @@ export interface PacketProps {
     packet: Packet;
     decoded: DecodedPacket;
     count?: number;
-}
-
-function parseFilter(text: string): (pkt: Packet) => boolean {
-    let filters: ((pkt: Packet) => boolean)[] = [];
-    let flags: string[] = [];
-    let skipRepeatedAnounce = true;
-    text.split(/\s+/g).forEach(part => {
-        const [match, prefix, value] = /([a-z]+):([^\s]+)/.exec(part) || [];
-        switch (prefix || "") {
-            case "kind":
-                flags.push(value.toLowerCase())
-                break;
-            case "service":
-                const service = serviceSpecificationFromName(value)
-                const serviceClass = service?.classIdentifier || parseInt(value);
-                if (serviceClass !== undefined)
-                    filters.push(pkt => isInstanceOf(pkt.service_class, serviceClass));
-                break;
-            case "announce":
-                skipRepeatedAnounce = false;
-                break;
-        }
-    });
-    if (!skipRepeatedAnounce)
-        filters.push(pkt => !pkt.isRepeatedAnnounce)
-    flags = unique(flags)
-    if (flags.length)
-        filters.push(pkt => hasAnyFlag(pkt))
-    return (pkt: Packet) => filters.every(filter => filter(pkt));
-
-    function hasAnyFlag(pkt: Packet) {
-        const k = pkt.decoded?.info.kind;
-        return k && flags.indexOf(k) > -1;
-    }
 }
 
 export interface PacketsProps {
@@ -105,7 +71,7 @@ export const PacketsProvider = ({ children }) => {
     const [progress, setProgress] = useState(0)
 
     const recording = !!recordingTrace;
-    const packetFilter = parseFilter(filter)
+    const { filter: packetFilter } = parsePacketFilter(filter)
     const throttledSetPackets = throttle(() => {
         const ps = packets.slice(0,
             packets.length < PACKET_MAX_ITEMS

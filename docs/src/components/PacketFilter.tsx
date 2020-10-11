@@ -13,6 +13,7 @@ import { serviceName } from "../../../src/dom/pretty";
 import { unique } from "../../../src/dom/utils";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext";
+import { parsePacketFilter } from '../../../src/dom/packet';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,7 +39,7 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
     const kinds = allKinds()
 
     const handleKind = (kind: string) => () => {
-        handleAddFilter(`kind:${kind}`)
+        handleAddFilter(kind)
         setAnchorEl(null)
     };
 
@@ -66,7 +67,7 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={handleClose}>
-                {kinds.map(kind => <MenuItem key={kind} value={kind} onClick={handleKind(kind)}>
+                {kinds.map(kind => <MenuItem key={kind} value={kind} onClick={handleKind(`kind:${kind}`)}>
                     <ListItemIcon>
                         <KindIcon kind={kind} />
                     </ListItemIcon>
@@ -80,16 +81,14 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 }
 
 export default function PacketFilter() {
-    const { filter, setFilter, serviceClass, setServiceClass } = useContext(PacketsContext)
-    const [textFilter, setTextFilter] = useState(filter);
+    const { filter, setFilter } = useContext(PacketsContext)
     const classes = useStyles();
 
     const handleChange = (ev) => {
-        setTextFilter(ev.target.value)
+        setFilter(ev.target.value)
     }
     const handleAddFilter = (k: string) => {
-        setTextFilter(textFilter + " " + k);
-        // debounce update to filters
+        setFilter(parsePacketFilter(filter + " " + k).normalized);
     }
     return <Box display="flex">
         <span>
@@ -99,7 +98,7 @@ export default function PacketFilter() {
             className={classes.input}
             placeholder="kind:report kind:command kind:event"
             inputProps={{ 'aria-label': 'filter packets' }}
-            value={textFilter}
+            value={filter}
             onChange={handleChange}
         />
     </Box>
