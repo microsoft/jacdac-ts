@@ -10,7 +10,14 @@ The rest of this page is for developers of the jacdac-ts library.
 
 ### Codespaces
 
-Gatsby development server is not yet supported in codespaces.
+Edit this project directly from your browser using GitHub Codespaces. If you have access to them,
+
+* open project in a new codespace
+* launch the docs server
+```
+npm run docs
+```
+* click on the generated URL in the terminal output and voila!
 
 ### Setup
 
