@@ -19,9 +19,9 @@ export function parsePacketFilter(bus: JDBus, text: string): {
     let flags = new Set<string>()
     let serviceClasses = new Set<number>();
     let devices = new Set<string>();
-    let announce = true;
+    let repeatedAnnounce = true;
     text.split(/\s+/g).forEach(part => {
-        const [match, prefix, _, value] = /([a-z]+)(:([^\s]+))?/.exec(part) || [];
+        const [match, prefix, _, value] = /([a-z\-_]+)(:([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
             case "kind":
             case "k":
@@ -38,9 +38,9 @@ export function parsePacketFilter(bus: JDBus, text: string): {
                 if (serviceClass !== undefined)
                     serviceClasses.add(serviceClass)
                 break;
-            case "announce":
-            case "a":
-                announce = (value === undefined) || (value === "true");
+            case "repeated-announce":
+            case "ra":
+                repeatedAnnounce = (value === undefined) || (value === "true");
                 break;
             case "device":
             case "dev":
@@ -59,8 +59,8 @@ export function parsePacketFilter(bus: JDBus, text: string): {
     });
 
     let normalized: string[] = []
-    if (!announce) {
-        normalized.push("announce:true")
+    if (!repeatedAnnounce) {
+        normalized.push("repeated-announce:false")
         filters.push(pkt => !pkt.isRepeatedAnnounce)
     }
     if (serviceClasses.size) {

@@ -69,12 +69,12 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography>{kindName(kind)}</Typography>&nbsp;
                     <Typography variant="subtitle2">kind:{kind}</Typography>
                 </MenuItem>)}
-                <MenuItem key="announce" value={"announce"} onClick={handleAdd("announce")}>
+                <MenuItem key="announce" value={"announce"} onClick={handleAdd("repeated-announce:false")}>
                     <ListItemIcon>
                         <KindIcon kind={"announce"} />
                     </ListItemIcon>
                     <Typography>Hide repeated announce</Typography>&nbsp;
-                    <Typography variant="subtitle2">announce:false</Typography>
+                    <Typography variant="subtitle2">repeated-announce:false</Typography>
                     </MenuItem>
                 {devices?.map(device => <MenuItem key={device.id} onClick={handleAdd(`dev:${device.name || device.shortId}`)}>
                     <ListItemIcon>

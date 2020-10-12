@@ -146,24 +146,17 @@ export const PacketsProvider = ({ children }) => {
     // reset filter
     useEffect(() => {
         const { filter: pf, normalized } = parsePacketFilter(bus, filter)
-        console.log(`packet filter: ${filter} -> ${normalized}`, pf)
+        console.log(`packet filter: ${filter} -> ${normalized}`)
         packetFilter.current = pf
     }, [filter]);
     // reset packets when filters change
     useEffect(() => {
-        console.log(`refresh filter`)
-        // clear existing packets
-        while (packets.length)
-            packets.pop();
-        // run trace
-        const trace = replayTrace || recordingTrace
-        if (trace)
-            for (let i = trace.packets.length - 1; i >= 0 && packets.length <= PACKET_MAX_ITEMS; i--) {
-                addPacket(trace.packets[i], true)
-            }
-        // update ui
-        throttledSetPackets();
-    }, [packetFilter])
+        const ps = [];
+        for (const packet of packets)
+            if (!packetFilter || packetFilter.current(packet.packet))
+                ps.push(packet)
+        setPackets(ps);
+    }, [packetFilter.current])
     // update trace place when trace is created    
     useEffect(() => {
         const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);
