@@ -1,9 +1,7 @@
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import InputBase from '@material-ui/core/InputBase';
-import IconButton from '@material-ui/core/IconButton';
+import { makeStyles, Theme, createStyles, Paper, InputBase, IconButton } from '@material-ui/core';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { Box, ListItemIcon, Menu, MenuItem, Tooltip } from "@material-ui/core";
+import { Box, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext";
@@ -11,7 +9,6 @@ import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
 import useDebounce from './useDebounce';
-
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -29,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: string, handleAddFilter: (k: string) => void }) {
+function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: string, handleAddFilter: (k: string) => void }) {
     const { text, icon, className, handleAddFilter } = props;
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -37,8 +34,8 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 
     const devices = useChange(bus, b => b.devices());
 
-    const handleKind = (kind: string) => () => {
-        handleAddFilter(kind)
+    const handleAdd = (filter: string) => () => {
+        handleAddFilter(filter)
         setAnchorEl(null)
     };
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -65,22 +62,26 @@ function SimpleMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={handleClose}>
-                {kinds.map(kind => <MenuItem key={kind} onClick={handleKind(`kind:${kind}`)}>
+                {kinds.map(kind => <MenuItem key={kind} onClick={handleAdd(`kind:${kind}`)}>
                     <ListItemIcon>
                         <KindIcon kind={kind} />
                     </ListItemIcon>
-                    {kindName(kind)}
+                    <Typography>{kindName(kind)}</Typography>&nbsp;
+                    <Typography variant="subtitle2">kind:{kind}</Typography>
                 </MenuItem>)}
-                <MenuItem key="announce" value={"announce"} onClick={handleKind("announce")}>
+                <MenuItem key="announce" value={"announce"} onClick={handleAdd("announce")}>
                     <ListItemIcon>
                         <KindIcon kind={"announce"} />
                     </ListItemIcon>
-                    Repeated Announce</MenuItem>
-                {devices?.map(device => <MenuItem key={device.id} onClick={handleKind(`dev:${device.shortId}`)}>
+                    <Typography>Hide repeated announce</Typography>&nbsp;
+                    <Typography variant="subtitle2">announce:false</Typography>
+                    </MenuItem>
+                {devices?.map(device => <MenuItem key={device.id} onClick={handleAdd(`dev:${device.name || device.shortId}`)}>
                     <ListItemIcon>
                         <KindIcon kind={"device"} />
                     </ListItemIcon>
-                    <DeviceName device={device} />
+                    <DeviceName device={device} />&nbsp;
+                    <Typography variant="subtitle2">dev:{device.name || device.shortId}</Typography>
                 </MenuItem>)}
             </Menu>
         </Box>
@@ -92,8 +93,6 @@ export default function PacketFilter() {
     const classes = useStyles();
     const [text, setText] = useState(filter);
     const debouncedText = useDebounce(text, 1000);
-
-    console.log('filter', filter, debouncedText)
 
     // background filter update
     useEffect(() => setText(filter), [filter])
@@ -113,7 +112,7 @@ export default function PacketFilter() {
     return <Paper square elevation={1}>
         <Box display="flex">
             <span>
-                <SimpleMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
+                <FilterMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
             </span>
             <InputBase
                 multiline={true}

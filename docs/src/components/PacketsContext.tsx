@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import Packet from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
 import { DecodedPacket } from "../../../src/dom/pretty";
@@ -6,9 +6,8 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { PACKET_PROCESS, PACKET_SEND, PROGRESS } from "../../../src/dom/constants";
 import { throttle, unique } from "../../../src/dom/utils";
 import Trace from "../../../src/dom/trace";
-import { isInstanceOf, serviceSpecificationFromName } from "../../../src/dom/spec";
 import TracePlayer from "../../../src/dom/traceplayer";
-import { parsePacketFilter } from "../../../src/dom/packetfilter";
+import { PacketFilter, parsePacketFilter } from "../../../src/dom/packetfilter";
 
 const PACKET_MAX_ITEMS = 500
 const RECORDING_TRACE_MAX_ITEMS = 100000;
@@ -59,6 +58,7 @@ export const PacketsProvider = ({ children }) => {
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const [filter, setFilter] = useState("")
+    const packetFilter = useRef<PacketFilter>(parsePacketFilter(bus, filter).filter)
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
     const [recordingTrace, setRecordingTrace] = useState<Trace>(undefined)
@@ -67,7 +67,6 @@ export const PacketsProvider = ({ children }) => {
     const [progress, setProgress] = useState(0)
 
     const recording = !!recordingTrace;
-    const { filter: packetFilter } = parsePacketFilter(bus, filter)
     const throttledSetPackets = throttle(() => {
         const ps = packets.slice(0,
             packets.length < PACKET_MAX_ITEMS
@@ -81,9 +80,9 @@ export const PacketsProvider = ({ children }) => {
         setProgress(undefined)
         bus.clear();
     }
-    const addPacket = (pkt: Packet) => {
+    const addPacket = (pkt: Packet, skipSetState = false) => {
         // apply filter
-        if (!packetFilter(pkt))
+        if (packetFilter.current && !packetFilter.current(pkt))
             return;
 
         // detect duplicate at the tail of the packets
@@ -100,7 +99,8 @@ export const PacketsProvider = ({ children }) => {
             })
         }
         // eventually refresh ui
-        throttledSetPackets();
+        if (!skipSetState)
+            throttledSetPackets();
     }
     const setTrace = async (pkts: Packet[], videoUrl?: string) => {
         if (!pkts?.length) return;
@@ -142,19 +142,37 @@ export const PacketsProvider = ({ children }) => {
             }
             // add packet to live list
             addPacket(pkt);
-        }), [recordingTrace]);
+        }), [recordingTrace, packetFilter, packets]);
+    // reset filter
+    useEffect(() => {
+        const { filter: pf, normalized } = parsePacketFilter(bus, filter)
+        console.log(`packet filter: ${filter} -> ${normalized}`, pf)
+        packetFilter.current = pf
+    }, [filter]);
     // reset packets when filters change
     useEffect(() => {
-        clearPackets()
-    }, [filter])
+        console.log(`refresh filter`)
+        // clear existing packets
+        while (packets.length)
+            packets.pop();
+        // run trace
+        const trace = replayTrace || recordingTrace
+        if (trace)
+            for (let i = trace.packets.length - 1; i >= 0 && packets.length <= PACKET_MAX_ITEMS; i--) {
+                addPacket(trace.packets[i], true)
+            }
+        // update ui
+        throttledSetPackets();
+    }, [packetFilter])
+    // update trace place when trace is created    
     useEffect(() => {
         const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);
+        p?.subscribe(PROGRESS, (pr: number) => setProgress(pr))
         setPlayer(p);
         setProgress(undefined)
         return () => p?.stop();
     }, [replayTrace]);
-    useEffect(() => player?.subscribe(PROGRESS, (p: number) => setProgress(p))
-        , [player]);
+
     return (
         <PacketsContext.Provider value={{
             packets, clearPackets,

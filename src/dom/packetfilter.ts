@@ -19,7 +19,7 @@ export function parsePacketFilter(bus: JDBus, text: string): {
     let flags = new Set<string>()
     let serviceClasses = new Set<number>();
     let devices = new Set<string>();
-    let skipRepeatedAnounce = true;
+    let announce = true;
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z]+)(:([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
@@ -40,7 +40,7 @@ export function parsePacketFilter(bus: JDBus, text: string): {
                 break;
             case "announce":
             case "a":
-                skipRepeatedAnounce = false;
+                announce = (value === undefined) || (value === "true");
                 break;
             case "device":
             case "dev":
@@ -51,7 +51,7 @@ export function parsePacketFilter(bus: JDBus, text: string): {
                     devices.add(value)
                 else {
                     // resolve device by name
-                    const dev = bus.devices().find(d => d.shortId === value || d.name === name);
+                    const dev = bus.devices().find(d => d.shortId === value || d.name === value);
                     if (dev)
                         devices.add(dev.deviceId);
                 }
@@ -59,9 +59,9 @@ export function parsePacketFilter(bus: JDBus, text: string): {
     });
 
     let normalized: string[] = []
-    if (!skipRepeatedAnounce) {
+    if (!announce) {
+        normalized.push("announce:true")
         filters.push(pkt => !pkt.isRepeatedAnnounce)
-        normalized.push("announce")
     }
     if (serviceClasses.size) {
         const scs = Array.from(serviceClasses.keys());
@@ -72,8 +72,10 @@ export function parsePacketFilter(bus: JDBus, text: string): {
         normalized = normalized.concat(Array.from(flags).map(flag => `kind:${flag}`))
         filters.push(pkt => hasAnyFlag(pkt))
     }
-    if (devices.size)
+    if (devices.size) {
         filters.push(pkt => devices.has(pkt.device_identifier))
+        normalized = normalized.concat(Array.from(devices).map(dev => `dev:${dev}`))
+    }
 
     return {
         normalized: normalized.join(" "),
