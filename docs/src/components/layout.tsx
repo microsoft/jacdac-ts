@@ -59,6 +59,7 @@ import PrintButton from "./PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
 import { SnackbarProvider } from 'notistack';
 
+export const TOC_DRAWER_WIDTH = 20;
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
 export const MOBILE_DRAWER_WIDTH = 20;
@@ -86,6 +87,14 @@ const useStyles = makeStyles((theme) => createStyles({
       width: `calc(100% - ${MOBILE_DRAWER_WIDTH}rem)`,
       marginLeft: `${MOBILE_DRAWER_WIDTH}rem`,
     },
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  tocBarShift: {
+    width: `calc(100% - ${TOC_DRAWER_WIDTH}rem)`,
+    marginLeft: `${TOC_DRAWER_WIDTH}rem`,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -238,7 +247,8 @@ function MainAppBar(props: { pageContext?: any }) {
     elevation={pageDeck ? 0 : 2}
     color={appBarColor}
     className={clsx(classes.appBar, {
-      [classes.appBarShift]: drawerOpen,
+      [classes.tocBarShift]: drawerType === DrawerType.Toc,
+      [classes.appBarShift]: drawerOpen && drawerType !== DrawerType.Toc,
       [classes.toolBarShift]: toolsMenu,
     })}
   >

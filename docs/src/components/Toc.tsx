@@ -1,17 +1,9 @@
 import React, { useContext } from "react"
-import { makeStyles, createStyles, Theme, Collapse } from '@material-ui/core';
+import { makeStyles, createStyles, Theme, Collapse, List, ListItem, Typography, useTheme } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
-// tslint:disable-next-line: no-submodule-imports
-import TreeView from '@material-ui/lab/TreeView';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-// tslint:disable-next-line: no-submodule-imports
-import TreeItem from '@material-ui/lab/TreeItem';
 
 interface TocNode {
   name: string;
@@ -24,12 +16,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: '100%',
-      maxWidth: 360,
-      backgroundColor: theme.palette.background.paper,
-    },
-    nested: {
-      paddingLeft: theme.spacing(4),
-    },
+      backgroundColor: theme.palette.background.paper
+    }
   }),
 );
 
@@ -79,6 +67,7 @@ function treeifyToc(toc: TocNode[]) {
 
 export default function Toc() {
   const classes = useStyles();
+  const theme = useTheme();
   const data = useStaticQuery(graphql`
   query {
     site {
@@ -188,26 +177,23 @@ export default function Toc() {
 
   const { tree, nodes } = treeifyToc(toc)
 
-  return <TreeView
-    className={classes.root}
-    defaultCollapseIcon={<ExpandMoreIcon />}
-    defaultExpandIcon={<ChevronRightIcon />}
-    defaultExpanded={Object.keys(nodes)}
-  >
-    {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} />)}
-  </TreeView>
+  return <List dense className={classes.root}>
+    {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} level={0} />)}
+  </List>
 
-  function TocListItem(props: { entry: TocNode }) {
-    const { entry } = props;
+  function TocListItem(props: { entry: TocNode, level: number }) {
+    const { entry, level } = props;
     const sub = !!entry.children && !!entry.children.length;
 
-    return <TreeItem
-      key={'tocitem' + entry.path}
-      nodeId={entry.path.replace(/\/$/, '')}
-      label={<Link to={entry.path}>
-        <ListItemText primary={entry.name} primaryTypographyProps={({ color: "textPrimary" })} />
-      </Link>}>
-      {sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} />)}
-    </TreeItem>
+    return <>
+      <ListItem button
+        key={'tocitem' + entry.path}>
+        <Link style={({ color: theme.palette.text.primary })} to={entry.path}>
+          <ListItemText
+            primary={<Typography variant={level < 2 ? "button" : "caption"}>{entry.name}</Typography>} />
+        </Link>
+      </ListItem>
+      { sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}
+    </>
   }
 }

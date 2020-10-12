@@ -6,7 +6,7 @@ import Alert from "./Alert";
 import PacketList from "./PacketList";
 import Toc from "./Toc";
 import DomTreeView from "./DomTreeView";
-import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH } from "./layout";
+import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import AppContext, { drawerTitle, DrawerType } from "./AppContext";
@@ -36,6 +36,13 @@ const useStyles = makeStyles((theme) => createStyles({
             width: `${MOBILE_DRAWER_WIDTH}rem`,
         }
     },
+    tocDrawer: {
+        width: `${TOC_DRAWER_WIDTH}rem`,
+        flexShrink: 0
+    },
+    tocDrawerPaper: {
+        width: `${TOC_DRAWER_WIDTH}rem`
+    },
     drawerHeader: {
         display: 'flex',
         alignItems: 'center',
@@ -56,18 +63,13 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 export default function AppDrawer(props: {
-    pagePath: string,
-    serviceClass?: number
+    pagePath: string
 }) {
     const { pagePath } = props
     const theme = useTheme()
     const classes = useStyles()
-    const { serviceClass: globalServiceClass } = useContext(PacketsContext)
-    const serviceClass = props.serviceClass !== undefined ? props.serviceClass : globalServiceClass;
     const { drawerType, setDrawerType } = useContext(AppContext)
     const open = drawerType !== DrawerType.None
-    const service = serviceClass !== undefined
-        && serviceSpecificationFromClassIdentifier(serviceClass)
     const searchResults = useDrawerSearchResults()
     const showSearchResults = !!searchResults;
     const showTitle = useMediaQuery(theme.breakpoints.up('lg'))
@@ -92,12 +94,12 @@ export default function AppDrawer(props: {
         return <></>
 
     return <Drawer
-        className={classes.drawer}
+        className={drawerType === DrawerType.Toc ? classes.tocDrawer : classes.drawer}
         variant="persistent"
         anchor="left"
         open={open}
         classes={{
-            paper: classes.drawerPaper,
+            paper: drawerType === DrawerType.Toc ? classes.tocDrawerPaper : classes.drawerPaper,
         }}
     >
         <div className={classes.drawerHeader}>
@@ -113,7 +115,7 @@ export default function AppDrawer(props: {
         {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
         {!showSearchResults && drawerType === DrawerType.Packets
-            ? <PacketList serviceClass={serviceClass} />
+            ? <PacketList />
             : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
     </Drawer>
 }
