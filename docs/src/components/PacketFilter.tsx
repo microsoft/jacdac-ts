@@ -141,6 +141,7 @@ export default function PacketFilter() {
                 placeholder="Filter packets"
                 inputProps={{ 'aria-label': 'filter packets' }}
                 value={text}
+                spellCheck={false}
                 onChange={handleChange}
             />
         </Box>
