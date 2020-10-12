@@ -1,16 +1,23 @@
 import React, { useContext, useState, useEffect } from "react"
+import useChange from "../jacdac/useChange"
 import DbContext, { DbStore, DB_VALUE_CHANGE } from "./DbContext"
 import useEffectAsync from "./useEffectAsync"
 
 export default function useDbValue(id: string, initialValue: string) {
     const { db } = useContext(DbContext)
     const [_value, _setValue] = useState<string>(undefined)
-    const values = db?.values;
+    const values = useChange(db, d => d?.values);
     let _mounted = true;
+//  console.log(`dbvalue use ${id}`, values)
+
+    const setValue = async (value: string) => {
+  //      console.log(`dbvalue store`, values, id, value)
+        await values?.set(id, value)
+    }
 
     // listen to change
     useEffect(() => values?.subscribe(DB_VALUE_CHANGE, async (changed) => {
-        console.log(`db value changed`, id)
+    //    console.log(`db value changed`, id)
         if (changed === id) {
             const v = await values.get(id)
             if (_mounted) {
@@ -20,23 +27,20 @@ export default function useDbValue(id: string, initialValue: string) {
         return () => {
             _mounted = false;
         }
-    }), [db])
+    }), [db, values])
 
     // load intial value
     useEffectAsync(async (mounted) => {
         const v = await values?.get(id);
         if (mounted()) {
-            console.log(`load dbvalue ${id}`, values, v)
+      //      console.log(`load dbvalue ${id}`, values, v)
             _setValue(v || initialValue)
         }
-    }, [db])
+    }, [db, values])
 
     return {
         value: _value,
-        setValue: async (value: string) => {
-            console.log(`dbvalue store`, values, id, value)
-            await values?.set(id, value)
-        }
+        setValue
     }
 }
 

@@ -8,8 +8,9 @@ import { throttle, unique } from "../../../src/dom/utils";
 import Trace from "../../../src/dom/trace";
 import TracePlayer from "../../../src/dom/traceplayer";
 import { PacketFilter, parsePacketFilter } from "../../../src/dom/packetfilter";
+import useDbValue from "./useDbValue"
 
-const PACKET_MAX_ITEMS = 500
+const PACKET_MAX_ITEMS = 100
 const RECORDING_TRACE_MAX_ITEMS = 100000;
 export interface PacketProps {
     key: number;
@@ -57,7 +58,7 @@ export const PacketsProvider = ({ children }) => {
     const { bus, disconnectAsync, connectAsync } = useContext<JDContextProps>(JACDACContext)
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
-    const [filter, setFilter] = useState("")
+    const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
     const packetFilter = useRef<PacketFilter>(parsePacketFilter(bus, filter).filter)
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
@@ -130,6 +131,11 @@ export const PacketsProvider = ({ children }) => {
             player?.start();
         }
     }
+    const setFilter = (f: string) => {
+        console.log(`set filter ${f}`)
+        _setFilter(f);
+    }
+
     // recording packets
     useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
         (pkt: Packet) => {
@@ -146,7 +152,6 @@ export const PacketsProvider = ({ children }) => {
     // reset filter
     useEffect(() => {
         const { filter: pf, normalized } = parsePacketFilter(bus, filter)
-        console.log(`packet filter: ${filter} -> ${normalized}`)
         packetFilter.current = pf
     }, [filter]);
     // reset packets when filters change

@@ -182,21 +182,21 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
 
   return (
     <ThemeProvider theme={theme}>
-      <MDXProvider components={mdxComponents}>
-        <SnackbarProvider maxSnack={3}>
+      <SnackbarProvider maxSnack={3}>
+        <DbProvider>
           <JACDACProvider>
             <ServiceManagerProvider>
               <PacketsProvider>
-                <DbProvider>
+                <MDXProvider components={mdxComponents}>
                   <AppProvider>
                     <LayoutWithContext {...props} />
                   </AppProvider>
-                </DbProvider>
+                </MDXProvider>
               </PacketsProvider>
             </ServiceManagerProvider>
           </JACDACProvider>
-        </SnackbarProvider>
-      </MDXProvider>
+        </DbProvider>
+      </SnackbarProvider>
     </ThemeProvider>
   )
 }

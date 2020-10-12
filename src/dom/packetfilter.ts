@@ -21,7 +21,7 @@ export function parsePacketFilter(bus: JDBus, text: string): {
     let devices = new Set<string>();
     let repeatedAnnounce = true;
     text.split(/\s+/g).forEach(part => {
-        const [match, prefix, _, value] = /([a-z\-_]+)(:([^\s]+))?/.exec(part) || [];
+        const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
             case "kind":
             case "k":

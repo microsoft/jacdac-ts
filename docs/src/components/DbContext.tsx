@@ -167,23 +167,16 @@ DbContext.displayName = "db";
 
 export default DbContext;
 
-let theDb: Db;
-
 export const DbProvider = ({ children }) => {
-    const [db, setDb] = useState<Db>(theDb)
+    const [db, setDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
-    useEffectAsync(async (mounted) => {
-        if (db)
-            return;
+    useEffectAsync(async () => {
         try {
-            const r = theDb = await Db.create();
-            if (mounted()) {
-                setDb(r);
-            }
+            const r = await Db.create();
+            setDb(r);
         }
         catch (e) {
-            if (mounted())
-                setError(e)
+            setError(e)
         }
     }, []);
     return (
