@@ -35,8 +35,14 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 
     const devices = useChange(bus, b => b.devices());
     const services = uniqueMap(arrayConcatMany(devices.map(device => device.services()))
-        , service => service.serviceClass.toString()
-        , service => service.specification?.shortId || service.serviceClass.toString());
+        , service => service.serviceClass.toString(), srv => srv);
+    const serviceIds = services.map(service => service.specification?.shortId || `0x${service.serviceClass.toString()}`);
+    const serviceSpecs = services.map(service => service.specification).filter(spec => !!spec);
+    const packets = uniqueMap(
+        arrayConcatMany(serviceSpecs.map(spec => spec.packets.filter(pkt => pkt.identifierName))),
+        pkt => pkt.identifier.toString(16),
+        pkt => pkt
+    )
 
     const handleAdd = (filter: string) => () => {
         handleAddFilter(filter)
@@ -87,12 +93,16 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <DeviceName device={device} />&nbsp;
                     <Typography variant="subtitle2">dev:{device.name || device.shortId}</Typography>
                 </MenuItem>)}
-                {services?.map(srv => <MenuItem key={`srv:` + srv} onClick={handleAdd(`srv:${srv}`)}>
+                {serviceIds?.map(srv => <MenuItem key={`srv:` + srv} onClick={handleAdd(`srv:${srv}`)}>
                     <ListItemIcon>
                         <KindIcon kind={"service"} />
                     </ListItemIcon>
                     <Typography>{srv}</Typography>&nbsp;
                     <Typography variant="subtitle2">srv:{srv}</Typography>
+                </MenuItem>)}
+                {packets?.map(pkt => <MenuItem key={`pkt:` + pkt.identifier} onClick={handleAdd(`pkt:0x${pkt.identifier.toString(16)}`)}>
+                    <Typography>{pkt.identifierName}</Typography>&nbsp;
+                    <Typography variant="subtitle2">pkt:0x{pkt.identifier.toString(16)}</Typography>
                 </MenuItem>)}
             </Menu>
         </Box>
