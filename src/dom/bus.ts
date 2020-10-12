@@ -37,7 +37,7 @@ import {
     TIMEOUT,
     LATE,
     PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT, REPORT_UPDATE, REGISTER_POLL_REPORT_INTERVAL, REGISTER_POLL_REPORT_MAX_INTERVAL
+    TIMEOUT_DISCONNECT, REPORT_UPDATE, REGISTER_POLL_REPORT_INTERVAL, REGISTER_POLL_REPORT_MAX_INTERVAL, PACKET_BRIDGE
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -519,7 +519,7 @@ export class JDBus extends JDNode {
      * Ingests and process a packet received from the bus.
      * @param pkt a jacdac packet
      */
-    processPacket(pkt: Packet) {
+    processPacket(pkt: Packet, bridged?: boolean) {
         if (!pkt.multicommand_class)
             pkt.device = this.device(pkt.device_identifier)
         this.emit(PACKET_PROCESS, pkt)
@@ -556,6 +556,10 @@ export class JDBus extends JDNode {
             if (pkt.is_command && pkt.service_command === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
+
+        // notify bridges that a packet has been processed
+        if (!bridged)
+            this.emit(PACKET_BRIDGE, pkt);
     }
 
     get selfDeviceId() {

@@ -1,12 +1,14 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
-import { PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { PACKET_BRIDGE, PACKET_SEND } from "./constants";
 import Packet from "./packet";
 
 export interface PacketMessage {
-    type: "jacdac";
+    channel: "jacdac";
+    type: "messagepacket";
     broadcast: true;
-    packet: Uint8Array;
+    outer: true;
+    data: Uint8Array;
 }
 
 /**
@@ -16,30 +18,53 @@ export default class IFrameBridgeClient extends JDClient {
     constructor(readonly bus: JDBus, readonly parentOrigin: string = "*") {
         super()
         this.postPacket = this.postPacket.bind(this);
+        this.handleMessage = this.handleMessage.bind(this);
         if (this.supported)
             this.registerEvents();
     }
 
     private registerEvents() {
-        this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket));
+        console.log(`jdiframe: listening for packets`)
+        this.mount(this.bus.subscribe(PACKET_BRIDGE, this.postPacket));
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
+
+        window.addEventListener("message", this.handleMessage, false);
+        this.mount(() => window.removeEventListener("message", this.handleMessage, false))
+    }
+
+    private handleMessage(event: MessageEvent) {
+        if (this.parentOrigin !== "*" && event.origin !== this.parentOrigin)
+            return; // wrong origin
+
+        const msg = event.data as PacketMessage;
+        if (!msg
+            || !msg.broadcast
+            || msg.channel !== "jacdac"
+            || msg.type !== "messagepacket"
+            || !msg.outer)
+            return; // not our message
+
+        // send to bus
+        const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
+        console.log(`jdiframe: process pkt`, pkt)
+        this.bus.processPacket(pkt, true);
     }
 
     private postPacket(pkt: Packet) {
+        console.log(`jd: send iframe pkt`)
+
         const msg: PacketMessage = {
-            type: "jacdac",
+            type: "messagepacket",
+            channel: "jacdac",
             broadcast: true,
-            packet: pkt.toBuffer()
+            outer: true,
+            data: pkt.toBuffer()
         }
-        window.parent.postMessage(msg, this.parentOrigin)
+        // may not be in iframe
+        window.parent?.postMessage(msg, this.parentOrigin)
     }
 
     get supported(): boolean {
-        try {
-            return typeof window !== "undefined"
-                && window.self !== window
-        } catch (e) {
-            return typeof window !== "undefined";
-        }
+        return typeof window !== "undefined";
     }
 }
