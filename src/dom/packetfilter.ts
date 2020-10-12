@@ -84,6 +84,6 @@ export function parsePacketFilter(bus: JDBus, text: string): {
 
     function hasAnyFlag(pkt: Packet) {
         const k = pkt.decoded?.info.kind;
-        return k && flags.has(k);
+        return !!k && flags.has(k);
     }
 }
