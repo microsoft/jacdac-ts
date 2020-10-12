@@ -534,6 +534,18 @@ export function unique(values: string[]) {
     return Object.keys(r)
 }
 
+export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted: (value: T) => U) {
+    const r = {}
+    for (let i = 0; i < values.length; ++i) {
+        const value = values[i]
+        const idv = id(value)
+        if (!r[idv]) {
+            r[idv] = value;
+        }
+    }
+    return Object.values(r).map(converted)
+}
+
 export function ellipseJoin(values: string[], maxItems: number, elipse = "...") {
     let v = values.slice(0, maxItems - 1)
     if (v.length < values.length)

@@ -9,6 +9,7 @@ import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
 import useDebounce from './useDebounce';
+import { arrayConcatMany, uniqueMap } from '../../../src/dom/utils';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -33,6 +34,9 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
     const kinds = allKinds()
 
     const devices = useChange(bus, b => b.devices());
+    const services = uniqueMap(arrayConcatMany(devices.map(device => device.services()))
+        , service => service.serviceClass.toString()
+        , service => service.specification?.shortId || service.serviceClass.toString());
 
     const handleAdd = (filter: string) => () => {
         handleAddFilter(filter)
@@ -75,13 +79,20 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     </ListItemIcon>
                     <Typography>Hide repeated announce</Typography>&nbsp;
                     <Typography variant="subtitle2">repeated-announce:false</Typography>
-                    </MenuItem>
-                {devices?.map(device => <MenuItem key={device.id} onClick={handleAdd(`dev:${device.name || device.shortId}`)}>
+                </MenuItem>
+                {devices?.map(device => <MenuItem key={`dev:` + device.id} onClick={handleAdd(`dev:${device.name || device.shortId}`)}>
                     <ListItemIcon>
                         <KindIcon kind={"device"} />
                     </ListItemIcon>
                     <DeviceName device={device} />&nbsp;
                     <Typography variant="subtitle2">dev:{device.name || device.shortId}</Typography>
+                </MenuItem>)}
+                {services?.map(srv => <MenuItem key={`srv:` + srv} onClick={handleAdd(`srv:${srv}`)}>
+                    <ListItemIcon>
+                        <KindIcon kind={"service"} />
+                    </ListItemIcon>
+                    <Typography>{srv}</Typography>&nbsp;
+                    <Typography variant="subtitle2">srv:{srv}</Typography>
                 </MenuItem>)}
             </Menu>
         </Box>
