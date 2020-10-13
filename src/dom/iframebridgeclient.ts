@@ -1,6 +1,5 @@
 import { JDBus } from "./bus";
-import { JDClient } from "./client";
-import { PACKET_BRIDGE, PACKET_SEND } from "./constants";
+import { PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
 
@@ -16,6 +15,8 @@ export interface PacketMessage {
  * A client that bridges received and sent packets to a parent iframe
  */
 export default class IFrameBridgeClient extends JDIFrameClient {
+    // this is a unique id used to trace packets sent by this bridge
+    readonly bridgeId = "bridge" + Math.random();
     constructor(readonly bus: JDBus) {
         super(bus)
         this.postPacket = this.postPacket.bind(this);
@@ -26,7 +27,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
 
     private registerEvents() {
         console.log(`jdiframe: listening for packets`)
-        this.mount(this.bus.subscribe(PACKET_BRIDGE, this.postPacket));
+        this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket));
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
 
         window.addEventListener("message", this.handleMessage, false);
@@ -45,12 +46,21 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             || !msg.outer)
             return; // not our message
 
-        // send to bus
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
-        this.bus.processPacket(pkt, true);
+        // we're adding a little trace to avoid resending our own packets
+        pkt.sender = this.bridgeId;
+
+        // send to native bus
+        this.bus.sendPacketAsync(pkt);
+        // send to javascript bus
+        this.bus.processPacket(pkt);
     }
 
     private postPacket(pkt: Packet) {
+        // check we sent this packet
+        if (pkt.sender === this.bridgeId)
+            return;
+
         const msg: PacketMessage = {
             type: "messagepacket",
             channel: "jacdac",

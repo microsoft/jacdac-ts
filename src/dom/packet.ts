@@ -20,12 +20,15 @@ import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pre
 import { isInstanceOf, serviceSpecificationFromName } from "./spec";
 
 export class Packet {
-    _header: Uint8Array;
-    _data: Uint8Array;
+    private _header: Uint8Array;
+    private _data: Uint8Array;
     timestamp: number
     device: JDDevice
-    readonly key: number;
     private _decoded: DecodedPacket;
+    readonly key: number;
+    // An optional tracing identity to avoid
+    // resending own packets for bridges
+    public sender: string;
 
     private static _nextKey = 1;
     private constructor() {

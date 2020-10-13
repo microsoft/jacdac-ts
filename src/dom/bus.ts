@@ -521,7 +521,7 @@ export class JDBus extends JDNode {
      * Ingests and process a packet received from the bus.
      * @param pkt a jacdac packet
      */
-    processPacket(pkt: Packet, bridged?: boolean) {
+    processPacket(pkt: Packet) {
         if (!pkt.multicommand_class)
             pkt.device = this.device(pkt.device_identifier)
         this.emit(PACKET_PROCESS, pkt)
@@ -558,10 +558,6 @@ export class JDBus extends JDNode {
             if (pkt.is_command && pkt.service_command === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
-
-        // notify bridges that a packet has been processed
-        if (!bridged)
-            this.emit(PACKET_BRIDGE, pkt);
     }
 
     get selfDeviceId() {

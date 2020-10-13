@@ -23,10 +23,11 @@ export default function PacketInspector() {
         <div>
             {packet.timestamp}ms, <KindChip kind={decoded?.info?.kind} />, size {packet.size}
         </div>
-        {info && <PacketSpecification
-            serviceClass={packet.service_class}
-            packetInfo={info}
-        />}
+        { decoded && <ul>
+            {decoded.decoded.map(member => <li>
+                {member.info.name}: <code>{member.humanValue}</code>
+            </li>)}
+        </ul>}
         <h3>Raw Data</h3>
         <p>
             {printPacket(packet)}
@@ -37,5 +38,10 @@ export default function PacketInspector() {
 ${toHex(packet.data)}`}
             </pre>
         </Paper>
+        {info && <><h3>Specification</h3>
+            <PacketSpecification
+                serviceClass={packet.service_class}
+                packetInfo={info}
+            /></>}
     </>;
 }
