@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { Drawer, Typography, Divider, makeStyles, createStyles, useMediaQuery, useTheme } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
 import PacketList from "./PacketList";
 import Toc from "./Toc";
 import DomTreeView from "./DomTreeView";
@@ -10,13 +9,8 @@ import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH 
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import AppContext, { drawerTitle, DrawerType } from "./AppContext";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { BusState } from "../../../src/dom/bus";
-import ConnectButton from "../jacdac/ConnectButton";
 import { useStaticQuery, graphql } from "gatsby";
 import Mdx from "./Mdx";
-import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
-import PacketsContext from "./PacketsContext";
 import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
 import { useDrawerSearchResults } from "./useDrawerSearchResults";
@@ -27,13 +21,13 @@ const useStyles = makeStyles((theme) => createStyles({
         width: `${DRAWER_WIDTH}rem`,
         flexShrink: 0,
         [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
-            width: `${MOBILE_DRAWER_WIDTH}rem`,
+            width: `100%`,
         }
     },
     drawerPaper: {
         width: `${DRAWER_WIDTH}rem`,
         [theme.breakpoints.down(MOBILE_BREAKPOINT)]: {
-            width: `${MOBILE_DRAWER_WIDTH}rem`,
+            width: `100%`,
         }
     },
     tocDrawer: {
@@ -65,7 +59,6 @@ const useStyles = makeStyles((theme) => createStyles({
 export default function AppDrawer(props: {
     pagePath: string
 }) {
-    const { pagePath } = props
     const theme = useTheme()
     const classes = useStyles()
     const { drawerType, setDrawerType } = useContext(AppContext)

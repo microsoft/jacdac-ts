@@ -190,7 +190,7 @@ export default function Toc() {
         key={'tocitem' + entry.path}>
         <Link style={({ color: theme.palette.text.primary })} to={entry.path}>
           <ListItemText
-            primary={<Typography variant={level < 2 ? "button" : "caption"}>{entry.name}</Typography>} />
+            primary={<Typography variant={sub ? "button" : "caption"}>{entry.name}</Typography>} />
         </Link>
       </ListItem>
       { sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}

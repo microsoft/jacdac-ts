@@ -59,7 +59,7 @@ import PrintButton from "./PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
 import { SnackbarProvider } from 'notistack';
 
-export const TOC_DRAWER_WIDTH = 20;
+export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
 export const MOBILE_DRAWER_WIDTH = 20;
@@ -332,7 +332,6 @@ function LayoutWithContext(props: {
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-  const serviceClass = pageContext?.node?.classIdentifier;
   const pagePath = pageContext?.frontmatter?.path;
   const pageDeck = !!pageContext?.frontmatter?.deck;
 
