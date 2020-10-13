@@ -15,8 +15,10 @@ export interface PacketMessage {
  * A client that bridges received and sent packets to a parent iframe
  */
 export default class IFrameBridgeClient extends JDClient {
-    constructor(readonly bus: JDBus, readonly parentOrigin: string = "*") {
+    constructor(readonly bus: JDBus, private parentOrigin: string = "*") {
         super()
+        this.parentOrigin = this.parentOrigin || "*";
+        console.log(`jdbridge: origin ${this.parentOrigin}`);
         this.postPacket = this.postPacket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
         if (this.supported)

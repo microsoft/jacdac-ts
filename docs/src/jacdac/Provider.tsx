@@ -5,9 +5,21 @@ import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
 
+function sniffQueryArguments() {
+    if (typeof window === "undefined" || typeof URLSearchParams === "undefined")
+        return {};
+
+    const params = new URLSearchParams(window.location.search)
+    return {
+        parentOrigin: params.get('parentOrigin')
+    }
+}
+
+const args = sniffQueryArguments();
 const bus = createUSBBus();
 bus.setBackgroundFirmwareScans(true)
-const iframeBridge = new IFrameBridgeClient(bus, "*");
+// route makecode messages
+const iframeBridge = new IFrameBridgeClient(bus, args.parentOrigin);
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
