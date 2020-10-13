@@ -70,19 +70,6 @@ module.exports = {
       }
     },
     {
-      resolve: `gatsby-plugin-manifest`,
-      options: {
-        name: `jacdac-ts`,
-        short_name: `jacdac-ts`,
-        start_url: `/`,
-        background_color: `#663399`,
-        theme_color: `#663399`,
-        display: `minimal-ui`,
-        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
-        crossOrigin: `use-credentials`,
-      },
-    },
-    {
       resolve: `gatsby-plugin-mdx`,
       options: {
         defaultLayouts: {
@@ -188,9 +175,21 @@ module.exports = {
       },
     },
     "gatsby-plugin-sitemap",
-    // this (optional) plugin enables Progressive Web App + Offline functionality
-    // To learn more, visit: https://gatsby.dev/offline
-    // `gatsby-plugin-offline`,
+    {
+      resolve: `gatsby-plugin-manifest`,
+      options: {
+        name: `JACDAC: Joint Asynchronous Communications; Device Agnostic Control`,
+        short_name: `JACDAC`,
+        start_url: `/`,
+        background_color: `#663399`,
+        theme_color: `#663399`,
+        display: `minimal-ui`,
+        cache_busting_mode: 'none',
+        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+        crossOrigin: `use-credentials`,
+      },
+    },
+    "gatsby-plugin-offline",
     "gatsby-plugin-robots-txt",
     "gatsby-plugin-meta-redirect",
   ],
