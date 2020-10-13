@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect } from "react";
 import { JSONTryParse, SMap } from "../../../src/dom/utils";
 import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../src/embed/filestorage'
 import { IThemeMessage } from "../../../src/embed/protocol";
-import { HTMLIFrameTransport } from "../../../src/embed/transport";
+import { IFrameTransport } from "../../../src/embed/transport";
 import DarkModeContext from "./DarkModeContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import { JDDevice } from "../../../src/dom/device";
@@ -69,7 +69,7 @@ export const ServiceManagerProvider = ({ children }) => {
     );
     if (isHosted) {
         console.log(`starting hosted services`)
-        const transport = new HTMLIFrameTransport()
+        const transport = new IFrameTransport(bus)
         fileStorage = new HostedFileStorage(transport)
 
         // notify host that we are ready

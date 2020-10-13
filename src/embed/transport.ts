@@ -1,11 +1,15 @@
+import { JDBus } from "../dom/bus";
+import JDIFrameClient from "../dom/iframeclient";
 import { IMessage, IStatusMessage } from "./protocol";
 
 export interface ITransport {
     postMessage(msg: IMessage): Promise<void>;
 }
 
-export class HTMLIFrameTransport implements ITransport {
-    constructor(public targetOrigin: string = "*") {
+export class IFrameTransport extends JDIFrameClient
+    implements ITransport {
+    constructor(bus: JDBus) {
+        super(bus)
     }
 
     postReady() {
@@ -20,7 +24,7 @@ export class HTMLIFrameTransport implements ITransport {
     postMessage(msg: IMessage): Promise<void> {
         msg.id = "jd:" + Math.random()
         msg.source = "jacdac"
-        window.parent.postMessage(msg, this.targetOrigin)
+        window.parent.postMessage(msg, this.origin)
         return Promise.resolve();
     }
 }

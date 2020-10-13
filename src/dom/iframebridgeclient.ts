@@ -1,6 +1,7 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
 import { PACKET_BRIDGE, PACKET_SEND } from "./constants";
+import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
 
 export interface PacketMessage {
@@ -14,11 +15,9 @@ export interface PacketMessage {
 /**
  * A client that bridges received and sent packets to a parent iframe
  */
-export default class IFrameBridgeClient extends JDClient {
-    constructor(readonly bus: JDBus, private parentOrigin: string = "*") {
-        super()
-        this.parentOrigin = this.parentOrigin || "*";
-        console.log(`jdbridge: origin ${this.parentOrigin}`);
+export default class IFrameBridgeClient extends JDIFrameClient {
+    constructor(readonly bus: JDBus) {
+        super(bus)
         this.postPacket = this.postPacket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
         if (this.supported)
@@ -35,7 +34,7 @@ export default class IFrameBridgeClient extends JDClient {
     }
 
     private handleMessage(event: MessageEvent) {
-        if (this.parentOrigin !== "*" && event.origin !== this.parentOrigin)
+        if (this.origin !== "*" && event.origin !== this.origin)
             return; // wrong origin
 
         const msg = event.data as PacketMessage;
@@ -48,13 +47,10 @@ export default class IFrameBridgeClient extends JDClient {
 
         // send to bus
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
-        console.log(`jdiframe: process pkt`, pkt)
         this.bus.processPacket(pkt, true);
     }
 
     private postPacket(pkt: Packet) {
-        console.log(`jd: send iframe pkt`)
-
         const msg: PacketMessage = {
             type: "messagepacket",
             channel: "jacdac",
@@ -63,7 +59,7 @@ export default class IFrameBridgeClient extends JDClient {
             data: pkt.toBuffer()
         }
         // may not be in iframe
-        window.parent?.postMessage(msg, this.parentOrigin)
+        window.parent?.postMessage(msg, this.origin)
     }
 
     get supported(): boolean {

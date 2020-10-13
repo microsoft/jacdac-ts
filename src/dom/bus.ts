@@ -62,6 +62,8 @@ export interface BusOptions {
     deviceLostDelay?: number;
     deviceDisconnectedDelay?: number;
     deviceId?: string;
+
+    parentOrigin?: string;
 }
 
 export interface BusHost {

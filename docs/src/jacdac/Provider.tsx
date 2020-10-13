@@ -16,10 +16,12 @@ function sniffQueryArguments() {
 }
 
 const args = sniffQueryArguments();
-const bus = createUSBBus();
+const bus = createUSBBus(undefined, {
+    parentOrigin: args.parentOrigin
+});
 bus.setBackgroundFirmwareScans(true)
 // route makecode messages
-const iframeBridge = new IFrameBridgeClient(bus, args.parentOrigin);
+const iframeBridge = new IFrameBridgeClient(bus);
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
