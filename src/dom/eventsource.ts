@@ -11,7 +11,7 @@ interface Listener {
 function normalizeEventNames(eventNames: string | string[]): string[] {
     if (!eventNames)
         eventNames = [];
-    if (typeof eventNames == "string")
+    if (typeof eventNames === "string")
         eventNames = [eventNames]
     return eventNames;
 }

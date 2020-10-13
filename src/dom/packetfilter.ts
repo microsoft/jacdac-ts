@@ -1,100 +1,121 @@
 import { JDBus } from "./bus";
 import Packet from "./packet";
 import { isInstanceOf, serviceSpecificationFromName } from "./spec";
+import { SMap } from "./utils";
 
 export type PacketFilter = (pkt: Packet) => boolean;
 
-export function parsePacketFilter(bus: JDBus, text: string): {
-    normalized: string;
-    filter: PacketFilter
-} {
+export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     if (!text) {
-        return {
-            normalized: "",
-            filter: (pkt) => true
-        }
+        return (pkt) => true
     }
 
     let filters: PacketFilter[] = [];
     let flags = new Set<string>()
     let serviceClasses = new Set<number>();
-    let devices = new Set<string>();
     let pkts = new Set<string>();
     let repeatedAnnounce = true;
+    let announce = true;
+    let regGet = false;
+    let regSet = false;
+    let devices: SMap<{ from: boolean; to: boolean; }> = {};
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
             case "kind":
             case "k":
-                if (!value) return;
-
+                if (!value)
+                    break;
                 flags.add(value.toLowerCase())
                 break;
             case "service":
             case "srv":
-                if (!value) return;
-
+                if (!value)
+                    break;
                 const service = serviceSpecificationFromName(value)
                 const serviceClass = service?.classIdentifier || parseInt(value, 16);
                 if (serviceClass !== undefined)
                     serviceClasses.add(serviceClass)
                 break;
+            case "announce":
+            case "a":
+                if (value === "false" || value === "no")
+                    announce = false;
+                break;
             case "repeated-announce":
             case "ra":
-                repeatedAnnounce = (value === undefined) || (value === "true");
+                if (value === "false" || value === "no")
+                    repeatedAnnounce = false;
                 break;
             case "device":
             case "dev":
-                if (!value) return;
-
-                const deviceId = parseInt(value, 16)
-                if (!isNaN(deviceId))
-                    devices.add(value)
-                else {
-                    // resolve device by name
-                    const dev = bus.devices().find(d => d.shortId === value || d.name === value);
-                    if (dev)
-                        devices.add(dev.deviceId);
+            case "to":
+            case "from":
+                if (!value)
+                    break;
+                // resolve device by name
+                const deviceId = bus.devices().find(d => d.shortId === value || d.name === value)?.deviceId;
+                if (deviceId) {
+                    const data = devices[deviceId] || (devices[deviceId] = { from: false, to: false })
+                    if (prefix === "from")
+                        data.from = true;
+                    else if (prefix === "to")
+                        data.to = true;
                 }
                 break;
             case "pkt":
                 if (!value) return;
-
                 // find register
                 const id = parseInt(value, 16);
                 if (!isNaN(id))
                     pkts.add(id.toString(16));
                 break;
+            case "reg-get":
+            case "get":
+                regGet = true;
+                break;
+            case "reg-set":
+            case "set":
+                regSet = true;
+                break;
+            case "requires-ack":
+                filters.push(pkt => pkt.requires_ack);
+                break;
         }
     });
 
-    let normalized: string[] = []
-    if (!repeatedAnnounce) {
-        normalized.push("repeated-announce:false")
-        filters.push(pkt => !pkt.isRepeatedAnnounce)
+    if (!announce) {
+        filters.push(pkt => !pkt.isAnnounce)
     }
-    if (flags.size) {
-        normalized = normalized.concat(Array.from(flags).map(flag => `kind:${flag}`))
+    if (!repeatedAnnounce)
+        filters.push(pkt => !pkt.isAnnounce || !pkt.isRepeatedAnnounce)
+    if (flags.size)
         filters.push(pkt => hasAnyFlag(pkt))
-    }
-    if (devices.size) {
-        filters.push(pkt => devices.has(pkt.device_identifier))
-        normalized = normalized.concat(Array.from(devices).map(dev => `dev:${dev}`))
-    }
+    if (regGet || regSet)
+        filters.push(pkt => pkt.is_reg_get || pkt.is_reg_set)
+    else if (regGet)
+        filters.push(pkt => pkt.is_reg_get)
+    else if (regSet)
+        filters.push(pkt => pkt.is_reg_set)
+    if (Object.keys(devices).length)
+        filters.push(pkt => {
+            const f = devices[pkt.device.deviceId];
+            return !!f && (!f.from || !pkt.is_command) && (!f.to || pkt.is_command);
+        })
     if (serviceClasses.size) {
         const scs = Array.from(serviceClasses.keys());
-        normalized = normalized.concat(scs.map(sc => `srv:${sc.toString(16)}`))
         filters.push(pkt => scs.some(serviceClass => isInstanceOf(pkt.service_class, serviceClass)));
     }
     if (pkts.size) {
         const scs = Array.from(pkts.keys());
-        normalized = normalized.concat(scs.map(sc => `pkt:${sc}`))
         filters.push(pkt => pkts.has(pkt.decoded?.info.identifier.toString(16)));
     }
 
-    return {
-        normalized: normalized.join(" "),
-        filter: (pkt: Packet) => filters.every(filter => filter(pkt))
+    //  const name = `filter` + bus.timestamp
+    return (pkt: Packet) => {
+        const r = filters.every(filter => filter(pkt));
+        //console.log(`${name} ${pkt} -> ${r}`)
+        return r;
     }
 
     function hasAnyFlag(pkt: Packet) {

@@ -59,7 +59,7 @@ export const PacketsProvider = ({ children }) => {
     const [packets, setPackets] = useState<PacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
-    const packetFilter = useRef<PacketFilter>(parsePacketFilter(bus, filter).filter)
+    const [packetFilter, setPacketFilter] = useState<{ filter: PacketFilter }>(undefined)
 
     const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
     const [recordingTrace, setRecordingTrace] = useState<Trace>(undefined)
@@ -80,28 +80,6 @@ export const PacketsProvider = ({ children }) => {
         setSelectedPacket(undefined)
         setProgress(undefined)
         bus.clear();
-    }
-    const addPacket = (pkt: Packet, skipSetState = false) => {
-        // apply filter
-        if (packetFilter.current && !packetFilter.current(pkt))
-            return;
-
-        // detect duplicate at the tail of the packets
-        const { key } = pkt;
-        const old = packets.slice(-15).find(p => p.key == key)
-        if (old)
-            old.count++;
-        else {
-            packets.unshift({
-                key,
-                packet: pkt,
-                decoded: pkt.decoded,
-                count: 1
-            })
-        }
-        // eventually refresh ui
-        if (!skipSetState)
-            throttledSetPackets();
     }
     const setTrace = async (pkts: Packet[], videoUrl?: string) => {
         if (!pkts?.length) return;
@@ -147,21 +125,33 @@ export const PacketsProvider = ({ children }) => {
                 }
             }
             // add packet to live list
-            addPacket(pkt);
+            if (!packetFilter?.filter(pkt))
+                return;
+
+            // detect duplicate at the tail of the packets
+            const { key } = pkt;
+            const old = packets.slice(-15).find(p => p.key == key)
+            if (old)
+                old.count++;
+            else {
+                packets.unshift({
+                    key,
+                    packet: pkt,
+                    decoded: pkt.decoded,
+                    count: 1
+                })
+            }
+            // eventually refresh ui
+            throttledSetPackets();
         }), [recordingTrace, packetFilter, packets]);
     // reset filter
     useEffect(() => {
-        const { filter: pf, normalized } = parsePacketFilter(bus, filter)
-        packetFilter.current = pf
+        const pf = parsePacketFilter(bus, filter)
+        setPacketFilter({ filter: pf });
+        while (packets.length)
+            packets.pop();
+        throttledSetPackets()
     }, [filter]);
-    // reset packets when filters change
-    useEffect(() => {
-        const ps = [];
-        for (const packet of packets)
-            if (!packetFilter || packetFilter.current(packet.packet))
-                ps.push(packet)
-        setPackets(ps);
-    }, [packetFilter.current])
     // update trace place when trace is created    
     useEffect(() => {
         const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);

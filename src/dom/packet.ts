@@ -10,7 +10,13 @@ import {
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT,
-    JD_SERVICE_NUMBER_CRC_ACK, JD_SERVICE_NUMBER_PIPE, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_METADATA_MASK, PIPE_CLOSE_MASK
+    JD_SERVICE_NUMBER_CRC_ACK,
+    JD_SERVICE_NUMBER_PIPE,
+    PIPE_PORT_SHIFT,
+    PIPE_COUNTER_MASK,
+    PIPE_METADATA_MASK,
+    PIPE_CLOSE_MASK,
+    CMD_GET_REG
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -129,7 +135,7 @@ export class Packet {
     }
 
     get is_reg_get() {
-        return (this.service_command >> 12) == (CMD_SET_REG >> 12)
+        return (this.service_command >> 12) == (CMD_GET_REG >> 12)
     }
 
     get is_event() {
@@ -178,11 +184,14 @@ export class Packet {
         return this.getNumber(fmt, 0)
     }
 
-    get isRepeatedAnnounce() {
+    get isAnnounce() {
         return this.device
             && this.service_number == 0
-            && this.service_command == CMD_ADVERTISEMENT_DATA
-            && this.device.lastServiceUpdate < this.timestamp
+            && this.service_command == CMD_ADVERTISEMENT_DATA;
+    }
+
+    get isRepeatedAnnounce() {
+        return this.isAnnounce && this.device.lastServiceUpdate < this.timestamp
     }
 
     get decoded() {
