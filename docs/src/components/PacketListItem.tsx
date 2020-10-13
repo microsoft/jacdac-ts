@@ -6,6 +6,7 @@ import KindIcon from './KindIcon';
 import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
 import { navigate } from 'gatsby';
+import AppContext, { DrawerType } from './AppContext'
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -24,11 +25,12 @@ export default function PacketListItem(props: {
 }) {
     const { packet, skipRepeatedAnnounce, showTime, count } = props;
     const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
+    const { setDrawerType } = useContext(AppContext)
     const classes = useStyles()
 
     const handleClick = () => {
+        setDrawerType(DrawerType.None)
         setSelectedPacket(packet)
-        navigate('/tools/packet-inspector')
     }
     const selected = packet === selectedPacket
 
@@ -42,6 +44,6 @@ export default function PacketListItem(props: {
         <ListItemText
             primary={primary}
             secondary={secondary}
-         />
+        />
     </ListItem>
 }

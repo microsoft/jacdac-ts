@@ -21,13 +21,15 @@ export default function PacketInspector() {
     return <>
         <h2>{`${packet.friendlyCommandName} ${packet.is_command ? "to" : "from"} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`}</h2>
         <div>
-            {packet.timestamp}ms, <KindChip kind={decoded?.info?.kind} />, size {packet.size}
+            {packet.timestamp}ms, <KindChip kind={info?.kind} />, size {packet.size}
         </div>
-        { decoded && <ul>
-            {decoded.decoded.map(member => <li>
-                {member.info.name}: <code>{member.humanValue}</code>
-            </li>)}
-        </ul>}
+        { decoded && <>
+            <h3>Arguments</h3><ul>
+                {decoded.decoded.map((member, i) => <li key={i}>
+                    {member.info.name}: <code>{member.humanValue}</code>
+                </li>)}
+            </ul>
+        </>}
         <h3>Raw Data</h3>
         <p>
             {printPacket(packet)}

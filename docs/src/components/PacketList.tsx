@@ -1,15 +1,9 @@
 import React, { useContext } from 'react';
-import { makeStyles, Theme, createStyles, withStyles, useMediaQuery, useTheme } from '@material-ui/core';
+import { makeStyles, createStyles } from '@material-ui/core';
 import PacketListItem from './PacketListItem';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PacketsContext, { PacketProps } from './PacketsContext';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ToggleButton from '@material-ui/lab/ToggleButton';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import AnnouncementIcon from '@material-ui/icons/Announcement';
-import KindIcon, { allKinds, kindName } from "./KindIcon";
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer'
 import PacketFilter from './PacketFilter';
@@ -21,22 +15,6 @@ const useStyles = makeStyles(() =>
         }
     })
 );
-
-const StyledToggleButtonGroup = withStyles((theme) => ({
-    root: {
-        display: 'block',
-    },
-    grouped: {
-        margin: theme.spacing(0.5),
-        border: 'none',
-        '&:not(:first-child)': {
-            borderRadius: theme.shape.borderRadius,
-        },
-        '&:first-child': {
-            borderRadius: theme.shape.borderRadius,
-        },
-    },
-}))(ToggleButtonGroup);
 
 interface VirtualListData {
     packets: PacketProps[];

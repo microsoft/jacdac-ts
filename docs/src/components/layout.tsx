@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden, Box, Tooltip, Zoom } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box, Tooltip, Zoom, Paper, Button } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link, IconButton, Fab } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -58,6 +58,7 @@ import TracePlayButton from "./TracePlayButton";
 import PrintButton from "./PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
 import { SnackbarProvider } from 'notistack';
+import PacketInspector from "./PacketInspector"
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -329,11 +330,15 @@ function LayoutWithContext(props: {
 }) {
   const { pageContext, children, } = props;
   const classes = useStyles();
+  const theme = useTheme();
   const { drawerType, toolsMenu } = useContext(AppContext)
+  const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
   const pagePath = pageContext?.frontmatter?.path;
   const pageDeck = !!pageContext?.frontmatter?.deck;
+
+  const handleClearSelectedPacket = () => setSelectedPacket(undefined)
 
   return (<>
     <div className={classes.root}>
@@ -364,6 +369,16 @@ function LayoutWithContext(props: {
             <div className={classes.drawerHeader} />
             <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
             <WebUSBAlert />
+            {selectedPacket &&
+              <Paper square>
+                <Box p={theme.spacing(0.25)} mb={theme.spacing(0.5)}>
+                  <PacketInspector />
+                  <Box>
+                    <Button onClick={handleClearSelectedPacket}>close</Button>
+                  </Box>
+                </Box>
+              </Paper>
+            }
             <Typography className={'markdown'} component="span">
               {children}
             </Typography>
