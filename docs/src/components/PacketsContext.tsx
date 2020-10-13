@@ -130,7 +130,7 @@ export const PacketsProvider = ({ children }) => {
 
             // detect duplicate at the tail of the packets
             const { key } = pkt;
-            const old = packets.slice(-15).find(p => p.key == key)
+            const old = packets.slice(15).find(p => p.key == key)
             if (old)
                 old.count++;
             else {
