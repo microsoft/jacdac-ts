@@ -1,20 +1,17 @@
 import React, { useContext } from "react";
-import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Typography, ListItem, Divider, SvgIcon } from "@material-ui/core";
+import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Typography, ListItem, Divider, SvgIcon, Box, useTheme } from "@material-ui/core";
 import { IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AppContext, { } from "./AppContext";
+import { OpenInNew } from '@material-ui/icons';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EditIcon from '@material-ui/icons/Edit';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -66,6 +63,7 @@ const MakeCode = (props: any) => <SvgIcon {...props}>
 
 export default function ToolsDrawer() {
     const classes = useStyles()
+    const theme = useTheme();
     const { toolsMenu, setToolsMenu } = useContext(AppContext)
     const { isHosted } = useContext(ServiceManagerContext)
     const { toggleDarkMode, darkMode } = useContext(DarkModeContext)
@@ -151,7 +149,10 @@ export default function ToolsDrawer() {
             {links.map(link => link.url ? <Link to={link.url} key={link.url}>
                 <ListItem button>
                     <ListItemIcon>{link.icon}</ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={link.text} />
+                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={<>
+                        <span>{link.text}</span>
+                        {/^https:\/\//.test(link.url) && <OpenInNew fontSize="small" color="action" />}
+                    </>} />
                 </ListItem>
             </Link>
                 : <Divider />)}
