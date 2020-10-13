@@ -374,7 +374,7 @@ function LayoutWithContext(props: {
                 <Box p={theme.spacing(0.25)} mb={theme.spacing(0.5)}>
                   <PacketInspector />
                   <Box>
-                    <Button onClick={handleClearSelectedPacket}>close</Button>
+                    <Button variant="outlined" onClick={handleClearSelectedPacket}>close</Button>
                   </Box>
                 </Box>
               </Paper>
