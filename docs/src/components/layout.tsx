@@ -349,7 +349,7 @@ function LayoutWithContext(props: {
       <HideOnScroll>
         <div><MainAppBar pageContext={pageContext} /></div>
       </HideOnScroll>
-      <AppDrawer pagePath={pagePath} serviceClass={serviceClass} />
+      <AppDrawer pagePath={pagePath} />
       <ToolsDrawer />
       {pageDeck && <Presentation>
         {children}
