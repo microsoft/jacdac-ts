@@ -148,7 +148,7 @@ export default function ToolsDrawer() {
             </IconButton>
         </div>
         <List>
-            {links.map(link => link.url ? <Link target={/^https:\/\//.test(link.url) ? "_blank" : ""} to={link.url} key={link.url}>
+            {links.map(link => link.url ? <Link to={link.url} key={link.url}>
                 <ListItem button>
                     <ListItemIcon>{link.icon}</ListItemIcon>
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={link.text} />
