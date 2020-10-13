@@ -61,9 +61,10 @@ export default function PacketSpecification(props: {
     serviceClass: number,
     packetInfo: jdspec.PacketInfo,
     reportInfo?: jdspec.PacketInfo,
-    pipeReportInfo?: jdspec.PacketInfo
+    pipeReportInfo?: jdspec.PacketInfo,
+    showDevices?: boolean
 }) {
-    const { serviceClass, packetInfo, reportInfo, pipeReportInfo } = props;
+    const { serviceClass, packetInfo, reportInfo, pipeReportInfo, showDevices } = props;
     const [args, setArgs] = useState<any[]>([])
     const classes = useStyles();
     if (!packetInfo)
@@ -91,8 +92,8 @@ export default function PacketSpecification(props: {
         {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={hasArgs && setArg} />}
         {!!reportInfo && <MembersType service={service} members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType service={service} members={pipeReportInfo.fields} title="Pipe report" />}
-        {isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
-        {isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
-        {isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
+        {showDevices && isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
+        {showDevices && isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
+        {showDevices && isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
     </div>
 }

@@ -60,6 +60,7 @@ export default function ServiceSpecification(props: {
                         packetInfo={pkt}
                         reportInfo={reportOf(pkt)}
                         pipeReportInfo={pipeReportOf(pkt)}
+                        showDevices={true}
                     />)}
             </Fragment>)
         }
