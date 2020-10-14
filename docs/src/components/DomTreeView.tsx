@@ -31,6 +31,8 @@ import NotificationImportantIcon from '@material-ui/icons/NotificationImportant'
 import { ellipseJoin } from '../../../src/dom/utils';
 import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
+import ConnectAlert from "./ConnectAlert"
+import { isWebUSBSupported } from '../../../src/dom/usb';
 
 declare module 'csstype' {
     interface Properties {
@@ -333,6 +335,9 @@ export default function DomTreeView(props: DomTreeViewProps) {
         if (onChecked)
             onChecked(checked)
     };
+
+    if (!devices?.length && isWebUSBSupported())
+        return <ConnectAlert />
 
     return (
         <TreeView

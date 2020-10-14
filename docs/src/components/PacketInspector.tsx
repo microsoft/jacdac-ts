@@ -8,6 +8,7 @@ import { toHex } from "../../../src/dom/utils";
 import { createStyles, makeStyles, Paper, Typography } from "@material-ui/core";
 import PacketSpecification from "./PacketSpecification";
 import { printPacket } from "../../../src/dom/pretty";
+import PacketHeaderLayout from "./PacketHeaderLayout";
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);
@@ -23,23 +24,24 @@ export default function PacketInspector() {
         <div>
             {packet.timestamp}ms, <KindChip kind={info?.kind} />, size {packet.size}
         </div>
-        { decoded && <>
+        <Typography variant="body2">
+            {printPacket(packet)}
+        </Typography>
+        <h3>Header</h3>
+        <PacketHeaderLayout packet={packet} />
+        <h3>Data</h3>
+        <Paper>
+            <pre>
+                {toHex(packet.data)}
+            </pre>
+        </Paper>
+        { decoded?.decoded.length && <>
             <h3>Arguments</h3><ul>
                 {decoded.decoded.map((member, i) => <li key={i}>
-                    {member.info.name}: <code>{member.humanValue}</code>
+                    {member.info.name == '_' ? info.name : member.info.name}: <code>{member.humanValue}</code>
                 </li>)}
             </ul>
         </>}
-        <h3>Raw Data</h3>
-        <p>
-            {printPacket(packet)}
-        </p>
-        <Paper>
-            <pre>
-                {`${toHex(packet.header)}
-${toHex(packet.data)}`}
-            </pre>
-        </Paper>
         {info && <><h3>Specification</h3>
             <PacketSpecification
                 serviceClass={packet.service_class}
