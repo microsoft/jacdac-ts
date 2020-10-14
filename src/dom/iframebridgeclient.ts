@@ -47,22 +47,10 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             || !msg.outer)
             return; // not our message
 
-        // sanity-check size
-        if (msg.data.length > 252) {
-            console.log("data too long");
+        const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
+        if (!pkt)
             return;
-        }
 
-        const sz = (msg.data.length + 3) & ~3
-        const data = new Uint8Array(sz)
-        data.set(msg.data)
-        data[2] = sz - 12
-
-        const chk = crc(data.slice(2))
-        data[0] = chk & 0xff
-        data[1] = (chk >> 8) & 0xff
-
-        const pkt = Packet.fromBinary(data, this.bus.timestamp);
         // we're adding a little trace to avoid resending our own packets
         pkt.sender = this.bridgeId;
 

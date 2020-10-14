@@ -41,10 +41,36 @@ export class Packet {
         this.key = Packet._nextKey++;
     }
 
+    static patchBinary(buf: Uint8Array) {
+        // sanity-check size
+        if (!buf || buf.length > 252)
+            return undefined;
+
+        // check if CRC is already set
+        if (buf[0] || buf[1] || buf[2])
+            return buf;
+
+        // compute CRC, size
+        const sz = (buf.length + 3) & ~3
+        const data = new Uint8Array(sz)
+        data.set(buf)
+        data[2] = sz - 12
+
+        const chk = crc(data.slice(2))
+        data[0] = chk & 0xff
+        data[1] = (chk >> 8) & 0xff
+
+        return data;
+    }
+
     static fromBinary(buf: Uint8Array, timestamp?: number) {
+        const data = Packet.patchBinary(buf)
+        if (!data)
+            return undefined;
+
         const p = new Packet()
-        p._header = buf.slice(0, JD_SERIAL_HEADER_SIZE)
-        p._data = buf.slice(JD_SERIAL_HEADER_SIZE)
+        p._header = data.slice(0, JD_SERIAL_HEADER_SIZE)
+        p._data = data.slice(JD_SERIAL_HEADER_SIZE)
         if (timestamp !== undefined)
             p.timestamp = timestamp;
         return p
