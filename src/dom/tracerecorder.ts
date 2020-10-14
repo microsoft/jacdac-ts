@@ -146,7 +146,7 @@ export default class TraceRecorder extends JDClient {
             // detect duplicate at the tail of the packets
             const key = pkt.toString().toString();
             const old = this._filteredPackets
-                .slice(DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
+                .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
                 .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
                     p.key === key)
             if (old) {
