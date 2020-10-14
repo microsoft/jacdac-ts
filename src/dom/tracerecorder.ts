@@ -8,7 +8,7 @@ import { throttle } from "./utils";
 
 const FILTERED_TRACE_MAX_ITEMS = 100;
 const DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE = 15;
-const DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME = 3000;
+const DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME = 10000;
 const RECORDING_TRACE_MAX_ITEMS = 100000;
 
 export interface TracePacketProps {
@@ -147,10 +147,11 @@ export default class TraceRecorder extends JDClient {
             const key = pkt.toString().toString();
             const old = this._filteredPackets
                 .slice(DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
-                .find(p => (pkt.timestamp - p.packet.timestamp) > DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
+                .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
                     p.key === key)
-            if (old)
+            if (old) {
                 old.count++;
+            }
             else {
                 this._filteredPackets.unshift({
                     key,

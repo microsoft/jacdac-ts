@@ -1,3 +1,4 @@
+import { SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 import { JDBus } from "./bus";
 import Packet from "./packet";
 import { isInstanceOf, serviceSpecificationFromName } from "./spec";
@@ -80,6 +81,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 break;
             case "requires-ack":
                 filters.push(pkt => pkt.requires_ack);
+                break;
+            case "log":
+                filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.is_report);
                 break;
         }
     });

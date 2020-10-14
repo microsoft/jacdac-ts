@@ -1,15 +1,13 @@
 import React, { useContext } from 'react';
-import { ListItem, Typography, ListItemIcon, makeStyles, Theme, createStyles, Badge, ListItemText, useMediaQuery, useTheme } from '@material-ui/core';
+import { ListItem, ListItemIcon, makeStyles, Theme, createStyles, ListItemText, useMediaQuery, useTheme } from '@material-ui/core';
 import Packet from '../../../src/dom/packet';
-import { printPacket, decodePacketData, deviceServiceName } from '../../../src/dom/pretty'
-import KindIcon from './KindIcon';
 import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
-import { navigate } from 'gatsby';
 import AppContext, { DrawerType } from './AppContext'
 import { MOBILE_BREAKPOINT } from './layout';
+import { SRV_LOGGER } from '../../../src/dom/constants';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
     createStyles({
         item: {
             marginBottom: 0,
@@ -24,7 +22,7 @@ export default function PacketListItem(props: {
     showTime?: boolean,
     count?: number
 }) {
-    const { packet, skipRepeatedAnnounce, showTime, count } = props;
+    const { packet, count } = props;
     const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
     const { setDrawerType } = useContext(AppContext)
     const classes = useStyles()
@@ -37,8 +35,8 @@ export default function PacketListItem(props: {
         setSelectedPacket(packet)
     }
     const selected = packet === selectedPacket
-
-    const primary = `${packet.friendlyCommandName}`
+    const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
+    const primary = (logMessage && packet.decoded?.decoded[0].value) || packet.friendlyCommandName
     const secondary = `${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>

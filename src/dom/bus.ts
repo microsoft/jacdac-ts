@@ -4,7 +4,7 @@ import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } 
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
-    SRV_LOGGER, JD_SERVICE_NUMBER_CTRL,
+    JD_SERVICE_NUMBER_CTRL,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT, DEVICE_ANNOUNCE,
     PACKET_SEND,
@@ -44,7 +44,7 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
-import { SensorReg } from "../../jacdac-spec/dist/specconstants";
+import { SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
