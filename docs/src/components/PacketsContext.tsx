@@ -87,7 +87,6 @@ export const PacketsProvider = ({ children }) => {
         }
     }
     const setFilter = (f: string) => {
-        console.log(`set filter ${f}`)
         _setFilter(f);
     }
     // update filter
@@ -104,7 +103,6 @@ export const PacketsProvider = ({ children }) => {
     }));
     // update packet view
     useEffect(() => recorder.subscribe(TraceRecorder.FILTERED_PACKETS_CHANGE, () => {
-        console.log(`updated filtered packets`)
         setPackets(recorder.filteredPackets)
     }))
 
