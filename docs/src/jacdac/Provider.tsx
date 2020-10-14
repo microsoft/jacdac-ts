@@ -20,7 +20,9 @@ const args = sniffQueryArguments();
 const bus = createUSBBus(undefined, {
     parentOrigin: args.parentOrigin
 });
-bus.setBackgroundFirmwareScans(true)
+// tslint:disable-next-line: no-unused-expression
+new IFrameBridgeClient(bus); // start bridge
+bus.setBackgroundFirmwareScans(true);
 // route makecode messages
 const recorder = new TraceRecorder(bus);
 
