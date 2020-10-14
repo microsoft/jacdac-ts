@@ -23,7 +23,9 @@ export interface PacketsProps {
     toggleRecording: () => void,
     tracing: boolean,
     toggleTrace: () => void,
-    progress: number
+    progress: number,
+    paused: boolean,
+    togglePaused: () => void
 }
 
 const PacketsContext = createContext<PacketsProps>({
@@ -39,7 +41,9 @@ const PacketsContext = createContext<PacketsProps>({
     toggleRecording: () => { },
     tracing: false,
     toggleTrace: () => { },
-    progress: undefined
+    progress: undefined,
+    paused: false,
+    togglePaused: () => { }
 });
 PacketsContext.displayName = "packets";
 
@@ -50,9 +54,10 @@ export const PacketsProvider = ({ children }) => {
     const [packets, setPackets] = useState<TracePacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
- 
+
     const [player, setPlayer] = useState<TracePlayer>(undefined);
     const [progress, setProgress] = useState(0)
+    const [paused, setPaused] = useState(false)
 
     const { recording } = recorder;
 
@@ -89,10 +94,9 @@ export const PacketsProvider = ({ children }) => {
     const setFilter = (f: string) => {
         _setFilter(f);
     }
+    const togglePaused = () => setPaused(!paused);
     // update filter
     useEffect(() => { recorder.filter = filter }, [filter]);
-    // update filtered packets
-    useEffect(() => recorder.subscribe(CHANGE, () => setPackets(recorder.filteredPackets)))
     // update trace place when trace is created
     useEffect(() => recorder.subscribe(CHANGE, () => {
         const p = !recorder.recording && recorder.trace && new TracePlayer(bus, recorder.trace.packets);
@@ -103,8 +107,16 @@ export const PacketsProvider = ({ children }) => {
     }));
     // update packet view
     useEffect(() => recorder.subscribe(TraceRecorder.FILTERED_PACKETS_CHANGE, () => {
-        setPackets(recorder.filteredPackets)
+        if (!paused)
+            setPackets(recorder.filteredPackets)
     }))
+    // update packets
+    useEffect(() => {
+        if (paused)
+            setPackets(packets.slice(0));
+        else
+            setPackets(recorder.filteredPackets)
+    }, [paused])
 
     return (
         <PacketsContext.Provider value={{
@@ -115,7 +127,8 @@ export const PacketsProvider = ({ children }) => {
             recording, toggleRecording,
             tracing: !!player?.running,
             toggleTrace,
-            progress: progress
+            progress,
+            paused, togglePaused
         }}>
             {children}
         </PacketsContext.Provider>
