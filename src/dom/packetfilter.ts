@@ -11,14 +11,15 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         return (pkt) => true
     }
 
-    let filters: PacketFilter[] = [];
     let flags = new Set<string>()
     let serviceClasses = new Set<number>();
     let pkts = new Set<string>();
-    let repeatedAnnounce = true;
-    let announce = true;
-    let regGet = false;
-    let regSet = false;
+    let repeatedAnnounce = undefined;
+    let announce = undefined;
+    let regGet = undefined;
+    let regSet = undefined;
+    let requiresAck = undefined;
+    let log = undefined;
     let devices: SMap<{ from: boolean; to: boolean; }> = {};
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
@@ -35,18 +36,20 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                     break;
                 const service = serviceSpecificationFromName(value)
                 const serviceClass = service?.classIdentifier || parseInt(value, 16);
-                if (serviceClass !== undefined)
+                if (serviceClass !== undefined && !isNaN(serviceClass))
                     serviceClasses.add(serviceClass)
                 break;
             case "announce":
             case "a":
-                if (!parseBoolean(value))
-                    announce = false;
+                announce = parseBoolean(value);
                 break;
             case "repeated-announce":
             case "ra":
-                if (!parseBoolean(value))
-                    repeatedAnnounce = false;
+                repeatedAnnounce = parseBoolean(value);
+                break;
+            case "requires-ack":
+            case "ack":
+                requiresAck = parseBoolean(value);
                 break;
             case "device":
             case "dev":
@@ -79,28 +82,30 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "set":
                 regSet = true;
                 break;
-            case "requires-ack":
-                filters.push(pkt => pkt.requires_ack);
-                break;
             case "log":
-                filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.is_report);
+                log = true;
                 break;
         }
     });
 
-    if (!announce) {
-        filters.push(pkt => !pkt.isAnnounce)
-    }
-    if (!repeatedAnnounce)
-        filters.push(pkt => !pkt.isAnnounce || !pkt.isRepeatedAnnounce)
+    console.log(`compiling filter`, text, { announce, repeatedAnnounce, requiresAck, log, flags, regGet, regSet, devices, serviceClasses, pkts })
+    let filters: PacketFilter[] = [];
+    if (announce !== undefined)
+        filters.push(pkt => pkt.isAnnounce === announce)
+    if (repeatedAnnounce !== undefined)
+        filters.push(pkt => !pkt.isAnnounce || (pkt.isRepeatedAnnounce === repeatedAnnounce))
+    if (requiresAck !== undefined)
+        filters.push(pkt => pkt.requires_ack === requiresAck);
     if (flags.size)
         filters.push(pkt => hasAnyFlag(pkt))
-    if (regGet || regSet)
-        filters.push(pkt => pkt.is_reg_get || pkt.is_reg_set)
-    else if (regGet)
-        filters.push(pkt => pkt.is_reg_get)
-    else if (regSet)
-        filters.push(pkt => pkt.is_reg_set)
+    if (regGet !== undefined || regSet !== undefined)
+        filters.push(pkt => (pkt.is_reg_get === regGet) || (pkt.is_reg_set === regSet))
+    else if (regGet !== undefined)
+        filters.push(pkt => pkt.is_reg_get === regGet)
+    else if (regSet !== undefined)
+        filters.push(pkt => pkt.is_reg_set === regSet)
+    if (log !== undefined)
+        filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.is_report);
     if (Object.keys(devices).length)
         filters.push(pkt => {
             if (!pkt.device) return false;
@@ -116,10 +121,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         filters.push(pkt => pkts.has(pkt.decoded?.info.identifier.toString(16)));
     }
 
-    //  const name = `filter` + bus.timestamp
     return (pkt: Packet) => {
         const r = filters.every(filter => filter(pkt));
-        //console.log(`${name} ${pkt} -> ${r}`)
         return r;
     }
 
@@ -131,7 +134,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     function parseBoolean(value: string) {
         if (value === "false" || value === "no")
             return false;
-        else
+        else if (value === "true" || value === "yes" || !value)
             return true;
+        else
+            return undefined;
     }
 }

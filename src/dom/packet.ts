@@ -16,14 +16,15 @@ import {
     PIPE_COUNTER_MASK,
     PIPE_METADATA_MASK,
     PIPE_CLOSE_MASK,
-    CMD_GET_REG
+    CMD_GET_REG,
+    SRV_CTRL
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
-import { isInstanceOf, serviceSpecificationFromName } from "./spec";
+import { BaseCmd } from "../../jacdac-spec/dist/specconstants";
 
 export class Packet {
     private _header: Uint8Array;
@@ -212,8 +213,9 @@ export class Packet {
 
     get isAnnounce() {
         return this.device
-            && this.service_number == 0
-            && this.service_command == CMD_ADVERTISEMENT_DATA;
+            && this.service_number == SRV_CTRL
+            && this.is_command
+            && this.service_command == BaseCmd.Announce;
     }
 
     get isRepeatedAnnounce() {

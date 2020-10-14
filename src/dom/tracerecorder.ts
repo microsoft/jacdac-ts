@@ -126,7 +126,7 @@ export default class TraceRecorder extends JDClient {
     private refreshFilter() {
         this._packetFilter = parsePacketFilter(this.bus, this._filter);
         this._filteredPackets = this._filteredPackets.filter(p => this._packetFilter(p.packet));
-        this.setFilteredPackets();
+        this.notifyPacketsChanged();
     }
 
     private handlePacket(pkt: Packet) {
