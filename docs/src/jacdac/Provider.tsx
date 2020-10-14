@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import JACDACContext from "../../../src/react/Context";
-import { JDBus, BusState } from "../../../src/dom/bus";
+import { BusState } from "../../../src/dom/bus";
 import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
+import TraceRecorder from "../../../src/dom/tracerecorder"
 
 function sniffQueryArguments() {
     if (typeof window === "undefined" || typeof URLSearchParams === "undefined")
@@ -21,7 +22,7 @@ const bus = createUSBBus(undefined, {
 });
 bus.setBackgroundFirmwareScans(true)
 // route makecode messages
-const iframeBridge = new IFrameBridgeClient(bus);
+const recorder = new TraceRecorder(bus);
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
@@ -37,12 +38,12 @@ const JACDACProvider = ({ children }) => {
     })
 
     // subscribe to connection state changes
-    useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)), [bus])
+    useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)), [])
 
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
-        <JACDACContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
+        <JACDACContext.Provider value={{ bus, recorder, connectionState, connectAsync, disconnectAsync }}>
             {children}
         </JACDACContext.Provider>
     )

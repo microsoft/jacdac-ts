@@ -1,26 +1,17 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import Packet from "../../../src/dom/packet";
 import Frame from "../../../src/dom/frame";
-import { DecodedPacket } from "../../../src/dom/pretty";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { PACKET_PROCESS, PACKET_SEND, PROGRESS } from "../../../src/dom/constants";
-import { throttle, unique } from "../../../src/dom/utils";
+import { CHANGE, PACKET_PROCESS, PROGRESS } from "../../../src/dom/constants";
 import Trace from "../../../src/dom/trace";
 import TracePlayer from "../../../src/dom/traceplayer";
-import { PacketFilter, parsePacketFilter } from "../../../src/dom/packetfilter";
 import useDbValue from "./useDbValue"
+import TraceRecorder, { TracePacketProps } from "../../../src/dom/tracerecorder"
 
-const PACKET_MAX_ITEMS = 100
-const RECORDING_TRACE_MAX_ITEMS = 100000;
-export interface PacketProps {
-    key: number;
-    packet: Packet;
-    decoded: DecodedPacket;
-    count?: number;
-}
+
 
 export interface PacketsProps {
-    packets: PacketProps[],
+    packets: TracePacketProps[],
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
     clearPackets: () => void,
@@ -41,7 +32,7 @@ const PacketsContext = createContext<PacketsProps>({
     setSelectedPacket: () => { },
     clearPackets: () => { },
     filter: "",
-    setFilter: (filter: string) => { },
+    setFilter: () => { },
     trace: undefined,
     setTrace: () => { },
     recording: false,
@@ -55,47 +46,33 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus, disconnectAsync, connectAsync } = useContext<JDContextProps>(JACDACContext)
-    const [packets, setPackets] = useState<PacketProps[]>([])
+    const { bus, recorder, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const [packets, setPackets] = useState<TracePacketProps[]>([])
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
-    const [packetFilter, setPacketFilter] = useState<{ filter: PacketFilter }>(undefined)
-
-    const [replayTrace, setReplayTrace] = useState<Trace>(undefined)
-    const [recordingTrace, setRecordingTrace] = useState<Trace>(undefined)
-
+ 
     const [player, setPlayer] = useState<TracePlayer>(undefined);
     const [progress, setProgress] = useState(0)
 
-    const recording = !!recordingTrace;
-    const throttledSetPackets = throttle(() => {
-        const ps = packets.slice(0,
-            packets.length < PACKET_MAX_ITEMS
-                ? packets.length : PACKET_MAX_ITEMS);
-        setPackets(ps);
-    }, 200);
+    const { recording } = recorder;
 
     const clearPackets = () => {
-        setPackets([])
         setSelectedPacket(undefined)
         setProgress(undefined)
         bus.clear();
+        recorder.clear();
     }
     const setTrace = async (pkts: Packet[], videoUrl?: string) => {
         if (!pkts?.length) return;
 
         clearPackets();
-        setRecordingTrace(undefined);
-        setReplayTrace(new Trace(pkts, videoUrl))
+        recorder.replayTrace = new Trace(pkts, videoUrl)
     }
     const toggleRecording = async () => {
         if (recording) {
-            setReplayTrace(recordingTrace)
-            setRecordingTrace(undefined)
+            recorder.stopRecording();
         } else {
-            await connectAsync()
-            setRecordingTrace(new Trace([]))
-            setReplayTrace(undefined);
+            recorder.startRecording();
             setProgress(undefined);
         }
     }
@@ -113,60 +90,30 @@ export const PacketsProvider = ({ children }) => {
         console.log(`set filter ${f}`)
         _setFilter(f);
     }
-
-    // recording packets
-    useEffect(() => bus.subscribe([PACKET_PROCESS, PACKET_SEND],
-        (pkt: Packet) => {
-            // record all packets if recording
-            if (recordingTrace) {
-                recordingTrace.packets.push(pkt)
-                if (recordingTrace.packets.length > RECORDING_TRACE_MAX_ITEMS * 1.1) { // 10% overshoot of max
-                    recordingTrace.packets = recordingTrace.packets.slice(-RECORDING_TRACE_MAX_ITEMS)
-                }
-            }
-            // add packet to live list
-            if (!packetFilter?.filter(pkt))
-                return;
-
-            // detect duplicate at the tail of the packets
-            const { key } = pkt;
-            const old = packets.slice(15).find(p => p.key == key)
-            if (old)
-                old.count++;
-            else {
-                packets.unshift({
-                    key,
-                    packet: pkt,
-                    decoded: pkt.decoded,
-                    count: 1
-                })
-            }
-            // eventually refresh ui
-            throttledSetPackets();
-        }), [recordingTrace, packetFilter, packets]);
-    // reset filter
-    useEffect(() => {
-        const pf = parsePacketFilter(bus, filter)
-        setPacketFilter({ filter: pf });
-        while (packets.length)
-            packets.pop();
-        throttledSetPackets()
-    }, [filter]);
-    // update trace place when trace is created    
-    useEffect(() => {
-        const p = replayTrace && new TracePlayer(bus, replayTrace?.packets);
-        p?.subscribe(PROGRESS, (pr: number) => setProgress(pr))
+    // update filter
+    useEffect(() => { recorder.filter = filter }, [filter]);
+    // update filtered packets
+    useEffect(() => recorder.subscribe(CHANGE, () => setPackets(recorder.filteredPackets)))
+    // update trace place when trace is created
+    useEffect(() => recorder.subscribe(CHANGE, () => {
+        const p = !recorder.recording && recorder.trace && new TracePlayer(bus, recorder.trace.packets);
+        if (p)
+            p.subscribe(PROGRESS, (pr: number) => setProgress(pr))
         setPlayer(p);
-        setProgress(undefined)
         return () => p?.stop();
-    }, [replayTrace]);
+    }));
+    // update packet view
+    useEffect(() => recorder.subscribe(TraceRecorder.FILTERED_PACKETS_CHANGE, () => {
+        console.log(`updated filtered packets`)
+        setPackets(recorder.filteredPackets)
+    }))
 
     return (
         <PacketsContext.Provider value={{
             packets, clearPackets,
             selectedPacket, setSelectedPacket,
             filter, setFilter,
-            trace: replayTrace || recordingTrace, setTrace,
+            trace: recorder.trace, setTrace,
             recording, toggleRecording,
             tracing: !!player?.running,
             toggleTrace,

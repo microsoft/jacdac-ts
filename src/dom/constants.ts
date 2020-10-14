@@ -79,7 +79,9 @@ export const CONNECTING = 'connecting';
 export const DISCONNECT = 'disconnect';
 export const DISCONNECTING = 'disconnecting'
 export const ANNOUNCE = 'announce'
+export const START = 'start'
 export const RESTART = 'restart'
+export const STOP = 'stop'
 export const CHANGE = 'change'
 export const EVENT = 'event'
 export const FIRMWARE_INFO = 'firmwareInfo'
@@ -109,7 +111,6 @@ export const PACKET_RECEIVE = 'packetReceive'
 export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
 export const PACKET_EVENT = 'packetEvent'
 export const PACKET_REPORT = 'packetReport'
-export const PACKET_BRIDGE = 'packetBridge'
 
 export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'

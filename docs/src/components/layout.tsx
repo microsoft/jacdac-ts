@@ -350,9 +350,7 @@ function LayoutWithContext(props: {
           content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
         />
       </Helmet>
-      <HideOnScroll>
-        <div><MainAppBar pageContext={pageContext} /></div>
-      </HideOnScroll>
+      <MainAppBar pageContext={pageContext} />
       <AppDrawer pagePath={pagePath} />
       <ToolsDrawer />
       {pageDeck && <Presentation>

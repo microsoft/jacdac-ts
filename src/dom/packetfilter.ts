@@ -39,12 +39,12 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 break;
             case "announce":
             case "a":
-                if (value === "false" || value === "no")
+                if (!parseBoolean(value))
                     announce = false;
                 break;
             case "repeated-announce":
             case "ra":
-                if (value === "false" || value === "no")
+                if (!parseBoolean(value))
                     repeatedAnnounce = false;
                 break;
             case "device":
@@ -99,6 +99,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         filters.push(pkt => pkt.is_reg_set)
     if (Object.keys(devices).length)
         filters.push(pkt => {
+            if (!pkt.device) return false;
             const f = devices[pkt.device.deviceId];
             return !!f && (!f.from || !pkt.is_command) && (!f.to || pkt.is_command);
         })
@@ -121,5 +122,12 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     function hasAnyFlag(pkt: Packet) {
         const k = pkt.decoded?.info.kind;
         return !!k && flags.has(k);
+    }
+
+    function parseBoolean(value: string) {
+        if (value === "false" || value === "no")
+            return false;
+        else
+            return true;
     }
 }
