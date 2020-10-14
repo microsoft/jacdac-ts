@@ -55,11 +55,10 @@ export const PacketsProvider = ({ children }) => {
     const [selectedPacket, setSelectedPacket] = useState<Packet>(undefined)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
 
+    const [recording, setRecording] = useState(recorder.recording)
     const [player, setPlayer] = useState<TracePlayer>(undefined);
     const [progress, setProgress] = useState(0)
     const [paused, setPaused] = useState(false)
-
-    const { recording } = recorder;
 
     const clearPackets = () => {
         setSelectedPacket(undefined)
@@ -74,7 +73,7 @@ export const PacketsProvider = ({ children }) => {
         recorder.replayTrace = new Trace(pkts, videoUrl)
     }
     const toggleRecording = async () => {
-        if (recording) {
+        if (recorder.recording) {
             recorder.stopRecording();
         } else {
             recorder.startRecording();
@@ -99,6 +98,7 @@ export const PacketsProvider = ({ children }) => {
     useEffect(() => { recorder.filter = filter }, [filter]);
     // update trace place when trace is created
     useEffect(() => recorder.subscribe(CHANGE, () => {
+        setRecording(recorder.recording);
         const p = !recorder.recording && recorder.trace && new TracePlayer(bus, recorder.trace.packets);
         if (p)
             p.subscribe(PROGRESS, (pr: number) => setProgress(pr))

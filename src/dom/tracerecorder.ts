@@ -46,8 +46,9 @@ export default class TraceRecorder extends JDClient {
     }
 
     startRecording() {
-        if (this._replayTrace) return;
+        if (this._recordingTrace) return;
 
+        this._replayTrace = undefined;
         this._recordingTrace = new Trace([]);
         this.emit(START);
         this.emit(CHANGE);
