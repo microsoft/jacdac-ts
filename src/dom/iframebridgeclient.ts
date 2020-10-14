@@ -2,6 +2,7 @@ import { JDBus } from "./bus";
 import { PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
+import { crc } from "./utils";
 
 export interface PacketMessage {
     channel: "jacdac";
@@ -46,7 +47,22 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             || !msg.outer)
             return; // not our message
 
-        const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
+        // sanity-check size
+        if (msg.data.length > 252) {
+            console.log("data too long");
+            return;
+        }
+
+        const sz = (msg.data.length + 3) & ~3
+        const data = new Uint8Array(sz)
+        data.set(msg.data)
+        data[2] = sz - 12
+
+        const chk = crc(data.slice(2))
+        data[0] = chk & 0xff
+        data[1] = (chk >> 8) & 0xff
+
+        const pkt = Packet.fromBinary(data, this.bus.timestamp);
         // we're adding a little trace to avoid resending our own packets
         pkt.sender = this.bridgeId;
 
