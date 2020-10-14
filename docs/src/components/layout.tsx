@@ -297,10 +297,14 @@ function MainAppBar(props: { pageContext?: any }) {
       <WebUSBSupported><div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div></WebUSBSupported>
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
       <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />
-      <div className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}><FlashButton /></div>
-      <IconButton color="inherit" className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} onClick={toggleToolsMenu} aria-label="More">
-        <MoreIcon />
-      </IconButton>
+      <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
+      <Tooltip className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} aria-label="More tools" title="More">
+        <span>
+          <IconButton edge="start" color="inherit" onClick={toggleToolsMenu} >
+            <MoreIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
     </Toolbar>
   </AppBar></Box>
 }

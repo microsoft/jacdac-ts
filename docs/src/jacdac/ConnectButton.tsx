@@ -25,7 +25,6 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
 
     if (small)
         return <span><IconButtonWithProgress
-            size="small"
             title={title}
             color={transparent ? "inherit" : "primary"}
             className={className}

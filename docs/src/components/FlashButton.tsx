@@ -9,7 +9,7 @@ import useEventRaised from "../jacdac/useEventRaised";
 import { computeUpdates } from "../../../src/dom/flashing";
 import useChange from "../jacdac/useChange";
 
-export default function FlashButton() {
+export default function FlashButton(props: { className?: string }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
 
     const devices = useChange(bus, bus => bus.devices())
@@ -21,11 +21,12 @@ export default function FlashButton() {
         return <></>
 
     const title = `Firmware update ${updates.length} available`;
-    return <Tooltip aria-label={title} title={title}>
+    return <Tooltip aria-label={title} title={title} {...props}>
         <span>
             <IconButton
                 color="inherit"
-                to="/tools/updater">
+                to="/tools/updater"
+                edge="start">
                 <Badge badgeContent={updates.length} color="secondary">
                     <SystemUpdateAltIcon />
                 </Badge>

@@ -1,4 +1,5 @@
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
+import { Tooltip } from '@material-ui/core';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import { IconButton } from 'gatsby-theme-material-ui';
 import React from "react";
@@ -9,7 +10,11 @@ export default function GitHubButton(props: { repo: string, size?: "small" | "me
     if (!/^https:\/\//.test(url) && !/^https:\/\/github.com\//.test(url)) {
         url = "https://github.com/" + url;
     }
-    return <IconButton to={url} size={size} className={className} color="inherit">
-        <GitHubIcon />
-    </IconButton>;
+    return <Tooltip title={`open ${url}`} className={className}>
+        <span>
+            <IconButton to={url} size={size} color="inherit" edge="start">
+                <GitHubIcon />
+            </IconButton>
+        </span>
+    </Tooltip>;
 }

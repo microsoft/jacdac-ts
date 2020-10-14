@@ -8,7 +8,7 @@ import AppContext from "./AppContext";
 import { delay } from "../../../src/dom/utils";
 
 export default function PrintButton(props: { component?: string } & IconButtonProps) {
-    const { disabled, ...others } = props;
+    const { disabled, className, ...others } = props;
     const { setError } = useContext(AppContext);
 
     const onPrint = () => {
@@ -22,13 +22,16 @@ export default function PrintButton(props: { component?: string } & IconButtonPr
         }
     }
     return <NoSsr>
-        <Tooltip title={"Print page"}>
-            <IconButton
-                {...others}
-                disabled={disabled}
-                onClick={onPrint}>
-                <PrintIcon />
-            </IconButton >
+        <Tooltip title={"Print page"} className={className}>
+            <span>
+                <IconButton
+                    {...others}
+                    edge="start"
+                    disabled={disabled}
+                    onClick={onPrint}>
+                    <PrintIcon />
+                </IconButton >
+            </span>
         </Tooltip>
     </NoSsr>
 }
