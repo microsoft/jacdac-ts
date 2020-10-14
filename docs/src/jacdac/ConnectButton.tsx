@@ -17,7 +17,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
-    const small = useMediaQuery(theme.breakpoints.down("md"))
+    const small = !full && useMediaQuery(theme.breakpoints.down("md"))
     const disabled = connectionState != BusState.Connected && connectionState != BusState.Disconnected
     const onClick = showDisconnect ? disconnectAsync : connectAsync;
     const icon = showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />

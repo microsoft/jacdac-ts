@@ -60,6 +60,14 @@ npm run installdocs
 npm run docs
 ```
 
+### JACDAC+MakeCode
+
+Open the multi editor to test MakeCode devices with the JACDAC view. You can select to run JACDAC and/or MakeCode on localhost/web from the drop downs.
+
+```
+https://makecode.com/multi?jacdac=1&localhost=1
+```
+
 ### HTML tools
 
 You can do ``npm run watch`` to watch/build bundles. Bundles are placed under the ``dist`` folder.
