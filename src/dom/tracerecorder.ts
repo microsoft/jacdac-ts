@@ -19,7 +19,7 @@ export interface TracePacketProps {
 
 export default class TraceRecorder extends JDClient {
     public maxRecordingLength = RECORDING_TRACE_MAX_ITEMS;
-    public maxFilteredLength = FILTERED_TRACE_MAX_ITEMS;
+    private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS;
 
     private _trace: Trace;
     private _recording = false;
@@ -99,6 +99,17 @@ export default class TraceRecorder extends JDClient {
         }
     }
 
+    get maxFilteredLength() {
+        return this._maxFilteredLength;
+    }
+
+    set maxFilteredLength(v: number) {
+        if (this._maxFilteredLength !== v) {
+            this._maxFilteredLength = v;
+            this.refreshFilter();
+        }
+    }
+
     get paused() {
         return this._paused;
     }
@@ -133,15 +144,14 @@ export default class TraceRecorder extends JDClient {
         this._filteredPackets = [];
         const packets = this.trace.packets;
         // reapply filter to existing trace
-        for (let i = packets.length - 1; i >= 0 && this._filteredPackets.length < FILTERED_TRACE_MAX_ITEMS; --i) {
+        for (let i = packets.length - 1; i >= 0 && this._filteredPackets.length < this.maxFilteredLength; --i) {
             const pkt = packets[i];
             if (this._packetFilter?.filter(pkt)) {
                 this.addFilteredPacket(pkt);
             }
         }
         this._filteredPackets = this._filteredPackets.reverse();
-        console.log(`refreshed filter`, this._filteredPackets)
-        this.emit(TraceRecorder.FILTERED_PACKETS_CHANGE);
+        this.notifyPacketsChanged();
     }
 
     private handlePacket(pkt: Packet) {

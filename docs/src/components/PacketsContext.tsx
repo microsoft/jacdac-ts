@@ -7,6 +7,7 @@ import Trace from "../../../src/dom/trace";
 import TracePlayer from "../../../src/dom/traceplayer";
 import useDbValue from "./useDbValue"
 import TraceRecorder, { TracePacketProps } from "../../../src/dom/tracerecorder"
+import { TimestampRange } from "../../../src/dom/packetfilter";
 
 
 
@@ -25,7 +26,9 @@ export interface PacketsProps {
     toggleTrace: () => void,
     progress: number,
     paused: boolean,
-    togglePaused: () => void
+    togglePaused: () => void,
+    timeRange: TimestampRange,
+    setTimeRange: (range: TimestampRange) => void
 }
 
 const PacketsContext = createContext<PacketsProps>({
@@ -43,7 +46,9 @@ const PacketsContext = createContext<PacketsProps>({
     toggleTrace: () => { },
     progress: undefined,
     paused: false,
-    togglePaused: () => { }
+    togglePaused: () => { },
+    timeRange: {},
+    setTimeRange: (range) => { }
 });
 PacketsContext.displayName = "packets";
 
@@ -58,7 +63,8 @@ export const PacketsProvider = ({ children }) => {
     const [recording, setRecording] = useState(recorder.recording)
     const [player, setPlayer] = useState<TracePlayer>(undefined);
     const [progress, setProgress] = useState(0)
-    const [paused, setPaused] = useState(false)
+    const [paused, setPaused] = useState(recorder.paused)
+    const [timeRange, setTimeRange] = useState<TimestampRange>({})
 
     const clearPackets = () => {
         setSelectedPacket(undefined)
@@ -93,9 +99,19 @@ export const PacketsProvider = ({ children }) => {
     const setFilter = (f: string) => {
         _setFilter(f);
     }
-    const togglePaused = () => setPaused(!paused);
+    const togglePaused = () => {
+        recorder.paused = !recorder.paused;
+        setPaused(recorder.paused);
+    }
     // update filter
-    useEffect(() => { recorder.filter = filter }, [filter]);
+    useEffect(() => {
+        let f = filter;
+        if (timeRange.after !== undefined)
+            f += ` after:${timeRange.after}`
+        if (timeRange.before !== undefined)
+            f += ` before:${timeRange.before}`
+        recorder.filter = f
+    }, [filter, timeRange]);
     // update trace place when trace is created
     useEffect(() => recorder.subscribe(CHANGE, () => {
         setRecording(recorder.recording);
@@ -107,16 +123,8 @@ export const PacketsProvider = ({ children }) => {
     }));
     // update packet view
     useEffect(() => recorder.subscribe(TraceRecorder.FILTERED_PACKETS_CHANGE, () => {
-        if (!paused)
-            setPackets(recorder.filteredPackets)
-    }), [paused])
-    // update packets
-    useEffect(() => {
-        if (paused)
-            setPackets(packets.slice(0));
-        else
-            setPackets(recorder.filteredPackets)
-    }, [paused])
+        setPackets(recorder.filteredPackets)
+    }), [])
 
     return (
         <PacketsContext.Provider value={{
@@ -128,7 +136,8 @@ export const PacketsProvider = ({ children }) => {
             tracing: !!player?.running,
             toggleTrace,
             progress,
-            paused, togglePaused
+            paused, togglePaused,
+            timeRange, setTimeRange
         }}>
             {children}
         </PacketsContext.Provider>

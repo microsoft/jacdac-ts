@@ -1,4 +1,4 @@
-import { makeStyles, Theme, createStyles, Paper, InputBase, IconButton } from '@material-ui/core';
+import { makeStyles, Theme, createStyles, Paper, InputBase, IconButton, useTheme } from '@material-ui/core';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Box, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from "@material-ui/core";
@@ -118,7 +118,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 }
 
 export default function PacketFilter() {
-    const { filter, setFilter } = useContext(PacketsContext)
+    const { paused, filter, setFilter } = useContext(PacketsContext)
     const classes = useStyles();
     const [text, setText] = useState(filter);
     const debouncedText = useDebounce(text, 1000);
@@ -139,9 +139,7 @@ export default function PacketFilter() {
         setText(text + " " + k);
     }
     return <>
-        <Box display="flex">
-            <TraceTimeFilterRangeSlider />
-        </Box>
+        {paused && <TraceTimeFilterRangeSlider />}
         <Paper square elevation={1}>
             <Box display="flex">
                 <span>
