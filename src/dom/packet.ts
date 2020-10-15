@@ -212,14 +212,13 @@ export class Packet {
     }
 
     get isAnnounce() {
-        return this.device
-            && this.service_number == SRV_CTRL
-            && this.is_command
+        return this.service_number == SRV_CTRL
+            && this.is_report
             && this.service_command == BaseCmd.Announce;
     }
 
     get isRepeatedAnnounce() {
-        return this.isAnnounce && this.device.lastServiceUpdate < this.timestamp
+        return this.isAnnounce && this.device?.lastServiceUpdate < this.timestamp
     }
 
     get decoded() {
