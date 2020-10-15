@@ -109,7 +109,7 @@ export const ServiceManagerProvider = ({ children }) => {
 function inIFrame() {
     try {
         return typeof window !== "undefined"
-            && window.self !== window
+            && window.self !== window.top
     } catch (e) {
         return typeof window !== "undefined";
     }
