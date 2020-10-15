@@ -4,11 +4,36 @@ import Packet from "./packet";
 import { isInstanceOf, serviceSpecificationFromName } from "./spec";
 import { SMap } from "./utils";
 
-export type PacketFilter = (pkt: Packet) => boolean;
+export type CompiledPacketFilter = (pkt: Packet) => boolean;
+
+export interface PacketFilterProps {
+    announce?: boolean,
+    repeatedAnnounce?: boolean,
+    requiresAck?: boolean,
+    log?: boolean,
+    flags?: string[],
+    regGet?: boolean,
+    regSet?: boolean,
+    devices?: SMap<{ from?: boolean; to?: boolean }>,
+    serviceClasses?: number[],
+    pkts?: string[],
+    before?: number,
+    after?: number,
+}
+
+export interface PacketFilter {
+    source: string;
+    props: PacketFilterProps;
+    filter: CompiledPacketFilter;
+}
 
 export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     if (!text) {
-        return (pkt) => true
+        return {
+            source: text,
+            props: {},
+            filter: (pkt) => true
+        }
     }
 
     let flags = new Set<string>()
@@ -96,7 +121,42 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         }
     });
 
-    console.log(`compiling filter`, text, {
+    const props = {
+        announce,
+        repeatedAnnounce,
+        requiresAck,
+        log,
+        flags: !!flags.size && Array.from(flags.keys()),
+        regGet,
+        regSet,
+        devices,
+        serviceClasses: !!serviceClasses.size && Array.from(serviceClasses.keys()),
+        pkts: !!pkts.size && Array.from(pkts.keys()),
+        before,
+        after
+    }
+    const filter = compileFilter(props)
+    return {
+        source: text,
+        props,
+        filter,
+    };
+    function parseBoolean(value: string) {
+        if (value === "false" || value === "no")
+            return false;
+        else if (value === "true" || value === "yes" || !value)
+            return true;
+        else
+            return undefined;
+    }
+    function parseTimestamp(value: string) {
+        const t = parseInt(value);
+        return isNaN(t) ? undefined : t;
+    }
+}
+
+export function compileFilter(props: PacketFilterProps) {
+    const {
         announce,
         repeatedAnnounce,
         requiresAck,
@@ -109,8 +169,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         pkts,
         before,
         after
-    })
-    let filters: PacketFilter[] = [];
+    } = props;
+
+    let filters: CompiledPacketFilter[] = [];
     if (before !== undefined)
         filters.push(pkt => pkt.timestamp <= before)
     if (after !== undefined)
@@ -121,7 +182,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         filters.push(pkt => !pkt.isAnnounce || (pkt.isRepeatedAnnounce === repeatedAnnounce))
     if (requiresAck !== undefined)
         filters.push(pkt => pkt.requires_ack === requiresAck);
-    if (flags.size)
+    if (flags)
         filters.push(pkt => hasAnyFlag(pkt))
     if (regGet !== undefined || regSet !== undefined)
         filters.push(pkt => (pkt.is_reg_get === regGet) || (pkt.is_reg_set === regSet))
@@ -137,36 +198,18 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             const f = devices[pkt.device.deviceId];
             return !!f && (!f.from || !pkt.is_command) && (!f.to || pkt.is_command);
         })
-    if (serviceClasses.size) {
-        const scs = Array.from(serviceClasses.keys());
-        filters.push(pkt => scs.some(serviceClass => isInstanceOf(pkt.service_class, serviceClass)));
+    if (serviceClasses) {
+        filters.push(pkt => serviceClasses.some(serviceClass => isInstanceOf(pkt.service_class, serviceClass)));
     }
-    if (pkts.size) {
-        const scs = Array.from(pkts.keys());
-        filters.push(pkt => pkts.has(pkt.decoded?.info.identifier.toString(16)));
+    if (pkts) {
+        filters.push(pkt => pkts.indexOf(pkt.decoded?.info.identifier.toString(16)) > -1);
     }
 
-    return (pkt: Packet) => {
-        const r = filters.every(filter => filter(pkt));
-        return r;
-    }
+    const filter: CompiledPacketFilter = (pkt: Packet) => filters.every(filter => filter(pkt));
+    return filter;
 
     function hasAnyFlag(pkt: Packet) {
         const k = pkt.decoded?.info.kind;
-        return !!k && flags.has(k);
-    }
-
-    function parseBoolean(value: string) {
-        if (value === "false" || value === "no")
-            return false;
-        else if (value === "true" || value === "yes" || !value)
-            return true;
-        else
-            return undefined;
-    }
-
-    function parseTimestamp(value: string) {
-        const t = parseInt(value);
-        return isNaN(t) ? undefined : t;
+        return !!k && flags.indexOf(k) > -1;
     }
 }

@@ -2,7 +2,7 @@ import { JDBus } from "./bus";
 import { JDClient } from "./client";
 import { CHANGE, DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND, START, STOP } from "./constants";
 import Packet from "./packet";
-import { PacketFilter, parsePacketFilter } from "./packetfilter";
+import { CompiledPacketFilter, PacketFilter, parsePacketFilter } from "./packetfilter";
 import Trace from "./trace";
 import { throttle } from "./utils";
 
@@ -62,6 +62,7 @@ export default class TraceRecorder extends JDClient {
 
         this._replayTrace = this._trace;
         this._trace = new Trace();
+        this._recording = false;
         this.emit(STOP);
         this.emit(CHANGE);
     }
@@ -134,7 +135,7 @@ export default class TraceRecorder extends JDClient {
         // reapply filter to existing trace
         for (let i = packets.length - 1; i >= 0 && this._filteredPackets.length < FILTERED_TRACE_MAX_ITEMS; --i) {
             const pkt = packets[i];
-            if (this._packetFilter?.(pkt)) {
+            if (this._packetFilter?.filter(pkt)) {
                 this.addFilteredPacket(pkt);
             }
         }
@@ -151,7 +152,7 @@ export default class TraceRecorder extends JDClient {
         this._trace.addPacket(pkt, this.maxRecordingLength);
 
         // add packet to live list
-        if (this._packetFilter?.(pkt)) {
+        if (this._packetFilter?.filter(pkt)) {
             this.addFilteredPacket(pkt);
             // debounced notification of changes
             this.notifyPacketsChanged();
