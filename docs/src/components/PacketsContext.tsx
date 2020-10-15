@@ -106,12 +106,14 @@ export const PacketsProvider = ({ children }) => {
     // update filter
     useEffect(() => {
         let f = filter;
-        if (timeRange.after !== undefined)
-            f += ` after:${timeRange.after}`
-        if (timeRange.before !== undefined)
-            f += ` before:${timeRange.before}`
+        if (paused) {
+            if (timeRange.after !== undefined)
+                f += ` after:${timeRange.after}`
+            if (timeRange.before !== undefined)
+                f += ` before:${timeRange.before}`
+        }
         recorder.filter = f
-    }, [filter, timeRange]);
+    }, [filter, timeRange, paused]);
     // update trace place when trace is created
     useEffect(() => recorder.subscribe(CHANGE, () => {
         setRecording(recorder.recording);
