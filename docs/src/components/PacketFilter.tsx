@@ -10,6 +10,7 @@ import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
 import useDebounce from './useDebounce';
 import { arrayConcatMany, uniqueMap } from '../../../src/dom/utils';
+import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -137,20 +138,25 @@ export default function PacketFilter() {
     const handleAddFilter = (k: string) => {
         setText(text + " " + k);
     }
-    return <Paper square elevation={1}>
+    return <>
         <Box display="flex">
-            <span>
-                <FilterMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
-            </span>
-            <InputBase
-                multiline={true}
-                className={classes.input}
-                placeholder="Filter packets"
-                inputProps={{ 'aria-label': 'filter packets' }}
-                value={text}
-                spellCheck={false}
-                onChange={handleChange}
-            />
+            <TraceTimeFilterRangeSlider />
         </Box>
-    </Paper>
+        <Paper square elevation={1}>
+            <Box display="flex">
+                <span>
+                    <FilterMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
+                </span>
+                <InputBase
+                    multiline={true}
+                    className={classes.input}
+                    placeholder="Filter packets"
+                    inputProps={{ 'aria-label': 'filter packets' }}
+                    value={text}
+                    spellCheck={false}
+                    onChange={handleChange}
+                />
+            </Box>
+        </Paper>
+    </>
 }

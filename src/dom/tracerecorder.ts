@@ -128,7 +128,6 @@ export default class TraceRecorder extends JDClient {
     }
 
     private refreshFilter() {
-        console.log(`refresh filter`, this._filteredPackets)
         this._packetFilter = parsePacketFilter(this.bus, this._filter);
         this._filteredPackets = [];
         const packets = this.trace.packets;
