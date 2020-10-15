@@ -4,8 +4,15 @@ import { printPacket } from "./pretty";
 import { toHex } from "./utils";
 
 export default class Trace {
-    constructor(public packets: Packet[], public videoUrl?: string) {
+    constructor(public packets: Packet[] = [], public videoUrl?: string) {
 
+    }
+
+    addPacket(pkt: Packet, maxLength = -1) {
+        this.packets.push(pkt);
+        if (maxLength > 0 && this.packets.length > maxLength * 1.1) { // 10% overshoot of max
+            this.packets = this.packets.slice(-maxLength)
+        }
     }
 
     serializeToText() {

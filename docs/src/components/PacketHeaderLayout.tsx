@@ -39,8 +39,26 @@ export default function PacketHeaderLayout(props: { packet: Packet }) {
             name: "device_identifiter",
             description: "64-bit device identifier"
         },
+
+        {
+            offset: 12,
+            size: 1,
+            name: "packet_size",
+            description: "The size of the payload field. Maximum size is 236 bytes."
+        },
+        {
+            offset: 13,
+            size: 1,
+            name: 'service_instance',
+            description: "A number that specifies an operation and code combination."
+        },
+        {
+            offset: 14,
+            size: 2,
+            name: 'service_command',
+            description: 'Identifier for the command'
+        }
     ]
-    const lastSlot = slots[slots.length - 1];
 
     const flags = [{
         position: 1,
@@ -60,19 +78,16 @@ export default function PacketHeaderLayout(props: { packet: Packet }) {
     }].filter(f => frameFlags & f.flag);
 
     return <>
-        <PaperBox padding={0}>
+        <PaperBox key="header" padding={0}>
             <pre>
                 <code>
                     {slots.map(slot => <Box component="span" key={slot.name} mr={theme.spacing(0.1)}><Tooltip title={slot.name}>
                         <span>{toHex(header.slice(slot.offset, slot.offset + slot.size))}</span>
                     </Tooltip></Box>)}
-                    <Box component="span" key={"reserved"} mr={theme.spacing(0.1)}><Tooltip title={"reserved"}>
-                        <span>{toHex(header.slice(lastSlot.offset + lastSlot.size))}</span>
-                    </Tooltip></Box>
                 </code>
             </pre>
         </PaperBox>
-        <PaperBox>
+        <PaperBox key="slots">
             <TableContainer>
                 <Table size="small">
                     <TableHead>
@@ -85,7 +100,7 @@ export default function PacketHeaderLayout(props: { packet: Packet }) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {slots.map(slot => <TableRow key={slot.name}>
+                        {slots.map((slot, i) => <TableRow key={slot.name}>
                             <TableCell><code>{toHex(header.slice(slot.offset, slot.offset + slot.size))}</code></TableCell>
                             <TableCell>{slot.offset}</TableCell>
                             <TableCell>{slot.size}</TableCell>
@@ -97,7 +112,7 @@ export default function PacketHeaderLayout(props: { packet: Packet }) {
             </TableContainer>
         </PaperBox>
         {!!flags.length &&
-            <PaperBox>
+            <PaperBox key="flags">
                 <TableContainer>
                     <Table size="small">
                         <TableHead>

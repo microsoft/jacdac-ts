@@ -21,7 +21,8 @@ export default class TraceRecorder extends JDClient {
     public maxRecordingLength = RECORDING_TRACE_MAX_ITEMS;
     public maxFilteredLength = FILTERED_TRACE_MAX_ITEMS;
 
-    private _recordingTrace: Trace;
+    private _trace: Trace;
+    private _recording = false;
     private _replayTrace: Trace;
     private _filter: string;
     private _packetFilter: PacketFilter = undefined;
@@ -34,6 +35,7 @@ export default class TraceRecorder extends JDClient {
 
     constructor(public readonly bus: JDBus, throttleDelay = 200) {
         super()
+        this._trace = new Trace();
         this.handlePacket = this.handlePacket.bind(this);
         this.handleFilterUpdate = this.handleFilterUpdate.bind(this);
 
@@ -46,29 +48,30 @@ export default class TraceRecorder extends JDClient {
     }
 
     startRecording() {
-        if (this._recordingTrace) return;
+        if (this._recording) return;
 
         this._replayTrace = undefined;
-        this._recordingTrace = new Trace([]);
+        this._trace = new Trace();
+        this._recording = true;
         this.emit(START);
         this.emit(CHANGE);
     }
 
     stopRecording() {
-        if (!this._recordingTrace) return;
+        if (!this._recording) return;
 
-        this._replayTrace = this._recordingTrace;
-        this._recordingTrace = undefined;
+        this._replayTrace = this._trace;
+        this._trace = new Trace();
         this.emit(STOP);
         this.emit(CHANGE);
     }
 
     get recording() {
-        return !!this._recordingTrace;
+        return this._recording;
     }
 
     get trace() {
-        return this._recordingTrace || this._replayTrace;
+        return this._trace;
     }
 
     get filteredPackets() {
@@ -126,45 +129,53 @@ export default class TraceRecorder extends JDClient {
 
     private refreshFilter() {
         this._packetFilter = parsePacketFilter(this.bus, this._filter);
-        this._filteredPackets = this._filteredPackets.filter(p => this._packetFilter(p.packet));
-        this.notifyPacketsChanged();
+        this._filteredPackets = [];
+        const packets = this.trace.packets;
+        // reapply filter to existing trace
+        for (let i = packets.length - 1; i >= 0 && this._filteredPackets.length < FILTERED_TRACE_MAX_ITEMS; --i) {
+            const pkt = packets[i];
+            if (this._packetFilter?.(pkt)) {
+                this.addFilteredPacket(pkt);
+            }
+        }
+        this._filteredPackets = this._filteredPackets.reverse();
+        this.emit(TraceRecorder.FILTERED_PACKETS_CHANGE);
     }
 
     private handlePacket(pkt: Packet) {
         if (this.paused)
             return; // skip any processing
 
-        // record all packets if recording
-        if (this._recordingTrace) {
-            this._recordingTrace.packets.push(pkt)
-            if (this._recordingTrace.packets.length > this.maxRecordingLength * 1.1) { // 10% overshoot of max
-                this._recordingTrace.packets = this._recordingTrace.packets.slice(-this.maxRecordingLength)
-            }
-        }
+        // record packets in traces
+        this._trace.addPacket(pkt, this.maxRecordingLength);
 
         // add packet to live list
         if (this._packetFilter?.(pkt)) {
-            // detect duplicate at the tail of the packets
-            const key = pkt.toString();
-            const old = this._filteredPackets
-                .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
-                .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
-                    p.key === key)
-            if (old) {
-                old.count++;
-            }
-            else {
-                this._filteredPackets.unshift({
-                    key,
-                    packet: pkt,
-                    count: 1
-                })
-            }
+            this.addFilteredPacket(pkt);
             // debounced notification of changes
             this.notifyPacketsChanged();
         }
 
         // notify that this packet has been processed
         this.emit(PACKET_PROCESS, pkt);
+    }
+
+    private addFilteredPacket(pkt) {
+        // detect duplicate at the tail of the packets
+        const key = pkt.toString();
+        const old = this._filteredPackets
+            .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
+            .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
+                p.key === key)
+        if (old) {
+            old.count++;
+        }
+        else {
+            this._filteredPackets.unshift({
+                key,
+                packet: pkt,
+                count: 1
+            })
+        }
     }
 }

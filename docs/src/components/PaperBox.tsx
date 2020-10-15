@@ -7,10 +7,10 @@ export function PaperBox(props: { padding?: number } & BoxProps) {
 
     return <Box {...others} mb={theme.spacing(0.25)}>
         <Paper square>
-            {!!padding && <Box p={theme.spacing(0.25)}>
+            {padding !== 0 && <Box p={theme.spacing(padding || 0.25)}>
                 {children}
             </Box>}
-            {padding && children}
+            {padding === 0 && children}
         </Paper>
     </Box>
 }
