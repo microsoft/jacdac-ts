@@ -109,7 +109,7 @@ export const PacketsProvider = ({ children }) => {
     useEffect(() => recorder.subscribe(TraceRecorder.FILTERED_PACKETS_CHANGE, () => {
         if (!paused)
             setPackets(recorder.filteredPackets)
-    }))
+    }), [paused])
     // update packets
     useEffect(() => {
         if (paused)

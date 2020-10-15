@@ -344,7 +344,6 @@ function LayoutWithContext(props: {
           <Footer />
         </main>
       </Container>}
-      <FabBar />
     </div>
   </>
   )
