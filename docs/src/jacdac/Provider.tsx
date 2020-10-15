@@ -4,7 +4,6 @@ import { BusState } from "../../../src/dom/bus";
 import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
-import TraceRecorder from "../../../src/dom/tracerecorder"
 import { inIFrame } from "../../../src/dom/iframeclient";
 
 function sniffQueryArguments() {
@@ -26,8 +25,6 @@ bus.setBackgroundFirmwareScans(true);
 if (inIFrame()) {
     new IFrameBridgeClient(bus); // start bridge
 }
-// route makecode messages
-const recorder = new TraceRecorder(bus);
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
@@ -48,7 +45,7 @@ const JACDACProvider = ({ children }) => {
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
-        <JACDACContext.Provider value={{ bus, recorder, connectionState, connectAsync, disconnectAsync }}>
+        <JACDACContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
             {children}
         </JACDACContext.Provider>
     )

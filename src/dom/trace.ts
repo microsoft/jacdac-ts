@@ -8,6 +8,24 @@ export default class Trace {
 
     }
 
+    get length() {
+        return this.packets.length;
+    }
+
+    get duration() {
+        if (!this.packets.length)
+            return 0;
+        return this.packets[this.packets.length - 1].timestamp - this.packets[0].timestamp;
+    }
+
+    get startTimestamp() {
+        return this.packets[0]?.timestamp || 0;
+    }
+
+    get endTimestamp() {
+        return this.packets[this.packets.length - 1]?.timestamp || 0;
+    }
+
     addPacket(pkt: Packet, maxLength = -1) {
         this.packets.push(pkt);
         if (maxLength > 0 && this.packets.length > maxLength * 1.1) { // 10% overshoot of max

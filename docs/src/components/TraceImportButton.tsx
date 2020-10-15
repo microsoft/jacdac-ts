@@ -8,7 +8,7 @@ import AppContext from "./AppContext"
 
 export default function TraceImportButton(props: { icon?: boolean, disabled?: boolean }) {
     const { icon, disabled } = props;
-    const { recording, setTrace } = useContext(PacketsContext)
+    const { recording, setReplayTrace } = useContext(PacketsContext)
     const { setError } = useContext(AppContext)
     const [importing, setImporting] = useState(false)
 
@@ -40,7 +40,7 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
                 // found anything?
                 if (packets) {
                     console.log(`importing ${packets.length} packets`)
-                    setTrace(packets);
+                    setReplayTrace(packets);
                 }
                 else
                     setError("could not parse file")

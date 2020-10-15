@@ -10,16 +10,14 @@ import { BusState } from '../../../src/dom/bus';
 
 export default function TracePlayButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
-    const { connectionState } = useContext<JDContextProps>(JACDACContext)
-    const { toggleTrace, tracing, recording, trace, progress } = useContext(PacketsContext)
-    const connecting = connectionState === BusState.Connecting || connectionState == BusState.Disconnecting;
+    const { toggleTracing, tracing, recording, replayTrace, progress } = useContext(PacketsContext)
 
     return <IconButtonWithProgress
         {...others}
-        disabled={disabled || recording || !trace || connecting}
+        disabled={disabled || recording || !replayTrace}
         indeterminate={progress !== undefined}
-        title={!trace ? "Load or record a trace to replay it" : tracing ? "Stop trace" : "Play trace"}
-        onClick={toggleTrace}
+        title={!replayTrace ? "Load or record a trace to replay it" : tracing ? "Stop trace" : "Play trace"}
+        onClick={toggleTracing}
         progress={progress !== undefined && progress * 100}>
         {tracing ? <StopIcon /> : <PlayArrowIcon />}
     </IconButtonWithProgress >

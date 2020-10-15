@@ -12,12 +12,12 @@ import TracePlayButton from "./TracePlayButton";
 import TracePauseButton from "./TracePauseButton";
 
 export default function PacketRecorder() {
-    const { clearPackets, trace, recording, tracing } = useContext(PacketsContext)
+    const { clearPackets, replayTrace, recording, tracing } = useContext(PacketsContext)
 
     const disableSave = tracing;
 
     return <>
-        {trace && !tracing && <Typography variant="caption">{trace.packets.length} packets</Typography>}
+        {!recording && replayTrace && <Typography variant="caption">{replayTrace.packets.length} packets</Typography>}
         <TraceImportButton icon={true} disabled={tracing || recording} />
         <SaveTraceButton disabled={disableSave} />
         |

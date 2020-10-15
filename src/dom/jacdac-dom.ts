@@ -35,3 +35,5 @@ export * from './traceplayer'
 export * from './command'
 export * from './packetfilter'
 export * from './tracerecorder'
+export * from './traceview'
+export * from "./traceplayer"

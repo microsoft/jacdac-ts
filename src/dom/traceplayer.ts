@@ -2,8 +2,10 @@ import { JDBus } from "./bus";
 import { CHANGE, PROGRESS } from "./constants";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
+import Trace from "./trace";
 
 export default class TracePlayer extends JDEventSource {
+    private _trace: Trace;
     private _busStartTimestamp: number = 0;
     private _index: number = 0;
     private _interval: any;
@@ -11,7 +13,6 @@ export default class TracePlayer extends JDEventSource {
 
     constructor(
         public readonly bus: JDBus,
-        public readonly packets: Packet[],
         public speed: number = 1
     ) {
         super();
@@ -22,6 +23,18 @@ export default class TracePlayer extends JDEventSource {
         return !!this._interval;
     }
 
+    get trace() {
+        return this._trace;
+    }
+
+    set trace(t: Trace) {
+        if (t !== this._trace) {
+            this.stop();
+            this._trace = t;
+            this.emit(CHANGE);
+        }
+     }
+
     /**
      * Gets the adjusted timestamp
      */
@@ -29,23 +42,21 @@ export default class TracePlayer extends JDEventSource {
         return (this.bus.timestamp - this._busStartTimestamp) * this.speed;
     }
 
-    get duration() {
-        return this.packets[this.packets.length - 1].timestamp - this.packets[0].timestamp;
-    }
-
     get progress() {
+        if (!this.trace) 
+            return 0;
         return Math.max(0, Math.min(
             1,
-            this.elapsed / this.duration
+            this.elapsed / this.trace.duration
         ));
     }
 
     get length() {
-        return this.packets.length;
+        return this.trace?.length || 0;
     }
 
     start() {
-        if (this._interval) return; // already running
+        if (this._interval || !this._trace) return; // already running
 
         // this is the reference start time of this run
         this._busStartTimestamp = this.bus.timestamp;
@@ -65,14 +76,17 @@ export default class TracePlayer extends JDEventSource {
     }
 
     private tick() {
+        if (!this._trace) return;
+
         const busElapsed = this.elapsed;
-        const packetStart = this.packets[0].timestamp;
+        const packets = this.trace.packets;
+        const packetStart = packets[0]?.timestamp || 0; 
 
         let nframes = 0;
         let npackets = 0;
 
-        while (this._index < this.packets.length) {
-            const packet = this.packets[this._index];
+        while (this._index < packets.length) {
+            const packet = packets[this._index];
             const packetElapsed = packet.timestamp - packetStart;
             if (packetElapsed > busElapsed)
                 break; // wait to catch up
@@ -86,7 +100,7 @@ export default class TracePlayer extends JDEventSource {
 
         console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)
         this.emitProgress();
-        if (this._index >= this.packets.length)
+        if (this._index >= packets.length)
             this.stop();
     }
 

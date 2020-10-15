@@ -7,13 +7,13 @@ import PacketsContext from "./PacketsContext";
 
 export default function SaveTraceButton(props: { disabled?: boolean }) {
     const { disabled } = props;
-    const { trace, recording } = useContext(PacketsContext)
+    const { replayTrace, recording } = useContext(PacketsContext)
     const { fileStorage } = useContext(ServiceManagerContext);
     const saveTrace = () => {
-        fileStorage.saveText("trace.jd.txt", trace.serializeToText());
+        fileStorage.saveText("trace.jd.txt", replayTrace.serializeToText());
     }
     return <Tooltip title="save trace">
-        <span><IconButton disabled={disabled || recording || !trace?.packets.length}
+        <span><IconButton disabled={disabled || recording || !replayTrace?.packets.length}
             size="small" key="save" onClick={saveTrace}>
             <SaveIcon />
         </IconButton></span>
