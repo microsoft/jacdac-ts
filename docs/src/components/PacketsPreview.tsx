@@ -18,7 +18,6 @@ export default function PacketsPreview() {
                 key={packet.key}
                 packet={packet.packet}
                 count={packet.count}
-                skipRepeatedAnnounce={false}
-                showTime={false} />)}
+                skipRepeatedAnnounce={false} />)}
     </List>
 }

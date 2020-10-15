@@ -20,6 +20,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let regSet = undefined;
     let requiresAck = undefined;
     let log = undefined;
+    let before = undefined;
+    let after = undefined;
     let devices: SMap<{ from: boolean; to: boolean; }> = {};
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
@@ -85,11 +87,34 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "log":
                 log = true;
                 break;
+            case "before":
+                before = parseTimestamp(value);
+                break;
+            case "after":
+                after = parseTimestamp(value);
+                break;
         }
     });
 
-    console.log(`compiling filter`, text, { announce, repeatedAnnounce, requiresAck, log, flags, regGet, regSet, devices, serviceClasses, pkts })
+    console.log(`compiling filter`, text, {
+        announce,
+        repeatedAnnounce,
+        requiresAck,
+        log,
+        flags,
+        regGet,
+        regSet,
+        devices,
+        serviceClasses,
+        pkts,
+        before,
+        after
+    })
     let filters: PacketFilter[] = [];
+    if (before !== undefined)
+        filters.push(pkt => pkt.timestamp <= before)
+    if (after !== undefined)
+        filters.push(pkt => pkt.timestamp >= after);
     if (announce !== undefined)
         filters.push(pkt => pkt.isAnnounce === announce)
     if (repeatedAnnounce !== undefined)
@@ -138,5 +163,10 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             return true;
         else
             return undefined;
+    }
+
+    function parseTimestamp(value: string) {
+        const t = parseInt(value);
+        return isNaN(t) ? undefined : t;
     }
 }

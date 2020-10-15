@@ -128,6 +128,7 @@ export default class TraceRecorder extends JDClient {
     }
 
     private refreshFilter() {
+        console.log(`refresh filter`, this._filteredPackets)
         this._packetFilter = parsePacketFilter(this.bus, this._filter);
         this._filteredPackets = [];
         const packets = this.trace.packets;
@@ -139,6 +140,7 @@ export default class TraceRecorder extends JDClient {
             }
         }
         this._filteredPackets = this._filteredPackets.reverse();
+        console.log(`refreshed filter`, this._filteredPackets)
         this.emit(TraceRecorder.FILTERED_PACKETS_CHANGE);
     }
 

@@ -39,7 +39,7 @@ export default function PacketInspector() {
                 </pre>
             </PaperBox>
         </>}
-        { decoded?.decoded.length && <>
+        {!!decoded?.decoded.length && <>
             <h3>Arguments</h3><ul>
                 {decoded.decoded.map((member, i) => <li key={i}>
                     {member.info.name == '_' ? info.name : member.info.name}: <code>{member.humanValue}</code>

@@ -22,7 +22,7 @@ export default function PacketListItem(props: {
     showTime?: boolean,
     count?: number
 }) {
-    const { packet, count } = props;
+    const { packet, count, showTime } = props;
     const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
     const { setDrawerType } = useContext(AppContext)
     const classes = useStyles()
@@ -37,7 +37,7 @@ export default function PacketListItem(props: {
     const selected = packet === selectedPacket
     const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
     const primary = (logMessage && packet.decoded?.decoded[0].value) || packet.friendlyCommandName
-    const secondary = `${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
+    const secondary = `${showTime ? `${packet.timestamp}ms: ` : ""}${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
         <ListItemIcon>

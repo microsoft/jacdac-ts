@@ -113,7 +113,7 @@ export default function AppDrawer(props: {
         {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
         {!showSearchResults && drawerType === DrawerType.Packets
-            ? <PacketList />
+            ? <PacketList showTime={true} />
             : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
     </Drawer>
 }
