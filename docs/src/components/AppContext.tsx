@@ -92,15 +92,3 @@ export const AppProvider = ({ children }) => {
         </AppContext.Provider>
     )
 }
-
-export function drawerTitle(type: DrawerType) {
-    switch (type) {
-        case DrawerType.Dom:
-            return "Devices"
-        case DrawerType.Packets:
-            return "Packets"
-        case DrawerType.ServiceSpecification:
-            return "Service Specification"
-        default: return undefined
-    }
-}

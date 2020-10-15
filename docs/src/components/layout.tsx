@@ -20,12 +20,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import ConnectButton from '../jacdac/ConnectButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import HistoryIcon from '@material-ui/icons/History';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import MenuIcon from '@material-ui/icons/Menu';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useStaticQuery, graphql } from "gatsby"
 import JACDACProvider from "../jacdac/Provider"
@@ -52,13 +46,13 @@ import GitHubButton from "./GitHubButton"
 import Presentation from "./Presentation";
 import useMdxComponents from "./useMdxComponents";
 import Footer from "./Footer";
-import HideOnScroll from "./HideOnScroll";
 import TraceRecordButton from "./TraceRecordButton"
 import TracePlayButton from "./TracePlayButton";
 import PrintButton from "./PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
 import { SnackbarProvider } from 'notistack';
 import PacketInspector from "./PacketInspector"
+import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -214,7 +208,7 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
 function MainAppBar(props: { pageContext?: any }) {
   const { pageContext } = props;
   const classes = useStyles();
-  const { drawerType, setDrawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
+  const { drawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
   const pageTitle = pageContext?.frontmatter?.title;
@@ -232,15 +226,6 @@ function MainAppBar(props: { pageContext?: any }) {
   `)
   const title = data.site.siteMetadata.title;
 
-  const handleDrawerToc = () => {
-    setDrawerType(DrawerType.Toc)
-  }
-  const handleDrawerConsole = () => {
-    setDrawerType(DrawerType.Packets);
-  }
-  const handleDrawerDom = () => {
-    setDrawerType(DrawerType.Dom);
-  }
   const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
 
   return <Box displayPrint="none"><AppBar
@@ -254,36 +239,7 @@ function MainAppBar(props: { pageContext?: any }) {
     })}
   >
     <Toolbar>
-      <Tooltip aria-label="open table of contents" title="open table of contents">
-        <span className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
-          <IconButton
-            color="inherit"
-            onClick={handleDrawerToc}
-            edge="start"
-          > <MenuIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip aria-label="open device tree" title="open DOM tree">
-        <span className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
-          <IconButton
-            color="inherit"
-            onClick={handleDrawerDom}
-            edge="start"
-          > <AccountTreeIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip aria-label="open packet console" title="open packet console">
-        <span className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)}>
-          <IconButton
-            color="inherit"
-            onClick={handleDrawerConsole}
-            edge="start"
-          > <HistoryIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <DrawerToolsButtonGroup className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} showToc={true} />
       {!drawerOpen && !toolsMenu && <Hidden mdDown={true}>
         <Typography variant="h6">
           <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>

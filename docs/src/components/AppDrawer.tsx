@@ -8,13 +8,14 @@ import DomTreeView from "./DomTreeView";
 import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import AppContext, { drawerTitle, DrawerType } from "./AppContext";
+import AppContext, { DrawerType } from "./AppContext";
 import { useStaticQuery, graphql } from "gatsby";
 import Mdx from "./Mdx";
 import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
 import { useDrawerSearchResults } from "./useDrawerSearchResults";
 import DrawerSearchResults from "./DrawerSearchResults";
+import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -43,7 +44,7 @@ const useStyles = makeStyles((theme) => createStyles({
         padding: theme.spacing(0, 1),
         // necessary for content to be below app bar
         ...theme.mixins.toolbar,
-        justifyContent: 'flex-end',
+        justifyContent: 'flex-start',
     },
     alertButton: {
         marginLeft: theme.spacing(2)
@@ -65,7 +66,6 @@ export default function AppDrawer(props: {
     const open = drawerType !== DrawerType.None
     const searchResults = useDrawerSearchResults()
     const showSearchResults = !!searchResults;
-    const showTitle = useMediaQuery(theme.breakpoints.up('lg'))
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
@@ -86,19 +86,22 @@ export default function AppDrawer(props: {
     if (drawerType === DrawerType.None)
         return <></>
 
+    const toc = drawerType === DrawerType.Toc;
     return <Drawer
-        className={drawerType === DrawerType.Toc ? classes.tocDrawer : classes.drawer}
+        className={toc ? classes.tocDrawer : classes.drawer}
         variant="persistent"
         anchor="left"
         open={open}
         classes={{
-            paper: drawerType === DrawerType.Toc ? classes.tocDrawerPaper : classes.drawerPaper,
+            paper: toc ? classes.tocDrawerPaper : classes.drawerPaper,
         }}
     >
         <div className={classes.drawerHeader}>
-            {drawerType !== DrawerType.Toc && <PacketRecorder />}
-            {showTitle && <Typography variant="h6">{drawerTitle(drawerType)}</Typography>}
-            {drawerType == DrawerType.Toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
+            {toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
+            {!toc && <><PacketRecorder />
+                <span className={classes.fluid} />
+                <DrawerToolsButtonGroup />
+            </>}
             <IconButton onClick={handleDrawerClose}>
                 <ChevronLeftIcon />
             </IconButton>

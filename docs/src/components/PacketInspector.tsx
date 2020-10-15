@@ -9,6 +9,7 @@ import { createStyles, makeStyles, Paper, Typography } from "@material-ui/core";
 import PacketSpecification from "./PacketSpecification";
 import { printPacket } from "../../../src/dom/pretty";
 import PacketHeaderLayout from "./PacketHeaderLayout";
+import { Link } from "gatsby-theme-material-ui";
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);
@@ -27,7 +28,7 @@ export default function PacketInspector() {
         <Typography variant="body2">
             {printPacket(packet)}
         </Typography>
-        <h3>Header</h3>
+        <h3><Link to="/spec/specification#frames">Header</Link></h3>
         <PacketHeaderLayout packet={packet} />
         <h3>Data</h3>
         <Paper>
