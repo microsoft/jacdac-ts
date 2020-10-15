@@ -33,7 +33,7 @@ export default class TracePlayer extends JDEventSource {
             this._trace = t;
             this.emit(CHANGE);
         }
-     }
+    }
 
     /**
      * Gets the adjusted timestamp
@@ -43,7 +43,7 @@ export default class TracePlayer extends JDEventSource {
     }
 
     get progress() {
-        if (!this.trace) 
+        if (!this.trace)
             return 0;
         return Math.max(0, Math.min(
             1,
@@ -76,11 +76,12 @@ export default class TracePlayer extends JDEventSource {
     }
 
     private tick() {
-        if (!this._trace) return;
+        if (!this._trace)
+            return;
 
         const busElapsed = this.elapsed;
         const packets = this.trace.packets;
-        const packetStart = packets[0]?.timestamp || 0; 
+        const packetStart = packets[0]?.timestamp || 0;
 
         let nframes = 0;
         let npackets = 0;
