@@ -49,7 +49,7 @@ export default class TraceView extends JDClient {
 
     set trace(t: Trace) {
         if (t !== this._trace) {
-            this._trace;
+            this._trace = t;
             this.refreshFilter();
             this.emit(CHANGE);
         }
