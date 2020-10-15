@@ -6,19 +6,15 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
 import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButtonWithProgress";
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
-import { BusState } from '../../../src/dom/bus';
 
 export default function TracePauseButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
-    const { connectionState } = useContext<JDContextProps>(JACDACContext)
-    const { paused, togglePaused } = useContext(PacketsContext)
-    const connecting = connectionState === BusState.Connecting || connectionState == BusState.Disconnecting;
+    const { paused, recording, tracing, togglePaused } = useContext(PacketsContext)
 
     return <IconButtonWithProgress
         {...others}
-        disabled={disabled || connecting}
-        title={paused ? "Resume updates" : "Pause updates"}
+        disabled={disabled || recording || tracing}
+        title={paused ? "Lock packets" : "Unlock packets"}
         onClick={togglePaused}>
         {paused ? <RefreshIcon /> : <PauseIcon />}
     </IconButtonWithProgress >

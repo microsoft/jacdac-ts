@@ -199,8 +199,8 @@ export class JDBus extends JDNode {
                 this.emit(DEVICE_DISCONNECT, dev);
                 this.emit(DEVICE_CHANGE, dev)
             })
-            this.emit(CHANGE);
         }
+        this.resetTime();
     }
 
     /**

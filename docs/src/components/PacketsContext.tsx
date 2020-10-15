@@ -11,6 +11,7 @@ import { TimestampRange } from "../../../src/dom/packetfilter";
 import TraceView, { TracePacketProps } from "../../../src/dom/traceview";
 
 export interface PacketsProps {
+    trace: Trace,
     packets: TracePacketProps[],
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
@@ -31,6 +32,7 @@ export interface PacketsProps {
 }
 
 const PacketsContext = createContext<PacketsProps>({
+    trace: undefined,
     packets: [],
     selectedPacket: undefined,
     setSelectedPacket: () => { },
@@ -66,7 +68,8 @@ export const PacketsProvider = ({ children }) => {
     const [progress, setProgress] = useState(0)
     const [timeRange, setTimeRange] = useState<TimestampRange>({})
     const [recording, setRecording] = useState(false)
-    const [trace, setTrace] = useState<Trace>(undefined);
+    const [trace, setTrace] = useState<Trace>(view.current.trace);
+    const [replayTrace, _setReplayTrace] = useState<Trace>(undefined);
     const [tracing, setTracing] = useState(false);
     const [paused, setPaused] = useState(false)
 
@@ -87,8 +90,7 @@ export const PacketsProvider = ({ children }) => {
     }
     const toggleRecording = () => {
         if (recorder.current.recording) {
-            const trace = recorder.current.stop();
-            player.current.trace = trace;
+            player.current.trace = recorder.current.stop();
         } else {
             player.current.trace = undefined;
             recorder.current.start();
@@ -108,6 +110,10 @@ export const PacketsProvider = ({ children }) => {
     }
     const togglePaused = () => {
         view.current.paused = !view.current.paused;
+        if (view.current.paused) {
+            recorder.current.stop();
+            player.current.stop();
+        }
     }
     // update filter in the view
     useEffect(() => {
@@ -122,25 +128,28 @@ export const PacketsProvider = ({ children }) => {
     }, [filter, timeRange, paused]);
     // track state in React
     useEffect(() => view.current.subscribe(CHANGE, () => {
+        setPaused(view.current.paused);
         setPackets(view.current.filteredPackets)
+        setTrace(view.current.trace);
     }), [])
     useEffect(() => recorder.current.subscribe(CHANGE, () => {
         setRecording(recorder.current.recording);
-    }))
-    useEffect(() => view.current.subscribe(CHANGE, () => {
-        setPaused(view.current.paused);
-    }))
+    }), [])
     useEffect(() => player.current.subscribe(CHANGE, () => {
-        setTrace(player.current.trace);
         setTracing(player.current.running);
-    }))
+        _setReplayTrace(player.current.trace);
+    }), [])
+    useEffect(() => player.current.subscribe(PROGRESS, () => {
+        setProgress(player.current.progress);
+    }), [])
 
     return (
         <PacketsContext.Provider value={{
+            trace,
             packets, clearPackets,
             selectedPacket, setSelectedPacket,
             filter, setFilter,
-            replayTrace: trace, setReplayTrace,
+            replayTrace, setReplayTrace,
             recording, toggleRecording,
             tracing, toggleTracing,
             progress,

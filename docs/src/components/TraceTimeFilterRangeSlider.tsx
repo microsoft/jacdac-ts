@@ -5,7 +5,7 @@ import useDebounce from './useDebounce';
 import { prettyDuration } from '../../../src/dom/pretty';
 
 export default function TraceTimeFilterRangeSlider() {
-    const { replayTrace, paused, timeRange, setTimeRange } = useContext(PacketsContext)
+    const { trace, paused, timeRange, setTimeRange } = useContext(PacketsContext)
     const [minMax, setMinMax] = useState([0, 1000]);
     const [value, setValue] = useState<number[]>([timeRange.after || 0, timeRange.before || 1000])
     const theme = useTheme();
@@ -16,13 +16,14 @@ export default function TraceTimeFilterRangeSlider() {
     };
 
     useEffect(() => {
-        if (!replayTrace)
+        if (!trace)
             return;
-        const mintime = replayTrace.startTimestamp;
-        const maxtime = replayTrace.endTimestamp;
+        const mintime = trace.startTimestamp;
+        const maxtime = trace.endTimestamp;
         // update range
         setMinMax([mintime, maxtime]);
-    }, [replayTrace, paused])
+        setValue([mintime, maxtime]);
+    }, [trace, paused])
 
     useEffect(() => {
         setTimeRange({ after: debouncedValue[0], before: debouncedValue[1] })

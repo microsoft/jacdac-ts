@@ -101,6 +101,7 @@ export default class TraceView extends JDClient {
     }
 
     clear() {
+        this.trace = new Trace();
         this._filteredPackets = []
         this.setFilteredPackets();
         this.emit(CHANGE);
@@ -126,6 +127,10 @@ export default class TraceView extends JDClient {
     }
 
     private handlePacket(pkt: Packet) {
+        // remember package
+        this.trace.addPacket(pkt);
+
+        // don't refresh filtered trace
         if (this.paused)
             return; // skip any processing
 

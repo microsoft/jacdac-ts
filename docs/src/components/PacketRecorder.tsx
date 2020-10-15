@@ -12,7 +12,7 @@ import TracePlayButton from "./TracePlayButton";
 import TracePauseButton from "./TracePauseButton";
 
 export default function PacketRecorder() {
-    const { clearPackets, replayTrace, recording, tracing } = useContext(PacketsContext)
+    const { clearPackets, replayTrace, recording, tracing, paused } = useContext(PacketsContext)
 
     const disableSave = tracing;
 
@@ -26,7 +26,8 @@ export default function PacketRecorder() {
         |
         <TracePauseButton size="small" />
         <Tooltip title="Clear">
-            <span><IconButton size="small" key="clear" onClick={clearPackets}><ClearIcon /></IconButton></span>
+            <span><IconButton size="small" key="clear" onClick={clearPackets}
+                disabled={paused || recording || tracing}><ClearIcon /></IconButton></span>
         </Tooltip>
     </>
 }
