@@ -5,6 +5,7 @@ import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
 import TraceRecorder from "../../../src/dom/tracerecorder"
+import { inIFrame } from "../../../src/dom/iframeclient";
 
 function sniffQueryArguments() {
     if (typeof window === "undefined" || typeof URLSearchParams === "undefined")
@@ -20,9 +21,11 @@ const args = sniffQueryArguments();
 const bus = createUSBBus(undefined, {
     parentOrigin: args.parentOrigin
 });
-// tslint:disable-next-line: no-unused-expression
-new IFrameBridgeClient(bus); // start bridge
 bus.setBackgroundFirmwareScans(true);
+// tslint:disable-next-line: no-unused-expression
+if (inIFrame()) {
+    new IFrameBridgeClient(bus); // start bridge
+}
 // route makecode messages
 const recorder = new TraceRecorder(bus);
 

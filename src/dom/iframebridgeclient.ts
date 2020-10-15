@@ -22,8 +22,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         super(bus)
         this.postPacket = this.postPacket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
-        if (this.supported)
-            this.registerEvents();
+        this.registerEvents();
     }
 
     private registerEvents() {
@@ -74,9 +73,5 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         }
         // may not be in iframe
         window.parent?.postMessage(msg, this.origin)
-    }
-
-    get supported(): boolean {
-        return typeof window !== "undefined";
     }
 }

@@ -7,6 +7,7 @@ import DarkModeContext from "./DarkModeContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import { JDDevice } from "../../../src/dom/device";
 import { IDeviceNameSettings } from "../../../src/dom/bus"
+import { inIFrame } from "../../../src/dom/iframeclient";
 
 export interface ISettings {
     get(key: string): string;
@@ -104,15 +105,6 @@ export const ServiceManagerProvider = ({ children }) => {
     return <ServiceManagerContext.Provider value={value}>
         {children}
     </ServiceManagerContext.Provider>
-}
-
-function inIFrame() {
-    try {
-        return typeof window !== "undefined"
-            && window.self !== window.top
-    } catch (e) {
-        return typeof window !== "undefined";
-    }
 }
 
 export default ServiceManagerContext;
