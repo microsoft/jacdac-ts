@@ -18,7 +18,7 @@ export default function ServiceSpecificationCard(props: { serviceClass?: number,
         />
         <CardContent>
             {spec?.notes["short"] &&
-                <Typography variant="body2">
+                <Typography variant="body2" component="div">
                     <Markdown source={spec?.notes["short"]} />
                 </Typography>
             }

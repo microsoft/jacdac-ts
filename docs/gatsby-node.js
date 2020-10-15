@@ -123,7 +123,7 @@ async function createSpecPages(graphql, actions, reporter) {
     createPage({
       // This is the slug you created before
       // (or `node.frontmatter.slug`)
-      path: `/spec${node.fields.slug}`,
+      path: node.fields.slug,
       // This component will wrap our MDX content
       component: path.resolve(`./src/components/spec.tsx`),
       context: { id: node.id }

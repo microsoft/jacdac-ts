@@ -87,6 +87,7 @@ export default function AppDrawer(props: {
         return <></>
 
     const toc = drawerType === DrawerType.Toc;
+    const spec = drawerType === DrawerType.ServiceSpecification;
     return <Drawer
         className={toc ? classes.tocDrawer : classes.drawer}
         variant="persistent"
@@ -98,10 +99,11 @@ export default function AppDrawer(props: {
     >
         <div className={classes.drawerHeader}>
             {toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
-            {!toc && <><PacketRecorder />
+            {!toc && !spec && <><PacketRecorder />
                 <span className={classes.fluid} />
                 <DrawerToolsButtonGroup />
             </>}
+            {spec && <span className={classes.fluid} />}
             <IconButton onClick={handleDrawerClose}>
                 <ChevronLeftIcon />
             </IconButton>

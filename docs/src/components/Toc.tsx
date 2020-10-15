@@ -123,7 +123,7 @@ export default function Toc() {
     order: 0
   }, {
     name: "Specification",
-    path: "/spec/specification",
+    path: "/specification/",
     order: 1
   }, {
     name: "Services",
@@ -155,8 +155,6 @@ export default function Toc() {
         path: node.fields.slug,
         order: node.frontmatter?.order !== undefined ? node.frontmatter?.order : 50
       }
-      if (node.parent.sourceInstanceName == "specPages")
-        r.path = "/spec" + r.path
       return r;
     })
     .forEach(node => toc.push(node))
