@@ -40,7 +40,7 @@ export class HostedModelStore extends JDEventSource {
             data: { path },
         } as IFileLoadMessage);
 
-        const data = ack?.data as IFileContent;
+        const data = ack?.data?.data as IFileContent;
         if (!data)
             return undefined;
 
