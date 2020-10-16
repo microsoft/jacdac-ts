@@ -44,16 +44,10 @@ export class HostedModelStore extends JDEventSource {
         if (!data)
             return undefined;
 
-        if (data.mimetype === 'application/octet-stream') {
-            const buffer = Buffer.from(data.content, 'base64');
-            return new Blob(
-                [buffer], { type: 'application/octet-stream' }
-            );
-        }
-        else {
-            return new Blob(
-                [data.content],
-                { type: `application/text` });
-        }
+        const base64 = data.mimetype === 'application/octet-stream';
+        const buffer = Buffer.from(data.content, base64 ? 'base64' : undefined);
+        return new Blob(
+            [buffer], { type: data.mimetype }
+        );
     }
 }

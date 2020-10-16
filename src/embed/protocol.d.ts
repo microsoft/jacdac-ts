@@ -51,7 +51,7 @@ export interface IFile {
 }
 
 export interface IFileContent {
-    content: any;
+    content: string;
     mimetype: string;
 }
 
