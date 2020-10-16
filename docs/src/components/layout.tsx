@@ -214,9 +214,9 @@ function MainAppBar(props: { pageContext?: any }) {
   const pageTitle = pageContext?.frontmatter?.title;
   const pageDeck = !!pageContext?.frontmatter?.deck;
   const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
-  const appBarColor = (pageDeck || widgetMode) ? "transparent"
-    : darkMode === "dark"
-      ? "inherit" : undefined;
+  const appBarColor = pageDeck ? "transparent"
+    : darkMode === "dark" ? "inherit"
+    : widgetMode ? "default" : undefined;
 
   const data = useStaticQuery(graphql`
     query {
