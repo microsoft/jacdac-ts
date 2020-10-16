@@ -17,8 +17,8 @@ export function parseTraceLog(contents: string): Packet[] {
             continue;
         }
         // parse data
-        const m = /\s*(\d+)\s+([a-f0-9]+)/i.exec(ln)
-        if (!m)
+        const m = /(\d+)\s+([a-f0-9]+)/i.exec(ln)
+        if (!m) // probably junk data
             continue;
 
         const timestamp = parseInt(m[1])
