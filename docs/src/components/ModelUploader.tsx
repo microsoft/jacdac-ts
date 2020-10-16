@@ -1,4 +1,4 @@
-import { makeStyles, Theme, createStyles, CircularProgress, List, ListItem, ListItemText } from '@material-ui/core';
+import { makeStyles, Theme, createStyles, CircularProgress, List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import React, { useContext, useState } from 'react';
 import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../../src/dom/constants';
 import { JDService } from '../../../src/dom/service';
@@ -18,6 +18,8 @@ import ServiceManagerContext from './ServiceManagerContext'
 import useChange from '../jacdac/useChange';
 import { IFile } from '../../../src/embed/protocol';
 import { prettySize } from '../../../src/dom/pretty';
+import RegisterTrend from './RegisterTrend';
+import { useRegisterIntValue, useRegisterStringValue } from '../jacdac/useRegisterValue';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -27,11 +29,14 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 export function ModelContent(props: { service: JDService }) {
     const { service } = props
+    const modelSize = useRegisterIntValue(service.register(ModelRunnerReg.ModelSize));
+    const lastError = useRegisterStringValue(service.register(ModelRunnerReg.LastError));
+
     return <>
-        <RegisterInput register={service.register(ModelRunnerReg.ModelSize)} />
-        <RegisterInput register={service.register(ModelRunnerReg.LastError)} />
+        {lastError && <Alert severity="warning">{lastError}</Alert>}
+        <Typography>model size: {modelSize === undefined ? "..." : prettySize(modelSize)}</Typography>
         <RegisterInput showName register={service.register(ModelRunnerReg.AutoInvokeEvery)} />
-        <RegisterInput showName register={service.register(ModelRunnerReg.Outputs)} />
+        <RegisterTrend showName register={service.register(ModelRunnerReg.Outputs)} mini={true} />
     </>
 }
 

@@ -27,5 +27,5 @@ export default function CardMediaWithSkeleton(props: CardMediaProps) {
     const hasImage = !!image || !!src;
     return hasImage ?
         <CardMedia className={className || classes.media} {...others} image={image} src={src} />
-        : <Skeleton variant="rect" className={className || classes.media} />
+        : <></>;
 }

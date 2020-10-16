@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { JSONTryParse, SMap } from "../../../src/dom/utils";
 import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../src/embed/filestorage'
 import { IThemeMessage } from "../../../src/embed/protocol";
@@ -66,7 +66,7 @@ ServiceManagerContext.displayName = "Services";
 export const ServiceManagerProvider = ({ children }) => {
     const { toggleDarkMode } = useContext(DarkModeContext)
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const props = useMemo<ServiceManagerContextProps>(createProps, [])
+    const props = useRef<ServiceManagerContextProps>(createProps())
 
     const handleMessage = (ev: MessageEvent<any>) => {
         const msg = ev.data;
@@ -90,7 +90,7 @@ export const ServiceManagerProvider = ({ children }) => {
         return () => { };
     }, [])
 
-    return <ServiceManagerContext.Provider value={props}>
+    return <ServiceManagerContext.Provider value={props.current}>
         {children}
     </ServiceManagerContext.Provider>
 
