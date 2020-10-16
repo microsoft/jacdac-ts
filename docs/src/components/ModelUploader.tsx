@@ -17,6 +17,7 @@ import SensorAggregatorConfigView from './SensorAggregatorConfigView';
 import ServiceManagerContext from './ServiceManagerContext'
 import useChange from '../jacdac/useChange';
 import { IFile } from '../../../src/embed/protocol';
+import { prettySize } from '../../../src/dom/pretty';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -120,10 +121,9 @@ export default function ModelUploader(props: {}) {
         try {
             setImporting(true)
             console.log(`loading model`, model)
-            const content = await modelStore.loadModel(model);
-            console.log(`loaded content`, content);
-            if (content) {
-                const blob = new Blob([content])
+            const blob = await modelStore.loadFile(model);
+            console.log(`loaded content`, blob);
+            if (blob) {
                 setModel(blob)
             }
         }
@@ -131,28 +131,48 @@ export default function ModelUploader(props: {}) {
             setImporting(false)
         }
     }
+    const handleLoadInputConfiguration = (model: IFile) => async () => {
+        try {
+            setImporting(true)
+            console.log(`loading model`, model)
+            const blob = await modelStore.loadFile(model);
+            console.log(`loaded content`, blob);
+            if (blob) {
+                setSensorConfig(blob)
+            }
+        }
+        finally {
+            setImporting(false)
+        }
+    }
 
-    const models = useChange(modelStore, _ => _.models());
+    const models = useChange(modelStore, _ => _?.models());
+    const inputConfigurations = useChange(modelStore, _ => _?.inputConfigurations())
 
     return <div className={classes.root}>
         <h3>Load a machine learning model</h3>
         <p>Machine learning models are typically stored in a <code>.tflite</code> file.</p>
-        {model && <Alert severity={'success'}>Model loaded ({model.byteLength >> 10}kb)</Alert>}
+        {model && <Alert severity={'success'}>Model loaded ({prettySize(model.byteLength)})</Alert>}
         {model && <p />}
         <UploadButton required={!model} disabled={importing} text={"Import model"} onFilesUploaded={handleTfmodelFiles} />
         <Button disabled={importing} onClick={handleClearModel}>clear model</Button>
         {models?.length && <List>
             {models.map(model => <ListItem key={model.path} button onClick={handleLoadModel(model)}>
-                <ListItemText primary={model.name} secondary={model.path} />
+                <ListItemText primary={model.name} secondary={`${model.path} ${prettySize(model.size)}`} />
             </ListItem>)}
         </List>}
         <h3>Configure sensors</h3>
-        <p>Sensor configuration files are stored in a <code>.json</code> file.</p>
+        <p>Sensor configuration files are stored in a <code>.jd.json</code> file.</p>
         {sensorConfig && <Alert severity={'success'}>Sensor configuration loaded</Alert>}
         {sensorConfig && <SensorAggregatorConfigView config={sensorConfig} />}
         {sensorConfig && <p />}
         <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} onFilesUploaded={handleSensorConfigFiles} />
         <Button disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
+        {inputConfigurations?.length && <List>
+            {inputConfigurations.map(iconfig => <ListItem key={iconfig.path} button onClick={handleLoadInputConfiguration(iconfig)}>
+                <ListItemText primary={iconfig.name} secondary={`${iconfig.path} ${prettySize(iconfig.size)}`} />
+            </ListItem>)}
+        </List>}
         <h3>Deploy model to machine learning services</h3>
         <ConnectAlert serviceClass={SRV_MODEL_RUNNER} />
         <ServiceList

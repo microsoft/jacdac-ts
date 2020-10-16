@@ -47,11 +47,19 @@ export interface IFile {
     name: string;
     path: string;
     size: number;
+    mimetype: string;
 }
+
+export interface IFileContent {
+    content: any;
+    mimetype: string;
+}
+
 export interface IModelListMessage extends IMessage {
     type: 'model-list',
     data: {
         models: IFile[];
+        inputConfigurations: IFile[];
     }
 }
 export interface IFileLoadMessage extends IMessage {

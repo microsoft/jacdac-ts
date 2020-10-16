@@ -42,6 +42,16 @@ export function prettyUnit(u: jdspec.Unit): string {
     }
 }
 
+export function prettySize(b: number) {
+    b = b | 0;
+    if (b < 1000)
+        return b + 'b';
+    else if (b < 1000000)
+        return roundWithPrecision(b / 1e3, 1) + 'kb';
+    else
+        return roundWithPrecision(b / 1e6, 1) + 'mb';
+}
+
 export function prettyDuration(ms: number) {
     if (ms < 1000)
         return `${roundWithPrecision(ms / 1000, 2)}s`

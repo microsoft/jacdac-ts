@@ -13,9 +13,15 @@ export function useDbBlob(id: string) {
         let _mounted = true;
         return values?.subscribe(DB_VALUE_CHANGE, async (changed) => {
             if (changed === id) {
-                const v = await values.get(id)
-                if (_mounted) {
-                    _setValue(v);
+                try {
+                    const v = await values.get(id)
+                    if (_mounted) {
+                        _setValue(v);
+                    }
+                }
+                catch (e) {
+                    console.log(e)
+                    await values?.set(id, undefined);
                 }
             }
             return () => {
@@ -26,9 +32,15 @@ export function useDbBlob(id: string) {
 
     // load intial value
     useEffectAsync(async (mounted) => {
-        const v = await values?.get(id);
-        if (mounted())
-            _setValue(v)
+        try {
+            const v = await values?.get(id);
+            if (mounted())
+                _setValue(v)
+        } catch (e) {
+            console.log(e)
+            // trash data
+            await values?.set(id, undefined);
+        }
     }, [values])
 
     return {

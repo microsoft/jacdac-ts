@@ -402,7 +402,11 @@ export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
             console.log(e)
             reject(e)
         }
-        fileReader.readAsArrayBuffer(blob);
+        try {
+            fileReader.readAsArrayBuffer(blob);
+        } catch (e) {
+            reject(e);
+        }
     })
 }
 
@@ -418,7 +422,11 @@ export function readBlobToText(blob: Blob): Promise<string> {
             console.log(e)
             reject(e)
         }
-        fileReader.readAsText(blob);
+        try {
+            fileReader.readAsText(blob);
+        } catch (e) {
+            reject(e);
+        }
     })
 }
 
