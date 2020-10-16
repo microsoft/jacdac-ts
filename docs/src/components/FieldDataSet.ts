@@ -1,4 +1,6 @@
 import { JDBus } from "../../../src/dom/bus";
+import { CHANGE } from "../../../src/dom/constants";
+import { JDEventSource } from "../../../src/dom/eventsource";
 import { JDField } from "../../../src/dom/field";
 import { JDRegister } from "../../../src/dom/register";
 import { arrayConcatMany } from "../../../src/dom/utils";
@@ -18,7 +20,7 @@ export class Example {
     }
 }
 
-export default class FieldDataSet {
+export default class FieldDataSet extends JDEventSource {
     readonly id = Math.random().toString()
     readonly rows: Example[];
     readonly headers: string[];
@@ -48,6 +50,7 @@ export default class FieldDataSet {
         public readonly fields: JDField[],
         public readonly colors: string[] = ["#000"]
     ) {
+        super();
         this.rows = [];
         this.headers = fields.map(field => field.friendlyName)
         this.units = fields.map(field => field.unit)
@@ -127,6 +130,8 @@ export default class FieldDataSet {
                 }
             }
         }
+
+        this.emit(CHANGE);
     }
 
     toCSV(sep: string = ",", options?: { units?: boolean }) {

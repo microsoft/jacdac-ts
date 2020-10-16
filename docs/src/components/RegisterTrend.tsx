@@ -6,21 +6,21 @@ import FieldDataSet from "./FieldDataSet"
 import Trend, { TrendProps } from "./Trend"
 import useChartPalette from "./useChartPalette";
 import useDebounce from "./useDebounce"
+import useChange from "../jacdac/useChange"
 
 export default function RegisterTrend(props: { register: JDRegister, showName?: boolean, mini?: boolean }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { register, mini } = props;
     const palette = useChartPalette()
-    const [dataSet, setDataSet] = useState(FieldDataSet.create(bus, [register], "output", palette, 100));
+    const [dataSet] = useState(FieldDataSet.create(bus, [register], "output", palette, 100));
 
-    const debouncedDataSet = useDebounce(dataSet, 200);
+    useChange(dataSet);
 
     // register on change...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         dataSet.addRow();
-        console.log('add row', dataSet)
-        setDataSet(dataSet);
+        console.log('add row', dataSet.rows.map(row => row.data[0]))
     }), [register])
 
-    return <Trend dataSet={debouncedDataSet} horizon={50} gradient={true} height={12} />
+    return <Trend dataSet={dataSet} horizon={50} gradient={true} height={12} />
 }
