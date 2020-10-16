@@ -37,5 +37,6 @@ export class HostedFileStorage implements IFileStorage {
             type: 'save-text',
             data: { name, data }
         } as ISaveTextMessage)
+            .then(resp => { })
     }
 }
