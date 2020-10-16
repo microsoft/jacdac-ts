@@ -1,5 +1,5 @@
-import { makeStyles, Theme, createStyles, CircularProgress } from '@material-ui/core';
-import React, { useState } from 'react';
+import { makeStyles, Theme, createStyles, CircularProgress, List, ListItem, ListItemText } from '@material-ui/core';
+import React, { useContext, useState } from 'react';
 import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../../src/dom/constants';
 import { JDService } from '../../../src/dom/service';
 import ServiceList from './ServiceList';
@@ -14,6 +14,9 @@ import RegisterInput from './RegisterInput';
 import CircularProgressWithLabel from './CircularProgressWithLabel'
 import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/dom/sensoraggregatorclient';
 import SensorAggregatorConfigView from './SensorAggregatorConfigView';
+import ServiceManagerContext from './ServiceManagerContext'
+import useChange from '../jacdac/useChange';
+import { IFile } from '../../../src/embed/protocol';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -73,6 +76,7 @@ export default function ModelUploader(props: {}) {
     const [importing, setImporting] = useState(false)
     const { data: model, setBlob: setModel } = useDbUint8Array("model.tflite")
     const { value: sensorConfig, setBlob: setSensorConfig } = useDbJSON<SensorAggregatorConfig>("sensor-input.json")
+    const { modelStore } = useContext(ServiceManagerContext)
 
     const handleTfmodelFiles = async (files: File[]) => {
         const file = files[0]
@@ -112,6 +116,23 @@ export default function ModelUploader(props: {}) {
             setImporting(false)
         }
     }
+    const handleLoadModel = (model: IFile) => async () => {
+        try {
+            setImporting(true)
+            console.log(`loading model`, model)
+            const content = await modelStore.loadModel(model);
+            console.log(`loaded content`, content);
+            if (content) {
+                const blob = new Blob([content])
+                setModel(blob)
+            }
+        }
+        finally {
+            setImporting(false)
+        }
+    }
+
+    const models = useChange(modelStore, _ => _.models());
 
     return <div className={classes.root}>
         <h3>Load a machine learning model</h3>
@@ -120,12 +141,17 @@ export default function ModelUploader(props: {}) {
         {model && <p />}
         <UploadButton required={!model} disabled={importing} text={"Import model"} onFilesUploaded={handleTfmodelFiles} />
         <Button disabled={importing} onClick={handleClearModel}>clear model</Button>
+        {models?.length && <List>
+            {models.map(model => <ListItem key={model.path} button onClick={handleLoadModel(model)}>
+                <ListItemText primary={model.name} secondary={model.path} />
+            </ListItem>)}
+        </List>}
         <h3>Configure sensors</h3>
         <p>Sensor configuration files are stored in a <code>.json</code> file.</p>
         {sensorConfig && <Alert severity={'success'}>Sensor configuration loaded</Alert>}
         {sensorConfig && <SensorAggregatorConfigView config={sensorConfig} />}
         {sensorConfig && <p />}
-        <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} accept=".json" onFilesUploaded={handleSensorConfigFiles} />
+        <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} onFilesUploaded={handleSensorConfigFiles} />
         <Button disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
         <h3>Deploy model to machine learning services</h3>
         <ConnectAlert serviceClass={SRV_MODEL_RUNNER} />

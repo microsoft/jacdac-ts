@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { JSONTryParse, SMap } from "../../../src/dom/utils";
 import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../src/embed/filestorage'
 import { IThemeMessage } from "../../../src/embed/protocol";
+import { ModelStore, HostedModelStore } from "../../../src/embed/modelstore";
 import { IFrameTransport } from "../../../src/embed/transport";
 import DarkModeContext from "./DarkModeContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
@@ -52,40 +53,25 @@ class LocalStorageDeviceNameSettings implements IDeviceNameSettings {
 export interface ServiceManagerContextProps {
     isHosted: boolean;
     fileStorage: IFileStorage;
+    modelStore: ModelStore;
 }
 
 const ServiceManagerContext = createContext<ServiceManagerContextProps>({
     isHosted: false,
-    fileStorage: null
+    fileStorage: null,
+    modelStore: null
 });
 ServiceManagerContext.displayName = "Services";
 
 export const ServiceManagerProvider = ({ children }) => {
     const { toggleDarkMode } = useContext(DarkModeContext)
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const isHosted = inIFrame();
-    let fileStorage: IFileStorage = new BrowserFileStorage()
-    let deviceNames = new LocalStorageDeviceNameSettings(
-        new LocalStorageSettings("jacdac_device_names")
-    );
-    if (isHosted) {
-        console.log(`starting hosted services`)
-        const transport = new IFrameTransport(bus)
-        fileStorage = new HostedFileStorage(transport)
-
-        // notify host that we are ready
-        transport.postReady()
-    }
-    const value = {
-        isHosted,
-        fileStorage
-    }
+    const props = useMemo<ServiceManagerContextProps>(createProps, [])
 
     const handleMessage = (ev: MessageEvent<any>) => {
         const msg = ev.data;
         if (msg?.source !== 'jacdac')
             return;
-        console.log(msg)
         switch (msg.type) {
             case 'theme': {
                 const themeMsg = msg as IThemeMessage
@@ -97,14 +83,40 @@ export const ServiceManagerProvider = ({ children }) => {
 
     // receiving messages
     useEffect(() => {
-        bus.host.deviceNameSettings = deviceNames
-        window.addEventListener('message', handleMessage, false)
-        return () => window.removeEventListener('message', handleMessage)
+        if (typeof window !== "undefined") {
+            window.addEventListener('message', handleMessage, false)
+            return () => window.removeEventListener('message', handleMessage);
+        }
+        return () => { };
     }, [])
 
-    return <ServiceManagerContext.Provider value={value}>
+    return <ServiceManagerContext.Provider value={props}>
         {children}
     </ServiceManagerContext.Provider>
+
+    function createProps(): ServiceManagerContextProps {
+        const isHosted = inIFrame();
+        let fileStorage: IFileStorage = new BrowserFileStorage()
+        let deviceNames = new LocalStorageDeviceNameSettings(
+            new LocalStorageSettings("jacdac_device_names")
+        );
+        bus.host.deviceNameSettings = deviceNames;
+        let modelStore: ModelStore = undefined;
+        if (isHosted) {
+            console.log(`starting hosted services`)
+            const transport = new IFrameTransport(bus)
+            fileStorage = new HostedFileStorage(transport)
+            modelStore = new HostedModelStore(transport);
+
+            // notify host that we are ready
+            transport.postReady()
+        }
+        return {
+            isHosted,
+            fileStorage,
+            modelStore
+        }
+    }
 }
 
 export default ServiceManagerContext;

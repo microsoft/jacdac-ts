@@ -35,8 +35,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private handleMessage(event: MessageEvent) {
-        if (this.origin !== "*" && event.origin !== this.origin)
-            return; // wrong origin
+        if (!this.isOriginValid(event))
+            return;
 
         const msg = event.data as PacketMessage;
         if (!msg

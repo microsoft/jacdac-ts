@@ -43,4 +43,22 @@ export interface ISaveTextMessage extends IMessage {
         data: string;
     }
 }
+export interface IFile {
+    name: string;
+    path: string;
+    size: number;
+}
+export interface IModelListMessage extends IMessage {
+    type: 'model-list',
+    data: {
+        models: IFile[];
+    }
+}
+export interface IFileLoadMessage extends IMessage {
+    type: 'file-load',
+    requireAck: true,
+    data: {
+        path: string;
+    }
+}
 /** End JACDAC protocol */

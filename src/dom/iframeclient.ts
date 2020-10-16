@@ -9,6 +9,10 @@ export default class JDIFrameClient extends JDClient {
     get origin() {
         return this.bus.options?.parentOrigin || "*";
     }
+
+    protected isOriginValid(msg: MessageEvent) {
+        return this.origin === "*" || msg.origin === this.origin;
+    }
 }
 
 export function inIFrame() {
