@@ -49,8 +49,12 @@ export class SensorAggregatorClient extends JDServiceClient {
                     error("unknown storage type")
             }
         }
+
+        if (!cfg || !cfg.inputs)
+            error("invalid input format");
+
         let totalSampleSize = 0
-        const inputs = cfg.inputs.map(input => {
+        const inputs = cfg.inputs?.map(input => {
             const { deviceId, serviceNumber, serviceClass } = input
             if (!!deviceId !== !!serviceNumber)
                 error(`deviceId and serviceNumber must be specified together`)

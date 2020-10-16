@@ -23,7 +23,7 @@ function SensorAggregatorInputConfigView(props: { input: SensorAggregatorInputCo
 export default function SensorAggregatorConfigView(props: { config: SensorAggregatorConfig }) {
     const { config } = props;
 
-    if (!config)
+    if (!config?.inputs)
         return <></>
 
     return <Paper>
