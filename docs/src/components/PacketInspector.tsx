@@ -5,10 +5,10 @@ import PacketsContext from "./PacketsContext";
 import HistoryIcon from '@material-ui/icons/History';
 import KindChip from "./KindChip"
 import { toHex } from "../../../src/dom/utils";
-import { createStyles, makeStyles, Paper, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import PacketSpecification from "./PacketSpecification";
 import { printPacket } from "../../../src/dom/pretty";
-import PacketHeaderLayout from "./PacketHeaderLayout";
+import PacketLayout from "./PacketLayout";
 import { Link } from "gatsby-theme-material-ui";
 import { PaperBox } from "./PaperBox";
 
@@ -30,7 +30,7 @@ export default function PacketInspector() {
             {printPacket(packet)}
         </Typography>
         <h3><Link to="/specification#frames">Header</Link></h3>
-        <PacketHeaderLayout packet={packet} />
+        <PacketLayout packet={packet} showSlots={true} showFlags={true} />
         {!!packet.data.length && <>
             <h3>Data</h3>
             <PaperBox padding={0}>

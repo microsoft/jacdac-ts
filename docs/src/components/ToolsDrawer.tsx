@@ -21,7 +21,7 @@ import HistoryIcon from '@material-ui/icons/History';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import LineWeightIcon from '@material-ui/icons/LineWeight';
+import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./DarkModeContext";
 
@@ -105,7 +105,7 @@ export default function ToolsDrawer() {
         },
         {
             text: "Jupyter Lab",
-            url: "https://mybinder.org/v2/gh/microsoft/jupyter-jacdac/main?urlpath=lab",
+            url: "/tools/jupyterlab",
             icon: <JupyterIcon />
         },
         {
@@ -114,7 +114,7 @@ export default function ToolsDrawer() {
         {
             text: "Firmware Update",
             url: "/tools/updater",
-            icon: <LineWeightIcon />
+            icon: <SystemUpdateAltIcon />
         },
         {
             text: "Packet inspector",

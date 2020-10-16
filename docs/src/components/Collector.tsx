@@ -268,7 +268,6 @@ export default function Collector(props: {}) {
             </Grid>
         </div>}
         <div key="sensors">
-            {connectionState == BusState.Disconnected && <p><ConnectButton /></p>}
             <h3>Choose sensors</h3>
             {!readingRegisters.length && <Alert className={classes.grow} severity="info">Waiting for sensor...</Alert>}
             {!!readingRegisters.length && <ReadingFieldGrid

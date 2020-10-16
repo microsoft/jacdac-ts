@@ -5,13 +5,14 @@ import {
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
 } from "../../../src/dom/constants";
 import Packet from "../../../src/dom/packet";
-import { toHex } from "../../../src/dom/utils";
+import { fromHex, toHex } from "../../../src/dom/utils";
 import { PaperBox } from "./PaperBox";
 
-export default function PacketHeaderLayout(props: { packet: Packet }) {
-    const { packet } = props;
-    const header = packet.header;
+export default function PacketLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {
+    const { packet, data, showSlots, showFlags } = props;
     const theme = useTheme();
+    const pkt = packet || Packet.fromBinary(fromHex(data))
+    const { header } = pkt;
     const frameFlags = header[3];
 
     const slots = [
@@ -87,7 +88,7 @@ export default function PacketHeaderLayout(props: { packet: Packet }) {
                 </code>
             </pre>
         </PaperBox>
-        <PaperBox key="slots">
+        {showSlots && <PaperBox key="slots">
             <TableContainer>
                 <Table size="small">
                     <TableHead>
@@ -110,8 +111,8 @@ export default function PacketHeaderLayout(props: { packet: Packet }) {
                     </TableBody>
                 </Table>
             </TableContainer>
-        </PaperBox>
-        {!!flags.length &&
+        </PaperBox>}
+        {showFlags && !!flags.length &&
             <PaperBox key="flags">
                 <TableContainer>
                     <Table size="small">
