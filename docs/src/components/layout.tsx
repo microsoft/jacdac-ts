@@ -213,7 +213,10 @@ function MainAppBar(props: { pageContext?: any }) {
   const drawerOpen = drawerType !== DrawerType.None
   const pageTitle = pageContext?.frontmatter?.title;
   const pageDeck = !!pageContext?.frontmatter?.deck;
-  const appBarColor = pageDeck ? "transparent" : darkMode === "dark" ? "inherit" : undefined;
+  const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
+  const appBarColor = (pageDeck || widgetMode) ? "transparent"
+    : darkMode === "dark"
+      ? "inherit" : undefined;
 
   const data = useStaticQuery(graphql`
     query {
