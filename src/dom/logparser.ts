@@ -4,6 +4,7 @@ import Packet from "./packet"
 import TracePlayer from "./traceplayer"
 import Frame from "./frame"
 import { TRACE_FILE_LINE_HEADER } from "./constants"
+import Trace from "./trace"
 
 export function parseTraceLog(contents: string): Packet[] {
     let foundHeader = false;
@@ -111,6 +112,7 @@ Time [s],Value,Parity Error,Framing Error
 
 export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void {
     const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
-    const player = new TracePlayer(bus, packets, speed);
+    const player = new TracePlayer(bus, speed);
+    player.trace = new Trace(packets);
     player.start();
 }
