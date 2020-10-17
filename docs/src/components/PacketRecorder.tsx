@@ -9,22 +9,20 @@ import CircularProgressWithLabel from "./CircularProgressWithLabel";
 import SaveTraceButton from "./SaveTraceButton";
 import TraceRecordButton from "./TraceRecordButton";
 import TracePlayButton from "./TracePlayButton";
-import TracePauseButton from "./TracePauseButton";
 
 export default function PacketRecorder() {
-    const { clearPackets, replayTrace, recording, tracing, paused } = useContext(PacketsContext)
-
-    const disableSave = tracing;
+    const { clearPackets, replayTrace,
+        recording, tracing, paused
+    } = useContext(PacketsContext)
 
     return <>
         {!recording && replayTrace && <Typography variant="caption">{replayTrace.packets.length} packets</Typography>}
         <TraceImportButton icon={true} disabled={tracing || recording} />
-        <SaveTraceButton disabled={disableSave} />
+        <SaveTraceButton disabled={tracing || !replayTrace} />
         |
         <TracePlayButton size="small" />
         <TraceRecordButton size="small" />
         |
-        <TracePauseButton size="small" />
         <Tooltip title="Clear">
             <span><IconButton size="small" key="clear" onClick={clearPackets}
                 disabled={paused || recording || tracing}><ClearIcon /></IconButton></span>

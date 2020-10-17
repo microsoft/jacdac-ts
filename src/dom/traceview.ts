@@ -23,7 +23,6 @@ export default class TraceView extends JDClient {
     private _filter: string;
     private _packetFilter: PacketFilter = undefined;
     private _filteredPackets: TracePacketProps[] = [];
-    private _paused: boolean = false;
 
     private notifyPacketsChanged: () => void;
 
@@ -82,17 +81,6 @@ export default class TraceView extends JDClient {
         }
     }
 
-    get paused() {
-        return this._paused;
-    }
-
-    set paused(p: boolean) {
-        if (this._paused !== p) {
-            this._paused = p;
-            this.emit(CHANGE);
-        }
-    }
-
     private setFilteredPackets() {
         // always clone for React
         this._filteredPackets = this._filteredPackets.slice(0, this._filteredPackets.length > this.maxFilteredLength * 1.1
@@ -129,10 +117,6 @@ export default class TraceView extends JDClient {
     private handlePacket(pkt: Packet) {
         // remember package
         this.trace.addPacket(pkt);
-
-        // don't refresh filtered trace
-        if (this.paused)
-            return; // skip any processing
 
         // add packet to live list
         if (this._packetFilter?.filter(pkt)) {

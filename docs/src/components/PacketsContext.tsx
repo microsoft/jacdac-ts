@@ -9,6 +9,7 @@ import useDbValue from "./useDbValue"
 import TraceRecorder from "../../../src/dom/tracerecorder"
 import { TimestampRange } from "../../../src/dom/packetfilter";
 import TraceView, { TracePacketProps } from "../../../src/dom/traceview";
+import { BusState } from "../../../src/dom/bus";
 
 export interface PacketsProps {
     trace: Trace,
@@ -26,7 +27,6 @@ export interface PacketsProps {
     toggleTracing: () => void,
     progress: number,
     paused: boolean,
-    togglePaused: () => void,
     timeRange: TimestampRange,
     setTimeRange: (range: TimestampRange) => void
 }
@@ -47,7 +47,6 @@ const PacketsContext = createContext<PacketsProps>({
     toggleTracing: () => { },
     progress: undefined,
     paused: false,
-    togglePaused: () => { },
     timeRange: {},
     setTimeRange: (range) => { }
 });
@@ -56,7 +55,7 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const { bus, connectionState, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
 
     const recorder = useRef<TraceRecorder>(new TraceRecorder(bus));
@@ -71,7 +70,9 @@ export const PacketsProvider = ({ children }) => {
     const [trace, setTrace] = useState<Trace>(view.current.trace);
     const [replayTrace, _setReplayTrace] = useState<Trace>(undefined);
     const [tracing, setTracing] = useState(false);
-    const [paused, setPaused] = useState(false)
+
+    const paused = connectionState === BusState.Disconnected
+        && !tracing;
 
     const clearPackets = () => {
         setSelectedPacket(undefined)
@@ -110,13 +111,6 @@ export const PacketsProvider = ({ children }) => {
     const setFilter = (f: string) => {
         _setFilter(f);
     }
-    const togglePaused = () => {
-        view.current.paused = !view.current.paused;
-        if (view.current.paused) {
-            recorder.current.stop();
-            player.current.stop();
-        }
-    }
     // update filter in the view
     useEffect(() => {
         let f = filter;
@@ -130,7 +124,6 @@ export const PacketsProvider = ({ children }) => {
     }, [filter, timeRange, paused]);
     // track state in React
     useEffect(() => view.current.subscribe(CHANGE, () => {
-        setPaused(view.current.paused);
         setPackets(view.current.filteredPackets)
         setTrace(view.current.trace);
     }), [])
@@ -155,7 +148,7 @@ export const PacketsProvider = ({ children }) => {
             recording, toggleRecording,
             tracing, toggleTracing,
             progress,
-            paused, togglePaused,
+            paused,
             timeRange, setTimeRange
         }}>
             {children}
