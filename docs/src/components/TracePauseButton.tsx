@@ -14,7 +14,7 @@ export default function TracePauseButton(props: { component?: string } & IconBut
     return <IconButtonWithProgress
         {...others}
         disabled={disabled || recording || tracing}
-        title={paused ? "Lock packets" : "Unlock packets"}
+        title={paused ? "Unlock packets" : "Lock packets"}
         onClick={togglePaused}>
         {paused ? <RefreshIcon /> : <PauseIcon />}
     </IconButtonWithProgress >
