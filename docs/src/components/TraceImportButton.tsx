@@ -50,7 +50,8 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
         }
     }
 
-    return <UploadButton icon={icon} disabled={importing || recording || disabled}
+    return <UploadButton icon={icon}
+        disabled={importing || recording || disabled}
         text="Import Trace File"
         onFilesUploaded={handleFiles} />
 }

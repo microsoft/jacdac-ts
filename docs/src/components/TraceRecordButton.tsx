@@ -15,13 +15,13 @@ export default function TraceRecordButton(props: { component?: string } & IconBu
     const { disabled, ...others } = props;
     const { recording, tracing, paused, toggleRecording } = useContext(PacketsContext)
     const { connectionState } = useContext<JDContextProps>(JACDACContext)
-    const connecting = connectionState === BusState.Connecting || connectionState == BusState.Disconnecting;
+    const connected = connectionState === BusState.Connected;
 
     return <IconButtonWithProgress
         {...others}
         title={recording ? "Stop recording" : "Record trace"}
         indeterminate={recording}
-        disabled={disabled || tracing || paused || connecting}
+        disabled={disabled || tracing || paused || !connected}
         onClick={toggleRecording}
         progressStyle={{ color: "#f66" }}>
         {!recording && <FiberManualRecord />}

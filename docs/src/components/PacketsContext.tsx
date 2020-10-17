@@ -56,7 +56,7 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
 
     const recorder = useRef<TraceRecorder>(new TraceRecorder(bus));
@@ -97,11 +97,13 @@ export const PacketsProvider = ({ children }) => {
             setProgress(undefined);
         }
     }
-    const toggleTracing = () => {
+    const toggleTracing = async () => {
         console.log(`player toggle running ${player.current.running}`)
         if (player.current.running) {
             player.current.stop();
         } else {
+            clearPackets();
+            await disconnectAsync();
             player.current.start();
         }
     }
