@@ -66,6 +66,7 @@ export default function AppDrawer(props: {
     const open = drawerType !== DrawerType.None
     const searchResults = useDrawerSearchResults()
     const showSearchResults = !!searchResults;
+    const showConnect = useMediaQuery(theme.breakpoints.down("md"));
     const query = useStaticQuery(graphql`
         {
           allFile(filter: {name: {eq: "service-spec-language"}}) {
@@ -101,7 +102,7 @@ export default function AppDrawer(props: {
             {false && toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
             {!toc && !spec && <><PacketRecorder />
                 <span className={classes.fluid} />
-                <DrawerToolsButtonGroup showConnect={true} />
+                <DrawerToolsButtonGroup showConnect={showConnect} />
             </>}
             {spec && <span className={classes.fluid} />}
             <IconButton onClick={handleDrawerClose}>
