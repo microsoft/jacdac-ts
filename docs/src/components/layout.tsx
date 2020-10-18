@@ -312,6 +312,8 @@ function LayoutWithContext(props: {
       <SEO />
       <CssBaseline />
       <Helmet>
+        <link rel="preconnect" href="https://raw.githubusercontent.com" />
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"

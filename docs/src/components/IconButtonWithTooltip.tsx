@@ -5,9 +5,9 @@ import React from "react";
 export default function IconButtonWithTooltip(props: { to?: string } & IconButtonProps) {
     const { title, children, ...others } = props;
 
-    return <Tooltip aria-label={title} title={title}>
+    return <Tooltip title={title}>
         <span>
-            <IconButton {...others}>
+            <IconButton aria-label={title} {...others}>
                 {children}
             </IconButton></span>
     </Tooltip>
