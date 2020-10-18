@@ -6,6 +6,7 @@ import PacketBadge from './PacketBadge';
 import AppContext, { DrawerType } from './AppContext'
 import { MOBILE_BREAKPOINT } from './layout';
 import { SRV_LOGGER } from '../../../src/dom/constants';
+import { prettyDuration } from '../../../src/dom/pretty';
 
 const useStyles = makeStyles(() =>
     createStyles({
@@ -37,7 +38,7 @@ export default function PacketListItem(props: {
     const selected = packet === selectedPacket
     const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
     const primary = (logMessage && packet.decoded?.decoded[0].value) || packet.friendlyCommandName
-    const secondary = `${showTime ? `${packet.timestamp}ms: ` : ""}${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
+    const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
         <ListItemIcon>

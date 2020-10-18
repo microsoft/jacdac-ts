@@ -101,7 +101,7 @@ export default function AppDrawer(props: {
             {false && toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
             {!toc && !spec && <><PacketRecorder />
                 <span className={classes.fluid} />
-                <DrawerToolsButtonGroup />
+                <DrawerToolsButtonGroup showConnect={true} />
             </>}
             {spec && <span className={classes.fluid} />}
             <IconButton onClick={handleDrawerClose}>

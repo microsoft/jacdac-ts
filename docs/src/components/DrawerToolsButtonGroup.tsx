@@ -8,9 +8,10 @@ import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import ConnectButton from "../jacdac/ConnectButton";
 
-export default function DrawerToolsButtonGroup(props: { className?: string, showToc?: boolean }) {
-    const { className, showToc } = props;
+export default function DrawerToolsButtonGroup(props: { className?: string, showToc?: boolean, showCurrent?: boolean, showConnect?: boolean }) {
+    const { className, showToc, showCurrent, showConnect } = props;
     const { drawerType, setDrawerType } = useContext(AppContext)
 
     const handleDrawer = (drawer: DrawerType) => () => setDrawerType(drawer);
@@ -30,7 +31,8 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
             label: "open packet console",
             icon: <HistoryIcon />
         }
-    ].filter(d => !!d);
+    ].filter(d => !!d)
+    .filter(d => showCurrent || d.drawer !== drawerType);
 
     return <>
         {drawers.map(drawer =>
@@ -42,5 +44,6 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
                 edge="start"
             > {drawer.icon}
             </IconButtonWithTooltip>)}
+        {showConnect && <ConnectButton transparent={true} full={false} />}
     </>
 }
