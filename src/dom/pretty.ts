@@ -53,24 +53,29 @@ export function prettySize(b: number) {
 }
 
 export function prettyDuration(ms: number) {
-    if (ms < 1000)
-        return `${roundWithPrecision(ms / 1000, 2)}s`
     let s = ms / 1000
+    if (s < 1)
+        return `${roundWithPrecision(s, 2)}s`
     if (s < 10)
         return `${roundWithPrecision(s, 1)}s`
     if (s < 60)
         return `${Math.floor(s)}s`
 
     let r = "";
-    const h = Math.floor(s / (24 * 3600))
+    const d = Math.floor(s / (24 * 3600))
+    if (d > 0) {
+        r += d + ":"
+        s -= d * (24 * 3600)
+    }
+    const h = Math.floor(s / 3600)
     if (h > 0) {
         r += h + ":"
-        s -= h * (24 * 3600)
+        s -= h * 3600
     }
-    const m = Math.floor(s / 3600)
-    if (m > 0) {
+    const m = Math.floor(s / 60)
+    if (d > 0 || h > 0 || m > 0) {
         r += m + ":"
-        s -= m * 3600
+        s -= m * 60
     }
     r += Math.floor(s)
     return r;
