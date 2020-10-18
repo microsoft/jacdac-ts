@@ -27,11 +27,6 @@ export interface PacketFilter {
     filter: CompiledPacketFilter;
 }
 
-export interface TimestampRange {
-    before?: number;
-    after?: number;
-}
-
 export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     if (!text) {
         return {

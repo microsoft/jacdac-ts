@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { DropzoneDialog } from 'material-ui-dropzone'
-import { Button, IconButton, Tooltip } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
+import IconButtonWithTooltip from './IconButtonWithTooltip';
 
 export default function UploadButton(props: {
     icon?: boolean,
@@ -26,14 +27,9 @@ export default function UploadButton(props: {
     const handleClose = () => setOpen(false)
 
     return <>
-        {icon && <Tooltip title={text}>
-            <span>
-                <IconButton onClick={handleOpen}>
-                    <OpenInBrowserIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
-        }
+        {icon && <IconButtonWithTooltip title={text} onClick={handleOpen}>
+            <OpenInBrowserIcon />
+        </IconButtonWithTooltip>}
         {!icon && <Button disabled={disabled} variant="outlined" onClick={handleOpen} startIcon={<OpenInBrowserIcon />}>
             {text}
         </Button>}

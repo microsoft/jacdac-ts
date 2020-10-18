@@ -5,29 +5,32 @@ import useDebounce from './useDebounce';
 import { prettyDuration } from '../../../src/dom/pretty';
 
 export default function TraceTimeFilterRangeSlider() {
-    const { trace, paused, timeRange, setTimeRange } = useContext(PacketsContext)
+    const { trace, timeRange, setTimeRange } = useContext(PacketsContext)
     const [minMax, setMinMax] = useState([0, 1000]);
-    const [value, setValue] = useState<number[]>([timeRange.after || 0, timeRange.before || 1000])
+    const [value, setValue] = useState<number[]>(timeRange)
     const theme = useTheme();
     const debouncedValue = useDebounce(value, 500);
 
-    const handleChange = (event, newValue) => {
+    const handleChange = (newValue) => {
         setValue(newValue);
     };
 
     useEffect(() => {
-        if (!trace)
-            return;
-        const mintime = trace.startTimestamp;
-        const maxtime = trace.endTimestamp;
+        const mintime = trace?.startTimestamp;
+        const maxtime = trace?.endTimestamp;
+        const range: number[] = mintime !== undefined && maxtime !== undefined
+            && [mintime, maxtime];
         // update range
-        setMinMax([mintime, maxtime]);
-        setValue([mintime, maxtime]);
-    }, [trace, paused])
+        setMinMax(range);
+        setValue(range);
+    }, [trace])
 
     useEffect(() => {
-        setTimeRange({ after: debouncedValue[0], before: debouncedValue[1] })
+        setTimeRange(debouncedValue)
     }, [debouncedValue])
+
+    if (!minMax || !debouncedValue)
+        return <></>
 
     return <Box display="flex" pl={theme.spacing(0.5)} pr={theme.spacing(0.5)}>
         <Slider

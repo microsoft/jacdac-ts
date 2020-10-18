@@ -53,6 +53,7 @@ import WebUSBSupported from "./WebUSBSupported";
 import { SnackbarProvider } from 'notistack';
 import PacketInspector from "./PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -216,7 +217,7 @@ function MainAppBar(props: { pageContext?: any }) {
   const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
   const appBarColor = pageDeck ? "transparent"
     : darkMode === "dark" ? "inherit"
-    : widgetMode ? "default" : undefined;
+      : widgetMode ? "default" : undefined;
 
   const data = useStaticQuery(graphql`
     query {
@@ -257,13 +258,10 @@ function MainAppBar(props: { pageContext?: any }) {
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"microsoft/jacdac"} />
       <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />
       <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
-      <Tooltip className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} aria-label="More tools" title="More">
-        <span>
-          <IconButton edge="start" color="inherit" onClick={toggleToolsMenu} >
-            <MoreIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <IconButtonWithTooltip className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} aria-label="More tools" title="More"
+        edge="start" color="inherit" onClick={toggleToolsMenu} >
+        <MoreIcon />
+      </IconButtonWithTooltip>
     </Toolbar>
   </AppBar></Box>
 }

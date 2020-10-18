@@ -1,6 +1,8 @@
-import { makeStyles, Theme, createStyles, Paper, InputBase, IconButton, useTheme } from '@material-ui/core';
+import { makeStyles, Theme, createStyles, Paper, InputBase, useTheme } from '@material-ui/core';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import FilterListIcon from '@material-ui/icons/FilterList';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
 import { Box, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
@@ -11,6 +13,8 @@ import DeviceName from './DeviceName';
 import useDebounce from './useDebounce';
 import { arrayConcatMany, uniqueMap } from '../../../src/dom/utils';
 import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
+import IconButtonWithTooltip from './IconButtonWithTooltip';
+import { IconButton } from 'gatsby-theme-material-ui';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -19,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
             flex: 1,
         },
         iconButton: {
-            padding: 10,
+            padding: theme.spacing(0.5)
         },
         divider: {
             height: 28,
@@ -33,6 +37,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const kinds = allKinds()
+    const classes = useStyles()
 
     const devices = useChange(bus, b => b.devices());
     const services = uniqueMap(arrayConcatMany(devices.map(device => device.services()))
@@ -61,7 +66,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
         <Box className={className} component="span">
             <Tooltip title={text}>
                 <span>
-                    <IconButton aria-controls="simple-menu"
+                    <IconButton className={classes.iconButton} aria-controls="simple-menu"
                         aria-haspopup="true"
                         onClick={handleClick}>
                         {icon || <FilterListIcon />}
@@ -118,7 +123,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 }
 
 export default function PacketFilter() {
-    const { paused, filter, setFilter } = useContext(PacketsContext)
+    const { timeRange, toggleTimeRange, filter, setFilter } = useContext(PacketsContext)
     const classes = useStyles();
     const [text, setText] = useState(filter);
     const debouncedText = useDebounce(text, 1000);
@@ -138,13 +143,17 @@ export default function PacketFilter() {
     const handleAddFilter = (k: string) => {
         setText(text + " " + k);
     }
+
     return <>
-        {paused && <TraceTimeFilterRangeSlider />}
+        {timeRange && <TraceTimeFilterRangeSlider />}
         <Paper square elevation={1}>
             <Box display="flex">
-                <span>
-                    <FilterMenu className={classes.iconButton} text="Filters" handleAddFilter={handleAddFilter} />
-                </span>
+                <FilterMenu text="Filters" handleAddFilter={handleAddFilter} />
+                <IconButtonWithTooltip className={classes.iconButton}
+                    title={timeRange ? "clear time range" : "use time range"}
+                    onClick={toggleTimeRange}>
+                    <QueryBuilderIcon />
+                </IconButtonWithTooltip>
                 <InputBase
                     multiline={true}
                     className={classes.input}

@@ -7,6 +7,7 @@ import HistoryIcon from '@material-ui/icons/History';
 import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
 
 export default function DrawerToolsButtonGroup(props: { className?: string, showToc?: boolean }) {
     const { className, showToc } = props;
@@ -33,15 +34,13 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
 
     return <>
         {drawers.map(drawer =>
-            <Tooltip key={drawer.label} aria-label={drawer.label} title={drawer.label}>
-                <span className={className}>
-                    <IconButton
-                        color="inherit"
-                        onClick={handleDrawer(drawer.drawer)}
-                        edge="start"
-                    > {drawer.icon}
-                    </IconButton>
-                </span>
-            </Tooltip>)}
+            <IconButtonWithTooltip key={drawer.label}
+                title={drawer.label}
+                className={className}
+                color="inherit"
+                onClick={handleDrawer(drawer.drawer)}
+                edge="start"
+            > {drawer.icon}
+            </IconButtonWithTooltip>)}
     </>
 }

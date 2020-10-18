@@ -78,6 +78,7 @@ export default class TraceView extends JDClient {
         if (this._maxFilteredLength !== v) {
             this._maxFilteredLength = v;
             this.refreshFilter();
+            this.emit(CHANGE);
         }
     }
 

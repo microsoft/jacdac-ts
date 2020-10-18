@@ -1,11 +1,9 @@
 import React, { useContext } from "react";
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import PrintIcon from '@material-ui/icons/Print';
-import { IconButton, IconButtonProps, NoSsr, Tooltip } from "@material-ui/core";
-import DarkModeContext from "./DarkModeContext";
-import { useSnackbar } from "notistack";
+import { IconButtonProps, NoSsr } from "@material-ui/core";
 import AppContext from "./AppContext";
-import { delay } from "../../../src/dom/utils";
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
 
 export default function PrintButton(props: { component?: string } & IconButtonProps) {
     const { disabled, className, ...others } = props;
@@ -22,16 +20,12 @@ export default function PrintButton(props: { component?: string } & IconButtonPr
         }
     }
     return <NoSsr>
-        <Tooltip title={"Print page"} className={className}>
-            <span>
-                <IconButton
-                    {...others}
-                    edge="start"
-                    disabled={disabled}
-                    onClick={onPrint}>
-                    <PrintIcon />
-                </IconButton >
-            </span>
-        </Tooltip>
+        <IconButtonWithTooltip title={"Print page"} className={className}
+            {...others}
+            edge="start"
+            disabled={disabled}
+            onClick={onPrint}>
+            <PrintIcon />
+        </IconButtonWithTooltip>
     </NoSsr>
 }

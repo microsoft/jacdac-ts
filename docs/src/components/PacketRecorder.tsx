@@ -1,18 +1,16 @@
-import { Tooltip, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ClearIcon from '@material-ui/icons/Clear';
-import { IconButton } from "gatsby-theme-material-ui";
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
 import TraceImportButton from "./TraceImportButton";
-import CircularProgressWithLabel from "./CircularProgressWithLabel";
 import SaveTraceButton from "./SaveTraceButton";
 import TraceRecordButton from "./TraceRecordButton";
 import TracePlayButton from "./TracePlayButton";
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
 
 export default function PacketRecorder() {
-    const { clearPackets, replayTrace,
-        recording, tracing, paused
+    const { clearPackets, replayTrace, recording, tracing,
     } = useContext(PacketsContext)
 
     return <>
@@ -23,9 +21,8 @@ export default function PacketRecorder() {
         <TracePlayButton size="small" />
         <TraceRecordButton size="small" />
         |
-        <Tooltip title="Clear">
-            <span><IconButton size="small" key="clear" onClick={clearPackets}
-                disabled={paused || recording || tracing}><ClearIcon /></IconButton></span>
-        </Tooltip>
+        <IconButtonWithTooltip title="Clear" size="small" key="clear" onClick={clearPackets}
+            disabled={recording || tracing}><ClearIcon />
+        </IconButtonWithTooltip>
     </>
 }
