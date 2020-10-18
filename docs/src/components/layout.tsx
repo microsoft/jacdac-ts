@@ -176,6 +176,12 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   const rawTheme = createMuiTheme({
     palette: {
+      primary: {
+        main: '#2e7d32',
+      },
+      secondary: {
+        main: '#ffc400',
+      },
       type: darkMode
     }
   })
