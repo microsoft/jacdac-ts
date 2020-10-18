@@ -38,6 +38,7 @@ import useChartPalette from './useChartPalette';
 import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../src/dom/sensoraggregatorclient";
 import { AlertTitle } from "@material-ui/lab";
 import { serviceName } from "../../../src/dom/pretty";
+import ConnectAlert from "./ConnectAlert";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -821,6 +822,7 @@ export default function EdgeImpulse(props: {}) {
         <ApiKeyManager />
         <Box mb={1} />
         <ProjectInfo apiKey={apiKey} info={info} />
+        <ConnectAlert />
         <h3>Data</h3>
         <h4>Select Sensors</h4>
         {!readingRegisters?.length && <Alert severity="info">No sensor found...</Alert>}
