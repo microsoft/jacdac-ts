@@ -18,6 +18,11 @@ export default function useFirmwareBlobs() {
         const names = await firmwares?.list()
         if (!names) return;
 
+        // wait for 2 minute 
+        // before starting any download
+        console.log(`firmware: await 2 minutes before checking updates`)
+        await delay(120000);
+
         const missingSlugs = unique(deviceSpecifications()
             .filter(spec => !!spec?.firmwares.length) // needs some firmwares
             .map(spec => spec.repo)
