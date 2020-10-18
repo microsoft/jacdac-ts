@@ -819,10 +819,10 @@ export default function EdgeImpulse(props: {}) {
     }
 
     return <>
+        <ConnectAlert />
         <ApiKeyManager />
         <Box mb={1} />
         <ProjectInfo apiKey={apiKey} info={info} />
-        <ConnectAlert />
         <h3>Data</h3>
         <h4>Select Sensors</h4>
         {!readingRegisters?.length && <Alert severity="info">No sensor found...</Alert>}
