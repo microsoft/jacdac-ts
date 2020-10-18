@@ -44,7 +44,7 @@ function UpdateDeviceCard(props: {
         // tslint:disable-next-line: react-this-binding-issue
         action={flashing ? <CircularProgressWithLabel value={progress} />
             : updateApplicable(firmware, blob)
-                ? <Button disabled={flashing} variant="contained"
+                ? <Button aria-label="deploy new firmware to device" disabled={flashing} variant="contained"
                     color="primary" onClick={() => handleFlashing()}>Flash</Button>
                 : <Alert severity="success">Up to date!</Alert>} />
 }

@@ -339,7 +339,7 @@ function LayoutWithContext(props: {
                 <Box p={theme.spacing(0.25)} mb={theme.spacing(0.5)}>
                   <PacketInspector />
                   <Box>
-                    <Button variant="outlined" onClick={handleClearSelectedPacket}>close</Button>
+                    <Button aria-label="close packet details" variant="outlined" onClick={handleClearSelectedPacket}>close</Button>
                   </Box>
                 </Box>
               </Paper>

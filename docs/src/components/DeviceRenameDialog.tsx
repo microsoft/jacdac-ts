@@ -64,8 +64,8 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleCancel} variant="contained">Cancel</Button>
-                <Button onClick={handleClose} variant="contained" color="primary">Save</Button>
+                <Button aria-label="cancel" onClick={handleCancel} variant="contained">Cancel</Button>
+                <Button aria-label="save" onClick={handleClose} variant="contained" color="primary">Save</Button>
             </DialogActions>
         </Dialog>
     </>

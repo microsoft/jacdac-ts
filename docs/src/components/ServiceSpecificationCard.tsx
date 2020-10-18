@@ -23,8 +23,8 @@ export default function ServiceSpecificationCard(props: { serviceClass?: number,
                 </Typography>
             }
         </CardContent>
-        <CardActions>
-            <Button to={`/services/${spec?.shortId}`}>More...</Button>
-        </CardActions>
+        {spec && <CardActions>
+            <Button aria-label={`open service ${spec.shortId} page`} to={`/services/${spec.shortId}`}>More...</Button>
+        </CardActions>}
     </Card>
 }

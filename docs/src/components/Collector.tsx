@@ -286,6 +286,7 @@ export default function Collector(props: {}) {
                     size="large"
                     variant="contained"
                     color={recording ? "secondary" : "primary"}
+                    aria-label="start/stop recording"
                     title="start/stop recording"
                     onClick={toggleRecording}
                     startIcon={recording ? <StopIcon /> : <PlayArrowIcon />}

@@ -596,8 +596,8 @@ function ApiKeyManager() {
             />
         </AccordionDetails>
         <AccordionActions>
-            <Button disabled={!key} variant="contained" color="primary" onClick={handleSave}>Save</Button>
-            <Button disabled={!apiKey} variant="contained" onClick={handleReset}>Clear</Button>
+            <Button aria-label="save api key" disabled={!key} variant="contained" color="primary" onClick={handleSave}>Save</Button>
+            <Button aria-label="clear api key" disabled={!apiKey} variant="contained" onClick={handleReset}>Clear</Button>
         </AccordionActions>
     </Accordion >
 }

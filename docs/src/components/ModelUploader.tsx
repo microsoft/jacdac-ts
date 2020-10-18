@@ -160,7 +160,7 @@ export default function ModelUploader(props: {}) {
         {model && <Alert severity={'success'}>Model loaded ({prettySize(model.byteLength)})</Alert>}
         {model && <p />}
         <UploadButton required={!model} disabled={importing} text={"Import model"} onFilesUploaded={handleTfmodelFiles} />
-        <Button disabled={importing} onClick={handleClearModel}>clear model</Button>
+        <Button aria-label="clear model" disabled={importing} onClick={handleClearModel}>clear model</Button>
         {models?.length && <List>
             {models.map(model => <ListItem key={model.path} button onClick={handleLoadModel(model)}>
                 <ListItemText primary={model.name} secondary={`${model.path} ${prettySize(model.size)}`} />
@@ -172,7 +172,7 @@ export default function ModelUploader(props: {}) {
         {sensorConfig && <SensorAggregatorConfigView config={sensorConfig} />}
         {sensorConfig && <p />}
         <UploadButton required={!sensorConfig} disabled={importing} text={"Import configuration"} onFilesUploaded={handleSensorConfigFiles} />
-        <Button disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
+        <Button aria-label="clear configuration" disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
         {inputConfigurations?.length && <List>
             {inputConfigurations.map(iconfig => <ListItem key={iconfig.path} button onClick={handleLoadInputConfiguration(iconfig)}>
                 <ListItemText primary={iconfig.name} secondary={`${iconfig.path} ${prettySize(iconfig.size)}`} />

@@ -8,6 +8,6 @@ export default function ServiceSpecificationButton() {
         setDrawerType(DrawerType.ServiceSpecification)
     }
     return (
-        <Button variant="outlined" onClick={onShowSpec}>Service Specification Language</Button>
+        <Button aria-label="open Service Specification Language documentation" variant="outlined" onClick={onShowSpec}>Service Specification Language</Button>
     );
 }

@@ -102,8 +102,8 @@ export default function RandomGenerator(props: { device?: boolean, firmware?: bo
                     <Alert severity="error">Oops, unable to generate a strong random number.</Alert>}
             </CardContent>
             <CardActions>
-                <Button size="small" variant="contained" onClick={handleCopy}>Copy</Button>
-                <Button size="small" variant="contained" color="primary" onClick={handleRegenerate}>Regenerate</Button>
+                <Button aria-label="copy random number to clipboard" size="small" variant="contained" onClick={handleCopy}>Copy</Button>
+                <Button aria-label="regenerate random number" size="small" variant="contained" color="primary" onClick={handleRegenerate}>Regenerate</Button>
             </CardActions>
         </Card>
     </NoSsr>

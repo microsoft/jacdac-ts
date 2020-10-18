@@ -37,6 +37,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
         </IconButtonWithProgress></span>
     else
         return <Button
+            aria-label={title}
             size="small"
             variant={transparent ? "outlined" : "contained"}
             color={transparent ? "inherit" : "primary"}
