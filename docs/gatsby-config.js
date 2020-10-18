@@ -196,7 +196,7 @@ module.exports = {
           `/*`, 
           `/specification/*`,
           `/services/*`,
-          `/devices/*`
+          `/devices/*`,
           `/tools/*`
         ],
       },
