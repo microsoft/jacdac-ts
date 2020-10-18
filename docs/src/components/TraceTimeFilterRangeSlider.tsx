@@ -9,9 +9,9 @@ export default function TraceTimeFilterRangeSlider() {
     const [minMax, setMinMax] = useState([0, 1000]);
     const [value, setValue] = useState<number[]>(timeRange)
     const theme = useTheme();
-    const debouncedValue = useDebounce(value, 500);
+    const debouncedValue = useDebounce(value, 1000);
 
-    const handleChange = (newValue) => {
+    const handleChange = (event, newValue) => {
         setValue(newValue);
     };
 
@@ -32,7 +32,7 @@ export default function TraceTimeFilterRangeSlider() {
     if (!minMax || !debouncedValue)
         return <></>
 
-    return <Box display="flex" pl={theme.spacing(0.5)} pr={theme.spacing(0.5)}>
+    return <Box display="flex" pl={theme.spacing(0.25)} pr={theme.spacing(0.25)}>
         <Slider
             min={minMax[0]}
             max={minMax[1]}
