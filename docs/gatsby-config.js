@@ -189,7 +189,18 @@ module.exports = {
         crossOrigin: `use-credentials`,
       },
     },
-    "gatsby-plugin-offline",
+    {
+      resolve: `gatsby-plugin-offline`,
+      options: {
+        precachePages: [
+          `/*`, 
+          `/specification/*`,
+          `/services/*`,
+          `/devices/*`
+          `/tools/*`
+        ],
+      },
+    },
     "gatsby-plugin-robots-txt",
     "gatsby-plugin-meta-redirect",
   ],
