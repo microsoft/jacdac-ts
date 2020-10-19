@@ -119,6 +119,13 @@ export class JDRegister extends JDServiceMemberNode {
         return this.decoded?.decoded?.map(field => field.humanValue).join(',');
     }
 
+    /**
+     * Gets all the decoded values as an array
+     */
+    get decodedValues() {
+        return this.decoded?.decoded?.map(f => f.value);
+    }
+
     toString() {
         const d = this.data;
         return `${this.id} ${d ? toHex(d) : ""}`
