@@ -185,7 +185,7 @@ export default function Toc() {
 
   function TocListItem(props: { entry: TocNode, level: number }) {
     const { entry, level } = props;
-    const sub = !!entry.children && !!entry.children.length;
+    const sub = level === 1 || (!!entry.children && !!entry.children.length);
 
     return <>
       <ListItem button
@@ -195,7 +195,7 @@ export default function Toc() {
             primary={<Typography variant={sub ? "button" : "caption"}>{entry.name}</Typography>} />
         </Link>
       </ListItem>
-      { sub && entry.children.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}
+      { sub && entry.children?.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}
     </>
   }
 }
