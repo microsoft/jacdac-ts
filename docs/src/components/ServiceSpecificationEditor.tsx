@@ -19,7 +19,6 @@ import "ace-builds/src-noconflict/theme-dracula";
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
-import PacketsContext from './PacketsContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useDbValue from './useDbValue';
 import DarkModeContext from './DarkModeContext';

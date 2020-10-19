@@ -10,9 +10,10 @@ import DeviceSpecificationList from "./DeviceSpecificationList";
 
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
-    showSource?: boolean
+    showSource?: boolean,
+    showDevices?: boolean
 }) {
-    const { service: node, showSource } = props;
+    const { service: node, showSource, showDevices } = props;
     const registers = node.packets.filter(isRegister)
     const events = node.packets.filter(isEvent)
     const commands = node.packets.filter(isCommand)
@@ -64,7 +65,7 @@ export default function ServiceSpecification(props: {
                     />)}
             </Fragment>)
         }
-        {<Fragment key="devices">
+        {showDevices && <Fragment key="devices">
             <h2>Registered Devices</h2>
             <DeviceSpecificationList requiredServiceClasses={[node.classIdentifier]} />
         </Fragment>}
