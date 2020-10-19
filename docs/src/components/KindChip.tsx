@@ -10,12 +10,12 @@ export default function KindChip(props: { kind: string, className?: string }) {
     const { setDrawerType } = useContext(AppContext)
     const icon = KindIcon({ kind })
     const chipFilter = `kind:${kind}`
-    const filtered = filter && filter.indexOf(chipFilter) > 1
+    const filtered = filter && filter.indexOf(chipFilter) > -1
     const handleClick = () => {
         if (filtered)
-            setFilter(filter?.replace(chipFilter, ''))
+            setFilter(filter?.replace(chipFilter, '')?.trim())
         else
-            setFilter(filter + ' ' + chipFilter)
+            setFilter(filter?.trim() + ' ' + chipFilter)
         setDrawerType(DrawerType.Packets)
     }
     return <Tooltip title={filtered ? `remove filter ${chipFilter}` : `add filter ${chipFilter}`}>

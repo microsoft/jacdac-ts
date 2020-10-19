@@ -7,6 +7,7 @@ import ServiceSpecificationSource from "./ServiceSpecificationSource"
 import Markdown from "./Markdown";
 import EnumSpecification from "./EnumSpecification";
 import DeviceSpecificationList from "./DeviceSpecificationList";
+import { Box } from "@material-ui/core";
 
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
@@ -31,7 +32,9 @@ export default function ServiceSpecification(props: {
 
     return (<Fragment key={`servicespec${node.shortId}`}>
         <h1 key="title">{node.name}
-            <span style={{ marginLeft: "1rem" }}><IDChip id={node.classIdentifier} /></span>
+            <Box ml={1} component="span">
+                <IDChip id={node.classIdentifier} filter={`srv:${node.shortId}`} />
+            </Box>
         </h1>
         <Markdown key="notesshort" source={node.notes.short} />
         {!!node.extends?.length &&
