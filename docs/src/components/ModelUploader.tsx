@@ -20,6 +20,7 @@ import { IFile } from '../../../src/embed/protocol';
 import { prettySize } from '../../../src/dom/pretty';
 import RegisterTrend from './RegisterTrend';
 import { useRegisterIntValue, useRegisterStringValue } from '../jacdac/useRegisterValue';
+import useCall from './useCall';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -47,33 +48,27 @@ export function ModelActions(props: {
     sensorInput?: SensorAggregatorConfig
 }) {
     const { service, model, sensorAggregatorService, sensorInput } = props
-    const [deploying, setDeploying] = useState(false)
-    const [progress, setProgress] = useState(0)
+    const { running, progress, alert, callAsync } = useCall();
 
-    const modelDisabled = !service || !model || deploying
+    const modelDisabled = !service || !model || running
 
-    const handleDeployModel = async () => {
-        try {
-            setDeploying(true)
-            if (sensorAggregatorService && sensorInput) {
-                const aggregator = new SensorAggregatorClient(sensorAggregatorService)
-                await aggregator.setInputs(sensorInput)
-            }
-            if (service && model) {
-                const runner = new ModelRunnerClient(service)
-                await runner.deployModel(model, p => setProgress(p * 100))
-            }
+    const handleDeployModel = async () => await callAsync(async (setProgress) => {
+        if (sensorAggregatorService && sensorInput) {
+            const aggregator = new SensorAggregatorClient(sensorAggregatorService)
+            await aggregator.setInputs(sensorInput)
         }
-        finally {
-            setDeploying(false)
+        if (service && model) {
+            const runner = new ModelRunnerClient(service)
+            await runner.deployModel(model, setProgress)
         }
-    }
+    })
 
     return <>
-        {!deploying && <Button disabled={modelDisabled} variant="contained" color="primary" onClick={handleDeployModel}>
+        {!running && <Button disabled={modelDisabled} variant="contained" color="primary" onClick={handleDeployModel}>
             {sensorInput ? "Deploy model and configuration" : "Deploy model"}
         </Button>}
-        {deploying && <CircularProgressWithLabel value={progress} />}
+        {running && <CircularProgressWithLabel value={progress * 100} />}
+        {alert}
     </>
 }
 
