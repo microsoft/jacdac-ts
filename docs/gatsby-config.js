@@ -53,6 +53,13 @@ module.exports = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
+        name: `traces`,
+        path: `${__dirname}/../jacdac-spec/traces`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
         name: `package`,
         path: `${__dirname}/../package.json`,
       },
