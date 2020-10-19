@@ -83,7 +83,7 @@ export default function PacketSpecification(props: {
     return <div className={classes.root}>
         <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
             <PacketMembersChip className={classes.chip} members={packetInfo.fields} />
-            <IDChip className={classes.chip} id={packetInfo.identifier} />
+            <IDChip className={classes.chip} id={packetInfo.identifier} filter={`pkt:0x${packetInfo.identifier.toString(16)}`} />
             <KindChip className={classes.chip} kind={packetInfo.kind} />
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}

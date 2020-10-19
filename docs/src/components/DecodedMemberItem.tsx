@@ -54,7 +54,8 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
             multiple={enumInfo.isFlags}
             value={enumInfo.isFlags ? valueToFlags(enumInfo, member.numValue) : member.numValue}
             onChange={handleEnumChange}>
-            {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n} <IDChip id={enumInfo.members[n]} /></MenuItem>)}
+            {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n}
+                <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
     else if (member.scaledValue !== undefined && info.unit == "frac") {

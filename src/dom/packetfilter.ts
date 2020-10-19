@@ -97,7 +97,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "pkt":
                 if (!value) return;
                 // find register
-                const id = parseInt(value, 16);
+                const id = parseInt(value.replace(/^0?x/, ''), 16);
                 if (!isNaN(id))
                     pkts.add(id.toString(16));
                 break;
