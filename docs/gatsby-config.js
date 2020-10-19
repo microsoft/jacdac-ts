@@ -8,6 +8,7 @@ module.exports = {
   },
   pathPrefix: "/jacdac-ts",
   plugins: [
+    `gatsby-transformer-plaintext`,
     {
       resolve: `gatsby-source-filesystem`,
       options: {

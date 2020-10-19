@@ -16,6 +16,7 @@ import Widget from "../jacdac/Widget";
 import ConnectButton from "../jacdac/ConnectButton"
 import PacketLayout from "./PacketLayout";
 import ConnectAlert from "./ConnectAlert";
+import TraceList from "./TraceList";
 
 export default function useMdxComponents() {
   const theme = useTheme();
@@ -47,7 +48,8 @@ export default function useMdxComponents() {
     Widget: props => <Widget {...props} />,
     ConnectButton: props => <ConnectButton {...props} />,
     PacketLayout: props => <PacketLayout {...props} />,
-    ConnectAlert: props => <ConnectAlert {...props} />
+    ConnectAlert: props => <ConnectAlert {...props} />,
+    TraceList: props => <TraceList {...props} />,
   };
 
   return mdxComponents;

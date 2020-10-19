@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react"
 import ImportButton from "./ImportButton"
-import { parseLogicLog, parseTraceLog } from "../../../src/dom/logparser"
+import { parseLogicLog, parseTrace } from "../../../src/dom/logparser"
 import PacketsContext from "./PacketsContext"
 import Packet from "../../../src/dom/packet";
 import { arrayConcatMany } from "../../../src/dom/utils";
@@ -22,7 +22,7 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
                 let packets: Packet[];
                 // let's try a few format and see if we're lucky
                 try {
-                    packets = parseTraceLog(txt)
+                    packets = parseTrace(txt)?.packets
                 } catch (e) {
                     console.log(`trace parse error`, e)
                 }

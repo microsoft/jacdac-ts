@@ -10,11 +10,11 @@ import { BusState } from '../../../src/dom/bus';
 
 export default function TracePlayButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
-    const { toggleTracing, tracing, recording, replayTrace, paused, progress } = useContext(PacketsContext)
+    const { toggleTracing, tracing, recording, replayTrace, progress } = useContext(PacketsContext)
 
     return <IconButtonWithProgress
         {...others}
-        disabled={disabled || recording || !replayTrace || paused}
+        disabled={disabled || recording || !replayTrace}
         indeterminate={progress !== undefined}
         title={!replayTrace ? "Load or record a trace to replay it" : tracing ? "Stop trace" : "Play trace"}
         onClick={toggleTracing}

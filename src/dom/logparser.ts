@@ -6,27 +6,30 @@ import Frame from "./frame"
 import { TRACE_FILE_LINE_HEADER } from "./constants"
 import Trace from "./trace"
 
-export function parseTraceLog(contents: string): Packet[] {
+export function parseTrace(contents: string): Trace {
     let foundHeader = false;
     let packets: Packet[] = []
-    for (let ln of contents.split(/\r?\n/)) {
+    contents?.split(/\r?\n/).forEach(ln => {
         // look for header first
         if (!foundHeader) {
             if (ln === TRACE_FILE_LINE_HEADER)
                 foundHeader = true;
-            continue;
+            return;
         }
         // parse data
         const m = /(\d+)\s+([a-f0-9]{12,})/i.exec(ln)
         if (!m) // probably junk data
-            continue;
+            return;
 
         const timestamp = parseInt(m[1])
         const data = fromHex(m[2])
         // add to array
         packets.push(Packet.fromBinary(data, timestamp))
-    }
-    return foundHeader && packets;
+    });
+    if (foundHeader)
+        return new Trace(packets);
+    else
+        return undefined;
 }
 
 export function parseLogicLog(logcontents: string): Frame[] {
