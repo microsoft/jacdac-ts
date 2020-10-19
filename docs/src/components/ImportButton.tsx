@@ -5,7 +5,7 @@ import { Button } from '@material-ui/core';
 import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
 import IconButtonWithTooltip from './IconButtonWithTooltip';
 
-export default function UploadButton(props: {
+export default function ImportButton(props: {
     icon?: boolean,
     text: string,
     onFilesUploaded: (files: File[]) => void,

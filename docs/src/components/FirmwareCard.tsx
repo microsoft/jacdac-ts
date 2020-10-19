@@ -5,7 +5,7 @@ import useEffectAsync from "./useEffectAsync";
 import { Link } from "gatsby-theme-material-ui";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
 import Alert from "./Alert";
-import UploadButton from "./UploadButton";
+import ImportButton from "./ImportButton";
 
 export const LOCAL_FILE_SLUG = "local file";
 
@@ -94,7 +94,7 @@ export default function FirmwareCard(props: { slug: string }) {
             {!downloading && release && isGithubRepo && <Button disabled={downloading} color={downloadColor} variant={downloadVariant} aria-label={`Download last release from ${slug}`} onClick={handleGitHubReleaseDownload}>
                 Download
             </Button>}
-            {!downloading && !isGithubRepo && <UploadButton text={"Import UF2 file"} onFilesUploaded={handleFiles} />}
+            {!downloading && !isGithubRepo && <ImportButton text={"Import UF2 file"} onFilesUploaded={handleFiles} />}
             {!downloading && firmwareBlobs?.length && <Button disabled={disabled} variant="text" arial-label={"Clear"} onClick={handleClear}>
                 Clear
             </Button>}

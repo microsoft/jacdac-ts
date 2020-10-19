@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react"
-import UploadButton from "./UploadButton"
+import ImportButton from "./ImportButton"
 import { parseLogicLog, parseTraceLog } from "../../../src/dom/logparser"
 import PacketsContext from "./PacketsContext"
 import Packet from "../../../src/dom/packet";
@@ -50,7 +50,7 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
         }
     }
 
-    return <UploadButton icon={icon}
+    return <ImportButton icon={icon}
         disabled={importing || recording || disabled}
         text="Import Trace File"
         onFilesUploaded={handleFiles} />
