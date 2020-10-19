@@ -29,6 +29,7 @@ export default function PacketListItem(props: {
     const classes = useStyles()
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT))
+    const { decoded } = packet;
 
     const handleClick = () => {
         if (mobile)
@@ -37,7 +38,9 @@ export default function PacketListItem(props: {
     }
     const selected = packet === selectedPacket
     const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
-    const primary = (logMessage && packet.decoded?.decoded[0].value) || packet.friendlyCommandName
+    const primary = (!decoded && "???")
+        || (logMessage && decoded.decoded[0].value)
+        || `${packet.friendlyCommandName} ${decoded.decoded.map(f => f.humanValue).join(', ')}`;
     const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
