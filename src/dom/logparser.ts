@@ -3,31 +3,27 @@ import { JDBus } from "./bus"
 import Packet from "./packet"
 import TracePlayer from "./traceplayer"
 import Frame from "./frame"
-import { TRACE_FILE_LINE_HEADER } from "./constants"
 import Trace from "./trace"
 
 export function parseTrace(contents: string): Trace {
-    let foundHeader = false;
+    let description: string[] = [];
     let packets: Packet[] = []
     contents?.split(/\r?\n/).forEach(ln => {
-        // look for header first
-        if (!foundHeader) {
-            if (ln === TRACE_FILE_LINE_HEADER)
-                foundHeader = true;
-            return;
-        }
         // parse data
         const m = /(\d+)\s+([a-f0-9]{12,})/i.exec(ln)
-        if (!m) // probably junk data
+        if (!m) { // probably junk data
+            if (packets.length == 0)
+                description.push(ln)
             return;
+        }
 
         const timestamp = parseInt(m[1])
         const data = fromHex(m[2])
         // add to array
         packets.push(Packet.fromBinary(data, timestamp))
     });
-    if (foundHeader)
-        return new Trace(packets);
+    if (packets.length)
+        return new Trace(packets, description.join('\n').trim());
     else
         return undefined;
 }

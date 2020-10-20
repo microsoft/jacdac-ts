@@ -18,7 +18,7 @@ export interface PacketsProps {
     filter: string,
     setFilter: (filter: string) => void,
     replayTrace: Trace,
-    setReplayTrace: (frames: Frame[], videoUrl?: string) => void,
+    setReplayTrace: (trace: Trace) => void,
     recording: boolean,
     toggleRecording: () => void,
     tracing: boolean,
@@ -78,12 +78,9 @@ export const PacketsProvider = ({ children }) => {
         view.current.clear();
         bus.clear();
     }
-    const setReplayTrace = (pkts: Packet[], videoUrl?: string) => {
+    const setReplayTrace = (trace: Trace) => {
         clearPackets();
-        if (!pkts?.length)
-            player.current.trace = undefined;
-        else
-            player.current.trace = new Trace(pkts, videoUrl);
+        player.current.trace = trace
     }
     const toggleRecording = () => {
         if (recorder.current.recording) {

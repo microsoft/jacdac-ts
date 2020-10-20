@@ -139,6 +139,4 @@ export const REGISTER_REFRESH_RETRY_1 = 80
 export const REGISTER_POLL_REPORT_INTERVAL = 799
 export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 
-export const TRACE_FILE_LINE_HEADER = "JACDAC trace"
-
 export * from "../../jacdac-spec/dist/specconstants";

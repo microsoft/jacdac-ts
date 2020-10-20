@@ -8,16 +8,16 @@ import PacketsContext from "./PacketsContext";
 import AppContext, { DrawerType } from "./AppContext";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
-    root: {
-        textDecoration: "none"
-    },
+  root: {
+    textDecoration: "none"
+  },
 }))
 
 export default function TraceList() {
-    const { setReplayTrace, toggleTracing } = useContext(PacketsContext)
-    const { setDrawerType } = useContext(AppContext)
-    const classes = useStyles();
-    const data = useStaticQuery(graphql`
+  const { setReplayTrace, toggleTracing } = useContext(PacketsContext)
+  const { setDrawerType } = useContext(AppContext)
+  const classes = useStyles();
+  const data = useStaticQuery(graphql`
     query {
         allPlainText {
           nodes {
@@ -31,24 +31,26 @@ export default function TraceList() {
           }
         }
       }`)
-    const traces: { trace: Trace; name: string }[] = data.allPlainText.nodes
-        .filter(node => node.parent?.ext === ".txt")
-        .map(node => {
-            return {
-                trace: parseTrace(node.content as string),
-                name: node.parent.name as string
-            }
-        })
-    const handleClick = (trace: Trace) => () => {
-        setDrawerType(DrawerType.Packets)
-        setReplayTrace(trace.packets)
-        toggleTracing();
-    }
-    return <List className={classes.root}>
-        {traces.map(({ trace, name }) => <ListItem button key={name} onClick={handleClick(trace)}>
-            <ListItemText
-                primary={name}
-                secondary={`${prettyDuration(trace.duration)}, ${trace.length} packets`} />
-        </ListItem>)}
-    </List >;
+  const traces: { trace: Trace; name: string }[] = data.allPlainText.nodes
+    .filter(node => node.parent?.ext === ".txt")
+    .map(node => {
+      return {
+        trace: parseTrace(node.content as string),
+        name: node.parent.name as string
+      }
+    })
+    .filter(trace => !!trace.trace);
+
+  const handleClick = (trace: Trace) => () => {
+    setDrawerType(DrawerType.Packets)
+    setReplayTrace(trace)
+    toggleTracing();
+  }
+  return <List className={classes.root}>
+    {traces.map(({ trace, name }) => <ListItem button key={name} onClick={handleClick(trace)}>
+      <ListItemText
+        primary={name}
+        secondary={`${prettyDuration(trace.duration)}, ${trace.length} packets`} />
+    </ListItem>)}
+  </List >;
 }

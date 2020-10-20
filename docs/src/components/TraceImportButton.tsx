@@ -5,6 +5,7 @@ import PacketsContext from "./PacketsContext"
 import Packet from "../../../src/dom/packet";
 import { arrayConcatMany } from "../../../src/dom/utils";
 import AppContext from "./AppContext"
+import Trace from "../../../src/dom/trace";
 
 export default function TraceImportButton(props: { icon?: boolean, disabled?: boolean }) {
     const { icon, disabled } = props;
@@ -19,28 +20,30 @@ export default function TraceImportButton(props: { icon?: boolean, disabled?: bo
                 setImporting(true)
                 const txt = await file.text()
 
-                let packets: Packet[];
+                let trace: Trace;
                 // let's try a few format and see if we're lucky
                 try {
-                    packets = parseTrace(txt)?.packets
+                    trace = parseTrace(txt)
                 } catch (e) {
                     console.log(`trace parse error`, e)
                 }
 
                 // try logic format
-                if (!packets) {
+                if (!trace) {
                     try {
                         const frames = parseLogicLog(txt) // ensure format is ok
-                        packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
+                        const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
+                        if (packets?.length)
+                            trace = new Trace(packets);
                     } catch (e) {
                         console.log(`logic parse error`, e)
                     }
                 }
 
                 // found anything?
-                if (packets) {
-                    console.log(`importing ${packets.length} packets`)
-                    setReplayTrace(packets);
+                if (trace) {
+                    console.log(`importing ${trace.packets.length} packets`)
+                    setReplayTrace(trace);
                 }
                 else
                     setError("could not parse file")
