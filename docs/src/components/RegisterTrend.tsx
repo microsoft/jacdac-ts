@@ -5,7 +5,6 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import FieldDataSet from "./FieldDataSet"
 import Trend, { TrendProps } from "./Trend"
 import useChartPalette from "./useChartPalette";
-import useDebounce from "./useDebounce"
 import useChange from "../jacdac/useChange"
 
 export default function RegisterTrend(props: { register: JDRegister, showName?: boolean, mini?: boolean }) {
@@ -21,5 +20,5 @@ export default function RegisterTrend(props: { register: JDRegister, showName?: 
         dataSet.addRow();
     }), [register])
 
-    return <Trend dataSet={dataSet} horizon={50} gradient={true} height={12} />
+    return <Trend dataSet={dataSet} horizon={50} gradient={true} height={12} mini={mini} />
 }

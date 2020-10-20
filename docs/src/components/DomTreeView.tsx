@@ -24,7 +24,7 @@ import { Switch, useMediaQuery, useTheme } from '@material-ui/core';
 import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER } from '../../../src/dom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE } from '../../../src/dom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
@@ -213,7 +213,8 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
     const specification = service.specification;
     const id = service.id
     const name = service.name
-    const packets = useChange(service, () => specification?.packets)
+    const open = checked?.indexOf(id) > -1;
+    const packets = specification?.packets;
     const registers = packets?.filter(isRegister)
         .map(info => service.register(info.identifier))
         .filter(reg => !registerFilter || registerFilter(reg))
@@ -229,7 +230,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
         labelText={name}
         labelInfo={reading}
         kind={"service"}
-        checked={checked?.indexOf(id) > -1}
+        checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
         actions={specification && <Link color="inherit" to={`/services/${specification.shortId}`}>
             <KindIcon kind="service" />
