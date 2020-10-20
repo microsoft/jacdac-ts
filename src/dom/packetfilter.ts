@@ -11,6 +11,7 @@ export interface PacketFilterProps {
     repeatedAnnounce?: boolean,
     requiresAck?: boolean,
     log?: boolean,
+    firmwareIdentifiers?: number[],
     flags?: string[],
     regGet?: boolean,
     regSet?: boolean,
@@ -39,6 +40,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let flags = new Set<string>()
     let serviceClasses = new Set<number>();
     let pkts = new Set<string>();
+    let firmwares = new Set<number>();
     let repeatedAnnounce = undefined;
     let announce = undefined;
     let regGet = undefined;
@@ -94,6 +96,14 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                         data.to = true;
                 }
                 break;
+            case "fw":
+            case "firmware-identifier":
+                if (!value) return;
+                // find register
+                const fwid = parseInt(value.replace(/^0?x/, ''), 16);
+                if (!isNaN(fwid))
+                    firmwares.add(fwid);
+                break;
             case "pkt":
                 if (!value) return;
                 // find register
@@ -126,6 +136,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         repeatedAnnounce,
         requiresAck,
         log,
+        firmwareIdentifiers: !!firmwares.size && Array.from(firmwares.keys()),
         flags: !!flags.size && Array.from(flags.keys()),
         regGet,
         regSet,
@@ -161,6 +172,7 @@ export function compileFilter(props: PacketFilterProps) {
         repeatedAnnounce,
         requiresAck,
         log,
+        firmwareIdentifiers,
         flags,
         regGet,
         regSet,
@@ -184,12 +196,14 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(pkt => pkt.requires_ack === requiresAck);
     if (flags)
         filters.push(pkt => hasAnyFlag(pkt))
+
     if (regGet !== undefined || regSet !== undefined)
         filters.push(pkt => (pkt.is_reg_get === regGet) || (pkt.is_reg_set === regSet))
     else if (regGet !== undefined)
         filters.push(pkt => pkt.is_reg_get === regGet)
     else if (regSet !== undefined)
         filters.push(pkt => pkt.is_reg_set === regSet)
+
     if (log !== undefined)
         filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.is_report);
     if (Object.keys(devices).length)
@@ -204,6 +218,11 @@ export function compileFilter(props: PacketFilterProps) {
     if (pkts) {
         filters.push(pkt => pkts.indexOf(pkt.decoded?.info.identifier.toString(16)) > -1);
     }
+    if (firmwareIdentifiers)
+        filters.push(pkt => {
+            const fwid = pkt.device?.firmwareIdentifier;
+            return fwid === undefined || firmwareIdentifiers.has(fwid);
+        })
 
     const filter: CompiledPacketFilter = (pkt: Packet) => filters.every(filter => filter(pkt));
     return filter;

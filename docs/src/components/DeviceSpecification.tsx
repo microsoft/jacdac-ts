@@ -15,9 +15,6 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
     return <>
         <h2 key="title">
             {device.name}
-            <span style={{ marginLeft: "1rem" }}>
-                {device.firmwares.map(firmware => <IDChip key={firmware} id={firmware} />)}
-            </span>
         </h2>
         {device.image && <img key="image" alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
         <p key="description">
@@ -29,7 +26,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         </ul>
         {!!device.firmwares.length && <><h3>Firmware identifiers</h3>
             <ul>
-                {device.firmwares.map(fw => <li key={fw}>0x{fw.toString(16)}</li>)}
+                {device.firmwares.map(firmware => <li key={firmware}><IDChip id={firmware} filter={`fw:0x${firmware.toString(16)}`} /></li>)}
             </ul></>}
         <h3>Services</h3>
         <Grid container spacing={2}>

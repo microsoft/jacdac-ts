@@ -20,7 +20,7 @@ export default function IDChip(props: { id: number | string, className?: string,
         setDrawerType(DrawerType.Packets)
     }
 
-    return <Tooltip title={filtered ? `remove filter ${filter}` : `add filter ${filter}`}>
+    return <Tooltip title={!!filter && (filtered ? `remove filter ${filter}` : `add filter ${filter}`)}>
         <span>
             <Chip onClick={!!filter && handleClick} className={className} size="small" icon={<FingerprintIcon />} title={`identifier ${ids}`} label={ids} />
         </span>

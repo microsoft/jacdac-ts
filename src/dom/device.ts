@@ -267,10 +267,18 @@ export class JDDevice extends JDNode {
             ?.sendCmdAsync(CtrlCmd.Reset)
     }
 
-    async resolveDeviceClass(): Promise<number> {
-        const deviceClassRegister = this.service(0)?.register(CtrlReg.DeviceClass);
-        await deviceClassRegister?.refresh(true);
-        return deviceClassRegister?.intValue;
+    async resolveFirmwareIdentifier(): Promise<number> {
+        const fwIdRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        await fwIdRegister?.refresh(true);
+        return fwIdRegister?.intValue;
+    }
+
+    get firmwareIdentifier(): number {
+        const fwIdRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        const v = fwIdRegister?.intValue;
+        if (fwIdRegister && v === undefined)
+            fwIdRegister?.refresh(true);
+        return v;
     }
 
     private initAcks() {
