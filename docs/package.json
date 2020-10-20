@@ -37,6 +37,7 @@
     "gatsby-source-filesystem": "^2.3.34",
     "gatsby-theme-material-ui": "^1.0.13",
     "gatsby-transformer-json": "^2.4.14",
+    "gatsby-transformer-plaintext": "^1.0.0",
     "gatsby-transformer-remark": "^2.8.39",
     "gatsby-transformer-sharp": "^2.5.17",
     "graphiql": "^1.0.5",
