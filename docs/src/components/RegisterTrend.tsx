@@ -19,7 +19,6 @@ export default function RegisterTrend(props: { register: JDRegister, showName?: 
     // register on change...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         dataSet.addRow();
-        console.log('add row', dataSet.rows.map(row => row.data[0]))
     }), [register])
 
     return <Trend dataSet={dataSet} horizon={50} gradient={true} height={12} />
