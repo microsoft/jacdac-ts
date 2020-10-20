@@ -168,11 +168,11 @@ export default function PacketFilter() {
                     spellCheck={false}
                     onChange={handleChange}
                 />
-                <IconButtonWithTooltip className={classes.iconButton}
+                {text && <IconButtonWithTooltip className={classes.iconButton}
                     title={"clear filter"}
                     onClick={handleClearFilter}>
                     <ClearIcon />
-                </IconButtonWithTooltip>
+                </IconButtonWithTooltip>}
             </Box>
         </Paper>
     </>
