@@ -38,7 +38,7 @@ export default function DeviceSpecificationList(props: {
     const cols = mobile ? 1 : medium ? 3 : 4;
 
     if (requiredServiceClasses)
-        specs = specs.filter(spec => spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
+        specs = specs.filter(spec => spec.services.length && spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
     if (shuffle)
         arrayShuffle(specs)
     if (count !== undefined)
