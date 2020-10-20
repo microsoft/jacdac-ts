@@ -221,7 +221,7 @@ export function compileFilter(props: PacketFilterProps) {
     if (firmwareIdentifiers)
         filters.push(pkt => {
             const fwid = pkt.device?.firmwareIdentifier;
-            return fwid === undefined || firmwareIdentifiers.has(fwid);
+            return fwid === undefined || firmwareIdentifiers.indexOf(fwid) > -1;
         })
 
     const filter: CompiledPacketFilter = (pkt: Packet) => filters.every(filter => filter(pkt));
