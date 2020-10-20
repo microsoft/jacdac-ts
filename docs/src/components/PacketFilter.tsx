@@ -3,6 +3,8 @@ import { makeStyles, Theme, createStyles, Paper, InputBase, useTheme } from '@ma
 import FilterListIcon from '@material-ui/icons/FilterList';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import ClearIcon from '@material-ui/icons/Clear';
 import { Box, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
@@ -143,6 +145,9 @@ export default function PacketFilter() {
     const handleAddFilter = (k: string) => {
         setText(text + " " + k);
     }
+    const handleClearFilter = () => {
+        setText("")
+    }
 
     return <>
         {timeRange && <TraceTimeFilterRangeSlider />}
@@ -163,6 +168,11 @@ export default function PacketFilter() {
                     spellCheck={false}
                     onChange={handleChange}
                 />
+                <IconButtonWithTooltip className={classes.iconButton}
+                    title={"clear filter"}
+                    onClick={handleClearFilter}>
+                    <ClearIcon />
+                </IconButtonWithTooltip>
             </Box>
         </Paper>
     </>
