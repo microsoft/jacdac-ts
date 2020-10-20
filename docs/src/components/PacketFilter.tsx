@@ -125,7 +125,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
 }
 
 export default function PacketFilter() {
-    const { timeRange, toggleTimeRange, filter, setFilter } = useContext(PacketsContext)
+    const { trace, timeRange, toggleTimeRange, filter, setFilter } = useContext(PacketsContext)
     const classes = useStyles();
     const [text, setText] = useState(filter);
     const debouncedText = useDebounce(text, 1000);
@@ -155,6 +155,7 @@ export default function PacketFilter() {
             <Box display="flex">
                 <FilterMenu text="Filters" handleAddFilter={handleAddFilter} />
                 <IconButtonWithTooltip className={classes.iconButton}
+                    disabled={!timeRange && !trace?.length}
                     title={timeRange ? "clear time range" : "use time range"}
                     onClick={toggleTimeRange}>
                     <QueryBuilderIcon />
