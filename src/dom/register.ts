@@ -8,6 +8,7 @@ import { DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
+import { JDNode } from "./node";
 
 
 export class JDRegister extends JDServiceMemberNode {
@@ -30,7 +31,11 @@ export class JDRegister extends JDServiceMemberNode {
     get fields() {
         if (!this._fields)
             this._fields = this.specification?.fields.map((field, index) => new JDField(this, index, field));
-        return this._fields;
+        return this._fields.slice();
+    }
+
+    get children(): JDNode[] {
+        return this.fields;
     }
 
     get lastSetTimestamp() {

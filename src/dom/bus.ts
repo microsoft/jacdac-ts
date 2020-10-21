@@ -432,10 +432,14 @@ export class JDBus extends JDNode {
             return this._devices.slice();
     }
 
+    get children(): JDNode[] {
+        return this.devices();
+    }
+
     /**
      * Gets the current list of services from all the known devices on the bus
      */
-    services(options: { serviceName?: string, serviceClass?: number }): JDService[] {
+    services(options?: { serviceName?: string, serviceClass?: number }): JDService[] {
         return arrayConcatMany(this.devices(options).map(d => d.services(options)))
     }
 

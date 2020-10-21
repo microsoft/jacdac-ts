@@ -210,6 +210,10 @@ export class JDDevice extends JDNode {
         return r;
     }
 
+    get children(): JDNode[] {
+        return this.services();
+    }
+
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL

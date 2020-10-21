@@ -116,7 +116,7 @@ export class JDEventSource {
     listenerCount(eventName: string): number {
         if (!eventName) return 0;
         const listeners = this.listeners[eventName]
-        return listeners ? listeners.length : 0
+        return listeners?.length || 0
     }
 
     /**
