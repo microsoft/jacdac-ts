@@ -1,6 +1,6 @@
 import React from "react"
 import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
-import { deviceSpecificationFromClassIdenfitier, deviceSpecificationFromIdentifier, imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { deviceSpecificationFromFirmwareIdentifier, deviceSpecificationFromIdentifier, imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import GitHubButton from "./GitHubButton"
 import IDChip from "./IDChip";
 import { Button, IconButton } from "gatsby-theme-material-ui";
@@ -16,7 +16,7 @@ export default function DeviceSpecificationCard(props: {
     const { deviceIdentifier, specificationIdentifier, specification } = props;
     let spec: jdspec.DeviceSpec = specification;
     if (!spec && deviceIdentifier !== undefined)
-        spec = deviceSpecificationFromClassIdenfitier(deviceIdentifier)
+        spec = deviceSpecificationFromFirmwareIdentifier(deviceIdentifier)
     if (!spec && specificationIdentifier !== undefined)
         spec = deviceSpecificationFromIdentifier(specificationIdentifier)
     const imageUrl = imageDeviceOf(spec)

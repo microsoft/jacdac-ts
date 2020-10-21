@@ -3,7 +3,7 @@ deck: true
 title: JACDAC
 ---
 
-import { serviceSpecificationFromName, deviceSpecificationFromClassIdenfitier } from "../../../../src/dom/spec"
+import { serviceSpecificationFromName, deviceSpecificationFromFirmwareIdentifier } from "../../../../src/dom/spec"
 
 # JACDAC
 
@@ -51,7 +51,7 @@ Discover registers, events, and commands on the fly.
 Define metadata, services and firmware identifiers.
 
 <pre>
-    <code className="language-markdown">{deviceSpecificationFromClassIdenfitier(0x30838b8e).source}</code>
+    <code className="language-markdown">{deviceSpecificationFromFirmwareIdentifier(0x30838b8e).source}</code>
 </pre>
 
 # Device catalog
