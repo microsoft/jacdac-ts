@@ -1,4 +1,4 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import React, { useContext } from "react"
 import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/dom/constants";
 import { JDNode, visitNodes } from "../../../src/dom/node";
@@ -17,8 +17,10 @@ function NodeCallRow(props: { node: JDNode }) {
 
     return <>
         <TableHead>
-            <TableCell valign="top">{node.id}</TableCell>
-            <TableCell valign="top">{total}</TableCell>
+            <TableRow>
+                <TableCell valign="top">{node.id}</TableCell>
+                <TableCell valign="top">{total}</TableCell>
+            </TableRow>
         </TableHead>
         <TableBody>
             {events.map(ev => <TableRow key={ev}>
@@ -51,15 +53,28 @@ function NodeListenerRow(props: { node: JDNode }) {
     const counts = eventNames.map(ev => node.listenerCount(ev));
     const total = counts.reduce((p, c) => p + c);
 
+    const handleClick = (ev: string) => () => {
+        const stackTraces = node.listenerStackTraces(ev)
+        stackTraces.forEach(st => console.log(st));
+    }
+
     return <>
         <TableHead>
-            <TableCell valign="top">{node.id}</TableCell>
-            <TableCell valign="top">{total}</TableCell>
+            <TableRow>
+                <TableCell valign="top">{node.id}</TableCell>
+                <TableCell valign="top">{total}</TableCell>
+                <TableCell />
+            </TableRow>
         </TableHead>
         <TableBody>
             {eventNames.map((ev, i) => <TableRow key={ev}>
-                <TableCell>{ev}</TableCell>
+                <TableCell>
+                    {ev}
+                </TableCell>
                 <TableCell>{counts[i]}</TableCell>
+                <TableCell>
+                    <Button size="small" onClick={handleClick(ev)}>traces</Button>
+                </TableCell>
             </TableRow>)}
         </TableBody>
     </>

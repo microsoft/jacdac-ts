@@ -1,11 +1,14 @@
 import { SMap } from "./utils";
 import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants";
 import { Observable, Observer } from "./observable";
+import Flags from "./flags";
+
 export type EventHandler = (...args) => void;
 
 interface Listener {
     handler: EventHandler;
     once: boolean;
+    stackTrace?: string;
 }
 
 function normalizeEventNames(eventNames: string | string[]): string[] {
@@ -55,7 +58,9 @@ export class JDEventSource {
 
         eventListeners.push({
             handler,
-            once: !!once
+            once: !!once,
+            // debug only collection of trace for leak detection
+            stackTrace: Flags.diagnostics && new Error().stack
         })
         this.emit(NEW_LISTENER, eventName, handler)
     }
@@ -117,6 +122,11 @@ export class JDEventSource {
         if (!eventName) return 0;
         const listeners = this.listeners[eventName]
         return listeners?.length || 0
+    }
+
+    listenerStackTraces(eventName: string): string[] {
+        const listeners = this.listeners[eventName]
+        return listeners?.map(listener => listener.stackTrace);
     }
 
     /**
