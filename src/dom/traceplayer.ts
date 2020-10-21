@@ -101,7 +101,7 @@ export default class TracePlayer extends JDClient {
             nframes++;
         }
 
-        console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)
+        //console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)
         this.emitProgress();
         if (this._index >= packets.length)
             this.stop();

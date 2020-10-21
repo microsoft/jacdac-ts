@@ -22,6 +22,7 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
 export class JDEventSource {
     private readonly listeners: SMap<Listener[]> = {};
     readonly eventStats: SMap<number> = {};
+    newListenerStats: SMap<number> = undefined;
 
     constructor() {
     }
@@ -63,6 +64,12 @@ export class JDEventSource {
             stackTrace: Flags.diagnostics && new Error().stack
         })
         this.emit(NEW_LISTENER, eventName, handler)
+        // diagnostics
+        if (Flags.diagnostics) {
+            if (!this.newListenerStats)
+                this.newListenerStats = {};
+            this.newListenerStats[eventName] = (this.newListenerStats[eventName] || 0) + 1;
+        }
     }
 
     private removeListenerInternal(eventName: string, handler: EventHandler): void {

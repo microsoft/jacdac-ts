@@ -8,28 +8,35 @@ import { PaperBox } from "./PaperBox";
 
 function NodeCallRow(props: { node: JDNode }) {
     const { node } = props;
-    const stats = node.eventStats;
-    const events = Object.keys(stats)
-        .filter(ev => stats[ev])
-        .sort((l, r) => -stats[l] + stats[r])
-    const total = events.filter(ev => ev !== REMOVE_LISTENER && ev !== NEW_LISTENER)
-        .map(ev => stats[ev])
+    const emitStats = node.eventStats;
+    const newListenerStats = node.newListenerStats || {};
+    const events = Object.keys(emitStats)
+        .filter(ev => emitStats[ev] || newListenerStats[ev])
+        .sort((l, r) => -emitStats[l] + emitStats[r])
+    const emitTotal = events
+        .filter(ev => ev !== REMOVE_LISTENER && ev !== NEW_LISTENER)
+        .map(ev => emitStats[ev] | 0)
+        .reduce((prev, curr) => prev + curr, 0);
+    const newListenerTotal = events
+        .map(ev => newListenerStats[ev] | 0)
         .reduce((prev, curr) => prev + curr, 0);
 
-    if (total == 0)
+    if (emitTotal == 0)
         return null
 
     return <>
         <TableHead>
             <TableRow>
-                <TableCell valign="top">{node.id}</TableCell>
-                <TableCell valign="top">{total}</TableCell>
+                <TableCell>{node.id}</TableCell>
+                <TableCell>{emitTotal}</TableCell>
+                <TableCell>{newListenerTotal}</TableCell>
             </TableRow>
         </TableHead>
         <TableBody>
             {events.map(ev => <TableRow key={ev}>
                 <TableCell>{ev}</TableCell>
-                <TableCell>{stats[ev]}</TableCell>
+                <TableCell>{emitStats[ev] || 0}</TableCell>
+                <TableCell>{newListenerStats[ev] || 0}</TableCell>
             </TableRow>)}
         </TableBody>
     </>
@@ -43,6 +50,13 @@ function NodeCalls() {
     return <PaperBox key="slots">
         <TableContainer >
             <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>node</TableCell>
+                        <TableCell>calls</TableCell>
+                        <TableCell>new listener</TableCell>
+                    </TableRow>
+                </TableHead>
                 {nodes.map(node => <NodeCallRow key={node.id} node={node} />)}
             </Table>
         </TableContainer>
