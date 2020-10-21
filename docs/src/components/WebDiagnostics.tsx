@@ -9,20 +9,24 @@ import { PaperBox } from "./PaperBox";
 function NodeCallRow(props: { node: JDNode }) {
     const { node } = props;
     const stats = node.eventStats;
-    const events = Object.keys(stats);
-    const statsText = events
+    const events = Object.keys(stats)
         .sort((l, r) => -stats[l] + stats[r])
-        .map(k => `${k}=${stats[k]}`)
-        .join(", ")
     const total = events.filter(ev => ev !== REMOVE_LISTENER && ev !== NEW_LISTENER)
         .map(ev => stats[ev])
         .reduce((prev, curr) => prev + curr);
 
-    return <TableRow>
-        <TableCell>{node.id}</TableCell>
-        <TableCell>{total}</TableCell>
-        <TableCell>{statsText}</TableCell>
-    </TableRow>
+    return <>
+        <TableHead>
+            <TableCell valign="top">{node.id}</TableCell>
+            <TableCell valign="top">{total}</TableCell>
+        </TableHead>
+        <TableBody>
+            {events.map(ev => <TableRow key={ev}>
+                <TableCell>{ev}</TableCell>
+                <TableCell>{stats[ev]}</TableCell>
+            </TableRow>)}
+        </TableBody>
+    </>
 }
 
 function NodeCalls() {
@@ -33,16 +37,7 @@ function NodeCalls() {
     return <PaperBox key="slots">
         <TableContainer >
             <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell >id</TableCell>
-                        <TableCell>total</TableCell>
-                        <TableCell>events</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {nodes.map(node => <NodeCallRow key={node.id} node={node} />)}
-                </TableBody>
+                {nodes.map(node => <NodeCallRow key={node.id} node={node} />)}
             </Table>
         </TableContainer>
     </PaperBox>
@@ -55,13 +50,19 @@ function NodeListenerRow(props: { node: JDNode }) {
         .sort((l, r) => -node.listenerCount(l) + node.listenerCount(r))
     const counts = eventNames.map(ev => node.listenerCount(ev));
     const total = counts.reduce((p, c) => p + c);
-    const statsText = eventNames.map((ev, i) => `${ev}=${counts[i]}`).join(", ");
 
-    return <TableRow>
-        <TableCell>{node.id}</TableCell>
-        <TableCell>{total}</TableCell>
-        <TableCell>{statsText}</TableCell>
-    </TableRow>
+    return <>
+        <TableHead>
+            <TableCell valign="top">{node.id}</TableCell>
+            <TableCell valign="top">{total}</TableCell>
+        </TableHead>
+        <TableBody>
+            {eventNames.map((ev, i) => <TableRow key={ev}>
+                <TableCell>{ev}</TableCell>
+                <TableCell>{counts[i]}</TableCell>
+            </TableRow>)}
+        </TableBody>
+    </>
 }
 
 function NodeListeners() {
@@ -72,16 +73,7 @@ function NodeListeners() {
     return <PaperBox key="slots">
         <TableContainer >
             <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell >id</TableCell>
-                        <TableCell>total</TableCell>
-                        <TableCell>events</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {nodes.map(node => <NodeListenerRow key={node.id} node={node} />)}
-                </TableBody>
+                {nodes.map(node => <NodeListenerRow key={node.id} node={node} />)}
             </Table>
         </TableContainer>
     </PaperBox>
