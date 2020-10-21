@@ -17,7 +17,9 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
     const { className, showToc, showCurrent, showConnect } = props;
     const { drawerType, setDrawerType } = useContext(AppContext)
     const [count, setCount] = useState(bus.devices().length)
-    useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
+    useEffect(() => bus.subscribe(DEVICE_CHANGE,
+        () => setCount(bus.devices().length))
+        , [bus])
 
     const handleDrawer = (drawer: DrawerType) => () => setDrawerType(drawer);
     const drawers = [
