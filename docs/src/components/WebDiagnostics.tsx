@@ -1,10 +1,13 @@
-import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import React, { useContext, useState } from "react"
 import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/dom/constants";
 import { JDNode, visitNodes } from "../../../src/dom/node";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useChange from "../jacdac/useChange"
 import { PaperBox } from "./PaperBox";
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Alert from "./Alert"
+import { AlertTitle } from "@material-ui/lab";
 
 function NodeCallRow(props: { node: JDNode }) {
     const { node } = props;
@@ -117,17 +120,30 @@ function NodeListeners() {
 }
 
 export default function WebDiagnostics() {
+    const [expanded, setExpanded] = React.useState<string | false>(false);
     const [v, setV] = useState(0)
     const handleRefresh = () => {
         setV(v + 1);
     }
-    return <PaperBox>
-        <h3>Diagnostics <Button variant="outlined" onClick={handleRefresh}>refresh</Button></h3>
-        <p>This diagnostics view does not register events to refresh automatically.
-        </p>
-        <h4>Event Listeners</h4>
-        <NodeListeners />
-        <h4>Event Calls</h4>
-        <NodeCalls />
-    </PaperBox>
+
+    const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+        setExpanded(isExpanded ? panel : false);
+    };
+
+    return <Alert severity="info">
+        <AlertTitle>Diagnostics <Button variant="outlined" onClick={handleRefresh}>refresh</Button></AlertTitle>
+        <p>This diagnostics view does not register events to refresh automatically. Click the button above to refresh data.</p>
+        <Accordion expanded={expanded === 'listeners'} onChange={handleChange('listeners')}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>Event Listeners</AccordionSummary>
+            <AccordionDetails>
+                <NodeListeners />
+            </AccordionDetails>
+        </Accordion>
+        <Accordion expanded={expanded === 'calls'} onChange={handleChange('calls')}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>Event Calls</AccordionSummary>
+            <AccordionDetails>
+                <NodeCalls />
+            </AccordionDetails>
+        </Accordion>
+    </Alert>
 }
