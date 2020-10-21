@@ -53,7 +53,7 @@ export default function Flash() {
     }
     // load indexed db file once
     useEffect(() => { scan() }, [isFlashing, connectionState])
-    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()), [bus])
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };

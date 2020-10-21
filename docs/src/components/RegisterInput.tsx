@@ -22,7 +22,7 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
     // decode...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         setDecoded(register.decoded)
-    }))
+    }), [register])
 
     return <>
         {showDeviceName && <Typography component="span" key="devicenamename">

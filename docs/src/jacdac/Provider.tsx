@@ -40,7 +40,7 @@ const JACDACProvider = ({ children }) => {
             bus.connectAsync(true);
         }
         return () => { }
-    })
+    }, [])
 
     // subscribe to connection state changes
     useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)), [])

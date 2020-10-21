@@ -82,7 +82,7 @@ function MyComponent() {
     useEffect(() => node.subscribe(CHANGE, () => {
         console.log('changed!')
         ... // do something stateful
-    }))
+    }), [node])
     ...
 }
 ```
