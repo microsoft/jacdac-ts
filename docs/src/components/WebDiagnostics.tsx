@@ -13,7 +13,7 @@ function NodeCallRow(props: { node: JDNode }) {
         .sort((l, r) => -stats[l] + stats[r])
     const total = events.filter(ev => ev !== REMOVE_LISTENER && ev !== NEW_LISTENER)
         .map(ev => stats[ev])
-        .reduce((prev, curr) => prev + curr);
+        .reduce((prev, curr) => prev + curr, 0);
 
     return <>
         <TableHead>
@@ -51,7 +51,7 @@ function NodeListenerRow(props: { node: JDNode }) {
     const eventNames = node.eventNames()
         .sort((l, r) => -node.listenerCount(l) + node.listenerCount(r))
     const counts = eventNames.map(ev => node.listenerCount(ev));
-    const total = counts.reduce((p, c) => p + c);
+    const total = counts.reduce((p, c) => p + c, 0);
 
     const handleClick = (ev: string) => () => {
         const stackTraces = node.listenerStackTraces(ev)
