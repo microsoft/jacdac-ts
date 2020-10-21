@@ -1,4 +1,4 @@
-import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import React, { useContext, useState } from "react"
 import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/dom/constants";
 import { JDNode, visitNodes } from "../../../src/dom/node";
@@ -10,10 +10,14 @@ function NodeCallRow(props: { node: JDNode }) {
     const { node } = props;
     const stats = node.eventStats;
     const events = Object.keys(stats)
+        .filter(ev => stats[ev])
         .sort((l, r) => -stats[l] + stats[r])
     const total = events.filter(ev => ev !== REMOVE_LISTENER && ev !== NEW_LISTENER)
         .map(ev => stats[ev])
         .reduce((prev, curr) => prev + curr, 0);
+
+    if (total == 0)
+        return null
 
     return <>
         <TableHead>
@@ -49,6 +53,7 @@ function NodeCalls() {
 function NodeListenerRow(props: { node: JDNode }) {
     const { node } = props;
     const eventNames = node.eventNames()
+        .filter(ev => node.listenerCount(ev))
         .sort((l, r) => -node.listenerCount(l) + node.listenerCount(r))
     const counts = eventNames.map(ev => node.listenerCount(ev));
     const total = counts.reduce((p, c) => p + c, 0);
@@ -57,6 +62,9 @@ function NodeListenerRow(props: { node: JDNode }) {
         const stackTraces = node.listenerStackTraces(ev)
         stackTraces.forEach(st => console.log(st));
     }
+
+    if (total == 0)
+        return null
 
     return <>
         <TableHead>
@@ -100,9 +108,8 @@ export default function WebDiagnostics() {
         setV(v + 1);
     }
     return <PaperBox>
-        <h3>Diagnostics</h3>
+        <h3>Diagnostics <Button variant="outlined" onClick={handleRefresh}>refresh</Button></h3>
         <p>This diagnostics view does not register events to refresh automatically.
-        <Button variant="contained" onClick={handleRefresh}>refresh</Button>
         </p>
         <h4>Event Listeners</h4>
         <NodeListeners />
