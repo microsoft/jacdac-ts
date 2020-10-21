@@ -17,7 +17,7 @@ const uf2ExtTags: SMap<number> = {
     version: -0x9fc7bc,
     name: -0x650d9d,
     pageSize: 0x0be9f7,
-    deviceClass: 0xc8a729
+    firmwareIdentifier: 0xc8a729
 }
 
 export interface FirmwarePage {
@@ -27,7 +27,7 @@ export interface FirmwarePage {
 
 export interface FirmwareBlob {
     pages: FirmwarePage[];
-    deviceClass: number;
+    firmwareIdentifier: number;
     pageSize: number;
     name: string;
     version: string;
@@ -268,7 +268,7 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
             flush()
             currBlob = {
                 pages: [],
-                deviceClass: familyID,
+                firmwareIdentifier: familyID,
                 version: "",
                 pageSize: 1024,
                 name: "FW " + familyID.toString(16),
@@ -324,15 +324,15 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
 }
 
 export function generateDeviceList(uf2: Uint8Array) {
-    return parseUF2(uf2, "").map(b => `* \`\`0x${b.deviceClass.toString(16)}\`\` ${b.name}`).join("\n")
+    return parseUF2(uf2, "").map(b => `* \`\`0x${b.firmwareIdentifier.toString(16)}\`\` ${b.name}`).join("\n")
 }
 
 export interface FirmwareInfo {
     deviceId: string;
     version: string;
     name: string;
-    deviceClass: number;
-    blDeviceClass: number;
+    firmwareIdentifier: number;
+    blFirmwareIdentifier: number;
 }
 
 export async function parseFirmwareFile(blob: Blob, store?: string): Promise<FirmwareBlob[]> {
@@ -351,8 +351,8 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             // ask all CTRL services for bootloader info
             if (!makeFlashers) {
                 for (const reg of [
-                    CtrlReg.BootloaderDeviceClass,
-                    CtrlReg.DeviceClass,
+                    CtrlReg.BootloaderFirmwareIdentifier,
+                    CtrlReg.FirmwareIdentifier,
                     CtrlReg.FirmwareVersion,
                     CtrlReg.DeviceDescription,
                 ]) {
@@ -372,11 +372,11 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
         bus.off(PACKET_REPORT, handlePkt)
     }
     const devs = Object.values(devices).filter(d => {
-        if (!d.blDeviceClass)
-            d.blDeviceClass = d.deviceClass
-        if (!d.deviceClass)
-            d.deviceClass = d.blDeviceClass
-        if (!d.deviceClass)
+        if (!d.blFirmwareIdentifier)
+            d.blFirmwareIdentifier = d.firmwareIdentifier
+        if (!d.firmwareIdentifier)
+            d.firmwareIdentifier = d.blFirmwareIdentifier
+        if (!d.firmwareIdentifier)
             return false
         return true
     })
@@ -395,10 +395,10 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
         if (!dev) {
             dev = devices[p.device_identifier] = {
                 deviceId: p.device_identifier,
-                deviceClass: null,
+                firmwareIdentifier: null,
                 version: null,
                 name: null,
-                blDeviceClass: null
+                blFirmwareIdentifier: null
             }
         }
 
@@ -406,7 +406,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             p.service_command == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
-            dev.blDeviceClass = p.getNumber(NumberFormat.UInt32LE, 12)
+            dev.blFirmwareIdentifier = p.getNumber(NumberFormat.UInt32LE, 12)
             if (makeFlashers) {
                 if (!flashers.find(f => f.device.deviceId == p.device_identifier)) {
                     log(`new flasher`)
@@ -417,10 +417,10 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
 
         if (!makeFlashers && p.service_number == 0 && p.service_command & CMD_GET_REG) {
             const reg = p.service_command & CMD_REG_MASK
-            if (reg == CtrlReg.BootloaderDeviceClass)
-                dev.blDeviceClass = p.uintData
-            else if (reg == CtrlReg.DeviceClass)
-                dev.deviceClass = p.uintData
+            if (reg == CtrlReg.BootloaderFirmwareIdentifier)
+                dev.blFirmwareIdentifier = p.uintData
+            else if (reg == CtrlReg.FirmwareIdentifier)
+                dev.firmwareIdentifier = p.uintData
             else if (reg == CtrlReg.DeviceDescription)
                 dev.name = bufferToString(p.data)
             else if (reg == CtrlReg.FirmwareVersion)
@@ -436,7 +436,7 @@ export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<Firmware
 }
 
 export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
-    return dev && blob && dev.blDeviceClass == blob.deviceClass && dev.version !== blob.version
+    return dev && blob && dev.blFirmwareIdentifier == blob.firmwareIdentifier && dev.version !== blob.version
 }
 
 export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]) {
@@ -461,7 +461,7 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
         log(`resetting ${device}`)
         await device.sendCtrlCommand(CtrlCmd.Reset)
     }
-    const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.deviceClass)
+    const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.firmwareIdentifier)
     if (!flashers.length)
         throw new Error("no devices to flash")
     if (flashers.length != updateCandidates.length) {
