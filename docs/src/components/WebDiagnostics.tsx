@@ -1,5 +1,5 @@
 import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
-import React, { useContext } from "react"
+import React, { useContext, useState } from "react"
 import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/dom/constants";
 import { JDNode, visitNodes } from "../../../src/dom/node";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -95,9 +95,14 @@ function NodeListeners() {
 }
 
 export default function WebDiagnostics() {
+    const [v, setV] = useState(0)
+    const handleRefresh = () => {
+        setV(v + 1);
+    }
     return <PaperBox>
         <h3>Diagnostics</h3>
         <p>This diagnostics view does not register events to refresh automatically.
+        <Button variant="contained" onClick={handleRefresh}>refresh</Button>
         </p>
         <h4>Event Listeners</h4>
         <NodeListeners />
