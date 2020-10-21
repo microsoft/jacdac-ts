@@ -33,10 +33,10 @@ export function serviceSpecifications() {
     return _serviceSpecifications.slice(0);
 }
 
-export function deviceSpecificationFromClassIdenfitier(deviceClass: number): jdspec.DeviceSpec {
-    if (deviceClass === undefined) return undefined;
+export function deviceSpecificationFromFirmwareIdentifier(firmwareIdentifier: number): jdspec.DeviceSpec {
+    if (firmwareIdentifier === undefined) return undefined;
 
-    const spec = _deviceRegistry.find(spec => spec.firmwares.indexOf(deviceClass) > -1);
+    const spec = _deviceRegistry.find(spec => spec.firmwares.indexOf(firmwareIdentifier) > -1);
     return spec;
 }
 

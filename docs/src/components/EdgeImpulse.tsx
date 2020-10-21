@@ -226,14 +226,14 @@ class EdgeImpulseClient extends JDClient {
         const { device } = service;
 
         // fetch device spec
-        const deviceClass = await service.device.resolveDeviceClass();
-        const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass);
+        const firmwareIdentifier = await service.device.resolveFirmwareIdentifier();
+        const deviceSpec = deviceSpecificationFromClassIdenfitier(firmwareIdentifier);
 
         this._hello = {
             "version": 2,
             "apiKey": this.apiKey,
             "deviceId": device.deviceId,
-            "deviceType": deviceSpec?.name || deviceClass?.toString(16) || "JACDAC device",
+            "deviceType": deviceSpec?.name || firmwareIdentifier?.toString(16) || "JACDAC device",
             "connection": "ip", // direct connection
             "sensors": [{
                 "name": this.inputRegisters.map(reg => serviceName(reg.service.serviceClass)).join(','),

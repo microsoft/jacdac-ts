@@ -268,13 +268,13 @@ export class JDDevice extends JDNode {
     }
 
     async resolveFirmwareIdentifier(): Promise<number> {
-        const fwIdRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
         await fwIdRegister?.refresh(true);
         return fwIdRegister?.intValue;
     }
 
     get firmwareIdentifier(): number {
-        const fwIdRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
         const v = fwIdRegister?.intValue;
         if (fwIdRegister && v === undefined)
             fwIdRegister?.refresh(true);
