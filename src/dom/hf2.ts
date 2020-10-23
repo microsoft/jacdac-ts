@@ -1,3 +1,4 @@
+import { warn } from "console";
 import { USBOptions } from "./usb";
 import {
     throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16,
@@ -528,20 +529,35 @@ class HF2Proto implements Proto {
     }
 }
 
+interface SendItem {
+    buf: Uint8Array
+    cb: () => void
+}
 class CMSISProto implements Proto {
     private q = new PromiseQueue()
+    private sendQ: SendItem[] = []
+
     constructor(public io: Transport) {
     }
 
     private _onJDMsg: (buf: Uint8Array) => void
-
 
     onJDMessage(f: (buf: Uint8Array) => void): void {
         this._onJDMsg = f
     }
 
     sendJDMessageAsync(buf: Uint8Array): Promise<void> {
-        throw new Error("Method not implemented.");
+        if (buf.length & 3) {
+            const tmp = new Uint8Array((buf.length + 3) & ~3)
+            tmp.set(buf)
+            buf = tmp
+        }
+        return new Promise<void>(resolve => {
+            this.sendQ.push({
+                buf,
+                cb: resolve
+            })
+        })
     }
 
     disconnectAsync(): Promise<void> {
@@ -577,6 +593,7 @@ class CMSISProto implements Proto {
 
     talkAsync(cmds: ArrayLike<number>) {
         return this.q.enqueue("talk", async () => {
+            //console.log("TALK", cmds)
             await this.io.sendPacketAsync(new Uint8Array(cmds))
             let response = await this.recvAsync()
             if (response[0] !== cmds[0]) {
@@ -613,28 +630,68 @@ class CMSISProto implements Proto {
     }
 
     private async readSerialLoop() {
-        const readSerial = async () => {
-            for (; ;) {
-                try {
-                    const buf = await this.talkAsync([0x83])
-                    const str = this.decodeString(buf)
-                    if (str == "") {
-                        // we avoid doing browser delays,
-                        // since these get throttled when window is inactive
-                        await this.dapDelay(20000)
-                    } else {
-                        console.log("SERIAL: '" + str + "'")
-                    }
-                } catch (e) {
-                    console.log("serial error", e)
-                }
-            }
-        }
-
         const setBaud = [0x82, 0, 0, 0, 0]
         write32(setBaud, 1, 115200)
         await this.talkAsync(setBaud)
-        await readSerial();
+        for (; ;) {
+            try {
+                const buf = await this.talkAsync([0x83])
+                const str = this.decodeString(buf)
+                if (str == "") {
+                    await delay(5)
+                } else {
+                    console.log("SERIAL: '" + str + "'")
+                }
+            } catch (e) {
+                console.log("serial error", e)
+            }
+        }
+    }
+
+    private async xchgLoop() {
+        let currSend: SendItem
+        for (; ;) {
+            let numev = 0
+            let inp = await this.readBytes(this.xchgAddr + 12, 256, true)
+            if (inp[2]) {
+                await this.writeWords(this.xchgAddr + 12, new Uint32Array([0]))
+                await this.triggerIRQ()
+                inp = inp.slice(0, inp[2] + 12)
+                this._onJDMsg(inp)
+                numev++
+            }
+
+            let sendFree = false
+            if (currSend) {
+                const send = await this.readBytes(this.xchgAddr + 12 + 256, 4)
+                if (!send[2]) {
+                    currSend.cb()
+                    currSend = null
+                    sendFree = true
+                    numev++
+                }
+            }
+
+            if (!currSend && this.sendQ.length) {
+                if (!sendFree) {
+                    const send = await this.readBytes(this.xchgAddr + 12 + 256, 4)
+                    if (!send[0])
+                        sendFree = true
+                }
+                if (sendFree) {
+                    currSend = this.sendQ.shift()
+                    const bbody = currSend.buf.slice(4)
+                    await this.writeWords(this.xchgAddr + 12 + 256 + 4, new Uint32Array(bbody.buffer))
+                    const bhead = currSend.buf.slice(0, 4)
+                    await this.writeWords(this.xchgAddr + 12 + 256, new Uint32Array(bhead.buffer))
+                    await this.triggerIRQ()
+                    numev++
+                }
+            }
+
+            if (numev == 0)
+                await this.dapDelay(1000)
+        }
     }
 
     async talkStringAsync(...cmds: number[]) {
@@ -668,6 +725,8 @@ class CMSISProto implements Proto {
         const dataBytes = new Uint8Array(data.buffer)
         let lastCh = MAX
 
+        //console.log("WRITE", addr.toString(16), data)
+
         await this.q.enqueue("talk", async () => {
             while (ptr < count) {
                 const ch = Math.min(count - ptrTX, MAX)
@@ -690,7 +749,14 @@ class CMSISProto implements Proto {
         })
     }
 
-    async readWords(addr: number, count: number) {
+    async readBytes(addr: number, count: number, jdmode = false) {
+        if (addr & 3 || count & 3)
+            throw new Error("unaligned")
+        const b = await this.readWords(addr, count >> 2, jdmode)
+        return new Uint8Array(b.buffer)
+    }
+
+    async readWords(addr: number, count: number, jdmode = false) {
         await this.setupTAR(addr)
         const MAX = 0xE
         const res = new Uint32Array(count)
@@ -699,17 +765,21 @@ class CMSISProto implements Proto {
         let overhang = 1
         let ptrTX = 0
 
+        // console.log("READ", addr.toString(16), count)
+        let numPending = 0
         await this.q.enqueue("talk", async () => {
-            while (ptr < count) {
+            while (ptr < count || numPending) {
                 const ch = Math.min(count - ptrTX, MAX)
-                if (ch) {
+                if (ch > 0) {
                     req[2] = ch
+                    numPending++
                     await this.io.sendPacketAsync(req)
                     ptrTX += ch
                 }
                 if (overhang-- > 0)
                     continue
                 const buf = await this.recvAsync()
+                numPending--
                 if (buf[0] != req[0])
                     throw new Error("bad response")
                 const len = buf[1]
@@ -717,11 +787,59 @@ class CMSISProto implements Proto {
                 if (words.length != len)
                     throw new Error("bad response2")
                 res.set(words, ptr)
+                // limit transfer, according to JD frame size
+                if (jdmode && ptr == 0) {
+                    const frmsz = new Uint8Array(res.buffer)[2]
+                    const words = (frmsz + 12 + 3) >> 2
+                    if (count > words) count = words
+                }
                 ptr += words.length
             }
         })
 
         return res
+    }
+
+    async findExchange() {
+        const memStart = 0x2000_0000
+        const memStop = memStart + 128 * 1024
+        const checkSize = 1024
+
+        let p0 = 0x20006000
+        let p1 = 0x20006000 + checkSize
+
+        const check = async (addr: number) => {
+            if (addr < memStart)
+                return null
+            if (addr + checkSize > memStop)
+                return null
+            const buf = await this.readWords(addr, checkSize >> 2)
+            for (let i = 0; i < buf.length; ++i) {
+                if (buf[i] == 0x786D444A && buf[i + 1] == 0xB0A6C0E9)
+                    return addr + (i << 2)
+            }
+            return 0
+        }
+
+        while (true) {
+            const a0 = await check(p0)
+            if (a0) return a0
+            const a1 = await check(p1)
+            if (a1) return a1
+            if (a0 === null && a1 === null)
+                return null
+            p0 -= checkSize
+            p1 += checkSize
+        }
+    }
+
+    private irqn: number
+    private xchgAddr: number
+
+    async triggerIRQ() {
+        const addr = 0xE000E200 + (this.irqn >> 5) * 4
+        const data = new Uint32Array([1 << (this.irqn & 31)])
+        await this.writeWords(addr, data)
     }
 
     async postConnectAsync() {
@@ -762,23 +880,12 @@ class CMSISProto implements Proto {
             await delay(20)
         }
 
-        //const buf0 = anyRandomUint32(128)
-        const buf0 = new Uint32Array(128)
-        for (let i = 0; i < buf0.length; ++i)
-            buf0[i] = i
+        const xchg = await this.findExchange()
+        this.xchgAddr = xchg
+        const info = await this.readWords(xchg, 3)
+        this.irqn = info[2] & 0xff
+        this.io.log(`exchange address: 0x${xchg.toString(16)}; irqn=${this.irqn}`)
 
-        const addr = 0x2000_0000
-        const t0 = Date.now()
-        await this.writeWords(addr, buf0)
-        const buf = await this.readWords(addr, buf0.length)
-        console.log(Date.now() - t0)
-        for (let i = 0; i < buf0.length; ++i)
-            if (buf[i] != buf0[i]) {
-                console.log(`mismatch ${i}`)
-                break
-            }
-        console.log(buf[0], buf[100], buf[101])
-        console.log(buf0)
-        console.log(buf)
+        /* async */ this.xchgLoop()
     }
 }
