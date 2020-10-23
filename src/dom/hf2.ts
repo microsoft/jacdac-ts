@@ -1,7 +1,7 @@
 import { USBOptions } from "./usb";
 import {
     throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16,
-    encodeU32LE, read32, bufferToString, uint8ArrayToString
+    encodeU32LE, read32, bufferToString, uint8ArrayToString, fromHex, randomUInt, anyRandomUint32
 } from "./utils";
 
 const controlTransferGetReport = 0x01;
@@ -550,18 +550,23 @@ class CMSISProto implements Proto {
 
     private recvAsync() {
         return new Promise<Uint8Array>((resolve, reject) => {
+            let to: any
             this.io.recvPacketAsync()
                 .then(v => {
                     const f = resolve
                     resolve = null
-                    if (f) f(v)
+                    if (f) {
+                        clearTimeout(to)
+                        f(v)
+                    }
                 }, err => {
                     if (resolve) {
                         resolve = null
+                        clearTimeout(to)
                         reject(err)
                     }
                 })
-            setTimeout(() => {
+            to = setTimeout(() => {
                 if (resolve) {
                     resolve = null
                     reject(new Error("CMSIS recv timeout"))
@@ -587,6 +592,10 @@ class CMSISProto implements Proto {
             }
             return response
         })
+    }
+
+    talkHexAsync(str: string) {
+        return this.talkAsync(fromHex(str.replace(/ /g, "")))
     }
 
     private decodeString(buf: Uint8Array) {
@@ -633,6 +642,88 @@ class CMSISProto implements Proto {
             .then(buf => this.decodeString(buf))
     }
 
+    async readDP(reg: number) {
+        const nums = [0x05, 0, 1, 2 | reg, 0, 0, 0, 0]
+        const buf = await this.talkAsync(nums)
+        return read32(buf, 3)
+    }
+
+    async setupTAR(addr: number) {
+        const nums = [5, 0, 2, 1, 0x52, 0, 0, 0x23, 5, 0, 0, 0, 0]
+        write32(nums, 9, addr)
+        await this.talkAsync(nums)
+    }
+
+    async writeWords(addr: number, data: Uint32Array) {
+        await this.setupTAR(addr)
+
+        const MAX = 0xE
+        let ptr = 0
+        const reqHd = [6, 0, MAX, 0, 0xD]
+        for (let i = 0; i < MAX * 4; ++i) reqHd.push(0)
+        const req = new Uint8Array(reqHd)
+        let overhang = 1
+        let ptrTX = 0
+        const count = data.length
+        const dataBytes = new Uint8Array(data.buffer)
+        let lastCh = MAX
+
+        await this.q.enqueue("talk", async () => {
+            while (ptr < count) {
+                const ch = Math.min(count - ptrTX, MAX)
+                if (ch) {
+                    req[2] = ch
+                    req.set(dataBytes.slice(ptrTX * 4, (ptrTX + ch) * 4), 5)
+                    await this.io.sendPacketAsync(ch == MAX ? req : req.slice(0, 5 + 4 * ch))
+                    ptrTX += ch
+                    lastCh = ch
+                }
+                if (overhang-- > 0)
+                    continue
+                const buf = await this.recvAsync()
+                if (buf[0] != req[0])
+                    throw new Error("bad response")
+                if (buf[1] != MAX && buf[1] != lastCh)
+                    throw new Error("bad response2")
+                ptr += buf[1]
+            }
+        })
+    }
+
+    async readWords(addr: number, count: number) {
+        await this.setupTAR(addr)
+        const MAX = 0xE
+        const res = new Uint32Array(count)
+        let ptr = 0
+        const req = new Uint8Array([6, 0, MAX, 0, 0xf])
+        let overhang = 1
+        let ptrTX = 0
+
+        await this.q.enqueue("talk", async () => {
+            while (ptr < count) {
+                const ch = Math.min(count - ptrTX, MAX)
+                if (ch) {
+                    req[2] = ch
+                    await this.io.sendPacketAsync(req)
+                    ptrTX += ch
+                }
+                if (overhang-- > 0)
+                    continue
+                const buf = await this.recvAsync()
+                if (buf[0] != req[0])
+                    throw new Error("bad response")
+                const len = buf[1]
+                const words = new Uint32Array(buf.slice(4, (1 + len) * 4).buffer)
+                if (words.length != len)
+                    throw new Error("bad response2")
+                res.set(words, ptr)
+                ptr += words.length
+            }
+        })
+
+        return res
+    }
+
     async postConnectAsync() {
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid))
@@ -642,6 +733,52 @@ class CMSISProto implements Proto {
 
         this.io.log("DAPLink v" + await this.talkStringAsync(0x00, 0x04))
 
-        /* async */ this.readSerialLoop()
+        const freq = [0x11, 0, 0, 0, 0]
+        write32(freq, 1, 10_000_000)
+        await this.talkAsync(freq)
+
+        const inits = [
+            "02 00", // connect
+            "04 00 64 00 00 00", // configure delays
+            // SWD switch
+            "12 38 FF FF FF FF FF FF FF",  // ones
+            "12 10 9E E7", // SWD
+            "12 38 FF FF FF FF FF FF FF",  // ones
+            "12 08 00", // zero
+            // read DPIDR
+            "05 00 01 02 00 00 00 00",
+            // clear errors
+            "05 00 03 00 04 00 00 00 08 00 00 00 00 04 00 00 00 50",
+        ]
+
+        for (const ini of inits)
+            await this.talkHexAsync(ini)
+
+        for (let i = 0; i < 100; ++i) {
+            const st = await this.readDP(4)
+            const mask = (1 << 29) | (1 << 31)
+            if ((st & mask) == mask)
+                break
+            await delay(20)
+        }
+
+        //const buf0 = anyRandomUint32(128)
+        const buf0 = new Uint32Array(128)
+        for (let i = 0; i < buf0.length; ++i)
+            buf0[i] = i
+
+        const addr = 0x2000_0000
+        const t0 = Date.now()
+        await this.writeWords(addr, buf0)
+        const buf = await this.readWords(addr, buf0.length)
+        console.log(Date.now() - t0)
+        for (let i = 0; i < buf0.length; ++i)
+            if (buf[i] != buf0[i]) {
+                console.log(`mismatch ${i}`)
+                break
+            }
+        console.log(buf[0], buf[100], buf[101])
+        console.log(buf0)
+        console.log(buf)
     }
 }
