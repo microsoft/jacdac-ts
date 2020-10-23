@@ -257,7 +257,6 @@ export class Transport {
         const subcl = this.isMicrobit ? 0 : HF2_DEVICE_MAJOR
         for (const iface of this.dev.configuration.interfaces) {
             const alt = iface.alternates[0]
-            console.log(alt.interfaceClass, alt.interfaceSubclass, alt)
             if (alt.interfaceClass == 0xff && alt.interfaceSubclass == subcl) {
                 this.iface = iface;
                 this.altIface = alt;
@@ -675,7 +674,7 @@ class CMSISProto implements Proto {
             if (!currSend && this.sendQ.length) {
                 if (!sendFree) {
                     const send = await this.readBytes(this.xchgAddr + 12 + 256, 4)
-                    if (!send[0])
+                    if (!send[2])
                         sendFree = true
                 }
                 if (sendFree) {
