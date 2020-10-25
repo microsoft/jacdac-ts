@@ -2,21 +2,12 @@ import React, { useContext } from "react"
 import { graphql, Link, useStaticQuery } from "gatsby";
 import { parseTrace } from "../../../src/dom/logparser"
 import Trace from "../../../src/dom/trace";
-import { createStyles, List, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
-import { prettyDuration } from "../../../src/dom/pretty";
-import PacketsContext from "./PacketsContext";
-import AppContext, { DrawerType } from "./AppContext";
-
-const useStyles = makeStyles((theme: Theme) => createStyles({
-  root: {
-    textDecoration: "none"
-  },
-}))
-
+import { createStyles, Grid, List, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
+import TraceCard from "./TraceCard";
+import useGridBreakpoints from "./useGridBreakpoints"
 export default function TraceList() {
-  const { setReplayTrace, toggleTracing } = useContext(PacketsContext)
-  const { setDrawerType } = useContext(AppContext)
-  const classes = useStyles();
+
+  const gridBreakpoints = useGridBreakpoints();
   const data = useStaticQuery(graphql`
     query {
         allPlainText {
@@ -41,16 +32,9 @@ export default function TraceList() {
     })
     .filter(trace => !!trace.trace);
 
-  const handleClick = (trace: Trace) => () => {
-    setDrawerType(DrawerType.Packets)
-    setReplayTrace(trace)
-    toggleTracing();
-  }
-  return <List className={classes.root}>
-    {traces.map(({ trace, name }) => <ListItem button key={name} onClick={handleClick(trace)}>
-      <ListItemText
-        primary={name}
-        secondary={`${prettyDuration(trace.duration)}, ${trace.length} packets`} />
-    </ListItem>)}
-  </List >;
+  return <Grid container spacing={2}>
+    {traces.map(({ trace, name }) => <Grid item key={name}>
+      <TraceCard name={name} trace={trace} {...gridBreakpoints} />
+    </Grid>)}
+  </Grid >;
 }

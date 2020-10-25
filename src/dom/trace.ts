@@ -3,8 +3,9 @@ import { printPacket } from "./pretty";
 import { toHex } from "./utils";
 
 export default class Trace {
-    constructor(public packets: Packet[] = [], public description?: string) {
-
+    constructor(
+        public packets: Packet[] = [],
+        public description?: string) {
     }
 
     get length() {
