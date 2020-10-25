@@ -628,26 +628,11 @@ class CMSISProto implements Proto {
         return this.talkAsync(cmd)
     }
 
-    private async readSerialLoop() {
-        const setBaud = [0x82, 0, 0, 0, 0]
-        write32(setBaud, 1, 115200)
-        await this.talkAsync(setBaud)
-        for (; ;) {
-            try {
-                const buf = await this.talkAsync([0x83])
-                const str = this.decodeString(buf)
-                if (str == "") {
-                    await delay(5)
-                } else {
-                    console.log("SERIAL: '" + str + "'")
-                }
-            } catch (e) {
-                console.log("serial error", e)
-            }
-        }
-    }
-
     private async xchgLoop() {
+        //const setBaud = [0x82, 0, 0, 0, 0]
+        //write32(setBaud, 1, 115200)
+        //await this.talkAsync(setBaud)
+
         let currSend: SendItem
         for (; ;) {
             let numev = 0
@@ -687,6 +672,15 @@ class CMSISProto implements Proto {
                     numev++
                 }
             }
+
+            /*
+            const buf = await this.talkAsync([0x83])
+            const str = this.decodeString(buf)
+            if (str != "") {
+                console.log("SERIAL: " + str)
+                numev++
+            }
+            */
 
             if (numev == 0)
                 await this.dapDelay(1000)
