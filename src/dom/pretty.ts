@@ -37,7 +37,6 @@ export function prettyUnit(u: jdspec.Unit): string {
     switch (u) {
         case "us": return "μs"
         case "C": return "°C"
-        case "frac": return "/" // don't show fraction
         default: return u
     }
 }
@@ -270,7 +269,7 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
         fields: [
             {
                 name: "_",
-                type: "bytes",
+                type: "B",
                 unit: "",
                 storage: 0
             }

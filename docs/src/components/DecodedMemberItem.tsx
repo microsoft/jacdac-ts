@@ -58,7 +58,7 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
                 <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
-    else if (member.scaledValue !== undefined && info.unit == "frac") {
+    else if (member.scaledValue !== undefined && info.unit == "/") {
         return <Slider
             disabled={readOnly}
             value={member.scaledValue}
@@ -70,7 +70,7 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     if (member.numValue !== undefined && mod)
         return <TextField type="number" label={member.numValue + workingIndicator} onChange={handleNumChange} disabled={readOnly} />
 
-    if (info.type === "bytes")
+    if (info.type === "B")
         return <pre>{member.value}</pre>
 
     return <Typography component="div" variant="body2">{member.humanValue + workingIndicator}</Typography>

@@ -23,6 +23,6 @@
   },
   "include": [
     "src",
-    "jacdac-spec/dist/specconstants.ts"
+    "jacdac-spec/dist/specconstants.ts", "jacdac-spec/spectool/senml.ts"
   ]
 }

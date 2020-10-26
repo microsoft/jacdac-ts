@@ -38,4 +38,3 @@ export * from './tracerecorder'
 export * from './traceview'
 export * from "./traceplayer"
 export * from "./flags"
-export * from "./senml"
