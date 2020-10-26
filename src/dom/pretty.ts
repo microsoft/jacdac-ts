@@ -39,6 +39,7 @@ export function prettyUnit(u: jdspec.Unit): string {
         case "C":
         case "Cel": return "°C";
         case "K": return "°K";
+        case "/": return "";
         default: return u
     }
 }
