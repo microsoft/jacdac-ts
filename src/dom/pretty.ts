@@ -272,7 +272,7 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
         fields: [
             {
                 name: "_",
-                type: "B",
+                type: "bytes",
                 unit: "",
                 storage: 0
             }

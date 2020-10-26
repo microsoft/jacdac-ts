@@ -70,7 +70,7 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     if (member.numValue !== undefined && mod)
         return <TextField type="number" label={member.numValue + workingIndicator} onChange={handleNumChange} disabled={readOnly} />
 
-    if (info.type === "B")
+    if (info.type === "bytes")
         return <pre>{member.value}</pre>
 
     return <Typography component="div" variant="body2">{member.humanValue + workingIndicator}</Typography>
