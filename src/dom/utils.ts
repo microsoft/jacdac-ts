@@ -535,8 +535,8 @@ export function roundWithPrecision(x: number, digits: number): number {
     return r;
 }
 
-export function unique(values: string[]) {
-    return new Set(values).keys();
+export function unique(values: string[]): string[] {
+    return Array.from(new Set(values).keys());
 }
 
 export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted: (value: T) => U) {

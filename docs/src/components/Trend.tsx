@@ -33,11 +33,11 @@ function UnitTrendChart(props: {
 } & TrendProps) {
     const { dataSet, useGradient, data, unit, horizon, vpw, vph, dot, gradient } = props;
 
-    const shape = unit == "/" ? "step" : "line"
+    const shape = unit == "#" ? "step" : "line"
     const symmetric = unit == "g" ? true : false
 
     const indexes = dataSet.units
-        .map((u, index) => (u || "") === unit ? index : undefined)
+        .map((u, index) => (u || "/") === unit ? index : undefined)
         .filter(index => index !== undefined)
     const headers = indexes.map(i => dataSet.headers[i])
     const colors = indexes.map(i => dataSet.colors[i])
@@ -146,7 +146,7 @@ export default function Trend(props: {
     const { dataSet, mini } = props;
     const classes = useStyles()
 
-    const units = unique(dataSet.units.map(unit => unit || ""))
+    const units = unique(dataSet.units.map(unit => unit || "/"))
     return <div className={clsx(classes.root, mini && classes.mini)}>
         {units.map(unit => <UnitTrend key={`graph${unit}`} unit={unit} {...props} />)}
     </div>
