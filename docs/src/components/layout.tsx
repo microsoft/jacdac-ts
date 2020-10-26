@@ -314,7 +314,6 @@ function LayoutWithContext(props: {
       <SEO />
       <CssBaseline />
       <Helmet>
-        <meta name="google-site-verification" content="c8Ux9qS2VNEyQQlAfJMo6YOqcPzgHq6wDmr7FBMBdSw" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://raw.githubusercontent.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="anonymous" />
