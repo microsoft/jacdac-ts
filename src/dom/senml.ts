@@ -128,7 +128,10 @@ export const SenMLSecondaryUnitConverters: SMap<{
     "km/h": { name: "kilometer per hour", unit: "m/s", scale: 1 / 3.6, offset: 0 },
 
     // compat with previous JACDAC versions
-    "frac": { name: "ratio", unit: "/", scale: 1, offset: 0 }
+    "frac": { name: "ratio", unit: "/", scale: 1, offset: 0 },
+    "us": { name: "micro seconds", unit: "s", scale: 1e-6, offset: 0 },
+    "mWh": { name: "micro watt-hour", unit: "J", scale: 3.6e-3, offset: 0 },
+    "grav": { name: "earth gravity", unit: "m/s2", scale: 9.80665, offset: 0 }
 }
 
 export interface SenMLRecord {
