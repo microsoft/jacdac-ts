@@ -37,7 +37,11 @@ import {
     TIMEOUT,
     LATE,
     PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT, REPORT_UPDATE, REGISTER_POLL_REPORT_INTERVAL, REGISTER_POLL_REPORT_MAX_INTERVAL
+    TIMEOUT_DISCONNECT,
+    REPORT_UPDATE,
+    REGISTER_POLL_REPORT_INTERVAL,
+    REGISTER_POLL_REPORT_MAX_INTERVAL,
+    REGISTER_OPTIONAL_POLL_COUNT
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -605,6 +609,8 @@ export class JDBus extends JDNode {
                         .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
                         // ask if data is missing or non-const
                         .filter(reg => !reg.data || !isConstRegister(reg.specification))
+                        // stop asking optional registers
+                        .filter(reg => !reg.specification?.optional || reg.lastGetAttempts < REGISTER_OPTIONAL_POLL_COUNT)
                     )
             )
             )

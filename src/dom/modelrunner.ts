@@ -30,7 +30,7 @@ import { serviceSpecificationFromClassIdentifier } from "./spec"
         device_id: u64
         service_class: u32
         service_num: u8
-        sample_size: u8 bytes
+        sample_size: u8 B
         sample_type: SampleType
         sample_shift: i8
     }
