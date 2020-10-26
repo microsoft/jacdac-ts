@@ -89,7 +89,7 @@ export type SenMLSecondaryUnit = "ms" | "min" | "h" | "MHz" | "kW" | "kVA" | "kv
 
 export const SenMLSecondaryUnitConverters: SMap<{
     name: string;
-    unit: SenMLUnit;
+    unit: SenMLUnit | "";
     scale: number;
     offset: number;
 }> = {
@@ -128,6 +128,7 @@ export const SenMLSecondaryUnitConverters: SMap<{
     "km/h": { name: "kilometer per hour", unit: "m/s", scale: 1 / 3.6, offset: 0 },
 
     // compat with previous JACDAC versions
+    "": { name: "count", unit: "", scale: 1, offset: 0 },
     "frac": { name: "ratio", unit: "/", scale: 1, offset: 0 },
     "us": { name: "micro seconds", unit: "s", scale: 1e-6, offset: 0 },
     "mWh": { name: "micro watt-hour", unit: "J", scale: 3.6e-3, offset: 0 },
@@ -181,8 +182,13 @@ export function normalizeUnit(value: number, unit: string) {
     if (su)
         return {
             value: (value * su.scale) + su.offset,
-            unit: su.unit
-        };
+            name: su.name,
+            unit: su.unit,
+        }
+
+    // primary?
+    const name = unit && SenMLUnitDescription[unit];
+
     // no scaling
-    return { value, unit };
+    return { value, unit, name };
 }
