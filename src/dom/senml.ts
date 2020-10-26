@@ -169,7 +169,7 @@ export interface SenMLRecord {
     ut?: number;
 }
 
-export type SenMLRecords = SenMLRecord[];
+export type SenMLPack = SenMLRecord[];
 
 /**
  * Rescales seconary unit to primary unit
