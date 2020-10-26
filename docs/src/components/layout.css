@@ -638,6 +638,7 @@ footer {
 .prism-code {
   padding-bottom: 0.5rem !important;
   margin-bottom: 0 !important;
+  white-space: pre-wrap;
 }
 
 @media print {
