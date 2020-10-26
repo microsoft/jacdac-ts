@@ -37,7 +37,7 @@ export function prettyUnit(u: jdspec.Unit): string {
     switch (u) {
         case "us": return "μs"
         case "C": return "°C"
-        case "frac": return "" // don't show fraction
+        case "frac": return "/" // don't show fraction
         default: return u
     }
 }
