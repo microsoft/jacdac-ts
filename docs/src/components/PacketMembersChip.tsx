@@ -13,7 +13,7 @@ export default function PacketMembersChip(props: { members: jdspec.PacketMember[
         return null
 
     const label = members.map(member => `${member.type} ${prettyUnit(member.unit)}`).join(', ');
-    const title = members.map(member => `${resolveUnit(member.unit)?.name || "???"}`).join(',\n');
+    const title = members.map(member => `${resolveUnit(member.unit)?.name || ""}`).join(',\n');
     return <Tooltip title={title}>
         <span>
             <Chip className={className} size="small" icon={<CategoryIcon />} label={label} />
