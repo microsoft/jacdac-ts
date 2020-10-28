@@ -14,12 +14,11 @@ changed who can write code for them. It is now possible for novices to program m
 web browser, a process that was previously the domain of skilled embedded firmware engineers. 
 However, despite a marked improvement in software tooling, it’s still challenging to build devices 
 that bring together new combinations of hardware, as traditional protocols (such as I2C and SPI) 
-for connecting microcontrollers to each other and to peripherals (such as sensors and actuators) 
-are low-level and inflexible. 
+for connecting microcontrollers to each other and to peripherals are low-level and inflexible. 
 
 JACDAC is a new hardware/software stack for low-cost microcontrollers that makes connecting microcontrollers and peripherals 
 as simple as plugging a USB device into your personal computer. JACDAC’s reversible physical connector, a flexible bus-based topology, 
-standardized signalling and service specifications, hardware and software reference designs, and modern web-based tooling bring interactive 
+standardized signalling and service specifications, hardware and software reference designs, and web-based tooling bring interactive 
 device prototyping into the 21st century. 
 
 The careful design of JACDAC means that it’s inexpensive and low power; it can be supported by 
@@ -29,16 +28,15 @@ reducing the gap between the Web and the microcontroller.
 
 ## Specification
 
-At a high level, JACDAC is a bus of *devices*, where each device can advertise the set of services it provides. 
-A *service* is specified by a strongly-typed interface and abstracts the process of communicating with a JACDAC device via packets.
-A *packet* encapsulates the JACDAC information, which includes XYZ. Finally, at the lowest-level of the JACDAC stack, 
-a *serial wire protocol* is used to transmit JACDAC packets between physical devices on the same JACDAC bus. 
-JACDAC packets may also be sent over WebUSB, providing connectivity to virtual JACDAC devices and services running in the web browser. 
+At a high level, JACDAC is a bus of devices, where each device can advertise the set of services it provides. A service is specified by a strongly-typed interface and abstracts the process of communicating with a JACDAC device via packets. A packet encapsulates the JACDAC information, which includes a 64-bit device identifier and data payload. Finally, at the lowest-level of the JACDAC stack, a serial wire protocol is used to transmit JACDAC packets between physical devices on the same JACDAC bus. JACDAC packets may also be sent over WebUSB, providing connectivity to virtual JACDAC devices and services running in the web browser. 
 
-To learn more:
+### For JACDAC Users
 
 * [Device Catalog Specification](./specification/device-catalog)
 * [Service Specification Language](./specification/service-spec-language)
+
+### For JACDAC Implementors
+
 * [JACDAC Protocol Specification](./specification/jacdac-protocol)
 * [Glossary](./specification/glossary)
 
