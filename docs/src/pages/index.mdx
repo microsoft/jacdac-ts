@@ -29,11 +29,17 @@ reducing the gap between the Web and the microcontroller.
 
 ## Specification
 
-JACDAC is a hardware/software stack that is best understood from the top-down:
+At a high level, JACDAC is a bus of *devices*, where each device can advertise the set of services it provides. 
+A *service* is specified by a strongly-typed interface and abstracts the process of communicating with a JACDAC device via packets.
+A *packet* encapsulates the JACDAC information, which includes XYZ. Finally, at the lowest-level of the JACDAC stack, 
+a *serial wire protocol* is used to transmit JACDAC packets between physical devices on the same JACDAC bus. 
+JACDAC packets may also be sent over WebUSB, providing connectivity to virtual JACDAC devices and services running in the web browser. 
+
+To learn more:
 
 * [Device Catalog Specification](./specification/device-catalog)
 * [Service Specification Language](./specification/service-spec-language)
-* [Serial Wire Specification](./specification/serial-wire-spec)
+* [JACDAC Protocol Specification](./specification/jacdac-protocol)
 * [Glossary](./specification/glossary)
 
 ## Services
