@@ -27,15 +27,12 @@ reducing the gap between the Web and the microcontroller.
 
 ## Specification
 
-JACDAC operates in a bus topology and requires devices have a microcontroller with UART, Timer, and GPIO interrupt capabilities.
+JACDAC is a hardware/software stack that is best understood from the top-down:
 
-A JACDAC [bus](/clients/web/dom/bus) has a set of connected devices.
-A [device](/clients/web/dom/device) may host services.
-A [service](/clients/web/dom/service) has registers, accepts commands, and may return acks. 
-A [register](/clients/web/dom/register) is an addressed data location, organized in [fields](/clients/web/dom/field), 
-that may be get, set or streamed.
-
-[Read the full JACDAC specification.](/specification)
+* [Device Catalog Specification](./specification/device-catalog)
+* [Service Specification Language](./specification/service-spec-language)
+* [Serial Wire Specification](./specification/serial-wire)
+* [Glossary](./specification/glossary)
 
 ## Services
 
