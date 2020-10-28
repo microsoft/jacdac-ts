@@ -3,35 +3,37 @@ title: JACDAC
 path: /
 ---
 
-**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a single wire broadcast protocol 
-for the plug and play of microcontrollers (MCUs) within the contexts of rapid prototyping, 
-making, and physical computing.
-
-A JACDAC [bus](/clients/web/dom/bus) is made of connected devices.
-A [device](/clients/web/dom/device) may host services.
-A [service](/clients/web/dom/service) has registers, accept commands
-and may return acks. A [register](/clients/web/dom/register) is an addressed data location, organized in [fields](/clients/web/dom/field), 
-that may be get, set or streamed.
+**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a
+a plug-and-play protocol for connecting microcontrollers and their peripherals (sensors/actuators)
+within the contexts of rapid prototyping, making, and physical computing.
 
 ## Motivation
 
-Widely used and highly efficient, I2C and SPI are the wired protocols of choice when connecting onboard sensors to microcontrollers. 
-Since these protocols are supported as standard by many microcontrollers, they are also the defacto way of connecting external peripheral 
-boards to microcontrollers. Wiring peripheral boards correctly is difficult for novice users and once wired, 
-the configuration of the system is static and does not support plug and play.
+The advent of simpler programming environments for microcontrollers over the past decade has greatly 
+changed who can write code for them. It is now possible for novices to program microcontrollers using only a 
+web browser, a process that was previously the domain of skilled embedded firmware engineers. 
+However, despite a marked improvement in software tooling, it’s still challenging to build devices 
+that bring together new combinations of hardware, as traditional protocols (such as I2C and SPI) 
+for connecting microcontrollers to each other and to peripherals (such as sensors and actuators) 
+are low-level and inflexible. 
 
-With the wide-adoption of web technologies and the huge growth in the Internet of Things (IoT), 
-the worlds of the feature rich and highly capable modern microcontroller and the Web should be closer together, yet they are not.
-
-JACDAC is a dynamic plug and play serial protocol allowing the configuration of systems at runtime. 
-It runs over a single wire allowing a variety of connectors to be used, 
-simplifying connections between devices. Finally, WebUSB and TypeScript extends the JACDAC bus to the web browser (and the Internet), 
-enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
+JACDAC is a new protocol for low-cost microcontrollers that makes connecting microcontrollers and peripherals 
+as simple as plugging a USB device into your personal computer. JACDAC’s reversible physical connector, a flexible bus-based topology, 
+standardized signalling and service specifications, hardware and software reference designs, and modern web-based tooling bring interactive 
+device prototyping into the 21st century. The careful design of JACDAC means that it’s inexpensive and low power; it can be supported by 
+microcontrollers that cost as little as two and a half US cents.  Support for WebUSB and TypeScript extends the JACDAC bus to the web 
+browser (and the Internet), enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
 reducing the gap between the Web and the microcontroller.
 
 ## Specification
 
 JACDAC operates in a bus topology and requires devices have a microcontroller with UART, Timer, and GPIO interrupt capabilities.
+
+A JACDAC [bus](/clients/web/dom/bus) has a set of connected devices.
+A [device](/clients/web/dom/device) may host services.
+A [service](/clients/web/dom/service) has registers, accepts commands, and may return acks. 
+A [register](/clients/web/dom/register) is an addressed data location, organized in [fields](/clients/web/dom/field), 
+that may be get, set or streamed.
 
 [Read the full protocol specification.](/specification)
 
