@@ -18,6 +18,7 @@ import { DeviceLostAlert } from './DeviceLostAlert';
 import CommandInput from './CommandInput';
 import { DecodedPacket } from '../../../src/dom/pretty';
 import DecodedPacketItem from './DecodedPacketItem';
+import ServiceSpecificationStatusAlert from './ServiceSpecificationStatusAlert'
 
 const useStyles = makeStyles({
     root: {
@@ -74,6 +75,7 @@ export default function ServiceCard(props: {
                         {reports?.map((report, ri) => <ListItem key={`report${ri}`} ><DecodedPacketItem pkt={report} /></ListItem>)}
                     </List>}
                 </Typography>
+                <ServiceSpecificationStatusAlert specification={specification} />
                 <DeviceLostAlert device={service?.device} />
             </CardContent>
             <CardActions>
