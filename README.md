@@ -60,6 +60,12 @@ npm run installdocs
 npm run docs
 ```
 
+* browse to the local server
+
+```
+http://localhost:8000?dbg=1
+```
+
 ### JACDAC+MakeCode
 
 Open the multi editor to test MakeCode devices with the JACDAC view. You can select to run JACDAC and/or MakeCode on localhost/web from the drop downs.

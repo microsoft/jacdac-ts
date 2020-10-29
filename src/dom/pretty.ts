@@ -35,9 +35,11 @@ export interface DecodedPacket {
 
 export function prettyUnit(u: jdspec.Unit): string {
     switch (u) {
-        case "us": return "μs"
-        case "C": return "°C"
-        case "frac": return "" // don't show fraction
+        case "us": return "μs";
+        case "C":
+        case "Cel": return "°C";
+        case "K": return "°K";
+        case "/": return "";
         default: return u
     }
 }

@@ -6,7 +6,7 @@ export default function useEventCount(event: JDEvent) {
     const [count, setCount] = useState(event.count)
     useEffect(() => event.subscribe(CHANGE, () => {
         setCount(event.count)
-    }))
+    }), [event])
 
     return count;
 }

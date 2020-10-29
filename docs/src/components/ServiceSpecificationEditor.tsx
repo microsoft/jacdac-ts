@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid } from '@material-ui/core';
-import { parseSpecificationMarkdownToJSON, converters } from '../../../jacdac-spec/spectool/jdspec'
+import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
 // tslint:disable-next-line: match-default-export-name
 import AceEditor from "react-ace";
 
@@ -20,8 +20,8 @@ import { clearCustomServiceSpecifications, addCustomServiceSpecification, servic
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
-import useDbValue from './useDbValue';
 import DarkModeContext from './DarkModeContext';
+import useLocalStorage from './useLocalStorage';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -47,7 +47,7 @@ export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const { darkMode } = useContext(DarkModeContext)
     const { drawerType } = useContext(AppContext)
-    const { value: source, setValue: setSource } = useDbValue('servicespecificationeditor',
+    const { value: source, setValue: setSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
         `# My Service
 
 TODO: describe your service
@@ -61,6 +61,7 @@ TODO: describe your service
 TODO describe this register
 `
     )
+
     const includes = serviceMap()
     const json = parseSpecificationMarkdownToJSON(source, includes)
     useEffect(() => {
@@ -80,33 +81,34 @@ TODO describe this register
     }
     return (
         <Grid spacing={2} className={classes.root} container>
-            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 5}>
+            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
                 <Paper square className={classes.segment}>
-                    <AceEditor
-                        className={classes.editor}
-                        mode="markdown"
-                        width="100%"
-                        height="42rem"
-                        value={source}
-                        onChange={handleSourceChange}
-                        name="servicespecificationeditor"
-                        wrapEnabled={true}
-                        debounceChangePeriod={500}
-                        editorProps={{ $blockScrolling: true }}
-                        annotations={annotations}
-                        minLines={48}
-                        theme={darkMode === 'light' ? 'github' : 'dracula'}
-                        setOptions={{
-                            enableBasicAutocompletion: true,
-                            enableLiveAutocompletion: true,
-                        }}
-                    />
+                    {source !== undefined &&
+                        <AceEditor
+                            className={classes.editor}
+                            mode="markdown"
+                            width="100%"
+                            height="42rem"
+                            onChange={handleSourceChange}
+                            name="servicespecificationeditor"
+                            wrapEnabled={true}
+                            defaultValue={source}
+                            debounceChangePeriod={500}
+                            editorProps={{ $blockScrolling: true }}
+                            annotations={annotations}
+                            minLines={48}
+                            theme={darkMode === 'light' ? 'github' : 'dracula'}
+                            setOptions={{
+                                enableBasicAutocompletion: false,
+                                enableLiveAutocompletion: false,
+                            }}
+                        />}
                 </Paper>
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
                 </Paper>
             </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 7}>
+            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 <ServiceSpecificationSource
                     serviceSpecification={json}
                     showMarkdown={false}

@@ -4,10 +4,10 @@ import Packet from "./packet"
 import { JDDevice } from "./device"
 import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE } from "./constants"
 
-const REG_CTRL_DEVICE_CLASS = 0x181
+const REG_CTRL_FIRMWARE_IDENTIFIER = 0x181
 
 export async function packetSpeedTest(dev: JDDevice) {
-    const pingCmd = CMD_GET_REG | REG_CTRL_DEVICE_CLASS
+    const pingCmd = CMD_GET_REG | REG_CTRL_FIRMWARE_IDENTIFIER
 
     dev.on(PACKET_REPORT, onPacket)
     const t0 = Date.now()

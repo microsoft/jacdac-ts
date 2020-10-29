@@ -58,7 +58,7 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
                 <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
-    else if (member.scaledValue !== undefined && info.unit == "frac") {
+    else if (member.scaledValue !== undefined && info.unit == "/") {
         return <Slider
             disabled={readOnly}
             value={member.scaledValue}

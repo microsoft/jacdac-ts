@@ -262,7 +262,7 @@ export interface MutableArrayLike<T> {
     [n: number]: T;
 }
 
-export function hexNum(n: number) {
+export function hexNum(n: number): string {
     if (n < 0)
         return "-" + hexNum(-n)
     return "0x" + n.toString(16)
@@ -467,7 +467,7 @@ export interface DebouncedPoll {
  */
 export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: number = 500, debouncedDelay: number = 100): () => void {
     const debounced = debounceAsync(handler, debouncedDelay);
-    let interval
+    let interval: any;
 
     const poll = () => {
         if (!interval) {
@@ -535,15 +535,12 @@ export function roundWithPrecision(x: number, digits: number): number {
     return r;
 }
 
-export function unique(values: string[]) {
-    const r = {}
-    for (let i = 0; i < values.length; ++i)
-        r[values[i]] = ""
-    return Object.keys(r)
+export function unique(values: string[]): string[] {
+    return Array.from(new Set(values).keys());
 }
 
 export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted: (value: T) => U) {
-    const r = {}
+    const r: SMap<T> = {}
     for (let i = 0; i < values.length; ++i) {
         const value = values[i]
         const idv = id(value)

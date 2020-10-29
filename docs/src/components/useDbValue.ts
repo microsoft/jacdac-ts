@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react"
 import useChange from "../jacdac/useChange"
-import DbContext, { DbStore, DB_VALUE_CHANGE } from "./DbContext"
+import DbContext, { DB_VALUE_CHANGE } from "./DbContext"
 import useEffectAsync from "./useEffectAsync"
 
 export default function useDbValue(id: string, initialValue: string) {

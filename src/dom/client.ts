@@ -6,7 +6,7 @@ export class JDClient extends JDEventSource {
         super()
     }
 
-    protected mount(unsubscribe: () => void): () => void {
+    mount(unsubscribe: () => void): () => void {
         if (unsubscribe && this.unsubscribers.indexOf(unsubscribe) < 0)
             this.unsubscribers.push(unsubscribe)
         return unsubscribe;

@@ -2,39 +2,43 @@
 title: JACDAC
 path: /
 ---
-import DeviceList from "../components/DeviceList";
 
-**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a single wire broadcast protocol 
-for the plug and play of microcontrollers (MCUs) within the contexts of rapid prototyping, 
-making, and physical computing.
-
-A JACDAC [bus](/clients/web/dom/bus) is made of connected devices.
-A [device](/clients/web/dom/device) may host services.
-A [service](/clients/web/dom/service) has registers, accept commands
-and may return acks. A [register](/clients/web/dom/register) is an addressed data location, organized in [fields](/clients/web/dom/field), 
-that may be get, set or streamed.
+**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a
+a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals 
+(sensors/actuators) within the contexts of rapid prototyping, making, and physical computing.
 
 ## Motivation
 
-Widely used and highly efficient, I2C and SPI are the wired protocols of choice when connecting onboard sensors to microcontrollers. 
-Since these protocols are supported as standard by many microcontrollers, they are also the defacto way of connecting external peripheral 
-boards to microcontrollers. Wiring peripheral boards correctly is difficult for novice users and once wired, 
-the configuration of the system is static and does not support plug and play.
+The advent of simpler programming environments for microcontrollers over the past decade has greatly 
+changed who can write code for them. It is now possible for novices to program microcontrollers using only a 
+web browser, a process that was previously the domain of skilled embedded firmware engineers. 
+However, despite a marked improvement in software tooling, it’s still challenging to build devices 
+that bring together new combinations of hardware, as traditional protocols (such as I2C and SPI) 
+for connecting microcontrollers to each other and to peripherals are low-level and inflexible. 
 
-With the wide-adoption of web technologies and the huge growth in the Internet of Things (IoT), 
-the worlds of the feature rich and highly capable modern microcontroller and the Web should be closer together, yet they are not.
+JACDAC is a new hardware/software stack for low-cost microcontrollers that makes connecting microcontrollers and peripherals 
+as simple as plugging a USB device into your personal computer. JACDAC’s reversible physical connector, a flexible bus-based topology, 
+standardized signalling and service specifications, hardware and software reference designs, and web-based tooling bring interactive 
+device prototyping into the 21st century. 
 
-JACDAC is a dynamic plug and play serial protocol allowing the configuration of systems at runtime. 
-It runs over a single wire allowing a variety of connectors to be used, 
-simplifying connections between devices. Finally, WebUSB and TypeScript extends the JACDAC bus to the web browser (and the Internet), 
-enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
+The careful design of JACDAC means that it’s inexpensive and low power; it can be supported by 
+microcontrollers that cost as little as two and a half US cents.  Support for WebUSB and TypeScript extends the JACDAC bus to the web 
+browser (and the Internet), enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
 reducing the gap between the Web and the microcontroller.
 
 ## Specification
 
-JACDAC operates in a bus topology and requires devices have a microcontroller with UART, Timer, and GPIO interrupt capabilities.
+At a high level, JACDAC is a bus of devices, where each device can advertise the set of services it provides. A service is specified by a strongly-typed interface and abstracts the process of communicating with a JACDAC device via packets. A packet encapsulates the JACDAC information, which includes a 64-bit device identifier and data payload. Finally, at the lowest-level of the JACDAC stack, a serial wire protocol is used to transmit JACDAC packets between physical devices on the same JACDAC bus. JACDAC packets may also be sent over WebUSB, providing connectivity to virtual JACDAC devices and services running in the web browser. 
 
-[Read the full protocol specification.](/specification)
+### For JACDAC Users
+
+* [Device Catalog Specification](./specification/device-catalog)
+* [Service Specification Language](./specification/service-spec-language)
+
+### For JACDAC Implementors
+
+* [JACDAC Protocol Specification](./specification/jacdac-protocol)
+* [Glossary](./specification/glossary)
 
 ## Services
 

@@ -85,8 +85,8 @@ export default function FirmwareCard(props: { slug: string }) {
             {version && <Typography variant="body2">version <code>{version}</code></Typography>}
             {updateAvailable && isGithubRepo && <Alert severity="info">Update available.</Alert>}
             {!!firmwareBlobs?.length && <List dense>
-                {firmwareBlobs.map(blob => <ListItem key={blob.deviceClass}>
-                    <ListItemText primary={blob.name} secondary={`0x${blob.deviceClass.toString(16)}`} />
+                {firmwareBlobs.map(blob => <ListItem key={blob.firmwareIdentifier}>
+                    <ListItemText primary={blob.name} secondary={`0x${blob.firmwareIdentifier.toString(16)}`} />
                 </ListItem>)}
             </List>}
         </CardContent>

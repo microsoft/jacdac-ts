@@ -72,7 +72,7 @@ export default function RoleManagerService(props: {
     }, [service])
 
     if (!client)
-        return <></> // wait till loaded
+        return null // wait till loaded
 
     const handleClearRoles = async () => await client?.clearRoles()
     return <Card>

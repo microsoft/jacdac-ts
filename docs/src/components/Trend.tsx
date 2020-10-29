@@ -33,20 +33,20 @@ function UnitTrendChart(props: {
 } & TrendProps) {
     const { dataSet, useGradient, data, unit, horizon, vpw, vph, dot, gradient } = props;
 
-    const shape = unit == "frac" ? "step" : "line"
+    const shape = unit == "#" ? "step" : "line"
     const symmetric = unit == "g" ? true : false
 
     const indexes = dataSet.units
-        .map((u, index) => (u || "frac") === unit ? index : undefined)
+        .map((u, index) => (u || "/") === unit ? index : undefined)
         .filter(index => index !== undefined)
     const headers = indexes.map(i => dataSet.headers[i])
     const colors = indexes.map(i => dataSet.colors[i])
     const times = data.map(ex => ex.timestamp)
     const maxt = Math.max.apply(null, times);
     const mint = Math.min.apply(null, times);
-    let minv = unit == "frac" ? 0 : Math.min.apply(null, indexes.map(i => dataSet.mins[i]));
-    let maxv = unit == "frac" ? 1 : Math.max.apply(null, indexes.map(i => dataSet.maxs[i]));
-    let opposite = unit != "frac" && Math.sign(minv) != Math.sign(maxv)
+    let minv = unit == "/" ? 0 : Math.min.apply(null, indexes.map(i => dataSet.mins[i]));
+    let maxv = unit == "/" ? 1 : Math.max.apply(null, indexes.map(i => dataSet.maxs[i]));
+    let opposite = unit != "/" && Math.sign(minv) != Math.sign(maxv)
     if (isNaN(minv) && isNaN(maxv)) {
         minv = 0
         maxv = 1
@@ -146,7 +146,7 @@ export default function Trend(props: {
     const { dataSet, mini } = props;
     const classes = useStyles()
 
-    const units = unique(dataSet.units.map(unit => unit || "frac"))
+    const units = unique(dataSet.units.map(unit => unit || "/"))
     return <div className={clsx(classes.root, mini && classes.mini)}>
         {units.map(unit => <UnitTrend key={`graph${unit}`} unit={unit} {...props} />)}
     </div>

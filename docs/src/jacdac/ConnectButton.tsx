@@ -5,7 +5,6 @@ import { BusState } from "../../../src/dom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
 import { useMediaQuery, useTheme } from "@material-ui/core";
-import { DEVICE_CHANGE } from "../../../src/dom/constants";
 import KindIcon from "../components/KindIcon";
 import IconButtonWithProgress from "../components/IconButtonWithProgress"
 
@@ -13,8 +12,6 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const { full, className, transparent } = props
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const theme = useTheme()
-    const [count, setCount] = useState(bus.devices().length)
-    useEffect(() => bus.subscribe(DEVICE_CHANGE, () => setCount(bus.devices().length)))
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
     const small = !full || useMediaQuery(theme.breakpoints.down("md"))
@@ -30,9 +27,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
             className={className}
             disabled={disabled}
             indeterminate={inProgress}
-            onClick={onClick}
-            badgeCount={count}
-        >
+            onClick={onClick}>
             {icon}
         </IconButtonWithProgress></span>
     else
@@ -46,6 +41,5 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
             disabled={disabled}
             onClick={onClick}>
             {title}
-            {count > 0 && ` (${count})`}
         </Button>
 }

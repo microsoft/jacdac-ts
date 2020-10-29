@@ -1,10 +1,9 @@
 import { JDBus } from "./bus";
+import { JDClient } from "./client";
 import { CHANGE, PROGRESS } from "./constants";
-import { JDEventSource } from "./eventsource";
-import Packet from "./packet";
 import Trace from "./trace";
 
-export default class TracePlayer extends JDEventSource {
+export default class TracePlayer extends JDClient {
     private _trace: Trace;
     private _busStartTimestamp: number = 0;
     private _index: number = 0;
@@ -17,6 +16,9 @@ export default class TracePlayer extends JDEventSource {
     ) {
         super();
         this.tick = this.tick.bind(this);
+
+        // always stop when unmounting
+        this.mount(() => this.stop());
     }
 
     get running() {
@@ -99,7 +101,7 @@ export default class TracePlayer extends JDEventSource {
             nframes++;
         }
 
-        console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)
+        //console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)
         this.emitProgress();
         if (this._index >= packets.length)
             this.stop();

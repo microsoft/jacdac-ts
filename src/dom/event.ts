@@ -32,6 +32,10 @@ export class JDEvent extends JDServiceMemberNode {
         return this._lastReportPkt?.timestamp
     }
 
+    get children(): JDNode[] {
+        return [];
+    }
+
     get intValue(): number {
         const d = this.data;
         return d && intOfBuffer(d);

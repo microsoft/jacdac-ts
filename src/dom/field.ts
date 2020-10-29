@@ -20,6 +20,10 @@ export class JDField extends JDNode {
         return this.specification.name === "_" ? this.register.specification.name : this.specification.name
     }
 
+    get children(): JDNode[] {
+        return [];
+    }
+
     get qualifiedName(): string {
         return `${this.register.qualifiedName}.${this.name}`
     }

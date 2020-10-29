@@ -78,6 +78,10 @@ export class JDService extends JDNode {
         return this._registers.slice(0);
     }
 
+    get children(): JDNode[] {
+        return [...this.registers(), ... this.events];
+    }
+
     register(address: number | { address: number }): JDRegister {
         let a = (typeof address == "number" ? address : address?.address);
         if (a === undefined)

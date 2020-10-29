@@ -54,6 +54,8 @@ import { SnackbarProvider } from 'notistack';
 import PacketInspector from "./PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import WebDiagnostics from "./WebDiagnostics";
+import Flags from "../../../src/dom/flags"
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -337,6 +339,7 @@ function LayoutWithContext(props: {
             <div className={classes.drawerHeader} />
             <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
             <WebUSBAlert />
+            {Flags.diagnostics && <WebDiagnostics />}
             {selectedPacket &&
               <Paper square>
                 <Box p={theme.spacing(0.25)} mb={theme.spacing(0.5)}>

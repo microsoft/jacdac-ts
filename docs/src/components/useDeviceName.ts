@@ -6,9 +6,8 @@ export default function useDeviceName(device: JDDevice, includeShortId?: boolean
     const [name, setName] = useState(device.friendlyName)
 
     useEffect(() => device.subscribe(NAME_CHANGE, () => {
-        console.log(`device ${device.deviceId} -> ${device.friendlyName}`)
         setName(device.friendlyName);
-    }))
+    }), [device])
 
     let r = name;
     if (includeShortId && name && name !== device.shortId)

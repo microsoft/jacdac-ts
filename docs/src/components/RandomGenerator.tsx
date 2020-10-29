@@ -1,7 +1,7 @@
 
 import React, { useState } from "react"
 import { cryptoRandomUint32 } from "../../../src/dom/utils";
-import { deviceSpecificationFromClassIdenfitier, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { deviceSpecificationFromFirmwareIdentifier, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typography, createStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';
@@ -49,7 +49,7 @@ function uniqueDeviceId() {
 
 function uniqueFirmwareId() {
     let id = cryptoRandomUint32(1)
-    while (id !== undefined && (!looksRandom(id) || deviceSpecificationFromClassIdenfitier(id))) {
+    while (id !== undefined && (!looksRandom(id) || deviceSpecificationFromFirmwareIdentifier(id))) {
         id = cryptoRandomUint32(1)
     }
     return id !== undefined && toFullHex([id])

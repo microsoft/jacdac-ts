@@ -53,7 +53,7 @@ export default function Flash() {
     }
     // load indexed db file once
     useEffect(() => { scan() }, [isFlashing, connectionState])
-    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()), [bus])
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
@@ -61,7 +61,7 @@ export default function Flash() {
         return {
             firmware: device.firmwareInfo,
             device,
-            blob: device.firmwareInfo && blobs?.find(b => device.firmwareInfo.deviceClass == b.deviceClass),
+            blob: device.firmwareInfo && blobs?.find(b => device.firmwareInfo.firmwareIdentifier == b.firmwareIdentifier),
             flashing: isDeviceFlashing(device),
             setFlashing: (b: boolean) => setFlashing(device, b)
         }

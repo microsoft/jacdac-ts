@@ -5,6 +5,7 @@ import { createUSBBus } from "../../../src/dom/usb";
 import { CONNECTION_STATE } from "../../../src/dom/constants";
 import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
 import { inIFrame } from "../../../src/dom/iframeclient";
+import Flags from "../../../src/dom/flags"
 
 function sniffQueryArguments() {
     if (typeof window === "undefined" || typeof URLSearchParams === "undefined")
@@ -25,6 +26,8 @@ bus.setBackgroundFirmwareScans(true);
 if (inIFrame()) {
     new IFrameBridgeClient(bus); // start bridge
 }
+Flags.diagnostics = typeof window !== "undefined" && /dbg=1/.test(window.location.href);
+
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
@@ -37,7 +40,7 @@ const JACDACProvider = ({ children }) => {
             bus.connectAsync(true);
         }
         return () => { }
-    })
+    }, [])
 
     // subscribe to connection state changes
     useEffect(() => bus.subscribe<BusState>(CONNECTION_STATE, connectionState => setConnectionState(connectionState)), [])

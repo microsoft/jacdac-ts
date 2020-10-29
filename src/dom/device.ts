@@ -210,6 +210,10 @@ export class JDDevice extends JDNode {
         return r;
     }
 
+    get children(): JDNode[] {
+        return this.services();
+    }
+
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.service_number = JD_SERVICE_NUMBER_CTRL
@@ -268,13 +272,13 @@ export class JDDevice extends JDNode {
     }
 
     async resolveFirmwareIdentifier(): Promise<number> {
-        const fwIdRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
         await fwIdRegister?.refresh(true);
         return fwIdRegister?.intValue;
     }
 
     get firmwareIdentifier(): number {
-        const fwIdRegister = this.service(0)?.register(CtrlReg.DeviceClass);
+        const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
         const v = fwIdRegister?.intValue;
         if (fwIdRegister && v === undefined)
             fwIdRegister?.refresh(true);

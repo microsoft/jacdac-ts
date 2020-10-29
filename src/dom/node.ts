@@ -42,6 +42,11 @@ export abstract class JDNode extends JDEventSource {
     abstract get parent(): JDNode;
 
     /**
+     * Gets the children of the current node
+     */
+    abstract get children(): JDNode[];
+
+    /**
      * Gets the logger function
      */
     protected get logger(): Log {
@@ -56,5 +61,15 @@ export abstract class JDNode extends JDEventSource {
 
     toString() {
         return this.friendlyName;
+    }
+}
+
+
+export function visitNodes(node: JDNode, vis: (node: JDNode) => void) {
+    let todo = [node];
+    while (todo.length) {
+        const node = todo.pop();
+        vis(node)
+        node.children.forEach(child => todo.push(child))
     }
 }

@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { deviceSpecificationFromClassIdenfitier } from "../../../src/dom/spec";
+import { deviceSpecificationFromFirmwareIdentifier } from "../../../src/dom/spec";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useEffectAsync from "./useEffectAsync";
 import { unique } from "../../../src/dom/utils";
@@ -12,14 +12,14 @@ export default function useFirmwareRepos() {
     const [repos, setRepos] = useState<string[]>([])
 
     const devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices().filter(dev => dev.announced))
-    const registers = devices.map(device => device?.service(0)?.register(CtrlReg.DeviceClass))
+    const registers = devices.map(device => device?.service(0)?.register(CtrlReg.FirmwareIdentifier))
         .filter(reg => !!reg);
     useEffectAsync(async (mounted) => {
         const repos: string[] = [];
         for (const register of registers) {
             await register.refresh(true)
-            const deviceClass = register.intValue;
-            const deviceSpec = deviceSpecificationFromClassIdenfitier(deviceClass)
+            const firmwareIdentifier = register.intValue;
+            const deviceSpec = deviceSpecificationFromFirmwareIdentifier(firmwareIdentifier)
             if (deviceSpec)
                 repos.push(deviceSpec.repo)
         }
