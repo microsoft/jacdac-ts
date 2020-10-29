@@ -119,6 +119,9 @@
         }        
         jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
         updateConnectionState()
+
+        if (/auto=1/.test(window.location.href))
+            listenWebUsb()
     </script>
 </body>
 
