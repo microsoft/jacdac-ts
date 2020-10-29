@@ -331,7 +331,7 @@ export class JDBus extends JDNode {
     }
 
     errorHandler(context: string, exception: any) {
-        this.log('error', `error ${context} ${exception?.description}`)
+        this.log('error', `error ${context} ${exception?.message}\n${exception?.stack}`)
         this.emit(ERROR, { context, exception })
         this.emit(CHANGE)
     }
