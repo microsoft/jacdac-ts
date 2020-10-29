@@ -5,7 +5,9 @@ path: /
 
 **JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a
 a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals 
-(sensors/actuators), with applications to rapid prototyping, making, and physical computing. JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of services it provides. A *service* is specified by a *service module interface* that abstracts the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. The JACDAC control protocol allows devices to discover one another and their services. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page). 
+(sensors/actuators), with applications to rapid prototyping, making, and physical computing. 
+
+JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of device-specific services it provides via the JACDAC control service, common to all devices. A *service* is specified by a *service module interface* that encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page). 
 
 ## Device catalog
 
@@ -40,8 +42,23 @@ repository.
 
 ## Community
 
-We are still in the process of setting up a community area for JACDAC discussions, 
-but for now please feel free to file issues with questions [on the Github respository for this site](https://github.com/microsoft/jacdac).
+We are still in the process of setting up a community area for JACDAC discussions.
+For now, please feel free to [file issues with questions](https://github.com/microsoft/jacdac/issues).
+
+## JACDAC Github repos
+
+- JACDAC Core
+  - [Device and service catalogs](https://github.com/microsoft/jacdac)
+  - [Protocol Common C Library](https://github.com/microsoft/jacdac-c)
+- Processor-specific ports
+  - [STM32](https://github.com/microsoft/jacdac-stm32x0)
+  - [ESP32](https://github.com/microsoft/jacdac-esp32)
+  - [Paduak](https://github.com/microsoft/jacdac-padauk)
+- [Web site and TypeScript-based tools](https://github.com/jacdac-ts/)
+- JACDAC Integrations
+   - [Adafruit CircuitPython](https://github.com/microsoft/jacdac-circuitpython)
+   - [Microsoft MakeCode](https://github.com/microsoft/pxt-jacdac-services) 
+   - [Jupyter Lab](https://github.com/microsoft/jupyter-jacdac)
 
 ## Applications
 
