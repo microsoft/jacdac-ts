@@ -13,6 +13,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "preserveConstEnums": true,
+    "noImplicitThis": true,
     "declarationDir": "dist/types",
     "resolveJsonModule": true,
     "outDir": "dist/lib",

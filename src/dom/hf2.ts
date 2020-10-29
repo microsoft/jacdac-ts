@@ -1,5 +1,9 @@
+import { CMSISProto } from "./microbit";
 import { USBOptions } from "./usb";
-import { throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16, encodeU32LE, read32, bufferToString } from "./utils";
+import {
+    throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16,
+    encodeU32LE, read32, bufferToString
+} from "./utils";
 
 const controlTransferGetReport = 0x01;
 const controlTransferSetReport = 0x09;
@@ -103,23 +107,25 @@ export class Transport {
     epOut: USBEndpoint;
     readLoopStarted = false;
     ready = false;
+    rawMode = false;
 
-    constructor(private usb: USBOptions) {
-
-    }
+    constructor(private usb: USBOptions) { }
 
     onData = (v: Uint8Array) => { };
     onError = (e: Error) => {
-        console.error("HF2 error: " + (e ? e.stack : e))
+        console.error("USB error: " + (e ? e.stack : e))
     };
 
     log(msg: string, v?: any) {
         if (v != undefined)
-            console.log("HF2: " + msg, v)
+            console.log("USB: " + msg, v)
         else
-            console.log("HF2: " + msg)
+            console.log("USB: " + msg)
     }
 
+    private mkProto(): Proto {
+        return this.isMicrobit ? new CMSISProto(this) : new HF2Proto(this)
+    }
 
     private clearDev() {
         if (this.dev) {
@@ -143,13 +149,19 @@ export class Transport {
             })
     }
 
-    private recvPacketAsync(): Promise<Uint8Array> {
+    recvPacketAsync(): Promise<Uint8Array> {
+        if (!this.rawMode)
+            this.error("rawMode required")
+        return this.recvPacketCoreAsync()
+    }
+
+    private recvPacketCoreAsync(): Promise<Uint8Array> {
         let final = (res: USBInTransferResult) => {
             if (res.status != "ok")
                 this.error("USB IN transfer failed")
             let arr = new Uint8Array(res.data.buffer)
             if (arr.length == 0)
-                return this.recvPacketAsync()
+                return this.recvPacketCoreAsync()
             return arr
         }
 
@@ -172,11 +184,11 @@ export class Transport {
 
     error(msg: string) {
         console.error(`USB error on device ${this.dev ? this.dev.productName : "n/a"} (${msg})`)
-        this.onError(new Error("hf2 error"))
+        this.onError(new Error("USB error"))
     }
 
     private async readLoop() {
-        if (this.readLoopStarted)
+        if (this.rawMode || this.readLoopStarted)
             return
         this.readLoopStarted = true
         this.log("start read loop")
@@ -189,7 +201,7 @@ export class Transport {
             }
 
             try {
-                const buf = await this.recvPacketAsync()
+                const buf = await this.recvPacketCoreAsync()
 
                 if (buf[0]) {
                     // we've got data; retry reading immedietly after processing it
@@ -231,6 +243,10 @@ export class Transport {
             })
     }
 
+    get isMicrobit() {
+        return this.dev && this.dev.productId == 516 && this.dev.vendorId == 3368
+    }
+
     private checkDevice() {
         this.iface = undefined;
         this.altIface = undefined;
@@ -238,14 +254,17 @@ export class Transport {
             return false;
         this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName)
         // resolve interfaces
+        const subcl = this.isMicrobit ? 0 : HF2_DEVICE_MAJOR
         for (const iface of this.dev.configuration.interfaces) {
             const alt = iface.alternates[0]
-            if (alt.interfaceClass == 0xff && alt.interfaceSubclass == HF2_DEVICE_MAJOR) {
+            if (alt.interfaceClass == 0xff && alt.interfaceSubclass == subcl) {
                 this.iface = iface;
                 this.altIface = alt;
                 break;
             }
         }
+        if (this.isMicrobit)
+            this.rawMode = true
         return !!this.iface;
     }
 
@@ -262,10 +281,17 @@ export class Transport {
     private async requestDeviceAsync() {
         try {
             this.dev = await this.usb.requestDevice({
-                filters: [{
-                    classCode: 255,
-                    subclassCode: HF2_DEVICE_MAJOR,
-                }]
+                filters: [
+                    {
+                        // hf2 devices (incl. arcade)
+                        classCode: 255,
+                        subclassCode: HF2_DEVICE_MAJOR,
+                    }, {
+                        // micro:bit v2
+                        vendorId: 3368,
+                        productId: 516
+                    }
+                ]
             })
         } catch (e) {
             console.log(e)
@@ -283,6 +309,11 @@ export class Transport {
 
         // let's connect!
         await this.openDeviceAsync();
+
+        const proto = this.mkProto()
+        await proto.postConnectAsync()
+
+        return proto
     }
 
     private async openDeviceAsync() {
@@ -307,7 +338,14 @@ export class Transport {
     }
 }
 
-export class Proto {
+export interface Proto {
+    onJDMessage(f: (buf: Uint8Array) => void): void
+    sendJDMessageAsync(buf: Uint8Array): Promise<void>
+    postConnectAsync(): Promise<void>
+    disconnectAsync(): Promise<void>
+}
+
+class HF2Proto implements Proto {
     eventHandlers: SMap<(buf: Uint8Array) => void> = {}
     msgs = new PromiseBuffer<Uint8Array>()
     cmdSeq = (Math.random() * 0xffff) | 0;
@@ -440,6 +478,7 @@ export class Proto {
 
     sendJDMessageAsync(buf: Uint8Array) {
         return this.talkAsync(HF2_CMD_JDS_SEND, buf)
+            .then(() => { })
     }
 
     handleEvent(buf: Uint8Array) {
@@ -459,8 +498,7 @@ export class Proto {
         console.log("SERIAL:", bufferToString(data))
     }
 
-    async connectAsync(background?: boolean) {
-        await this.io.connectAsync(background)
+    async postConnectAsync() {
         await this.checkMode()
         const buf = await this.talkAsync(HF2_CMD_INFO)
         this.io.log("Connected to: " + bufferToString(buf))

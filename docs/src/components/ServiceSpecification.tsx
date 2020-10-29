@@ -6,8 +6,9 @@ import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
 import Markdown from "./Markdown";
 import EnumSpecification from "./EnumSpecification";
-import DeviceSpecificationList from "./DeviceSpecificationList";
 import { Box } from "@material-ui/core";
+import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
+import DeviceSpecificationList from "./DeviceSpecificationList"
 
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
@@ -36,6 +37,7 @@ export default function ServiceSpecification(props: {
                 <IDChip id={node.classIdentifier} filter={`srv:${node.shortId}`} />
             </Box>
         </h1>
+        <ServiceSpecificationStatusAlert specification={node} />
         <Markdown key="notesshort" source={node.notes.short} />
         {!!node.extends?.length &&
             <p key="extends">
