@@ -202,7 +202,7 @@ module.exports = {
       options: {
         precachePages: [
           `/*`, 
-          `/specification/*`,
+          `/reference/*`,
           `/services/*`,
           `/devices/*`,
           `/tools/*`

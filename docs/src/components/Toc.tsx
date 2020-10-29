@@ -122,8 +122,8 @@ export default function Toc() {
     path: "/",
     order: 0
   }, {
-    name: "Specification",
-    path: "/specification/",
+    name: "Reference",
+    path: "/reference/",
     order: 1
   }, {
     name: "Services",

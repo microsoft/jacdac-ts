@@ -5,59 +5,38 @@ path: /
 
 **JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a
 a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals 
-(sensors/actuators) within the contexts of rapid prototyping, making, and physical computing.
+(sensors/actuators), with applications to rapid prototyping, making, and physical computing. JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of services it provides. A *service* is specified by a *service module interface* that abstracts the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. The JACDAC control protocol allows devices to discover one another and their services. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page). 
 
-## Motivation
+## Device catalog
 
-The advent of simpler programming environments for microcontrollers over the past decade has greatly 
-changed who can write code for them. It is now possible for novices to program microcontrollers using only a 
-web browser, a process that was previously the domain of skilled embedded firmware engineers. 
-However, despite a marked improvement in software tooling, it’s still challenging to build devices 
-that bring together new combinations of hardware, as traditional protocols (such as I2C and SPI) 
-for connecting microcontrollers to each other and to peripherals are low-level and inflexible. 
-
-JACDAC is a new hardware/software stack for low-cost microcontrollers that makes connecting microcontrollers and peripherals 
-as simple as plugging a USB device into your personal computer. JACDAC’s reversible physical connector, a flexible bus-based topology, 
-standardized signalling and service specifications, hardware and software reference designs, and web-based tooling bring interactive 
-device prototyping into the 21st century. 
-
-The careful design of JACDAC means that it’s inexpensive and low power; it can be supported by 
-microcontrollers that cost as little as two and a half US cents.  Support for WebUSB and TypeScript extends the JACDAC bus to the web 
-browser (and the Internet), enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
-reducing the gap between the Web and the microcontroller.
-
-## Specification
-
-At a high level, JACDAC is a bus of devices, where each device can advertise the set of services it provides. A service is specified by a strongly-typed interface and abstracts the process of communicating with a JACDAC device via packets. A packet encapsulates the JACDAC information, which includes a 64-bit device identifier and data payload. Finally, at the lowest-level of the JACDAC stack, a serial wire protocol is used to transmit JACDAC packets between physical devices on the same JACDAC bus. JACDAC packets may also be sent over WebUSB, providing connectivity to virtual JACDAC devices and services running in the web browser. 
-
-### For JACDAC Users
-
-* [Device Catalog Specification](./specification/device-catalog)
-* [Service Specification Language](./specification/service-spec-language)
-
-### For JACDAC Implementors
-
-* [JACDAC Protocol Specification](./specification/jacdac-protocol)
-* [Glossary](./specification/glossary)
-
-## Services
-
-The [list of known service specifications](/services) provides a set of 
-standaridized JACDAC modules. Additional modules can be specified in the [specification](https://github.com/microsoft/jacdac) repository.
-
-[Browse the services.](/services)
-
-<ServiceSpecificationList count={3} shuffle={true} />
-
-## Device Catalog
-
-The JACDAC project contains a catalog of known devices that 
+The [device catalog](/devices) lists the registered JACDAC devices that 
 can be automatically detected on the bus. Once a device is detected, 
 the catalog information provides vendor information, pictures and firmware information.
 
-[Browse the devices.](/devices)
-
 <DeviceSpecificationList count={3} shuffle={true} />
+
+## Service catalog
+
+The [service catalog](/services) lists the registered JACDAC service
+modules. Additional modules can be specified in the [JACDAC](https://github.com/microsoft/jacdac) 
+repository.
+
+<ServiceSpecificationList count={3} shuffle={true} />
+
+## For JACDAC users
+
+* C
+* TypeScript
+* CircuitPython
+* MakeCode
+
+## For JACDAC manufacturers and implementers
+
+* [Device Catalog Specification](./reference/device-catalog)
+* [Service Specification Language](./reference/service-spec-language)
+* [JACDAC Protocol Specification](./reference/jacdac-protocol)
+* [Serial Wire Protocol](./reference/serial-protocol)
+* [Glossary](./reference/glossary)
 
 ## Community
 
@@ -81,6 +60,25 @@ https://youtu.be/TvSmYga2Pic
 https://youtu.be/YKshfoeGtbM
 
 https://youtu.be/CKBXQIGQEuw
+
+## Why JACDAC?
+
+The advent of simpler programming environments for microcontrollers over the past decade has greatly 
+changed who can write code for them. It is now possible for novices to program microcontrollers using only a 
+web browser, a process that was previously the domain of skilled embedded firmware engineers. 
+However, despite a marked improvement in software tooling, it’s still challenging to build devices 
+that bring together new combinations of hardware, as traditional protocols (such as I2C and SPI) 
+for connecting microcontrollers to each other and to peripherals are low-level and inflexible. 
+
+JACDAC is a new hardware/software stack for low-cost microcontrollers that makes connecting microcontrollers and peripherals 
+as simple as plugging a USB device into your personal computer. JACDAC’s reversible physical connector, a flexible bus-based topology, 
+standardized signalling and service specifications, hardware and software reference designs, and web-based tooling bring interactive 
+device prototyping into the 21st century. 
+
+The careful design of JACDAC means that it’s inexpensive and low power; it can be supported by 
+microcontrollers that cost as little as two and a half US cents.  Support for WebUSB and TypeScript extends the JACDAC bus to the web 
+browser (and the Internet), enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
+reducing the gap between the Web and the microcontroller.
 
 ## Microsoft Open Source Code of Conduct
 
