@@ -9,11 +9,12 @@ interface SendItem {
 export class CMSISProto implements Proto {
     private q = new PromiseQueue()
     private sendQ: SendItem[] = []
+    private irqn: number
+    private xchgAddr: number
+    private _onJDMsg: (buf: Uint8Array) => void
 
     constructor(public io: Transport) {
     }
-
-    private _onJDMsg: (buf: Uint8Array) => void
 
     private error(msg: string): never {
         // debugger
@@ -304,9 +305,6 @@ export class CMSISProto implements Proto {
             p1 += checkSize
         }
     }
-
-    private irqn: number
-    private xchgAddr: number
 
     private async triggerIRQ() {
         const addr = 0xE000E200 + (this.irqn >> 5) * 4
