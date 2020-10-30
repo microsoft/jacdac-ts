@@ -7,30 +7,26 @@ path: /
 a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals 
 (sensors/actuators), with applications to rapid prototyping, making, and physical computing. 
 
-JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of device-specific services it provides via the JACDAC control service, common to all devices. A *service* is specified by a *service module interface* that encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page). 
+JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of device-specific services it provides via the JACDAC control service, common to all devices. A *service* is specified by a *service class* that encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page). 
 
 ## Device catalog
 
-The [device catalog](/devices) lists the registered JACDAC devices that 
-can be automatically detected on the bus. Once a device is detected, 
-the catalog information provides vendor information, pictures and firmware information.
+The [device catalog](/devices) lists the registered JACDAC devices that can be automatically detected on the bus. Once a device is detected, the catalog information provides vendor information, pictures and firmware information.
 
 <DeviceSpecificationList count={3} shuffle={true} />
 
 ## Service catalog
 
-The [service catalog](/services) lists the registered JACDAC service
-modules. Additional modules can be specified in the [JACDAC](https://github.com/microsoft/jacdac) 
-repository.
+The [service catalog](/services) lists the registered JACDAC service classes, which are stored in the [JACDAC](https://github.com/microsoft/jacdac) repository.
 
 <ServiceSpecificationList count={3} shuffle={true} />
 
 ## For JACDAC users
 
-* C
-* TypeScript
-* CircuitPython
-* MakeCode
+JACDAC has support for the C, CircuitPython, and TypeScript languages, as well as for Microsoft MakeCode.
+To get familiar with the JACDAC abstractions and APIs right away, we suggest browsing the 
+TypeScript [JACDAC Object Model](./clients/web/dom), which is used to make this web site a JACDAC endpoint (over WebUSB),
+as well as the [tools](./tools/) built using the model.
 
 ## For JACDAC manufacturers and implementers
 
