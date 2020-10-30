@@ -69,7 +69,7 @@ export default function AppDrawer(props: {
     const showConnect = useMediaQuery(theme.breakpoints.down("md"));
     const query = useStaticQuery(graphql`
         {
-          allFile(filter: {name: {eq: "service-spec-language"}}) {
+          allFile(filter: {name: {eq: "service-specification"}}) {
             nodes {
               childMdx {
                 body
