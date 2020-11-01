@@ -25,7 +25,7 @@ export default function ServiceSpecificationCard(props: { serviceClass?: number,
             }
         </CardContent>
         {spec && <CardActions>
-            <Button aria-label={`open service ${spec.shortId} page`} to={`/services/${spec.shortId}`}>More...</Button>
+            <Button variant="outlined" aria-label={`open service ${spec.shortId} page`} to={`/services/${spec.shortId}`}>More...</Button>
         </CardActions>}
     </Card>
 }
