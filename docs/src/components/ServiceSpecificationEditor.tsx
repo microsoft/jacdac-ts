@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         padding: "0",
         backgroundColor: "transparent",
         whiteSpec: "pre-wrap",
-        flexGrow: 2
+        flexGrow: 1
     }
 }));
 
