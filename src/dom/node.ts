@@ -12,7 +12,7 @@ export abstract class JDNode extends JDEventSource {
     }
 
     /**
-     * Globally unique identifier per GraphQL spec
+     * Globally unique identifier in the tree
      */
     abstract get id(): string;
 
