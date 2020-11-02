@@ -1,6 +1,7 @@
 import { Proto, Transport } from "./hf2";
 import {
-    delay, PromiseQueue, write32, write16, read32, uint8ArrayToString, fromHex} from "./utils";
+    delay, PromiseQueue, write32, write16, read32, uint8ArrayToString, fromHex, bufferConcat, fromUTF8
+} from "./utils";
 
 interface SendItem {
     buf: Uint8Array
@@ -12,8 +13,20 @@ export class CMSISProto implements Proto {
     private irqn: number
     private xchgAddr: number
     private _onJDMsg: (buf: Uint8Array) => void
+    private pendingSerial: Uint8Array
+    private lastPendingSerial: number
+    private lastSend: number
+    private lastXchg: number
+    private recvTo: () => void
 
     constructor(public io: Transport) {
+        let last = this.recvTo
+        setInterval(() => {
+            if (last && last == this.recvTo) {
+                last()
+            }
+            last = this.recvTo
+        }, 200)
     }
 
     private error(msg: string): never {
@@ -45,28 +58,27 @@ export class CMSISProto implements Proto {
 
     private recvAsync() {
         return new Promise<Uint8Array>((resolve, reject) => {
-            let to: any
             this.io.recvPacketAsync()
                 .then(v => {
                     const f = resolve
                     resolve = null
                     if (f) {
-                        clearTimeout(to)
+                        this.recvTo = null
                         f(v)
                     }
                 }, err => {
                     if (resolve) {
                         resolve = null
-                        clearTimeout(to)
+                        this.recvTo = null
                         reject(err)
                     }
                 })
-            to = setTimeout(() => {
+            this.recvTo = () => {
                 if (resolve) {
                     resolve = null
                     reject(new Error("CMSIS recv timeout"))
                 }
-            }, 200)
+            }
         })
     }
 
@@ -117,6 +129,12 @@ export class CMSISProto implements Proto {
     private async xchgLoop() {
         let currSend: SendItem
         for (; ;) {
+            const now = Date.now()
+            if (this.lastXchg && now - this.lastXchg > 50) {
+                console.error("slow xchg: " + (now - this.lastXchg) + "ms")
+            }
+            this.lastXchg = now
+
             let numev = 0
             let inp = await this.readBytes(this.xchgAddr + 12, 256, true)
             if (inp[2]) {
@@ -151,20 +169,59 @@ export class CMSISProto implements Proto {
                     const bhead = currSend.buf.slice(0, 4)
                     await this.writeWords(this.xchgAddr + 12 + 256, new Uint32Array(bhead.buffer))
                     await this.triggerIRQ()
+                    this.lastSend = Date.now()
                     numev++
+                } else {
+                    if (this.lastSend) {
+                        const d = Date.now() - this.lastSend
+                        if (d > 50) {
+                            this.lastSend = 0
+                            console.error("failed to send packet fast enough")
+                        }
+                    }
                 }
             }
 
-            const buf = await this.talkAsync([0x83])
-            const str = this.decodeString(buf)
-            if (str != "") {
-                console.log("SERIAL: " + str)
+            if (await this.readSerial())
                 numev++
-            }
 
             if (numev == 0)
                 await this.dapDelay(1000)
         }
+    }
+
+    private async readSerial() {
+        let buf = await this.talkAsync([0x83])
+        const len = buf[1]
+        if (len) {
+            buf = buf.slice(2, 2 + len)
+            if (this.pendingSerial)
+                buf = bufferConcat(this.pendingSerial, buf)
+            let ptr = 0
+            let beg = 0
+            while (ptr < buf.length) {
+                if (buf[ptr] == 10 || buf[ptr] == 13) {
+                    const line = buf.slice(beg, ptr)
+                    if (line.length)
+                        console.log("SERIAL: " + fromUTF8(uint8ArrayToString(line)))
+                    beg = ptr + 1
+                }
+                ptr++
+            }
+            buf = buf.slice(ptr)
+            this.pendingSerial = buf.length ? buf : null
+            if (this.pendingSerial)
+                this.lastPendingSerial = Date.now()
+        } else if (this.pendingSerial) {
+            const d = Date.now() - this.lastPendingSerial
+            if (d > 500) {
+                const s = fromUTF8(uint8ArrayToString(this.pendingSerial))
+                this.pendingSerial = null
+                console.log("SERIAL[TO]: " + s)
+            }
+        }
+
+        return len
     }
 
     private async talkStringAsync(...cmds: number[]) {
