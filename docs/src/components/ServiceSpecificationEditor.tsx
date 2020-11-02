@@ -1,26 +1,10 @@
 import React, { useContext, useEffect } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
-// tslint:disable-next-line: match-default-export-name
-import AceEditor from "react-ace";
-
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/mode-markdown";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/mode-json";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/mode-javascript";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/theme-github";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/ext-language_tools"
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/theme-dracula";
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
-import DarkModeContext from './DarkModeContext';
 import useLocalStorage from './useLocalStorage';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -33,19 +17,20 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         marginBottom: theme.spacing(2)
     },
     editor: {
+        width: "100%",
+        height: "42rem"
     },
     pre: {
         margin: "0",
         padding: "0",
         backgroundColor: "transparent",
         whiteSpec: "pre-wrap",
-        flexGrow: 1
+        flexGrow: 2
     }
 }));
 
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
-    const { darkMode } = useContext(DarkModeContext)
     const { drawerType } = useContext(AppContext)
     const { value: source, setValue: setSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
         `# My Service
@@ -76,32 +61,20 @@ TODO describe this register
         type: 'error'
     }))
     const drawerOpen = drawerType != DrawerType.None
-    const handleSourceChange = (newValue: string) => {
-        setSource(newValue)
+    const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setSource(ev.target.value)
     }
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
                 <Paper square className={classes.segment}>
                     {source !== undefined &&
-                        <AceEditor
+                        <TextareaAutosize
                             className={classes.editor}
-                            mode="markdown"
-                            width="100%"
-                            height="42rem"
                             onChange={handleSourceChange}
                             name="servicespecificationeditor"
-                            wrapEnabled={true}
                             defaultValue={source}
-                            debounceChangePeriod={500}
-                            editorProps={{ $blockScrolling: true }}
-                            annotations={annotations}
-                            minLines={48}
-                            theme={darkMode === 'light' ? 'github' : 'dracula'}
-                            setOptions={{
-                                enableBasicAutocompletion: false,
-                                enableLiveAutocompletion: false,
-                            }}
+                            rowsMin={48}
                         />}
                 </Paper>
                 <Paper square className={classes.segment}>
