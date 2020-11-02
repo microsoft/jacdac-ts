@@ -66,6 +66,15 @@ npm run docs
 http://localhost:8000?dbg=1
 ```
 
+To analyze the webpack bundle size,
+
+```
+cd docs
+gatsby build
+gatsby serve
+nav to http://127.0.0.1:3001
+```
+
 ### JACDAC+MakeCode
 
 Open the multi editor to test MakeCode devices with the JACDAC view. You can select to run JACDAC and/or MakeCode on localhost/web from the drop downs.

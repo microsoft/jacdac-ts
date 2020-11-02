@@ -211,5 +211,6 @@ module.exports = {
     },
     "gatsby-plugin-robots-txt",
     "gatsby-plugin-meta-redirect",
+    "gatsby-plugin-webpack-bundle-analyser-v2"
   ],
 }
