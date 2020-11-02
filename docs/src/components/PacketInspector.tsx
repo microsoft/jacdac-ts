@@ -10,7 +10,7 @@ import PacketSpecification from "./PacketSpecification";
 import { printPacket } from "../../../src/dom/pretty";
 import PacketLayout from "./PacketLayout";
 import { Link } from "gatsby-theme-material-ui";
-import { PaperBox } from "./PaperBox";
+import PaperBox from "./PaperBox";
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);

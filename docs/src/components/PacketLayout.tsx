@@ -6,7 +6,7 @@ import {
 } from "../../../src/dom/constants";
 import Packet from "../../../src/dom/packet";
 import { fromHex, toHex } from "../../../src/dom/utils";
-import { PaperBox } from "./PaperBox";
+import PaperBox from "./PaperBox";
 
 export default function PacketLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {
     const { packet, data, showSlots, showFlags } = props;

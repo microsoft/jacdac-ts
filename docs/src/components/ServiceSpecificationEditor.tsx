@@ -1,11 +1,13 @@
 import React, { useContext, useEffect } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useLocalStorage from './useLocalStorage';
+import useDebounce from './useDebounce'
+import PaperBox from './PaperBox'
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -17,8 +19,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         marginBottom: theme.spacing(2)
     },
     editor: {
-        width: "100%",
-        height: "42rem"
     },
     pre: {
         margin: "0",
@@ -47,8 +47,9 @@ TODO describe this register
 `
     )
 
+    const debouncedSource = useDebounce(source, 700)
     const includes = serviceMap()
-    const json = parseSpecificationMarkdownToJSON(source, includes)
+    const json = parseSpecificationMarkdownToJSON(debouncedSource, includes)
     useEffect(() => {
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
@@ -67,21 +68,22 @@ TODO describe this register
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <Paper square className={classes.segment}>
+                <PaperBox>
                     {source !== undefined &&
-                        <TextareaAutosize
+                        <TextField
+                            fullWidth={true}
                             className={classes.editor}
                             onChange={handleSourceChange}
-                            name="servicespecificationeditor"
                             defaultValue={source}
-                            rowsMin={48}
+                            multiline={true}
+                            rows={42}
                         />}
-                </Paper>
+                </PaperBox>
+            </Grid>
+            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
                 </Paper>
-            </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 <ServiceSpecificationSource
                     serviceSpecification={json}
                     showMarkdown={false}
