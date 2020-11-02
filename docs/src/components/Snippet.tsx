@@ -1,14 +1,12 @@
 import React, { useContext } from "react"
+import CodeBlock from "./CodeBlock"
 
 export default function Snippet(props: {
     value: string,
     mode?: string
 }) {
-    const { value } = props
+    const { value, mode } = props
+    const className = mode && `language-${mode}`
 
-    return <pre>
-        <code>
-            {value}
-        </code>
-    </pre>
+    return <CodeBlock className={className}>{value}</CodeBlock>
 }
