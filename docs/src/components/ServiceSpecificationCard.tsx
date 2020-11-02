@@ -4,6 +4,7 @@ import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
 import IDChip from "./IDChip";
 import { Button } from "gatsby-theme-material-ui";
 import Markdown from "./Markdown";
+import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 
 export default function ServiceSpecificationCard(props: { serviceClass?: number, specification?: jdspec.ServiceSpec }) {
     const { serviceClass, specification } = props;
@@ -23,6 +24,7 @@ export default function ServiceSpecificationCard(props: { serviceClass?: number,
                     <Markdown source={spec?.notes["short"]} />
                 </Typography>
             }
+            <ServiceSpecificationStatusAlert specification={spec} />
         </CardContent>
         {spec && <CardActions>
             <Button variant="outlined" aria-label={`open service ${spec.shortId} page`} to={`/services/${spec.shortId}`}>More...</Button>

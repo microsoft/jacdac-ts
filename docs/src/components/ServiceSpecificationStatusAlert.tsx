@@ -1,7 +1,7 @@
 import React from "react";
 import Alert from "./Alert";
 
-export default function ServiceSpecificationStatusAlert(props: { specification: jdspec.ServiceSpec }) {
+export function StatusAlert(props: { specification: jdspec.ServiceSpec }) {
     const { specification } = props;
 
     switch (specification?.status) {
@@ -10,3 +10,7 @@ export default function ServiceSpecificationStatusAlert(props: { specification: 
         default: return null;
     }
 }
+
+const ServiceSpecificationStatusAlert = React.memo(StatusAlert);
+
+export default ServiceSpecificationStatusAlert;
