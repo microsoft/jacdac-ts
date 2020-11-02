@@ -41,7 +41,8 @@ import {
     REPORT_UPDATE,
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
-    REGISTER_OPTIONAL_POLL_COUNT
+    REGISTER_OPTIONAL_POLL_COUNT,
+    PACKET_PRE_PROCESS
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -532,7 +533,7 @@ export class JDBus extends JDNode {
     processPacket(pkt: Packet) {
         if (!pkt.multicommand_class)
             pkt.device = this.device(pkt.device_identifier)
-        this.emit(PACKET_PROCESS, pkt)
+        this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
         if (!pkt.device) {
             // skip
@@ -556,6 +557,7 @@ export class JDBus extends JDNode {
             }
             pkt.device.processPacket(pkt)
         }
+        this.emit(PACKET_PROCESS, pkt)
         // don't spam with duplicate advertisement events
         if (isAnnounce) {
             this.emit(PACKET_RECEIVE_ANNOUNCE, pkt)

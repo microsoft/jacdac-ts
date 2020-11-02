@@ -106,6 +106,7 @@ export const SELF_ANNOUNCE = 'selfAnnounce'
 export const PACKET_SEND = 'packetSend'
 export const PACKET_SEND_DISCONNECT = 'packetSendDisconnect'
 
+export const PACKET_PRE_PROCESS = 'packetPreProcess'
 export const PACKET_PROCESS = 'packetProcess'
 export const PACKET_RECEIVE = 'packetReceive'
 export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
