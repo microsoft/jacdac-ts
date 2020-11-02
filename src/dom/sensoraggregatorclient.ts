@@ -1,4 +1,3 @@
-import { VariablesAreInputTypesRule } from "graphql"
 import { SensorAggregatorReg, SensorAggregatorSampleType } from "../../jacdac-spec/dist/specconstants"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "./constants"
