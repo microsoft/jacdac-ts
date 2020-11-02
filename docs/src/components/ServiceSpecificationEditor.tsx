@@ -8,6 +8,7 @@ import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useLocalStorage from './useLocalStorage';
 import useDebounce from './useDebounce'
 import PaperBox from './PaperBox'
+import Alert from './Alert';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -81,6 +82,13 @@ TODO describe this register
                 </PaperBox>
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
+                {!!annotations?.length &&
+                <Alert severity="warning">
+                    <ul>
+                        {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
+                    </ul>
+                </Alert>
+                }
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
                 </Paper>
