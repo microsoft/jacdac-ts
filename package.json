@@ -157,7 +157,6 @@
   },
   "dependencies": {
     "@types/node": "^10.17.39",
-    "@types/w3c-web-usb": "^1.0.4",
-    "graphql": "^15.3.0"
+    "@types/w3c-web-usb": "^1.0.4"
   }
 }

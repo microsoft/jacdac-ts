@@ -9,11 +9,10 @@ const pkg = require('./package.json')
 
 export default [
   { libraryName: 'jacdac-dom', dir: 'dom' },
-  { libraryName: 'jacdac-graphql', dir: 'graphql', external: ["jacdac-dom"] }, // include graphqljs
   { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-dom", "webusb"] },
   { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-dom", "react"] },
   { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-dom"] },
-  { libraryName: 'jacdac', dir: '', external: ["jacdac-dom", "react", "jacdac-react", "jacdac-graphql", "webusb", "jacdac-node", "jacdac-embed"] },
+  { libraryName: 'jacdac', dir: '', external: ["jacdac-dom", "react", "jacdac-react", "webusb", "jacdac-node", "jacdac-embed"] },
 ].map(({ libraryName, dir, external }) => {
   return {
     input: `src/${dir}/${libraryName}.ts`,
