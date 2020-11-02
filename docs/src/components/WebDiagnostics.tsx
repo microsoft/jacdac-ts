@@ -4,7 +4,7 @@ import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/dom/constants";
 import { JDNode, visitNodes } from "../../../src/dom/node";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useChange from "../jacdac/useChange"
-import { PaperBox } from "./PaperBox";
+import PaperBox from "./PaperBox";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Alert from "./Alert"
 import { AlertTitle } from "@material-ui/lab";

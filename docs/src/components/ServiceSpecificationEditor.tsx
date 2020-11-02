@@ -1,27 +1,14 @@
 import React, { useContext, useEffect } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
-// tslint:disable-next-line: match-default-export-name
-import AceEditor from "react-ace";
-
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/mode-markdown";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/mode-json";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/mode-javascript";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/theme-github";
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/ext-language_tools"
-// tslint:disable-next-line: no-import-side-effect no-submodule-imports
-import "ace-builds/src-noconflict/theme-dracula";
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
-import DarkModeContext from './DarkModeContext';
 import useLocalStorage from './useLocalStorage';
+import useDebounce from './useDebounce'
+import PaperBox from './PaperBox'
+import Alert from './Alert';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -45,7 +32,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
-    const { darkMode } = useContext(DarkModeContext)
     const { drawerType } = useContext(AppContext)
     const { value: source, setValue: setSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
         `# My Service
@@ -62,8 +48,9 @@ TODO describe this register
 `
     )
 
+    const debouncedSource = useDebounce(source, 700)
     const includes = serviceMap()
-    const json = parseSpecificationMarkdownToJSON(source, includes)
+    const json = parseSpecificationMarkdownToJSON(debouncedSource, includes)
     useEffect(() => {
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
@@ -76,39 +63,35 @@ TODO describe this register
         type: 'error'
     }))
     const drawerOpen = drawerType != DrawerType.None
-    const handleSourceChange = (newValue: string) => {
-        setSource(newValue)
+    const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setSource(ev.target.value)
     }
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <Paper square className={classes.segment}>
+                <PaperBox>
                     {source !== undefined &&
-                        <AceEditor
+                        <TextField
+                            fullWidth={true}
                             className={classes.editor}
-                            mode="markdown"
-                            width="100%"
-                            height="42rem"
                             onChange={handleSourceChange}
-                            name="servicespecificationeditor"
-                            wrapEnabled={true}
                             defaultValue={source}
-                            debounceChangePeriod={500}
-                            editorProps={{ $blockScrolling: true }}
-                            annotations={annotations}
-                            minLines={48}
-                            theme={darkMode === 'light' ? 'github' : 'dracula'}
-                            setOptions={{
-                                enableBasicAutocompletion: false,
-                                enableLiveAutocompletion: false,
-                            }}
+                            multiline={true}
+                            rows={42}
                         />}
-                </Paper>
+                </PaperBox>
+            </Grid>
+            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
+                {!!annotations?.length &&
+                <Alert severity="warning">
+                    <ul>
+                        {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
+                    </ul>
+                </Alert>
+                }
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
                 </Paper>
-            </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 <ServiceSpecificationSource
                     serviceSpecification={json}
                     showMarkdown={false}
