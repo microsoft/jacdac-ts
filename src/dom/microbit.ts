@@ -196,7 +196,7 @@ export class CMSISProto implements Proto {
 
     private sendPacketAsync(buf: Uint8Array) {
         this.numSend++
-        this.io.sendPacketAsync(buf)
+        return this.io.sendPacketAsync(buf)
     }
 
     private async readSerial() {
