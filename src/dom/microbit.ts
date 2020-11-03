@@ -17,7 +17,7 @@ export class CMSISProto implements Proto {
     private lastPendingSerial: number
     private lastSend: number
     private lastXchg: number
-    private start = Date.now()
+    private slowStart = Date.now()
     private numSend = 0
     private recvTo: () => void
 
@@ -133,9 +133,9 @@ export class CMSISProto implements Proto {
         for (; ;) {
             const now = Date.now()
             if (this.lastXchg && now - this.lastXchg > 50) {
-                console.error(`${now - this.start}ms: slow xchg: ${now - this.lastXchg}ms tx#:${this.numSend}`)
+                console.warn(`slow WebUSB exchange: ${now - this.lastXchg}ms; since last: ${now - this.slowStart}ms/tx#:${this.numSend}; if you see this often try disabling async stack traces in dev tools`)
                 this.numSend = 0
-                this.start = now
+                this.slowStart = now
             }
             this.lastXchg = now
 
@@ -217,7 +217,7 @@ export class CMSISProto implements Proto {
                 }
                 ptr++
             }
-            buf = buf.slice(ptr)
+            buf = buf.slice(beg)
             this.pendingSerial = buf.length ? buf : null
             if (this.pendingSerial)
                 this.lastPendingSerial = Date.now()
@@ -226,7 +226,7 @@ export class CMSISProto implements Proto {
             if (d > 500) {
                 const s = fromUTF8(uint8ArrayToString(this.pendingSerial))
                 this.pendingSerial = null
-                console.log("SERIAL[TO]: " + s)
+                console.log("SERIAL-N: " + s)
             }
         }
 
