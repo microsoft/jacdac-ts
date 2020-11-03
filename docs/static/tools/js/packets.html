@@ -17,9 +17,11 @@
         #log>div {
             margin: 0.25rem;
         }
+
         button:not(.active) {
             opacity: 0.7;
         }
+
         button.active {
             font-weight: bold;
         }
@@ -50,7 +52,10 @@
         // webusb
         jacdac = jacdacDom;
         let jd = jacdac.createUSBBus()
-        jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
+        jd.on([jacdac.PACKET_PROCESS, jacdac.PACKET_SEND], pkt =>
+            log(jacdac.printPacket(pkt, {
+                showTime: true
+            })))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
         async function listenWebUsb() {
@@ -58,6 +63,10 @@
             await jd.disconnectAsync();
             await jd.connectAsync();
             log('started')
+            if (/mic=1/.test(window.location.href)) {
+                await jacdac.delay(1000)
+                await jacdac.testMic(jd)
+            }
         }
 
         // replace
@@ -112,11 +121,13 @@
             disconnect.classList.remove('active');
             switch (jd.connectionState) {
                 case jacdac.BusState.Connected:
-                    disconnect.classList.add('active'); break;
+                    disconnect.classList.add('active');
+                    break;
                 case jacdac.BusState.Disconnected:
-                    connect.classList.add('active'); break;
+                    connect.classList.add('active');
+                    break;
             }
-        }        
+        }
         jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
         updateConnectionState()
 
