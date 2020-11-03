@@ -17,6 +17,8 @@ export class CMSISProto implements Proto {
     private lastPendingSerial: number
     private lastSend: number
     private lastXchg: number
+    private start = Date.now()
+    private numSend = 0
     private recvTo: () => void
 
     constructor(public io: Transport) {
@@ -85,7 +87,7 @@ export class CMSISProto implements Proto {
     private talkAsync(cmds: ArrayLike<number>) {
         return this.q.enqueue("talk", async () => {
             //console.log("TALK", cmds)
-            await this.io.sendPacketAsync(new Uint8Array(cmds))
+            await this.sendPacketAsync(new Uint8Array(cmds))
             let response = await this.recvAsync()
             if (response[0] !== cmds[0]) {
                 const msg = `Bad response for ${cmds[0]} -> ${response[0]}`
@@ -131,7 +133,9 @@ export class CMSISProto implements Proto {
         for (; ;) {
             const now = Date.now()
             if (this.lastXchg && now - this.lastXchg > 50) {
-                console.error("slow xchg: " + (now - this.lastXchg) + "ms")
+                console.error(`${now - this.start}ms: slow xchg: ${now - this.lastXchg}ms tx#:${this.numSend}`)
+                this.numSend = 0
+                this.start = now
             }
             this.lastXchg = now
 
@@ -188,6 +192,11 @@ export class CMSISProto implements Proto {
             if (numev == 0)
                 await this.dapDelay(1000)
         }
+    }
+
+    private sendPacketAsync(buf: Uint8Array) {
+        this.numSend++
+        this.io.sendPacketAsync(buf)
     }
 
     private async readSerial() {
@@ -263,7 +272,7 @@ export class CMSISProto implements Proto {
                 if (ch) {
                     req[2] = ch
                     req.set(dataBytes.slice(ptrTX * 4, (ptrTX + ch) * 4), 5)
-                    await this.io.sendPacketAsync(ch == MAX ? req : req.slice(0, 5 + 4 * ch))
+                    await this.sendPacketAsync(ch == MAX ? req : req.slice(0, 5 + 4 * ch))
                     ptrTX += ch
                     lastCh = ch
                 }
@@ -303,7 +312,7 @@ export class CMSISProto implements Proto {
                 if (ch > 0) {
                     req[2] = ch
                     numPending++
-                    await this.io.sendPacketAsync(req)
+                    await this.sendPacketAsync(req)
                     ptrTX += ch
                 }
                 if (overhang-- > 0)
