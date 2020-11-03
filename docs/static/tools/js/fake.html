@@ -1,0 +1,107 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .hint {
+            font-size: 80%;
+        }
+
+        #log {
+            margin-top: 1rem;
+        }
+
+        #log>div {
+            margin: 0.25rem;
+        }
+
+        button:not(.active) {
+            opacity: 0.7;
+        }
+
+        button.active {
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        var process = {
+            env: {}
+        }
+    </script>
+</head>
+
+<body>
+    <h1>JACDAC/Fake</h1>
+    <div>
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+
+    <div id="log">
+        <div>waiting for message...</div>
+    </div>
+
+    <script>
+        class PromiseQueue {
+            constructor() {
+                this.promises = {};
+            }
+            enqueue(id, f) {
+                return new Promise((resolve, reject) => {
+                    let arr = this.promises[id];
+                    if (!arr) {
+                        arr = this.promises[id] = [];
+                    }
+                    const cleanup = () => {
+                        arr.shift();
+                        if (arr.length == 0)
+                            delete this.promises[id];
+                        else
+                            arr[0]();
+                    };
+                    arr.push(() => f().then(v => {
+                        cleanup();
+                        resolve(v);
+                    }, err => {
+                        cleanup();
+                        reject(err);
+                    }));
+                    if (arr.length == 1)
+                        arr[0]();
+                });
+            }
+        }
+
+        function delay(millis, value) {
+            return new Promise((resolve) => setTimeout(() => resolve(value), millis));
+        }
+
+        async function testLoop() {
+            let lastXchg = 0
+            const q = new PromiseQueue()
+            let start = Date.now()
+            let iter = 0
+            for (;;) {
+                iter++
+                const now = Date.now()
+                if (lastXchg && now - lastXchg > 50) {
+                    console.error(`${now - start}ms: 1slow xchg: ${now - lastXchg}ms #${iter}`)
+                    start = now
+                    iter = 0
+                }
+                lastXchg = now
+
+                for (let i = 0; i < 1000; ++i)
+                    await q.enqueue("talk", () => Promise.resolve())
+                await q.enqueue("talk", () => delay(10))
+            }
+        }
+
+        testLoop()
+    </script>
+</body>
+
+</html>
