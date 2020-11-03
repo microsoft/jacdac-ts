@@ -55,19 +55,36 @@
             let iter = 0
             let foo = 0
             for (;;) {
-                iter++
-                const now = Date.now()
-                if (lastXchg && now - lastXchg > 50) {
-                    console.error(`${now - start}ms: slow: ${now - lastXchg}ms #${iter}`)
-                    start = now
-                    iter = 0
-                }
-                lastXchg = now
-
-                for (let i = 0; i < 1000; ++i)
+                for (let i = 0; i < 1000; ++i) {
+                    iter++
+                    
                     await Promise.resolve().then(() => foo++)
-                await delay(10)
+
+                    const now = Date.now()
+                    if (lastXchg && now - lastXchg > 30) {
+                        log(`${now - start}ms: slow: ${now - lastXchg}ms #${iter}`)
+                        start = now
+                        iter = 0
+                    }
+                    lastXchg = now
+                }
+
+                iter++
+                await delay(1)
             }
+        }
+
+
+        function log(msg) {
+            if (!msg)
+                return
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            line.style.whiteSpace = "pre-wrap";
+            logDiv.appendChild(line);
+            while (logDiv.childElementCount > 500)
+                logDiv.firstChild.remove();
         }
 
         testLoop()
