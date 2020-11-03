@@ -1,7 +1,7 @@
 import { Box, BoxProps, Paper, PaperProps, useTheme } from "@material-ui/core";
 import React from "react";
 
-export function PaperBox(props: { padding?: number } & BoxProps) {
+export default function PaperBox(props: { padding?: number } & BoxProps) {
     const { children, padding, ...others } = props;
     const theme = useTheme();
 
