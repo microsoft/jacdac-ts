@@ -66,28 +66,10 @@ export async function testMic(bus: JDBus) {
     let buf16 = new Int16Array(buf.buffer)
     console.log(buf16)
 
-    for (const v of [2, 4, 8, 16, 32, 64, 128]) {
-        amplify(buf16, v)
-    }
-
+    // 16x amplification
     buf16 = amplify(buf16, 16)
 
     const wav = toWav(samplingHz, buf16)
-
-    let mx = 0
-    let counts = new Uint32Array(16)
-
-    for (const e of buf16) {
-        const ee = Math.abs(e)
-        mx = Math.max(ee, mx)
-        for (let i = 0; i < counts.length; ++i) {
-            if (ee > (1 << i))
-                counts[i]++
-        }
-    }
-
-    console.log("MAX", mx, buf16.length)
-    console.log(counts)
 
     const url = `data:audio/wav;base64,${btoa(U.uint8ArrayToString(wav))}`
     downloadUrl("mic.wav", url)
@@ -96,7 +78,7 @@ export async function testMic(bus: JDBus) {
         const pipe = new InPipeReader(bus)
         await micService.sendPacketAsync(
             pipe.openCommand(MicrophoneCmd.Sample, pack("I", [seconds * samplingHz])), true)
-        const bufs = await pipe.readData(seconds * 2100 + 300)
+        const bufs = await pipe.readData(seconds * 1200 + 300)
         return U.bufferConcatMany(bufs)
     }
 
