@@ -38,6 +38,19 @@ export function toWav(hz: number, buf: Int16Array) {
     return res
 }
 
+function amplify(buf: Int16Array, factor: number) {
+    let numclamp = 0
+    buf = buf.map(x => {
+        const r = x * factor
+        const r2 = Math.max(Math.min(0x7fff, r), -0x8000)
+        if (r != r2)
+            numclamp++
+        return r2
+    })
+    console.log(`amplify ${factor} => ${(numclamp * 100 / buf.length).toFixed(3)}% clamped`)
+    return buf
+}
+
 export async function testMic(bus: JDBus) {
     const micService = bus.services({ serviceClass: SRV_MICROPHONE })[0]
     if (!micService) {
@@ -47,16 +60,44 @@ export async function testMic(bus: JDBus) {
     const reg = micService.register(MicrophoneReg.SamplingPeriod)
     await reg.refresh()
     const samplingHz = Math.round(1_000_000 / reg.intValue)
-    const seconds = 3
-    const pipe = new InPipeReader(bus)
-    await micService.sendPacketAsync(
-        pipe.openCommand(MicrophoneCmd.Sample, pack("I", [seconds * samplingHz])), true)
-    const bufs = await pipe.readData(seconds * 2100 + 300)
-    const buf = U.bufferConcatMany(bufs)
-    const buf16 = new Int16Array(buf.buffer)
+
+    const buf = await record(3)
+
+    let buf16 = new Int16Array(buf.buffer)
     console.log(buf16)
+
+    for (const v of [2, 4, 8, 16, 32, 64, 128]) {
+        amplify(buf16, v)
+    }
+
+    buf16 = amplify(buf16, 16)
+
     const wav = toWav(samplingHz, buf16)
+
+    let mx = 0
+    let counts = new Uint32Array(16)
+
+    for (const e of buf16) {
+        const ee = Math.abs(e)
+        mx = Math.max(ee, mx)
+        for (let i = 0; i < counts.length; ++i) {
+            if (ee > (1 << i))
+                counts[i]++
+        }
+    }
+
+    console.log("MAX", mx, buf16.length)
+    console.log(counts)
 
     const url = `data:audio/wav;base64,${btoa(U.uint8ArrayToString(wav))}`
     downloadUrl("mic.wav", url)
+
+    async function record(seconds: number) {
+        const pipe = new InPipeReader(bus)
+        await micService.sendPacketAsync(
+            pipe.openCommand(MicrophoneCmd.Sample, pack("I", [seconds * samplingHz])), true)
+        const bufs = await pipe.readData(seconds * 2100 + 300)
+        return U.bufferConcatMany(bufs)
+    }
+
 }
