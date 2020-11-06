@@ -1,5 +1,5 @@
 import { JDDevice } from "./device"
-import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_NUMBER_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE } from "./constants"
+import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_NUMBER_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE, METADATA } from "./constants"
 import Packet from "./packet"
 import { JDBus } from "./bus"
 import { randomUInt, signal, fromHex, throwError, warn, bufferConcat } from "./utils"
@@ -95,7 +95,10 @@ export class InPipe extends JDClient {
             return
         if ((pkt.service_command & PIPE_COUNTER_MASK) == (this._count & PIPE_COUNTER_MASK)) {
             this._count++
-            this.emit(DATA, pkt)
+            if (pkt.service_command & PIPE_METADATA_MASK)
+                this.emit(METADATA, pkt)
+            else
+                this.emit(DATA, pkt)
             if (pkt.service_command & PIPE_CLOSE_MASK) {
                 this.close()
             }
@@ -120,12 +123,19 @@ export class InPipeReader extends InPipe {
     constructor(bus: JDBus) {
         super(bus)
         this.mount(this.subscribe(DATA, (pkt: Packet) => {
-            if (pkt.service_command & PIPE_METADATA_MASK)
-                this.meta.push(pkt)
-            else
-                this.output.push(pkt)
+            this.output.push(pkt)
+        }))
+        this.mount(this.subscribe(METADATA, (pkt: Packet) => {
+            this.meta.push(pkt)
         }))
         this.mount(this.subscribe(CLOSE, this.done.signal))
+    }
+
+    async read() {
+        if (this.output.length)
+            return this.output.shift().data
+        await this.wait([DATA, CLOSE])
+        return this.output.shift()?.data
     }
 
     async readData(timeout = 500): Promise<Uint8Array[]> {

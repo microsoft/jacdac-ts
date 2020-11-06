@@ -1,0 +1,104 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .hint {
+            font-size: 80%;
+        }
+
+        #log {
+            margin-top: 1rem;
+        }
+
+        #log>div {
+            margin: 0.25rem;
+        }
+
+        button:not(.active) {
+            opacity: 0.7;
+        }
+
+        button.active {
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        var process = {
+            env: {}
+        }
+    </script>
+</head>
+
+<body>
+    <h1>JACDAC/Wifi</h1>
+    <div>
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+    <div id="log">
+        <div>waiting for message...</div>
+    </div>
+
+    <script src="/dist/jacdac-dom.umd.js"></script>
+    <script>
+        // webusb
+        jacdac = jacdacDom;
+        let jd = jacdac.createUSBBus()
+        jd.on([jacdac.PACKET_PROCESS, jacdac.PACKET_SEND], pkt =>
+            log(jacdac.printPacket(pkt, {
+                showTime: true
+            })))
+        jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
+
+        async function listenWebUsb() {
+            log('starting')
+            await jd.disconnectAsync();
+            await jd.connectAsync();
+            log('started')
+            await jacdac.delay(1000)
+            await jacdac.testWifi(jd)
+        }
+
+        // binding ui
+        const connect = document.getElementById("connect");
+        connect.onclick = listenWebUsb;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnectAsync()
+
+        function log(msg) {
+            if (!msg)
+                return
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            line.style.whiteSpace = "pre-wrap";
+            logDiv.appendChild(line);
+            while (logDiv.childElementCount > 500)
+                logDiv.firstChild.remove();
+        }
+
+        function updateConnectionState() {
+            connect.classList.remove('active');
+            disconnect.classList.remove('active');
+            switch (jd.connectionState) {
+                case jacdac.BusState.Connected:
+                    disconnect.classList.add('active');
+                    break;
+                case jacdac.BusState.Disconnected:
+                    connect.classList.add('active');
+                    break;
+            }
+        }
+        jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
+        updateConnectionState()
+
+        if (/auto=1/.test(window.location.href))
+            listenWebUsb()
+    </script>
+</body>
+
+</html>

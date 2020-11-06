@@ -7,6 +7,7 @@ import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading, isEvent } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
+import { InPipeReader } from "./pipes";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -162,6 +163,12 @@ export class JDService extends JDNode {
                 })
                 // the handler remove either upon timeout, or on first invocation of handleRes()
         })
+    }
+
+    async sendPipeCmd(cmd: number, timeout = 500, suffix?: Uint8Array) {
+        const inp = new InPipeReader(this.device.bus)
+        await this.sendPacketAsync(inp.openCommand(cmd, suffix), true)
+        return await inp.readData(timeout)
     }
 
     processPacket(pkt: Packet) {

@@ -89,6 +89,7 @@ export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 export const NAME_CHANGE = 'nameChange'
 export const LATE = 'late'
 
+export const METADATA = 'metadata'
 export const DATA = 'data'
 export const CLOSE = 'close'
 
