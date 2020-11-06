@@ -152,6 +152,22 @@ export class JDEventSource {
     }
 
     /**
+     * Waits for given event to fire
+     */
+    wait(eventName: string | string[]) {
+        return new Promise<void>((resolve) => {
+            this.once(eventName, () => {
+                console.log("once", eventName)
+                const f = resolve
+                if (f) {
+                    resolve = null
+                    f()
+                }
+            })
+        })
+    }
+
+    /**
      * Subscribbes to an event and returns the unsubscription handler
      * @param eventName 
      * @param next 
