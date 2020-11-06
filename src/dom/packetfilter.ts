@@ -197,7 +197,7 @@ export function compileFilter(props: PacketFilterProps) {
     if (flags)
         filters.push(pkt => hasAnyFlag(pkt))
 
-    if (regGet !== undefined || regSet !== undefined)
+    if (regGet !== undefined && regSet !== undefined)
         filters.push(pkt => (pkt.is_reg_get === regGet) || (pkt.is_reg_set === regSet))
     else if (regGet !== undefined)
         filters.push(pkt => pkt.is_reg_get === regGet)
