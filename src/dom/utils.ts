@@ -104,7 +104,6 @@ export function uint8ArrayToString(input: ArrayLike<number>) {
     return res;
 }
 
-
 export function fromUTF8(binstr: string) {
     if (!binstr) return ""
 
@@ -304,6 +303,10 @@ export function decodeU32LE(buf: Uint8Array) {
 
 export function bufferToString(buf: Uint8Array) {
     return fromUTF8(uint8ArrayToString(buf))
+}
+
+export function stringToBuffer(str: string) {
+    return stringToUint8Array(toUTF8(str))
 }
 
 export function bufferConcat(a: Uint8Array, b: Uint8Array) {
