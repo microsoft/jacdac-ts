@@ -2,7 +2,7 @@ import { CMSISProto } from "./microbit";
 import { USBOptions } from "./usb";
 import {
     throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16,
-    encodeU32LE, read32, bufferToString
+    encodeU32LE, read32, bufferToString, dontAwait
 } from "./utils";
 
 const controlTransferGetReport = 0x01;
@@ -334,7 +334,7 @@ export class Transport {
         await this.dev.claimInterface(this.iface.interfaceNumber)
         this.log("all connected")
         this.ready = true
-        this.readLoop()
+        dontAwait(this.readLoop())
     }
 }
 
@@ -472,8 +472,8 @@ class HF2Proto implements Proto {
     }
 
     onJDMessage(f: (buf: Uint8Array) => void) {
-        this.talkAsync(HF2_CMD_JDS_CONFIG, encodeU32LE([1]))
         this.onEvent(HF2_EV_JDS_PACKET, f)
+        dontAwait(this.talkAsync(HF2_CMD_JDS_CONFIG, encodeU32LE([1])))
     }
 
     sendJDMessageAsync(buf: Uint8Array) {

@@ -4,7 +4,7 @@ import {
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_NUMBER_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, CtrlReg
 } from "./constants"
-import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
+import { hash, fromHex, idiv, read32, SMap, bufferEq, assert, dontAwait } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";
@@ -281,7 +281,7 @@ export class JDDevice extends JDNode {
         const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
         const v = fwIdRegister?.intValue;
         if (fwIdRegister && v === undefined)
-            fwIdRegister?.refresh(true);
+            dontAwait(fwIdRegister?.refresh(true));
         return v;
     }
 
@@ -315,7 +315,7 @@ export class JDDevice extends JDNode {
                         numdrop++
                     } else {
                         //console.log(`resend`, this)
-                        aa.pkt.sendCmdAsync(this)
+                        dontAwait(aa.pkt.sendCmdAsync(this))
                     }
                 }
             }
@@ -339,7 +339,7 @@ export class JDDevice extends JDNode {
                 errCb: () => reject(new Error("No ACK for " + pkt.toString()))
             }
             this._ackAwaiting.push(ack)
-            pkt.sendCmdAsync(this)
+            dontAwait(pkt.sendCmdAsync(this))
         })
     }
 }

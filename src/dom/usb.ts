@@ -3,7 +3,7 @@ import { JDBus, BusState, BusOptions } from "./bus";
 import Packet from "./packet";
 import { Observable } from "./observable";
 import { EventTargetObservable } from "./eventtargetobservable";
-import { delay } from "./utils";
+import { delay, dontAwait } from "./utils";
 
 const HF2 = "HF2"
 
@@ -72,7 +72,7 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
             const transport = new Transport(options);
             transport.onError = (e) => {
                 bus.errorHandler(HF2, e)
-                bus.disconnectAsync()
+                dontAwait(bus.disconnectAsync())
             }
             const onJDMessage = (buf: Uint8Array) => {
                 const pkts = Packet.fromFrame(buf, bus.timestamp)
@@ -100,8 +100,8 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
         next: ev => {
             console.log(`usb device event: connect, `, bus.connectionState, ev)
             if (bus.connectionState === BusState.Disconnected)
-                delay(500)
-                    .then(() => bus.connectAsync(true))
+                dontAwait(delay(500)
+                    .then(() => bus.connectAsync(true)))
         }
     })
     return bus;

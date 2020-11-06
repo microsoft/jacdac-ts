@@ -1,6 +1,6 @@
 import Packet from "./packet";
 import { JDDevice } from "./device";
-import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
+import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex, dontAwait } from "./utils";
 import {
     ConsolePriority,
     CMD_CONSOLE_SET_MIN_PRIORITY,
@@ -147,10 +147,10 @@ export class JDBus extends JDNode {
             this._announceInterval = setInterval(() => {
                 if (this.connected)
                     this.emit(SELF_ANNOUNCE);
-                this.refreshRegisters();
+                dontAwait(this.refreshRegisters());
             }, 499);
         if (!this._refreshRegistersInterval)
-            this._refreshRegistersInterval = setInterval(() => this.refreshRegisters(), 50);
+            this._refreshRegistersInterval = setInterval(() => dontAwait(this.refreshRegisters()), 50);
         if (!this._gcInterval)
             this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
     }
@@ -543,7 +543,8 @@ export class JDBus extends JDNode {
                     const ack = Packet.onlyHeader(pkt.crc)
                     ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
                     ack.device_identifier = this.selfDeviceId
-                    ack.sendReportAsync(this.selfDevice)
+                    // send response in background
+                    dontAwait(ack.sendReportAsync(this.selfDevice))
                 }
             }
             pkt.device.processPacket(pkt);
@@ -583,13 +584,13 @@ export class JDBus extends JDNode {
             return;
         this._announcing = true;
         let restartCounter = 0
-        this.on(SELF_ANNOUNCE, () => {
+        this.on(SELF_ANNOUNCE, async () => {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
             const pkt = Packet.packed(CMD_ADVERTISEMENT_DATA, "I", [restartCounter | 0x100])
             pkt.service_number = JD_SERVICE_NUMBER_CTRL
             pkt.device_identifier = this.selfDeviceId
-            pkt.sendReportAsync(this.selfDevice)
+            await pkt.sendReportAsync(this.selfDevice)
         })
     }
 

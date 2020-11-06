@@ -1,6 +1,6 @@
 import { JDBus } from "../dom/bus";
 import JDIFrameClient from "../dom/iframeclient";
-import { SMap } from "../dom/utils";
+import { dontAwait, SMap } from "../dom/utils";
 import { IAckMessage, IMessage, IStatusMessage } from "./protocol";
 
 export interface ITransport {
@@ -21,12 +21,12 @@ export class IFrameTransport extends JDIFrameClient
     }
 
     postReady() {
-        this.postMessage({
+        dontAwait(this.postMessage({
             type: 'status',
             data: {
                 status: 'ready'
             }
-        } as IStatusMessage)
+        } as IStatusMessage))
     }
 
     /**

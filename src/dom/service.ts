@@ -6,7 +6,7 @@ import { CMD_REG_MASK, PACKET_RECEIVE, PACKET_SEND, CMD_GET_REG, SERVICE_NODE_NA
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading, isEvent } from "./spec";
 import { JDEvent } from "./event";
-import { delay, strcmp } from "./utils";
+import { delay, dontAwait, strcmp } from "./utils";
 import { InPipeReader } from "./pipes";
 
 export class JDService extends JDNode {
@@ -151,17 +151,17 @@ export class JDService extends JDNode {
                     resolve = null
                 }
             }
-            delay(timeout).then(() => {
+            dontAwait(delay(timeout).then(() => {
                 if (!resolve) return
                 resolve = null
                 this.off(REPORT_RECEIVE, handleRes)
                 reject(new Error(`timeout (${timeout}ms) waiting for response to ${pkt}`))
-            })
-            this.sendPacketAsync(pkt)
+            }))
+            dontAwait(this.sendPacketAsync(pkt)
                 .then(() => {
                     this.on(REPORT_RECEIVE, handleRes)
-                })
-                // the handler remove either upon timeout, or on first invocation of handleRes()
+                }))
+            // the handler remove either upon timeout, or on first invocation of handleRes()
         })
     }
 

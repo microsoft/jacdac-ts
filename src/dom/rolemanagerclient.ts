@@ -4,7 +4,7 @@ import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
 import { SRV_ROLE_MANAGER, DEVICE_CONNECT, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
-import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
+import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array, dontAwait } from "./utils";
 import { unpack } from "./struct";
 import Packet from "./packet";
 
@@ -22,15 +22,15 @@ export class RemoteRequestedDevice {
         return this.services.every(s => ldev.hasService(s))
     }
 
-    select(dev: JDDevice) {
+    async select(dev: JDDevice) {
         if (dev == this.boundTo)
             return
         if (this.parent == null) {
             // setDevName(dev.deviceId, this.name)
         } else {
             if (this.boundTo)
-                this.parent.setRole(this.boundTo, "")
-            this.parent.setRole(dev, this.name)
+                await this.parent.setRole(this.boundTo, "")
+            await this.parent.setRole(dev, this.name)
         }
         this.boundTo = dev
     }
@@ -84,10 +84,10 @@ export class RoleManagerClient extends JDServiceClient {
 
         this.mount(this.bus.subscribe(SELF_ANNOUNCE, () => {
             if (this.service.device.connected)
-                this.scanCore()
+                dontAwait(this.scanCore())
         }))
 
-        this.scanCore()
+        dontAwait(this.scanCore())
     }
 
     private async scanCore() {

@@ -99,7 +99,7 @@
       "no-duplicate-switch-case": true,
       "no-duplicate-variable": true,
       // pxt:override (TODO) "no-empty": true,
-      // pxt:override "no-floating-promises": true,
+      "no-floating-promises": true,
       "no-for-in-array": true,
       // pxt:override "no-implicit-dependencies": true,
       "no-import-side-effect": true,

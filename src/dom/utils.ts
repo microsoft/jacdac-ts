@@ -190,14 +190,14 @@ export class PromiseBuffer<T> {
                 }
                 this.waiting.push(f)
                 if (timeout > 0) {
-                    delay(timeout)
+                    dontAwait(delay(timeout)
                         .then(() => {
                             let idx = this.waiting.indexOf(f)
                             if (idx >= 0) {
                                 this.waiting.splice(idx, 1)
                                 reject(new Error("Timeout"))
                             }
-                        })
+                        }))
                 }
             })
     }
@@ -205,7 +205,7 @@ export class PromiseBuffer<T> {
 
 
 export class PromiseQueue {
-    promises: SMap<(() => Promise<any>)[]> = {};
+    promises: SMap<(() => void)[]> = {};
 
     enqueue<T>(id: string, f: () => Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
@@ -220,14 +220,14 @@ export class PromiseQueue {
                 else
                     arr[0]()
             }
-            arr.push(() =>
+            arr.push(() => dontAwait(
                 f().then(v => {
                     cleanup()
                     resolve(v)
                 }, err => {
                     cleanup()
                     reject(err)
-                }))
+                })))
             if (arr.length == 1)
                 arr[0]()
         })
@@ -567,4 +567,8 @@ export function arrayShuffle<T>(a: T[]): T[] {
         [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+}
+
+export function dontAwait<T>(_v: Promise<T>) {
+    // just ignores passed promise, to shut up no-floating-promises tslint
 }

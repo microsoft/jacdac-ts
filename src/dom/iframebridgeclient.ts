@@ -2,7 +2,7 @@ import { JDBus } from "./bus";
 import { PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
-import { crc } from "./utils";
+import { crc, dontAwait } from "./utils";
 
 export interface PacketMessage {
     channel: "jacdac";
@@ -54,7 +54,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         pkt.sender = this.bridgeId;
 
         // send to native bus
-        this.bus.sendPacketAsync(pkt);
+        dontAwait(this.bus.sendPacketAsync(pkt));
         // send to javascript bus
         this.bus.processPacket(pkt);
     }

@@ -1,6 +1,6 @@
 import { Proto, Transport } from "./hf2";
 import {
-    delay, PromiseQueue, write32, write16, read32, uint8ArrayToString, fromHex, bufferConcat, fromUTF8
+    delay, PromiseQueue, write32, write16, read32, uint8ArrayToString, fromHex, bufferConcat, fromUTF8, dontAwait
 } from "./utils";
 
 interface SendItem {
@@ -440,6 +440,6 @@ export class CMSISProto implements Proto {
         await this.writeWord(xchg + 12, 0)
         this.io.log(`exchange address: 0x${xchg.toString(16)}; irqn=${this.irqn}`)
 
-        /* async */ this.xchgLoop()
+        dontAwait(this.xchgLoop())
     }
 }
