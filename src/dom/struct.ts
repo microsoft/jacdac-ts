@@ -73,21 +73,24 @@ function packUnpackCore(format: string, nums: number[], buf: Uint8Array, isPack:
                 let reps = 1
                 if (i0 != i)
                     reps = parseInt(format.slice(i0, i))
-                while (reps--) {
-                    let fmt = getFormat(format[i], isBig)
-                    if (fmt === null) {
-                        throw new Error("Unsupported format character: " + format[i])
-                    } else {
-                        if (buf) {
-                            if (isPack)
-                                setNumber(buf, fmt, off, nums[idx++])
-                            else
-                                nums.push(getNumber(buf, fmt, off))
-                        }
+                if (format[i] == 'x')
+                    off += reps
+                else
+                    while (reps--) {
+                        let fmt = getFormat(format[i], isBig)
+                        if (fmt === null) {
+                            throw new Error("Unsupported format character: " + format[i])
+                        } else {
+                            if (buf) {
+                                if (isPack)
+                                    setNumber(buf, fmt, off, nums[idx++])
+                                else
+                                    nums.push(getNumber(buf, fmt, off))
+                            }
 
-                        off += sizeOfNumberFormat(fmt)
+                            off += sizeOfNumberFormat(fmt)
+                        }
                     }
-                }
                 break
         }
     }
