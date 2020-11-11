@@ -17,6 +17,7 @@ import ConnectButton from "../jacdac/ConnectButton"
 import PacketLayout from "./PacketLayout";
 import ConnectAlert from "./ConnectAlert";
 import TraceList from "./TraceList";
+import GithubRepositoryCard from "./GithubRepositoryCard";
 
 export default function useMdxComponents() {
   const theme = useTheme();
@@ -50,6 +51,7 @@ export default function useMdxComponents() {
     PacketLayout: props => <PacketLayout {...props} />,
     ConnectAlert: props => <ConnectAlert {...props} />,
     TraceList: props => <TraceList {...props} />,
+    GithubRepositoryCard: props => <GithubRepositoryCard {...props} />
   };
 
   return mdxComponents;
