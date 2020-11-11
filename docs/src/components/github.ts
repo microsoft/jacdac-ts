@@ -54,26 +54,28 @@ export async function fetchReleaseBinary(slug: string, tag: string): Promise<Blo
 
 function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
     const res = useFetch<T>(`${ROOT}${path}`)
-    switch (res.status) {
-        case 200:
-        case 201:
-        case 202:
-        case 203:
-        case 204:
-            break;
-        case 404:
-            // unknow repo or no access
-            res.response = undefined;
-            break;
-        case 403:
-            // throttled
-            if (options?.ignoreThrottled)
+    if (res.status !== undefined)
+        switch (res.status) {
+            case 200:
+            case 201:
+            case 202:
+            case 203:
+            case 204:
+                break;
+            case 404:
+                // unknow repo or no access
                 res.response = undefined;
-            else
-                throw new Error("Too many calls to GitHub, try again later");
-        default:
-            throw new Error("Unknown response from GitHub");
-    }
+                break;
+            case 403:
+                // throttled
+                if (options?.ignoreThrottled)
+                    res.response = undefined;
+                else
+                    throw new Error("Too many calls to GitHub, try again later");
+            default:
+                console.log(`unknown status`, res)
+                throw new Error(`Unknown response from GitHub ${res.status}`);
+        }
     return res;
 }
 
