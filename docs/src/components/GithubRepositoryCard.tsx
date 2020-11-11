@@ -1,6 +1,6 @@
 import React, { } from 'react';
 // tslint:disable-next-line: no-submodule-imports
-import { Card, CardActions, CardContent, CardHeader, Typography } from '@material-ui/core';
+import { Box, Card, CardActions, CardContent, CardHeader, Link, Typography } from '@material-ui/core';
 import { useGithubRepository } from './github';
 
 export default function GithubRepositoryCard(props: { repo: string }) {
@@ -10,13 +10,21 @@ export default function GithubRepositoryCard(props: { repo: string }) {
     return <Card>
         {response &&
             <CardHeader
-                title={response && response.full_name}
+                title={<>
+                    <Link href={response.organization.html_url}>
+                        <Typography component="span" variant="h6">{response.organization.login}</Typography>
+                    </Link>
+                    <Box component="span" ml={0.2} mr={0.2}>/</Box>
+                    <Link href={response.html_url}>                    
+                        {response.name}
+                    </Link>
+                </>} 
             />}
         <CardContent>
             {response && <Typography>{response.description}</Typography>}
         </CardContent>
         <CardActions>
-            
+
         </CardActions>
     </Card>
 }

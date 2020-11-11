@@ -18,6 +18,7 @@ export interface GithubRelease {
 export interface GithubUser {
     login: string;
     avatar_url: string;
+    html_url: string;
 }
 
 export interface GithubRepository {
@@ -30,6 +31,7 @@ export interface GithubRepository {
     homepage: string;
     default_branch: string;
     organization: GithubUser;
+    html_url: string;
 }
 
 export function normalizeSlug(slug: string): string {
