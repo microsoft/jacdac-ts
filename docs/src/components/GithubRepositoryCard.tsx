@@ -14,6 +14,7 @@ export default function GithubRepositoryCard(props: {
     const { slug, showRelease, showDescription, children } = props;
     const { response: repo, loading: repoLoading } = useRepository(slug);
     const { response: release, loading: releaseLoading } = useLatestRelease(showRelease && slug);
+    const description = showDescription && repo?.description;
 
     const title = repo
         ? <>
@@ -32,10 +33,10 @@ export default function GithubRepositoryCard(props: {
             subheader={release && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>}
             avatar={<GitHubIcon />}
         />
-        <CardContent>
-            {repo && showDescription && <Typography>{repo.description}</Typography>}
+        {(description || children) && <CardContent>
+            {description && <Typography>{description}</Typography>}
             {children}
-        </CardContent>
+        </CardContent>}
         <CardActions>
             {(repoLoading || releaseLoading) && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
         </CardActions>
