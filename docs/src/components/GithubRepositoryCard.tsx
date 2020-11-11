@@ -5,9 +5,14 @@ import { useLatestRelease, useRepository } from './github';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import { Link } from 'gatsby-theme-material-ui';
 
-export default function GithubRepositoryCard(props: { slug: string, showRelease?: boolean }) {
-    const { slug, showRelease } = props;
-    const { response: repo, loading: repoLoading, status } = useRepository(slug);
+export default function GithubRepositoryCard(props: {
+    slug: string,
+    showRelease?: boolean,
+    showDescription?: boolean,
+    children?: any
+}) {
+    const { slug, showRelease, showDescription, children } = props;
+    const { response: repo, loading: repoLoading } = useRepository(slug);
     const { response: release, loading: releaseLoading } = useLatestRelease(showRelease && slug);
 
     const title = repo
@@ -28,7 +33,8 @@ export default function GithubRepositoryCard(props: { slug: string, showRelease?
             avatar={<GitHubIcon />}
         />
         <CardContent>
-            {repo && <Typography>{repo.description}</Typography>}
+            {repo && showDescription && <Typography>{repo.description}</Typography>}
+            {children}
         </CardContent>
         <CardActions>
             {(repoLoading || releaseLoading) && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}

@@ -19,7 +19,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         </h2>
         {device.image && <img alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
         {device.description && <Markdown source={device.description} />}
-        {device.repo && <GithubRepositoryCard slug={device.repo} showRelease={true} />}
+        {device.repo && <GithubRepositoryCard slug={device.repo} showRelease={true} showDescription={true} />}
         {!!device.firmwares.length && <><h3>Firmware identifiers</h3>
             <ul>
                 {device.firmwares.map(firmware => <li key={firmware}><IDChip id={firmware} filter={`fw:0x${firmware.toString(16)}`} /></li>)}
