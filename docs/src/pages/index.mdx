@@ -5,7 +5,7 @@ path: /
 
 **JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals (sensors/actuators), with applications to rapid prototyping, making, and physical computing. 
 
-JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of device-specific services it provides via the JACDAC control service, common to all devices. A *service* encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page).
+JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of services it provides. A *service* encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page).
 
 ## Device catalog
 
@@ -31,33 +31,15 @@ JACDAC has support for the C, CircuitPython, and TypeScript languages, as well a
 
 You will want to read about adding a [device entry](./reference/device-entry) to the [device catalog](/devices) and the role of [service specifications](./reference/service-specification), found in the [service catalog](/services). Please read the [JACDAC protocol](./jacdac-protocol) to learn about the JACDAC packet structure and state machine. To port the JACDAC protocol to a new microcontroller requires implementing the [single wire serial (SWS) protocol](./reference/sws-protocol), which requires that the microcontroller have UART, Timer, and GPIO interrupt capabilities.
 
-## Community
-
-We are still in the process of setting up a community area for JACDAC discussions.
-For now, please feel free to [file issues with questions](https://github.com/microsoft/jacdac/issues).
-
 ## JACDAC Github repos
 
 JACDAC is an Open Source living standard. Checkout our [GitHub Repositories](/github)
 for the piece you want.
 
-## Applications
+## Community
 
-### Fashion
-
-JACDAC was the technology used to network microcontrollers together at the 
-[BKLYN Fashion Academy](https://www.bklynlibrary.org/bklyn-fashion-academy) in 2019.
-
-Read more about it [here](https://www.microsoft.com/en-us/research/blog/fashion-forward-researchers-designers-debut-new-tech-on-new-york-city-runway), 
-or watch the video below:
-
-https://youtu.be/TvSmYga2Pic
-
-### Gaming
-
-https://youtu.be/YKshfoeGtbM
-
-https://youtu.be/CKBXQIGQEuw
+We are still in the process of setting up a community area for JACDAC discussions.
+For now, please feel free to [file issues with questions](https://github.com/microsoft/jacdac/issues).
 
 ## Why JACDAC?
 
@@ -67,6 +49,26 @@ JACDAC is a new hardware/software stack for low-cost microcontrollers that makes
 
 The careful design of JACDAC means that it’s inexpensive and low power; it can be supported by microcontrollers that cost as little as two and a half US cents.  Support for WebUSB and TypeScript extends the JACDAC bus to the web browser (and the Internet), enabling the development of services and the debugging of the JACDAC bus directly from the Web browser, 
 reducing the gap between the Web and the microcontroller.
+
+## First Applications
+
+### Fashion
+
+The first version of JACDAC was used to network microcontrollers together at the 
+[BKLYN Fashion Academy](https://www.bklynlibrary.org/bklyn-fashion-academy) in 2019.
+Read more about it [here](https://www.microsoft.com/en-us/research/blog/fashion-forward-researchers-designers-debut-new-tech-on-new-york-city-runway), 
+or watch the video below:
+
+https://youtu.be/TvSmYga2Pic
+
+### Gaming
+
+The first version of JACDAC also was used to network [MakeCode Arcade devices][https://arcade.makecode.com]
+for multi-player gaming experiences:
+
+https://youtu.be/YKshfoeGtbM
+
+https://youtu.be/CKBXQIGQEuw
 
 ## Microsoft Open Source Code of Conduct
 
