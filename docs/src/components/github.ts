@@ -107,6 +107,8 @@ export function useRepository(slug: string) {
 }
 
 export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
+    if (!slug)
+        return { response: undefined, loading: false, error: undefined, status: undefined }
     const uri = `repos/${normalizeSlug(slug)}/releases/latest`;
     const res = useFetchApi<GithubRelease>(uri);
     return res;
