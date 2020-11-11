@@ -5,7 +5,7 @@ export default function useFetch<T>(url: RequestInfo, options?: RequestInit) {
     const [response, setResponse] = useState<T>(undefined);
     const [error, setError] = useState<any>(undefined);
     const [status, setStatus] = useState<number>(undefined);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // start in loading mode
 
     useEffectAsync(async (mounted) => {
         setLoading(true);
