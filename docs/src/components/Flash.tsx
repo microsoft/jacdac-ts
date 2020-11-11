@@ -14,6 +14,7 @@ import useSelectedNodes from "../jacdac/useSelectedNodes"
 // tslint:disable-next-line: no-submodule-imports
 import useFirmwareRepos from "./useFirmwareRepos";
 import UpdateDeviceList from "./UpdateDeviceList";
+import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -75,6 +76,9 @@ export default function Flash() {
             </Tabs>
             <TabPanel value={tab} index={0}>
                 <Grid container spacing={2}>
+                    <Grid {...gridBreakpoints} item key="localfile">
+                        <LocalFileFirmwareCard />
+                    </Grid>
                     {firmwareRepos.map(firmwareRepo => <Grid {...gridBreakpoints} item key={`firmwarerepo${firmwareRepo}`}>
                         <FirmwareCard slug={firmwareRepo} />
                     </Grid>)}

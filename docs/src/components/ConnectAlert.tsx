@@ -1,5 +1,5 @@
 // tslint:disable-next-line: no-submodule-imports
-import { createStyles, makeStyles } from "@material-ui/core";
+import { Box, createStyles, makeStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
 import React, { useContext } from "react";
@@ -23,17 +23,15 @@ function NoSsrConnectAlert(props: { serviceClass?: number }) {
     const spec = serviceSpecificationFromClassIdentifier(serviceClass)
     const supported = isWebUSBSupported()
 
-    if (!supported)
-        return <></>
-
-    if (connectionState === BusState.Disconnected)
-        return <Alert severity="info" closeable={true}>
-            {!spec && <span>Don't forget to connect!</span>}
-            {spec && <span>Don't forget to connect some {spec.name} devices!</span>}
-            <ConnectButton className={classes.button} full={true} transparent={true} />
-        </Alert>
-
-    return <></>
+    if (supported && connectionState === BusState.Disconnected)
+        return <Box displayPrint="none">
+            <Alert severity="info" closeable={true}>
+                {!spec && <span>Don't forget to connect!</span>}
+                {spec && <span>Don't forget to connect some {spec.name} devices!</span>}
+                <ConnectButton className={classes.button} full={true} transparent={true} />
+            </Alert>
+    </Box>
+    return null
 }
 
 export default function ConnectAlert(props: { serviceClass?: number }) {

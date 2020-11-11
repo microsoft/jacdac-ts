@@ -73,25 +73,43 @@ export async function fetchReleaseBinary(slug: string, tag: string): Promise<Blo
     return undefined;
 }
 
-function useGithubFetchApi<T>(path: string, options?: GitHubApiOptions) {
+function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
     const res = useFetch<T>(`${ROOT}${path}`)
-    switch (res.status) {
-        case 404:
-            // unknow repo or no access
-            res.response = undefined;
-            break;
-        case 403:
-            // throttled
-            if (options?.ignoreThrottled)
+    if (res.status !== undefined)
+        switch (res.status) {
+            case 200:
+            case 201:
+            case 202:
+            case 203:
+            case 204:
+                break;
+            case 404:
+                // unknow repo or no access
                 res.response = undefined;
-            else
-                throw new Error("Too many calls to GitHub, try again later");
-    }
+                break;
+            case 403:
+                // throttled
+                if (options?.ignoreThrottled)
+                    res.response = undefined;
+                else
+                    throw new Error("Too many calls to GitHub, try again later");
+            default:
+                console.log(`unknown status`, res)
+                throw new Error(`Unknown response from GitHub ${res.status}`);
+        }
     return res;
 }
 
-export function useGithubRepository(slug: string) {
+export function useRepository(slug: string) {
     const path = `repos/${normalizeSlug(slug)}`
-    const res = useGithubFetchApi<GithubRepository>(path);
+    const res = useFetchApi<GithubRepository>(path);
+    return res;
+}
+
+export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
+    if (!slug)
+        return { response: undefined, loading: false, error: undefined, status: undefined }
+    const uri = `repos/${normalizeSlug(slug)}/releases/latest`;
+    const res = useFetchApi<GithubRelease>(uri);
     return res;
 }

@@ -7,6 +7,7 @@ import { Grid } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
 import Markdown from "./Markdown";
 import DeviceSpecificationSource from "./DeviceSpecificationSource";
+import GithubRepositoryCard from "./GithubRepositoryCard"
 
 export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, showSource?: string }) {
     const { device, showSource } = props;
@@ -14,16 +15,11 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
 
     return <>
         <h2 key="title">
-            {device.name}
+            <Link to={device.link}>{device.name}</Link>
         </h2>
-        {device.image && <img key="image" alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
-        <p key="description">
-            {device.description && <Markdown source={device.description} />}
-        </p>
-        <ul>
-            <li>repo: <Link to={device.repo}>{device.repo}</Link></li>
-            <li>link: <Link to={device.link}>{device.link}</Link></li>
-        </ul>
+        {device.image && <img alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
+        {device.description && <Markdown source={device.description} />}
+        {device.repo && <GithubRepositoryCard slug={device.repo} showRelease={true} showDescription={true} />}
         {!!device.firmwares.length && <><h3>Firmware identifiers</h3>
             <ul>
                 {device.firmwares.map(firmware => <li key={firmware}><IDChip id={firmware} filter={`fw:0x${firmware.toString(16)}`} /></li>)}
@@ -31,8 +27,8 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         <h3>Services</h3>
         <Grid container spacing={2}>
             {device.services.map(sc => serviceSpecificationFromClassIdentifier(sc))
-                .map(spec => <Grid item {...gridBreakpoints}>
-                    <ServiceSpecificationCard key={spec.shortId} specification={spec} />
+                .map(spec => <Grid item key={spec.shortId} {...gridBreakpoints}>
+                    <ServiceSpecificationCard specification={spec} />
                 </Grid>)}
         </Grid>
         {showSource && <>
