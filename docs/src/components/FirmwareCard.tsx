@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react"
-import { Button, Card, CardHeader, CardActions, CircularProgress, CardContent, Chip, ListItem, List, ListItemText, Typography } from "@material-ui/core";
-import { fetchLatestRelease, fetchReleaseBinary, GithubRelease, normalizeSlug } from "./github";
-import useEffectAsync from "./useEffectAsync";
+import React, { useState } from "react"
+import { Button, Card, CardHeader, CardActions, CircularProgress, CardContent, ListItem, List, ListItemText, Typography } from "@material-ui/core";
+import { fetchReleaseBinary, normalizeSlug, useLatestRelease } from "./github";
 import { Link } from "gatsby-theme-material-ui";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
 import Alert from "./Alert";
@@ -11,7 +10,7 @@ export const LOCAL_FILE_SLUG = "local file";
 
 export default function FirmwareCard(props: { slug: string }) {
     const { slug } = props
-    const [release, setRelease] = useState<GithubRelease>(undefined)
+    const { response: release } = useLatestRelease(slug);
     const [downloading, setDownloading] = useState(false)
     const [error, setError] = useState("")
     const { setFirmwareFile, firmwareBlobs } = useFirmwareBlob(slug)
@@ -23,23 +22,6 @@ export default function FirmwareCard(props: { slug: string }) {
     const indeterminate = downloading && !isGithubRepo
     const downloadColor = updateAvailable ? "primary" : "inherit"
     const downloadVariant = updateAvailable ? "contained" : "text"
-
-    useEffectAsync(async (mounted) => {
-        if (slug == LOCAL_FILE_SLUG || !mounted())
-            return;
-        try {
-            setError("")
-            setDownloading(true)
-            const rel = await fetchLatestRelease(slug)
-            if (mounted())
-                setRelease(rel)
-        } catch (e) {
-            setError(e.message)
-        }
-        finally {
-            setDownloading(false)
-        }
-    }, [slug]);
 
     const handleFiles = async (files: File[]) => {
         const file = files[0]
