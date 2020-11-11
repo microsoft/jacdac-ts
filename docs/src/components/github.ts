@@ -1,4 +1,4 @@
-import { stringify } from "querystring";
+import useFetch from "./useFetch";
 
 const ROOT = "https://api.github.com/"
 
@@ -15,11 +15,34 @@ export interface GithubRelease {
     }[]
 }
 
+export interface GithubUser {
+    login: string;
+    avatar_url: string;
+    html_url: string;
+}
+
+export interface GithubRepository {
+    name: string;
+    full_name: string;
+    private: boolean;
+    owner: GithubUser;
+    description: string;
+    fork: boolean;
+    homepage: string;
+    default_branch: string;
+    organization: GithubUser;
+    html_url: string;
+}
+
 export function normalizeSlug(slug: string): string {
     return slug.replace(/^https:\/\/github.com\//, "")
 }
 
-export async function fetchLatestRelease(slug: string, options?: { ignoreThrottled?: boolean }): Promise<GithubRelease> {
+export interface GitHubApiOptions {
+    ignoreThrottled?: boolean;
+}
+
+export async function fetchLatestRelease(slug: string, options?: GitHubApiOptions): Promise<GithubRelease> {
     const uri = `${ROOT}repos/${normalizeSlug(slug)}/releases/latest`;
     const resp = await fetch(uri)
     //    console.log(resp)
@@ -48,4 +71,27 @@ export async function fetchReleaseBinary(slug: string, tag: string): Promise<Blo
         return firmware;
     }
     return undefined;
+}
+
+function useGithubFetchApi<T>(path: string, options?: GitHubApiOptions) {
+    const res = useFetch<T>(`${ROOT}${path}`)
+    switch (res.status) {
+        case 404:
+            // unknow repo or no access
+            res.response = undefined;
+            break;
+        case 403:
+            // throttled
+            if (options?.ignoreThrottled)
+                res.response = undefined;
+            else
+                throw new Error("Too many calls to GitHub, try again later");
+    }
+    return res;
+}
+
+export function useGithubRepository(slug: string) {
+    const path = `repos/${normalizeSlug(slug)}`
+    const res = useGithubFetchApi<GithubRepository>(path);
+    return res;
 }

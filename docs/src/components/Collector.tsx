@@ -1,8 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions, CardHeader, CardContent, FormGroup, FormControlLabel, PaletteType } from '@material-ui/core';
-import { JDField } from '../../../src/dom/field';
+import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
@@ -11,22 +10,20 @@ import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SaveIcon from '@material-ui/icons/Save';
 import useChange from '../jacdac/useChange';
-import ConnectButton from '../jacdac/ConnectButton';
-import { BusState, JDBus } from '../../../src/dom/bus'
+import { JDBus } from '../../../src/dom/bus'
 import FieldDataSet from './FieldDataSet';
 import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/dom/event';
-import { EVENT, REPORT_UPDATE, SRV_ROLE_MANAGER, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';
+import { EVENT, REPORT_UPDATE, SRV_SENSOR_AGGREGATOR } from '../../../src/dom/constants';
 import { arrayConcatMany, throttle } from '../../../src/dom/utils';
 import DataSetGrid from './DataSetGrid';
 import { JDRegister } from '../../../src/dom/register';
 import ReadingFieldGrid from './ReadingFieldGrid';
 import DeviceCardHeader from './DeviceCardHeader';
-import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/dom/sensoraggregatorclient';
-import DarkModeContext from './DarkModeContext';
+import { SensorAggregatorClient } from '../../../src/dom/sensoraggregatorclient';
 import { Link } from 'gatsby-theme-material-ui';
 import { JDService } from '../../../src/dom/service';
 import ServiceManagerContext from './ServiceManagerContext';
@@ -80,7 +77,7 @@ function createDataSet(bus: JDBus,
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const classes = useStyles();
     const { fileStorage } = useContext(ServiceManagerContext)
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
