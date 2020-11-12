@@ -1,7 +1,7 @@
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import React, { useState } from "react";
-import { flagsToValue, prettyUnit, valueToFlags } from "../../../src/dom/pretty";
-import { tryParseMemberValue } from "../../../src/dom/spec";
+import { flagsToValue, prettyUnit, valueToFlags } from "../../../src/jdom/pretty";
+import { tryParseMemberValue } from "../../../src/jdom/spec";
 import IDChip from "./IDChip";
 
 function isSet(field: any) {

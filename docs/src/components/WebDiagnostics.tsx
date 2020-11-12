@@ -1,7 +1,7 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import React, { useContext, useState } from "react"
-import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/dom/constants";
-import { JDNode, visitNodes } from "../../../src/dom/node";
+import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/jdom/constants";
+import { JDNode, visitNodes } from "../../../src/jdom/node";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useChange from "../jacdac/useChange"
 import PaperBox from "./PaperBox";

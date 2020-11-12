@@ -7,12 +7,12 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
-import { JDDevice } from '../../../src/dom/device';
-import { SRV_CTRL, SRV_LOGGER, CtrlReg } from '../../../src/dom/constants';
+import { JDDevice } from '../../../src/jdom/device';
+import { SRV_CTRL, SRV_LOGGER, CtrlReg } from '../../../src/jdom/constants';
 import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
-import { JDService } from '../../../src/dom/service';
+import { JDService } from '../../../src/jdom/service';
 import { CardActions, createStyles, Theme } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import { useRegisterStringValue } from '../jacdac/useRegisterValue';

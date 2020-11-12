@@ -1,6 +1,6 @@
 import React, { createContext } from "react";
-import { JDBus, BusState } from "../dom/bus";
-import TraceRecorder from "../dom/tracerecorder";
+import { JDBus, BusState } from "../jdom/bus";
+import TraceRecorder from "../jdom/tracerecorder";
 
 export interface JDContextProps {
     bus: JDBus,

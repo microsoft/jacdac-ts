@@ -55,7 +55,7 @@ import PacketInspector from "./PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
-import Flags from "../../../src/dom/flags"
+import Flags from "../../../src/jdom/flags"
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;

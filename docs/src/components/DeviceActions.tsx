@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { JDDevice } from "../../../src/dom/device"
+import { JDDevice } from "../../../src/jdom/device"
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FingerprintIcon from '@material-ui/icons/Fingerprint';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name

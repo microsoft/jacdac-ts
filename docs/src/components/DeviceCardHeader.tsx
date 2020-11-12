@@ -1,8 +1,8 @@
-import { CtrlReg, SRV_CTRL } from "../../../src/dom/constants";
+import { CtrlReg, SRV_CTRL } from "../../../src/jdom/constants";
 import { CardHeader, Chip, Typography } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports
 import { Link } from 'gatsby-theme-material-ui';
-import { JDDevice } from "../../../src/dom/device";
+import { JDDevice } from "../../../src/jdom/device";
 import React from "react";
 import { useRegisterIntValue, useRegisterStringValue } from "../jacdac/useRegisterValue";
 import DeviceActions from "./DeviceActions";

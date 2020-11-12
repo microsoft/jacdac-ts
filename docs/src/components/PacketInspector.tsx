@@ -4,10 +4,10 @@ import PacketsContext from "./PacketsContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
 import KindChip from "./KindChip"
-import { toHex } from "../../../src/dom/utils";
+import { toHex } from "../../../src/jdom/utils";
 import { Typography } from "@material-ui/core";
 import PacketSpecification from "./PacketSpecification";
-import { printPacket } from "../../../src/dom/pretty";
+import { printPacket } from "../../../src/jdom/pretty";
 import PacketLayout from "./PacketLayout";
 import { Link } from "gatsby-theme-material-ui";
 import PaperBox from "./PaperBox";

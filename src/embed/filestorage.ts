@@ -1,4 +1,4 @@
-import { delay } from "../dom/utils";
+import { delay } from "../jdom/utils";
 import { ISaveTextMessage } from "./protocol";
 import { ITransport } from "./transport";
 

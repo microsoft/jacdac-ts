@@ -1,12 +1,12 @@
 import React, { useContext, useState } from "react";
 import { Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Select, Switch, TextField, Typography } from "@material-ui/core";
-import { InPipeReader } from "../../../src/dom/pipes";
-import { JDService } from "../../../src/dom/service";
+import { InPipeReader } from "../../../src/jdom/pipes";
+import { JDService } from "../../../src/jdom/service";
 import DeviceName from "./DeviceName";
-import { hasPipeReport, isReportOf } from "../../../src/dom/spec"
-import { packArguments } from "../../../src/dom/command"
-import { DecodedPacket, decodePacketData, printPacket } from "../../../src/dom/pretty"
-import Packet from "../../../src/dom/packet";
+import { hasPipeReport, isReportOf } from "../../../src/jdom/spec"
+import { packArguments } from "../../../src/jdom/command"
+import { DecodedPacket, decodePacketData, printPacket } from "../../../src/jdom/pretty"
+import Packet from "../../../src/jdom/packet";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 import CmdButton from "./CmdButton";
 

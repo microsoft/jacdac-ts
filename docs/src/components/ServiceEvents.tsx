@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from "react";
-import { JDService } from "../../../src/dom/service";
-import { isEvent } from "../../../src/dom/spec";
+import { JDService } from "../../../src/jdom/service";
+import { isEvent } from "../../../src/jdom/spec";
 import EventInput from "./EventInput";
 
 export default function ServiceEvents(props: {

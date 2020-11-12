@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { NAME_CHANGE } from "../../../src/dom/constants";
-import { JDDevice } from "../../../src/dom/device";
+import { NAME_CHANGE } from "../../../src/jdom/constants";
+import { JDDevice } from "../../../src/jdom/device";
 
 export default function useDeviceName(device: JDDevice, includeShortId?: boolean) {
     const [name, setName] = useState(device.friendlyName)

@@ -6,9 +6,9 @@ import useChange from '../jacdac/useChange';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useGridBreakpoints from './useGridBreakpoints';
 import DeviceCardHeader from './DeviceCardHeader';
-import { JDService } from '../../../src/dom/service';
+import { JDService } from '../../../src/jdom/service';
 import { DeviceLostAlert } from './DeviceLostAlert';
-import { JDDevice } from '../../../src/dom/device';
+import { JDDevice } from '../../../src/jdom/device';
 import Alert from './Alert';
 
 

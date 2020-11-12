@@ -1,6 +1,6 @@
 import { List } from "@material-ui/core";
 import React from "react"
-import Trace from "../../../src/dom/trace"
+import Trace from "../../../src/jdom/trace"
 import PacketListItem from "./PacketListItem"
 
 export default function TraceView(props: { trace: Trace }) {

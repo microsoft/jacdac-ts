@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import JACDACContext from "../../../src/react/Context";
-import { BusState } from "../../../src/dom/bus";
-import { createUSBBus } from "../../../src/dom/usb";
-import { CONNECTION_STATE } from "../../../src/dom/constants";
-import IFrameBridgeClient from "../../../src/dom/iframebridgeclient"
-import { inIFrame } from "../../../src/dom/iframeclient";
-import Flags from "../../../src/dom/flags"
+import { BusState } from "../../../src/jdom/bus";
+import { createUSBBus } from "../../../src/jdom/usb";
+import { CONNECTION_STATE } from "../../../src/jdom/constants";
+import IFrameBridgeClient from "../../../src/jdom/iframebridgeclient"
+import { inIFrame } from "../../../src/jdom/iframeclient";
+import Flags from "../../../src/jdom/flags"
 
 function sniffQueryArguments() {
     if (typeof window === "undefined" || typeof URLSearchParams === "undefined")

@@ -3,9 +3,9 @@ import React, { useState } from "react"
 import {
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
-} from "../../../src/dom/constants";
-import Packet from "../../../src/dom/packet";
-import { fromHex, toHex } from "../../../src/dom/utils";
+} from "../../../src/jdom/constants";
+import Packet from "../../../src/jdom/packet";
+import { fromHex, toHex } from "../../../src/jdom/utils";
 import PaperBox from "./PaperBox";
 
 export default function PacketLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {

@@ -1,7 +1,7 @@
 import { Button, Card, CardActions, CardContent, CardHeader, Typography } from "@material-ui/core";
 import React, { useContext } from "react";
-import { prettyDuration } from "../../../src/dom/pretty";
-import Trace from "../../../src/dom/trace";
+import { prettyDuration } from "../../../src/jdom/pretty";
+import Trace from "../../../src/jdom/trace";
 import AppContext, { DrawerType } from "./AppContext";
 import Markdown from "./Markdown"
 import PacketsContext from "./PacketsContext";

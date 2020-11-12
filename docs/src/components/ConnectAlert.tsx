@@ -3,11 +3,11 @@ import { Box, createStyles, makeStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
 import React, { useContext } from "react";
-import { BusState } from "../../../src/dom/bus";
-import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { BusState } from "../../../src/jdom/bus";
+import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import ConnectButton from "../jacdac/ConnectButton";
-import { isWebUSBSupported } from "../../../src/dom/usb"
+import { isWebUSBSupported } from "../../../src/jdom/usb"
 import { NoSsr } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => createStyles({

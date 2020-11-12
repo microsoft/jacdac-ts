@@ -1,11 +1,11 @@
 import React, { useState, useContext } from "react"
 import ImportButton from "./ImportButton"
-import { parseLogicLog, parseTrace } from "../../../src/dom/logparser"
+import { parseLogicLog, parseTrace } from "../../../src/jdom/logparser"
 import PacketsContext from "./PacketsContext"
-import Packet from "../../../src/dom/packet";
-import { arrayConcatMany } from "../../../src/dom/utils";
+import Packet from "../../../src/jdom/packet";
+import { arrayConcatMany } from "../../../src/jdom/utils";
 import AppContext from "./AppContext"
-import Trace from "../../../src/dom/trace";
+import Trace from "../../../src/jdom/trace";
 
 export default function TraceImportButton(props: { icon?: boolean, disabled?: boolean }) {
     const { icon, disabled } = props;

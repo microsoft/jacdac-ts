@@ -1,6 +1,6 @@
-import { JDBus } from "../dom/bus";
-import JDIFrameClient from "../dom/iframeclient";
-import { SMap } from "../dom/utils";
+import { JDBus } from "../jdom/bus";
+import JDIFrameClient from "../jdom/iframeclient";
+import { SMap } from "../jdom/utils";
 import { IAckMessage, IMessage, IStatusMessage } from "./protocol";
 
 export interface ITransport {

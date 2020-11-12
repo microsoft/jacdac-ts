@@ -1,11 +1,11 @@
 import React from 'react';
 import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
-import { deviceSpecifications, imageDeviceOf } from '../../../src/dom/spec';
+import { deviceSpecifications, imageDeviceOf } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import InfoIcon from '@material-ui/icons/Info';
 import Markdown from "./Markdown"
 import { IconButton } from "gatsby-theme-material-ui";
-import { arrayShuffle } from '../../../src/dom/utils';
+import { arrayShuffle } from '../../../src/jdom/utils';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

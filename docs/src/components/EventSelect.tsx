@@ -11,12 +11,12 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 // tslint:disable-next-line: no-submodule-imports
 import Select from '@material-ui/core/Select';
-import { JDEvent } from '../../../src/dom/event';
+import { JDEvent } from '../../../src/jdom/event';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import clsx from 'clsx';
-import { arrayConcatMany } from '../../../src/dom/utils';
-import { JDDevice } from '../../../src/dom/device';
+import { arrayConcatMany } from '../../../src/jdom/utils';
+import { JDDevice } from '../../../src/jdom/device';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

@@ -1,7 +1,7 @@
 import { Badge } from "@material-ui/core";
 import React from "react";
 import { SRV_LOGGER } from "../../../jacdac-spec/dist/specconstants";
-import Packet from "../../../src/dom/packet";
+import Packet from "../../../src/jdom/packet";
 import KindIcon from "./KindIcon";
 import LogMessageIcon from "./LogMessageIcon";
 

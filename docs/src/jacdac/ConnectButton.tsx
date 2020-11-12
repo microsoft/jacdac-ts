@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Button } from "gatsby-theme-material-ui";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { BusState } from "../../../src/dom/bus";
+import { BusState } from "../../../src/jdom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
 import { useMediaQuery, useTheme } from "@material-ui/core";

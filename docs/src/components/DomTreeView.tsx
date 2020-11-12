@@ -14,25 +14,25 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import { Badge } from "@material-ui/core"
 import KindIcon from "./KindIcon"
-import { JDDevice } from '../../../src/dom/device';
-import { JDEvent } from '../../../src/dom/event';
-import { JDService } from '../../../src/dom/service';
-import { JDRegister } from '../../../src/dom/register';
+import { JDDevice } from '../../../src/jdom/device';
+import { JDEvent } from '../../../src/jdom/event';
+import { JDService } from '../../../src/jdom/service';
+import { JDRegister } from '../../../src/jdom/register';
 import useChange from "../jacdac/useChange";
-import { isRegister, isEvent, isReading } from '../../../src/dom/spec';
+import { isRegister, isEvent, isReading } from '../../../src/jdom/spec';
 import { Switch, useMediaQuery, useTheme } from '@material-ui/core';
 import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE } from '../../../src/dom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE } from '../../../src/jdom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
-import { ellipseJoin } from '../../../src/dom/utils';
+import { ellipseJoin } from '../../../src/jdom/utils';
 import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
-import { isWebUSBSupported } from '../../../src/dom/usb';
+import { isWebUSBSupported } from '../../../src/jdom/usb';
 
 declare module 'csstype' {
     interface Properties {

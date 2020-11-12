@@ -1,7 +1,7 @@
-import { JDNode } from "../../../src/dom/node";
-import { CHANGE } from "../../../src/dom/constants";
+import { JDNode } from "../../../src/jdom/node";
+import { CHANGE } from "../../../src/jdom/constants";
 import { useState, useEffect } from "react";
-import { JDEventSource } from "../../../src/dom/eventsource";
+import { JDEventSource } from "../../../src/jdom/eventsource";
 import useEffectAsync from "../components/useEffectAsync";
 
 export default function useChange<TNode extends JDEventSource, TValue>(node: TNode, query?: (n: TNode) => TValue): TValue {

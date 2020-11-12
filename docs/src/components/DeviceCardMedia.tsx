@@ -1,5 +1,5 @@
 import React from "react";
-import { JDDevice } from "../../../src/dom/device";
+import { JDDevice } from "../../../src/jdom/device";
 import useDeviceSpecification from "../jacdac/useDeviceSpecification";
 import CardMediaWithSkeleton from "./CardMediaWithSkeleton";
 

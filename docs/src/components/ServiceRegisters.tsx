@@ -1,6 +1,6 @@
 import React from "react";
-import { JDService } from "../../../src/dom/service";
-import { isRegister } from "../../../src/dom/spec";
+import { JDService } from "../../../src/jdom/service";
+import { isRegister } from "../../../src/jdom/spec";
 import RegisterInput from "./RegisterInput";
 import useChange from '../jacdac/useChange';
 

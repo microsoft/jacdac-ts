@@ -1,5 +1,5 @@
 import React from "react"
-import { isWebUSBSupported } from "../../../src/dom/usb"
+import { isWebUSBSupported } from "../../../src/jdom/usb"
 
 export default function WebUSBSupported(props: { children: any }) {
     const { children } = props;

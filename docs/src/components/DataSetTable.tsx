@@ -15,7 +15,7 @@ import TableRow from '@material-ui/core/TableRow';
 // tslint:disable-next-line: no-submodule-imports
 import Paper from '@material-ui/core/Paper';
 import { DataSet } from './DataSet';
-import { prettyDuration } from '../../../src/dom/pretty';
+import { prettyDuration } from '../../../src/jdom/pretty';
 
 const useStyles = makeStyles({
   table: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { JDEvent } from "../../../src/dom/event";
+import { JDEvent } from "../../../src/jdom/event";
 import { Typography, Badge } from "@material-ui/core";
 import KindIcon from "./KindIcon";
 import useEventCount from "../jacdac/useEventCount";

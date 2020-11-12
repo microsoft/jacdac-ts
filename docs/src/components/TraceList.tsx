@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { graphql, Link, useStaticQuery } from "gatsby";
-import { parseTrace } from "../../../src/dom/logparser"
-import Trace from "../../../src/dom/trace";
+import { parseTrace } from "../../../src/jdom/logparser"
+import Trace from "../../../src/jdom/trace";
 import { createStyles, Grid, List, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
 import TraceCard from "./TraceCard";
 import useGridBreakpoints from "./useGridBreakpoints"

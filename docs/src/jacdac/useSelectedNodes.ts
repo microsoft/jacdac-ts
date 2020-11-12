@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { JDNode } from "../../../src/dom/node"
+import { JDNode } from "../../../src/jdom/node"
 
 export default function useSelectedNodes<TNode extends JDNode>() {
     const [nodes] = useState<Set<string>>(new Set<string>())

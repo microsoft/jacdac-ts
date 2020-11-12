@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { CHANGE, ERROR } from "../../../src/dom/constants";
-import { JDEventSource } from "../../../src/dom/eventsource";
-import { delay } from "../../../src/dom/utils";
+import { CHANGE, ERROR } from "../../../src/jdom/constants";
+import { JDEventSource } from "../../../src/jdom/eventsource";
+import { delay } from "../../../src/jdom/utils";
 import useEffectAsync from "./useEffectAsync";
 
 export const DB_VALUE_CHANGE = "dbValueChange"

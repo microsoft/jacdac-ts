@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ListItem } from '@material-ui/core';
-import { JDDevice } from '../../../src/dom/device';
+import { JDDevice } from '../../../src/jdom/device';
 import DeviceCard from './DeviceCard';
 
 
