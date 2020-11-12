@@ -1,6 +1,6 @@
-import { CtrlReg, SRV_CTRL } from "../../../src/dom/constants";
-import { JDDevice } from "../../../src/dom/device";
-import { deviceSpecificationFromFirmwareIdentifier, imageDeviceOf } from "../../../src/dom/spec";
+import { CtrlReg, SRV_CTRL } from "../../../src/jdom/constants";
+import { JDDevice } from "../../../src/jdom/device";
+import { deviceSpecificationFromFirmwareIdentifier, imageDeviceOf } from "../../../src/jdom/spec";
 import { useRegisterIntValue } from "./useRegisterValue";
 
 export default function useDeviceSpecification(device: JDDevice) {

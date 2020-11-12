@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { isWebUSBSupported } from "../../../src/dom/usb"
+import { isWebUSBSupported } from "../../../src/jdom/usb"
 import { Collapse, NoSsr } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";

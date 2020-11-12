@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
-import { JDRegister } from "../../../src/dom/register";
+import { JDRegister } from "../../../src/jdom/register";
 import { Slider, Typography, Switch, TextField, Select, MenuItem, Theme, createStyles, makeStyles } from "@material-ui/core";
-import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/dom/pretty";
+import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/jdom/pretty";
 import IDChip from "./IDChip"
 import AppContext from "./AppContext"
 

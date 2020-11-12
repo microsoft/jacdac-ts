@@ -10,7 +10,7 @@ import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import ConnectButton from "../jacdac/ConnectButton";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { DEVICE_CHANGE } from "../../../src/dom/constants";
+import { DEVICE_CHANGE } from "../../../src/jdom/constants";
 
 export default function DrawerToolsButtonGroup(props: { className?: string, showToc?: boolean, showCurrent?: boolean, showConnect?: boolean }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)

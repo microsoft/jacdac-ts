@@ -1,4 +1,4 @@
-import { isRegister, isEvent, isCommand, tryParseMemberValue, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
+import { isRegister, isEvent, isCommand, tryParseMemberValue, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./Alert";
 import React, { useState } from "react";

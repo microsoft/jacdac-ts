@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 import { ListItem, ListItemIcon, makeStyles, Theme, createStyles, ListItemText, useMediaQuery, useTheme } from '@material-ui/core';
-import Packet from '../../../src/dom/packet';
+import Packet from '../../../src/jdom/packet';
 import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
 import AppContext, { DrawerType } from './AppContext'
 import { MOBILE_BREAKPOINT } from './layout';
-import { SRV_LOGGER } from '../../../src/dom/constants';
-import { prettyDuration } from '../../../src/dom/pretty';
+import { SRV_LOGGER } from '../../../src/jdom/constants';
+import { prettyDuration } from '../../../src/jdom/pretty';
 
 const useStyles = makeStyles(() =>
     createStyles({

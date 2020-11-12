@@ -1,8 +1,8 @@
 import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { BusState } from "../../../src/dom/bus";
-import { CONNECTION_STATE, ERROR } from "../../../src/dom/constants";
-import { isCancelError } from "../../../src/dom/utils";
+import { BusState } from "../../../src/jdom/bus";
+import { CONNECTION_STATE, ERROR } from "../../../src/jdom/constants";
+import { isCancelError } from "../../../src/jdom/utils";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 
 export enum DrawerType {

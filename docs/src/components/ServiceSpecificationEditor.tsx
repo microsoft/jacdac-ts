@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
 import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
-import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/dom/spec';
+import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/jdom/spec';
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';

@@ -1,7 +1,7 @@
 
 import React, { useState } from "react"
-import { cryptoRandomUint32 } from "../../../src/dom/utils";
-import { deviceSpecificationFromFirmwareIdentifier, serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { cryptoRandomUint32 } from "../../../src/jdom/utils";
+import { deviceSpecificationFromFirmwareIdentifier, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import { TextField, Paper, Card, makeStyles, CardContent, CardActions, Typography, createStyles } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CheckIcon from '@material-ui/icons/Check';

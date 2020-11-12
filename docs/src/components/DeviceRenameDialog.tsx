@@ -15,7 +15,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EditIcon from '@material-ui/icons/Edit';
-import { JDDevice } from '../../../src/dom/device';
+import { JDDevice } from '../../../src/jdom/device';
 import DeviceActions from './DeviceActions';
 import { IconButton } from 'gatsby-theme-material-ui';
 

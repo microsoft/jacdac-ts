@@ -1,5 +1,5 @@
 import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec"
+import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 import ServiceSpecification from "../components/ServiceSpecification"
 
 <ServiceSpecification service={serviceSpecificationFromClassIdentifier(props.pageContext.node.classIdentifier)} showSource={true} showDevices={true} />
@@ -10,5 +10,5 @@ import ServiceSpecification from "../components/ServiceSpecification"
     <li><a href={`https://github.com/microsoft/jacdac/tree/main/services/${props.pageContext.node.shortId}.md`}>Edit specification source</a>.</li>
     <li>Read <Link to="/reference/service-specification">Service Specification Language</Link> reference</li>
     <li>Create a new service specification using the <Link to="/tools/service-editor">Service Editor</Link></li>
-    <li>Using services in JavaScript with the <Link to={`/clients/web/dom`}>JACDAC DOM</Link></li>
+    <li>Using services in JavaScript with the <Link to={`/clients/web/jdom`}>JACDAC DOM</Link></li>
 </ul>

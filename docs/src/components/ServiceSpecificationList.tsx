@@ -1,7 +1,7 @@
 import { Grid } from "@material-ui/core";
 import React, { useMemo } from "react";
-import { serviceSpecifications } from "../../../src/dom/spec";
-import { arrayShuffle } from "../../../src/dom/utils";
+import { serviceSpecifications } from "../../../src/jdom/spec";
+import { arrayShuffle } from "../../../src/jdom/utils";
 import ServiceSpecificationCard from "./ServiceSpecificationCard"
 import useGridBreakpoints from "./useGridBreakpoints";
 

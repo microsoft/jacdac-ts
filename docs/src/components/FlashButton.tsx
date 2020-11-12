@@ -4,9 +4,9 @@ import { IconButton } from "gatsby-theme-material-ui";
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 import { Badge, Tooltip } from "@material-ui/core";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
+import { DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants";
 import useEventRaised from "../jacdac/useEventRaised";
-import { computeUpdates } from "../../../src/dom/flashing";
+import { computeUpdates } from "../../../src/jdom/flashing";
 import useChange from "../jacdac/useChange";
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
 

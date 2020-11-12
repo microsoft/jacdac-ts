@@ -1,4 +1,4 @@
-import { HF2_DEVICE_MAJOR } from "../dom/hf2";
+import { HF2_DEVICE_MAJOR } from "../jdom/hf2";
 
 const USB = require('webusb').USB;
 

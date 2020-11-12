@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { JDRegister } from "../../../src/dom/register";
+import { JDRegister } from "../../../src/jdom/register";
 import { Slider, Typography, Switch, TextField, Select, MenuItem } from "@material-ui/core";
-import { REPORT_UPDATE } from "../../../src/dom/constants";
-import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/dom/pretty";
-import { debouncedPollAsync } from "../../../src/dom/utils";
+import { REPORT_UPDATE } from "../../../src/jdom/constants";
+import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/jdom/pretty";
+import { debouncedPollAsync } from "../../../src/jdom/utils";
 import IDChip from "./IDChip"
 import DeviceName from "./DeviceName";
 import { DecodedMemberItem } from "./DecodedMemberItem";

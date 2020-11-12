@@ -8,11 +8,11 @@ import json from 'rollup-plugin-json'
 const pkg = require('./package.json')
 
 export default [
-  { libraryName: 'jacdac-dom', dir: 'dom' },
-  { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-dom", "webusb"] },
-  { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-dom", "react"] },
-  { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-dom"] },
-  { libraryName: 'jacdac', dir: '', external: ["jacdac-dom", "react", "jacdac-react", "webusb", "jacdac-node", "jacdac-embed"] },
+  { libraryName: 'jacdac-jdom', dir: 'jdom' },
+  { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-jdom", "webusb"] },
+  { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-jdom", "react"] },
+  { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-jdom"] },
+  { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "react", "jacdac-react", "webusb", "jacdac-node", "jacdac-embed"] },
 ].map(({ libraryName, dir, external }) => {
   return {
     input: `src/${dir}/${libraryName}.ts`,

@@ -1,9 +1,9 @@
 import { createStyles, Grid, makeStyles, Tab, Tabs, Theme } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
-import { BusState } from "../../../src/dom/bus";
-import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/dom/constants";
-import { isBootloaderFlashing, JDDevice } from "../../../src/dom/device";
-import { scanFirmwares, updateApplicable } from "../../../src/dom/flashing";
+import { BusState } from "../../../src/jdom/bus";
+import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants";
+import { isBootloaderFlashing, JDDevice } from "../../../src/jdom/device";
+import { scanFirmwares, updateApplicable } from "../../../src/jdom/flashing";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useEventRaised from "../jacdac/useEventRaised";
 import TabPanel, { a11yProps } from './TabPanel';

@@ -1,5 +1,5 @@
-import { CHANGE } from "../dom/constants";
-import { JDEventSource } from "../dom/eventsource";
+import { CHANGE } from "../jdom/constants";
+import { JDEventSource } from "../jdom/eventsource";
 import { IFile, IFileContent, IFileLoadMessage, IModelListMessage } from "./protocol";
 import { ITransport } from "./transport";
 

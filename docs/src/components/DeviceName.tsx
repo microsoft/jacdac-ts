@@ -1,6 +1,6 @@
 import { Typography } from "@material-ui/core";
 import React from "react"
-import { JDDevice } from "../../../src/dom/device";
+import { JDDevice } from "../../../src/jdom/device";
 import useDeviceName from "./useDeviceName";
 
 export default function DeviceName(props: { device: JDDevice, serviceNumber?: number }) {

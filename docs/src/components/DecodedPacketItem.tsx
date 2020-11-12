@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { DecodedPacket } from "../../../src/dom/pretty";
+import { DecodedPacket } from "../../../src/jdom/pretty";
 import { DecodedMemberItem } from "./DecodedMemberItem";
 
 export default function DecodedPacketItem(props: { pkt: DecodedPacket }) {

@@ -3,7 +3,7 @@ import React from "react";
 import Chip from '@material-ui/core/Chip';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CategoryIcon from '@material-ui/icons/Category';
-import { prettyUnit } from "../../../src/dom/pretty";
+import { prettyUnit } from "../../../src/jdom/pretty";
 import { Tooltip } from "@material-ui/core";
 import { resolveUnit } from '../../../jacdac-spec/spectool/jdspec'
 

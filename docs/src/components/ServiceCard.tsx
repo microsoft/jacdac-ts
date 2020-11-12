@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { JDService } from "../../../src/dom/service";
+import { JDService } from "../../../src/jdom/service";
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
@@ -11,12 +11,12 @@ import Typography from '@material-ui/core/Typography';
 import { Link } from 'gatsby-theme-material-ui';
 import ServiceRegisters from './ServiceRegisters';
 import ServiceEvents from './ServiceEvents';
-import { isCommand } from '../../../src/dom/spec';
+import { isCommand } from '../../../src/jdom/spec';
 import { CardActions, List, ListItem } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import { DeviceLostAlert } from './DeviceLostAlert';
 import CommandInput from './CommandInput';
-import { DecodedPacket } from '../../../src/dom/pretty';
+import { DecodedPacket } from '../../../src/jdom/pretty';
 import DecodedPacketItem from './DecodedPacketItem';
 import ServiceSpecificationStatusAlert from './ServiceSpecificationStatusAlert'
 
@@ -66,7 +66,7 @@ export default function ServiceCard(props: {
             <DeviceCardHeader device={service.device} />
             <CardContent>
                 {showServiceName && <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/dom/service"}>{service.name}</Link>
+                    <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/jdom/service"}>{service.name}</Link>
                 </Typography>}
                 <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters key={'reg' + service.id} service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}

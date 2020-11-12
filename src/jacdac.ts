@@ -1,1 +1,1 @@
-export * from './dom/jacdac-dom'
+export * from './jdom/jacdac-jdom'

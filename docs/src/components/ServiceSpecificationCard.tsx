@@ -1,6 +1,6 @@
 import React from "react"
 import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Grid, makeStyles, Theme, Typography } from "@material-ui/core";
-import { serviceSpecificationFromClassIdentifier } from "../../../src/dom/spec";
+import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import IDChip from "./IDChip";
 import { Button } from "gatsby-theme-material-ui";
 import Markdown from "./Markdown";

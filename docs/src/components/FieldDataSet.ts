@@ -1,9 +1,9 @@
-import { JDBus } from "../../../src/dom/bus";
-import { CHANGE } from "../../../src/dom/constants";
-import { JDEventSource } from "../../../src/dom/eventsource";
-import { JDField } from "../../../src/dom/field";
-import { JDRegister } from "../../../src/dom/register";
-import { arrayConcatMany } from "../../../src/dom/utils";
+import { JDBus } from "../../../src/jdom/bus";
+import { CHANGE } from "../../../src/jdom/constants";
+import { JDEventSource } from "../../../src/jdom/eventsource";
+import { JDField } from "../../../src/jdom/field";
+import { JDRegister } from "../../../src/jdom/register";
+import { arrayConcatMany } from "../../../src/jdom/utils";
 
 export class Example {
     label: string;

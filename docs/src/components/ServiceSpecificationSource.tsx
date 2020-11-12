@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
-import { serviceSpecificationFromClassIdentifier } from '../../../src/dom/spec';
+import { serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
 import { Paper, createStyles, makeStyles, Theme } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
 import Snippet from './Snippet';

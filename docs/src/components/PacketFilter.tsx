@@ -13,7 +13,7 @@ import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
 import useDebounce from './useDebounce';
-import { arrayConcatMany, uniqueMap } from '../../../src/dom/utils';
+import { arrayConcatMany, uniqueMap } from '../../../src/jdom/utils';
 import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
 import IconButtonWithTooltip from './IconButtonWithTooltip';
 import { IconButton } from 'gatsby-theme-material-ui';

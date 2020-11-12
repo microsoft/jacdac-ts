@@ -1,6 +1,6 @@
 import { createStyles, FormControl, InputLabel, makeStyles, MenuItem, Select, TextField, Theme } from "@material-ui/core";
 import React, { ChangeEvent, useState } from "react";
-import { serviceSpecifications } from "../../../src/dom/spec"
+import { serviceSpecifications } from "../../../src/jdom/spec"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

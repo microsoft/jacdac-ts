@@ -4,7 +4,7 @@ import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import PacketList from "./PacketList";
 import Toc from "./Toc";
-import DomTreeView from "./DomTreeView";
+import JDomTreeView from "./JDomTreeView";
 import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -115,6 +115,6 @@ export default function AppDrawer(props: {
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
         {!showSearchResults && drawerType === DrawerType.Packets
             ? <PacketList showTime={true} />
-            : drawerType === DrawerType.Dom ? <DomTreeView /> : undefined}
+            : drawerType === DrawerType.Dom ? <JDomTreeView /> : undefined}
     </Drawer>
 }

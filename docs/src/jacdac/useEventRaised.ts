@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { JDEventSource } from "../../../src/dom/eventsource";
+import { JDEventSource } from "../../../src/jdom/eventsource";
 
 export default function useEventRaised<TEventSource extends JDEventSource, TValue>(eventName: string | string[], node: TEventSource, query?: (n: TEventSource) => TValue): TValue {
     const [version, setVersion] = useState(0)

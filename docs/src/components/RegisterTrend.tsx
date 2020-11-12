@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { REPORT_UPDATE } from "../../../src/dom/constants";
-import { JDRegister } from "../../../src/dom/register";
+import { REPORT_UPDATE } from "../../../src/jdom/constants";
+import { JDRegister } from "../../../src/jdom/register";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import FieldDataSet from "./FieldDataSet"
 import Trend, { TrendProps } from "./Trend"
