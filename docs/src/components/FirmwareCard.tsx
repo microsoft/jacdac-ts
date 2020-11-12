@@ -4,6 +4,7 @@ import { fetchReleaseBinary, useLatestRelease } from "./github";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
 import GithubRepositoryCardHeader from "./GithubRepositoryCardHeader";
 import Alert from "./Alert";
+import { Link } from "gatsby-theme-material-ui";
 
 export default function FirmwareCard(props: { slug: string, showFirmwares?: boolean }) {
     const { slug, showFirmwares } = props
@@ -52,7 +53,10 @@ export default function FirmwareCard(props: { slug: string, showFirmwares?: bool
             {updateAvailable && <Alert severity="info">Update available.</Alert>}
             {showFirmwares && !!firmwareBlobs?.length && <List dense>
                 {firmwareBlobs.map(blob => <ListItem key={blob.firmwareIdentifier}>
-                    <ListItemText primary={blob.name} secondary={`0x${blob.firmwareIdentifier.toString(16)}`} />
+                    <ListItemText primary={blob.name}
+                        secondary={<Link to={`/firmwares/0x${blob.firmwareIdentifier.toString(16)}`}>
+                            {`0x${blob.firmwareIdentifier.toString(16)}`}
+                        </Link>} />
                 </ListItem>)}
             </List>}
         </CardContent>

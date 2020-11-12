@@ -47,11 +47,12 @@ async function createServicePages(graphql, actions, reporter) {
         node
       },
     })
+    console.log(`service redirect`, { from: r, to: p })
     createRedirect({
       fromPath: r,
       toPath: p
     })
-  }) 
+  })
 }
 
 async function createDevicePages(graphql, actions, reporter) {
@@ -62,6 +63,7 @@ async function createDevicePages(graphql, actions, reporter) {
     nodes {
       id
       name
+      firmwares
     }
   }
 }
@@ -87,7 +89,17 @@ async function createDevicePages(graphql, actions, reporter) {
         node
       },
     })
-  }) 
+    // adding firmware identifier redirects
+    if (node.firmwares)
+      node.firmwares.forEach(fw => {
+        const fp = `/firmwares/0x${fw.toString(16)}`;
+        console.log(`firmware redirect`, { from: fp, to: p })
+        createRedirect({
+          fromPath: fp,
+          toPath: p
+        })
+      })
+  })
 }
 
 async function createSpecPages(graphql, actions, reporter) {
@@ -128,7 +140,7 @@ async function createSpecPages(graphql, actions, reporter) {
       component: path.resolve(`./src/components/spec.tsx`),
       context: { id: node.id }
     })
-  }) 
+  })
 }
 
 // Implement the Gatsby API “createPages”. This is
