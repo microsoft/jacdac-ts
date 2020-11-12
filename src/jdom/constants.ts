@@ -65,7 +65,6 @@ export enum ConsolePriority {
     Silent = 4
 }
 
-/** known service numbers */
 export const SRV_CTRL = 0;
 
 export const NEW_LISTENER = 'newListener'
