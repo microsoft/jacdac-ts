@@ -8,7 +8,7 @@ import json from 'rollup-plugin-json'
 const pkg = require('./package.json')
 
 export default [
-  { libraryName: 'jacdac-jdom', dir: 'dom' },
+  { libraryName: 'jacdac-jdom', dir: 'jdom' },
   { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-jdom", "webusb"] },
   { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-jdom", "react"] },
   { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-jdom"] },
