@@ -129,13 +129,13 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    get service_number(): number {
+    get service_index(): number {
         return this._header[13] & JD_SERVICE_NUMBER_MASK;
     }
-    set service_number(service_number: number) {
-        if (service_number == null)
+    set service_index(value: number) {
+        if (value == null)
             throw new Error("service_number not set")
-        this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | service_number;
+        this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | value;
         this._decoded = undefined;
     }
 
