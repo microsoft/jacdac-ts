@@ -165,7 +165,7 @@ const useStyles = makeStyles(
     }),
 );
 
-interface DomTreeViewItemProps {
+interface JDomTreeViewItemProps {
     key: string;
     expanded: string[];
     selected: string[];
@@ -173,7 +173,7 @@ interface DomTreeViewItemProps {
     setChecked?: (id: string, value: boolean) => void;
 }
 
-function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & DomTreeViewProps) {
+function DeviceTreeItem(props: { device: JDDevice } & JDomTreeViewItemProps & JDomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
     const name = useDeviceName(device, true)
@@ -208,7 +208,7 @@ function DeviceTreeItem(props: { device: JDDevice } & DomTreeViewItemProps & Dom
     </StyledTreeItem>
 }
 
-function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & DomTreeViewProps) {
+function ServiceTreeItem(props: { service: JDService } & JDomTreeViewItemProps & JDomTreeViewProps) {
     const { service, checked, setChecked, checkboxes, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
     const id = service.id
@@ -255,7 +255,7 @@ function ServiceTreeItem(props: { service: JDService } & DomTreeViewItemProps & 
     </StyledTreeItem>
 }
 
-function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps & DomTreeViewProps) {
+function RegisterTreeItem(props: { register: JDRegister } & JDomTreeViewItemProps & JDomTreeViewProps) {
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
     const humanValue = useRegisterHumanValue(register)
@@ -274,7 +274,7 @@ function RegisterTreeItem(props: { register: JDRegister } & DomTreeViewItemProps
     />
 }
 
-function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTreeViewProps) {
+function EventTreeItem(props: { event: JDEvent } & JDomTreeViewItemProps & JDomTreeViewProps) {
     const { event, checked, setChecked, checkboxes } = props;
     const { specification, id } = event
     const count = useEventCount(event)
@@ -294,7 +294,7 @@ function EventTreeItem(props: { event: JDEvent } & DomTreeViewItemProps & DomTre
 
 export type CheckedMap = { [id: string]: boolean };
 
-export interface DomTreeViewProps {
+export interface JDomTreeViewProps {
     defaultChecked?: string[];
     defaultExpanded?: string[];
     defaultSelected?: string[];
@@ -308,7 +308,7 @@ export interface DomTreeViewProps {
     eventFilter?: (event: JDEvent) => boolean;
 }
 
-export default function DomTreeView(props: DomTreeViewProps) {
+export default function JDomTreeView(props: JDomTreeViewProps) {
     const { onChecked, defaultExpanded, defaultSelected, defaultChecked, onToggle, onSelect, checkboxes, deviceFilter, ...other } = props;
     const classes = useStyles();
     const [expanded, setExpanded] = useState<string[]>(defaultExpanded || []);
