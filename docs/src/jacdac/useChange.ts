@@ -35,7 +35,7 @@ export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode,
             if (mounted())
                 setValue(d)
         }
-    }, [version]);
+    }, [node, version]);
 
     return value;
 }
