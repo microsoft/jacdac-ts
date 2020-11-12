@@ -102,7 +102,7 @@ export class TcpSocket {
         })
         await this.outPipe.sendMeta(U.bufferConcat(
             pack("IH", [TCPPipeCmd.OpenSsl, port]),
-            U.stringToBuffer(hostname)))
+            U.stringToBuffer(hostname + "\u0000")))
         const buf = await this.inPipe.read()
         if (!buf)
             throw new Error("missing first packet")
@@ -147,7 +147,6 @@ function service(bus: JDBus, serviceClass: number) {
 }
 
 export async function testWifi(bus: JDBus) {
-
     const wifi = new WifiClient(service(bus, SRV_WIFI))
     const tcp = new TcpClient(service(bus, SRV_TCP), wifi)
     tcp.on(ERROR, msg => {

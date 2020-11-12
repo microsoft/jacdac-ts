@@ -329,6 +329,7 @@ export class JDDevice extends JDNode {
     }
 
     sendPktWithAck(pkt: Packet) {
+        pkt.device = this
         pkt.requires_ack = true
         this.initAcks()
         return new Promise<void>((resolve, reject) => {
