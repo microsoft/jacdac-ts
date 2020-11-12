@@ -1,8 +1,8 @@
 import Packet from "./packet"
 import {
-    JD_SERVICE_NUMBER_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
+    JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
     JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_NUMBER_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, CtrlReg
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, CtrlReg
 } from "./constants"
 import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -216,7 +216,7 @@ export class JDDevice extends JDNode {
 
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
-        pkt.service_index = JD_SERVICE_NUMBER_CTRL
+        pkt.service_index = JD_SERVICE_INDEX_CTRL
         return pkt.sendCmdAsync(this)
     }
 
@@ -290,7 +290,7 @@ export class JDDevice extends JDNode {
 
         this._ackAwaiting = []
         this.on(PACKET_REPORT, (rep: Packet) => {
-            if (rep.service_index != JD_SERVICE_NUMBER_CRC_ACK)
+            if (rep.service_index != JD_SERVICE_INDEX_CRC_ACK)
                 return
             let numdone = 0
             for (const aa of this._ackAwaiting) {

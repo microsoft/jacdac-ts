@@ -5,13 +5,13 @@ import {
     CMD_SET_REG,
     JD_SERIAL_HEADER_SIZE,
     JD_FRAME_FLAG_ACK_REQUESTED,
-    JD_SERVICE_NUMBER_MASK,
-    JD_SERVICE_NUMBER_INV_MASK,
+    JD_SERVICE_INDEX_MASK,
+    JD_SERVICE_INDEX_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT,
-    JD_SERVICE_NUMBER_CRC_ACK,
-    JD_SERVICE_NUMBER_PIPE,
+    JD_SERVICE_INDEX_CRC_ACK,
+    JD_SERVICE_INDEX_PIPE,
     PIPE_PORT_SHIFT,
     PIPE_COUNTER_MASK,
     PIPE_METADATA_MASK,
@@ -130,12 +130,12 @@ export class Packet {
     }
 
     get service_index(): number {
-        return this._header[13] & JD_SERVICE_NUMBER_MASK;
+        return this._header[13] & JD_SERVICE_INDEX_MASK;
     }
     set service_index(value: number) {
         if (value == null)
             throw new Error("service_number not set")
-        this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | value;
+        this._header[13] = (this._header[13] & JD_SERVICE_INDEX_INV_MASK) | value;
         this._decoded = undefined;
     }
 
@@ -326,9 +326,9 @@ export class Packet {
     }
     get friendlyServiceName(): string {
         let service_name: string;
-        if (this.service_index == JD_SERVICE_NUMBER_CRC_ACK) {
+        if (this.service_index == JD_SERVICE_INDEX_CRC_ACK) {
             service_name = "CRC-ACK"
-        } else if (this.service_index == JD_SERVICE_NUMBER_PIPE) {
+        } else if (this.service_index == JD_SERVICE_INDEX_PIPE) {
             service_name = "PIPE"
         } else {
             const serv_id = serviceName(this.multicommand_class || this.serviceClass)
@@ -339,10 +339,10 @@ export class Packet {
     get friendlyCommandName(): string {
         const cmd = this.service_command
         let cmdname = commandName(cmd, this.serviceClass)
-        if (this.service_index == JD_SERVICE_NUMBER_CRC_ACK) {
+        if (this.service_index == JD_SERVICE_INDEX_CRC_ACK) {
             cmdname = hexNum(cmd)
         }
-        else if (this.service_index == JD_SERVICE_NUMBER_PIPE) {
+        else if (this.service_index == JD_SERVICE_INDEX_PIPE) {
             cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
             if (cmd & PIPE_METADATA_MASK)
                 cmdname += " meta"

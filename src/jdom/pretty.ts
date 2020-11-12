@@ -3,8 +3,8 @@ import { NumberFormat } from "./buffer"
 import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum } from "./utils"
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
-    JD_SERVICE_NUMBER_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
-    JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_NUMBER_CRC_ACK, CMD_ADVERTISEMENT_DATA
+    JD_SERVICE_INDEX_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
+    JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_INDEX_CRC_ACK, CMD_ADVERTISEMENT_DATA
 } from "./constants"
 import { BaseCmd, BaseReg, CtrlReg, SensorReg } from "../../jacdac-spec/dist/specconstants"
 
@@ -391,7 +391,7 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.device && pkt.service_index == JD_SERVICE_NUMBER_PIPE) {
+    if (pkt.device && pkt.service_index == JD_SERVICE_INDEX_PIPE) {
         const info = decodePipe(pkt)
         if (info)
             return info
