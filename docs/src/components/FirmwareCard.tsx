@@ -5,8 +5,8 @@ import { useFirmwareBlob } from "./useFirmwareBlobs";
 import GithubRepositoryCardHeader from "./GithubRepositoryCardHeader";
 import Alert from "./Alert";
 
-export default function FirmwareCard(props: { slug: string }) {
-    const { slug } = props
+export default function FirmwareCard(props: { slug: string, showFirmwares?: boolean }) {
+    const { slug, showFirmwares } = props
     const { response: release } = useLatestRelease(slug);
     const [downloading, setDownloading] = useState(false)
     const [error, setError] = useState("")
@@ -45,9 +45,12 @@ export default function FirmwareCard(props: { slug: string }) {
         <GithubRepositoryCardHeader slug={slug} showRelease={true} />
         <CardContent>
             {error && <Alert severity="error">{error}</Alert>}
-            {version && <Typography variant="body2">version <code>{version}</code></Typography>}
+            {version && <Typography variant="body2">
+                version <code>{version}</code>
+                {!!firmwareBlobs.length && <span>, {firmwareBlobs.length} firmwares loaded</span>}
+            </Typography>}
             {updateAvailable && <Alert severity="info">Update available.</Alert>}
-            {!!firmwareBlobs?.length && <List dense>
+            {showFirmwares && !!firmwareBlobs?.length && <List dense>
                 {firmwareBlobs.map(blob => <ListItem key={blob.firmwareIdentifier}>
                     <ListItemText primary={blob.name} secondary={`0x${blob.firmwareIdentifier.toString(16)}`} />
                 </ListItem>)}

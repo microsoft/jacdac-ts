@@ -80,7 +80,7 @@ export default function Flash() {
                         <LocalFileFirmwareCard />
                     </Grid>
                     {firmwareRepos.map(firmwareRepo => <Grid {...gridBreakpoints} item key={`firmwarerepo${firmwareRepo}`}>
-                        <FirmwareCard slug={firmwareRepo} />
+                        <FirmwareCard slug={firmwareRepo} showFirmwares={true} />
                     </Grid>)}
                 </Grid>
             </TabPanel>
