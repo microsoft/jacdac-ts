@@ -78,7 +78,7 @@ class FlashClient {
     }
 
     private async sendCommandAsync(p: Packet) {
-        p.service_number = 1
+        p.service_index = 1
         await p.sendCmdAsync(this.device)
     }
 
@@ -402,7 +402,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             }
         }
 
-        if (p.service_number == 1 &&
+        if (p.service_index == 1 &&
             p.service_command == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
@@ -415,7 +415,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             }
         }
 
-        if (!makeFlashers && p.service_number == 0 && p.service_command & CMD_GET_REG) {
+        if (!makeFlashers && p.service_index == 0 && p.service_command & CMD_GET_REG) {
             const reg = p.service_command & CMD_REG_MASK
             if (reg == CtrlReg.BootloaderFirmwareIdentifier)
                 dev.blFirmwareIdentifier = p.uintData

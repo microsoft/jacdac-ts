@@ -74,7 +74,7 @@
 
         const palette = new Rickshaw.Color.Palette();
         function graph(pkt) {
-            const serviceClass = pkt.dev.serviceClassAt(pkt.service_number);
+            const serviceClass = pkt.dev.serviceClassAt(pkt.service_index);
             const id = serviceClass;
             let div = document.getElementById(id);
 

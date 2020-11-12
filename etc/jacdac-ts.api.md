@@ -751,7 +751,7 @@ export class JDDevice extends JDNode {
     get serviceLength(): number;
     // (undocumented)
     services(options?: {
-        serviceNumber?: number;
+        serviceIndex?: number;
         serviceName?: string;
         serviceClass?: number;
     }): JDService[];

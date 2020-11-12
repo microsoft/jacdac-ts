@@ -5,13 +5,13 @@ import {
     CMD_SET_REG,
     JD_SERIAL_HEADER_SIZE,
     JD_FRAME_FLAG_ACK_REQUESTED,
-    JD_SERVICE_NUMBER_MASK,
-    JD_SERVICE_NUMBER_INV_MASK,
+    JD_SERVICE_INDEX_MASK,
+    JD_SERVICE_INDEX_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT,
-    JD_SERVICE_NUMBER_CRC_ACK,
-    JD_SERVICE_NUMBER_PIPE,
+    JD_SERVICE_INDEX_CRC_ACK,
+    JD_SERVICE_INDEX_PIPE,
     PIPE_PORT_SHIFT,
     PIPE_COUNTER_MASK,
     PIPE_METADATA_MASK,
@@ -129,19 +129,19 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    get service_number(): number {
-        return this._header[13] & JD_SERVICE_NUMBER_MASK;
+    get service_index(): number {
+        return this._header[13] & JD_SERVICE_INDEX_MASK;
     }
-    set service_number(service_number: number) {
-        if (service_number == null)
+    set service_index(value: number) {
+        if (value == null)
             throw new Error("service_number not set")
-        this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | service_number;
+        this._header[13] = (this._header[13] & JD_SERVICE_INDEX_INV_MASK) | value;
         this._decoded = undefined;
     }
 
     get service_class(): number {
         if (this.device)
-            return this.device.serviceClassAt(this.service_number)
+            return this.device.serviceClassAt(this.service_index)
         return undefined
     }
 
@@ -212,7 +212,7 @@ export class Packet {
     }
 
     get isAnnounce() {
-        return this.service_number == SRV_CTRL
+        return this.service_index == SRV_CTRL
             && this.is_report
             && this.service_command == BaseCmd.Announce;
     }
@@ -276,7 +276,7 @@ export class Packet {
     }
 
     toString(): string {
-        let msg = `${this.device_identifier}/${this.service_number}[${this.frame_flags}]: ${this.service_command} sz=${this.size}`
+        let msg = `${this.device_identifier}/${this.service_index}[${this.frame_flags}]: ${this.service_command} sz=${this.size}`
         if (this.size < 20) msg += ": " + toHex(this.data)
         else msg += ": " + toHex(this.data.slice(0, 20)) + "..."
         return msg
@@ -326,23 +326,23 @@ export class Packet {
     }
     get friendlyServiceName(): string {
         let service_name: string;
-        if (this.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
+        if (this.service_index == JD_SERVICE_INDEX_CRC_ACK) {
             service_name = "CRC-ACK"
-        } else if (this.service_number == JD_SERVICE_NUMBER_PIPE) {
+        } else if (this.service_index == JD_SERVICE_INDEX_PIPE) {
             service_name = "PIPE"
         } else {
             const serv_id = serviceName(this.multicommand_class || this.serviceClass)
-            service_name = `${serv_id} (${this.service_number})`
+            service_name = `${serv_id} (${this.service_index})`
         }
         return service_name;
     }
     get friendlyCommandName(): string {
         const cmd = this.service_command
         let cmdname = commandName(cmd, this.serviceClass)
-        if (this.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
+        if (this.service_index == JD_SERVICE_INDEX_CRC_ACK) {
             cmdname = hexNum(cmd)
         }
-        else if (this.service_number == JD_SERVICE_NUMBER_PIPE) {
+        else if (this.service_index == JD_SERVICE_INDEX_PIPE) {
             cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
             if (cmd & PIPE_METADATA_MASK)
                 cmdname += " meta"
@@ -352,7 +352,7 @@ export class Packet {
         return cmdname;
     }
     get serviceClass() {
-        return this.device?.serviceClassAt(this.service_number);
+        return this.device?.serviceClassAt(this.service_index);
     }
 }
 

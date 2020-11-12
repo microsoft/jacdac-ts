@@ -8432,7 +8432,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "{\n        serviceNumber?: number;\n        serviceName?: string;\n        serviceClass?: number;\n    }"
+                  "text": "{\n        serviceIndex?: number;\n        serviceName?: string;\n        serviceClass?: number;\n    }"
                 },
                 {
                   "kind": "Content",

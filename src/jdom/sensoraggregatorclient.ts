@@ -10,9 +10,9 @@ import { bufferConcat, bufferConcatMany, fromHex } from "./utils"
 
 export interface SensorAggregatorInputConfig {
     serviceClass: number;
-    // if specified, also specify serviceNumber
+    // if specified, also specify serviceIndex
     deviceId?: string;
-    serviceNumber?: number;
+    serviceIndex?: number;
 }
 
 export interface SensorAggregatorConfig {
@@ -54,9 +54,9 @@ export class SensorAggregatorClient extends JDServiceClient {
 
         let totalSampleSize = 0
         const inputs = cfg.inputs?.map(input => {
-            const { deviceId, serviceNumber, serviceClass } = input
-            if (!!deviceId !== !!serviceNumber)
-                error(`deviceId and serviceNumber must be specified together`)
+            const { deviceId, serviceIndex, serviceClass } = input
+            if (!!deviceId !== !!serviceIndex)
+                error(`deviceId and serviceIndex must be specified together`)
             const specification = serviceSpecificationFromClassIdentifier(serviceClass)
             if (!specification)
                 error(`missing specification from service 0x${serviceClass.toString(16)}`)
@@ -81,7 +81,7 @@ export class SensorAggregatorClient extends JDServiceClient {
                 freeze ? fromHex(deviceId) : new Uint8Array(8),
                 pack("IBBBb", [
                     serviceClass,
-                    freeze ? serviceNumber : 0,
+                    freeze ? serviceIndex : 0,
                     sampleSize,
                     sampleType,
                     sampleShift

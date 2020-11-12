@@ -8,14 +8,14 @@ import DeviceName from "./DeviceName";
 function SensorAggregatorInputConfigView(props: { input: SensorAggregatorInputConfig }) {
     const { bus } = useContext<JDContextProps>(JACDACContext);
     const { input } = props;
-    const { serviceClass, deviceId, serviceNumber } = input;
+    const { serviceClass, deviceId, serviceIndex } = input;
 
     const device = deviceId && bus.device(deviceId)
 
     return <>
         {serviceName(serviceClass)}
-        {device && <DeviceName device={device} serviceNumber={serviceNumber} />}
-        {!device && deviceId && <span>{deviceId}[{serviceNumber}]</span>}
+        {device && <DeviceName device={device} serviceIndex={serviceIndex} />}
+        {!device && deviceId && <span>{deviceId}[{serviceIndex}]</span>}
         {!deviceId && <span>/ any device</span>}
     </>
 }

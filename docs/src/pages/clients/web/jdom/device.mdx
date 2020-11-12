@@ -48,10 +48,10 @@ for(const service in device.services()) {
 
 ### ``service``
 
-Retreives the service by **service number** in the device. Undefined if not found.
+Retreives the service by **service index** in the device. Undefined if not found.
 
 ```javascript
-const service = device.service(pkt.service_number)
+const service = device.service(pkt.service_index)
 ```
 
 ## Events
