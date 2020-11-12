@@ -394,7 +394,7 @@ class EdgeImpulseClient extends JDClient {
             inputs: this.inputRegisters.map(reg => ({
                 serviceClass: reg.service.serviceClass,
                 deviceId: reg.service.device.deviceId,
-                serviceNumber: reg.service.service_number
+                serviceIndex: reg.service.service_index
             }))
         }
 

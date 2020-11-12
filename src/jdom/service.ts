@@ -16,13 +16,13 @@ export class JDService extends JDNode {
 
     constructor(
         public readonly device: JDDevice,
-        public readonly service_number: number
+        public readonly service_index: number
     ) {
         super()
     }
 
     get id() {
-        return `${this.nodeKind}:${this.device.deviceId}:${this.service_number.toString(16)}`
+        return `${this.nodeKind}:${this.device.deviceId}:${this.service_index.toString(16)}`
     }
 
     get nodeKind() {
@@ -30,7 +30,7 @@ export class JDService extends JDNode {
     }
 
     get serviceClass() {
-        return this.device.serviceClassAt(this.service_number);
+        return this.device.serviceClassAt(this.service_index);
     }
 
     get name() {
@@ -40,12 +40,12 @@ export class JDService extends JDNode {
     get friendlyName() {
         const parts = [this.device.friendlyName]
         if (this.device.services({ serviceClass: this.serviceClass }).length > 1)
-            parts.push(`[${this.service_number.toString(16)}]`)
+            parts.push(`[${this.service_index.toString(16)}]`)
         return parts.join('.')
     }
 
     get qualifiedName() {
-        return `${this.device.qualifiedName}[${this.service_number.toString(16)}]`
+        return `${this.device.qualifiedName}[${this.service_index.toString(16)}]`
     }
 
     get parent(): JDNode {
@@ -125,7 +125,7 @@ export class JDService extends JDNode {
 
     sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device;
-        pkt.service_number = this.service_number;
+        pkt.service_index = this.service_index;
         if (ack !== undefined)
             pkt.requires_ack = !!ack
         this.emit(PACKET_SEND, pkt)
@@ -186,7 +186,7 @@ export class JDService extends JDNode {
         const a = this;
         return a.serviceClass - b.serviceClass ||
             strcmp(a.device.deviceId, b.device.deviceId) ||
-            a.service_number - b.service_number;
+            a.service_index - b.service_index;
     }
 }
 

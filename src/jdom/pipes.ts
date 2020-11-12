@@ -31,7 +31,7 @@ export class OutPipe {
         }
         const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this.count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
-        pkt.service_number = JD_SERVICE_NUMBER_PIPE
+        pkt.service_index = JD_SERVICE_NUMBER_PIPE
         await this.device.sendPktWithAck(pkt)
             .then(() => { }, err => {
                 this.free()
@@ -87,7 +87,7 @@ export class InPipe extends JDClient {
 
 
     private _handlePacket(pkt: Packet) {
-        if (pkt.service_number !== JD_SERVICE_NUMBER_PIPE)
+        if (pkt.service_index !== JD_SERVICE_NUMBER_PIPE)
             return
         if (pkt.service_command >> PIPE_PORT_SHIFT !== this._port)
             return

@@ -391,13 +391,13 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.device && pkt.service_number == JD_SERVICE_NUMBER_PIPE) {
+    if (pkt.device && pkt.service_index == JD_SERVICE_NUMBER_PIPE) {
         const info = decodePipe(pkt)
         if (info)
             return info
     }
 
-    const srv_class = pkt?.multicommand_class || pkt?.device?.serviceClassAt(pkt.service_number);
+    const srv_class = pkt?.multicommand_class || pkt?.device?.serviceClassAt(pkt.service_index);
     const service = serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null
@@ -433,9 +433,9 @@ export function serviceShortIdOrClass(serviceClass: number) {
 }
 
 export function deviceServiceName(pkt: Packet): string {
-    const srv_class = pkt?.device?.serviceClassAt(pkt.service_number);
+    const srv_class = pkt?.device?.serviceClassAt(pkt.service_index);
     const serv_id = serviceName(srv_class);
-    return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.service_number}`
+    return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.service_index}`
 }
 
 export function commandName(n: number, serviceClass?: number): string {
@@ -517,7 +517,7 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         pdesc = `[ack:${hexNum(pkt.crc)}] ` + pdesc
 
     const d = pkt.data
-    if (pkt.device && pkt.service_number == 0 && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+    if (pkt.device && pkt.service_index == 0 && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
         if (pkt.device.lastServiceUpdate < pkt.timestamp) {
             if (opts.skipRepeatedAnnounce)
                 return ""

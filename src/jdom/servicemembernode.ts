@@ -13,7 +13,7 @@ export abstract class JDServiceMemberNode extends JDNode {
     }
 
     get id() {
-        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_number.toString(16)}:${this.address.toString(16)}`
+        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_index.toString(16)}:${this.address.toString(16)}`
     }
 
     get name() {

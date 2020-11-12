@@ -541,7 +541,7 @@ export class JDBus extends JDNode {
             if (pkt.device_identifier == this.selfDeviceId) {
                 if (pkt.requires_ack) {
                     const ack = Packet.onlyHeader(pkt.crc)
-                    ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
+                    ack.service_index = JD_SERVICE_NUMBER_CRC_ACK
                     ack.device_identifier = this.selfDeviceId
                     ack.sendReportAsync(this.selfDevice)
                 }
@@ -549,7 +549,7 @@ export class JDBus extends JDNode {
             pkt.device.processPacket(pkt);
         } else {
             pkt.device.lastSeen = pkt.timestamp
-            if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
+            if (pkt.service_index == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     pkt.device.processAnnouncement(pkt)
@@ -587,7 +587,7 @@ export class JDBus extends JDNode {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
             const pkt = Packet.packed(CMD_ADVERTISEMENT_DATA, "I", [restartCounter | 0x100])
-            pkt.service_number = JD_SERVICE_NUMBER_CTRL
+            pkt.service_index = JD_SERVICE_NUMBER_CTRL
             pkt.device_identifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)
         })
