@@ -103,7 +103,9 @@
         {
           "assets": [
             "package.json",
-            "package-lock.json"
+            "package-lock.json",
+            "etc/jacdac-ts.api.json",
+            "etc/jacdac-ts.api.md"
           ]
         }
       ]
