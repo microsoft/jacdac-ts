@@ -13,12 +13,13 @@ export default [
   { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-jdom", "react"] },
   { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-jdom"] },
   { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "react", "jacdac-react", "webusb", "jacdac-node", "jacdac-embed"] },
+  { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-node", "webusb"] },
 ].map(({ libraryName, dir, external }) => {
   return {
     input: `src/${dir}/${libraryName}.ts`,
     output: [
       { file: `dist/${libraryName}.umd.js`, name: camelCase(libraryName), format: 'umd', sourcemap: true },
-      { file: `dist/${libraryName}.es5.js`, format: 'es', sourcemap: true }
+      { file: `dist/${libraryName}.js`, format: 'es', sourcemap: true }
     ],
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
     external: external || [],
