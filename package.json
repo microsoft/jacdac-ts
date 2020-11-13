@@ -126,6 +126,7 @@
     "@microsoft/api-extractor": "^7.11.4",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
+    "cli": "^1.0.1",
     "colors": "^1.3.2",
     "coveralls": "^3.0.2",
     "cross-env": "^5.2.0",
@@ -151,7 +152,8 @@
     "ts-node": "^9",
     "tslint": "^6",
     "tslint-microsoft-contrib": "^6",
-    "typescript": "^4"
+    "typescript": "^4",
+    "webusb": "^2.1.0"
   },
   "dependencies": {
     "@types/node": "^14",
