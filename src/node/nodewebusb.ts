@@ -22,8 +22,13 @@ const usb = new USB({ devicesFound })
 
 export async function requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice> {
     console.log(`requesting device...`)
-    const device = await usb.requestDevice(options);
-    return device;
+    try {
+        const device = await usb.requestDevice(options);
+        return device;
+    } catch (e: unknown) {
+        console.debug(e);
+        return undefined;
+    }
 }
 export async function getDevices(): Promise<USBDevice[]> {
     const devices = await usb.getDevices();
