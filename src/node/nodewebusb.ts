@@ -2,8 +2,7 @@ import { HF2_DEVICE_MAJOR } from "../jdom/hf2";
 
 const USB = require('webusb').USB;
 
-const devicesFound = async devices => {
-    console.log(devices)
+function findDevice(devices: USBDevice[]) {
     for (const device of devices) {
         if (device.deviceVersionMajor == HF2_DEVICE_MAJOR) {
             for (const iface of device.configuration.interfaces) {
@@ -18,13 +17,12 @@ const devicesFound = async devices => {
     return undefined
 }
 
-const usb = new USB({ devicesFound })
-
+const usb = new USB({ devicesFound: async devices => findDevice(devices) })
 export async function requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice> {
     console.log(`requesting device...`)
     try {
-        const device = await usb.requestDevice(options);
-        return device;
+        const devices = await usb.getDevices();
+        return findDevice(devices);
     } catch (e: unknown) {
         console.debug(e);
         return undefined;
