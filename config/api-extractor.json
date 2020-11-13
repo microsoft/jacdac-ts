@@ -5,7 +5,8 @@
   "compiler": {
   },
   "apiReport": {
-    "enabled": true
+    "enabled": true,
+    "reportFolder": "<projectFolder>/etc/"
   },
   "docModel": {
     "enabled": true,

@@ -25,6 +25,12 @@ export enum AccelReg {
     Forces = 257
 }
 
+// @public (undocumented)
+export const ACK_MAX_DELAY = 120;
+
+// @public (undocumented)
+export const ACK_MIN_DELAY = 90;
+
 // @public
 export function addCustomServiceSpecification(service: jdspec.ServiceSpec): void;
 
@@ -35,6 +41,18 @@ export function ALIGN(n: number): number;
 export const ANNOUNCE = "announce";
 
 // @public (undocumented)
+export function anyRandomUint32(length: number): Uint32Array;
+
+// @public (undocumented)
+export type ArgType = number | boolean | string | Uint8Array;
+
+// @public (undocumented)
+export function arrayConcatMany<T>(arrs: T[][]): T[];
+
+// @public (undocumented)
+export function arrayShuffle<T>(a: T[]): T[];
+
+// @public (undocumented)
 export function assert(cond: boolean, msg?: string): void;
 
 // @public (undocumented)
@@ -42,6 +60,7 @@ export enum BaseCmd {
     Announce = 0,
     Calibrate = 2,
     Description = 3,
+    Event = 1,
     GetRegister = 4096,
     SetRegister = 8192
 }
@@ -50,11 +69,11 @@ export enum BaseCmd {
 export enum BaseReg {
     HighThreshold = 6,
     Intensity = 1,
-    IsStreaming = 3,
     LowThreshold = 5,
     MaxPower = 7,
     Reading = 257,
     StreamingInterval = 4,
+    StreamSamples = 3,
     Value = 2
 }
 
@@ -83,6 +102,9 @@ export enum BootloaderError {
 export function bufferConcat(a: Uint8Array, b: Uint8Array): Uint8Array;
 
 // @public (undocumented)
+export function bufferConcatMany(bufs: Uint8Array[]): Uint8Array;
+
+// @public (undocumented)
 export function bufferEq(a: Uint8Array, b: ArrayLike<number>): boolean;
 
 // @public (undocumented)
@@ -98,29 +120,35 @@ export function bufferToString(buf: Uint8Array): string;
 export const BUS_NODE_NAME = "bus";
 
 // @public (undocumented)
-export interface BusOptions {
+export interface BusHost {
     // (undocumented)
-    connectAsync?: (background?: boolean) => Promise<void>;
+    deviceNameSettings?: IDeviceNameSettings;
+    // (undocumented)
+    log?: Log;
+}
+
+// @public (undocumented)
+export interface BusOptions {
     // (undocumented)
     deviceDisconnectedDelay?: number;
     // (undocumented)
+    deviceId?: string;
+    // (undocumented)
     deviceLostDelay?: number;
     // (undocumented)
-    disconnectAsync?: () => Promise<void>;
-    // (undocumented)
-    sendPacketAsync?: (p: Packet) => Promise<void>;
+    parentOrigin?: string;
 }
 
 // @public (undocumented)
 export enum BusState {
     // (undocumented)
-    Connected = 0,
+    Connected = "connected",
     // (undocumented)
-    Connecting = 1,
+    Connecting = "connecting",
     // (undocumented)
-    Disconnected = 3,
+    Disconnected = "disconnected",
     // (undocumented)
-    Disconnecting = 2
+    Disconnecting = "disconnecting"
 }
 
 // @public (undocumented)
@@ -143,16 +171,19 @@ export function calibrateAsync(service: JDService): Promise<void>;
 export const CHANGE = "change";
 
 // @public (undocumented)
+export function clampToStorage(v: number, tp: jdspec.StorageType): number;
+
+// @public (undocumented)
 export function clearCustomServiceSpecifications(): void;
 
 // @public (undocumented)
 export function clone<T>(v: T): T;
 
 // @public (undocumented)
-export const CMD_ADVERTISEMENT_DATA = 0;
+export const CLOSE = "close";
 
 // @public (undocumented)
-export const CMD_CALIBRATE = 2;
+export const CMD_ADVERTISEMENT_DATA = 0;
 
 // @public (undocumented)
 export const CMD_CONSOLE_MESSAGE_DBG = 128;
@@ -167,9 +198,6 @@ export const CMD_CONSOLE_SET_MIN_PRIORITY: number;
 export const CMD_EVENT = 1;
 
 // @public (undocumented)
-export const CMD_GET_DESCRIPTION = 3;
-
-// @public (undocumented)
 export const CMD_GET_REG = 4096;
 
 // @public (undocumented)
@@ -182,10 +210,21 @@ export const CMD_SET_REG = 8192;
 export const CMD_TOP_MASK = 61440;
 
 // @public (undocumented)
+export enum CODALMessageBusCmd {
+    Send = 128
+}
+
+// @public (undocumented)
 export const COMMAND_NODE_NAME = "command";
 
 // @public (undocumented)
-export function commandName(n: number): any;
+export function commandName(n: number, serviceClass?: number): string;
+
+// @public (undocumented)
+export type CompiledPacketFilter = (pkt: Packet) => boolean;
+
+// @public (undocumented)
+export function compileFilter(props: PacketFilterProps): CompiledPacketFilter;
 
 // @public (undocumented)
 export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]): {
@@ -223,27 +262,40 @@ export enum ConsolePriority {
 export function crc(p: Uint8Array): number;
 
 // @public (undocumented)
-export function createUSBBus(options?: USBOptions): JDBus;
+export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDBus;
 
 // @public (undocumented)
 export function cryptoRandomUint32(length: number): Uint32Array;
 
 // @public (undocumented)
+export enum CtrlAnnounceFlags {
+    // (undocumented)
+    SupportsACK = 1
+}
+
+// @public (undocumented)
 export enum CtrlCmd {
     Identify = 129,
     Noop = 128,
-    Reset = 130
+    Reset = 130,
+    Services = 0
 }
 
 // @public (undocumented)
 export enum CtrlReg {
-    BootloaderDeviceClass = 388,
-    DeviceClass = 385,
+    BootloaderFirmwareIdentifier = 388,
     DeviceDescription = 384,
+    FirmwareIdentifier = 385,
     FirmwareVersion = 389,
     Temperature = 386,
     Uptime = 390
 }
+
+// @public (undocumented)
+export const DATA = "data";
+
+// @public (undocumented)
+export function debounce(handler: () => void, delay: number): () => void;
 
 // @public (undocumented)
 export function debounceAsync(handler: () => Promise<void>, delay: number): () => void;
@@ -285,6 +337,8 @@ export interface DecodedPacket {
     description: string;
     // (undocumented)
     info: jdspec.PacketInfo;
+    // (undocumented)
+    service: jdspec.ServiceSpec;
 }
 
 // @public (undocumented)
@@ -324,6 +378,9 @@ export const DEVICE_FOUND = "deviceFound";
 export const DEVICE_LOST = "deviceLost";
 
 // @public (undocumented)
+export const DEVICE_NAME_CHANGE = "deviceNameChange";
+
+// @public (undocumented)
 export const DEVICE_NODE_NAME = "device";
 
 // @public (undocumented)
@@ -331,6 +388,18 @@ export const DEVICE_RESTART = "deviceRestart";
 
 // @public (undocumented)
 export function deviceServiceName(pkt: Packet): string;
+
+// @public (undocumented)
+export function deviceSpecificationFromFirmwareIdentifier(firmwareIdentifier: number): jdspec.DeviceSpec;
+
+// @public (undocumented)
+export function deviceSpecificationFromIdentifier(id: string): jdspec.DeviceSpec;
+
+// @public (undocumented)
+export function deviceSpecifications(): jdspec.DeviceSpec[];
+
+// @public (undocumented)
+export function deviceSpecificationsForService(serviceClass: number): jdspec.DeviceSpec[];
 
 // @public (undocumented)
 export const DISCONNECT = "disconnect";
@@ -367,6 +436,19 @@ export const EVENT_NODE_NAME = "event";
 export type EventHandler = (...args: any[]) => void;
 
 // @public (undocumented)
+export class EventTargetObservable<TEvent> implements Observable<TEvent> {
+    constructor(element: EventTarget, eventName: string);
+    // (undocumented)
+    readonly element: EventTarget;
+    // (undocumented)
+    readonly eventName: string;
+    // (undocumented)
+    subscribe(observer: Observer<TEvent>): {
+        unsubscribe: () => void;
+    };
+}
+
+// @public (undocumented)
 export const FIELD_NODE_NAME = "field";
 
 // @public (undocumented)
@@ -378,7 +460,7 @@ export const FIRMWARE_INFO = "firmwareInfo";
 // @public (undocumented)
 export interface FirmwareBlob {
     // (undocumented)
-    deviceClass: number;
+    firmwareIdentifier: number;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -386,17 +468,19 @@ export interface FirmwareBlob {
     // (undocumented)
     pageSize: number;
     // (undocumented)
+    store: string;
+    // (undocumented)
     version: string;
 }
 
 // @public (undocumented)
 export interface FirmwareInfo {
     // (undocumented)
-    blDeviceClass: number;
-    // (undocumented)
-    deviceClass: number;
+    blFirmwareIdentifier: number;
     // (undocumented)
     deviceId: string;
+    // (undocumented)
+    firmwareIdentifier: number;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -480,13 +564,25 @@ export enum GamepadReg {
 }
 
 // @public (undocumented)
+export function generateDeviceList(uf2: Uint8Array): string;
+
+// @public (undocumented)
+export function getMLModelFormatName(model: Uint8Array): string;
+
+// @public (undocumented)
 export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: number): number;
 
 // @public (undocumented)
 export function hash(buf: Uint8Array, bits: number): number;
 
 // @public (undocumented)
+export function hasPipeReport(info: jdspec.PacketInfo): jdspec.PacketMember;
+
+// @public (undocumented)
 export function hexDump(d: ArrayLike<number>): string;
+
+// @public (undocumented)
+export function hexNum(n: number): string;
 
 // @public (undocumented)
 export const HF2_CMD_BININFO = 1;
@@ -575,16 +671,39 @@ export enum HumidityReg {
 }
 
 // @public (undocumented)
+export interface IDeviceNameSettings {
+    // (undocumented)
+    notifyUpdate(device: JDDevice, name: string): void;
+    // (undocumented)
+    resolve(device: JDDevice): string;
+}
+
+// @public (undocumented)
 export function idiv(a: number, b: number): number;
 
 // @public (undocumented)
+export function imageDeviceOf(spec: jdspec.DeviceSpec): string;
+
+// @public (undocumented)
+export function inIFrame(): boolean;
+
+// @public (undocumented)
 export function intOfBuffer(data: Uint8Array): number;
+
+// @public (undocumented)
+export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice): boolean;
+
+// @public (undocumented)
+export function isBootloaderRelated(id1: string, id2: string): boolean;
 
 // @public (undocumented)
 export function isCancelError(e: Error): boolean;
 
 // @public (undocumented)
 export function isCommand(pkt: jdspec.PacketInfo): boolean;
+
+// @public (undocumented)
+export function isConstRegister(pkt: jdspec.PacketInfo): boolean;
 
 // @public (undocumented)
 export function isEvent(pkt: jdspec.PacketInfo): boolean;
@@ -596,10 +715,25 @@ export function isInstanceOf(classIdentifier: any, requiredClassIdentifier: numb
 export function isIntegerType(tp: string): boolean;
 
 // @public (undocumented)
+export function isMLModelSupported(model: Uint8Array, formatRegValue: number): boolean;
+
+// @public (undocumented)
+export function isPipeReport(pkt: jdspec.PacketInfo): boolean;
+
+// @public (undocumented)
+export function isPipeReportOf(cmd: jdspec.PacketInfo, pipeReport: jdspec.PacketInfo): boolean;
+
+// @public (undocumented)
 export function isReading(pkt: jdspec.PacketInfo): boolean;
 
 // @public (undocumented)
 export function isRegister(pkt: jdspec.PacketInfo): boolean;
+
+// @public (undocumented)
+export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo): boolean;
+
+// @public (undocumented)
+export function isSensor(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
 export function isWebUSBSupported(): boolean;
@@ -632,23 +766,27 @@ export const JD_SERIAL_HEADER_SIZE = 16;
 export const JD_SERIAL_MAX_PAYLOAD_SIZE = 236;
 
 // @public (undocumented)
-export const JD_SERVICE_NUMBER_CRC_ACK = 63;
+export const JD_SERVICE_INDEX_CRC_ACK = 63;
 
 // @public (undocumented)
-export const JD_SERVICE_NUMBER_CTRL = 0;
+export const JD_SERVICE_INDEX_CTRL = 0;
 
 // @public (undocumented)
-export const JD_SERVICE_NUMBER_INV_MASK = 192;
+export const JD_SERVICE_INDEX_INV_MASK = 192;
 
 // @public (undocumented)
-export const JD_SERVICE_NUMBER_MASK = 63;
+export const JD_SERVICE_INDEX_MASK = 63;
 
 // @public (undocumented)
-export const JD_SERVICE_NUMBER_PIPE = 62;
+export const JD_SERVICE_INDEX_PIPE = 62;
 
 // @public
 export class JDBus extends JDNode {
-    constructor(options?: BusOptions);
+    constructor(transport: PacketTransport, options?: BusOptions);
+    // (undocumented)
+    get children(): JDNode[];
+    // (undocumented)
+    clear(): void;
     // (undocumented)
     connectAsync(background?: boolean): Promise<void>;
     // (undocumented)
@@ -664,14 +802,23 @@ export class JDBus extends JDNode {
     // (undocumented)
     disconnectAsync(): Promise<void>;
     // (undocumented)
+    get disconnected(): boolean;
+    // (undocumented)
     get disconnecting(): boolean;
+    // (undocumented)
+    enableAnnounce(): void;
     // (undocumented)
     errorHandler(context: string, exception: any): void;
     // (undocumented)
     get firmwareBlobs(): FirmwareBlob[];
     set firmwareBlobs(blobs: FirmwareBlob[]);
+    // (undocumented)
+    get friendlyName(): string;
+    // (undocumented)
+    readonly host: BusHost;
     get id(): string;
-    lookupName(id: string): string;
+    // (undocumented)
+    protected get logger(): Log;
     // (undocumented)
     get minConsolePriority(): ConsolePriority;
     set minConsolePriority(priority: ConsolePriority);
@@ -683,16 +830,40 @@ export class JDBus extends JDNode {
     get nodeKind(): string;
     // (undocumented)
     options?: BusOptions;
+    // (undocumented)
+    get parent(): JDNode;
     processPacket(pkt: Packet): void;
     // (undocumented)
     get qualifiedName(): string;
     // (undocumented)
+    get selfDevice(): JDDevice;
+    // (undocumented)
+    get selfDeviceId(): string;
+    // (undocumented)
     sendPacketAsync(p: Packet): Promise<void>;
+    services(options?: {
+        serviceName?: string;
+        serviceClass?: number;
+    }): JDService[];
+    // (undocumented)
+    setBackgroundFirmwareScans(enabled: boolean): void;
     // (undocumented)
     get timestamp(): number;
     // (undocumented)
     toString(): string;
+    // (undocumented)
+    readonly transport: PacketTransport;
+    withTimeout<T>(timeout: number, p: Promise<T>): Promise<T>;
 }
+
+// @public (undocumented)
+export class JDClient extends JDEventSource {
+    constructor();
+    // (undocumented)
+    mount(unsubscribe: () => void): () => void;
+    // (undocumented)
+    unmount(): void;
+    }
 
 // @public (undocumented)
 export class JDDevice extends JDNode {
@@ -702,14 +873,20 @@ export class JDDevice extends JDNode {
     // (undocumented)
     readonly bus: JDBus;
     // (undocumented)
+    get children(): JDNode[];
+    // (undocumented)
     connected: boolean;
     // (undocumented)
     readonly deviceId: string;
     // (undocumented)
     disconnect(): void;
     // (undocumented)
+    get firmwareIdentifier(): number;
+    // (undocumented)
     get firmwareInfo(): FirmwareInfo;
     set firmwareInfo(info: FirmwareInfo);
+    // (undocumented)
+    get friendlyName(): string;
     // (undocumented)
     hasService(service_class: number): boolean;
     // (undocumented)
@@ -724,11 +901,12 @@ export class JDDevice extends JDNode {
     get lost(): boolean;
     set lost(v: boolean);
     // (undocumented)
-    _lost: boolean;
-    // (undocumented)
     get name(): string;
+    set name(value: string);
     // (undocumented)
     get nodeKind(): string;
+    // (undocumented)
+    get parent(): JDNode;
     // (undocumented)
     port(id: number): PipeInfo;
     // (undocumented)
@@ -740,7 +918,11 @@ export class JDDevice extends JDNode {
     // (undocumented)
     reset(): Promise<void>;
     // (undocumented)
+    resolveFirmwareIdentifier(): Promise<number>;
+    // (undocumented)
     sendCtrlCommand(cmd: number, payload?: Buffer): Promise<void>;
+    // (undocumented)
+    sendPktWithAck(pkt: Packet): Promise<void>;
     // (undocumented)
     service(service_number: number): JDService;
     // (undocumented)
@@ -759,13 +941,13 @@ export class JDDevice extends JDNode {
     servicesData: Uint8Array;
     // (undocumented)
     get shortId(): string;
-    // (undocumented)
-    toString(): string;
-}
+    }
 
 // @public (undocumented)
-export class JDEvent extends JDServiceNode {
+export class JDEvent extends JDServiceMemberNode {
     constructor(service: JDService, address: number);
+    // (undocumented)
+    get children(): JDNode[];
     // (undocumented)
     get count(): number;
     // (undocumented)
@@ -784,17 +966,17 @@ export class JDEvent extends JDServiceNode {
 export class JDEventSource {
     constructor();
     // (undocumented)
-    changeId: number;
+    get changeId(): number;
     emit(eventName: string, ...args: any[]): boolean;
     eventNames(): string[];
     // (undocumented)
+    readonly eventStats: SMap<number>;
+    // (undocumented)
     listenerCount(eventName: string): number;
-    // Warning: (ae-forgotten-export) The symbol "Listener" needs to be exported by the entry point jacdac.d.ts
-    //
     // (undocumented)
-    readonly listeners: SMap<Listener[]>;
+    listenerStackTraces(eventName: string): string[];
     // (undocumented)
-    protected log(msg: any): void;
+    newListenerStats: SMap<number>;
     observe<T>(eventName: string | string[]): Observable<T>;
     // (undocumented)
     off(eventName: string | string[], handler: EventHandler): this;
@@ -809,7 +991,11 @@ export class JDEventSource {
 export class JDField extends JDNode {
     constructor(register: JDRegister, index: number, specification: jdspec.PacketMember);
     // (undocumented)
+    get children(): JDNode[];
+    // (undocumented)
     get decoded(): DecodedMember;
+    // (undocumented)
+    get friendlyName(): string;
     // (undocumented)
     get id(): string;
     // (undocumented)
@@ -819,7 +1005,7 @@ export class JDField extends JDNode {
     // (undocumented)
     get nodeKind(): string;
     // (undocumented)
-    get prettyName(): string;
+    get parent(): JDNode;
     // (undocumented)
     get qualifiedName(): string;
     // (undocumented)
@@ -835,23 +1021,36 @@ export class JDField extends JDNode {
 // @public (undocumented)
 export abstract class JDNode extends JDEventSource {
     constructor();
+    abstract get children(): JDNode[];
+    abstract get friendlyName(): string;
     abstract get id(): string;
+    // (undocumented)
+    protected log(level: LogLevel, msg: any): void;
+    protected get logger(): Log;
     abstract get name(): string;
     // (undocumented)
     readonly nodeId: number;
     abstract get nodeKind(): string;
+    abstract get parent(): JDNode;
     abstract get qualifiedName(): string;
+    // (undocumented)
+    toString(): string;
 }
 
 // @public (undocumented)
-export class JDRegister extends JDServiceNode {
+export class JDRegister extends JDServiceMemberNode {
     constructor(service: JDService, address: number);
     // (undocumented)
     get boolValue(): boolean;
     // (undocumented)
+    get children(): JDNode[];
+    // (undocumented)
+    compareTo(b: JDRegister): number;
+    // (undocumented)
     get data(): Uint8Array;
     // (undocumented)
     get decoded(): DecodedPacket;
+    get decodedValues(): any[];
     // (undocumented)
     get fields(): JDField[];
     // (undocumented)
@@ -863,9 +1062,17 @@ export class JDRegister extends JDServiceNode {
     // (undocumented)
     get lastDataTimestamp(): number;
     // (undocumented)
+    get lastGetAttempts(): number;
+    // (undocumented)
+    get lastGetTimestamp(): number;
+    // (undocumented)
+    get lastSetTimestamp(): number;
+    // (undocumented)
     get nodeKind(): string;
     // (undocumented)
     processReport(pkt: Packet): void;
+    // (undocumented)
+    refresh(skipIfValue?: boolean): Promise<void>;
     // (undocumented)
     sendGetAsync(): Promise<void>;
     // (undocumented)
@@ -884,19 +1091,29 @@ export class JDRegister extends JDServiceNode {
 
 // @public (undocumented)
 export class JDService extends JDNode {
-    constructor(device: JDDevice, service_number: number);
+    constructor(device: JDDevice, service_index: number);
+    // (undocumented)
+    get children(): JDNode[];
+    // (undocumented)
+    compareTo(b: JDService): number;
     // (undocumented)
     readonly device: JDDevice;
     // (undocumented)
-    event(address: number): JDEvent;
+    event(address: number | {
+        address: number;
+    }): JDEvent;
     // (undocumented)
     get events(): JDEvent[];
+    // (undocumented)
+    get friendlyName(): string;
     // (undocumented)
     get id(): string;
     // (undocumented)
     get name(): string;
     // (undocumented)
     get nodeKind(): string;
+    // (undocumented)
+    get parent(): JDNode;
     // (undocumented)
     processPacket(pkt: Packet): void;
     // (undocumented)
@@ -908,27 +1125,48 @@ export class JDService extends JDNode {
         address: number;
     }): JDRegister;
     // (undocumented)
+    registers(): JDRegister[];
+    // (undocumented)
+    registersUseAcks: boolean;
+    // (undocumented)
     sendCmdAsync(cmd: number, ack?: boolean): Promise<void>;
+    // (undocumented)
+    sendCmdAwaitResponseAsync(pkt: Packet, timeout?: number): Promise<Packet>;
     // (undocumented)
     sendPacketAsync(pkt: Packet, ack?: boolean): Promise<void>;
     // (undocumented)
-    readonly service_number: number;
+    readonly service_index: number;
     // (undocumented)
     get serviceClass(): number;
     get specification(): jdspec.ServiceSpec;
+    }
+
+// @public (undocumented)
+export class JDServiceClient extends JDClient {
+    constructor(service: JDService);
+    // (undocumented)
+    protected get bus(): JDBus;
+    // (undocumented)
+    protected get device(): JDDevice;
+    // (undocumented)
+    readonly service: JDService;
     // (undocumented)
     toString(): string;
 }
 
 // @public (undocumented)
-export abstract class JDServiceNode extends JDNode {
+export abstract class JDServiceMemberNode extends JDNode {
     constructor(service: JDService, address: number, isPacket: (pkt: jdspec.PacketInfo) => boolean);
     // (undocumented)
     readonly address: number;
     // (undocumented)
+    get friendlyName(): string;
+    // (undocumented)
     get id(): string;
     // (undocumented)
     get name(): string;
+    // (undocumented)
+    get parent(): JDNode;
     // (undocumented)
     get qualifiedName(): string;
     // (undocumented)
@@ -942,6 +1180,64 @@ export function jsonCopyFrom<T>(trg: T, src: T): void;
 
 // @public (undocumented)
 export function JSONTryParse(src: string): any;
+
+// @public (undocumented)
+export enum KeyboardAction {
+    // (undocumented)
+    Down = 2,
+    // (undocumented)
+    Press = 0,
+    // (undocumented)
+    Up = 1
+}
+
+// @public (undocumented)
+export enum KeyboardCmd {
+    Clear = 129,
+    Key = 128
+}
+
+// @public (undocumented)
+export enum KeyboardModifiers {
+    // (undocumented)
+    LeftAlt = 226,
+    // (undocumented)
+    LeftControl = 224,
+    // (undocumented)
+    LeftGUID = 227,
+    // (undocumented)
+    LeftShift = 225,
+    // (undocumented)
+    RightAlt = 230,
+    // (undocumented)
+    RightControl = 228,
+    // (undocumented)
+    RightGUID = 231,
+    // (undocumented)
+    RightShift = 229
+}
+
+// @public (undocumented)
+export const LATE = "late";
+
+// @public (undocumented)
+export enum LEDMatrixControllerCmd {
+    Clear = 128
+}
+
+// @public (undocumented)
+export enum LEDMatrixControllerReg {
+    Brightness = 130,
+    Columns = 132,
+    Enabled = 129,
+    Leds = 128,
+    Rows = 131
+}
+
+// @public (undocumented)
+export enum LEDMatrixDisplayReg {
+    Leds = 257
+}
 
 // @public (undocumented)
 export enum LightCmd {
@@ -968,7 +1264,18 @@ export enum LightReg {
 }
 
 // @public (undocumented)
+export type Log = (level: LogLevel, message: any, optionalArgs?: any[]) => void;
+
+// @public (undocumented)
 export function log(msg: string, v?: any): void;
+
+// @public (undocumented)
+export enum LoggerCmd {
+    Debug = 128,
+    Error = 131,
+    Log = 129,
+    Warn = 130
+}
 
 // @public (undocumented)
 export enum LoggerPriority {
@@ -988,15 +1295,103 @@ export enum LoggerReg {
 }
 
 // @public (undocumented)
+export type LogLevel = 'error' | 'warn' | 'log' | 'info' | 'debug';
+
+// @public (undocumented)
 export const LOST = "lost";
 
 // @public (undocumented)
 export function memcpy(trg: Uint8Array, trgOff: number, src: ArrayLike<number>, srcOff?: number, len?: number): void;
 
 // @public (undocumented)
+export enum MicrophoneCmd {
+    Sample = 129
+}
+
+// @public (undocumented)
+export enum MicrophoneReg {
+    SamplingPeriod = 128
+}
+
+// @public (undocumented)
+export class ModelRunnerClient extends JDServiceClient {
+    constructor(service: JDService);
+    // (undocumented)
+    autoInvoke(everySamples?: number): Promise<void>;
+    // (undocumented)
+    deployModel(model: Uint8Array, progress?: (p: number) => void): Promise<void>;
+    // (undocumented)
+    isModelSupported(model: Uint8Array): Promise<boolean>;
+    // (undocumented)
+    modelStats(): Promise<TFModelStats>;
+    // (undocumented)
+    subscribeResults(handler: (sample: number[]) => void): () => void;
+}
+
+// @public (undocumented)
+export enum ModelRunnerCmd {
+    Predict = 129,
+    SetModel = 128
+}
+
+// @public (undocumented)
+export enum ModelRunnerModelFormat {
+    // (undocumented)
+    EdgeImpulseCompiled = 810961221,
+    // (undocumented)
+    ML4F = 809963362,
+    // (undocumented)
+    TFLite = 860636756
+}
+
+// @public (undocumented)
+export enum ModelRunnerReg {
+    AllocatedArenaSize = 387,
+    AutoInvokeEvery = 128,
+    Format = 390,
+    FormatVersion = 391,
+    InputShape = 384,
+    LastError = 389,
+    LastRunTime = 386,
+    ModelSize = 388,
+    Outputs = 257,
+    OutputShape = 385,
+    Parallel = 392
+}
+
+// @public (undocumented)
 export enum MotorReg {
     Duty = 2,
     Enabled = 1
+}
+
+// @public (undocumented)
+export enum MouseButton {
+    // (undocumented)
+    Left = 2,
+    // (undocumented)
+    Middle = 4,
+    // (undocumented)
+    Right = 1
+}
+
+// @public (undocumented)
+export enum MouseButtonEvent {
+    // (undocumented)
+    Click = 3,
+    // (undocumented)
+    DoubleClick = 4,
+    // (undocumented)
+    Down = 2,
+    // (undocumented)
+    Up = 1
+}
+
+// @public (undocumented)
+export enum MouseCmd {
+    Move = 129,
+    SetButton = 128,
+    Wheel = 130
 }
 
 // @public (undocumented)
@@ -1031,6 +1426,9 @@ export interface MutableArrayLike<T> {
     // (undocumented)
     readonly length: number;
 }
+
+// @public (undocumented)
+export const NAME_CHANGE = "nameChange";
 
 // @public (undocumented)
 export const NEW_LISTENER = "newListener";
@@ -1104,10 +1502,15 @@ export interface Observer<T> {
 export function pack(format: string, nums: number[]): Uint8Array;
 
 // @public (undocumented)
+export function packArguments(info: jdspec.PacketInfo, args: ArgType[]): Packet;
+
+// @public (undocumented)
 export function packedSize(format: string): number;
 
 // @public (undocumented)
 export class Packet {
+    // (undocumented)
+    clone(): Packet;
     // (undocumented)
     compress(stripped: Uint8Array[]): void;
     // (undocumented)
@@ -1116,28 +1519,35 @@ export class Packet {
     get data(): Uint8Array;
     set data(buf: Uint8Array);
     // (undocumented)
-    _data: Uint8Array;
+    get decoded(): DecodedPacket;
     // (undocumented)
-    dev: JDDevice;
+    device: JDDevice;
     // (undocumented)
     get device_identifier(): string;
     set device_identifier(id: string);
     // (undocumented)
     get frame_flags(): number;
     // (undocumented)
+    get friendlyCommandName(): string;
+    // (undocumented)
+    get friendlyDeviceName(): string;
+    // (undocumented)
+    get friendlyServiceName(): string;
+    // (undocumented)
     static from(service_command: number, data: Uint8Array): Packet;
     // (undocumented)
-    static fromBinary(buf: Uint8Array): Packet;
+    static fromBinary(buf: Uint8Array, timestamp?: number): Packet;
     // (undocumented)
     static fromFrame(frame: Uint8Array, timestamp: number): Packet[];
     // (undocumented)
     getNumber(fmt: NumberFormat, offset: number): number;
     // (undocumented)
-    _header: Uint8Array;
+    get header(): Uint8Array;
     // (undocumented)
     get intData(): number;
     // (undocumented)
     get is_command(): boolean;
+    set is_command(value: boolean);
     // (undocumented)
     get is_event(): boolean;
     // (undocumented)
@@ -1146,6 +1556,8 @@ export class Packet {
     get is_reg_set(): boolean;
     // (undocumented)
     get is_report(): boolean;
+    // (undocumented)
+    get isAnnounce(): boolean;
     // (undocumented)
     get isRepeatedAnnounce(): boolean;
     // (undocumented)
@@ -1157,6 +1569,8 @@ export class Packet {
     // (undocumented)
     static packed(service_command: number, fmt: string, nums: number[]): Packet;
     // (undocumented)
+    static patchBinary(buf: Uint8Array): Uint8Array;
+    // (undocumented)
     get requires_ack(): boolean;
     set requires_ack(ack: boolean);
     // (undocumented)
@@ -1166,6 +1580,8 @@ export class Packet {
     // (undocumented)
     sendCoreAsync(bus: JDBus): Promise<void>;
     // (undocumented)
+    sender: string;
+    // (undocumented)
     sendReportAsync(dev: JDDevice): Promise<void>;
     // (undocumented)
     get service_class(): number;
@@ -1173,8 +1589,10 @@ export class Packet {
     get service_command(): number;
     set service_command(cmd: number);
     // (undocumented)
-    get service_number(): number;
-    set service_number(service_number: number);
+    get service_index(): number;
+    set service_index(value: number);
+    // (undocumented)
+    get serviceClass(): number;
     // (undocumented)
     get size(): number;
     // (undocumented)
@@ -1202,6 +1620,9 @@ export const PACKET_KIND_RO = "ro";
 export const PACKET_KIND_RW = "rw";
 
 // @public (undocumented)
+export const PACKET_PRE_PROCESS = "packetPreProcess";
+
+// @public (undocumented)
 export const PACKET_PROCESS = "packetProcess";
 
 // @public (undocumented)
@@ -1217,30 +1638,106 @@ export const PACKET_REPORT = "packetReport";
 export const PACKET_SEND = "packetSend";
 
 // @public (undocumented)
+export const PACKET_SEND_DISCONNECT = "packetSendDisconnect";
+
+// @public (undocumented)
+export interface PacketFilter {
+    // (undocumented)
+    filter: CompiledPacketFilter;
+    // (undocumented)
+    props: PacketFilterProps;
+    // (undocumented)
+    source: string;
+}
+
+// @public (undocumented)
+export interface PacketFilterProps {
+    // (undocumented)
+    after?: number;
+    // (undocumented)
+    announce?: boolean;
+    // (undocumented)
+    before?: number;
+    // (undocumented)
+    devices?: SMap<{
+        from?: boolean;
+        to?: boolean;
+    }>;
+    // (undocumented)
+    firmwareIdentifiers?: number[];
+    // (undocumented)
+    flags?: string[];
+    // (undocumented)
+    log?: boolean;
+    // (undocumented)
+    pkts?: string[];
+    // (undocumented)
+    regGet?: boolean;
+    // (undocumented)
+    regSet?: boolean;
+    // (undocumented)
+    repeatedAnnounce?: boolean;
+    // (undocumented)
+    requiresAck?: boolean;
+    // (undocumented)
+    serviceClasses?: number[];
+}
+
+// @public (undocumented)
+export interface PacketMessage {
+    // (undocumented)
+    broadcast: true;
+    // (undocumented)
+    channel: "jacdac";
+    // (undocumented)
+    data: Uint8Array;
+    // (undocumented)
+    outer: true;
+    // (undocumented)
+    type: "messagepacket";
+}
+
+// @public (undocumented)
 export function packetSpeedTest(dev: JDDevice): Promise<{
     msg: string;
     pktsPerSecond: number;
     dropRate: number;
 }>;
 
+// @public (undocumented)
+export interface PacketTransport {
+    // (undocumented)
+    connectAsync?: (background?: boolean) => Promise<void>;
+    // (undocumented)
+    disconnectAsync?: () => Promise<void>;
+    // (undocumented)
+    sendPacketAsync?: (p: Packet) => Promise<void>;
+}
+
 // @public
 export function packNumberArray(nums: number[]): Uint8Array;
 
 // @public (undocumented)
-export interface ParsedFrame {
-    // (undocumented)
-    data: Uint8Array;
-    // (undocumented)
-    info?: string;
-    // (undocumented)
-    timestamp: number;
-}
+export function parseDeviceId(id: string): Uint8Array;
 
 // @public (undocumented)
-export function parseLog(logcontents: string): ParsedFrame[];
+export function parseFirmwareFile(blob: Blob, store?: string): Promise<FirmwareBlob[]>;
+
+// Warning: (ae-forgotten-export) The symbol "Frame" needs to be exported by the entry point jacdac.d.ts
+//
+// @public (undocumented)
+export function parseLogicLog(logcontents: string): Frame[];
 
 // @public (undocumented)
-export function parseUF2(uf2: Uint8Array): FirmwareBlob[];
+export function parsePacketFilter(bus: JDBus, text: string): PacketFilter;
+
+// Warning: (ae-forgotten-export) The symbol "Trace" needs to be exported by the entry point jacdac.d.ts
+//
+// @public (undocumented)
+export function parseTrace(contents: string): Trace;
+
+// @public (undocumented)
+export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[];
 
 // @public (undocumented)
 export const PIPE_CLOSE_MASK = 32;
@@ -1256,6 +1753,8 @@ export const PIPE_PORT_SHIFT = 7;
 
 // @public (undocumented)
 export interface PipeInfo {
+    // (undocumented)
+    localPipe?: any;
     // (undocumented)
     pipeType?: string;
 }
@@ -1277,6 +1776,9 @@ export enum PowerReg {
 export function prettyDuration(ms: number): string;
 
 // @public (undocumented)
+export function prettySize(b: number): string;
+
+// @public (undocumented)
 export function prettyUnit(u: jdspec.Unit): string;
 
 // @public (undocumented)
@@ -1289,6 +1791,9 @@ export interface PrintPacketOptions {
     // (undocumented)
     skipRepeatedAnnounce?: boolean;
 }
+
+// @public (undocumented)
+export const PROGRESS = "progress";
 
 // @public (undocumented)
 export class PromiseBuffer<T> {
@@ -1311,34 +1816,15 @@ export class PromiseQueue {
 }
 
 // @public (undocumented)
-export class Proto {
-    constructor(io: Transport_2);
-    // (undocumented)
-    cmdSeq: number;
-    // (undocumented)
-    connectAsync(background?: boolean): Promise<void>;
+export interface Proto {
     // (undocumented)
     disconnectAsync(): Promise<void>;
     // (undocumented)
-    error(m: string): void;
-    // (undocumented)
-    eventHandlers: SMap<(buf: Uint8Array) => void>;
-    // (undocumented)
-    handleEvent(buf: Uint8Array): void;
-    // (undocumented)
-    io: Transport_2;
-    // (undocumented)
-    msgs: PromiseBuffer<Uint8Array>;
-    // (undocumented)
-    onEvent(id: number, f: (buf: Uint8Array) => void): void;
-    // (undocumented)
     onJDMessage(f: (buf: Uint8Array) => void): void;
     // (undocumented)
-    onSerial(data: Uint8Array, iserr: boolean): void;
+    postConnectAsync(): Promise<void>;
     // (undocumented)
-    sendJDMessageAsync(buf: Uint8Array): Promise<Uint8Array>;
-    // (undocumented)
-    talkAsync(cmd: number, data?: Uint8Array): Promise<Uint8Array>;
+    sendJDMessageAsync(buf: Uint8Array): Promise<void>;
 }
 
 // @public (undocumented)
@@ -1352,37 +1838,40 @@ export enum PwmLightReg {
 }
 
 // @public (undocumented)
+export function randomUInt(max: number): number;
+
+// @public (undocumented)
 export function read16(buf: ArrayLike<number>, pos: number): number;
 
 // @public (undocumented)
 export function read32(buf: ArrayLike<number>, pos: number): number;
 
 // @public (undocumented)
-export const REG_HIGH_THRESHOLD = 6;
+export function readBlobToText(blob: Blob): Promise<string>;
 
 // @public (undocumented)
-export const REG_INTENSITY = 1;
-
-// @public (undocumented)
-export const REG_IS_STREAMING = 3;
-
-// @public (undocumented)
-export const REG_LOW_THRESHOLD = 5;
-
-// @public (undocumented)
-export const REG_MAX_POWER = 7;
-
-// @public (undocumented)
-export const REG_READING = 257;
-
-// @public (undocumented)
-export const REG_STREAMING_INTERVAL = 4;
-
-// @public (undocumented)
-export const REG_VALUE = 2;
+export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array>;
 
 // @public (undocumented)
 export const REGISTER_NODE_NAME = "register";
+
+// @public (undocumented)
+export const REGISTER_OPTIONAL_POLL_COUNT = 3;
+
+// @public (undocumented)
+export const REGISTER_POLL_REPORT_INTERVAL = 799;
+
+// @public (undocumented)
+export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000;
+
+// @public (undocumented)
+export const REGISTER_REFRESH_RETRY_0 = 30;
+
+// @public (undocumented)
+export const REGISTER_REFRESH_RETRY_1 = 80;
+
+// @public (undocumented)
+export const REGISTER_REFRESH_TIMEOUT = 150;
 
 // @public (undocumented)
 export enum RegisterType {
@@ -1399,10 +1888,29 @@ export enum RegisterType {
 }
 
 // @public (undocumented)
+export class RemoteRequestedDevice {
+    constructor(parent: RoleManagerClient, name: string);
+    // (undocumented)
+    boundTo: JDDevice;
+    // (undocumented)
+    candidates: JDDevice[];
+    // (undocumented)
+    isCandidate(ldev: JDDevice): boolean;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    parent: RoleManagerClient;
+    // (undocumented)
+    select(dev: JDDevice): void;
+    // (undocumented)
+    services: number[];
+}
+
+// @public (undocumented)
 export const REMOVE_LISTENER = "removeListener";
 
 // @public (undocumented)
-export function replayLog(bus: JDBus, frames: ParsedFrame[]): void;
+export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void;
 
 // @public (undocumented)
 export const REPORT_RECEIVE = "reportReceive";
@@ -1414,6 +1922,28 @@ export const REPORT_UPDATE = "reportUpdate";
 export const RESTART = "restart";
 
 // @public (undocumented)
+export class RoleManagerClient extends JDServiceClient {
+    constructor(service: JDService);
+    // (undocumented)
+    clearRoles(): Promise<void>;
+    // (undocumented)
+    static create(bus: JDBus, print?: (s: string) => void): RoleManagerClient;
+    // (undocumented)
+    remoteRequestedDevices: RemoteRequestedDevice[];
+    // (undocumented)
+    setRole(dev: JDDevice, name: string): Promise<void>;
+}
+
+// @public (undocumented)
+export enum RoleManagerCmd {
+    ClearAllRoles = 132,
+    GetRole = 128,
+    ListRequiredRoles = 131,
+    ListStoredRoles = 130,
+    SetRole = 129
+}
+
+// @public (undocumented)
 export enum RotaryEncoderReg {
     ClicksPerTurn = 384,
     Position = 257
@@ -1423,15 +1953,87 @@ export enum RotaryEncoderReg {
 export function roundWithPrecision(x: number, digits: number): number;
 
 // @public (undocumented)
-export function scaleValue(v: number, info: jdspec.PacketMember): number;
+export function scaleFloatToInt(v: number, info: jdspec.PacketMember): number;
+
+// @public (undocumented)
+export function scaleIntToFloat(v: number, info: jdspec.PacketMember): number;
 
 // @public (undocumented)
 export function scanFirmwares(bus: JDBus, timeout?: number): Promise<FirmwareInfo[]>;
 
 // @public (undocumented)
+export const SELF_ANNOUNCE = "selfAnnounce";
+
+// @public (undocumented)
+export class SensorAggregatorClient extends JDServiceClient {
+    constructor(service: JDService);
+    // (undocumented)
+    collect(numSamples: number): Promise<void>;
+    // (undocumented)
+    setInputs(cfg: SensorAggregatorConfig): Promise<void>;
+    // (undocumented)
+    stats(): Promise<SensorAggregatorStats>;
+    // (undocumented)
+    subscribeSample(handler: (sample: number[]) => void): () => void;
+}
+
+// @public (undocumented)
+export interface SensorAggregatorConfig {
+    // (undocumented)
+    inputs: SensorAggregatorInputConfig[];
+    // (undocumented)
+    samplesInWindow: number;
+    // (undocumented)
+    samplingInterval: number;
+}
+
+// @public (undocumented)
+export interface SensorAggregatorInputConfig {
+    // (undocumented)
+    deviceId?: string;
+    // (undocumented)
+    serviceClass: number;
+    // (undocumented)
+    serviceIndex?: number;
+}
+
+// @public (undocumented)
+export enum SensorAggregatorReg {
+    CurrentSample = 257,
+    Inputs = 128,
+    NumSamples = 384,
+    SampleSize = 385,
+    StreamSamples = 129
+}
+
+// @public (undocumented)
+export enum SensorAggregatorSampleType {
+    // (undocumented)
+    I16 = 144,
+    // (undocumented)
+    I32 = 160,
+    // (undocumented)
+    I8 = 136,
+    // (undocumented)
+    U16 = 16,
+    // (undocumented)
+    U32 = 32,
+    // (undocumented)
+    U8 = 8
+}
+
+// @public (undocumented)
+export interface SensorAggregatorStats {
+    // (undocumented)
+    "numSamples": number;
+    // (undocumented)
+    "sampleSize": number;
+}
+
+// @public (undocumented)
 export enum SensorReg {
-    IsStreaming = 3,
-    StreamingInterval = 4
+    StreamingInterval = 4,
+    StreamSamples = 3
 }
 
 // @public (undocumented)
@@ -1446,11 +2048,17 @@ export function serviceMap(): SMap<jdspec.ServiceSpec>;
 // @public (undocumented)
 export function serviceName(n: number): string;
 
+// @public (undocumented)
+export function serviceShortIdOrClass(serviceClass: number): string;
+
 // @public
 export function serviceSpecificationFromClassIdentifier(classIdentifier: number): jdspec.ServiceSpec;
 
 // @public
 export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec;
+
+// @public (undocumented)
+export function serviceSpecifications(): jdspec.ServiceSpec[];
 
 // @public (undocumented)
 export enum ServoReg {
@@ -1462,13 +2070,21 @@ export enum ServoReg {
 export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r: number): void;
 
 // @public (undocumented)
-export function setStreamingAsync(service: JDService, on: boolean): Promise<void>;
-
-// @public (undocumented)
 export function setThresholdAsync(service: JDService, low: boolean, value: number): Promise<void>;
 
 // @public (undocumented)
 export function shortDeviceId(devid: string): string;
+
+// @public (undocumented)
+export interface Signal {
+    // (undocumented)
+    signal: () => void;
+    // (undocumented)
+    signalled: Promise<void>;
+}
+
+// @public (undocumented)
+export function signal(): Signal;
 
 // @public
 export function sizeOfNumberFormat(format: NumberFormat): 1 | 2 | 4 | 8 | 0;
@@ -1488,64 +2104,52 @@ export interface SMap<T> {
 export const SRV_ACCELEROMETER = 521405449;
 
 // @public (undocumented)
-export const SRV_ARCADE_CONTROLS = 501915758;
-
-// @public (undocumented)
-export const SRV_BATTERY = 489302733;
-
-// @public (undocumented)
 export const SRV_BOOTLOADER = 536516936;
 
 // @public (undocumented)
 export const SRV_BUTTON = 343122531;
 
 // @public (undocumented)
-export const SRV_COLOR_SENSOR = 349625762;
+export const SRV_CODAL_MESSAGE_BUS = 380468437;
 
 // @public (undocumented)
-export const SRV_CONTROLLER = 411755704;
+export const SRV_CONTROL = 0;
 
-// @public
+// @public (undocumented)
 export const SRV_CTRL = 0;
 
 // @public (undocumented)
-export const SRV_DNS = 293022141;
+export const SRV_GAMEPAD = 501915758;
 
 // @public (undocumented)
-export const SRV_GAMEPAD = 268773352;
+export const SRV_HUMIDITY = 382210232;
 
 // @public (undocumented)
-export const SRV_HAPTIC = 292230307;
+export const SRV_KEYBOARD = 414210922;
 
 // @public (undocumented)
-export const SRV_KEYBOARD = 451182893;
+export const SRV_LED_MATRIX_CONTROLLER = 490070931;
 
 // @public (undocumented)
-export const SRV_LCD = 416622668;
+export const SRV_LED_MATRIX_DISPLAY = 286070091;
 
 // @public (undocumented)
 export const SRV_LIGHT = 309264608;
 
 // @public (undocumented)
-export const SRV_LIGHT_SENSOR = 367501567;
-
-// @public (undocumented)
-export const SRV_LIGHT_SPECTRUM_SENSOR = 385485837;
-
-// @public (undocumented)
 export const SRV_LOGGER = 316415946;
 
 // @public (undocumented)
-export const SRV_MESSAGE_BUS = 291286005;
+export const SRV_MICROPHONE = 289254534;
 
 // @public (undocumented)
-export const SRV_MICROPHONE = 442259558;
+export const SRV_MODEL_RUNNER = 336566904;
 
 // @public (undocumented)
 export const SRV_MOTOR = 385895640;
 
 // @public (undocumented)
-export const SRV_MOUSE = 347903935;
+export const SRV_MOUSE = 411425820;
 
 // @public (undocumented)
 export const SRV_MULTITOUCH = 416636459;
@@ -1554,46 +2158,49 @@ export const SRV_MULTITOUCH = 416636459;
 export const SRV_MUSIC = 458731991;
 
 // @public (undocumented)
-export const SRV_PIXEL = 392756159;
-
-// @public (undocumented)
 export const SRV_POWER = 530893146;
-
-// @public (undocumented)
-export const SRV_PROXIMITY = 348223771;
 
 // @public (undocumented)
 export const SRV_PWM_LIGHT = 531985491;
 
 // @public (undocumented)
+export const SRV_ROLE_MANAGER = 295451345;
+
+// @public (undocumented)
 export const SRV_ROTARY_ENCODER = 284830153;
+
+// @public (undocumented)
+export const SRV_SENSOR_AGGREGATOR = 496034245;
 
 // @public (undocumented)
 export const SRV_SERVO = 318542083;
 
 // @public (undocumented)
-export const SRV_SERVOS = 405375192;
-
-// @public (undocumented)
 export const SRV_SLIDER = 522667846;
-
-// @public (undocumented)
-export const SRV_SWITCH = 337740146;
 
 // @public (undocumented)
 export const SRV_TCP = 457422603;
 
 // @public (undocumented)
-export const SRV_THERMOMETER = 337754823;
-
-// @public (undocumented)
-export const SRV_TOUCH_BUTTONS = 449530325;
-
-// @public (undocumented)
-export const SRV_TOUCHBUTTON = 319616446;
+export const SRV_TEMPERATURE = 337754823;
 
 // @public (undocumented)
 export const SRV_WIFI = 413852154;
+
+// @public (undocumented)
+export function stableSortRegisters(registers: JDRegister[]): JDRegister[];
+
+// @public (undocumented)
+export function stableSortServices(services: JDService[]): JDService[];
+
+// @public (undocumented)
+export const START = "start";
+
+// @public (undocumented)
+export const STOP = "stop";
+
+// @public (undocumented)
+export function storageTypeRange(tp: jdspec.StorageType): [number, number];
 
 // @public (undocumented)
 export function strcmp(a: string, b: string): 0 | 1 | -1;
@@ -1603,11 +2210,13 @@ export function stringToUint8Array(input: string): Uint8Array;
 
 // @public (undocumented)
 export enum TCPCmd {
+    Open = 128
+}
+
+// @public (undocumented)
+export enum TCPPipeCmd {
     Error = 0,
-    Indata = 0,
-    Open = 128,
-    OpenSsl = 1,
-    Outdata = 0
+    OpenSsl = 1
 }
 
 // @public (undocumented)
@@ -1624,10 +2233,30 @@ export enum TemperatureReg {
 }
 
 // @public (undocumented)
+export interface TFModelStats {
+    // (undocumented)
+    "arenaSize": number;
+    // (undocumented)
+    "inputShape": number[];
+    // (undocumented)
+    "lastError": string;
+    // (undocumented)
+    "modelSize": number;
+    // (undocumented)
+    "outputShape": number[];
+}
+
+// @public (undocumented)
 export function throttle(handler: () => void, delay: number): () => void;
 
 // @public (undocumented)
 export function throwError(msg: string, cancel?: boolean): void;
+
+// @public (undocumented)
+export const TIMEOUT = "timeout";
+
+// @public (undocumented)
+export const TIMEOUT_DISCONNECT = "timeoutDisconnect";
 
 // @public (undocumented)
 export function toArray<T>(a: ArrayLike<T>): T[];
@@ -1642,12 +2271,22 @@ export function toHex(bytes: ArrayLike<number>): string;
 export function toUTF8(str: string, cesu8?: boolean): string;
 
 // @public (undocumented)
+export interface TracePacketProps {
+    // (undocumented)
+    count?: number;
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    packet: Packet;
+}
+
+// @public (undocumented)
 class Transport_2 {
     constructor(usb: USBOptions);
     // (undocumented)
     altIface: USBAlternateInterface;
     // (undocumented)
-    connectAsync(background: boolean): Promise<void>;
+    connectAsync(background: boolean): Promise<Proto>;
     // (undocumented)
     dev: USBDevice;
     // (undocumented)
@@ -1661,15 +2300,21 @@ class Transport_2 {
     // (undocumented)
     iface: USBInterface;
     // (undocumented)
+    get isMicrobit(): boolean;
+    // (undocumented)
     log(msg: string, v?: any): void;
     // (undocumented)
     onData: (v: Uint8Array) => void;
     // (undocumented)
     onError: (e: Error) => void;
     // (undocumented)
+    rawMode: boolean;
+    // (undocumented)
     readLoopStarted: boolean;
     // (undocumented)
     ready: boolean;
+    // (undocumented)
+    recvPacketAsync(): Promise<Uint8Array>;
     // (undocumented)
     sendPacketAsync(pkt: Uint8Array): Promise<void>;
     }
@@ -1677,10 +2322,19 @@ class Transport_2 {
 export { Transport_2 as Transport }
 
 // @public (undocumented)
+export function tryParseMemberValue(text: string, info: jdspec.PacketMember): {
+    value?: any;
+    error?: string;
+};
+
+// @public (undocumented)
 export function uint8ArrayToString(input: ArrayLike<number>): string;
 
 // @public (undocumented)
 export function unique(values: string[]): string[];
+
+// @public (undocumented)
+export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted: (value: T) => U): U[];
 
 // @public (undocumented)
 export function unpack(buf: Uint8Array, format: string, offset?: number): number[];
@@ -1694,6 +2348,10 @@ export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob): boolean
 // @public (undocumented)
 export interface USBOptions {
     // (undocumented)
+    connectObservable?: Observable<USBConnectionEvent>;
+    // (undocumented)
+    disconnectObservable?: Observable<USBConnectionEvent>;
+    // (undocumented)
     getDevices: () => Promise<USBDevice[]>;
     // (undocumented)
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>;
@@ -1701,6 +2359,9 @@ export interface USBOptions {
 
 // @public (undocumented)
 export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number): any[];
+
+// @public (undocumented)
+export function visitNodes(node: JDNode, vis: (node: JDNode) => void): void;
 
 // @public (undocumented)
 export function warn(msg: string, v?: any): void;
@@ -1735,7 +2396,6 @@ export enum WifiAPFlags {
 export enum WifiCmd {
     Connect = 129,
     Disconnect = 130,
-    Results = 0,
     Scan = 128
 }
 
@@ -1743,6 +2403,11 @@ export enum WifiCmd {
 export enum WifiEvent {
     GotIp = 1,
     LostIp = 2
+}
+
+// @public (undocumented)
+export enum WifiReg {
+    Connected = 384
 }
 
 // @public (undocumented)
