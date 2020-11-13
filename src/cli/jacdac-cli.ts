@@ -1,7 +1,3 @@
-/**
- * JACDAC command line tool
- */
-
 const cli = require("cli")
 import { PACKET_PROCESS } from "../jdom/constants"
 import { createUSBBus } from "../jdom/usb"
