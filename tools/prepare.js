@@ -11,7 +11,7 @@ console.log(`patching version: ${version}`)
 
 // patch with cdn files
 async function patchDocs() {
-  for (const suffix of ["", "-dom", "-graphql", "-react"]) {
+  for (const suffix of ["", "-jdom", "-graphql", "-react"]) {
     const fn = `jacdac${suffix}.umd.js`
     await patch({
       files: './docs/static/tools/js/*.html',
