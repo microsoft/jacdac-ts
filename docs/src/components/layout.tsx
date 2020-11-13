@@ -253,11 +253,11 @@ function MainAppBar(props: { pageContext?: any }) {
     <Toolbar>
       <DrawerToolsButtonGroup className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} showToc={true} showCurrent={true} />
       {!drawerOpen && !toolsMenu && <Hidden implementation="css" mdDown={true}>
-        <Typography variant="h6">
+        <Typography component="span" variant="h6">
           <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
         </Typography>
         {pageTitle && pageTitle !== "JACDAC" &&
-          <Typography variant="h6">
+          <Typography component="span" variant="h6">
             {"/"} {pageTitle}
           </Typography>}
       </Hidden>}
