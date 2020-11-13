@@ -29,7 +29,7 @@
     "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
     "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean && cd .. && node ./tools/prepare.js",
     "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths",
-    "apidocs": "node node_modules/@microsoft/api-extractor/bin/api-extractor run --local",
+    "apidocs": "node node_modules/@microsoft/api-extractor/bin/api-extractor run --local && node node_modules/@microsoft/api-documenter/bin/api-documenter markdown --input-folder etc --output-folder built/apidocs",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
@@ -103,7 +103,9 @@
         {
           "assets": [
             "package.json",
-            "package-lock.json"
+            "package-lock.json",
+            "etc/jacdac-ts.api.json",
+            "etc/jacdac-ts.api.md"
           ]
         }
       ]
