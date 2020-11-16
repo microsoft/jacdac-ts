@@ -20,13 +20,13 @@ export default function FlashButton(props: { className?: string }) {
     console.log({ updates, updatesCount })
     if (!updatesCount)
         return <></>
-    const title = `Firmware update ${updatesCount} available`;
+    const title = `Firmware updates available`;
     return <IconButtonWithTooltip
         title={title} {...props}
         color="inherit"
         to="/tools/updater"
         edge="start">
-        <Badge badgeContent={updatesCount} color="secondary">
+        <Badge badgeContent={"*"} color="secondary">
             <SystemUpdateAltIcon />
         </Badge>
     </IconButtonWithTooltip>

@@ -48,7 +48,7 @@ TODO describe this register
 `
     )
 
-    const debouncedSource = useDebounce(source, 700)
+    const [debouncedSource] = useDebounce(source, 700)
     const includes = serviceMap()
     const json = parseSpecificationMarkdownToJSON(debouncedSource, includes)
     useEffect(() => {

@@ -128,7 +128,7 @@ export default function PacketFilter() {
     const { trace, timeRange, toggleTimeRange, filter, setFilter } = useContext(PacketsContext)
     const classes = useStyles();
     const [text, setText] = useState(filter);
-    const debouncedText = useDebounce(text, 1000);
+    const [debouncedText] = useDebounce(text, 1000);
 
     // background filter update
     useEffect(() => setText(filter), [filter])
