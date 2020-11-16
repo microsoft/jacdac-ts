@@ -3,9 +3,7 @@ title: JACDAC
 path: /
 ---
 
-**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals (sensors/actuators), with applications to rapid prototyping, making, and physical computing. 
-
-JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of services it provides. A *service* encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page).
+**JACDAC** (**J**oint **A**synchronous **C**ommunications; **D**evice **A**gnostic **C**ontrol) is a plug-and-play hardware/software stack for connecting microcontrollers and their peripherals (sensors/actuators), with applications to rapid prototyping, making, and physical computing. JACDAC devices communicate over a *bus*, where each *device* can advertise itself and the set of services it provides. A *service* encapsulates the process of communicating with a JACDAC device via packets. A *packet* includes a device identifier and data payload. JACDAC packets are sent serially among physical devices on the JACDAC bus and may also be sent over WebUSB, providing connectivity to web-based tooling and services running in the web browser (see the connect icon at the top of this page).
 
 ## Device catalog
 
@@ -21,20 +19,11 @@ The [service catalog](/services) lists the registered JACDAC service classes, wh
 
 ## Reference documentation
 
-For a definition of JACDAC terms, see the [glossary](./reference/glossary).
-
-### For JACDAC users
-
-JACDAC has support for the C, CircuitPython, and TypeScript languages, as well as for Microsoft MakeCode. To get familiar with the JACDAC abstractions, we suggest browsing the TypeScript [JACDAC Object Model](./clients/web/jdom), which is used to make this web site a JACDAC endpoint (over WebUSB), as well as the [tools](./tools/) built using the model.
-
-### For JACDAC device manufacturers and firmware engineers
-
-You will want to read about adding a [device entry](./reference/device-entry) to the [device catalog](/devices) and the role of [service specifications](./reference/service-specification), found in the [service catalog](/services). Please read the [JACDAC protocol](./jacdac-protocol) to learn about the JACDAC packet structure and state machine. To port the JACDAC protocol to a new microcontroller requires implementing the [single wire serial (SWS) protocol](./reference/sws-protocol), which requires that the microcontroller have UART, Timer, and GPIO interrupt capabilities.
+See the [overview of reference documentation](/reference/), including the JACDAC protocol specification.
 
 ## JACDAC Github repos
 
-JACDAC is an Open Source living standard. Checkout our [GitHub Repositories](/github)
-for the piece you want.
+JACDAC is an Open Source living standard. Checkout our [GitHub Repositories](/github) for the piece you want.
 
 ## Community
 
