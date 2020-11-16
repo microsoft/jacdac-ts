@@ -155,7 +155,7 @@
     "tslint": "^6",
     "tslint-microsoft-contrib": "^6",
     "typescript": "^4",
-    "webusb": "^2.1.0"
+    "webusb": "^2.2.0"
   },
   "dependencies": {
     "@types/node": "^14",
