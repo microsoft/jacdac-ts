@@ -6,7 +6,7 @@ import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useLocalStorage from './useLocalStorage';
-import useDebounce from './useDebounce'
+import { useDebounce } from 'use-debounce';
 import PaperBox from './PaperBox'
 import Alert from './Alert';
 
@@ -48,7 +48,7 @@ TODO describe this register
 `
     )
 
-    const debouncedSource = useDebounce(source, 700)
+    const [debouncedSource] = useDebounce(source, 700)
     const includes = serviceMap()
     const json = parseSpecificationMarkdownToJSON(debouncedSource, includes)
     useEffect(() => {

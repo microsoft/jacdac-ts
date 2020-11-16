@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PacketsContext from "./PacketsContext"
 import { Box, Slider, useTheme } from "@material-ui/core"
-import useDebounce from './useDebounce';
+import { useDebounce } from 'use-debounce';
 import { prettyDuration } from '../../../src/jdom/pretty';
 
 export default function TraceTimeFilterRangeSlider() {
@@ -9,7 +9,7 @@ export default function TraceTimeFilterRangeSlider() {
     const [minMax, setMinMax] = useState([0, 1000]);
     const [value, setValue] = useState<number[]>(timeRange)
     const theme = useTheme();
-    const debouncedValue = useDebounce(value, 1000);
+    const [debouncedValue] = useDebounce(value, 1000);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
