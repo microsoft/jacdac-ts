@@ -15,6 +15,7 @@ import useSelectedNodes from "../jacdac/useSelectedNodes"
 import useFirmwareRepos from "./useFirmwareRepos";
 import UpdateDeviceList from "./UpdateDeviceList";
 import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
+import { useDebouncedCallback } from "use-debounce"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -40,7 +41,7 @@ export default function Flash() {
     const firmwareRepos = useFirmwareRepos()
 
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
-    async function scan() {
+    const scan = useDebouncedCallback(async () => {
         if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
             return;
         console.log(`start scanning bus`)
@@ -51,9 +52,9 @@ export default function Flash() {
         finally {
             setScanning(false)
         }
-    }
-    useEffect(() => { scan() }, [isFlashing, connectionState])
-    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()), [connectionState, isFlashing, scanning])
+    }, 30000)
+    useEffect(() => { scan?.callback() }, [isFlashing, connectionState])
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan.callback()), [connectionState, isFlashing, scanning])
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
