@@ -88,7 +88,7 @@ export enum BusState {
     Disconnected = "disconnected"
 }
 
-const SCAN_FIRMWARE_INTERVAL = 30000
+const BACKGROUND_SCAN_FIRMWARE_INTERVAL = 30000 // scan at most every 30sec in background
 
 function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
     switch (level) {
@@ -479,10 +479,10 @@ export class JDBus extends JDNode {
             if (!this._debouncedScanFirmwares) {
                 this._debouncedScanFirmwares = debounceAsync(async () => {
                     if (this.connected) {
-                        this.log('info', `scanning firmwares`)
+                        this.log('info', `background scan firmwares`)
                         await scanFirmwares(this);
                     }
-                }, SCAN_FIRMWARE_INTERVAL)
+                }, BACKGROUND_SCAN_FIRMWARE_INTERVAL)
                 this.on(DEVICE_ANNOUNCE, this._debouncedScanFirmwares)
             }
         } else {
