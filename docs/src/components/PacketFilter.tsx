@@ -12,7 +12,7 @@ import PacketsContext from "./PacketsContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
-import useDebounce from './useDebounce';
+import { useDebounce } from 'use-debounce';
 import { arrayConcatMany, uniqueMap } from '../../../src/jdom/utils';
 import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
 import IconButtonWithTooltip from './IconButtonWithTooltip';
@@ -128,7 +128,7 @@ export default function PacketFilter() {
     const { trace, timeRange, toggleTimeRange, filter, setFilter } = useContext(PacketsContext)
     const classes = useStyles();
     const [text, setText] = useState(filter);
-    const debouncedText = useDebounce(text, 1000);
+    const [debouncedText] = useDebounce(text, 1000);
 
     // background filter update
     useEffect(() => setText(filter), [filter])
