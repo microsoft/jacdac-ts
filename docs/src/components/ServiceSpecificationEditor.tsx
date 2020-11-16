@@ -6,7 +6,7 @@ import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useLocalStorage from './useLocalStorage';
-import useDebounce from 'use-debounce'
+import { useDebounce } from 'use-debounce'
 import PaperBox from './PaperBox'
 import Alert from './Alert';
 

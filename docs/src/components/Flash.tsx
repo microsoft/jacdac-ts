@@ -16,7 +16,7 @@ import UpdateDeviceList from "./UpdateDeviceList";
 import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
 import useChange from "../jacdac/useChange";
 import DbContext, { DbContextProps } from "./DbContext";
-import useDebouncedCallback from 'use-debounce'
+import { useDebouncedCallback } from 'use-debounce'
 const SCAN_DEBOUNCE_DELAY = 2000
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -57,7 +57,7 @@ export default function Flash() {
     // scan when storing or clearing firmwares
     useChange(db?.firmwares);
     // scan when new device
-    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan?.callback()))
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };

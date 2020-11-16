@@ -12,7 +12,7 @@ import PacketsContext from "./PacketsContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import DeviceName from './DeviceName';
-import useDebounce from 'use-debounce'
+import { useDebounce } from 'use-debounce'
 import { arrayConcatMany, uniqueMap } from '../../../src/jdom/utils';
 import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
 import IconButtonWithTooltip from './IconButtonWithTooltip';

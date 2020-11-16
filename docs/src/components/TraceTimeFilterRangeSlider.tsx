@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PacketsContext from "./PacketsContext"
 import { Box, Slider, useTheme } from "@material-ui/core"
-import useDebounce from 'use-debounce'
+import { useDebounce } from 'use-debounce'
 import { prettyDuration } from '../../../src/jdom/pretty';
 
 export default function TraceTimeFilterRangeSlider() {
