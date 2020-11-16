@@ -302,7 +302,7 @@ function LayoutWithContext(props: {
   const theme = useTheme();
   const { drawerType, toolsMenu } = useContext(AppContext)
   const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
-  useFirmwareBlobs();
+  useFirmwareBlobs(true);
   const drawerOpen = drawerType !== DrawerType.None
   const pagePath = pageContext?.frontmatter?.path;
   const pageDeck = !!pageContext?.frontmatter?.deck;

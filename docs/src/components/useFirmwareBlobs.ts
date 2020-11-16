@@ -8,7 +8,7 @@ import { deviceSpecifications } from "../../../src/jdom/spec";
 import { delay, unique } from "../../../src/jdom/utils";
 import { fetchLatestRelease, fetchReleaseBinary } from "./github";
 
-export default function useFirmwareBlobs() {
+export default function useFirmwareBlobs(background?: boolean) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { db } = useContext<DbContextProps>(DbContext)
     const firmwares = db?.firmwares;
@@ -18,10 +18,15 @@ export default function useFirmwareBlobs() {
         const names = await firmwares?.list()
         if (!names) return;
 
-        // wait for 2 minute 
-        // before starting any download
-        console.log(`firmware: await 2 minutes before checking updates`)
-        await delay(120000);
+        if (background) {
+            // already loaded
+            if (bus.firmwareBlobs)
+                return;
+            // wait for 2 minute 
+            // before starting any download
+            console.log(`firmware: await 2 minutes before checking updates`)
+            await delay(120000);
+        }
 
         const missingSlugs = unique(deviceSpecifications()
             .filter(spec => !!spec?.firmwares.length) // needs some firmwares

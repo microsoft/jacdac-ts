@@ -16,6 +16,7 @@ import useFirmwareRepos from "./useFirmwareRepos";
 import UpdateDeviceList from "./UpdateDeviceList";
 import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
 import { useDebouncedCallback } from "use-debounce"
+import useFirmwareBlobs from "./useFirmwareBlobs";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -38,10 +39,12 @@ export default function Flash() {
     devices = devices.filter(dev => !isBootloaderFlashing(devices, isDeviceFlashing, dev))
 
     // collect firmware repoes
+    useFirmwareBlobs();
     const firmwareRepos = useFirmwareRepos()
 
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     const scan = useDebouncedCallback(async () => {
+        console.log(`request scan`)
         if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
             return;
         console.log(`start scanning bus`)
@@ -53,8 +56,9 @@ export default function Flash() {
             setScanning(false)
         }
     }, 30000)
-    useEffect(() => { scan?.callback() }, [isFlashing, connectionState])
-    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan.callback()), [connectionState, isFlashing, scanning])
+    useEffect(() => { scan?.callback() }, [scan])
+    useEffect(() => { scan?.callback() }, [scan, isFlashing, connectionState])
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan.callback()), [scan])
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
