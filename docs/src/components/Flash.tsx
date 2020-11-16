@@ -1,7 +1,6 @@
 import { createStyles, Grid, makeStyles, Tab, Tabs, Theme } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
-import { BusState } from "../../../src/jdom/bus";
-import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants";
+import { DEVICE_ANNOUNCE, DEVICE_CHANGE, DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants";
 import { isBootloaderFlashing, JDDevice } from "../../../src/jdom/device";
 import { scanFirmwares, updateApplicable } from "../../../src/jdom/flashing";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -15,6 +14,10 @@ import useSelectedNodes from "../jacdac/useSelectedNodes"
 import useFirmwareRepos from "./useFirmwareRepos";
 import UpdateDeviceList from "./UpdateDeviceList";
 import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
+import useChange from "../jacdac/useChange";
+import DbContext, { DbContextProps } from "./DbContext";
+import useDebouncedCallback from 'use-debounce'
+const SCAN_DEBOUNCE_DELAY = 2000
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -26,13 +29,14 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function Flash() {
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
+    const { db } = useContext<DbContextProps>(DbContext)
     const gridBreakpoints = useGridBreakpoints()
     const [scanning, setScanning] = useState(false)
     const [tab, setTab] = useState(0);
     const classes = useStyles()
     const { hasSelection: isFlashing, selected: isDeviceFlashing, setSelected: setFlashing } = useSelectedNodes<JDDevice>()
 
-    let devices = useEventRaised(DEVICE_CHANGE, bus, () => bus.devices().filter(dev => dev.announced))
+    let devices = useEventRaised([DEVICE_CHANGE, DEVICE_FIRMWARE_INFO], bus, () => bus.devices().filter(dev => dev.announced))
     // filter out bootloader while flashing
     devices = devices.filter(dev => !isBootloaderFlashing(devices, isDeviceFlashing, dev))
 
@@ -40,9 +44,7 @@ export default function Flash() {
     const firmwareRepos = useFirmwareRepos()
 
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
-    async function scan() {
-        if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
-            return;
+    const scan = useDebouncedCallback(async () => {
         console.log(`start scanning bus`)
         try {
             setScanning(true)
@@ -51,13 +53,15 @@ export default function Flash() {
         finally {
             setScanning(false)
         }
-    }
-    // load indexed db file once
-    useEffect(() => { scan() }, [isFlashing, connectionState])
-    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()), [bus])
+    }, SCAN_DEBOUNCE_DELAY)
+    // scan when storing or clearing firmwares
+    useChange(db?.firmwares);
+    // scan when new device
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()))
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
+
     const updates = devices.map(device => {
         return {
             firmware: device.firmwareInfo,

@@ -7,7 +7,7 @@ export default function useEventRaised<TEventSource extends JDEventSource, TValu
 
     useEffect(() => node?.subscribe(eventName, () => {
         setVersion(version + 1)
-    }), [node, version])
+    }), [node])
 
     return value;
 }
