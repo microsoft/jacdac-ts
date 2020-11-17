@@ -10,11 +10,11 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
 import Alert from "./Alert"
 
-import { SearchResult } from "./useDrawerSearchResults";
-import { createStyles, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
+import { useDrawerSearchResults } from "./useDrawerSearchResults";
+import { ListItemText } from "@material-ui/core";
 
-export default function DrawerSearchResults(props: { results?: SearchResult[] }) {
-    const { results } = props
+export default function DrawerSearchResults() {
+    const results = useDrawerSearchResults();
 
     return <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
