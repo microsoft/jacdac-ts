@@ -39,6 +39,7 @@ import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../src/jdo
 import { AlertTitle } from "@material-ui/lab";
 import { serviceName } from "../../../src/jdom/pretty";
 import ConnectAlert from "./ConnectAlert";
+import ApiKeyAccordion from "./ApiKeyAccordion";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 
@@ -538,69 +539,19 @@ class EdgeImpulseClient extends JDClient {
 }
 
 function ApiKeyManager() {
-    const { value: apiKey, setValue: setApiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
-    const [key, setKey] = useState("")
-    const [expanded, setExpanded] = useState(false)
-    const [validated, setValidated] = useState(false)
-
-    useEffectAsync(async (mounted) => {
-        if (!apiKey) {
-            if (mounted())
-                setValidated(false)
+    const validateKey = async (key: string) => {
+        const r = await EdgeImpulseClient.currentProjectInfo(key)
+        return {
+            statusCode: (r?.valid && 200) || r?.errorStatus || 500
         }
-        else {
-            const r = await EdgeImpulseClient.currentProjectInfo(apiKey)
-            if (!mounted())
-                return;
-            if (r?.valid) {
-                setValidated(true);
-                setExpanded(false);
-            } else {
-                setValidated(false)
-                if (r.errorStatus === 403) // invalid key
-                    setApiKey(undefined)
-            }
-        }
-    }, [apiKey])
-
-    const handleApiChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setKey(event.target.value)
-    }
-    const handleSave = () => {
-        setApiKey(key)
-        setKey("")
-    }
-    const handleReset = () => {
-        setApiKey("")
-    }
-
-    const handleExpanded = () => {
-        setExpanded(!expanded)
-    }
-
-    return <Accordion expanded={expanded} onChange={handleExpanded}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body1">API Key Configuration</Typography>
-            {validated && <Box ml={1} color="success.main"><CheckCircleOutlineIcon /></Box>}
-        </AccordionSummary>
-        <AccordionDetails style={({ display: "block" })}>
-            {validated && <Alert severity={"success"}>API key ready!</Alert>}
-            <p>To get an <b>API key</b>, navigate to &nbsp;
+    };
+    return <ApiKeyAccordion
+        apiName={EDGE_IMPULSE_API_KEY}
+        validateKey={validateKey}
+        instructions={<p>To get an <b>API key</b>, navigate to &nbsp;
             <Link to="https://studio.edgeimpulse.com/studio/8698/keys" target="_blank">https://studio.edgeimpulse.com/studio/8698/keys</Link>
-            &nbsp; and generate a new key.</p>
-            <TextField
-                autoFocus
-                label="API key"
-                fullWidth
-                value={key}
-                onChange={handleApiChange}
-            />
-        </AccordionDetails>
-        <AccordionActions>
-            <Button aria-label="save api key" disabled={!key} variant="contained" color="primary" onClick={handleSave}>Save</Button>
-            <Button aria-label="clear api key" disabled={!apiKey} variant="contained" onClick={handleReset}>Clear</Button>
-        </AccordionActions>
-    </Accordion >
+            &nbsp; and generate a new key.</p>}
+    />
 }
 
 function useEdgeImpulseProjectInfo(apiKey: string) {
