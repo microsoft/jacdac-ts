@@ -142,6 +142,12 @@ module.exports = {
             description: node => node.notes["short"],
             body: node => node.source,
             path: node => `/services/${node.shortId}`
+          },
+          DevicesJson: {
+            title: node => node.name,
+            description: node => node.description,
+            body: node => node.source,
+            path: node => `/devices/${node.id}`
           }
         } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
       },
