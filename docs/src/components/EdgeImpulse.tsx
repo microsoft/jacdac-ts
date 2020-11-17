@@ -10,24 +10,13 @@ import { JDClient } from "../../../src/jdom/client";
 import DeviceCardHeader from "./DeviceCardHeader";
 import Alert from "./Alert";
 import useEffectAsync from "./useEffectAsync";
-import { BaseReg, CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../src/jdom/constants";
+import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../src/jdom/constants";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromFirmwareIdentifier, isSensor } from "../../../src/jdom/spec";
 import CircularProgressWithLabel from "./CircularProgressWithLabel";
 import Trend from "./Trend"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import GetAppIcon from '@material-ui/icons/GetApp';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import Accordion from '@material-ui/core/Accordion';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import { AccordionActions } from '@material-ui/core';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ServiceList from "./ServiceList";
 import { ModelActions, ModelContent } from "./ModelUploader";
 import { readBlobToUint8Array } from "../../../src/jdom/utils";
