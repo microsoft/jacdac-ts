@@ -20,16 +20,9 @@ export function useDrawerSearchResults(): SearchResult[] {
     let nodes: SearchResult[] = undefined;
     if (searchQuery && index) {
         const results = index.search(searchQuery, <any>{
-            /*fields: {
-                title: { boost: 4 },
-                description: { boost: 2 },
-                body: { boost: 1 }
-            },*/
             expand: true
         })
-        console.log({ index, results })
         const indexDocs = results.map(({ ref }) => index.documentStore.getDoc(ref))
-        console.log({ indexDocs })
         nodes = indexDocs.map(id => <SearchResult>{
             title: id.title,
             url: id.url
