@@ -8,22 +8,15 @@ title: JDOM
 The JDOM module is a dependency-free JavaScript object model 
 that reflects the state of the JACDAC elements:
 
-> A JACDAC **[bus](/clients/web/jdom/bus)** is made of connected devices.
-A **[device](/clients/web/jdom/device)** may host **services**.
-A **[service](/clients/web/jdom/service)** has **registers**, accept **commands**
-and may return **acks**. A **[register](/clients/web/jdom/register)** is an addressed data location, organized in [fields](/clients/web/jdom/field),
-, that may be get, set or streamed. All these elements are [nodes](/clients/web/jdom/node) in the [JDOM](/clients/web/jdom).
+- A **[bus](/clients/web/jdom/bus)** is made of connected devices.
+- A **[device](/clients/web/jdom/device)** may host **services**.
+- A **[service](/clients/web/jdom/service)** has **[registers](/clients/web/jdom/register)** and **[events](/clients/web/jdom/event)**, accepts **commands**,
+and may return **acks**. 
+- A **[register](/clients/web/jdom/register)** is an addressed data location, organized in [fields](/clients/web/jdom/field),
+, that may be get, set or streamed. 
 
-All element implement a event emitter and observable pattern to
+All the above elements are [nodes](/clients/web/jdom/node) in the [JDOM](/clients/web/jdom). All elements implement a event emitter and observable pattern to
 easily data-bind them in a variety of UI frameworks.
-
-* [Bus](/clients/web/jdom/bus)
-* [Device](/clients/web/jdom/device)
-* [Service](/clients/web/jdom/service)
-* [Register](/clients/web/jdom/register)
-* [Event](/clients/web/jdom/event)
-* [Field](/clients/web/jdom/field)
-* [Node](/clients/web/jdom/node)
 
 ## Setup
 

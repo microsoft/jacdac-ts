@@ -124,7 +124,7 @@
     ]
   },
   "devDependencies": {
-    "@microsoft/api-documenter": "^7.9.32",
+    "@microsoft/api-documenter": "^7.9.33",
     "@microsoft/api-extractor": "^7.11.4",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
@@ -147,7 +147,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "semantic-release": "^17.2.2",
+    "semantic-release": "^17.2.3",
     "shelljs": "^0.8.3",
     "travis-deploy-once": "^5.0.9",
     "ts-jest": "^23.10.2",
