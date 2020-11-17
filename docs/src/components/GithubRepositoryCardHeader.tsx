@@ -22,7 +22,9 @@ export default function GithubRepositoryCardHeader(props: {
             <Link href={repo.html_url}>
                 <Typography component="span" variant="h5">{repo.name}</Typography>
             </Link>
-        </> : <Typography>{repo}</Typography>;
+        </> : <Link href={`https://github.com/${slug}`}>
+            <Typography component="span" variant="h6">{slug}</Typography>
+        </Link>;
 
     return <CardHeader
         title={title}
