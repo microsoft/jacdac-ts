@@ -1,32 +1,38 @@
-import { useContext } from "react"
+import { useContext, useRef } from "react"
+import { useDebounce } from "use-debounce"
 import AppContext from "./AppContext"
+import useSearchIndex from "./useSearchIndex"
 
 export interface SearchResult { url: string; title: string; }
 
 export function useDrawerSearchResults(): SearchResult[] {
-    // adicionar variável para língua
-    const index = typeof window !== undefined
-        && (window as any)?.__FLEXSEARCH__?.en?.index
-    const store = typeof window !== undefined
-        && (window as any)?.__FLEXSEARCH__?.en?.store
-    const { searchQuery } = useContext(AppContext)
-    if (!searchQuery || !index) {
-        return undefined
-    } else {
-        let results = []
-        // search the indexed fields
-        Object.keys(index).forEach(idx => {
-            // more search options at https://github.com/nextapps-de/flexsearch#index.search
-            results.push(...index[idx].values.search(searchQuery))
+    const index = useSearchIndex()
+
+    const { searchQuery: _searchQuery } = useContext(AppContext)
+    const [searchQuery] = useDebounce(_searchQuery, 500)
+    // debounce duplicate search
+    const lastResult = useRef<{ searchQuery: string; nodes: SearchResult[]; }>(undefined)
+    if (lastResult.current?.searchQuery === searchQuery)
+        return lastResult.current.nodes;
+
+    // spin up search
+    console.log(`search "${searchQuery}"`)
+    let nodes: SearchResult[] = undefined;
+    if (searchQuery && index) {
+        const results = index.search(searchQuery, <any>{
+            expand: true
         })
-
-        // find the unique ids of the nodes
-        results = Array.from(new Set(results))
-
-        // return the corresponding nodes in the store
-        const nodes = store
-            .filter(node => (results.includes(node.id) ? node : null))
-            .map(node => node.node)
-        return nodes
+        const indexDocs = results.map(({ ref }) => index.documentStore.getDoc(ref))
+        nodes = indexDocs.map(id => <SearchResult>{
+            title: id.title,
+            url: id.url
+        })
     }
+
+    // cache result
+    lastResult.current = {
+        searchQuery,
+        nodes
+    }
+    return nodes;
 }

@@ -127,6 +127,33 @@ module.exports = {
       },
     },
     {
+      resolve: `@gatsby-contrib/gatsby-plugin-elasticlunr-search`,
+      options: {
+        fields: [`title`, `description`, `body`],
+        resolvers: {
+          Mdx: {
+            title: node => node.frontmatter.title,
+            description: node => node.frontmatter.description,
+            body: node => node.rawBody,
+            url: node => node.frontmatter.path || node.fields.slug,
+          },
+          ServicesJson: {
+            title: node => node.name,
+            description: node => node.notes["short"],
+            body: node => node.source,
+            url: node => `/services/${node.shortId}`
+          },
+          DevicesJson: {
+            title: node => node.name,
+            description: node => node.description,
+            body: node => node.source,
+            url: node => `/devices/${node.id}`
+          }
+        } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
+      },
+    },
+    /*    
+    {
       resolve: 'gatsby-plugin-flexsearch',
       options: {
         // L
@@ -182,6 +209,7 @@ module.exports = {
         ],
       },
     },
+    */
     "gatsby-plugin-sitemap",
     {
       resolve: `gatsby-plugin-manifest`,
@@ -201,7 +229,7 @@ module.exports = {
       resolve: `gatsby-plugin-offline`,
       options: {
         precachePages: [
-          `/*`, 
+          `/*`,
           `/reference/*`,
           `/services/*`,
           `/devices/*`,

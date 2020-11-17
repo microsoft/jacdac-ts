@@ -69,7 +69,7 @@ export const AppProvider = ({ children }) => {
         if (isCancelError(e.exception))
             return;
         setError(e.exception.message)
-    }), [bus])
+    }), [])
 
     useEffect(() => bus.subscribe(CONNECTION_STATE, cs => {
         switch (cs) {
@@ -78,7 +78,7 @@ export const AppProvider = ({ children }) => {
                     variant: "info"
                 })
         }
-    }), [bus])
+    }), [])
 
     return (
         <AppContext.Provider value={{

@@ -8,33 +8,18 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports
 import TreeItem from '@material-ui/lab/TreeItem';
+import Alert from "./Alert"
 
-import { SearchResult } from "./useDrawerSearchResults";
-import { createStyles, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
+import { useDrawerSearchResults } from "./useDrawerSearchResults";
+import { ListItemText } from "@material-ui/core";
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            width: '100%',
-            maxWidth: 360,
-            backgroundColor: theme.palette.background.paper
-        }
-    })
-);
-
-export default function DrawerSearchResults(props: { results?: SearchResult[] }) {
-    const { results } = props
-    const classes = useStyles()
-
+export default function DrawerSearchResults() {
+    const results = useDrawerSearchResults();
     return <TreeView
-        className={classes.root}
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
     >
-        {!results.length && <TreeItem
-            key={'nosearch'}
-            nodeId={'nosearch'}
-            label={<ListItem><ListItemText primary={"no result found"} /></ListItem>} />}
+        {!results.length && <Alert severity="info">no results found</Alert>}
         {results.map(result => <TreeItem
             key={'search' + result.url}
             nodeId={result.url.replace(/\/$/, '')}

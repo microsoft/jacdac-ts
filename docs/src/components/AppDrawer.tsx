@@ -13,7 +13,6 @@ import { useStaticQuery, graphql } from "gatsby";
 import Mdx from "./Mdx";
 import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
-import { useDrawerSearchResults } from "./useDrawerSearchResults";
 import DrawerSearchResults from "./DrawerSearchResults";
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 
@@ -62,10 +61,9 @@ export default function AppDrawer(props: {
 }) {
     const theme = useTheme()
     const classes = useStyles()
-    const { drawerType, setDrawerType } = useContext(AppContext)
+    const { drawerType, setDrawerType, searchQuery } = useContext(AppContext)
     const open = drawerType !== DrawerType.None
-    const searchResults = useDrawerSearchResults()
-    const showSearchResults = !!searchResults;
+    const showSearchResults = !!searchQuery;
     const showConnect = useMediaQuery(theme.breakpoints.down("md"));
     const query = useStaticQuery(graphql`
         {
@@ -99,7 +97,7 @@ export default function AppDrawer(props: {
         }}
     >
         <div className={classes.drawerHeader}>
-            {false && toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
+            {toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
             {!toc && !spec && <><PacketRecorder />
                 <span className={classes.fluid} />
                 <DrawerToolsButtonGroup showConnect={showConnect} />
@@ -110,7 +108,7 @@ export default function AppDrawer(props: {
             </IconButton>
         </div>
         <Divider />
-        {showSearchResults && <DrawerSearchResults results={searchResults} />}
+        {showSearchResults && <DrawerSearchResults />}
         {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
         {!showSearchResults && drawerType === DrawerType.Packets
