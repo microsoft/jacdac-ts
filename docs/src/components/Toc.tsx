@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { makeStyles, createStyles, Theme, Collapse, List, ListItem, Typography, useTheme } from '@material-ui/core';
+import { makeStyles, createStyles, Theme, Collapse, List, ListItem, Typography, useTheme, Box } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
@@ -177,7 +177,7 @@ export default function Toc() {
     }
   }).forEach(node => toc.push(node))
 
-  const { tree, nodes } = treeifyToc(toc)
+  const { tree } = treeifyToc(toc)
 
   return <List dense className={classes.root}>
     {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} level={0} />)}
@@ -195,7 +195,9 @@ export default function Toc() {
             primary={<Typography variant={sub ? "button" : "caption"}>{entry.name}</Typography>} />
         </Link>
       </ListItem>
-      { sub && entry.children?.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}
+      { sub && !!entry.children?.length && <Box ml={level > 0 ? 1 : 0}>
+        {entry.children?.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}
+      </Box>}
     </>
   }
 }
