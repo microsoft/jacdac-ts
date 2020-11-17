@@ -1,4 +1,5 @@
-import { useContext } from "react"
+import { useContext, useRef } from "react"
+import { useDebounce } from "use-debounce"
 import AppContext from "./AppContext"
 
 export interface SearchResult { url: string; title: string; }
@@ -9,10 +10,17 @@ export function useDrawerSearchResults(): SearchResult[] {
         && (window as any)?.__FLEXSEARCH__?.en?.index
     const store = typeof window !== undefined
         && (window as any)?.__FLEXSEARCH__?.en?.store
-    const { searchQuery } = useContext(AppContext)
-    if (!searchQuery || !index) {
-        return undefined
-    } else {
+    const { searchQuery: _searchQuery } = useContext(AppContext)
+    const [searchQuery] = useDebounce(_searchQuery, 500)
+    const lastResult = useRef<{ searchQuery: string; nodes: SearchResult[]; }>(undefined)
+
+    // cache hit
+    if (lastResult.current?.searchQuery === searchQuery)
+        return lastResult.current.nodes;
+
+    console.log(`search "${searchQuery}"`)
+    let nodes: SearchResult[] = undefined;
+    if (searchQuery && index) {
         let results = []
         // search the indexed fields
         Object.keys(index).forEach(idx => {
@@ -24,9 +32,14 @@ export function useDrawerSearchResults(): SearchResult[] {
         results = Array.from(new Set(results))
 
         // return the corresponding nodes in the store
-        const nodes = store
+        nodes = store
             .filter(node => (results.includes(node.id) ? node : null))
             .map(node => node.node)
-        return nodes
     }
+
+    lastResult.current = {
+        searchQuery,
+        nodes
+    }
+    return nodes;
 }
