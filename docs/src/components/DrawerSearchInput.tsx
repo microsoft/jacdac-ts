@@ -10,7 +10,6 @@ export default function DrawerSearchInput() {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value)
     }
-    const handleBlur = () => setSearchQuery("")
     return <TextField
         label="Search"
         margin="normal"
@@ -18,6 +17,5 @@ export default function DrawerSearchInput() {
         type="search"
         size="small"
         value={searchQuery}
-        onChange={handleChange}
-        onBlur={handleBlur} />
+        onChange={handleChange} />
 }

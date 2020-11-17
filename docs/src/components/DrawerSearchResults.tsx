@@ -15,7 +15,6 @@ import { ListItemText } from "@material-ui/core";
 
 export default function DrawerSearchResults() {
     const results = useDrawerSearchResults();
-
     return <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}

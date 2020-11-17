@@ -27,7 +27,6 @@ export function useDrawerSearchResults(): SearchResult[] {
             title: id.title,
             url: id.url
         })
-        console.log({ nodes })
     }
 
     // cache result
