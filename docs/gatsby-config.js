@@ -143,8 +143,7 @@ module.exports = {
             body: node => node.source,
             path: node => `/services/${node.shortId}`
           }
-        },
-        filter: (node, getNode) => node.frontmatter.tags !== "exempt",
+        } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
       },
     },
     /*    
