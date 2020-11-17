@@ -135,19 +135,19 @@ module.exports = {
             title: node => node.frontmatter.title,
             description: node => node.frontmatter.description,
             body: node => node.rawBody,
-            path: node => node.frontmatter.path || node.fields.slug,
+            url: node => node.frontmatter.path || node.fields.slug,
           },
           ServicesJson: {
             title: node => node.name,
             description: node => node.notes["short"],
             body: node => node.source,
-            path: node => `/services/${node.shortId}`
+            url: node => `/services/${node.shortId}`
           },
           DevicesJson: {
             title: node => node.name,
             description: node => node.description,
             body: node => node.source,
-            path: node => `/devices/${node.id}`
+            url: node => `/devices/${node.id}`
           }
         } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
       },

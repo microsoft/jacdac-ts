@@ -28,8 +28,13 @@ export function useDrawerSearchResults(): SearchResult[] {
             expand: true
         })
         console.log({ index, results })
-        nodes = results.map(ref => index.documentStore.getDoc(ref))
-        console.log(nodes)
+        const indexDocs = results.map(({ ref }) => index.documentStore.getDoc(ref))
+        console.log({ indexDocs })
+        nodes = indexDocs.map(id => <SearchResult>{
+            title: id.title,
+            url: id.url
+        })
+        console.log({ nodes })
     }
 
     // cache result
