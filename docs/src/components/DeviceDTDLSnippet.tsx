@@ -9,5 +9,5 @@ export function DeviceDTDLSnippet(props: { dev: jdspec.DeviceSpec }) {
         () => toDTDL(dev),
         [dev]);
 
-    return <Snippet value={dtdl} mode="json" />
+    return <Snippet value={dtdl} mode="json" download={`${dev.name}.json`} />
 }
