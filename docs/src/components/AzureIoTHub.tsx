@@ -44,7 +44,6 @@ function parseConnectionString(source: string): ConnectionString {
 function ApiKeyManager() {
     const validateKey = async (key: string) => {
         const connectionString = parseConnectionString(key);
-        console.log({ connectionString })
         if (!connectionString) {
             return {
                 statusCode: 401
