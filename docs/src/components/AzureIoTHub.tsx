@@ -6,11 +6,53 @@ import ConnectAlert from "./ConnectAlert";
 const AZURE_IOT_HUB_API_KEY = "azureiothubapikey"
 const AZURE_IOT_API_VERSION = "2020-05-31-preview"
 
+// https://docs.microsoft.com/en-us/rest/api/iothub/service/devices/createorupdateidentity#device
+interface AzureIotHubDevice {
+    deviceId: string;
+    etag: string;
+    generationId: string;
+    lastActivityTime?: string;
+    status: "enabled" | "disabled",
+    statusReason: string,
+    statusUpdateTime: string,
+}
+
+interface AzureResponse<T> {
+    status: number;
+    success: boolean;
+    payload?: T;
+    error?: { code: string; message: string };
+}
+
+interface AzureIotHubStats {
+    connectedDeviceCount: number;
+}
+
+interface ConnectionString {
+    HostName: string;
+    source: string;
+}
+
+function parseConnectionString(source: string): ConnectionString {
+    let r: any = {
+        source
+    };
+    source.split(';').map(fragment => fragment.split('=')).forEach(kv => r[kv[0]] = kv[1]);
+    return r["HostName"] && r;
+}
 
 function ApiKeyManager() {
     const validateKey = async (key: string) => {
+        const connectionString = parseConnectionString(key);
+        console.log({ connectionString })
+        if (!connectionString) {
+            return {
+                statusCode: 401
+            }
+        }
+        const stats = await AzureIotHubClient.stats(connectionString.source, connectionString.HostName);
         return {
-            statusCode: 200
+            statusCode: stats.status
         }
     };
     return <ApiKeyAccordion
@@ -26,33 +68,15 @@ function ApiKeyManager() {
     />
 }
 
-// https://docs.microsoft.com/en-us/rest/api/iothub/service/devices/createorupdateidentity#device
-interface AzureIotDevice {
-    deviceId: string;
-    etag: string;
-    generationId: string;
-    lastActivityTime?: string;
-    status: "enabled" | "disabled",
-    statusReason: string,
-    statusUpdateTime: string,
-}
-
-interface AzureIotResponse<T> {
-    status: number;
-    success: boolean;
-    payload?: T;
-    error?: { code: string; message: string };
-}
-
 class AzureIotHubClient {
     // https://docs.microsoft.com/en-us/rest/api/iothub/
     // https://docs.microsoft.com/en-us/rest/api/iothub/common-error-codes
-    static async apiFetch<T>(authorization: string, fullyQualifiedHubName: string, path: string | number, method?: "GET" | "POST" | "PUT" | "DELETE", body?: any): Promise<AzureIotResponse<T>> {
+    static async apiFetch<T>(sasTokenOrConnectionString: string, fullyQualifiedHubName: string, path: string | number, method?: "GET" | "POST" | "PUT" | "DELETE", body?: any): Promise<AzureResponse<T>> {
         const url = `https://${fullyQualifiedHubName}.azure-devices.net/${path}?api-version=${AZURE_IOT_API_VERSION}`
         const options: RequestInit = {
             method: method || "GET",
             headers: {
-                "Authorization": authorization,
+                "Authorization": sasTokenOrConnectionString,
                 "Accept": "application/json"
             },
             body: body && JSON.stringify(body)
@@ -80,12 +104,17 @@ class AzureIotHubClient {
     }
 
     // https://docs.microsoft.com/en-us/rest/api/iothub/service/devices/getidentity
-    static getIdentity(apiKey: string, fullyQualifiedHubName: string, deviceId: string) {
-        return this.apiFetch<AzureIotDevice>(apiKey, fullyQualifiedHubName, `devices/${deviceId}`);
+    static getIdentity(sasTokenOrConnectionString: string, fullyQualifiedHubName: string, deviceId: string) {
+        return this.apiFetch<AzureIotHubDevice>(sasTokenOrConnectionString, fullyQualifiedHubName, `devices/${deviceId}`);
     }
     //https://docs.microsoft.com/en-us/rest/api/iothub/service/devices/createorupdateidentity#device
-    static createOrUpdateIdentity(apiKey: string, fullyQualifiedHubName: string, deviceId: string, payload: AzureIotDevice) {
-        return this.apiFetch<AzureIotDevice>(apiKey, fullyQualifiedHubName, `devices/${deviceId}`, "PUT", payload);
+    static createOrUpdateIdentity(sasTokenOrConnectionString: string, fullyQualifiedHubName: string, deviceId: string, payload: AzureIotHubDevice) {
+        return this.apiFetch<AzureIotHubDevice>(sasTokenOrConnectionString, fullyQualifiedHubName, `devices/${deviceId}`, "PUT", payload);
+    }
+
+    // https://docs.microsoft.com/en-us/rest/api/iothub/service/statistics/getservicestatistics
+    static stats(sasTokenOrConnectionString: string, fullyQualifiedHubName: string) {
+        return this.apiFetch<AzureIotHubStats>(sasTokenOrConnectionString, fullyQualifiedHubName, `/statistics/service`)
     }
 }
 
