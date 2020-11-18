@@ -57,12 +57,12 @@ export default function DeviceSpecificationSource(props: {
                 {showSpecification && <TabPanel key="spec" value={tab} index={index++}>
                     <DeviceSpecification device={spec} />
                 </TabPanel>}
-                {showDTDL && <TabPanel key="dtdl" value={tab} index={index++}>
-                    <DeviceDTDLSnippet dev={deviceSpecification} />
-                </TabPanel>}
                 <TabPanel key={`convjson`} value={tab} index={index++}>
                     <Snippet value={JSON.stringify(spec, null, 2)} mode={"json"} />
                 </TabPanel>
+                {showDTDL && <TabPanel key="dtdl" value={tab} index={index++}>
+                    <DeviceDTDLSnippet dev={deviceSpecification} />
+                </TabPanel>}
             </Paper>
         </div>
     );
