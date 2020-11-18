@@ -7,6 +7,9 @@
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec";
 import { uniqueMap } from "../jdom/utils";
 
+export const REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
+export const DTDL_NAME = "Digital Twins Definition Language"
+
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
 function toDTMI(dev: jdspec.DeviceSpec, segments: (string | number)[], version?: number) {
@@ -95,7 +98,6 @@ function enumDTDI(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.En
 }
 
 function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): DTDLSchema {
-    const members = Object.keys(en.members).map(k => en.members[k])
     const dtdl = {
         "@type": "Enum",
         "@id": enumDTDI(dev, srv, en),
