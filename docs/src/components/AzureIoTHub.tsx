@@ -14,11 +14,15 @@ function ApiKeyManager() {
         }
     };
     return <ApiKeyAccordion
+        title={"Connection string"}
         apiName={AZURE_IOT_HUB_API_KEY}
         validateKey={validateKey}
-        instructions={<p>To get an <b>API key</b>, navigate to &nbsp;
-            <Link to="https://studio.edgeimpulse.com/studio/8698/keys" target="_blank">https://studio.edgeimpulse.com/studio/8698/keys</Link>
-            &nbsp; and generate a new key.</p>}
+        instructions={<p>Open your Azure IoT Hub in the &nbsp;
+            <Link href="https://portal.azure.com/">Azure Portal</Link>,
+            click <code>Shared access policies</code>,
+            select <code>iothubowner</code>,
+            copy one of the <code>Connection string—secondary key</code>.
+        </p>}
     />
 }
 
