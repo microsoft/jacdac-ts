@@ -102,10 +102,12 @@ function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.
     const dtdl = {
         "@type": "Enum",
         "@id": enumDTDI(dev, srv, en),
-        "name": en.name,
+        "name": escapeName(en.name),
+        "displayName": en.name,
         "valueSchema": "integer",
         "enumValues": Object.keys(en.members).map(k => ({
-            name: k,
+            name: escapeName(k),
+            displayName: k,
             enumValue: en.members[k]
         }))
     }
@@ -238,6 +240,8 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
 interface DTDLNode {
     '@type'?: string;
     '@id'?: string;
+    // 1-64 characters
+    // ^[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?$
     name?: string;
     displayName?: string,
     description?: string;
@@ -261,12 +265,23 @@ interface DTDLInterface extends DTDLContent {
     '@context'?: string;
 }
 
+function escapeName(name: string) {
+    name = name.trim().replace(/[^a-zA-Z0-9_]/g, '_');
+    if (!/^[a-zA-Z]/.test(name))
+        name = "a" + name;
+    return name.slice(0, 64);
+}
+
+function escapeDisplayName(name: string) {
+    return name.slice(0, 64);
+}
+
 function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": toDTMI(dev, [srv.shortId]),
-        "name": srv.shortName,
-        "displayName": srv.name,
+        "name": escapeName(srv.shortName),
+        "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets.map(pkt => packetToDTDL(dev, srv, pkt)).filter(c => !!c)
     }
@@ -293,8 +308,8 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
 function serviceToComponent(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, serviceIndex: number): any {
     const dtdl = {
         "@type": "Component",
-        "name": srv.shortName,
-        "displayName": srv.name,
+        "name": escapeName(srv.shortName),
+        "displayName": escapeDisplayName(srv.name),
         "schema": toDTMI(dev, [srv.shortId])
     }
     return dtdl;
@@ -308,7 +323,8 @@ export function toDTDL(dev: jdspec.DeviceSpec): string {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": toDTMI(dev, []),
-        "name": dev.name,
+        "name": escapeName(dev.name),
+        "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
         "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
         "@context": CONTEXT
