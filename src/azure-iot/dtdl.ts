@@ -332,5 +332,5 @@ export function toDTDL(dev: jdspec.DeviceSpec): string {
         "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
         "@context": CONTEXT
     }
-    return JSON.stringify([...schemas, dtdl], null, 2);
+    return JSON.stringify([dtdl, ...schemas], null, 2);
 }
