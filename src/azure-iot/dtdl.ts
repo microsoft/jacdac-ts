@@ -9,6 +9,7 @@ import { uniqueMap } from "../jdom/utils";
 
 export const REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
 export const DTDL_NAME = "Digital Twins Definition Language"
+const CONTEXT = "dtmi:dtdl:context;2";
 
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
@@ -234,7 +235,7 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
 }
 
 
-export interface DTDLNode {
+interface DTDLNode {
     '@type'?: string;
     '@id'?: string;
     name?: string;
@@ -242,22 +243,22 @@ export interface DTDLNode {
     description?: string;
 }
 
-export interface DTDLSchema extends DTDLNode {
+interface DTDLSchema extends DTDLNode {
     fields?: DTDLSchema[];
     schema?: string | DTDLSchema;
     elementSchema?: string | DTDLSchema;
 }
 
-export interface DTDLContent extends DTDLNode {
+interface DTDLContent extends DTDLNode {
     '@type': "Property" | "Command" | "Component" | "Interface";
     unit?: string;
     schema?: string | DTDLSchema;
 }
 
-export interface DTDLInterface extends DTDLContent {
+interface DTDLInterface extends DTDLContent {
     contents: DTDLContent[];
     schemas?: (DTDLSchema | DTDLInterface)[];
-    '@context'?: "dtmi:dtdl:context;2";
+    '@context'?: string;
 }
 
 function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DTDLInterface {
@@ -285,8 +286,7 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
         if (hasEnums)
             dtdl.schemas = dtdl.schemas.concat(Object.keys(srv.enums).map(en => enumSchema(dev, srv, srv.enums[en])));
     }
-    //if (srv.extends?.length)
-    //    dtdl.extends = srv.extends.map(id => toDTMI([id]))
+    dtdl["@context"] = CONTEXT
     return dtdl;
 }
 
@@ -300,7 +300,7 @@ function serviceToComponent(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, ser
     return dtdl;
 }
 
-export function deviceToInterface(dev: jdspec.DeviceSpec): DTDLInterface {
+export function toDTDL(dev: jdspec.DeviceSpec): string {
     const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
     const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);
     const schemas = uniqueServices.map(srv => serviceToInterface(dev, srv));
@@ -311,12 +311,7 @@ export function deviceToInterface(dev: jdspec.DeviceSpec): DTDLInterface {
         "name": dev.name,
         "description": dev.description,
         "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
-        schemas
+        "@context": CONTEXT
     }
-    return dtdl;
-}
-
-export function DTDLtoString(dtdl: DTDLInterface) {
-    dtdl["@context"] = "dtmi:dtdl:context;2";
-    return JSON.stringify(dtdl, undefined, 4);
+    return JSON.stringify([dtdl, ...schemas], null, 2);
 }
