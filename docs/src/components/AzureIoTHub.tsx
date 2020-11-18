@@ -72,7 +72,7 @@ class AzureIotHubClient {
     // https://docs.microsoft.com/en-us/rest/api/iothub/
     // https://docs.microsoft.com/en-us/rest/api/iothub/common-error-codes
     static async apiFetch<T>(sasTokenOrConnectionString: string, fullyQualifiedHubName: string, path: string | number, method?: "GET" | "POST" | "PUT" | "DELETE", body?: any): Promise<AzureResponse<T>> {
-        const url = `https://${fullyQualifiedHubName}.azure-devices.net/${path}?api-version=${AZURE_IOT_API_VERSION}`
+        const url = `https://${fullyQualifiedHubName}/${path}?api-version=${AZURE_IOT_API_VERSION}`
         const options: RequestInit = {
             method: method || "GET",
             headers: {
@@ -114,7 +114,7 @@ class AzureIotHubClient {
 
     // https://docs.microsoft.com/en-us/rest/api/iothub/service/statistics/getservicestatistics
     static stats(sasTokenOrConnectionString: string, fullyQualifiedHubName: string) {
-        return this.apiFetch<AzureIotHubStats>(sasTokenOrConnectionString, fullyQualifiedHubName, `/statistics/service`)
+        return this.apiFetch<AzureIotHubStats>(sasTokenOrConnectionString, fullyQualifiedHubName, `statistics/service`)
     }
 }
 
