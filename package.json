@@ -39,7 +39,8 @@
     "installdev": "npm run pullsubmodules && npm install && npm run installdocs",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "docs": "cd docs && node node_modules/gatsby/cli.js develop",
-    "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0"
+    "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0",
+    "buildspecs": "cd jacdac-spec/spectool && sh build.sh"
   },
   "release": {
     "branch": "main",
