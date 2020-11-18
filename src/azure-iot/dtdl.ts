@@ -9,8 +9,8 @@ import { uniqueMap } from "../jdom/utils";
 
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
-function toDTMI(segments: (string | number)[], version?: number) {
-    return `dtmi:jacdac:${segments.map(seg => typeof seg === "string" ? seg : `x${seg.toString(16)}`).join(':')};${version !== undefined ? version : 1}`;
+function toDTMI(dev: jdspec.DeviceSpec, segments: (string | number)[], version?: number) {
+    return `dtmi:jacdac:${[dev.id, ...segments].map(seg => typeof seg === "string" ? seg : `x${seg.toString(16)}`).join(':')};${version !== undefined ? version : 1}`;
 }
 
 function toUnit(pkt: jdspec.PacketInfo) {
@@ -273,15 +273,15 @@ function toUnit(pkt: jdspec.PacketInfo) {
 
 // https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#primitive-schemas
 
-function enumDTDI(srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): string {
-    return toDTMI([srv.classIdentifier, en.name])
+function enumDTDI(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): string {
+    return toDTMI(dev, [srv.classIdentifier, en.name])
 }
 
-function enumSchema(srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): DTDLSchema {
+function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): DTDLSchema {
     const members = Object.keys(en.members).map(k => en.members[k])
     const dtdl = {
         "@type": "Enum",
-        "@id": enumDTDI(srv, en),
+        "@id": enumDTDI(dev, srv, en),
         "name": en.name,
         "valueSchema": "integer",
         "enumValues": Object.keys(en.members).map(k => ({
@@ -292,7 +292,7 @@ function enumSchema(srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): DTDLSchema {
     return dtdl;
 }
 
-function toSchema(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string {
+function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string {
     // todo: startsRepeats
     if (pkt.fields.length !== 1)
         return undefined;
@@ -314,12 +314,12 @@ function toSchema(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string {
         return "float"; // decimal type
     const en = srv.enums[field.type];
     if (en)
-        return enumDTDI(srv, en);
+        return enumDTDI(dev, srv, en);
     console.warn(`unsupported schema`, { fields: pkt.fields })
     return undefined;
 }
 
-function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
+function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
     const types: jdspec.SMap<string> = {
         "command": "Command",
         "const": "Property",
@@ -330,7 +330,7 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
     const dtdl: any = {
         "@type": types[pkt.kind] || `Unsupported${pkt.kind}`,
         name: pkt.name,
-        "@id": toDTMI([srv.shortId, pkt.kind, pkt.name]),
+        "@id": toDTMI(dev, [srv.shortId, pkt.kind, pkt.name]),
         description: pkt.description,
     }
     switch (pkt.kind) {
@@ -344,7 +344,7 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
             if (unit) {
                 dtdl.unit = unit.unit;
             }
-            dtdl.schema = toSchema(srv, pkt)
+            dtdl.schema = toSchema(dev, srv, pkt)
             if (pkt.kind === "rw")
                 dtdl.writable = true;
             if (pkt.kind == "ro" && pkt.identifier == 0x101) // isReading
@@ -353,7 +353,7 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
             if (!dtdl.schema && pkt.kind === "event") {
                 // keep a count of the events
                 dtdl["@type"] = [dtdl["@type"], "Event"]
-                dtdl.schema = toDTMI([srv.shortId, "event"]);
+                dtdl.schema = toDTMI(dev, [srv.shortId, "event"]);
             }
             else if (unit && unit.semantic)
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
@@ -394,11 +394,11 @@ export interface DTDLInterface extends DTDLContent {
 function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI([dev.id, srv.shortId]),
+        "@id": toDTMI(dev, [srv.shortId]),
         "name": srv.shortName,
         "displayName": srv.name,
         "description": srv.notes["short"],
-        "contents": srv.packets.map(pkt => packetToDTDL(srv, pkt)).filter(c => !!c)
+        "contents": srv.packets.map(pkt => packetToDTDL(dev, srv, pkt)).filter(c => !!c)
     }
     const hasEvents = srv.packets.find(pkt => pkt.kind === "event");
     const hasEnums = Object.keys(srv.enums).length;
@@ -406,7 +406,7 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
         dtdl.schemas = [];
         if (hasEvents)
             dtdl.schemas.push({
-                "@id": toDTMI([srv.shortId, "event"]),
+                "@id": toDTMI(dev, [srv.shortId, "event"]),
                 "@type": "Object",
                 "fields": [{
                     "name": "count",
@@ -414,7 +414,7 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
                 }]
             });
         if (hasEnums)
-            dtdl.schemas = dtdl.schemas.concat(Object.keys(srv.enums).map(en => enumSchema(srv, srv.enums[en])));
+            dtdl.schemas = dtdl.schemas.concat(Object.keys(srv.enums).map(en => enumSchema(dev, srv, srv.enums[en])));
     }
     //if (srv.extends?.length)
     //    dtdl.extends = srv.extends.map(id => toDTMI([id]))
@@ -426,7 +426,7 @@ function serviceToComponent(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, ser
         "@type": "Component",
         "name": srv.shortName,
         "displayName": srv.name,
-        "schema": toDTMI([dev.id, srv.shortId])
+        "schema": toDTMI(dev, [srv.shortId])
     }
     return dtdl;
 }
@@ -438,7 +438,7 @@ export function deviceToInterface(dev: jdspec.DeviceSpec): DTDLInterface {
 
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI([dev.id]),
+        "@id": toDTMI(dev, []),
         "name": dev.name,
         "description": dev.description,
         "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
