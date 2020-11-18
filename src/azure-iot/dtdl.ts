@@ -214,7 +214,8 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
     }
     switch (pkt.kind) {
         case "command":
-            break;
+            // https://docs.microsoft.com/en-us/azure/digital-twins/concepts-models#azure-digital-twins-dtdl-implementation-specifics
+            return undefined;
         case "const":
         case "rw":
         case "ro":
