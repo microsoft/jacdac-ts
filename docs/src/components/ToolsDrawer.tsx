@@ -22,6 +22,8 @@ import HistoryIcon from '@material-ui/icons/History';
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import CloudIcon from '@material-ui/icons/Cloud';
 import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./DarkModeContext";
 
@@ -107,6 +109,11 @@ export default function ToolsDrawer() {
             text: "Jupyter Lab",
             url: "/tools/jupyterlab",
             icon: <JupyterIcon />
+        },
+        {
+            text: "Azure IoT Hub",
+            url: "/tools/azure-iot-hub",
+            icon: <CloudIcon />
         },
         {
             // separator
