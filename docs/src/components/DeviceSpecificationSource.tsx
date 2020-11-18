@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
@@ -38,7 +38,10 @@ export default function DeviceSpecificationSource(props: {
         setTab(newValue);
     };
 
-    const dtdl = showDTDL && DTDLtoString(deviceToInterface(deviceSpecification));
+    // compute once
+    const dtdl = useMemo<string>(
+        () => showDTDL && DTDLtoString(deviceToInterface(deviceSpecification)),
+        [showDTDL, deviceSpecification]);
 
     let index = 0;
     return (
