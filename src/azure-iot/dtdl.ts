@@ -218,9 +218,6 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
             dtdl.schema = toSchema(dev, srv, pkt)
             if (pkt.kind === "rw")
                 dtdl.writable = true;
-            if (pkt.kind == "ro" && pkt.identifier == 0x101) // isReading
-                dtdl["@type"] = "Telemetry"
-
             if (!dtdl.schema && pkt.kind === "event") {
                 // keep a count of the events
                 dtdl["@type"] = [dtdl["@type"], "Event"]
