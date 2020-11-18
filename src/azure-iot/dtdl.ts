@@ -4,6 +4,9 @@
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */
 
+import { serviceSpecificationFromClassIdentifier } from "../jdom/spec";
+import { uniqueMap } from "../jdom/utils";
+
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
 function toDTMI(segments: (string | number)[], version?: number) {
@@ -377,21 +380,21 @@ export interface DTDLSchema extends DTDLNode {
 }
 
 export interface DTDLContent extends DTDLNode {
-    '@type': "Property" | "Command" | "Component";
+    '@type': "Property" | "Command" | "Component" | "Interface";
     unit?: string;
     schema?: string | DTDLSchema;
 }
 
-export interface DTDLInterface extends DTDLNode {
+export interface DTDLInterface extends DTDLContent {
     contents: DTDLContent[];
-    schemas?: DTDLSchema[];
+    schemas?: (DTDLSchema | DTDLInterface)[];
     '@context'?: "dtmi:dtdl:context;2";
 }
 
-export function serviceToInterface(srv: jdspec.ServiceSpec): DTDLInterface {
+function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI([srv.shortId]),
+        "@id": toDTMI([dev.id, srv.shortId]),
         "name": srv.shortName,
         "displayName": srv.name,
         "description": srv.notes["short"],
@@ -418,26 +421,28 @@ export function serviceToInterface(srv: jdspec.ServiceSpec): DTDLInterface {
     return dtdl;
 }
 
-function serviceToComponent(spec: jdspec.ServiceSpec): any {
+function serviceToComponent(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, serviceIndex: number): any {
     const dtdl = {
         "@type": "Component",
-        "name": spec.shortName,
-        "schema": toDTMI([spec.shortId])
+        "name": srv.shortName,
+        "displayName": srv.name,
+        "schema": toDTMI([dev.id, srv.shortId])
     }
     return dtdl;
 }
 
 export function deviceToInterface(dev: jdspec.DeviceSpec): DTDLInterface {
+    const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
+    const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);
+    const schemas = uniqueServices.map(srv => serviceToInterface(dev, srv));
+
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": toDTMI([dev.id]),
         "name": dev.name,
         "description": dev.description,
-        "contents": dev.services.map((srv, i) => ({
-            "@type": "Component",
-            "name": `srv${i}`,
-            "schema": toDTMI([srv])
-        }))
+        "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
+        schemas
     }
     return dtdl;
 }
