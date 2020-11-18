@@ -6,8 +6,8 @@ import Tab from '@material-ui/core/Tab';
 import { Paper, createStyles, makeStyles, Theme } from '@material-ui/core';
 import TabPanel, { a11yProps } from './TabPanel';
 import Snippet from './Snippet';
-import { deviceToInterface, DTDLtoString } from '../../../src/azure-iot/dtdl'
 import DeviceSpecification from './DeviceSpecification';
+import { DeviceDTDLSnippet } from './DeviceDTDLSnippet';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -38,11 +38,6 @@ export default function DeviceSpecificationSource(props: {
         setTab(newValue);
     };
 
-    // compute once
-    const dtdl = useMemo<string>(
-        () => showDTDL && DTDLtoString(deviceToInterface(deviceSpecification)),
-        [showDTDL, deviceSpecification]);
-
     let index = 0;
     return (
         <div className={classes.root}>
@@ -63,7 +58,7 @@ export default function DeviceSpecificationSource(props: {
                     <DeviceSpecification device={spec} />
                 </TabPanel>}
                 {showDTDL && <TabPanel key="dtdl" value={tab} index={index++}>
-                    <Snippet value={dtdl} mode="json" />
+                    <DeviceDTDLSnippet dev={deviceSpecification} />
                 </TabPanel>}
                 <TabPanel key={`convjson`} value={tab} index={index++}>
                     <Snippet value={JSON.stringify(spec, null, 2)} mode={"json"} />
