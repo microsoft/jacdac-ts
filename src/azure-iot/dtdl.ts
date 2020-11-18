@@ -111,31 +111,83 @@ function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.
     return dtdl;
 }
 
-function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string {
-    // todo: startsRepeats
-    if (pkt.fields.length !== 1)
-        return undefined;
-    const field = pkt.fields[0];
+function fieldType(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, field: jdspec.PacketMember) {
+    let type: string;
     if (field.type == "bool")
-        return "boolean";
-    if (field.isFloat)
-        return "float";
-    if (field.isSimpleType) {
+        type = "boolean";
+    else if (field.isFloat)
+        type = "float";
+    else if (field.isSimpleType) {
         if (/^(u|i)/.test(field.type))
-            return "integer";
+            type = "integer";
         else if (field.type === "B")
             // base64 encoded binary data
-            return "string";
+            type = "string";
     }
-    if (field.type === "string")
-        return "string";
-    if (field.shift && field.storage === 4 && /^(u|i)/.test(field.type))
-        return "float"; // decimal type
-    const en = srv.enums[field.type];
-    if (en)
-        return enumDTDI(dev, srv, en);
-    console.warn(`unsupported schema`, { fields: pkt.fields })
-    return undefined;
+    else if (field.type === "string")
+        type = "string";
+    else if (field.shift && field.storage === 4 && /^(u|i)/.test(field.type))
+        type = "float"; // decimal type
+    else {
+        const en = srv.enums[field.type];
+        if (en)
+            type = enumDTDI(dev, srv, en);
+    }
+    return {
+        name: field.name == "_" ? pkt.name : field.name,
+        type: type
+    }
+}
+
+// warps fields into an object
+function objectSchema(schemas: DTDLSchema[]): DTDLSchema {
+    return {
+        "@type": "Object",
+        "fields": schemas
+    }
+}
+
+// wraps a schema into an array
+function arraySchema(schema: string | DTDLSchema): DTDLSchema {
+    return {
+        "@type": "Array",
+        "elementSchema": schema
+    }
+}
+
+// converts JADAC pkt data layout into a DTDL schema
+function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string | DTDLSchema {
+    const fields = pkt.fields.map(field => fieldType(dev, srv, pkt, field));
+
+    // a single data entry
+    if (fields.length === 1 && !pkt.fields[0].startRepeats)
+        return fields[0].type;
+
+    // map fields into schema
+    const schemas: DTDLSchema[] =
+        fields.map(field => ({
+            name: field.name,
+            schema: field.type
+        }))
+
+    // is there an array?
+    const repeatIndex = pkt.fields.findIndex(field => field.startRepeats);
+    if (repeatIndex < 0) {
+        // no array
+        // wrap schemas into an object
+        return objectSchema(schemas)
+    }
+
+    // split fields into prelude and array data
+    const nonRepeat = schemas.slice(0, repeatIndex);
+    const repeats = schemas.slice(repeatIndex);
+    return objectSchema([
+        ...nonRepeat,
+        {
+            name: "repeat",
+            schema: arraySchema(objectSchema(repeats))
+        }
+    ]);
 }
 
 function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
@@ -196,6 +248,7 @@ export interface DTDLNode {
 export interface DTDLSchema extends DTDLNode {
     fields?: DTDLSchema[];
     schema?: string | DTDLSchema;
+    elementSchema?: string | DTDLSchema;
 }
 
 export interface DTDLContent extends DTDLNode {
