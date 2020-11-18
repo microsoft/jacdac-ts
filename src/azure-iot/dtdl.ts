@@ -14,7 +14,10 @@ const CONTEXT = "dtmi:dtdl:context;2";
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
 function toDTMI(dev: jdspec.DeviceSpec, segments: (string | number)[], version?: number) {
-    return `dtmi:jacdac:${[dev.id, ...segments].map(seg => typeof seg === "string" ? seg : `x${seg.toString(16)}`).join(':')};${version !== undefined ? version : 1}`.toLowerCase();
+    return `dtmi:jacdac:${[dev.id, ...segments]
+        .map(seg => typeof seg === "string" ? seg : `x${seg.toString(16)}`)
+        .map(seg => seg.replace(/-/g, '_'))
+        .join(':')};${version !== undefined ? version : 1}`.toLowerCase();
 }
 
 function toUnit(pkt: jdspec.PacketInfo) {
@@ -280,7 +283,6 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": toDTMI(dev, [srv.shortId]),
-        "name": escapeName(srv.shortName),
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets.map(pkt => packetToDTDL(dev, srv, pkt)).filter(c => !!c)
@@ -323,7 +325,6 @@ export function toDTDL(dev: jdspec.DeviceSpec): string {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
         "@id": toDTMI(dev, []),
-        "name": escapeName(dev.name),
         "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
         "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
