@@ -164,6 +164,8 @@ function arraySchema(schema: string | DTDLSchema): DTDLSchema {
 // converts JADAC pkt data layout into a DTDL schema
 function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string | DTDLSchema {
     const fields = pkt.fields.map(field => fieldType(dev, srv, pkt, field));
+    if (!fields.length)
+        return undefined;
 
     // a single data entry
     if (fields.length === 1 && !pkt.fields[0].startRepeats)
@@ -330,5 +332,5 @@ export function toDTDL(dev: jdspec.DeviceSpec): string {
         "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
         "@context": CONTEXT
     }
-    return JSON.stringify([dtdl, ...schemas], null, 2);
+    return JSON.stringify([...schemas, dtdl], null, 2);
 }
