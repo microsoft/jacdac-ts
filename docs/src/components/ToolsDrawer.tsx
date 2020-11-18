@@ -110,11 +110,13 @@ export default function ToolsDrawer() {
             url: "/tools/jupyterlab",
             icon: <JupyterIcon />
         },
+/*        
         {
             text: "Azure IoT Hub",
             url: "/tools/azure-iot-hub",
             icon: <CloudIcon />
         },
+*/        
         {
             // separator
         },
