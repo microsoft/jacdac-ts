@@ -19,7 +19,7 @@ const node = bus.node(id)
 Registers a handler for a given event.
 
 ```javascript
-import { CONNECT } from "jacdac"
+import { CONNECT } from "jacdac-ts"
 
 node.on(CONNECT, () => console.log('connect!'))
 ```
@@ -67,7 +67,7 @@ If you are using React Hooks, use ``subscribe`` with ``useEffect`` to handle eve
 
 ```typescript
 import { useEffect } from React
-import { CHANGE } from "jacdac"
+import { CHANGE } from "jacdac-ts"
 
 function MyComponent() {
     const node = ...

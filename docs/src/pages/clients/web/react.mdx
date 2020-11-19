@@ -11,7 +11,7 @@ JACDAC is compatible with React 16+ and hooks
 The ``JACDACContext`` provides access to the bus, and connection/disconnection functionalies from your hooks or components.
 
 ```tsx
-import { JACDACContext } from "jacdac";
+import { JACDACContext } from "jacdac-ts";
 
 function myComponent() {
     const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JACDACContext)
@@ -39,7 +39,7 @@ You can also use the react syntax to use this context.
 This hook subscribes to the ``CHANGE`` event of a [JDOM](/clients/web/jdom) node to automatically refresh the view.
 
 ```tsx
-import { JACDACContext, useChange } from "jacdac";
+import { JACDACContext, useChange } from "jacdac-ts";
 
 const DeviceList = () => {
     const { bus } = useContext(JACDACContext)
