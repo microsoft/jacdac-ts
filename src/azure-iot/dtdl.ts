@@ -13,10 +13,10 @@ const CONTEXT = "dtmi:dtdl:context;2";
 
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
-function toDTMI(dev: jdspec.DeviceSpec, segments: (string | number)[], version?: number) {
-    return `dtmi:jacdac:${[dev.id, ...segments]
+function toDTMI(segments: (string | number)[], version?: number) {
+    return `dtmi:jacdac:${[...segments]
         .map(seg => typeof seg === "string" ? seg : `x${seg.toString(16)}`)
-        .map(seg => seg.replace(/-/g, '_'))
+        .map(seg => seg.replace(/(-|_)/g, ''))
         .join(':')};${version !== undefined ? version : 1}`.toLowerCase();
 }
 
@@ -129,14 +129,14 @@ function toUnit(pkt: jdspec.PacketInfo) {
 
 // https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#primitive-schemas
 
-function enumDTDI(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): string {
-    return toDTMI(dev, [srv.classIdentifier, en.name])
+function enumDTDI(srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): string {
+    return toDTMI([srv.classIdentifier, en.name])
 }
 
-function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): DTDLSchema {
+function enumSchema(srv: jdspec.ServiceSpec, en: jdspec.EnumInfo): DTDLSchema {
     const dtdl = {
         "@type": "Enum",
-        "@id": enumDTDI(dev, srv, en),
+        "@id": enumDTDI(srv, en),
         "valueSchema": "integer",
         "enumValues": Object.keys(en.members).map(k => ({
             name: escapeName(k),
@@ -147,7 +147,7 @@ function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.
     return dtdl;
 }
 
-function fieldType(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, field: jdspec.PacketMember) {
+function fieldType(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, field: jdspec.PacketMember) {
     let type: string;
     if (field.type == "bool")
         type = "boolean";
@@ -167,7 +167,7 @@ function fieldType(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.
     else {
         const en = srv.enums[field.type];
         if (en)
-            type = enumDTDI(dev, srv, en);
+            type = enumDTDI(srv, en);
     }
 
     if (!type)
@@ -196,8 +196,8 @@ function arraySchema(schema: string | DTDLSchema): DTDLSchema {
 }
 
 // converts JADAC pkt data layout into a DTDL schema
-function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, supportsArray?: boolean): string | DTDLSchema {
-    const fields = pkt.fields.map(field => fieldType(dev, srv, pkt, field));
+function toSchema(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, supportsArray?: boolean): string | DTDLSchema {
+    const fields = pkt.fields.map(field => fieldType(srv, pkt, field));
     if (!fields.length)
         return undefined;
 
@@ -245,7 +245,7 @@ function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.P
     }
 }
 
-function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
+function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
     const types: jdspec.SMap<string> = {
         "const": "Property",
         "rw": "Property",
@@ -255,7 +255,7 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
     const dtdl: any = {
         "@type": types[pkt.kind] || `Unsupported${pkt.kind}`,
         name: pkt.name,
-        "@id": toDTMI(dev, [srv.shortId, pkt.kind, pkt.name]),
+        "@id": toDTMI([srv.shortId, pkt.kind, pkt.name]),
         description: pkt.description,
     }
     switch (pkt.kind) {
@@ -271,13 +271,13 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
             if (unit) {
                 dtdl.unit = unit.unit;
             }
-            dtdl.schema = toSchema(dev, srv, pkt, false)
+            dtdl.schema = toSchema(srv, pkt, false)
             if (pkt.kind === "rw")
                 dtdl.writable = true;
             if (!dtdl.schema && pkt.kind === "event") {
                 // keep a count of the events
                 dtdl["@type"] = [dtdl["@type"], "Event"]
-                dtdl.schema = toDTMI(dev, [srv.shortId, "event"]);
+                dtdl.schema = toDTMI([srv.shortId, "event"]);
             }
             else if (unit && unit.semantic)
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
@@ -335,15 +335,15 @@ function escapeDisplayName(name: string) {
     return name.slice(0, 64);
 }
 
-function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DTDLInterface {
+export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI(dev, [srv.shortId]),
+        "@id": toDTMI([srv.shortId]),
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets
             .filter(pkt => !pkt.derived)
-            .map(pkt => packetToDTDL(dev, srv, pkt)).filter(c => !!c)
+            .map(pkt => packetToDTDL(srv, pkt)).filter(c => !!c)
     }
     const hasEvents = srv.packets.find(pkt => pkt.kind === "event");
     const hasEnums = Object.keys(srv.enums).length;
@@ -351,7 +351,7 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
         dtdl.schemas = [];
         if (hasEvents)
             dtdl.schemas.push({
-                "@id": toDTMI(dev, [srv.shortId, "event"]),
+                "@id": toDTMI([srv.shortId, "event"]),
                 "@type": "Object",
                 "fields": [{
                     "name": "count",
@@ -359,34 +359,41 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
                 }]
             });
         if (hasEnums)
-            dtdl.schemas = dtdl.schemas.concat(Object.keys(srv.enums).map(en => enumSchema(dev, srv, srv.enums[en])));
+            dtdl.schemas = dtdl.schemas.concat(Object.keys(srv.enums).map(en => enumSchema(srv, srv.enums[en])));
     }
     dtdl["@context"] = CONTEXT
     return dtdl;
 }
 
-function serviceToComponent(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, serviceIndex: number): any {
+function serviceToComponent(srv: jdspec.ServiceSpec, serviceIndex: number): any {
     const dtdl = {
         "@type": "Component",
         "name": escapeName(srv.shortName),
         "displayName": escapeDisplayName(srv.name),
-        "schema": toDTMI(dev, [srv.shortId])
+        "schema": toDTMI([srv.shortId])
     }
     return dtdl;
 }
 
-export function deviceToDTDL(dev: jdspec.DeviceSpec): string {
+export interface DTDLGenerationOptions {
+    services?: boolean; // generate all services
+}
+
+export function deviceToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
     const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
     const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);
-    const schemas = uniqueServices.map(srv => serviceToInterface(dev, srv));
+    const schemas = uniqueServices.map(srv => serviceToDTDL(srv));
 
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI(dev, []),
+        "@id": toDTMI([dev.id]),
         "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
-        "contents": services.map((srv, i) => serviceToComponent(dev, srv, i)),
+        "contents": services.map((srv, i) => serviceToComponent(srv, i)),
         "@context": CONTEXT
     }
-    return JSON.stringify([dtdl, ...schemas], null, 2);
+    if (options?.services)
+        return [dtdl, ...schemas]
+    else
+        return dtdl
 }
