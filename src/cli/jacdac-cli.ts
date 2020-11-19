@@ -12,7 +12,8 @@ cli.enable("version")
 const options = cli.parse({
     usb: ['u', 'listen to JACDAC over USB', true],
     packets: ['p', 'show/hide all packets', true],
-    dtdl: [false, 'generate DTDL files', "file"]
+    dtdl: [false, 'generate DTDL files', "file"],
+    devices: ['d', 'regular expression filter for devices', 'string']
 })
 
 // DTDL
@@ -21,7 +22,14 @@ if (options.dtdl) {
     const run = async () => {
         const dir = options.dtdl
         fs.mkdirpSync(dir)
-        const devices = deviceSpecifications()
+        let devices = deviceSpecifications()
+        // filters        
+        if (options.devices) {
+            const rx = new RegExp(options.devices, "i")
+            devices = devices.filter(dev => rx.test(dev.name))
+        }
+
+        cli.info(`${devices.length} devices`)
         devices.forEach((dev, i) => {
             const fn = `${dir}/${dev.name}.json`;
             cli.debug(`${dev.name} => ${fn}`)
@@ -29,6 +37,7 @@ if (options.dtdl) {
             const dtdl = deviceToDTDL(dev);
             fs.writeFileSync(fn, dtdl)
         })
+        cli.info(`done`)
     }
     run();
 }

@@ -86,6 +86,10 @@ function toUnit(pkt: jdspec.PacketInfo) {
             semantic: "Temperature",
             unit: "degreeFahrenheit"
         },
+        "g": {
+            semantic: "Acceleration",
+            unit: "gForce"
+        }
     };
     const unit = units[field.unit];
     if (unit)
@@ -139,6 +143,10 @@ function fieldType(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.
         if (en)
             type = enumDTDI(dev, srv, en);
     }
+
+    if (!type)
+        console.warn(`unknown field type ${field.type}`, field)
+
     return {
         name: field.name == "_" ? pkt.name : field.name,
         type: type
