@@ -691,6 +691,43 @@ export function inIFrame(): boolean;
 export function intOfBuffer(data: Uint8Array): number;
 
 // @public (undocumented)
+export enum IotHubCmd {
+    Connect = 128,
+    Disconnect = 129,
+    GetTwin = 133,
+    PatchTwin = 134,
+    RespondToMethod = 137,
+    SendMsgExt = 131,
+    SendStringMsg = 130,
+    Subscribe = 132,
+    SubscribeMethod = 136,
+    SubscribeTwin = 135
+}
+
+// @public (undocumented)
+export enum IotHubEvent {
+    Connected = 1,
+    ConnectionError = 2,
+    DeviceboundStr = 3
+}
+
+// @public (undocumented)
+export enum IotHubPipeCmd {
+    DeviceboundProperties = 1,
+    MethodCall = 1,
+    Properties = 1,
+    TwinError = 1
+}
+
+// @public (undocumented)
+export enum IotHubReg {
+    ConnectionStatus = 384,
+    ConnectionString = 128,
+    DeviceId = 386,
+    HubName = 385
+}
+
+// @public (undocumented)
 export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice): boolean;
 
 // @public (undocumented)
@@ -2073,6 +2110,14 @@ export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r:
 export function setThresholdAsync(service: JDService, low: boolean, value: number): Promise<void>;
 
 // @public (undocumented)
+export enum SettingsCmd {
+    Get = 128,
+    List = 131,
+    ListKeys = 130,
+    Set = 129
+}
+
+// @public (undocumented)
 export function shortDeviceId(devid: string): string;
 
 // @public (undocumented)
@@ -2102,6 +2147,9 @@ export interface SMap<T> {
 
 // @public (undocumented)
 export const SRV_ACCELEROMETER = 521405449;
+
+// @public (undocumented)
+export const SRV_AZURE_IOT_HUB = 434976332;
 
 // @public (undocumented)
 export const SRV_BOOTLOADER = 536516936;
@@ -2174,6 +2222,9 @@ export const SRV_SENSOR_AGGREGATOR = 496034245;
 
 // @public (undocumented)
 export const SRV_SERVO = 318542083;
+
+// @public (undocumented)
+export const SRV_SETTINGS_STORAGE = 285727818;
 
 // @public (undocumented)
 export const SRV_SLIDER = 522667846;
