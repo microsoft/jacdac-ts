@@ -99,12 +99,6 @@ export enum BootloaderError {
 }
 
 // @public (undocumented)
-export class BrowserFileStorage implements IFileStorage {
-    // (undocumented)
-    saveText(name: string, data: string, mimeType?: string): Promise<void>;
-}
-
-// @public (undocumented)
 export function bufferConcat(a: Uint8Array, b: Uint8Array): Uint8Array;
 
 // @public (undocumented)
@@ -408,25 +402,10 @@ export function deviceSpecifications(): jdspec.DeviceSpec[];
 export function deviceSpecificationsForService(serviceClass: number): jdspec.DeviceSpec[];
 
 // @public (undocumented)
-export function deviceToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any;
-
-// @public (undocumented)
 export const DISCONNECT = "disconnect";
 
 // @public (undocumented)
 export const DISCONNECTING = "disconnecting";
-
-// @public (undocumented)
-export const DTDL_NAME = "Digital Twins Definition Language";
-
-// @public
-export const DTDL_REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md";
-
-// @public (undocumented)
-export interface DTDLGenerationOptions {
-    // (undocumented)
-    services?: boolean;
-}
 
 // @public (undocumented)
 export function ellipseJoin(values: string[], maxItems: number, elipse?: string): string;
@@ -588,9 +567,6 @@ export enum GamepadReg {
 export function generateDeviceList(uf2: Uint8Array): string;
 
 // @public (undocumented)
-export function getDevices(): Promise<USBDevice[]>;
-
-// @public (undocumented)
 export function getMLModelFormatName(model: Uint8Array): string;
 
 // @public (undocumented)
@@ -690,30 +666,6 @@ export const HF2_STATUS_INVALID_CMD = 1;
 export const HF2_STATUS_OK = 0;
 
 // @public (undocumented)
-export class HostedFileStorage implements IFileStorage {
-    constructor(transport: ITransport);
-    // (undocumented)
-    saveText(name: string, data: string): Promise<void>;
-    // (undocumented)
-    readonly transport: ITransport;
-}
-
-// @public (undocumented)
-export class HostedModelStore extends JDEventSource {
-    constructor(transport: ITransport);
-    // (undocumented)
-    inputConfigurations(): IFile[];
-    // (undocumented)
-    loadFile(model: IFile): Promise<Blob>;
-    // Warning: (ae-forgotten-export) The symbol "IFile" needs to be exported by the entry point jacdac.d.ts
-    //
-    // (undocumented)
-    models(): IFile[];
-    // (undocumented)
-    readonly transport: ITransport;
-}
-
-// @public (undocumented)
 export enum HumidityReg {
     Humidity = 257
 }
@@ -728,25 +680,6 @@ export interface IDeviceNameSettings {
 
 // @public (undocumented)
 export function idiv(a: number, b: number): number;
-
-// @public (undocumented)
-export interface IFileStorage {
-    // (undocumented)
-    saveText(name: string, data: string): Promise<void>;
-}
-
-// Warning: (ae-forgotten-export) The symbol "JDIFrameClient" needs to be exported by the entry point jacdac.d.ts
-//
-// @public (undocumented)
-export class IFrameTransport extends JDIFrameClient implements ITransport {
-    constructor(bus: JDBus);
-    // (undocumented)
-    onMessage<TMessage extends IMessage>(type: string, handler: (msg: TMessage) => void): void;
-    // Warning: (ae-forgotten-export) The symbol "IMessage" needs to be exported by the entry point jacdac.d.ts
-    postMessage<TMessage extends IMessage, IAckMessage>(msg: TMessage): Promise<IAckMessage>;
-    // (undocumented)
-    postReady(): void;
-}
 
 // @public (undocumented)
 export function imageDeviceOf(spec: jdspec.DeviceSpec): string;
@@ -841,14 +774,6 @@ export function isSensor(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
 export function isWebUSBSupported(): boolean;
-
-// @public (undocumented)
-export interface ITransport {
-    // (undocumented)
-    onMessage<TMessage extends IMessage>(type: string, handler: (msg: TMessage) => void): void;
-    // (undocumented)
-    postMessage<TMessage extends IMessage, TResponse extends IMessage>(msg: TMessage): Promise<TResponse>;
-}
 
 // @public (undocumented)
 export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 256;
@@ -976,18 +901,6 @@ export class JDClient extends JDEventSource {
     // (undocumented)
     unmount(): void;
     }
-
-// @public (undocumented)
-export interface JDContextProps {
-    // (undocumented)
-    bus: JDBus;
-    // (undocumented)
-    connectAsync: () => Promise<void>;
-    // (undocumented)
-    connectionState: BusState;
-    // (undocumented)
-    disconnectAsync: () => Promise<void>;
-}
 
 // @public (undocumented)
 export class JDDevice extends JDNode {
@@ -1481,16 +1394,6 @@ export enum ModelRunnerReg {
     Outputs = 257,
     OutputShape = 385,
     Parallel = 392
-}
-
-// @public (undocumented)
-export abstract class ModelStore extends JDEventSource {
-    // (undocumented)
-    abstract inputConfigurations(): IFile[];
-    // (undocumented)
-    abstract loadFile(model: IFile): Promise<any>;
-    // (undocumented)
-    abstract models(): IFile[];
 }
 
 // @public (undocumented)
@@ -2053,9 +1956,6 @@ export const REPORT_RECEIVE = "reportReceive";
 export const REPORT_UPDATE = "reportUpdate";
 
 // @public (undocumented)
-export function requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice>;
-
-// @public (undocumented)
 export const RESTART = "restart";
 
 // @public (undocumented)
@@ -2196,11 +2096,6 @@ export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec;
 
 // @public (undocumented)
 export function serviceSpecifications(): jdspec.ServiceSpec[];
-
-// Warning: (ae-forgotten-export) The symbol "DTDLInterface" needs to be exported by the entry point jacdac.d.ts
-//
-// @public (undocumented)
-export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface;
 
 // @public (undocumented)
 export enum ServoReg {
