@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
-import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
+import { parseServiceSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/jdom/spec';
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
@@ -50,7 +50,7 @@ TODO describe this register
 
     const [debouncedSource] = useDebounce(source, 700)
     const includes = serviceMap()
-    const json = parseSpecificationMarkdownToJSON(debouncedSource, includes)
+    const json = parseServiceSpecificationMarkdownToJSON(debouncedSource, includes)
     useEffect(() => {
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
