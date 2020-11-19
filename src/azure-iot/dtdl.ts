@@ -89,11 +89,39 @@ function toUnit(pkt: jdspec.PacketInfo) {
         "g": {
             semantic: "Acceleration",
             unit: "gForce"
-        }
+        },
+        "mA": {
+            semantic: "Current",
+            unit: "milliampere"
+        },
+        "uA": {
+            semantic: "Current",
+            unit: "microampere"
+        },
+        "A": {
+            semantic: "Current",
+            unit: "ampere"
+        },
+        "mV": {
+            semantic: "Voltage",
+            unit: "millivolt"
+        },
+        "uV": {
+            semantic: "Voltage",
+            unit: "microvolt"
+        },
+        "V": {
+            semantic: "Voltage",
+            unit: "volt"
+        },
     };
     const unit = units[field.unit];
     if (unit)
         return unit;
+
+    // ignoring some known units
+    if (["#", "/"].indexOf(field.unit) > -1)
+        return undefined;
 
     console.warn(`unsupported unit ${field.unit}`)
     return undefined;
