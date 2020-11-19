@@ -13,8 +13,8 @@ export default [
   { libraryName: 'jacdac-react', dir: 'react', external: ["jacdac-jdom", "react"] },
   { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-jdom"] },
   { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "react", "jacdac-react", "webusb", "jacdac-node", "jacdac-embed"] },
-  { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-node", "webusb"] },
-].map(({ libraryName, dir, external }) => {
+  { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-node", "webusb"], watch: "src/**" },
+].map(({ libraryName, dir, external, watch }) => {
   return {
     input: `src/${dir}/${libraryName}.ts`,
     output: [
@@ -24,7 +24,7 @@ export default [
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
     external: external || [],
     watch: {
-      include: `src/${dir}/**`
+      include: watch || `src/${dir}/**`
     },
     plugins: [
       // Allow json resolution

@@ -1,10 +1,10 @@
 /// <reference path="../../jacdac-spec/spectool/jdspec.d.ts" />
 
-import { NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer";
+import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
-import { fromHex, SMap, stringToUint8Array, toUTF8 } from "./utils";
-import { BaseReg, CMD_SET_REG, JD_SERIAL_MAX_PAYLOAD_SIZE, SensorReg } from "./constants";
+import { fromHex, SMap } from "./utils";
+import { BaseReg, SensorReg } from "./constants";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
@@ -85,7 +85,6 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
  * @param name 
  */
 export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
-    const k = (name || "").toLowerCase().trim()
     return _serviceSpecifications.find(s => s.shortId == name)
         || Object.values(_customServiceSpecifications).find(ser => ser.shortId == name)
 }

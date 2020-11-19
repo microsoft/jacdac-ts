@@ -33,7 +33,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         </Grid>
         {showSource && <>
             <h2>Specification</h2>
-            <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} />
+            <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} showDTDL={true} />
         </>}
     </>
 }
