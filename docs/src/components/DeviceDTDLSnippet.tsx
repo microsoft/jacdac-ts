@@ -7,7 +7,7 @@ export function
     const { dev } = props;
 
     const dtdl = useMemo<string>(
-        () => deviceToDTDL(dev, { services: true }),
+        () => JSON.stringify(deviceToDTDL(dev, { services: true }), null, 2),
         [dev]);
 
     return <Snippet value={dtdl} mode="json" download={`${dev.name}.json`} />

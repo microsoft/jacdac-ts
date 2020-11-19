@@ -1,14 +1,14 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
-import { parseSpecificationMarkdownToJSON } from '../../../jacdac-spec/spectool/jdspec'
-import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../src/jdom/spec';
+import { parseDeviceMarkdownToJSON } from '../../../jacdac-spec/spectool/devices'
 import RandomGenerator from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
-import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useLocalStorage from './useLocalStorage';
 import { useDebounce } from 'use-debounce';
 import PaperBox from './PaperBox'
 import Alert from './Alert';
+import { deviceSpecifications } from '../../../src/jdom/spec';
+import DeviceSpecificationSource from "./DeviceSpecificationSource"
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -30,33 +30,27 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }));
 
-export default function ServiceSpecificationEditor() {
+export default function DeviceDesigner() {
     const classes = useStyles();
     const { drawerType } = useContext(AppContext)
-    const { value: source, setValue: setSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
-        `# My Service
+    const { value: source, setValue: setSource } = useLocalStorage('jacdac:devicedesigner',
+        `# My Device
 
-TODO: describe your service
+TODO: describe your device
 
         extends: _sensor
 
-## Registers
-
-    ro position: i32 @ reading
-
-TODO describe this register
 `
     )
 
     const [debouncedSource] = useDebounce(source, 700)
-    const includes = serviceMap()
-    const json = parseSpecificationMarkdownToJSON(debouncedSource, includes)
-    useEffect(() => {
-        addCustomServiceSpecification(json)
-        if (json.classIdentifier)
-            clearCustomServiceSpecifications();
-    }, [debouncedSource])
-    const annotations = json?.errors?.map(error => ({
+    const usedIds: jdspec.SMap<string> = useMemo(() => {
+        const r = {};
+        deviceSpecifications().forEach(dev => r[dev.id] = dev.name);
+        return r
+    }, []);
+    const device = parseDeviceMarkdownToJSON(debouncedSource, undefined, usedIds, )
+    const annotations = device?.errors?.map(error => ({
         row: error.line,
         column: 1,
         text: error.message,
@@ -83,19 +77,16 @@ TODO describe this register
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 {!!annotations?.length &&
-                <Alert severity="warning">
-                    <ul>
-                        {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
-                    </ul>
-                </Alert>
+                    <Alert severity="warning">
+                        <ul>
+                            {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
+                        </ul>
+                    </Alert>
                 }
                 <Paper square className={classes.segment}>
-                    <RandomGenerator device={false} />
+                    <RandomGenerator device={true} />
                 </Paper>
-                <ServiceSpecificationSource
-                    serviceSpecification={json}
-                    showMarkdown={false}
-                    showSpecification={true} />
+                <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} showDTDL={true} />
             </Grid>
         </Grid>
     );
