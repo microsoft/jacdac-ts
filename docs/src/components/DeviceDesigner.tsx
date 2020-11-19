@@ -40,6 +40,8 @@ TODO: describe your device
 
 * services:
 * firmware:
+* repo: https://github.com/...
+* link:
 
 `
     )
@@ -86,7 +88,7 @@ TODO: describe your device
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={true} />
                 </Paper>
-                <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} showDTDL={true} />
+                <DeviceSpecificationSource deviceSpecification={device} showMarkdown={false} showDTDL={true} />
             </Grid>
         </Grid>
     );
