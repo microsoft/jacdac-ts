@@ -38,7 +38,8 @@ export default function DeviceDesigner() {
 
 TODO: describe your device
 
-        extends: _sensor
+* services:
+* firmware:
 
 `
     )
@@ -49,7 +50,7 @@ TODO: describe your device
         deviceSpecifications().forEach(dev => r[dev.id] = dev.name);
         return r
     }, []);
-    const device = parseDeviceMarkdownToJSON(debouncedSource, undefined, usedIds, )
+    const device = parseDeviceMarkdownToJSON(debouncedSource, undefined, usedIds,)
     const annotations = device?.errors?.map(error => ({
         row: error.line,
         column: 1,
