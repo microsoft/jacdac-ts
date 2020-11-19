@@ -42,15 +42,15 @@ function uniqueServiceId() {
     return id !== undefined && toFullHex([id])
 }
 
-function uniqueDeviceId() {
+export function uniqueDeviceId() {
     const n = cryptoRandomUint32(2);
     return n !== undefined && toFullHex([n[0], n[1]])
 }
 
-function uniqueFirmwareId() {
-    let id = cryptoRandomUint32(1)
+export function uniqueFirmwareId() {
+    let id = cryptoRandomUint32(1)[0]
     while (id !== undefined && (!looksRandom(id) || deviceSpecificationFromFirmwareIdentifier(id))) {
-        id = cryptoRandomUint32(1)
+        id = cryptoRandomUint32(1)[0]
     }
     return id !== undefined && toFullHex([id])
 }

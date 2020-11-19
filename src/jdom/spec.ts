@@ -94,7 +94,7 @@ export function serviceSpecificationFromName(name: string): jdspec.ServiceSpec {
  * @param classIdentifier 
  */
 export function serviceSpecificationFromClassIdentifier(classIdentifier: number): jdspec.ServiceSpec {
-    if (classIdentifier === null || classIdentifier === undefined)
+    if (classIdentifier === null || classIdentifier === undefined || isNaN(classIdentifier))
         return undefined;
     return _serviceSpecifications.find(s => s.classIdentifier === classIdentifier)
         || _customServiceSpecifications[classIdentifier]

@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useMemo } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
+import React, { useContext, useMemo, useState } from 'react';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Tabs, Tab, Typography } from '@material-ui/core';
+import TabPanel, { a11yProps } from './TabPanel';
 import { parseDeviceMarkdownToJSON } from '../../../jacdac-spec/spectool/devices'
-import RandomGenerator from './RandomGenerator';
+import RandomGenerator, { uniqueDeviceId } from './RandomGenerator';
 import AppContext, { DrawerType } from './AppContext';
 import useLocalStorage from './useLocalStorage';
 import { useDebounce } from 'use-debounce';
-import PaperBox from './PaperBox'
-import Alert from './Alert';
-import { deviceSpecifications } from '../../../src/jdom/spec';
 import DeviceSpecificationSource from "./DeviceSpecificationSource"
+import { clone } from '../../../src/jdom/utils';
+import DeviceSpecificationForm from './DeviceSpecificationForm';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -33,62 +33,27 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function DeviceDesigner() {
     const classes = useStyles();
     const { drawerType } = useContext(AppContext)
-    const { value: source, setValue: setSource } = useLocalStorage('jacdac:devicedesigner',
-        `# My Device
-
-TODO: describe your device
-
-* services:
-* firmware:
-* repo: https://github.com/...
-* link:
-
-`
-    )
-
-    const [debouncedSource] = useDebounce(source, 700)
-    const device = useMemo(() => {
-        const usedIds: jdspec.SMap<string> = {};
-        deviceSpecifications().forEach(dev => usedIds[dev.id] = dev.name);
-        return parseDeviceMarkdownToJSON(debouncedSource, undefined, usedIds,)
-    }, [debouncedSource]);
-    const annotations = device?.errors?.map(error => ({
-        row: error.line,
-        column: 1,
-        text: error.message,
-        type: 'error'
-    }))
+    const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner',
+        {
+            name: "My device",
+            id: uniqueDeviceId(),
+            services: [],
+            firmwares: [],
+            repo: ""
+        } as jdspec.DeviceSpec)
+    if (!device.id)
+        device.id = uniqueDeviceId();
     const drawerOpen = drawerType != DrawerType.None
-    const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setSource(ev.target.value)
+    const updateDevice = () => {
+        setDevice(clone(device));
     }
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <PaperBox>
-                    {source !== undefined &&
-                        <TextField
-                            fullWidth={true}
-                            className={classes.editor}
-                            onChange={handleSourceChange}
-                            defaultValue={source}
-                            multiline={true}
-                            rows={42}
-                        />}
-                </PaperBox>
+                <DeviceSpecificationForm device={device} updateDevice={updateDevice} />
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
-                {!!annotations?.length &&
-                    <Alert severity="warning">
-                        <ul>
-                            {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
-                        </ul>
-                    </Alert>
-                }
-                <Paper square className={classes.segment}>
-                    <RandomGenerator device={true} />
-                </Paper>
-                <DeviceSpecificationSource deviceSpecification={device} showMarkdown={false} showDTDL={true} />
+                <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} showDTDL={true} />
             </Grid>
         </Grid>
     );
