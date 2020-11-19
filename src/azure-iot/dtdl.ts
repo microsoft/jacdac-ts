@@ -134,7 +134,7 @@ function fieldType(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.
             // base64 encoded binary data
             type = "string";
     }
-    else if (field.type === "string")
+    else if (field.type === "string" || field.type == "string0")
         type = "string";
     else if (field.shift && /^(u|i)/.test(field.type))
         type = "float"; // decimal type
