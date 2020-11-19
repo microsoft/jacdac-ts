@@ -320,7 +320,7 @@ function serviceToComponent(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, ser
     return dtdl;
 }
 
-export function toDTDL(dev: jdspec.DeviceSpec): string {
+export function deviceToDTDL(dev: jdspec.DeviceSpec): string {
     const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
     const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);
     const schemas = uniqueServices.map(srv => serviceToInterface(dev, srv));
