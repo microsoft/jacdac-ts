@@ -45,12 +45,11 @@ TODO: describe your device
     )
 
     const [debouncedSource] = useDebounce(source, 700)
-    const usedIds: jdspec.SMap<string> = useMemo(() => {
-        const r = {};
-        deviceSpecifications().forEach(dev => r[dev.id] = dev.name);
-        return r
-    }, []);
-    const device = parseDeviceMarkdownToJSON(debouncedSource, undefined, usedIds,)
+    const device = useMemo(() => {
+        const usedIds: jdspec.SMap<string> = {};
+        deviceSpecifications().forEach(dev => usedIds[dev.id] = dev.name);
+        return parseDeviceMarkdownToJSON(debouncedSource, undefined, usedIds,)
+    }, [debouncedSource]);
     const annotations = device?.errors?.map(error => ({
         row: error.line,
         column: 1,
