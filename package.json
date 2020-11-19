@@ -4,7 +4,7 @@
   "description": "",
   "keywords": [],
   "main": "dist/jacdac.umd.js",
-  "module": "dist/jacdac.es5.js",
+  "module": "dist/jacdac.es.js",
   "typings": "dist/types/src/jacdac.d.ts",
   "files": [
     "dist",
