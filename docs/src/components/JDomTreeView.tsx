@@ -12,7 +12,6 @@ import Typography from '@material-ui/core/Typography';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import { Badge } from "@material-ui/core"
 import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/jdom/device';
 import { JDEvent } from '../../../src/jdom/event';
