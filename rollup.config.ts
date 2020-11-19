@@ -17,7 +17,7 @@ export default [
   { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-node", "jacdac-azure-iot", "webusb"], watch: "src/**" },
 ].map(({ libraryName, dir, external, watch }) => {
   return {
-    input: `src/${dir}/${libraryName}.ts`,
+    input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
     output: [
       { file: `dist/${libraryName}.umd.js`, name: camelCase(libraryName), format: 'umd', sourcemap: true },
       { file: `dist/${libraryName}.js`, format: 'es', sourcemap: true }

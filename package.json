@@ -41,7 +41,7 @@
     "docs": "cd docs && node node_modules/gatsby/cli.js develop",
     "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0",
     "buildspecs": "cd jacdac-spec/spectool && sh build.sh",
-    "builddtdl": "node dist/jacdac-cli.js --dtdl temp/dtdl"
+    "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm"
   },
   "release": {
     "branch": "main",
