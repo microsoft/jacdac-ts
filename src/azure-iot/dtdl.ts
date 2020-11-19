@@ -255,7 +255,7 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
     const dtdl: any = {
         "@type": types[pkt.kind] || `Unsupported${pkt.kind}`,
         name: pkt.name,
-        "@id": toDTMI([srv.shortId, pkt.kind, pkt.name]),
+        "@id": toDTMI([srv.classIdentifier, pkt.kind, pkt.name]),
         description: pkt.description,
     }
     switch (pkt.kind) {
@@ -277,7 +277,7 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
             if (!dtdl.schema && pkt.kind === "event") {
                 // keep a count of the events
                 dtdl["@type"] = [dtdl["@type"], "Event"]
-                dtdl.schema = toDTMI([srv.shortId, "event"]);
+                dtdl.schema = toDTMI([srv.classIdentifier, "event"]);
             }
             else if (unit && unit.semantic)
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
@@ -351,7 +351,7 @@ export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
         dtdl.schemas = [];
         if (hasEvents)
             dtdl.schemas.push({
-                "@id": toDTMI([srv.shortId, "event"]),
+                "@id": toDTMI([srv.classIdentifier, "event"]),
                 "@type": "Object",
                 "fields": [{
                     "name": "count",
@@ -380,7 +380,7 @@ export interface DTDLGenerationOptions {
 }
 
 export function serviceDTMI(srv: jdspec.ServiceSpec) {
-    return toDTMI([srv.shortId || srv.classIdentifier])
+    return toDTMI([srv.classIdentifier])
 }
 
 export function deviceDTMI(dev: jdspec.DeviceSpec) {
