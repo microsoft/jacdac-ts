@@ -7,7 +7,7 @@
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec";
 import { uniqueMap } from "../jdom/utils";
 
-export const REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
+export const DTDL_REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
 export const DTDL_NAME = "Digital Twins Definition Language"
 const CONTEXT = "dtmi:dtdl:context;2";
 
