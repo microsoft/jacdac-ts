@@ -193,17 +193,22 @@ function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.P
         // wrap schemas into an object
         return objectSchema(schemas)
     }
-
-    // split fields into prelude and array data
-    const nonRepeat = schemas.slice(0, repeatIndex);
-    const repeats = schemas.slice(repeatIndex);
-    return objectSchema([
-        ...nonRepeat,
-        {
-            name: "repeat",
-            schema: arraySchema(objectSchema(repeats))
-        }
-    ]);
+    else if (repeatIndex == 0) {
+        // the whole structure is an array
+        return arraySchema(objectSchema(schemas))
+    }
+    else {
+        // split fields into prelude and array data
+        const nonRepeat = schemas.slice(0, repeatIndex);
+        const repeats = schemas.slice(repeatIndex);
+        return objectSchema([
+            ...nonRepeat,
+            {
+                name: "repeat",
+                schema: arraySchema(repeats.length > 1 ? objectSchema(repeats) : repeats[0])
+            }
+        ]);
+    }
 }
 
 function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
