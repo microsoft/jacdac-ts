@@ -1223,6 +1223,115 @@
           ]
         },
         {
+          "kind": "Class",
+          "canonicalReference": "jacdac-ts!BrowserFileStorage:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class BrowserFileStorage implements "
+            },
+            {
+              "kind": "Reference",
+              "text": "IFileStorage",
+              "canonicalReference": "jacdac-ts!IFileStorage:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "BrowserFileStorage",
+          "members": [
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!BrowserFileStorage#saveText:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "saveText(name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", data: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", mimeType?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 9
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "name",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                },
+                {
+                  "parameterName": "data",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "mimeType",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                }
+              ],
+              "name": "saveText"
+            }
+          ],
+          "implementsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 3
+            }
+          ]
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!bufferConcat:function(1)",
           "docComment": "",
@@ -4639,6 +4748,66 @@
           "name": "deviceSpecificationsForService"
         },
         {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!deviceToDTDL:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function deviceToDTDL(dev: "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.DeviceSpec",
+              "canonicalReference": "!jdspec.DeviceSpec:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "DTDLGenerationOptions",
+              "canonicalReference": "jacdac-ts!DTDLGenerationOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "any"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "dev",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            }
+          ],
+          "name": "deviceToDTDL"
+        },
+        {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!DISCONNECT:var",
           "docComment": "",
@@ -4671,6 +4840,81 @@
             "startIndex": 0,
             "endIndex": 0
           }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!DTDL_NAME:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "DTDL_NAME = \"Digital Twins Definition Language\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DTDL_NAME",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!DTDL_REFERENCE_URL:var",
+          "docComment": "/**\n * * JACDAC service/device specification to DTDL\n *\n * DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "DTDL_REFERENCE_URL = \"https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DTDL_REFERENCE_URL",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "jacdac-ts!DTDLGenerationOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DTDLGenerationOptions "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DTDLGenerationOptions",
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!DTDLGenerationOptions#services:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "services?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "services",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
         },
         {
           "kind": "Function",
@@ -6385,6 +6629,47 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!getDevices:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function getDevices(): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "USBDevice",
+              "canonicalReference": "!USBDevice:class"
+            },
+            {
+              "kind": "Content",
+              "text": "[]>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 5
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [],
+          "name": "getDevices"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!getMLModelFormatName:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -7161,6 +7446,370 @@
           }
         },
         {
+          "kind": "Class",
+          "canonicalReference": "jacdac-ts!HostedFileStorage:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class HostedFileStorage implements "
+            },
+            {
+              "kind": "Reference",
+              "text": "IFileStorage",
+              "canonicalReference": "jacdac-ts!IFileStorage:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "HostedFileStorage",
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "jacdac-ts!HostedFileStorage:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `HostedFileStorage` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(transport: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ITransport",
+                  "canonicalReference": "jacdac-ts!ITransport:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "transport",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!HostedFileStorage#saveText:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "saveText(name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", data: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "name",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                },
+                {
+                  "parameterName": "data",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                }
+              ],
+              "name": "saveText"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!HostedFileStorage#transport:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly transport: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ITransport",
+                  "canonicalReference": "jacdac-ts!ITransport:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "transport",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            }
+          ],
+          "implementsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 3
+            }
+          ]
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "jacdac-ts!HostedModelStore:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class HostedModelStore extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "JDEventSource",
+              "canonicalReference": "jacdac-ts!JDEventSource:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "HostedModelStore",
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "jacdac-ts!HostedModelStore:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `HostedModelStore` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(transport: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ITransport",
+                  "canonicalReference": "jacdac-ts!ITransport:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "transport",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!HostedModelStore#inputConfigurations:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "inputConfigurations(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFile",
+                  "canonicalReference": "jacdac-ts!IFile:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "inputConfigurations"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!HostedModelStore#loadFile:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "loadFile(model: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFile",
+                  "canonicalReference": "jacdac-ts!IFile:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Blob",
+                  "canonicalReference": "!Blob:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "model",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "loadFile"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!HostedModelStore#models:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "models(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFile",
+                  "canonicalReference": "jacdac-ts!IFile:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "models"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!HostedModelStore#transport:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly transport: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ITransport",
+                  "canonicalReference": "jacdac-ts!ITransport:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "transport",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 3
+          },
+          "implementsTokenRanges": []
+        },
+        {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!HumidityReg:enum",
           "docComment": "",
@@ -7372,6 +8021,354 @@
             }
           ],
           "name": "idiv"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "jacdac-ts!IFileStorage:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface IFileStorage "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "IFileStorage",
+          "members": [
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "jacdac-ts!IFileStorage#saveText:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "saveText(name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", data: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "name",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                },
+                {
+                  "parameterName": "data",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                }
+              ],
+              "name": "saveText"
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "jacdac-ts!IFrameTransport:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class IFrameTransport extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "JDIFrameClient",
+              "canonicalReference": "jacdac-ts!default:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            },
+            {
+              "kind": "Content",
+              "text": "implements "
+            },
+            {
+              "kind": "Reference",
+              "text": "ITransport",
+              "canonicalReference": "jacdac-ts!ITransport:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "IFrameTransport",
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "jacdac-ts!IFrameTransport:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `IFrameTransport` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(bus: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDBus",
+                  "canonicalReference": "jacdac-ts!JDBus:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "bus",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!IFrameTransport#onMessage:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "onMessage<TMessage extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IMessage",
+                  "canonicalReference": "jacdac-ts!IMessage:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(type: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", handler: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(msg: TMessage) => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "type",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "handler",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "TMessage",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "onMessage"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!IFrameTransport#postMessage:member(1)",
+              "docComment": "/**\n * Post message to client and awaits for ack if needed\n *\n * @param msg - \n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "postMessage<TMessage extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IMessage",
+                  "canonicalReference": "jacdac-ts!IMessage:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", IAckMessage>(msg: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TMessage"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<IAckMessage>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 7
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "msg",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "TMessage",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                },
+                {
+                  "typeParameterName": "IAckMessage",
+                  "constraintTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "postMessage"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!IFrameTransport#postReady:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "postReady(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "postReady"
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 3
+          },
+          "implementsTokenRanges": [
+            {
+              "startIndex": 4,
+              "endIndex": 6
+            }
+          ]
         },
         {
           "kind": "Function",
@@ -8793,6 +9790,192 @@
           "overloadIndex": 1,
           "parameters": [],
           "name": "isWebUSBSupported"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "jacdac-ts!ITransport:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ITransport "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ITransport",
+          "members": [
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "jacdac-ts!ITransport#onMessage:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "onMessage<TMessage extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IMessage",
+                  "canonicalReference": "jacdac-ts!IMessage:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(type: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", handler: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(msg: TMessage) => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "type",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "handler",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "TMessage",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "onMessage"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "jacdac-ts!ITransport#postMessage:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "postMessage<TMessage extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IMessage",
+                  "canonicalReference": "jacdac-ts!IMessage:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", TResponse extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IMessage",
+                  "canonicalReference": "jacdac-ts!IMessage:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(msg: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TMessage"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TResponse>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 9
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "msg",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "TMessage",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                },
+                {
+                  "typeParameterName": "TResponse",
+                  "constraintTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "postMessage"
+            }
+          ],
+          "extendsTokenRanges": []
         },
         {
           "kind": "Variable",
@@ -10446,6 +11629,142 @@
             "endIndex": 3
           },
           "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "jacdac-ts!JDContextProps:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface JDContextProps "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "JDContextProps",
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!JDContextProps#bus:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "bus: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDBus",
+                  "canonicalReference": "jacdac-ts!JDBus:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "bus",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!JDContextProps#connectAsync:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "connectAsync: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "connectAsync",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!JDContextProps#connectionState:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "connectionState: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "BusState",
+                  "canonicalReference": "jacdac-ts!BusState:enum"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "connectionState",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!JDContextProps#disconnectAsync:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "disconnectAsync: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "disconnectAsync",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            }
+          ],
+          "extendsTokenRanges": []
         },
         {
           "kind": "Class",
@@ -17729,6 +19048,151 @@
           ]
         },
         {
+          "kind": "Class",
+          "canonicalReference": "jacdac-ts!ModelStore:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare abstract class ModelStore extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "JDEventSource",
+              "canonicalReference": "jacdac-ts!JDEventSource:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ModelStore",
+          "members": [
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!ModelStore#inputConfigurations:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "abstract inputConfigurations(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFile",
+                  "canonicalReference": "jacdac-ts!IFile:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "inputConfigurations"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!ModelStore#loadFile:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "abstract loadFile(model: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFile",
+                  "canonicalReference": "jacdac-ts!IFile:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<any>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "model",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "loadFile"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!ModelStore#models:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "abstract models(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "IFile",
+                  "canonicalReference": "jacdac-ts!IFile:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "models"
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 3
+          },
+          "implementsTokenRanges": []
+        },
+        {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!MotorReg:enum",
           "docComment": "",
@@ -24444,6 +25908,64 @@
           }
         },
         {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!requestDevice:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function requestDevice(options: "
+            },
+            {
+              "kind": "Reference",
+              "text": "USBDeviceRequestOptions",
+              "canonicalReference": "!USBDeviceRequestOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "USBDevice",
+              "canonicalReference": "!USBDevice:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 7
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "requestDevice"
+        },
+        {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!RESTART:var",
           "docComment": "",
@@ -26275,6 +27797,51 @@
           "overloadIndex": 1,
           "parameters": [],
           "name": "serviceSpecifications"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!serviceToDTDL:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function serviceToDTDL(srv: "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.ServiceSpec",
+              "canonicalReference": "!jdspec.ServiceSpec:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "DTDLInterface",
+              "canonicalReference": "jacdac-ts!~DTDLInterface:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "srv",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "serviceToDTDL"
         },
         {
           "kind": "Enum",
