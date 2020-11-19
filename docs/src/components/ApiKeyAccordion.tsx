@@ -12,10 +12,11 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
 export default function ApiKeyAccordion(props: {
     apiName: string,
+    title?: string,
     validateKey: (key: string) => Promise<{ statusCode: number; }>,
     instructions: JSX.Element | JSX.Element[]
 }) {
-    const { apiName, validateKey, instructions } = props;
+    const { apiName, validateKey, instructions, title } = props;
     const { value: apiKey, setValue: setApiKey } = useDbValue(apiName, "")
     const [key, setKey] = useState("")
     const [expanded, setExpanded] = useState(false)
@@ -58,7 +59,7 @@ export default function ApiKeyAccordion(props: {
 
     return <Accordion expanded={expanded} onChange={handleExpanded}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body1">API Key Configuration</Typography>
+            <Typography variant="body1">{`${title || "API key"} Configuration`}</Typography>
             {validated && <Box ml={1} color="success.main"><CheckCircleOutlineIcon /></Box>}
         </AccordionSummary>
         <AccordionDetails style={({ display: "block" })}>
