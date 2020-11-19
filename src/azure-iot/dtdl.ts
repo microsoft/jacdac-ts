@@ -296,7 +296,9 @@ function serviceToInterface(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec): DT
         "@id": toDTMI(dev, [srv.shortId]),
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
-        "contents": srv.packets.map(pkt => packetToDTDL(dev, srv, pkt)).filter(c => !!c)
+        "contents": srv.packets
+            .filter(pkt => !pkt.derived)
+            .map(pkt => packetToDTDL(dev, srv, pkt)).filter(c => !!c)
     }
     const hasEvents = srv.packets.find(pkt => pkt.kind === "event");
     const hasEnums = Object.keys(srv.enums).length;
