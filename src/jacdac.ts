@@ -1,1 +1,5 @@
 export * from './jdom/jacdac-jdom'
+export * from './node/jacdac-node'
+export * from './embed/jacdac-embed'
+export * from './azure-iot/jacdac-azure-iot'
+export * from './react/jacdac-react'
