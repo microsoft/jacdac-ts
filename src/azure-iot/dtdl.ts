@@ -208,7 +208,6 @@ function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.P
 
 function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLContent {
     const types: jdspec.SMap<string> = {
-        "command": "Command",
         "const": "Property",
         "rw": "Property",
         "ro": "Property",
@@ -221,6 +220,7 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
         description: pkt.description,
     }
     switch (pkt.kind) {
+        case "report":
         case "command":
             // https://docs.microsoft.com/en-us/azure/digital-twins/concepts-models#azure-digital-twins-dtdl-implementation-specifics
             return undefined;
