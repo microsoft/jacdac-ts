@@ -136,7 +136,7 @@ function fieldType(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.
     }
     else if (field.type === "string")
         type = "string";
-    else if (field.shift && field.storage === 4 && /^(u|i)/.test(field.type))
+    else if (field.shift && /^(u|i)/.test(field.type))
         type = "float"; // decimal type
     else {
         const en = srv.enums[field.type];
