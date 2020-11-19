@@ -338,7 +338,7 @@ function escapeDisplayName(name: string) {
 export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI([srv.shortId]),
+        "@id": serviceDTMI(srv),
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets
@@ -370,13 +370,21 @@ function serviceToComponent(srv: jdspec.ServiceSpec, serviceIndex: number): any 
         "@type": "Component",
         "name": escapeName(srv.shortName),
         "displayName": escapeDisplayName(srv.name),
-        "schema": toDTMI([srv.shortId])
+        "schema": serviceDTMI(srv)
     }
     return dtdl;
 }
 
 export interface DTDLGenerationOptions {
     services?: boolean; // generate all services
+}
+
+export function serviceDTMI(srv: jdspec.ServiceSpec) {
+    return toDTMI([srv.shortId || srv.classIdentifier])
+}
+
+export function deviceDTMI(dev: jdspec.DeviceSpec) {
+    return toDTMI([dev.id]);
 }
 
 export function deviceToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
@@ -386,7 +394,7 @@ export function deviceToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOpt
 
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": toDTMI([dev.id]),
+        "@id": deviceDTMI(dev),
         "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
         "contents": services.map((srv, i) => serviceToComponent(srv, i)),
