@@ -109,8 +109,6 @@ function enumSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, en: jdspec.
     const dtdl = {
         "@type": "Enum",
         "@id": enumDTDI(dev, srv, en),
-        "name": escapeName(en.name),
-        "displayName": en.name,
         "valueSchema": "integer",
         "enumValues": Object.keys(en.members).map(k => ({
             name: escapeName(k),
@@ -170,7 +168,7 @@ function arraySchema(schema: string | DTDLSchema): DTDLSchema {
 }
 
 // converts JADAC pkt data layout into a DTDL schema
-function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): string | DTDLSchema {
+function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, supportsArray?: boolean): string | DTDLSchema {
     const fields = pkt.fields.map(field => fieldType(dev, srv, pkt, field));
     if (!fields.length)
         return undefined;
@@ -188,12 +186,20 @@ function toSchema(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdspec.P
 
     // is there an array?
     const repeatIndex = pkt.fields.findIndex(field => field.startRepeats);
+
     if (repeatIndex < 0) {
         // no array
         // wrap schemas into an object
         return objectSchema(schemas)
     }
-    else if (repeatIndex == 0) {
+
+    // check if arrays are supported
+    if (!supportsArray) {
+        console.warn(`arrays not supported in ${srv.shortName}.${pkt.name}`)
+        return undefined;
+    }
+
+    if (repeatIndex == 0) {
         // the whole structure is an array
         return arraySchema(objectSchema(schemas))
     }
@@ -237,7 +243,7 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
             if (unit) {
                 dtdl.unit = unit.unit;
             }
-            dtdl.schema = toSchema(dev, srv, pkt)
+            dtdl.schema = toSchema(dev, srv, pkt, false)
             if (pkt.kind === "rw")
                 dtdl.writable = true;
             if (!dtdl.schema && pkt.kind === "event") {
@@ -252,6 +258,12 @@ function packetToDTDL(dev: jdspec.DeviceSpec, srv: jdspec.ServiceSpec, pkt: jdsp
             console.log(`unknown packet kind ${pkt.kind}`)
             break;
     }
+
+    if (!dtdl.schema) {
+        console.log(`unknown schema for ${srv.name}.${pkt.name}`);
+        return undefined;
+    }
+
     return dtdl;
 }
 
