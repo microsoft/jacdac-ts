@@ -93,9 +93,13 @@ async function createDevicePages(graphql, actions, reporter) {
     if (node.firmwares)
       node.firmwares.forEach(fw => {
         const fp = `/firmwares/0x${fw.toString(16)}`;
-        console.log(`firmware redirect`, { from: fp, to: p })
+        const dp = `/devices/0x${fw.toString(16)}`;
         createRedirect({
           fromPath: fp,
+          toPath: p
+        })
+        createRedirect({
+          fromPath: dp,
           toPath: p
         })
       })
