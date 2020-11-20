@@ -7,6 +7,10 @@ import { uniqueFirmwareId } from './RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 import IconButtonWithTooltip from "./IconButtonWithTooltip"
+import ApiKeyAccordion from './ApiKeyAccordion';
+import { GITHUB_API_KEY, parseRepoUrl } from './github'
+import GithubPullRequestButton from './GithubPullRequestButton'
+import { normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 
 export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSpec, updateDevice: () => void }) {
     const { device, updateDevice } = props;
@@ -25,12 +29,15 @@ export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSp
     const nameError = device.name?.length > 32
         ? "name too long"
         : undefined;
-    const githubError = !device.repo || /^https:\/\/github.com\/([^\/]+)\/([^\/]+)\/?$/.test(device.repo)
+    const parsedRepo = parseRepoUrl(device.repo);
+    const githubError = parsedRepo
         ? ""
         : "invalid GitHub repository"
     const linkError = !device.link || /^https:\/\//.test(device.link)
         ? ""
         : "Must be https://..."
+    const devId = (device.name || "").replace(/[^a-zA-Z0-9_]/g, '');
+    const modulePath = parsedRepo && `modules/${parsedRepo.owner}/${devId}.json`
 
     const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         device.name = ev.target.value;
@@ -166,6 +173,24 @@ export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSp
                     Each revision of your firmware may have a different identifier.
                 </Typography>
             </PaperBox>
+        </Grid>
+        <Grid item xs={12}>
+            <ApiKeyAccordion
+                apiName={GITHUB_API_KEY}
+                title="GitHub Developer Token"
+                instructions={
+                    <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
+                }
+            />
+            <GithubPullRequestButton
+                title={`Module definition: ${device.name}`}
+                head={device.id}
+                body={`This pull requests a new module for JACDAC.`}
+                commit={`added ${device.name} files`}
+                files={modulePath && {
+                    [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2)
+                }}
+            />
         </Grid>
     </Grid>
 }

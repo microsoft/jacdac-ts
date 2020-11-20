@@ -1,7 +1,7 @@
 import useFetch from "./useFetch";
 
 const ROOT = "https://api.github.com/"
-
+export const GITHUB_API_KEY = "GITHUB"
 export interface GithubRelease {
     url: string,
     html_url: string,
@@ -40,6 +40,13 @@ export function normalizeSlug(slug: string): string {
 
 export interface GitHubApiOptions {
     ignoreThrottled?: boolean;
+}
+
+export function parseRepoUrl(url: string): { owner: string; name: string; } {
+    const m = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/?$/.exec(url || "")
+    if (m)
+        return { owner: m[1], name: m[2] }
+    return undefined;
 }
 
 export async function fetchLatestRelease(slug: string, options?: GitHubApiOptions): Promise<GithubRelease> {

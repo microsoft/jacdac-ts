@@ -4,20 +4,22 @@ import { createPullRequest } from "octokit-plugin-create-pull-request";
 import { Button, Link } from "gatsby-theme-material-ui";
 import { CircularProgress } from "@material-ui/core";
 import AppContext from "./AppContext";
+import { GITHUB_API_KEY } from "./github";
+import useDbValue from "./useDbValue";
 
-export function GithubPullRequestButton(props: {
-    token: string,
+export default function GithubPullRequestButton(props: {
     title: string,
     body: string,
     head: string,
-    comment: string,
+    commit: string,
     files: { [path: string]: string | { content: string; encoding: "utf-8" | "base64"; } }
 }) {
-    const { token, comment, files, title, body, head } = props;
+    const { commit, files, title, body, head } = props;
+    const { value: token } = useDbValue(GITHUB_API_KEY, "")
     const [busy, setBusy] = useState(false)
     const { setError: setAppError } = useContext(AppContext)
 
-    const disabled = busy || !token || !comment || !title || !body || !head || !Object.keys(files).length
+    const disabled = busy || !token || !commit || !title || !body || !head || !files || !Object.keys(files).length
     const handleClick = async () => {
 
         try {
@@ -38,7 +40,7 @@ export function GithubPullRequestButton(props: {
                 changes: [
                     {
                         files,
-                        commit: comment,
+                        commit,
                     },
                 ],
             })
