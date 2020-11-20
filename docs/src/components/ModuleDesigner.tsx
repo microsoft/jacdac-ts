@@ -93,7 +93,7 @@ export default function ModuleDesigner() {
     }
 
     return <Grid container direction="row" spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} lg={4}>
             <TextField
                 required
                 error={!!idError}
@@ -105,7 +105,8 @@ export default function ModuleDesigner() {
                 onChange={handleIdChange}
                 variant={variant}
             />
-        </Grid>        <Grid item xs={12}>
+        </Grid>
+        <Grid item xs={12} lg={8}>
             <TextField
                 required
                 error={!!nameError}
@@ -130,7 +131,7 @@ export default function ModuleDesigner() {
                 variant={variant}
             />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} lg={6}>
             <TextField
                 required
                 error={!!githubError}
@@ -144,9 +145,9 @@ export default function ModuleDesigner() {
                 type="url"
             />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} lg={6}>
             <TextField
-                label="GitHub Link"
+                label="Home page url"
                 error={!!linkError}
                 helperText={linkError || "Web page for more information"}
                 fullWidth={true}
@@ -210,16 +211,7 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12}>
-            <ApiKeyAccordion
-                apiName={GITHUB_API_KEY}
-                title="GitHub Developer Token"
-                instructions={
-                    <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
-                }
-            />
-        </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} lg={4}>
             <GithubPullRequestButton
                 title={`Module definition: ${device.name}`}
                 head={device.id}
@@ -228,6 +220,15 @@ export default function ModuleDesigner() {
                 files={modulePath && {
                     [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2)
                 }}
+            />
+        </Grid>
+        <Grid item xs={12} lg={6}>
+            <ApiKeyAccordion
+                apiName={GITHUB_API_KEY}
+                title="GitHub Developer Token"
+                instructions={
+                    <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
+                }
             />
         </Grid>
     </Grid>
