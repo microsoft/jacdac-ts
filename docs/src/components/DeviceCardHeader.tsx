@@ -32,7 +32,7 @@ export default function DeviceCardHeader(props: { device: JDDevice, showFirmware
         {showMedia && <DeviceCardMedia device={device} />}
         <CardHeader
             action={<DeviceActions device={device} reset={true} />}
-            title={<Link color="textPrimary" to={`/devices/${specification?.id || ""}`}>
+            title={<Link color="textPrimary" to={`/modules/${specification?.id || ""}`}>
                 <DeviceName device={device} />
             </Link>}
             subheader={<>

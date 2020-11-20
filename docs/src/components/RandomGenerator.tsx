@@ -30,6 +30,13 @@ function genServId() {
     return (n[0] & 0xfff_ffff) | 0x1000_0000
 }
 
+function genFirmwareId() {
+    const n = cryptoRandomUint32(1);
+    if (n === undefined)
+        return undefined;
+    return (n[0] & 0xfff_ffff) | 0x3000_0000
+}
+
 function toFullHex(n: number[]) {
     return "0x" + n.map(id => ("000000000" + id.toString(16)).slice(-8)).join('')
 }
@@ -48,9 +55,9 @@ export function uniqueDeviceId() {
 }
 
 export function uniqueFirmwareId() {
-    let id = cryptoRandomUint32(1)[0]
+    let id = genFirmwareId()
     while (id !== undefined && (!looksRandom(id) || deviceSpecificationFromFirmwareIdentifier(id))) {
-        id = cryptoRandomUint32(1)[0]
+        id = genFirmwareId()
     }
     return id !== undefined && toFullHex([id])
 }

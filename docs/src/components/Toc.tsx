@@ -130,8 +130,8 @@ export default function Toc() {
     path: "/services/",
     order: 2
   }, {
-    name: "Devices",
-    path: "/devices/",
+    name: "Modules",
+    path: "/modules/",
     order: 3
   }, {
     name: "Clients",
@@ -173,7 +173,7 @@ export default function Toc() {
   data.allDevicesJson.nodes.map(node => {
     return {
       name: node.name,
-      path: `/devices/${node.id}`
+      path: `/modules/${node.id}`
     }
   }).forEach(node => toc.push(node))
 
