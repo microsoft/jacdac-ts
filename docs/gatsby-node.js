@@ -81,7 +81,7 @@ async function createDevicePages(graphql, actions, reporter) {
   // already includes an ID field, we just use that for
   // each page's path.
   result.data.allDevicesJson.nodes.forEach(node => {
-    const p = `/devices/${node.id}/`;
+    const p = `/modules/${node.id}/`;
     createPage({
       path: p,
       component: slash(deviceTemplate),
@@ -93,9 +93,13 @@ async function createDevicePages(graphql, actions, reporter) {
     if (node.firmwares)
       node.firmwares.forEach(fw => {
         const fp = `/firmwares/0x${fw.toString(16)}`;
-        console.log(`firmware redirect`, { from: fp, to: p })
+        const dp = `/devices/0x${fw.toString(16)}`;
         createRedirect({
           fromPath: fp,
+          toPath: p
+        })
+        createRedirect({
+          fromPath: dp,
           toPath: p
         })
       })

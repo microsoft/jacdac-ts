@@ -8,7 +8,7 @@ import { uniqueFirmwareId } from './RandomGenerator';
 import AddIcon from '@material-ui/icons/Add';
 import IconButtonWithTooltip from "./IconButtonWithTooltip"
 
-export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSpec, updateDevice: () => void }) {
+export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSpec, updateDevice: () => void }) {
     const { device, updateDevice } = props;
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {

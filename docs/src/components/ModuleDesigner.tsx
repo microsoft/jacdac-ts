@@ -2,9 +2,8 @@ import React, { useContext } from 'react';
 import { createStyles, makeStyles, Theme, Grid } from '@material-ui/core';
 import AppContext, { DrawerType } from './AppContext';
 import useLocalStorage from './useLocalStorage';
-import DeviceSpecificationSource from "./DeviceSpecificationSource"
 import { clone } from '../../../src/jdom/utils';
-import DeviceSpecificationForm from './DeviceSpecificationForm';
+import ModuleSpecificationForm from './ModuleSpecificationForm';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -40,14 +39,5 @@ export default function DeviceDesigner() {
     const updateDevice = () => {
         setDevice(clone(device));
     }
-    return (
-        <Grid spacing={2} className={classes.root} container>
-            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <DeviceSpecificationForm device={device} updateDevice={updateDevice} />
-            </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
-                <DeviceSpecificationSource deviceSpecification={device} showJSON={true} showMarkdown={true} showDTDL={true} />
-            </Grid>
-        </Grid>
-    );
+    return <ModuleSpecificationForm device={device} updateDevice={updateDevice} />;
 }
