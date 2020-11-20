@@ -61,7 +61,7 @@ export default function GithubPullRequestButton(props: {
         }
     }
 
-    return <Button variant="contained" onClick={handleClick} disabled={disabled}>
+    return <Button color="primary" variant="contained" onClick={handleClick} disabled={disabled}>
         Create Pull Request
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
