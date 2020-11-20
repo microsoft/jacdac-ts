@@ -69,7 +69,7 @@ export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSp
                 helperText={nameError}
                 fullWidth={true}
                 label="Name"
-                placeholder="My Device"
+                placeholder="My module"
                 value={device.name || ""}
                 onChange={handleNameChange}
                 variant={variant}
@@ -142,6 +142,9 @@ export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSp
                             {srv.name}
                         </MenuItem>)}
                 </Menu>
+                <Typography variant="caption" component="div">
+                    Select one or more services.
+                </Typography>
             </PaperBox>
         </Grid>
         <Grid item xs={12}>
@@ -158,6 +161,10 @@ export default function ModuleSpecificationForm(props: { device: jdspec.DeviceSp
                 <IconButtonWithTooltip title="Add random firmware identifier" aria-controls="firmware-menu" aria-haspopup="true" onClick={handleAddFirmware}>
                     <AddIcon />
                 </IconButtonWithTooltip>
+                <Typography variant="caption" component="div">
+                    Firmware identifiers uniquely identify your module on the JACDAC bus.
+                    Each revision of your firmware may have a different identifier.
+                </Typography>
             </PaperBox>
         </Grid>
     </Grid>
