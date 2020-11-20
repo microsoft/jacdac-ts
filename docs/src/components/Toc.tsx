@@ -107,7 +107,7 @@ export default function Toc() {
       }
     }
 
-    allDevicesJson {
+    allModulesJson {
       nodes {
         id
         name
@@ -170,7 +170,7 @@ export default function Toc() {
     }
   }).forEach(node => toc.push(node))
 
-  data.allDevicesJson.nodes.map(node => {
+  data.allModulesJson.nodes.map(node => {
     return {
       name: node.name,
       path: `/modules/${node.id}`

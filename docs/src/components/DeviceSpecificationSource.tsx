@@ -26,12 +26,11 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 export default function DeviceSpecificationSource(props: {
     deviceSpecification?: jdspec.DeviceSpec,
-    showMarkdown?: boolean,
     showSpecification?: boolean,
     showDTDL?: boolean,
     showJSON?: boolean
 }) {
-    const { deviceSpecification, showMarkdown, showSpecification, showDTDL, showJSON } = props;
+    const { deviceSpecification, showSpecification, showDTDL, showJSON } = props;
     const classes = useStyles();
     const [tab, setTab] = useState(0);
     const spec = deviceSpecification
@@ -46,16 +45,12 @@ export default function DeviceSpecificationSource(props: {
             <Paper square>
                 <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                     {[
-                        showMarkdown && "Markdown",
                         showSpecification && "Specification",
-                        showMarkdown && "JSON",
+                        showJSON && "JSON",
                         showDTDL && "DTDL",
                     ].filter(n => !!n)
                         .map((n, i) => <Tab key={n} label={n} {...a11yProps(i)} />)}
                 </Tabs>
-                {showMarkdown && <TabPanel value={tab} index={index++}>
-                    <Snippet value={deviceSpecification.source || deviceSpecificationToMarkdown(deviceSpecification)} mode="markdown" download={`${spec.name || "device"}.md`} />
-                </TabPanel>}
                 {showSpecification && <TabPanel key="spec" value={tab} index={index++}>
                     <DeviceSpecification device={spec} />
                 </TabPanel>}
