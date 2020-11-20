@@ -13,7 +13,7 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 export default function ApiKeyAccordion(props: {
     apiName: string,
     title?: string,
-    validateKey: (key: string) => Promise<{ statusCode: number; }>,
+    validateKey?: (key: string) => Promise<{ statusCode: number; }>,
     instructions: JSX.Element | JSX.Element[]
 }) {
     const { apiName, validateKey, instructions, title } = props;
@@ -28,7 +28,7 @@ export default function ApiKeyAccordion(props: {
                 setValidated(false)
         }
         else {
-            const { statusCode } = await validateKey(apiKey)
+            const { statusCode } = validateKey ? (await validateKey(apiKey)) : { statusCode: 200 }
             if (!mounted())
                 return;
             if (statusCode === 200) {

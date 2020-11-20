@@ -224,17 +224,3 @@ export function parseDeviceId(id: string) {
 export function hasPipeReport(info: jdspec.PacketInfo) {
     return info.fields.find(f => f.type == "pipe")
 }
-
-
-export function deviceSpecificationToMarkdown(dev: jdspec.DeviceSpec) {
-    return `# ${dev.name}
-
-${dev.description || ""}
-
-* services: ${dev.services?.map(s => `0x${s.toString(16)}`).join(", ") || ""}
-* firmwares: ${dev.firmwares?.map(s => `0x${s.toString(16)}`).join(", ") || ""}
-* repo: ${dev.repo || ""}
-* link: ${dev.link || ""}
-
-`
-}

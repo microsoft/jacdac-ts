@@ -25,9 +25,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }));
 
-export default function DeviceDesigner() {
+export default function ModuleDesigner() {
     const classes = useStyles();
-    const { drawerType } = useContext(AppContext)
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
             name: "My device",
@@ -35,7 +34,6 @@ export default function DeviceDesigner() {
             firmwares: [],
             repo: ""
         } as jdspec.DeviceSpec)
-    const drawerOpen = drawerType != DrawerType.None
     const updateDevice = () => {
         setDevice(clone(device));
     }
