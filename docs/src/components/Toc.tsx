@@ -175,7 +175,7 @@ export default function Toc() {
       name: node.name,
       path: `/modules/${node.id}`
     }
-  }).forEach(node => toc.push(node))
+  }).forEach(node => toc.push(node));
 
   const { tree } = treeifyToc(toc)
 
