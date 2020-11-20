@@ -6,6 +6,7 @@ import { CircularProgress } from "@material-ui/core";
 import AppContext from "./AppContext";
 import { GITHUB_API_KEY } from "./github";
 import useDbValue from "./useDbValue";
+import { useSnackbar } from "notistack";
 
 export default function GithubPullRequestButton(props: {
     title: string,
@@ -18,6 +19,7 @@ export default function GithubPullRequestButton(props: {
     const { value: token } = useDbValue(GITHUB_API_KEY, "")
     const [busy, setBusy] = useState(false)
     const { setError: setAppError } = useContext(AppContext)
+    const { enqueueSnackbar } = useSnackbar();
 
     const disabled = busy || !token || !commit || !title || !body || !head || !files || !Object.keys(files).length
     const handleClick = async () => {
@@ -45,6 +47,12 @@ export default function GithubPullRequestButton(props: {
                 ],
             })
 
+            if (result.status === 201) {
+                enqueueSnackbar("pull request created...", {
+                    variant: "info"
+                })
+            }
+
             console.log({ result })
         } catch (e) {
             setAppError(e)
@@ -53,7 +61,7 @@ export default function GithubPullRequestButton(props: {
         }
     }
 
-    return <Button onClick={handleClick} disabled={disabled}>
+    return <Button variant="contained" onClick={handleClick} disabled={disabled}>
         Create Pull Request
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
