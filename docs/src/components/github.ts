@@ -43,7 +43,7 @@ export interface GitHubApiOptions {
 }
 
 export function parseRepoUrl(url: string): { owner: string; name: string; } {
-    const m = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/?$/.exec(url || "")
+    const m = /^https:\/\/github\.com\/([^\/ \t]+)\/([^\/ \t]+)\/?$/.exec(url || "")
     if (m)
         return { owner: m[1], name: m[2] }
     return undefined;
