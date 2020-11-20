@@ -8,6 +8,7 @@ import TabPanel, { a11yProps } from './TabPanel';
 import Snippet from './Snippet';
 import DeviceSpecification from './DeviceSpecification';
 import { DeviceDTDLSnippet } from './DeviceDTDLSnippet';
+import { deviceSpecificationToMarkdown } from '../../../src/jdom/spec';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -27,9 +28,10 @@ export default function DeviceSpecificationSource(props: {
     deviceSpecification?: jdspec.DeviceSpec,
     showMarkdown?: boolean,
     showSpecification?: boolean,
-    showDTDL?: boolean
+    showDTDL?: boolean,
+    showJSON?: boolean
 }) {
-    const { deviceSpecification, showMarkdown, showSpecification, showDTDL } = props;
+    const { deviceSpecification, showMarkdown, showSpecification, showDTDL, showJSON } = props;
     const classes = useStyles();
     const [tab, setTab] = useState(0);
     const spec = deviceSpecification
@@ -44,22 +46,22 @@ export default function DeviceSpecificationSource(props: {
             <Paper square>
                 <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                     {[
-                        showMarkdown && deviceSpecification.source && "Markdown",
+                        showMarkdown && "Markdown",
                         showSpecification && "Specification",
-                        "JSON",
+                        showMarkdown && "JSON",
                         showDTDL && "DTDL",
                     ].filter(n => !!n)
                         .map((n, i) => <Tab key={n} label={n} {...a11yProps(i)} />)}
                 </Tabs>
-                {showMarkdown && deviceSpecification.source && <TabPanel value={tab} index={index++}>
-                    <Snippet value={deviceSpecification.source} mode="markdown" />
+                {showMarkdown && <TabPanel value={tab} index={index++}>
+                    <Snippet value={deviceSpecification.source || deviceSpecificationToMarkdown(deviceSpecification)} mode="markdown" download={`${spec.name || "device"}.md`} />
                 </TabPanel>}
                 {showSpecification && <TabPanel key="spec" value={tab} index={index++}>
                     <DeviceSpecification device={spec} />
                 </TabPanel>}
-                <TabPanel key={`convjson`} value={tab} index={index++}>
+                {showJSON && <TabPanel key={`convjson`} value={tab} index={index++}>
                     <Snippet value={JSON.stringify(spec, null, 2)} mode={"json"} />
-                </TabPanel>
+                </TabPanel>}
                 {showDTDL && <TabPanel key="dtdl" value={tab} index={index++}>
                     <DeviceDTDLSnippet dev={deviceSpecification} />
                 </TabPanel>}

@@ -1,11 +1,7 @@
-import React, { useContext, useMemo, useState } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextField, Tabs, Tab, Typography } from '@material-ui/core';
-import TabPanel, { a11yProps } from './TabPanel';
-import { parseDeviceMarkdownToJSON } from '../../../jacdac-spec/spectool/devices'
-import RandomGenerator, { uniqueDeviceId } from './RandomGenerator';
+import React, { useContext } from 'react';
+import { createStyles, makeStyles, Theme, Grid } from '@material-ui/core';
 import AppContext, { DrawerType } from './AppContext';
 import useLocalStorage from './useLocalStorage';
-import { useDebounce } from 'use-debounce';
 import DeviceSpecificationSource from "./DeviceSpecificationSource"
 import { clone } from '../../../src/jdom/utils';
 import DeviceSpecificationForm from './DeviceSpecificationForm';
@@ -33,16 +29,13 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function DeviceDesigner() {
     const classes = useStyles();
     const { drawerType } = useContext(AppContext)
-    const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner',
+    const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
             name: "My device",
-            id: uniqueDeviceId(),
             services: [],
             firmwares: [],
             repo: ""
         } as jdspec.DeviceSpec)
-    if (!device.id)
-        device.id = uniqueDeviceId();
     const drawerOpen = drawerType != DrawerType.None
     const updateDevice = () => {
         setDevice(clone(device));
@@ -53,7 +46,7 @@ export default function DeviceDesigner() {
                 <DeviceSpecificationForm device={device} updateDevice={updateDevice} />
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
-                <DeviceSpecificationSource deviceSpecification={device} showMarkdown={true} showDTDL={true} />
+                <DeviceSpecificationSource deviceSpecification={device} showJSON={true} showMarkdown={true} showDTDL={true} />
             </Grid>
         </Grid>
     );

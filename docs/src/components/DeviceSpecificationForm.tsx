@@ -1,11 +1,10 @@
-import { Box, Chip, Grid, IconButton, InputAdornment, List, ListItem, ListItemText, ListSubheader, Menu, MenuItem, Paper, TextField, Typography } from '@material-ui/core';
-import { Button } from 'gatsby-theme-material-ui';
-import React, { ChangeEvent, useState } from 'react';
+import { Box, Chip, Grid, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
+import React, { ChangeEvent } from 'react';
 import { SRV_CTRL } from '../../../src/jdom/constants';
 import { serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
 import PaperBox from "./PaperBox"
-import RandomGenerator, { uniqueDeviceId, uniqueFirmwareId } from './RandomGenerator';
-import AutorenewIcon from '@material-ui/icons/Autorenew';
+import { uniqueFirmwareId } from './RandomGenerator';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 import IconButtonWithTooltip from "./IconButtonWithTooltip"
 
@@ -23,7 +22,7 @@ export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSp
         }
     };
     const variant = "outlined";
-    const nameError = device.name.length > 32
+    const nameError = device.name?.length > 32
         ? "name too long"
         : undefined;
     const githubError = !device.repo || /^https:\/\/github.com\/([^\/]+)\/([^\/]+)\/?$/.test(device.repo)
@@ -49,23 +48,12 @@ export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSp
         device.description = ev.target.value;
         updateDevice();
     }
-    const handleSetFid = (ev: ChangeEvent<HTMLInputElement>) => {
-        setFid(ev.target.value);
-    }
-    const handleFidClick = () => {
-        device.firmwares.push(fidn);
-        updateDevice();
-    }
     const handleDeleteService = (i: number) => () => {
         device.services.splice(i, 1);
         updateDevice();
     }
     const handleDeleteFirmware = (i: number) => () => {
         device.firmwares.splice(i, 1);
-        updateDevice();
-    }
-    const handleGenerateDeviceId = () => {
-        device.id = uniqueDeviceId();
         updateDevice();
     }
     const handleAddFirmware = () => {
@@ -82,7 +70,7 @@ export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSp
                 fullWidth={true}
                 label="Name"
                 placeholder="My Device"
-                value={device.name}
+                value={device.name || ""}
                 onChange={handleNameChange}
                 variant={variant}
             />
@@ -94,30 +82,10 @@ export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSp
                 label="Description"
                 multiline={true}
                 rows={4}
-                value={device.description}
+                value={device.description || ""}
                 onChange={handleDescriptionChange}
                 variant={variant}
             />
-        </Grid>
-        <Grid item xs={12}>
-            <TextField
-                required
-                fullWidth={true}
-                label="Identifier"
-                disabled={true}
-                value={device.id}
-                variant={variant}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">
-                        <IconButtonWithTooltip
-                            title={"Generate random identifier"}
-                            onClick={handleGenerateDeviceId}
-                            edge="end"
-                        >
-                            <AutorenewIcon />
-                        </IconButtonWithTooltip>
-                    </InputAdornment>,
-                }} />
         </Grid>
         <Grid item xs={12}>
             <TextField
@@ -127,7 +95,7 @@ export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSp
                 fullWidth={true}
                 label="GitHub Repository"
                 placeholder="https://github.com/..."
-                value={device.repo}
+                value={device.repo || ""}
                 onChange={handleRepoChange}
                 variant={variant}
                 type="url"
@@ -140,7 +108,7 @@ export default function DeviceSpecificationForm(props: { device: jdspec.DeviceSp
                 helperText={linkError || "Web page for more information"}
                 fullWidth={true}
                 placeholder="https://..."
-                value={device.link}
+                value={device.link || ""}
                 onChange={handleLinkChange}
                 variant={variant}
                 type="url"
