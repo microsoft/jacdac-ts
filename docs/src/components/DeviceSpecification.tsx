@@ -1,7 +1,7 @@
 import React from "react"
 import IDChip from "./IDChip";
 import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
+import { imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 import ServiceSpecificationCard from "./ServiceSpecificationCard";
 import { Grid } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
@@ -17,7 +17,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         <h2 key="title">
             <Link to={device.link}>{device.name}</Link>
         </h2>
-        {device.image && <img alt="image of the device" src={`https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${device.image}`} />}
+        {device.image && <img alt="image of the device" src={imageDeviceOf(device)} />}
         {device.description && <Markdown source={device.description} />}
         {device.repo && <FirmwareCard slug={device.repo} />}
         {!!device.firmwares.length && <><h3>Firmware identifiers</h3>

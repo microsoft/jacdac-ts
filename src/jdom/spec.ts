@@ -57,7 +57,7 @@ export function deviceSpecifications(): jdspec.DeviceSpec[] {
 }
 
 export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
-    return spec?.image && `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${spec.image}`
+    return spec?.image && `https://raw.githubusercontent.com/microsoft/jacdac/main/modules/${spec.image}`
 }
 
 /**
