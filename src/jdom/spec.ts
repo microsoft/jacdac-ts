@@ -2,13 +2,13 @@
 
 import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
-import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
+import moduleRegistryData from "../../jacdac-spec/dist/modules.json";
 import { fromHex, SMap } from "./utils";
 import { BaseReg, SensorReg } from "./constants";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
-const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any;
+const _moduleRegistry: jdspec.DeviceSpec[] = moduleRegistryData as any;
 
 /**
  * Adds a custom service specification
@@ -36,24 +36,24 @@ export function serviceSpecifications() {
 export function deviceSpecificationFromFirmwareIdentifier(firmwareIdentifier: number): jdspec.DeviceSpec {
     if (firmwareIdentifier === undefined) return undefined;
 
-    const spec = _deviceRegistry.find(spec => spec.firmwares.indexOf(firmwareIdentifier) > -1);
+    const spec = _moduleRegistry.find(spec => spec.firmwares.indexOf(firmwareIdentifier) > -1);
     return spec;
 }
 
 export function deviceSpecificationFromIdentifier(id: string): jdspec.DeviceSpec {
     if (id === undefined) return undefined;
 
-    const spec = _deviceRegistry.find(spec => spec.id === id);
+    const spec = _moduleRegistry.find(spec => spec.id === id);
     return spec;
 }
 
 export function deviceSpecificationsForService(serviceClass: number): jdspec.DeviceSpec[] {
     if (serviceClass === undefined) return undefined;
-    return _deviceRegistry.filter(spec => spec.services.indexOf(serviceClass) > -1);
+    return _moduleRegistry.filter(spec => spec.services.indexOf(serviceClass) > -1);
 }
 
 export function deviceSpecifications(): jdspec.DeviceSpec[] {
-    return _deviceRegistry.slice(0)
+    return _moduleRegistry.slice(0)
 }
 
 export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
