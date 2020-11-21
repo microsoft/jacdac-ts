@@ -19,8 +19,8 @@ import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
 import { SelectWithLabel } from './SelectWithLabel';
 
-function CompanySelect(props: { onCompanyChanged?: (name: string) => void }) {
-    const { onCompanyChanged } = props;
+function CompanySelect(props: { error?: string, onCompanyChanged?: (name: string) => void }) {
+    const { onCompanyChanged, error } = props;
     const [company, setCompany] = useState("")
     const companies = useMemo(() => unique(deviceSpecifications().map(dev => dev.company)), []);
 
@@ -32,6 +32,7 @@ function CompanySelect(props: { onCompanyChanged?: (name: string) => void }) {
     return <SelectWithLabel
         value={company}
         label={"Company"}
+        error={error}
         helperText={"Name of the company manufacturing this device. The company name will be used to generate the module identifier."}
         onChange={handleChange}>
         {companies.map(company => <MenuItem key={company} value={company}>
@@ -64,6 +65,9 @@ export default function ModuleDesigner() {
         }
     };
     const variant = "outlined";
+    const companyError = !device.company
+        ? "select a company"
+        : "";
     const nameError = device.name?.length > 32
         ? "name too long"
         : undefined;
@@ -82,7 +86,7 @@ export default function ModuleDesigner() {
         : "Select at least one service"
     const imageError = !imageBase64 ? "missing image" : ""
     const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError
-        && !imageError;
+        && !imageError && !companyError;
 
     const route = device.id?.split('-').join('/');
     const modulePath = ok && `modules/${route}.json`
@@ -131,7 +135,7 @@ export default function ModuleDesigner() {
 
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12} md={6}>
-            <CompanySelect onCompanyChanged={handleCompanyChanged} />
+            <CompanySelect error={companyError} onCompanyChanged={handleCompanyChanged} />
         </Grid>
         <Grid item xs={12} md={6}>
             <TextField
