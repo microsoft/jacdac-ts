@@ -213,7 +213,9 @@ export default function ModuleDesigner() {
             </PaperBox>
         </Grid>
         <Grid item xs={12} lg={4}>
-            <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} />
+            <PaperBox>
+                <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} />
+            </PaperBox>
         </Grid>
         <Grid item xs={12} lg={4}>
             <GithubPullRequestButton

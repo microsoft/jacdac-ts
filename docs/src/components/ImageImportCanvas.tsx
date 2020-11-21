@@ -13,9 +13,9 @@ const useStyles = makeStyles((theme) => createStyles({
         display: "block"
     },
     btn: {
-        position: "absolute", 
-        borderRadius: "6rem", 
-        left: "calc(50% - 3rem)", 
+        position: "absolute",
+        borderRadius: "6rem",
+        left: "calc(50% - 3rem)",
         top: "calc(50% - 3rem)"
     }
 }))
@@ -33,16 +33,14 @@ export default function ImportImageCanvas(props: { width: number, height: number
         setImageBlob(file);
     }
 
-    return <Paper>
-        <div className={classes.root}>
-            {!canvasUrl && <Skeleton className={classes.img} variant="rect" width={width} height={height} />}
-            {canvasUrl && <img className={classes.img} src={canvasUrl} width={width} height={height} />}
-            <ImportButton
-                className={classes.btn}
-                icon={true}
-                text="Import 4:3 image"
-                onFilesUploaded={handleFilesUploaded}
-                acceptedFiles={["image/jpeg", "image/png"]} />
-        </div>
-    </Paper >
+    return <div className={classes.root}>
+        {!canvasUrl && <Skeleton className={classes.img} variant="rect" width={width} height={height} />}
+        {canvasUrl && <img className={classes.img} src={canvasUrl} width={width} height={height} />}
+        <ImportButton
+            className={classes.btn}
+            icon={true}
+            text="Import 4:3 image"
+            onFilesUploaded={handleFilesUploaded}
+            acceptedFiles={["image/jpeg", "image/png"]} />
+    </div>
 }
