@@ -15,8 +15,9 @@ const useStyles = makeStyles((theme) => createStyles({
     btn: {
         position: "absolute",
         borderRadius: "6rem",
-        left: "calc(50% - 3rem)",
-        top: "calc(50% - 3rem)"
+        left: "calc(50% - 2rem)",
+        top: "calc(50% - 2rem)",
+        background: theme.palette.background.paper
     }
 }))
 
@@ -36,11 +37,12 @@ export default function ImportImageCanvas(props: { width: number, height: number
     return <div className={classes.root}>
         {!canvasUrl && <Skeleton className={classes.img} variant="rect" width={width} height={height} />}
         {canvasUrl && <img className={classes.img} src={canvasUrl} width={width} height={height} />}
-        <ImportButton
-            className={classes.btn}
-            icon={true}
-            text="Import 4:3 image"
-            onFilesUploaded={handleFilesUploaded}
-            acceptedFiles={["image/jpeg", "image/png"]} />
+        <Box className={classes.btn}>
+            <ImportButton
+                icon={true}
+                text="Import 4:3 image"
+                onFilesUploaded={handleFilesUploaded}
+                acceptedFiles={["image/jpeg", "image/png"]} />
+        </Box>
     </div>
 }

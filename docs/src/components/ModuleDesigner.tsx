@@ -214,6 +214,9 @@ export default function ModuleDesigner() {
         </Grid>
         <Grid item xs={12} lg={4}>
             <PaperBox>
+                <Typography>
+                    Catalog image
+            </Typography>
                 <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} />
             </PaperBox>
         </Grid>
