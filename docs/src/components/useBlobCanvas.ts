@@ -21,16 +21,15 @@ function readBlobToCanvas(blob: Blob, width: number, height: number): Promise<HT
             const ih = img.height
             const iar = iw / ih
             let sx = 0, sy = 0, sw = iw, sh = ih;
-            if (iar > car) { // image is wider, clip sides
+            if (iar < car) { // image is wider, clip sides
                 const dw = iw - cw;
                 sx = dw >> 1
-                sw = iw - dw;
+                sw = iw - dw
             } else { // klip top
                 const dh = ih - ch;
                 sy = dh >> 1
                 sw = ih - dh;
             }
-            console.log({ sx, sy, sw, sh, cw, ch, iw, ih })
             ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
 
             // done
