@@ -10,7 +10,8 @@ const useStyles = makeStyles((theme) => createStyles({
     },
     img: {
         margin: "auto",
-        display: "block"
+        display: "block",
+        width: "100%"
     },
     btn: {
         position: "absolute",
@@ -28,6 +29,7 @@ export default function ImportImageCanvas(props: { width: number, height: number
     const canvas = useBlobCanvas(imageBlob, width, height);
     const canvasUrl = useMemo(() => canvas?.toDataURL("image/jpeg", 85), [canvas])
     const classes = useStyles();
+    const ratio = `${height / width * 100}%`
 
     const handleFilesUploaded = async (files: File[]) => {
         const file = files[0];
@@ -37,8 +39,10 @@ export default function ImportImageCanvas(props: { width: number, height: number
     useEffect(() => canvas && onImageImported(canvas), [canvas]);
 
     return <div className={classes.root}>
-        {!canvasUrl && <Skeleton className={classes.img} variant="rect" width={width} height={height} />}
-        {canvasUrl && <img className={classes.img} src={canvasUrl} width={width} height={height} />}
+        <div className={classes.img}>
+            {!canvasUrl && <Skeleton variant="rect" width={"100%"} height={"18rem"} />}
+            {canvasUrl && <img src={canvasUrl} width={"100%"} height={"100%"} />}
+        </div>
         <Box className={classes.btn}>
             <ImportButton
                 icon={true}

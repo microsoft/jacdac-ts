@@ -16,6 +16,7 @@ import { GITHUB_API_KEY, parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
+import FirmwareCard from "./FirmwareCard"
 
 export default function ModuleDesigner() {
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
@@ -54,15 +55,16 @@ export default function ModuleDesigner() {
     const idError = !device.id
         ? "missing identifier"
         : ""
-    const devId = (device.name || "").replace(/[^a-z0-9_]/ig, '');
     const servicesError = !!device.services?.length
         ? ""
         : "Select at least one service"
     const imageError = !imageBase64 ? "missing image" : ""
-    const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError && !imageError;
+    const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError
+        && !imageError;
 
-    const modulePath = ok && `modules/${parsedRepo.owner.toLowerCase()}/${devId.toLowerCase()}.json`
-    const imagePath = ok && `modules/${parsedRepo.owner.toLowerCase()}/${devId.toLowerCase()}.jpg`
+    const route = device.id?.split('-').join('/');
+    const modulePath = ok && `modules/${route}.json`
+    const imagePath = ok && `modules/${route}.jpg`
 
     const handleIdChange = (ev: ChangeEvent<HTMLInputElement>) => {
         device.id = ev.target.value.replace(/[^a-z0-9_\-]/ig, '');
@@ -144,21 +146,22 @@ export default function ModuleDesigner() {
             <TextField
                 required
                 error={!!githubError}
-                helperText={githubError || "Repository hosting the firmware binaries."}
+                helperText={githubError}
                 fullWidth={true}
-                label="GitHub Repository"
+                label="GitHub Repository hosting the firmware binaries"
                 placeholder="https://github.com/..."
                 value={device.repo || ""}
                 onChange={handleRepoChange}
                 variant={variant}
                 type="url"
             />
+            {!githubError && <FirmwareCard slug={device.repo} />}
         </Grid>
         <Grid item xs={12} lg={6}>
             <TextField
                 label="Home page url"
                 error={!!linkError}
-                helperText={linkError || "Web page for more information"}
+                helperText={linkError}
                 fullWidth={true}
                 placeholder="https://..."
                 value={device.link || ""}
@@ -167,7 +170,7 @@ export default function ModuleDesigner() {
                 type="url"
             />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={8}>
             <PaperBox elevation={1}>
                 <Typography color={servicesError ? "error" : "inherit"}>
                     Services *
@@ -200,7 +203,7 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
             <PaperBox elevation={1}>
                 <Typography>
                     Firmwares
@@ -220,7 +223,7 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
             <PaperBox>
                 <Typography color={imageError ? "error" : "inherit"}>
                     Catalog image
@@ -231,29 +234,35 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12} lg={4}>
-            <GithubPullRequestButton
-                title={`Module definition: ${device.name}`}
-                head={device.id}
-                body={`This pull requests a new module for JACDAC.`}
-                commit={`added ${device.name} files`}
-                files={modulePath && {
-                    [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
-                    [imagePath]: {
-                        content: imageBase64,
-                        encoding: "base64"
-                    }
-                }}
-            />
-        </Grid>
-        <Grid item xs={12} lg={6}>
-            <ApiKeyAccordion
-                apiName={GITHUB_API_KEY}
-                title="GitHub Developer Token"
-                instructions={
-                    <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
-                }
-            />
+        <Grid item xs={12} md={6}>
+            <PaperBox>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} lg={4}>
+                        <GithubPullRequestButton
+                            title={`Module definition: ${device.name}`}
+                            head={device.id}
+                            body={`This pull requests a new module for JACDAC.`}
+                            commit={`added ${device.name} files`}
+                            files={modulePath && {
+                                [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
+                                [imagePath]: {
+                                    content: imageBase64,
+                                    encoding: "base64"
+                                }
+                            }}
+                        />
+                    </Grid>
+                    <Grid item xs={12} lg={8}>
+                        <ApiKeyAccordion
+                            apiName={GITHUB_API_KEY}
+                            title="GitHub Developer Token"
+                            instructions={
+                                <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
+                            }
+                        />
+                    </Grid>
+                </Grid>
+            </PaperBox>
         </Grid>
     </Grid>
 }
