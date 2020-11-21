@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, createStyles, makeStyles, Paper, useTheme } from '@material-ui/core';
 import ImportButton from './ImportButton';
 import { Skeleton } from "@material-ui/lab";
@@ -22,8 +22,8 @@ const useStyles = makeStyles((theme) => createStyles({
 }))
 
 
-export default function ImportImageCanvas(props: { width: number, height: number }) {
-    const { width, height } = props;
+export default function ImportImageCanvas(props: { width: number, height: number, onImageImported?: (cvs: HTMLCanvasElement) => void }) {
+    const { width, height, onImageImported } = props;
     const [imageBlob, setImageBlob] = useState<Blob>(undefined)
     const canvas = useBlobCanvas(imageBlob, width, height);
     const canvasUrl = useMemo(() => canvas?.toDataURL("image/jpeg", 85), [canvas])
@@ -33,6 +33,8 @@ export default function ImportImageCanvas(props: { width: number, height: number
         const file = files[0];
         setImageBlob(file);
     }
+    // notify of new canvas
+    useEffect(() => canvas && onImageImported(canvas), [canvas]);
 
     return <div className={classes.root}>
         {!canvasUrl && <Skeleton className={classes.img} variant="rect" width={width} height={height} />}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Grid } from '@material-ui/core';
 import useLocalStorage from './useLocalStorage';
 import { clone } from '../../../src/jdom/utils';
@@ -29,6 +29,7 @@ export default function ModuleDesigner() {
         setDevice(clone(device));
     }
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [imageBase64, setImageBase64] = useState<string>(undefined);
     const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -57,8 +58,11 @@ export default function ModuleDesigner() {
     const servicesError = !!device.services?.length
         ? ""
         : "Select at least one service"
-    const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError;
+    const imageError = !imageBase64 ? "missing image" : ""
+    const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError && !imageError;
+
     const modulePath = ok && `modules/${parsedRepo.owner.toLowerCase()}/${devId.toLowerCase()}.json`
+    const imagePath = ok && `modules/${parsedRepo.owner.toLowerCase()}/${devId.toLowerCase()}.jpg`
 
     const handleIdChange = (ev: ChangeEvent<HTMLInputElement>) => {
         device.id = ev.target.value.replace(/[^a-z0-9_\-]/ig, '');
@@ -91,6 +95,10 @@ export default function ModuleDesigner() {
     const handleAddFirmware = () => {
         device.firmwares.push(parseInt(uniqueFirmwareId(), 16))
         updateDevice();
+    }
+    const handleImageImported = (cvs: HTMLCanvasElement) => {
+        const url = cvs.toDataURL("image/jpeg", 99)
+        setImageBase64(url.slice(url.indexOf(';')))
     }
 
     return <Grid container direction="row" spacing={2}>
@@ -214,10 +222,13 @@ export default function ModuleDesigner() {
         </Grid>
         <Grid item xs={12}>
             <PaperBox>
-                <Typography>
+                <Typography color={imageError ? "error" : "inherit"}>
                     Catalog image
             </Typography>
-                <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} />
+                <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} onImageImported={handleImageImported} />
+                <Typography variant="caption" color={imageError ? "error" : "inherit"} component="div">
+                    {`Import a ${DEVICE_IMAGE_WIDTH}x${DEVICE_IMAGE_HEIGHT} image of the device.`}
+                </Typography>
             </PaperBox>
         </Grid>
         <Grid item xs={12} lg={4}>
@@ -227,7 +238,11 @@ export default function ModuleDesigner() {
                 body={`This pull requests a new module for JACDAC.`}
                 commit={`added ${device.name} files`}
                 files={modulePath && {
-                    [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2)
+                    [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
+                    [imagePath]: {
+                        content: imageBase64,
+                        encoding: "base64"
+                    }
                 }}
             />
         </Grid>
