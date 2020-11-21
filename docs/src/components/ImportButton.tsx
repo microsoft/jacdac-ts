@@ -9,12 +9,12 @@ export default function ImportButton(props: {
     icon?: boolean,
     text: string,
     onFilesUploaded: (files: File[]) => void,
-    required?: boolean,
     disabled?: boolean,
-    acceptedFiles?: string[]
+    acceptedFiles?: string[],
+    filesLimit?: number
 }) {
     const [open, setOpen] = useState(false)
-    const { text, onFilesUploaded, disabled, required, acceptedFiles, icon } = props;
+    const { text, onFilesUploaded, disabled, acceptedFiles, icon, filesLimit } = props;
 
     const handleOpen = () => {
         setOpen(true)
@@ -40,7 +40,7 @@ export default function ImportButton(props: {
             onClose={handleClose}
             acceptedFiles={acceptedFiles}
             clearOnUnmount={true}
-            filesLimit={1}
+            filesLimit={filesLimit || 1}
             submitButtonText={"import"}
         />
     </>

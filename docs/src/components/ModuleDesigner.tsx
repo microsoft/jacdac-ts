@@ -15,6 +15,7 @@ import ApiKeyAccordion from './ApiKeyAccordion';
 import { GITHUB_API_KEY, parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
 import { normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
+import ImportImageCanvas from './ImageImportCanvas';
 
 export default function ModuleDesigner() {
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
@@ -210,6 +211,9 @@ export default function ModuleDesigner() {
                     Each revision of your firmware may have a different identifier.
                 </Typography>
             </PaperBox>
+        </Grid>
+        <Grid item xs={12} lg={4}>
+            <ImportImageCanvas />
         </Grid>
         <Grid item xs={12} lg={4}>
             <GithubPullRequestButton
