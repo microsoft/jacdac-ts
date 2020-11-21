@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Grid } from '@material-ui/core';
+import React, { useMemo, useState } from 'react';
+import { Grid, Select } from '@material-ui/core';
 import useLocalStorage from './useLocalStorage';
-import { clone } from '../../../src/jdom/utils';
+import { clone, unique } from '../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
 import { ChangeEvent } from 'react';
 import { SRV_CTRL } from '../../../src/jdom/constants';
-import { serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
+import { deviceSpecifications, serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
 import PaperBox from "./PaperBox"
 import { uniqueFirmwareId } from './RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
@@ -17,6 +17,28 @@ import GithubPullRequestButton from './GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
+import { SelectWithLabel } from './SelectWithLabel';
+
+function CompanySelect(props: { onCompanyChanged?: (name: string) => void }) {
+    const { onCompanyChanged } = props;
+    const [company, setCompany] = useState("")
+    const companies = useMemo(() => unique(deviceSpecifications().map(dev => dev.company)), []);
+
+    const handleChange = (ev: ChangeEvent<{ value: string }>) => {
+        setCompany(ev.target.value);
+        onCompanyChanged?.(ev.target.value);
+    }
+
+    return <SelectWithLabel
+        value={company}
+        label={"Company"}
+        helperText={"Name of the company manufacturing this device. The company name will be used to generate the module identifier."}
+        onChange={handleChange}>
+        {companies.map(company => <MenuItem key={company} value={company}>
+            {company}
+        </MenuItem>)}
+    </SelectWithLabel>
+}
 
 export default function ModuleDesigner() {
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
@@ -102,9 +124,16 @@ export default function ModuleDesigner() {
         const url = cvs.toDataURL("image/jpeg", 99)
         setImageBase64(url.slice(url.indexOf(';')))
     }
+    const handleCompanyChanged = (value: string) => {
+        device.company = value;
+        updateDevice();
+    }
 
     return <Grid container direction="row" spacing={2}>
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} md={6}>
+            <CompanySelect onCompanyChanged={handleCompanyChanged} />
+        </Grid>
+        <Grid item xs={12} md={6}>
             <TextField
                 required
                 error={!!idError}
@@ -117,7 +146,7 @@ export default function ModuleDesigner() {
                 variant={variant}
             />
         </Grid>
-        <Grid item xs={12} lg={8}>
+        <Grid item xs={12}>
             <TextField
                 required
                 error={!!nameError}

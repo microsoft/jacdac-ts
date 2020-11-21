@@ -8,6 +8,7 @@ import { serviceName } from "../../../src/jdom/pretty"
 import CmdButton from "./CmdButton"
 import { Alert, AlertTitle } from "@material-ui/lab"
 import DeviceCardHeader from "./DeviceCardHeader"
+import { SelectWithLabel } from "./SelectWithLabel"
 
 function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: RoleManagerClient }) {
     const { rdev, client } = props
@@ -31,25 +32,19 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
     const noCandidates = !rdev.candidates?.length;
     const disabled = working;
     const value = rdev.boundTo?.id || ""
-    const error = !value
+    const error = !value && "select a device"
 
     const serviceNames = rdev.services.map(serviceClass => serviceName(serviceClass)).join(', ')
     return <Box mb={2}>
-        {!noCandidates && <FormControl fullWidth={true} variant="outlined">
-            <InputLabel key="label">{label}</InputLabel>
-            <Select
-                disabled={disabled}
-                label={label}
-                value={value}
-                error={error}
-                fullWidth={true}
-                onChange={handleChange}>
-                {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
-                    <DeviceName device={candidate} />
-                </MenuItem>)}
-            </Select>
-            {serviceNames && <FormHelperText>{serviceNames}</FormHelperText>}
-        </FormControl >}
+        {!noCandidates && <SelectWithLabel
+            disabled={disabled}
+            label={label}
+            value={value}
+            error={error}>
+            {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
+                <DeviceName device={candidate} />
+            </MenuItem>)}
+        </SelectWithLabel>}
         {noCandidates && <Alert severity="warning">
             <AlertTitle>No compatible device for {label}</AlertTitle>
             Please connect a device with {serviceNames} services.
