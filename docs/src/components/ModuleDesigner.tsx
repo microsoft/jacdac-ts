@@ -212,7 +212,7 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12}>
             <PaperBox>
                 <Typography>
                     Catalog image
