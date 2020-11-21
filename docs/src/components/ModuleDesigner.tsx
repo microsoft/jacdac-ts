@@ -14,7 +14,7 @@ import IconButtonWithTooltip from "./IconButtonWithTooltip"
 import ApiKeyAccordion from './ApiKeyAccordion';
 import { GITHUB_API_KEY, parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
-import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
+import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
 import { SelectWithLabel } from './SelectWithLabel';
@@ -92,8 +92,17 @@ export default function ModuleDesigner() {
     const modulePath = ok && `modules/${route}.json`
     const imagePath = ok && `modules/${route}.jpg`
 
+    const updateDeviceId = () => {
+        if (device.company) {
+            const companyid = escapeDeviceIdentifier(device.company);
+            if (device.id.indexOf(companyid) != 0)
+                device.id = companyid + '-' + device.id
+        }
+    }
+
     const handleIdChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        device.id = ev.target.value.replace(/[^a-z0-9_\-]/ig, '');
+        device.id = escapeDeviceIdentifier(ev.target.value);
+        updateDeviceId();
         updateDevice();
     }
     const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -130,6 +139,7 @@ export default function ModuleDesigner() {
     }
     const handleCompanyChanged = (value: string) => {
         device.company = value;
+        updateDeviceId();
         updateDevice();
     }
 
@@ -141,7 +151,7 @@ export default function ModuleDesigner() {
             <TextField
                 required
                 error={!!idError}
-                helperText={idError}
+                helperText={idError || device.id}
                 fullWidth={true}
                 label="Identifier"
                 placeholder="abc"
