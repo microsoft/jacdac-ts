@@ -14,7 +14,7 @@ import IconButtonWithTooltip from "./IconButtonWithTooltip"
 import ApiKeyAccordion from './ApiKeyAccordion';
 import { GITHUB_API_KEY, parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
-import { normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
+import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 
 export default function ModuleDesigner() {
@@ -213,7 +213,7 @@ export default function ModuleDesigner() {
             </PaperBox>
         </Grid>
         <Grid item xs={12} lg={4}>
-            <ImportImageCanvas />
+            <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} />
         </Grid>
         <Grid item xs={12} lg={4}>
             <GithubPullRequestButton
