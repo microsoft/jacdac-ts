@@ -96,10 +96,13 @@ function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
                 break;
             case 403:
                 // throttled
-                if (options?.ignoreThrottled)
+                if (options?.ignoreThrottled) {
                     res.response = undefined;
+                    return res
+                }
                 else
                     throw new Error("Too many calls to GitHub, try again later");
+
             default:
                 console.log(`unknown status`, res)
                 throw new Error(`Unknown response from GitHub ${res.status}`);
@@ -109,7 +112,7 @@ function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
 
 export function useRepository(slug: string) {
     const path = `repos/${normalizeSlug(slug)}`
-    const res = useFetchApi<GithubRepository>(path);
+    const res = useFetchApi<GithubRepository>(path, { ignoreThrottled: true });
     return res;
 }
 
@@ -117,6 +120,6 @@ export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
     if (!slug)
         return { response: undefined, loading: false, error: undefined, status: undefined }
     const uri = `repos/${normalizeSlug(slug)}/releases/latest`;
-    const res = useFetchApi<GithubRelease>(uri);
+    const res = useFetchApi<GithubRelease>(uri, { ignoreThrottled: true });
     return res;
 }

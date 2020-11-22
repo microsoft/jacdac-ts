@@ -4,19 +4,19 @@ import { useState, useEffect } from "react";
 import { JDEventSource } from "../../../src/jdom/eventsource";
 import useEffectAsync from "../components/useEffectAsync";
 
-export default function useChange<TNode extends JDEventSource, TValue>(node: TNode, query?: (n: TNode) => TValue): TValue {
+export default function useChange<TNode extends JDEventSource, TValue>(node: TNode, query?: (n: TNode) => TValue, deps?: React.DependencyList): TValue {
     const [version, setVersion] = useState(node?.changeId || 0)
     const value = query ? query(node) : undefined
 
     useEffect(() => node?.subscribe(CHANGE, () => {
         //console.log(`change ${node} ${version}->${node.changeId}`)
         setVersion(node.changeId)
-    }), [node])
+    }), [node, ...(deps || [])])
 
     return value;
 }
 
-export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode, query?: (n: TNode) => Promise<TValue>): TValue {
+export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode, query?: (n: TNode) => Promise<TValue>, deps?: React.DependencyList): TValue {
     const [version, setVersion] = useState(node?.changeId || 0)
     const [value, setValue] = useState(undefined);
 
@@ -35,7 +35,7 @@ export function useChangeAsync<TNode extends JDEventSource, TValue>(node: TNode,
             if (mounted())
                 setValue(d)
         }
-    }, [node, version]);
+    }, [node, version, ...(deps || [])]);
 
     return value;
 }

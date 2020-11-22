@@ -17,7 +17,6 @@ import GithubPullRequestButton from './GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
-import { SelectWithLabel } from './SelectWithLabel';
 
 function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
     const { onValueChange, value, error } = props;
@@ -29,16 +28,17 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
         onValueChange?.(ev.target.value);
     }
 
-    return <SelectWithLabel
+    return <TextField
+        fullWidth={true}
         value={company}
         label={"Company"}
-        error={error}
-        helperText={"Name of the company manufacturing this device. The company name will be used to generate the module identifier."}
+        error={!!error}
+        helperText={error || "Name of the company manufacturing this device. The company name will be used to generate the module identifier."}
         onChange={handleChange}>
         {companies.map(company => <MenuItem key={company} value={company}>
             {company}
         </MenuItem>)}
-    </SelectWithLabel>
+    </TextField>
 }
 
 export default function ModuleDesigner() {
@@ -185,9 +185,10 @@ export default function ModuleDesigner() {
             />
         </Grid>
         <Grid item xs={12} lg={6}>
-            <SelectWithLabel
+            <TextField
                 required={true}
-                error={githubError}
+                fullWidth={true}
+                error={!!githubError}
                 helperText={githubError}
                 placeholder="https://github.com/..."
                 value={device.repo || ""}
@@ -197,7 +198,7 @@ export default function ModuleDesigner() {
                 {companyRepos.map(cp => <MenuItem key={cp} value={cp}>
                     {cp}
                 </MenuItem>)}
-            </SelectWithLabel>
+            </TextField>
             {!githubError && <Box mt={1}><FirmwareCard slug={device.repo} /></Box>}
         </Grid>
         <Grid item xs={12} lg={6}>

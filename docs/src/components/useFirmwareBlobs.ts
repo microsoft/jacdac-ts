@@ -79,7 +79,7 @@ export function useFirmwareBlob(repoSlug: string) {
             const uf2Blobs = await parseFirmwareFile(blob, repoSlug)
             return uf2Blobs;
         }
-    })
+    }, [repoSlug])
 
     return {
         firmwareBlobs: blobs,
