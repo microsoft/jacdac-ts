@@ -22,13 +22,18 @@ export default function GithubRepositoryCardHeader(props: {
             <Link href={repo.html_url}>
                 <Typography component="span" variant="h5">{repo.name}</Typography>
             </Link>
-        </> : <Link href={`https://github.com/${slug}`}>
+        </> : <><Link href={`https://github.com/${slug}`}>
             <Typography component="span" variant="h6">{slug}</Typography>
-        </Link>;
+        </Link>
+            <Typography variant="caption">Unable to find repository</Typography>
+        </>;
 
     return <CardHeader
         title={title}
-        subheader={release && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>}
+        subheader={release
+            ? <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>
+            : <Typography variant="caption">Unable to find release</Typography>
+        }
         avatar={<GitHubIcon />}
     />
 }
