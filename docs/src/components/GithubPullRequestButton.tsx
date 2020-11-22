@@ -7,22 +7,33 @@ import AppContext from "./AppContext";
 import { GITHUB_API_KEY } from "./github";
 import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
+import { useConfirm } from 'material-ui-confirm';
 
 export default function GithubPullRequestButton(props: {
     title: string,
+    label?: string;
     body: string,
     head: string,
     commit: string,
     files: { [path: string]: string | { content: string; encoding: "utf-8" | "base64"; } }
 }) {
-    const { commit, files, title, body, head } = props;
+    const { commit, files, label, title, body, head } = props;
     const { value: token } = useDbValue(GITHUB_API_KEY, "")
     const [busy, setBusy] = useState(false)
     const { setError: setAppError } = useContext(AppContext)
     const { enqueueSnackbar } = useSnackbar();
+    const confirm = useConfirm();
 
     const disabled = busy || !token || !commit || !title || !body || !head || !files || !Object.keys(files).length
     const handleClick = async () => {
+        try {
+            await confirm({
+                title: "Submit module?",
+                description: "Submit your module as a new pull request in https://github.com/microsoft/jacdac?"
+            });
+        } catch (e) {
+            return;
+        }
 
         try {
             setBusy(true);
@@ -62,7 +73,7 @@ export default function GithubPullRequestButton(props: {
     }
 
     return <Button color="primary" variant="contained" onClick={handleClick} disabled={disabled}>
-        Create Pull Request
+        {label || "Create Pull Request"}
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
 }

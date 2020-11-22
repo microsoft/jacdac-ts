@@ -56,6 +56,7 @@ import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
+import { ConfirmProvider } from "material-ui-confirm"
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -196,19 +197,21 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   return (
     <ThemeProvider theme={theme}>
       <SnackbarProvider maxSnack={3}>
-        <DbProvider>
-          <JACDACProvider>
-            <ServiceManagerProvider>
-              <PacketsProvider>
-                <MDXProvider components={mdxComponents}>
-                  <AppProvider>
-                    <LayoutWithContext {...props} />
-                  </AppProvider>
-                </MDXProvider>
-              </PacketsProvider>
-            </ServiceManagerProvider>
-          </JACDACProvider>
-        </DbProvider>
+        <ConfirmProvider>
+          <DbProvider>
+            <JACDACProvider>
+              <ServiceManagerProvider>
+                <PacketsProvider>
+                  <MDXProvider components={mdxComponents}>
+                    <AppProvider>
+                      <LayoutWithContext {...props} />
+                    </AppProvider>
+                  </MDXProvider>
+                </PacketsProvider>
+              </ServiceManagerProvider>
+            </JACDACProvider>
+          </DbProvider>
+        </ConfirmProvider>
       </SnackbarProvider>
     </ThemeProvider>
   )

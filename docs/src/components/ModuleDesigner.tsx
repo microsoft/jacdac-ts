@@ -1,11 +1,11 @@
-import React from 'react';
-import { Grid } from '@material-ui/core';
+import React, { useMemo, useState } from 'react';
+import { FormControl, FormHelperText, Grid, InputLabel, Select } from '@material-ui/core';
 import useLocalStorage from './useLocalStorage';
-import { clone } from '../../../src/jdom/utils';
+import { clone, unique } from '../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
 import { ChangeEvent } from 'react';
 import { SRV_CTRL } from '../../../src/jdom/constants';
-import { serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
+import { deviceSpecifications, serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
 import PaperBox from "./PaperBox"
 import { uniqueFirmwareId } from './RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
@@ -14,11 +14,40 @@ import IconButtonWithTooltip from "./IconButtonWithTooltip"
 import ApiKeyAccordion from './ApiKeyAccordion';
 import { GITHUB_API_KEY, parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
-import { normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
+import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
+import ImportImageCanvas from './ImageImportCanvas';
+import FirmwareCard from "./FirmwareCard"
+import { Autocomplete } from '@material-ui/lab/';
+
+function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
+    const { onValueChange, value, error } = props;
+    const [company, setCompany] = useState(value)
+    const companies = useMemo(() => unique(deviceSpecifications().map(dev => dev.company)), []);
+
+    const handleChange = (ev: unknown, newValue: string) => {
+        setCompany(newValue);
+        onValueChange?.(newValue);
+    }
+
+    const helperText = "Name of the company manufacturing this device. The company name will be used to generate the module identifier."
+    return <Autocomplete
+        freeSolo={true as any}
+        fullWidth={true}
+        includeInputInList
+        autoComplete
+        options={companies}
+        renderInput={(params) => <TextField {...params}
+            error={!!error}
+            label="Company"
+            helperText={error || helperText} variant="outlined" />}
+        inputValue={company}
+        onInputChange={handleChange} />
+}
 
 export default function ModuleDesigner() {
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
+            id: "my-device",
             name: "My device",
             services: [],
             firmwares: [],
@@ -28,6 +57,7 @@ export default function ModuleDesigner() {
         setDevice(clone(device));
     }
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [imageBase64, setImageBase64] = useState<string>(undefined);
     const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -38,7 +68,14 @@ export default function ModuleDesigner() {
             updateDevice();
         }
     };
+    const companyRepos = useMemo(() => unique(deviceSpecifications()
+        .filter(d => d.company === device.company)
+        .map(d => d.repo)
+        .filter(repo => !!repo)), [device?.company]);
     const variant = "outlined";
+    const companyError = !device.company
+        ? "select a company"
+        : "";
     const nameError = device.name?.length > 32
         ? "name too long"
         : undefined;
@@ -51,24 +88,33 @@ export default function ModuleDesigner() {
         : "Must be https://..."
     const idError = !device.id
         ? "missing identifier"
-        : ""
-    const devId = (device.name || "").replace(/[^a-z0-9_]/ig, '');
+        : deviceSpecifications().find(dev => dev.id == device.id)
+            ? "identifer already used"
+            : "";
     const servicesError = !!device.services?.length
         ? ""
         : "Select at least one service"
-    const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError;
-    const modulePath = ok && `modules/${parsedRepo.owner.toLowerCase()}/${devId.toLowerCase()}.json`
+    const imageError = !imageBase64 ? "missing image" : ""
+    const ok = !nameError && parsedRepo && !linkError && !idError && !servicesError
+        && !imageError && !companyError;
 
-    const handleIdChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        device.id = ev.target.value.replace(/[^a-z0-9_\-]/ig, '');
-        updateDevice();
+    const route = device.id?.split('-').join('/');
+    const modulePath = ok && `modules/${route}.json`
+    const imagePath = ok && `modules/${route}.jpg`
+
+    const updateDeviceId = () => {
+        const companyid = escapeDeviceIdentifier(device.company);
+        const nameid = escapeDeviceNameIdentifier(device.name);
+        device.id = companyid + '-' + nameid;
     }
+
     const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         device.name = ev.target.value;
+        updateDeviceId();
         updateDevice();
     }
-    const handleRepoChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        device.repo = ev.target.value;
+    const handleRepoChange = (ev: unknown, newValue: string) => {
+        device.repo = newValue;
         updateDevice();
     }
     const handleLinkChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -91,22 +137,32 @@ export default function ModuleDesigner() {
         device.firmwares.push(parseInt(uniqueFirmwareId(), 16))
         updateDevice();
     }
+    const handleImageImported = (cvs: HTMLCanvasElement) => {
+        const url = cvs.toDataURL("image/jpeg", 99)
+        setImageBase64(url.slice(url.indexOf(',')))
+    }
+    const handleCompanyChanged = (value: string) => {
+        device.company = value;
+        updateDeviceId();
+        updateDevice();
+    }
 
     return <Grid container direction="row" spacing={2}>
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12}>
             <TextField
-                required
+                disabled
                 error={!!idError}
-                helperText={idError}
                 fullWidth={true}
                 label="Identifier"
-                placeholder="abc"
-                value={device.id || ""}
-                onChange={handleIdChange}
+                helperText={"This identifer is a URL friendly string created from your company and product name"}
                 variant={variant}
+                value={device.id || ""}
             />
         </Grid>
-        <Grid item xs={12} lg={8}>
+        <Grid item xs={12} md={6}>
+            <CompanySelect value={device?.company} error={companyError} onValueChange={handleCompanyChanged} />
+        </Grid>
+        <Grid item xs={12} md={6}>
             <TextField
                 required
                 error={!!nameError}
@@ -132,24 +188,24 @@ export default function ModuleDesigner() {
             />
         </Grid>
         <Grid item xs={12} lg={6}>
-            <TextField
-                required
-                error={!!githubError}
-                helperText={githubError || "Repository hosting the firmware binaries."}
-                fullWidth={true}
-                label="GitHub Repository"
+            <Autocomplete
                 placeholder="https://github.com/..."
-                value={device.repo || ""}
-                onChange={handleRepoChange}
-                variant={variant}
-                type="url"
+                inputValue={device.repo || ""}
+                onInputChange={handleRepoChange}
+                options={companyRepos}
+                renderInput={(params) => <TextField {...params}
+                    error={!!githubError}
+                    type="url"
+                    label="Firmware repository *"
+                    helperText={githubError || "GitHub Repository hosting the firmware binaries"} variant="outlined" />}
             />
+            {!githubError && <Box mt={1}><FirmwareCard slug={device.repo} /></Box>}
         </Grid>
         <Grid item xs={12} lg={6}>
             <TextField
                 label="Home page url"
                 error={!!linkError}
-                helperText={linkError || "Web page for more information"}
+                helperText={linkError}
                 fullWidth={true}
                 placeholder="https://..."
                 value={device.link || ""}
@@ -158,7 +214,7 @@ export default function ModuleDesigner() {
                 type="url"
             />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={8}>
             <PaperBox elevation={1}>
                 <Typography color={servicesError ? "error" : "inherit"}>
                     Services *
@@ -191,7 +247,7 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
             <PaperBox elevation={1}>
                 <Typography>
                     Firmwares
@@ -211,25 +267,47 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12} lg={4}>
-            <GithubPullRequestButton
-                title={`Module definition: ${device.name}`}
-                head={device.id}
-                body={`This pull requests a new module for JACDAC.`}
-                commit={`added ${device.name} files`}
-                files={modulePath && {
-                    [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2)
-                }}
-            />
+        <Grid item xs={12} md={6}>
+            <PaperBox>
+                <Typography color={imageError ? "error" : "inherit"}>
+                    Catalog image
+            </Typography>
+                <ImportImageCanvas width={DEVICE_IMAGE_WIDTH} height={DEVICE_IMAGE_HEIGHT} onImageImported={handleImageImported} />
+                <Typography variant="caption" color={imageError ? "error" : "inherit"} component="div">
+                    {`Import a ${DEVICE_IMAGE_WIDTH}x${DEVICE_IMAGE_HEIGHT} image of the device.`}
+                </Typography>
+            </PaperBox>
         </Grid>
-        <Grid item xs={12} lg={6}>
-            <ApiKeyAccordion
-                apiName={GITHUB_API_KEY}
-                title="GitHub Developer Token"
-                instructions={
-                    <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
-                }
-            />
+        <Grid item xs={12} md={6}>
+            <PaperBox>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} lg={4}>
+                        <GithubPullRequestButton
+                            label={"submit module"}
+                            title={`Module: ${device.name}`}
+                            head={device.id}
+                            body={`This pull request adds a new module for JACDAC.`}
+                            commit={`added ${device.name} files`}
+                            files={modulePath && {
+                                [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
+                                [imagePath]: {
+                                    content: imageBase64,
+                                    encoding: "base64"
+                                }
+                            }}
+                        />
+                    </Grid>
+                    <Grid item xs={12} lg={8}>
+                        <ApiKeyAccordion
+                            apiName={GITHUB_API_KEY}
+                            title="GitHub Developer Token"
+                            instructions={
+                                <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
+                            }
+                        />
+                    </Grid>
+                </Grid>
+            </PaperBox>
         </Grid>
     </Grid>
 }
