@@ -113,8 +113,8 @@ export default function ModuleDesigner() {
         updateDeviceId();
         updateDevice();
     }
-    const handleRepoChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        device.repo = ev.target.value;
+    const handleRepoChange = (ev: unknown, newValue: string) => {
+        device.repo = newValue;
         updateDevice();
     }
     const handleLinkChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -188,21 +188,17 @@ export default function ModuleDesigner() {
             />
         </Grid>
         <Grid item xs={12} lg={6}>
-            <TextField
-                select
-                required={true}
-                fullWidth={true}
-                error={!!githubError}
-                helperText={githubError}
+            <Autocomplete
                 placeholder="https://github.com/..."
-                value={device.repo || ""}
-                onChange={handleRepoChange}
-                type="url"
-                label="GitHub Repository hosting the firmware binaries">
-                {companyRepos.map(cp => <MenuItem key={cp} value={cp}>
-                    {cp}
-                </MenuItem>)}
-            </TextField>
+                inputValue={device.repo || ""}
+                onInputChange={handleRepoChange}
+                options={companyRepos}
+                renderInput={(params) => <TextField {...params}
+                    error={!!githubError}
+                    type="url"
+                    label="Firmware repository *"
+                    helperText={githubError || "GitHub Repository hosting the firmware binaries"} variant="outlined" />}
+            />
             {!githubError && <Box mt={1}><FirmwareCard slug={device.repo} /></Box>}
         </Grid>
         <Grid item xs={12} lg={6}>
