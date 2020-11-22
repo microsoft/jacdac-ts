@@ -23,7 +23,6 @@ export default function GithubPullRequestButton(props: {
 
     const disabled = busy || !token || !commit || !title || !body || !head || !files || !Object.keys(files).length
     const handleClick = async () => {
-
         try {
             setBusy(true);
             const MyOctokit = Octokit.plugin(createPullRequest);

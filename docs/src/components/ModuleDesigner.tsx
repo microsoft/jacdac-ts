@@ -139,7 +139,7 @@ export default function ModuleDesigner() {
     }
     const handleImageImported = (cvs: HTMLCanvasElement) => {
         const url = cvs.toDataURL("image/jpeg", 99)
-        setImageBase64(url.slice(url.indexOf(';')))
+        setImageBase64(url.slice(url.indexOf(',')))
     }
     const handleCompanyChanged = (value: string) => {
         device.company = value;

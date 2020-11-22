@@ -27,9 +27,8 @@ export default function ImportImageCanvas(props: { width: number, height: number
     const { width, height, onImageImported } = props;
     const [imageBlob, setImageBlob] = useState<Blob>(undefined)
     const canvas = useBlobCanvas(imageBlob, width, height);
-    const canvasUrl = useMemo(() => canvas?.toDataURL("image/jpeg", 85), [canvas])
+    const canvasUrl = useMemo(() => canvas?.toDataURL("image/png"), [canvas])
     const classes = useStyles();
-    const ratio = `${height / width * 100}%`
 
     const handleFilesUploaded = async (files: File[]) => {
         const file = files[0];
