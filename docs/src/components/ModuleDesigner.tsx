@@ -283,9 +283,10 @@ export default function ModuleDesigner() {
                 <Grid container spacing={2}>
                     <Grid item xs={12} lg={4}>
                         <GithubPullRequestButton
-                            title={`Module definition: ${device.name}`}
+                            label={"submit module"}
+                            title={`Module: ${device.name}`}
                             head={device.id}
-                            body={`This pull requests a new module for JACDAC.`}
+                            body={`This pull request adds a new module for JACDAC.`}
                             commit={`added ${device.name} files`}
                             files={modulePath && {
                                 [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
