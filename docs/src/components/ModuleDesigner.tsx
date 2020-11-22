@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Grid, Select } from '@material-ui/core';
+import { FormControl, FormHelperText, Grid, InputLabel, Select } from '@material-ui/core';
 import useLocalStorage from './useLocalStorage';
 import { clone, unique } from '../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
@@ -17,28 +17,31 @@ import GithubPullRequestButton from './GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
+import { Autocomplete } from '@material-ui/lab/';
 
 function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
     const { onValueChange, value, error } = props;
     const [company, setCompany] = useState(value)
     const companies = useMemo(() => unique(deviceSpecifications().map(dev => dev.company)), []);
 
-    const handleChange = (ev: ChangeEvent<{ value: string }>) => {
-        setCompany(ev.target.value);
-        onValueChange?.(ev.target.value);
+    const handleChange = (ev: unknown, newValue: string) => {
+        setCompany(newValue);
+        onValueChange?.(newValue);
     }
 
-    return <TextField
+    const helperText = "Name of the company manufacturing this device. The company name will be used to generate the module identifier."
+    return <Autocomplete
+        freeSolo={true as any}
         fullWidth={true}
-        value={company}
-        label={"Company"}
-        error={!!error}
-        helperText={error || "Name of the company manufacturing this device. The company name will be used to generate the module identifier."}
-        onChange={handleChange}>
-        {companies.map(company => <MenuItem key={company} value={company}>
-            {company}
-        </MenuItem>)}
-    </TextField>
+        includeInputInList
+        autoComplete
+        options={companies}
+        renderInput={(params) => <TextField {...params}
+            error={!!error}
+            label="Company"
+            helperText={error || helperText} variant="outlined" />}
+        inputValue={company}
+        onInputChange={handleChange} />
 }
 
 export default function ModuleDesigner() {
@@ -186,6 +189,7 @@ export default function ModuleDesigner() {
         </Grid>
         <Grid item xs={12} lg={6}>
             <TextField
+                select
                 required={true}
                 fullWidth={true}
                 error={!!githubError}
