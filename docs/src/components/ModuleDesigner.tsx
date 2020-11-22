@@ -14,7 +14,7 @@ import IconButtonWithTooltip from "./IconButtonWithTooltip"
 import ApiKeyAccordion from './ApiKeyAccordion';
 import { GITHUB_API_KEY, parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
-import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
+import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
 import { Autocomplete } from '@material-ui/lab/';
@@ -104,7 +104,7 @@ export default function ModuleDesigner() {
 
     const updateDeviceId = () => {
         const companyid = escapeDeviceIdentifier(device.company);
-        const nameid = escapeDeviceIdentifier(device.name);
+        const nameid = escapeDeviceNameIdentifier(device.name);
         device.id = companyid + '-' + nameid;
     }
 
