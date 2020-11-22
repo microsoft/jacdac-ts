@@ -19,14 +19,14 @@ import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
 import { SelectWithLabel } from './SelectWithLabel';
 
-function CompanySelect(props: { error?: string, onCompanyChanged?: (name: string) => void }) {
-    const { onCompanyChanged, error } = props;
-    const [company, setCompany] = useState("")
+function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
+    const { onValueChange, value, error } = props;
+    const [company, setCompany] = useState(value)
     const companies = useMemo(() => unique(deviceSpecifications().map(dev => dev.company)), []);
 
     const handleChange = (ev: ChangeEvent<{ value: string }>) => {
         setCompany(ev.target.value);
-        onCompanyChanged?.(ev.target.value);
+        onValueChange?.(ev.target.value);
     }
 
     return <SelectWithLabel
@@ -44,6 +44,7 @@ function CompanySelect(props: { error?: string, onCompanyChanged?: (name: string
 export default function ModuleDesigner() {
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
+            id: "my-device",
             name: "My device",
             services: [],
             firmwares: [],
@@ -64,6 +65,10 @@ export default function ModuleDesigner() {
             updateDevice();
         }
     };
+    const companyRepos = useMemo(() => unique(deviceSpecifications()
+        .filter(d => d.company === device.company)
+        .map(d => d.repo)
+        .filter(repo => !!repo)), [device?.company]);
     const variant = "outlined";
     const companyError = !device.company
         ? "select a company"
@@ -80,7 +85,9 @@ export default function ModuleDesigner() {
         : "Must be https://..."
     const idError = !device.id
         ? "missing identifier"
-        : ""
+        : deviceSpecifications().find(dev => dev.id == device.id)
+            ? "identifer already used"
+            : "";
     const servicesError = !!device.services?.length
         ? ""
         : "Select at least one service"
@@ -93,20 +100,14 @@ export default function ModuleDesigner() {
     const imagePath = ok && `modules/${route}.jpg`
 
     const updateDeviceId = () => {
-        if (device.company) {
-            const companyid = escapeDeviceIdentifier(device.company);
-            if (device.id.indexOf(companyid) != 0)
-                device.id = companyid + '-' + device.id
-        }
+        const companyid = escapeDeviceIdentifier(device.company);
+        const nameid = escapeDeviceIdentifier(device.name);
+        device.id = companyid + '-' + nameid;
     }
 
-    const handleIdChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        device.id = escapeDeviceIdentifier(ev.target.value);
-        updateDeviceId();
-        updateDevice();
-    }
     const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         device.name = ev.target.value;
+        updateDeviceId();
         updateDevice();
     }
     const handleRepoChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -144,23 +145,21 @@ export default function ModuleDesigner() {
     }
 
     return <Grid container direction="row" spacing={2}>
-        <Grid item xs={12} md={6}>
-            <CompanySelect error={companyError} onCompanyChanged={handleCompanyChanged} />
-        </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
             <TextField
-                required
+                disabled
                 error={!!idError}
-                helperText={idError || device.id}
                 fullWidth={true}
                 label="Identifier"
-                placeholder="abc"
-                value={device.id || ""}
-                onChange={handleIdChange}
+                helperText={"This identifer is a URL friendly string created from your company and product name"}
                 variant={variant}
+                value={device.id || ""}
             />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
+            <CompanySelect value={device?.company} error={companyError} onValueChange={handleCompanyChanged} />
+        </Grid>
+        <Grid item xs={12} md={6}>
             <TextField
                 required
                 error={!!nameError}
@@ -186,19 +185,20 @@ export default function ModuleDesigner() {
             />
         </Grid>
         <Grid item xs={12} lg={6}>
-            <TextField
-                required
-                error={!!githubError}
+            <SelectWithLabel
+                required={true}
+                error={githubError}
                 helperText={githubError}
-                fullWidth={true}
-                label="GitHub Repository hosting the firmware binaries"
                 placeholder="https://github.com/..."
                 value={device.repo || ""}
                 onChange={handleRepoChange}
-                variant={variant}
                 type="url"
-            />
-            {!githubError && <FirmwareCard slug={device.repo} />}
+                label="GitHub Repository hosting the firmware binaries">
+                {companyRepos.map(cp => <MenuItem key={cp} value={cp}>
+                    {cp}
+                </MenuItem>)}
+            </SelectWithLabel>
+            {!githubError && <Box mt={1}><FirmwareCard slug={device.repo} /></Box>}
         </Grid>
         <Grid item xs={12} lg={6}>
             <TextField
