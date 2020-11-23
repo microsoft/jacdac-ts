@@ -32,9 +32,10 @@ export default function GithubPullRequestButton(props: {
     const handleClick = async () => {
         try {
             await confirm({
-                title: "Submit module?",
+                title: label,
+                confirmationText: "create pull request",
                 description: <>
-                    <p>Submit your module as a new pull request in https://github.com/microsoft/jacdac?</p>
+                    <p>We will open a new Pull Request on https://github.com/microsoft/jacdac with your files?</p>
                     <ApiKeyAccordion
                         apiName={GITHUB_API_KEY}
                         title="GitHub Developer Token"
@@ -73,9 +74,10 @@ export default function GithubPullRequestButton(props: {
 
             if (result.status === 201) {
                 setResponse(result.data)
-                const url = result.data.url;
+                const url = result.data.html_url;
+                const id = result.data.number;
                 enqueueSnackbar(<Typography component="span">
-                    Pull Request created...
+                    Pull Request <Link target="_blank" rel="no-referrer no-follower" href={url}>#{id}</Link> created...
                 </Typography>, {
                     variant: "success"
                 })
@@ -95,7 +97,7 @@ export default function GithubPullRequestButton(props: {
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
         {response && <Alert severity="success">
-            Pull Request <Link href={response.url}>#{response.number}</Link> created.
+            Pull Request <Link href={response.html_url}>#{response.number}</Link> created.
             </Alert>}
     </>
 }

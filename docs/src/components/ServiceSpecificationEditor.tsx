@@ -67,7 +67,7 @@ TODO describe this register
     const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSource(ev.target.value)
     }
-    const servicePath = json && `services/${json.shortId}.md`
+    const servicePath = json && `services/${json.shortId || `0x${json.classIdentifier.toString(16)}`}.md`
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
@@ -103,7 +103,7 @@ TODO describe this register
                 <GithubPullRequestButton
                     label={"submit service"}
                     title={json && `Service: ${json.name}`}
-                    head={json && `services-${json.shortId}`}
+                    head={json && `services-0x${json.classIdentifier.toString(16)}`}
                     body={`This pull request adds a new service definition for JACDAC.`}
                     commit={json && `added service files`}
                     files={servicePath && {
