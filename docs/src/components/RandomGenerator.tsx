@@ -41,7 +41,7 @@ function toFullHex(n: number[]) {
     return "0x" + n.map(id => ("000000000" + id.toString(16)).slice(-8)).join('')
 }
 
-function uniqueServiceId() {
+export function uniqueServiceId() {
     let id = genServId()
     while (id !== undefined && (!looksRandom(id) || serviceSpecificationFromClassIdentifier(id))) {
         id = genServId()

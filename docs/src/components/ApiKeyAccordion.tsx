@@ -19,7 +19,7 @@ export default function ApiKeyAccordion(props: {
     const { apiName, validateKey, instructions, title } = props;
     const { value: apiKey, setValue: setApiKey } = useDbValue(apiName, "")
     const [key, setKey] = useState("")
-    const [expanded, setExpanded] = useState(false)
+    const [expanded, setExpanded] = useState(!apiKey)
     const [validated, setValidated] = useState(false)
 
     useEffectAsync(async (mounted) => {

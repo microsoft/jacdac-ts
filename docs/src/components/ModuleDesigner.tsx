@@ -324,33 +324,20 @@ export default function ModuleDesigner() {
         </Grid>
         <Grid item xs={12}>
             <PaperBox>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} lg={6}>
-                        <GithubPullRequestButton
-                            label={"submit module"}
-                            title={`Module: ${device.name}`}
-                            head={device.id}
-                            body={`This pull request adds a new module for JACDAC.`}
-                            commit={`added ${device.name} files`}
-                            files={modulePath && {
-                                [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
-                                [imagePath]: {
-                                    content: imageBase64,
-                                    encoding: "base64"
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} lg={6}>
-                        <ApiKeyAccordion
-                            apiName={GITHUB_API_KEY}
-                            title="GitHub Developer Token"
-                            instructions={
-                                <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens/new</a> and generate a new personal access token with **repo** scope.</p>
-                            }
-                        />
-                    </Grid>
-                </Grid>
+                <GithubPullRequestButton
+                    label={"submit module"}
+                    title={`Module: ${device.name}`}
+                    head={device.id}
+                    body={`This pull request adds a new module for JACDAC.`}
+                    commit={`added ${device.name} files`}
+                    files={modulePath && {
+                        [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
+                        [imagePath]: {
+                            content: imageBase64,
+                            encoding: "base64"
+                        }
+                    }}
+                />
             </PaperBox>
         </Grid>
     </Grid>

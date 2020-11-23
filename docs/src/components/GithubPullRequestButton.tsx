@@ -9,6 +9,8 @@ import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
 import { useConfirm } from 'material-ui-confirm';
 import Alert from "./Alert";
+import GitHubIcon from '@material-ui/icons/GitHub';
+import ApiKeyAccordion from "./ApiKeyAccordion";
 
 export default function GithubPullRequestButton(props: {
     title: string,
@@ -30,8 +32,18 @@ export default function GithubPullRequestButton(props: {
     const handleClick = async () => {
         try {
             await confirm({
-                title: "Submit module?",
-                description: "Submit your module as a new pull request in https://github.com/microsoft/jacdac?"
+                title: label,
+                confirmationText: "create pull request",
+                description: <>
+                    <p>We will open a new Pull Request on https://github.com/microsoft/jacdac with your files?</p>
+                    <ApiKeyAccordion
+                        apiName={GITHUB_API_KEY}
+                        title="GitHub Developer Token"
+                        instructions={
+                            <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens/new</a> and generate a new personal access token with **repo** scope.</p>
+                        }
+                    />
+                </>
             });
         } catch (e) {
             return;
@@ -62,9 +74,10 @@ export default function GithubPullRequestButton(props: {
 
             if (result.status === 201) {
                 setResponse(result.data)
-                const url = result.data.url;
+                const url = result.data.html_url;
+                const id = result.data.number;
                 enqueueSnackbar(<Typography component="span">
-                    Pull Request created...
+                    Pull Request <Link target="_blank" rel="no-referrer no-follower" href={url}>#{id}</Link> created...
                 </Typography>, {
                     variant: "success"
                 })
@@ -78,12 +91,13 @@ export default function GithubPullRequestButton(props: {
         }
     }
 
-    return <><Button color="primary" variant="contained" onClick={handleClick} disabled={disabled}>
+    return <><Button color="primary" variant="contained" onClick={handleClick}
+        disabled={disabled} startIcon={<GitHubIcon />}>
         {label || "Create Pull Request"}
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
         {response && <Alert severity="success">
-            Pull Request <Link href={response.url}>#{response.number}</Link> created.
+            Pull Request <Link href={response.html_url}>#{response.number}</Link> created.
             </Alert>}
     </>
 }

@@ -9,6 +9,7 @@ import useLocalStorage from './useLocalStorage';
 import { useDebounce } from 'use-debounce';
 import PaperBox from './PaperBox'
 import Alert from './Alert';
+import GithubPullRequestButton from './GithubPullRequestButton';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -66,6 +67,7 @@ TODO describe this register
     const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSource(ev.target.value)
     }
+    const servicePath = json && `services/${json.shortId || `0x${json.classIdentifier.toString(16)}`}.md`
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
@@ -83,11 +85,11 @@ TODO describe this register
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 {!!annotations?.length &&
-                <Alert severity="warning">
-                    <ul>
-                        {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
-                    </ul>
-                </Alert>
+                    <Alert severity="warning">
+                        <ul>
+                            {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
+                        </ul>
+                    </Alert>
                 }
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
@@ -96,6 +98,18 @@ TODO describe this register
                     serviceSpecification={json}
                     showMarkdown={false}
                     showSpecification={true} />
+            </Grid>
+            <Grid key="submit" item xs={12}>
+                <GithubPullRequestButton
+                    label={"submit service"}
+                    title={json && `Service: ${json.name}`}
+                    head={json && `services-0x${json.classIdentifier.toString(16)}`}
+                    body={`This pull request adds a new service definition for JACDAC.`}
+                    commit={json && `added service files`}
+                    files={servicePath && {
+                        [servicePath]: debouncedSource
+                    }}
+                />
             </Grid>
         </Grid>
     );

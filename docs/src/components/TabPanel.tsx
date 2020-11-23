@@ -1,5 +1,6 @@
 import React from "react"
 import { Box, Typography } from "@material-ui/core";
+import { useId } from "react-use-id-hook"
 
 export default function TabPanel(props: {
     children?: React.ReactNode;
@@ -7,13 +8,14 @@ export default function TabPanel(props: {
     value: any;
 }) {
     const { children, value, index, ...other } = props;
+    const did = useId();
 
     return (
         <div
             role="tabpanel"
             hidden={value !== index}
-            id={`simple-tabpanel-${index}`}
-            aria-labelledby={`simple-tab-${index}`}
+            id={did}
+            aria-labelledby={did}
             {...other}
         >
             {value === index && (
