@@ -18,6 +18,8 @@ import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escape
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
 import { Autocomplete } from '@material-ui/lab/';
+import useFirmwareBlobs, { useFirmwareBlob } from './useFirmwareBlobs';
+import { FirmwareBlob } from '../../../src/jdom/flashing';
 
 function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
     const { onValueChange, value, error } = props;
@@ -56,13 +58,14 @@ export default function ModuleDesigner() {
     const updateDevice = () => {
         setDevice(clone(device));
     }
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [servicesAnchorEl, setServicesAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [firmwaresAnchorEl, setFirmwaresAnchorEl] = React.useState<null | HTMLElement>(null);
     const [imageBase64, setImageBase64] = useState<string>(undefined);
     const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
+        setServicesAnchorEl(event.currentTarget);
     };
     const handleServiceAddClose = (id: number) => () => {
-        setAnchorEl(null);
+        setServicesAnchorEl(null);
         if (id !== undefined) {
             device.services.push(id)
             updateDevice();
@@ -72,6 +75,7 @@ export default function ModuleDesigner() {
         .filter(d => d.company === device.company)
         .map(d => d.repo)
         .filter(repo => !!repo)), [device?.company]);
+    const { firmwareBlobs } = useFirmwareBlob(device.repo)
     const variant = "outlined";
     const companyError = !device.company
         ? "select a company"
@@ -133,10 +137,21 @@ export default function ModuleDesigner() {
         device.firmwares.splice(i, 1);
         updateDevice();
     }
-    const handleAddFirmware = () => {
-        device.firmwares.push(parseInt(uniqueFirmwareId(), 16))
+    const handleFirmwareAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setFirmwaresAnchorEl(event.currentTarget);
+        // device.firmwares.push(parseInt(uniqueFirmwareId(), 16))
         updateDevice();
-    }
+    };
+    const handleFirmwareAddClose = (blob: FirmwareBlob) => () => {
+        setFirmwaresAnchorEl(null);
+        const id = blob?.firmwareIdentifier
+        if (id !== undefined) {
+            device.firmwares.push(id)
+            device.name = blob.name
+            updateDeviceId();
+            updateDevice();
+        }
+    };
     const handleImageImported = (cvs: HTMLCanvasElement) => {
         const url = cvs.toDataURL("image/jpeg", 99)
         setImageBase64(url.slice(url.indexOf(',')))
@@ -149,46 +164,11 @@ export default function ModuleDesigner() {
 
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12}>
-            <TextField
-                disabled
-                error={!!idError}
-                fullWidth={true}
-                label="Identifier"
-                helperText={"This identifer is a URL friendly string created from your company and product name"}
-                variant={variant}
-                value={device.id || ""}
-            />
-        </Grid>
-        <Grid item xs={12} md={6}>
             <CompanySelect value={device?.company} error={companyError} onValueChange={handleCompanyChanged} />
         </Grid>
-        <Grid item xs={12} md={6}>
-            <TextField
-                required
-                error={!!nameError}
-                helperText={nameError}
-                fullWidth={true}
-                label="Name"
-                placeholder="My module"
-                value={device.name || ""}
-                onChange={handleNameChange}
-                variant={variant}
-            />
-        </Grid>
         <Grid item xs={12}>
-            <TextField
-                fullWidth={true}
-                required
-                label="Description"
-                multiline={true}
-                rows={4}
-                value={device.description || ""}
-                onChange={handleDescriptionChange}
-                variant={variant}
-            />
-        </Grid>
-        <Grid item xs={12} lg={6}>
             <Autocomplete
+                autoComplete
                 placeholder="https://github.com/..."
                 inputValue={device.repo || ""}
                 onInputChange={handleRepoChange}
@@ -197,24 +177,50 @@ export default function ModuleDesigner() {
                     error={!!githubError}
                     type="url"
                     label="Firmware repository *"
-                    helperText={githubError || "GitHub Repository hosting the firmware binaries"} variant="outlined" />}
+                    helperText={githubError || "GitHub Repository hosting the firmware binaries."} variant="outlined" />}
             />
             {!githubError && <Box mt={1}><FirmwareCard slug={device.repo} /></Box>}
         </Grid>
-        <Grid item xs={12} lg={6}>
-            <TextField
-                label="Home page url"
-                error={!!linkError}
-                helperText={linkError}
-                fullWidth={true}
-                placeholder="https://..."
-                value={device.link || ""}
-                onChange={handleLinkChange}
-                variant={variant}
-                type="url"
-            />
+        <Grid item xs={12}>
+            <PaperBox elevation={1}>
+                <Typography>
+                    Firmwares
+            </Typography>
+                {device.firmwares?.map((id, i) => {
+                    const blob = firmwareBlobs?.find(b => b.firmwareIdentifier == id);
+                    return <Box component="span" ml={0.5} mb={0.5} key={i}>
+                        <Chip
+                            label={blob ? `${blob.name} (0x${id.toString(16)})` : `0x${id.toString(16)}`}
+                            onDelete={handleDeleteFirmware(i)}
+                        />
+                    </Box>;
+                })}
+                <IconButtonWithTooltip title="Add random firmware identifier" aria-controls="firmware-menu"
+                    aria-haspopup="true" onClick={handleFirmwareAddClick}>
+                    <AddIcon />
+                </IconButtonWithTooltip>
+                <Menu
+                    id="firmware-menu"
+                    anchorEl={firmwaresAnchorEl}
+                    keepMounted
+                    open={Boolean(firmwaresAnchorEl)}
+                    onClose={handleFirmwareAddClose(undefined)}
+                >
+                    {firmwareBlobs?.map(blob => <MenuItem key={blob.firmwareIdentifier} value={blob.firmwareIdentifier.toString(16)}
+                        onClick={handleFirmwareAddClose(blob)}>
+                        {blob.name}
+                        <Typography variant="caption" component="span">
+                            {blob.version}
+                        </Typography>
+                    </MenuItem>)}
+                </Menu>
+                <Typography variant="caption" component="div">
+                    Firmware identifiers uniquely identify your module on the JACDAC bus.
+                    Each revision of your firmware may have a different identifier.
+                </Typography>
+            </PaperBox>
         </Grid>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12}>
             <PaperBox elevation={1}>
                 <Typography color={servicesError ? "error" : "inherit"}>
                     Services *
@@ -230,9 +236,9 @@ export default function ModuleDesigner() {
                 </IconButtonWithTooltip>
                 <Menu
                     id="services-menu"
-                    anchorEl={anchorEl}
+                    anchorEl={servicesAnchorEl}
                     keepMounted
-                    open={Boolean(anchorEl)}
+                    open={Boolean(servicesAnchorEl)}
                     onClose={handleServiceAddClose(undefined)}
                 >
                     {serviceSpecifications()
@@ -247,27 +253,56 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12} md={4}>
-            <PaperBox elevation={1}>
-                <Typography>
-                    Firmwares
-            </Typography>
-                {device.firmwares?.map((id, i) => <Box component="span" ml={0.5} mb={0.5} key={i}>
-                    <Chip
-                        label={`0x${id.toString(16)}`}
-                        onDelete={handleDeleteFirmware(i)}
-                    />
-                </Box>)}
-                <IconButtonWithTooltip title="Add random firmware identifier" aria-controls="firmware-menu" aria-haspopup="true" onClick={handleAddFirmware}>
-                    <AddIcon />
-                </IconButtonWithTooltip>
-                <Typography variant="caption" component="div">
-                    Firmware identifiers uniquely identify your module on the JACDAC bus.
-                    Each revision of your firmware may have a different identifier.
-                </Typography>
-            </PaperBox>
+        <Grid item xs={12}>
+            <TextField
+                required
+                error={!!nameError}
+                helperText={nameError}
+                fullWidth={true}
+                label="Name"
+                placeholder="My module"
+                value={device.name || ""}
+                onChange={handleNameChange}
+                variant={variant}
+            />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
+            <TextField
+                disabled
+                error={!!idError}
+                fullWidth={true}
+                label="Identifier"
+                helperText={"This generated identifer is a URL friendly string created from your company and product name."}
+                variant={variant}
+                value={device.id || ""}
+            />
+        </Grid>
+        <Grid item xs={12}>
+            <TextField
+                fullWidth={true}
+                required
+                label="Description"
+                multiline={true}
+                rows={4}
+                value={device.description || ""}
+                onChange={handleDescriptionChange}
+                variant={variant}
+            />
+        </Grid>
+        <Grid item xs={12}>
+            <TextField
+                label="Home page url"
+                error={!!linkError}
+                helperText={linkError}
+                fullWidth={true}
+                placeholder="https://..."
+                value={device.link || ""}
+                onChange={handleLinkChange}
+                variant={variant}
+                type="url"
+            />
+        </Grid>
+        <Grid item xs={12}>
             <PaperBox>
                 <Typography color={imageError ? "error" : "inherit"}>
                     Catalog image
@@ -278,10 +313,10 @@ export default function ModuleDesigner() {
                 </Typography>
             </PaperBox>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
             <PaperBox>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} lg={4}>
+                    <Grid item xs={12} lg={6}>
                         <GithubPullRequestButton
                             label={"submit module"}
                             title={`Module: ${device.name}`}
@@ -297,12 +332,12 @@ export default function ModuleDesigner() {
                             }}
                         />
                     </Grid>
-                    <Grid item xs={12} lg={8}>
+                    <Grid item xs={12} lg={6}>
                         <ApiKeyAccordion
                             apiName={GITHUB_API_KEY}
                             title="GitHub Developer Token"
                             instructions={
-                                <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens</a> and generate a new personal access token with **repo** scope.</p>
+                                <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens/new</a> and generate a new personal access token with **repo** scope.</p>
                             }
                         />
                     </Grid>

@@ -72,6 +72,9 @@ export function useFirmwareBlob(repoSlug: string) {
     const firmwares = db?.firmwares;
 
     const blobs = useChangeAsync(firmwares, async (fw) => {
+        if (!repoSlug)
+            return undefined;
+
         const blob = await firmwares?.get(repoSlug)
         if (!blob) {
             return undefined;
