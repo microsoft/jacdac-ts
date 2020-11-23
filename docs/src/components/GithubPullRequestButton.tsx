@@ -2,12 +2,13 @@ import React, { useContext, useState } from "react"
 import { Octokit } from "@octokit/core";
 import { createPullRequest } from "octokit-plugin-create-pull-request";
 import { Button, Link } from "gatsby-theme-material-ui";
-import { CircularProgress } from "@material-ui/core";
+import { CircularProgress, Typography } from "@material-ui/core";
 import AppContext from "./AppContext";
 import { GITHUB_API_KEY } from "./github";
 import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
 import { useConfirm } from 'material-ui-confirm';
+import Alert from "./Alert";
 
 export default function GithubPullRequestButton(props: {
     title: string,
@@ -19,6 +20,7 @@ export default function GithubPullRequestButton(props: {
 }) {
     const { commit, files, label, title, body, head } = props;
     const { value: token } = useDbValue(GITHUB_API_KEY, "")
+    const [response, setResponse] = useState(undefined);
     const [busy, setBusy] = useState(false)
     const { setError: setAppError } = useContext(AppContext)
     const { enqueueSnackbar } = useSnackbar();
@@ -59,12 +61,16 @@ export default function GithubPullRequestButton(props: {
             })
 
             if (result.status === 201) {
-                enqueueSnackbar("pull request created...", {
-                    variant: "info"
+                setResponse(result.data)
+                const url = result.data.url;
+                enqueueSnackbar(<Typography component="span">
+                    Pull Request created...
+                </Typography>, {
+                    variant: "success"
                 })
+            } else {
+                setResponse(undefined);
             }
-
-            console.log({ result })
         } catch (e) {
             setAppError(e)
         } finally {
@@ -72,8 +78,12 @@ export default function GithubPullRequestButton(props: {
         }
     }
 
-    return <Button color="primary" variant="contained" onClick={handleClick} disabled={disabled}>
+    return <><Button color="primary" variant="contained" onClick={handleClick} disabled={disabled}>
         {label || "Create Pull Request"}
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
+        {response && <Alert severity="success">
+            Pull Request <Link href={response.url}>#{response.number}</Link> created.
+            </Alert>}
+    </>
 }
