@@ -1,6 +1,7 @@
 const path = require(`path`)
 const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
+const { escapeDeviceIdentifier } = require("../dist/jacdac-jdom.umd")
 
 async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
@@ -63,6 +64,7 @@ async function createDevicePages(graphql, actions, reporter) {
     nodes {
       id
       name
+      company
       firmwares
     }
   }
@@ -76,6 +78,7 @@ async function createDevicePages(graphql, actions, reporter) {
 
   // Create image post pages.
   const deviceTemplate = path.resolve(`src/templates/device.mdx`)
+  const companyTemplate = path.resolve(`src/templates/device-company.mdx`)
   // We want to create a detailed page for each
   // Instagram post. Since the scraped Instagram data
   // already includes an ID field, we just use that for
@@ -104,6 +107,19 @@ async function createDevicePages(graphql, actions, reporter) {
         })
       })
   })
+
+  // create device company routes
+  const companies = new Set(result.data.allDevicesJson.nodes.map(node => node.company))
+  for (const company in companies) {
+    createPage({
+      path: `/devices/${escapeDeviceIdentifier(device.company)}`,
+      component: slash(companyTemplate),
+      context: {
+        company
+      },
+    })
+
+  }
 }
 
 async function createSpecPages(graphql, actions, reporter) {

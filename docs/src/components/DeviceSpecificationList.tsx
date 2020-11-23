@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
 import { deviceSpecifications, imageDeviceOf } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
@@ -27,22 +27,27 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function DeviceSpecificationList(props: {
     count?: number,
     shuffle?: boolean,
+    company?: string,
     requiredServiceClasses?: number[]
 }) {
-    const { count, shuffle, requiredServiceClasses } = props;
+    const { count, shuffle, requiredServiceClasses, company } = props;
     const theme = useTheme();
     const classes = useStyles();
-    let specs = deviceSpecifications();
     const mobile = useMediaQuery(theme.breakpoints.down('xs'));
     const medium = useMediaQuery(theme.breakpoints.down('md'));
     const cols = mobile ? 1 : medium ? 3 : 4;
-
-    if (requiredServiceClasses)
-        specs = specs.filter(spec => spec.services.length && spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
-    if (shuffle)
-        arrayShuffle(specs)
-    if (count !== undefined)
-        specs = specs.slice(0, count)
+    const specs = useMemo(() => {
+        let r = deviceSpecifications();
+        if (company)
+            r = r.filter(spec => spec.company === company);
+        if (requiredServiceClasses)
+            r = r.filter(spec => spec.services.length && spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
+        if (shuffle)
+            arrayShuffle(r)
+        if (count !== undefined)
+            r = r.slice(0, count)
+        return r;
+    }, [requiredServiceClasses, shuffle, count]);
 
     return <GridList className={classes.root} cols={cols}>
         {specs.map(spec => <GridListTile key={spec.id}>

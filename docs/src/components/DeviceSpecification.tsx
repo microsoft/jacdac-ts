@@ -3,11 +3,12 @@ import IDChip from "./IDChip";
 import { Link } from 'gatsby-theme-material-ui';
 import { imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 import ServiceSpecificationCard from "./ServiceSpecificationCard";
-import { Grid } from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
 import Markdown from "./Markdown";
 import DeviceSpecificationSource from "./DeviceSpecificationSource";
 import FirmwareCard from "./FirmwareCard"
+import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec"
 
 export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, showSource?: string }) {
     const { device, showSource } = props;
@@ -17,6 +18,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         <h2 key="title">
             <Link to={device.link}>{device.name}</Link>
         </h2>
+        <Typography variant="subtitle1">by <Link to={`/devices/${escapeDeviceIdentifier(device.company)}`}>{device.company}</Link></Typography>
         {<img alt="image of the device" src={imageDeviceOf(device)} />}
         {device.description && <Markdown source={device.description} />}
         {device.repo && <FirmwareCard slug={device.repo} />}
@@ -34,7 +36,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         {showSource && <>
             <h2>Specification</h2>
             <DeviceSpecificationSource deviceSpecification={device}
-                showMarkdown={true} showJSON={true} showDTDL={true} />
+                showJSON={true} showDTDL={true} />
         </>}
     </>
 }
