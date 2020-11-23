@@ -135,8 +135,8 @@ export default function ToolsDrawer() {
             icon: <KindIcon kind={"service"} />
         },
         {
-            text: "Module designer",
-            url: "/tools/module-designer",
+            text: "Device designer",
+            url: "/tools/device-designer",
             icon: <KindIcon kind={"device"} />
         },
     ]
