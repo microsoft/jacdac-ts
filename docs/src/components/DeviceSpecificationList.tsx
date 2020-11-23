@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
-import { deviceSpecifications, imageDeviceOf } from '../../../src/jdom/spec';
+import { deviceSpecifications, identifierToUrlPath, imageDeviceOf } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import InfoIcon from '@material-ui/icons/Info';
 import Markdown from "./Markdown"
@@ -56,7 +56,7 @@ export default function DeviceSpecificationList(props: {
                 title={spec.name}
                 subtitle={<Markdown className={classes.ellipsis} source={spec.description.split('.', 1)[0]} />}
                 actionIcon={<>
-                    <IconButton to={`/devices/${spec.id}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
+                    <IconButton to={`/devices/${identifierToUrlPath(spec.id)}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
                         <InfoIcon />
                     </IconButton>
                 </>

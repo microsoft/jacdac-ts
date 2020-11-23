@@ -4,6 +4,7 @@ import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
+import { identifierToUrlPath } from "../../../src/jdom/spec";
 
 interface TocNode {
   name: string;
@@ -173,7 +174,7 @@ export default function Toc() {
   data.allDevicesJson.nodes.map(node => {
     return {
       name: node.name,
-      path: `/devices/${node.id}`
+      path: `/devices/${identifierToUrlPath(node.id)}`
     }
   }).forEach(node => toc.push(node));
 

@@ -60,6 +60,10 @@ export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
     return spec && `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${spec.id.replace(/-/g, '/')}.jpg`
 }
 
+export function identifierToUrlPath(id: string) {
+    return id?.replace(/-/g, '/')
+}
+
 /**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
 */

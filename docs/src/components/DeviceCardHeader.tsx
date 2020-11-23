@@ -9,6 +9,7 @@ import DeviceActions from "./DeviceActions";
 import DeviceName from "./DeviceName";
 import DeviceCardMedia from "./DeviceCardMedia"
 import useDeviceSpecification from "../jacdac/useDeviceSpecification";
+import { identifierToUrlPath } from "../../../src/jdom/spec";
 
 function DeviceFirmwareChip(props: { device: JDDevice }) {
     const { device } = props;
@@ -32,7 +33,7 @@ export default function DeviceCardHeader(props: { device: JDDevice, showFirmware
         {showMedia && <DeviceCardMedia device={device} />}
         <CardHeader
             action={<DeviceActions device={device} reset={true} />}
-            title={<Link color="textPrimary" to={`/devices/${specification?.id || ""}`}>
+            title={<Link color="textPrimary" to={`/devices/${identifierToUrlPath(specification?.id) || ""}`}>
                 <DeviceName device={device} />
             </Link>}
             subheader={<>
