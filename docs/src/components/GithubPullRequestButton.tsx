@@ -9,6 +9,8 @@ import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
 import { useConfirm } from 'material-ui-confirm';
 import Alert from "./Alert";
+import GitHubIcon from '@material-ui/icons/GitHub';
+import ApiKeyAccordion from "./ApiKeyAccordion";
 
 export default function GithubPullRequestButton(props: {
     title: string,
@@ -31,7 +33,16 @@ export default function GithubPullRequestButton(props: {
         try {
             await confirm({
                 title: "Submit module?",
-                description: "Submit your module as a new pull request in https://github.com/microsoft/jacdac?"
+                description: <>
+                    <p>Submit your module as a new pull request in https://github.com/microsoft/jacdac?</p>
+                    <ApiKeyAccordion
+                        apiName={GITHUB_API_KEY}
+                        title="GitHub Developer Token"
+                        instructions={
+                            <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens/new</a> and generate a new personal access token with **repo** scope.</p>
+                        }
+                    />
+                </>
             });
         } catch (e) {
             return;
@@ -78,7 +89,8 @@ export default function GithubPullRequestButton(props: {
         }
     }
 
-    return <><Button color="primary" variant="contained" onClick={handleClick} disabled={disabled}>
+    return <><Button color="primary" variant="contained" onClick={handleClick}
+        disabled={disabled} startIcon={<GitHubIcon />}>
         {label || "Create Pull Request"}
         {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
     </Button>
