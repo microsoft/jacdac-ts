@@ -110,7 +110,7 @@ async function createDevicePages(graphql, actions, reporter) {
   })
 
   const snakify = (name) => {
-    return name?.replace(/([a-z])([A-Z])/g, (_, a, b) => a + "_" + b)
+    return name.replace(/([a-z])([A-Z])/g, (_, a, b) => a + "_" + b)
   }
   const escapeDeviceIdentifier = (text) => {
     if (!text) text = ""
