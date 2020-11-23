@@ -63,6 +63,7 @@ async function createDevicePages(graphql, actions, reporter) {
     nodes {
       id
       name
+      company
       firmwares
     }
   }
@@ -76,12 +77,13 @@ async function createDevicePages(graphql, actions, reporter) {
 
   // Create image post pages.
   const deviceTemplate = path.resolve(`src/templates/device.mdx`)
+  const companyTemplate = path.resolve(`src/templates/device-company.mdx`)
   // We want to create a detailed page for each
   // Instagram post. Since the scraped Instagram data
   // already includes an ID field, we just use that for
   // each page's path.
   result.data.allDevicesJson.nodes.forEach(node => {
-    const p = `/devices/${node.id}/`;
+    const p = `/devices/${node.id.replace(/-/g, '/')}/`;
     createPage({
       path: p,
       component: slash(deviceTemplate),
@@ -94,6 +96,8 @@ async function createDevicePages(graphql, actions, reporter) {
       node.firmwares.forEach(fw => {
         const fp = `/firmwares/0x${fw.toString(16)}`;
         const dp = `/devices/0x${fw.toString(16)}`;
+        console.log(`firmware redirect`, { from: fp, to: p })
+        console.log(`device redirect`, { from: dp, to: p })
         createRedirect({
           fromPath: fp,
           toPath: p
@@ -104,6 +108,34 @@ async function createDevicePages(graphql, actions, reporter) {
         })
       })
   })
+
+  const snakify = (name) => {
+    return name.replace(/([a-z])([A-Z])/g, (_, a, b) => a + "_" + b)
+  }
+  const escapeDeviceIdentifier = (text) => {
+    if (!text) text = ""
+    const escaped = text.trim().toLowerCase().replace(/([^a-z0-9\_-])+/ig, '-')
+      .replace(/^-+/, '').replace(/-+$/, '');
+    const id = snakify(escaped)
+    return id;
+  }
+
+
+  // create device company routes
+  const companies = new Set(result.data.allDevicesJson.nodes.map(node => node.company))
+  console.log(companies)
+  for (const company of companies.keys()) {
+    const p = `/devices/${escapeDeviceIdentifier(company).replace(/-/g, '/')}`
+    console.log(`device company page`, { p })
+    createPage({
+      path: p,
+      component: slash(companyTemplate),
+      context: {
+        company
+      },
+    })
+
+  }
 }
 
 async function createSpecPages(graphql, actions, reporter) {

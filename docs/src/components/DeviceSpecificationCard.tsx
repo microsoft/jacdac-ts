@@ -1,6 +1,6 @@
 import React from "react"
 import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Grid, makeStyles, Theme } from "@material-ui/core";
-import { deviceSpecificationFromFirmwareIdentifier, deviceSpecificationFromIdentifier, imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
+import { deviceSpecificationFromFirmwareIdentifier, deviceSpecificationFromIdentifier, identifierToUrlPath, imageDeviceOf, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import GitHubButton from "./GitHubButton"
 import IDChip from "./IDChip";
 import { Button, IconButton } from "gatsby-theme-material-ui";
@@ -35,7 +35,7 @@ export default function DeviceSpecificationCard(props: {
                 .map(sspec => <Button aria-label={`open service ${sspec.shortId} page`} key={sspec.shortId} to={`/services/${sspec.shortId}`}>{sspec.name}</Button>)}
         </CardContent>}
         {spec && <CardActions>
-            <Button aria-label={`open device ${spec.name} page`} to={`/devices/${spec.id}`}>More...</Button>
+            <Button aria-label={`open device ${spec.name} page`} to={`/devices/${identifierToUrlPath(spec.id)}`}>More...</Button>
             <IconButton to={spec.link} size="small">
                 <HomeIcon />
             </IconButton>
