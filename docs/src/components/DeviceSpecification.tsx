@@ -17,7 +17,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         <h2 key="title">
             <Link to={device.link}>{device.name}</Link>
         </h2>
-        {device.image && <img alt="image of the device" src={imageDeviceOf(device)} />}
+        {<img alt="image of the device" src={imageDeviceOf(device)} />}
         {device.description && <Markdown source={device.description} />}
         {device.repo && <FirmwareCard slug={device.repo} />}
         {!!device.firmwares.length && <><h3>Firmware identifiers</h3>
