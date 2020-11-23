@@ -10,6 +10,8 @@ import PaperBox from "./PaperBox"
 import { uniqueFirmwareId } from './RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import CreateIcon from '@material-ui/icons/Create';
 import IconButtonWithTooltip from "./IconButtonWithTooltip"
 import ApiKeyAccordion from './ApiKeyAccordion';
 import { GITHUB_API_KEY, parseRepoUrl } from './github'
@@ -142,6 +144,10 @@ export default function ModuleDesigner() {
         // device.firmwares.push(parseInt(uniqueFirmwareId(), 16))
         updateDevice();
     };
+    const handleFirmwareAddRandomClick = () => {
+        device.firmwares.push(parseInt(uniqueFirmwareId(), 16))
+        updateDevice();
+    };
     const handleFirmwareAddClose = (blob: FirmwareBlob) => () => {
         setFirmwaresAnchorEl(null);
         const id = blob?.firmwareIdentifier
@@ -195,10 +201,13 @@ export default function ModuleDesigner() {
                         />
                     </Box>;
                 })}
-                <IconButtonWithTooltip title="Add random firmware identifier" aria-controls="firmware-menu"
+                <IconButtonWithTooltip title="Add random firmware identifier" onClick={handleFirmwareAddRandomClick}>
+                    <CreateIcon />
+                </IconButtonWithTooltip>
+                {firmwareBlobs && <IconButtonWithTooltip title="Add firmware identifier from repository" aria-controls="firmware-menu"
                     aria-haspopup="true" onClick={handleFirmwareAddClick}>
                     <AddIcon />
-                </IconButtonWithTooltip>
+                </IconButtonWithTooltip>}
                 <Menu
                     id="firmware-menu"
                     anchorEl={firmwaresAnchorEl}
