@@ -51,7 +51,7 @@ export default function DeviceSpecificationList(props: {
                 title={spec.name}
                 subtitle={<Markdown className={classes.ellipsis} source={spec.description.split('.', 1)[0]} />}
                 actionIcon={<>
-                    <IconButton to={`/modules/${spec.id}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
+                    <IconButton to={`/devices/${spec.id}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
                         <InfoIcon />
                     </IconButton>
                 </>
