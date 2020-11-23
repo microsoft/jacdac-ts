@@ -59,7 +59,7 @@ async function createDevicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
   const result = await graphql(`
 {
-  allModulesJson {
+  allDevicesJson {
     nodes {
       id
       name
@@ -80,8 +80,8 @@ async function createDevicePages(graphql, actions, reporter) {
   // Instagram post. Since the scraped Instagram data
   // already includes an ID field, we just use that for
   // each page's path.
-  result.data.allModulesJson.nodes.forEach(node => {
-    const p = `/modules/${node.id}/`;
+  result.data.allDevicesJson.nodes.forEach(node => {
+    const p = `/devices/${node.id}/`;
     createPage({
       path: p,
       component: slash(deviceTemplate),

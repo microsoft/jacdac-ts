@@ -50,7 +50,7 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
         onInputChange={handleChange} />
 }
 
-export default function ModuleDesigner() {
+export default function DeviceDesigner() {
     const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
             id: "my-device",
@@ -109,8 +109,8 @@ export default function ModuleDesigner() {
         && !imageError && !companyError;
 
     const route = device.id?.split('-').join('/');
-    const modulePath = ok && `modules/${route}.json`
-    const imagePath = ok && `modules/${route}.jpg`
+    const modulePath = ok && `devices/${route}.json`
+    const imagePath = ok && `devices/${route}.jpg`
 
     const updateDeviceId = () => {
         const companyid = escapeDeviceIdentifier(device.company);

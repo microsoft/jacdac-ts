@@ -47,8 +47,8 @@ module.exports = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
-        name: `modules`,
-        path: `${__dirname}/../jacdac-spec/dist/modules.json`,
+        name: `devices`,
+        path: `${__dirname}/../jacdac-spec/dist/devices.json`,
       },
     },
     {
@@ -147,7 +147,7 @@ module.exports = {
             title: node => node.name,
             description: node => node.description,
             body: node => node.source,
-            url: node => `/modules/${node.id}`
+            url: node => `/devices/${node.id}`
           }
         } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
       },
@@ -232,7 +232,7 @@ module.exports = {
           `/*`,
           `/reference/*`,
           `/services/*`,
-          `/modules/*`,
+          `/devices/*`,
           `/tools/*`
         ],
       },
