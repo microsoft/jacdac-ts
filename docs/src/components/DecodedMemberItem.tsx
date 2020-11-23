@@ -4,6 +4,7 @@ import { Slider, Typography, Switch, TextField, Select, MenuItem, Theme, createS
 import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/jdom/pretty";
 import IDChip from "./IDChip"
 import AppContext from "./AppContext"
+import { useId } from "react-use-id-hook"
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -80,10 +81,11 @@ export function DecodedMemberItem(props: { member: DecodedMember, serviceSpecifi
     const { member, register, serviceSpecification, specification } = props;
     const { info } = member;
     const classes = useStyles()
+    const id = useId();
     return <div className={classes.root}>
-        {info.name !== "_" && <Typography id="slider" component="span" gutterBottom>
+        {info.name !== "_" && <Typography id={id} component="span" gutterBottom>
             {info.name}
         </Typography>}
-        <MemberInput member={member} serviceSpecification={serviceSpecification} specification={specification} labelledby={"slider"} register={register} />
+        <MemberInput member={member} serviceSpecification={serviceSpecification} specification={specification} labelledby={id} register={register} />
     </div>
 }

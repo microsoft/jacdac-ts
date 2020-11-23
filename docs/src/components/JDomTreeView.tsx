@@ -308,7 +308,9 @@ export interface JDomTreeViewProps {
 }
 
 export default function JDomTreeView(props: JDomTreeViewProps) {
-    const { onChecked, defaultExpanded, defaultSelected, defaultChecked, onToggle, onSelect, checkboxes, deviceFilter, ...other } = props;
+    const {
+        defaultExpanded, defaultSelected, defaultChecked,
+        onChecked, onToggle, onSelect, checkboxes, deviceFilter, ...other } = props;
     const classes = useStyles();
     const [expanded, setExpanded] = useState<string[]>(defaultExpanded || []);
     const [selected, setSelected] = useState<string[]>(defaultSelected || []);

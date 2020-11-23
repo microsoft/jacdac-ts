@@ -24,7 +24,7 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
     const { device } = props
     const [open, setOpen] = React.useState(false);
     const [name, setName] = useState(device.name);
-    const did = useId();
+    const dialogId = useId();
 
     const handleClickOpen = (ev) => {
         ev.stopPropagation()
@@ -47,8 +47,8 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
         <IconButton size="small" aria-label="rename device" title="rename device" onClick={handleClickOpen}>
             <EditIcon />
         </IconButton>
-        <Dialog open={open} onClose={handleClose} aria-labelledby={did}>
-            <DialogTitle id={did}>Name your device</DialogTitle>
+        <Dialog open={open} onClose={handleClose} aria-labelledby={dialogId}>
+            <DialogTitle id={dialogId}>Name your device</DialogTitle>
             <DialogContent>
                 <DialogContentText>
                     <span>Give a friendly name to </span>
@@ -58,7 +58,6 @@ export default function DeviceRenameButton(props: { device: JDDevice }) {
                 <TextField
                     autoFocus
                     margin="dense"
-                    id="name"
                     label="Device name"
                     fullWidth
                     value={name}

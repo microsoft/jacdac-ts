@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FormControl, FormHelperText, Grid, InputLabel, Select } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import useLocalStorage from './useLocalStorage';
 import { clone, unique } from '../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
@@ -13,15 +13,16 @@ import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CreateIcon from '@material-ui/icons/Create';
 import IconButtonWithTooltip from "./IconButtonWithTooltip"
-import ApiKeyAccordion from './ApiKeyAccordion';
-import { GITHUB_API_KEY, parseRepoUrl } from './github'
+import { parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from './ImageImportCanvas';
 import FirmwareCard from "./FirmwareCard"
+// tslint:disable-next-line: no-submodule-imports
 import { Autocomplete } from '@material-ui/lab/';
-import useFirmwareBlobs, { useFirmwareBlob } from './useFirmwareBlobs';
+import { useFirmwareBlob } from './useFirmwareBlobs';
 import { FirmwareBlob } from '../../../src/jdom/flashing';
+import { useId } from "react-use-id-hook"
 
 function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
     const { onValueChange, value, error } = props;
@@ -32,6 +33,10 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
         setCompany(newValue);
         onValueChange?.(newValue);
     }
+    const renderInputs = (params) => <TextField {...params}
+        error={!!error}
+        label="Company"
+        helperText={error || helperText} variant="outlined" />
 
     const helperText = "Name of the company manufacturing this device. The company name will be used to generate the module identifier."
     return <Autocomplete
@@ -40,10 +45,7 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
         includeInputInList
         autoComplete
         options={companies}
-        renderInput={(params) => <TextField {...params}
-            error={!!error}
-            label="Company"
-            helperText={error || helperText} variant="outlined" />}
+        renderInput={renderInputs}
         inputValue={company}
         onInputChange={handleChange} />
 }
@@ -63,6 +65,8 @@ export default function ModuleDesigner() {
     const [servicesAnchorEl, setServicesAnchorEl] = React.useState<null | HTMLElement>(null);
     const [firmwaresAnchorEl, setFirmwaresAnchorEl] = React.useState<null | HTMLElement>(null);
     const [imageBase64, setImageBase64] = useState<string>(undefined);
+    const firmwareMenuId = useId();
+    const servicesMenuId = useId();
     const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setServicesAnchorEl(event.currentTarget);
     };
@@ -167,6 +171,11 @@ export default function ModuleDesigner() {
         updateDeviceId();
         updateDevice();
     }
+    const renderRepoInput = (params) => <TextField {...params}
+        error={!!githubError}
+        type="url"
+        label="Firmware repository *"
+        helperText={githubError || "GitHub Repository hosting the firmware binaries."} variant="outlined" />
 
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12}>
@@ -179,11 +188,7 @@ export default function ModuleDesigner() {
                 inputValue={device.repo || ""}
                 onInputChange={handleRepoChange}
                 options={companyRepos}
-                renderInput={(params) => <TextField {...params}
-                    error={!!githubError}
-                    type="url"
-                    label="Firmware repository *"
-                    helperText={githubError || "GitHub Repository hosting the firmware binaries."} variant="outlined" />}
+                renderInput={renderRepoInput}
             />
             {!githubError && <Box mt={1}><FirmwareCard slug={device.repo} /></Box>}
         </Grid>
@@ -204,12 +209,12 @@ export default function ModuleDesigner() {
                 <IconButtonWithTooltip title="Add random firmware identifier" onClick={handleFirmwareAddRandomClick}>
                     <CreateIcon />
                 </IconButtonWithTooltip>
-                {firmwareBlobs && <IconButtonWithTooltip title="Add firmware identifier from repository" aria-controls="firmware-menu"
+                {firmwareBlobs && <IconButtonWithTooltip title="Add firmware identifier from repository" aria-controls={firmwareMenuId}
                     aria-haspopup="true" onClick={handleFirmwareAddClick}>
                     <AddIcon />
                 </IconButtonWithTooltip>}
                 <Menu
-                    id="firmware-menu"
+                    id={firmwareMenuId}
                     anchorEl={firmwaresAnchorEl}
                     keepMounted
                     open={Boolean(firmwaresAnchorEl)}
@@ -240,11 +245,11 @@ export default function ModuleDesigner() {
                         onDelete={handleDeleteService(i)}
                     />
                 </Box>)}
-                <IconButtonWithTooltip title="Add a known service" aria-controls="services-menu" aria-haspopup="true" onClick={handleServiceAddClick}>
+                <IconButtonWithTooltip title="Add a known service" aria-controls={servicesMenuId} aria-haspopup="true" onClick={handleServiceAddClick}>
                     <AddIcon />
                 </IconButtonWithTooltip>
                 <Menu
-                    id="services-menu"
+                    id={servicesMenuId}
                     anchorEl={servicesAnchorEl}
                     keepMounted
                     open={Boolean(servicesAnchorEl)}
