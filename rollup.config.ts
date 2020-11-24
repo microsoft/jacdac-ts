@@ -20,7 +20,8 @@ export default [
     input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
     output: [
       { file: `dist/${libraryName}.umd.js`, name: camelCase(libraryName), format: 'umd', sourcemap: true },
-      { file: `dist/${libraryName}.js`, format: 'es', sourcemap: true }
+      { file: `dist/${libraryName}.js`, format: 'es', sourcemap: true },
+      { file: `dist/${libraryName}.cjs.js`, format: 'cjs', sourcemap: true }
     ],
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
     external: external || [],

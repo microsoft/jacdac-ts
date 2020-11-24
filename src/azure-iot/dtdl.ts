@@ -380,7 +380,7 @@ export interface DTDLGenerationOptions {
 }
 
 export function serviceDTMI(srv: jdspec.ServiceSpec) {
-    return toDTMI([srv.classIdentifier])
+    return toDTMI(["services", srv.classIdentifier])
 }
 
 export function deviceDTMI(dev: jdspec.DeviceSpec) {

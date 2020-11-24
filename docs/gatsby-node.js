@@ -1,6 +1,9 @@
 const path = require(`path`)
+const fs = require(`fs-extra`)
 const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
+const { serviceSpecifications } = require(`../dist/jacdac-jdom.cjs`)
+const { serviceToDTDL } = require(`../dist/jacdac-azure-iot.cjs`)
 
 async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
@@ -179,6 +182,21 @@ async function createSpecPages(graphql, actions, reporter) {
   })
 }
 
+async function generateDTMI() {
+  const services = serviceSpecifications()
+  const dir = './public/dtmi'
+  await fs.emptyDir(dir)
+  for (const service of services.filter(srv => !/^_/.test(srv.shortId))) {
+    const dtml = serviceToDTDL(service)
+    const route = dtml["@id"].replace(/^dtmi\:/, '')
+      .replace(/;\d*$/, '')
+      .replace(/:/g, "/");
+    const f = path.join(dir, route + ".json")
+    console.log(`dtml ${service.shortId} => ${f}`)
+    await fs.outputFile(f, JSON.stringify(dtml, null, 2))
+  }
+}
+
 // Implement the Gatsby API “createPages”. This is
 // called after the Gatsby bootstrap is finished so you have
 // access to any information necessary to programmatically
@@ -187,6 +205,8 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
   await createServicePages(graphql, actions, reporter)
   await createSpecPages(graphql, actions, reporter)
   await createDevicePages(graphql, actions, reporter)
+  // generate JSON for DTMI models
+  await generateDTMI();
 }
 
 exports.onCreateNode = ({ node, actions, getNode }) => {
