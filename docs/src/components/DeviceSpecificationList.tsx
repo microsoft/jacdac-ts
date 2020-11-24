@@ -41,7 +41,8 @@ export default function DeviceSpecificationList(props: {
         if (company)
             r = r.filter(spec => spec.company === company);
         if (requiredServiceClasses)
-            r = r.filter(spec => spec.services.length && spec.services.every(srv => requiredServiceClasses.indexOf(srv) > -1))
+            r = r.filter(spec => spec.services.length
+                && requiredServiceClasses.every(srv => spec.services.indexOf(srv) > -1))
         if (shuffle)
             arrayShuffle(r)
         if (count !== undefined)
