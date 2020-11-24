@@ -143,3 +143,12 @@ export interface StyledTreeViewItemProps {
     checked?: string[];
     setChecked?: (id: string, value: boolean) => void;
 }
+
+export interface StyledTreeViewProps {
+    defaultChecked?: string[];
+    defaultExpanded?: string[];
+    defaultSelected?: string[];
+    onToggle?: (expanded: string[]) => void;
+    onSelect?: (selected: string[]) => void;
+    onChecked?: (checked: string[]) => void;
+}

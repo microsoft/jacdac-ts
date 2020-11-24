@@ -32,7 +32,7 @@ import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
 import { isWebUSBSupported } from '../../../src/jdom/usb';
-import { StyledTreeItem, StyledTreeViewItemProps } from './StyledTreeView';
+import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './StyledTreeView';
 
 function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
@@ -155,14 +155,8 @@ function EventTreeItem(props: { event: JDEvent } & StyledTreeViewItemProps & JDo
 
 export type CheckedMap = { [id: string]: boolean };
 
-export interface JDomTreeViewProps {
-    defaultChecked?: string[];
-    defaultExpanded?: string[];
-    defaultSelected?: string[];
+export interface JDomTreeViewProps extends StyledTreeViewProps {
     checkboxes?: ("device" | "service" | "register" | "event")[];
-    onToggle?: (expanded: string[]) => void;
-    onSelect?: (selected: string[]) => void;
-    onChecked?: (checked: string[]) => void;
     deviceFilter?: (devices: JDDevice) => boolean;
     serviceFilter?: (services: JDService) => boolean;
     registerFilter?: (register: JDRegister) => boolean;
