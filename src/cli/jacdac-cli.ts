@@ -3,7 +3,7 @@ const fs = require("fs-extra")
 import { PACKET_PROCESS } from "../jdom/constants"
 import { createUSBBus } from "../jdom/usb"
 import { getDevices, requestDevice } from "../node/nodewebusb"
-import { deviceToDTDL, serviceToDTDL } from "../azure-iot/dtdl"
+import { deviceSpecificationToDTDL, serviceSpecificationToDTDL } from "../azure-iot/dtdl"
 import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
 
 cli.setApp("jacdac", "1.0.6")
@@ -37,7 +37,7 @@ if (options.dtdl) {
                 const fn = `${dir}/${srv.shortName}.json`;
                 cli.debug(`${srv.name} => ${fn}`)
                 cli.progress(i / (services.length - 1))
-                const dtdl = serviceToDTDL(srv);
+                const dtdl = serviceSpecificationToDTDL(srv);
                 fs.writeJSONSync(fn, dtdl)
             })
         }
@@ -55,7 +55,7 @@ if (options.dtdl) {
                 const fn = `${dir}/${dev.name}.json`;
                 cli.debug(`${dev.name} => ${fn}`)
                 cli.progress(i / (devices.length - 1))
-                const dtdl = deviceToDTDL(dev);
+                const dtdl = deviceSpecificationToDTDL(dev);
                 fs.writeJSONSync(fn, dtdl)
             })
         }

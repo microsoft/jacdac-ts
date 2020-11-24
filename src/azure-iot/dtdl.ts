@@ -335,10 +335,10 @@ function escapeDisplayName(name: string) {
     return name.slice(0, 64);
 }
 
-export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
+export function serviceSpecificationToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": serviceDTMI(srv),
+        "@id": serviceSpecificationDTMI(srv),
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets
@@ -365,12 +365,12 @@ export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
     return dtdl;
 }
 
-function serviceToComponent(srv: jdspec.ServiceSpec, serviceIndex: number): any {
+function serviceSpecificationToComponent(srv: jdspec.ServiceSpec, serviceIndex: number): any {
     const dtdl = {
         "@type": "Component",
         "name": escapeName(srv.shortName),
         "displayName": escapeDisplayName(srv.name),
-        "schema": serviceDTMI(srv)
+        "schema": serviceSpecificationDTMI(srv)
     }
     return dtdl;
 }
@@ -379,25 +379,25 @@ export interface DTDLGenerationOptions {
     services?: boolean; // generate all services
 }
 
-export function serviceDTMI(srv: jdspec.ServiceSpec) {
+export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
     return toDTMI(["services", srv.classIdentifier])
 }
 
-export function deviceDTMI(dev: jdspec.DeviceSpec) {
+export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
     return toDTMI([dev.id]);
 }
 
-export function deviceToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
+export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
     const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
     const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);
-    const schemas = uniqueServices.map(srv => serviceToDTDL(srv));
+    const schemas = uniqueServices.map(srv => serviceSpecificationToDTDL(srv));
 
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": deviceDTMI(dev),
+        "@id": deviceSpecificationDTMI(dev),
         "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
-        "contents": services.map((srv, i) => serviceToComponent(srv, i)),
+        "contents": services.map((srv, i) => serviceSpecificationToComponent(srv, i)),
         "@context": CONTEXT
     }
     if (options?.services)
