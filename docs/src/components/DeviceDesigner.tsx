@@ -179,6 +179,19 @@ export default function DeviceDesigner() {
 
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12}>
+            <TextField
+                required
+                error={!!nameError}
+                helperText={nameError}
+                fullWidth={true}
+                label="Name"
+                placeholder="My module"
+                value={device.name || ""}
+                onChange={handleNameChange}
+                variant={variant}
+            />
+        </Grid>
+        <Grid item xs={12}>
             <CompanySelect value={device?.company} error={companyError} onValueChange={handleCompanyChanged} />
         </Grid>
         <Grid item xs={12}>
@@ -266,19 +279,6 @@ export default function DeviceDesigner() {
                     {servicesError || "Select one or more services."}
                 </Typography>
             </PaperBox>
-        </Grid>
-        <Grid item xs={12}>
-            <TextField
-                required
-                error={!!nameError}
-                helperText={nameError}
-                fullWidth={true}
-                label="Name"
-                placeholder="My module"
-                value={device.name || ""}
-                onChange={handleNameChange}
-                variant={variant}
-            />
         </Grid>
         <Grid item xs={12}>
             <TextField

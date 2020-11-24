@@ -32,147 +32,9 @@ import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
 import { isWebUSBSupported } from '../../../src/jdom/usb';
+import { StyledTreeItem, StyledTreeViewItemProps } from './StyledTreeView';
 
-declare module 'csstype' {
-    interface Properties {
-        '--tree-view-color'?: string;
-        '--tree-view-bg-color'?: string;
-    }
-}
-
-const useTreeItemStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            marginLeft: theme.spacing(1),
-            color: theme.palette.text.secondary,
-            '&:hover > $content': {
-                backgroundColor: theme.palette.action.hover,
-            },
-            '&:focus > $content, &$selected > $content': {
-                backgroundColor: `var(--tree-view-bg-color, ${theme.palette.grey[400]})`,
-                color: 'var(--tree-view-color)',
-            },
-            '&:focus > $content $label, &:hover > $content $label, &$selected > $content $label': {
-                backgroundColor: 'transparent',
-            },
-        },
-        content: {
-            color: theme.palette.text.secondary,
-            borderTopRightRadius: theme.spacing(2),
-            borderBottomRightRadius: theme.spacing(2),
-            paddingRight: theme.spacing(1),
-            fontWeight: theme.typography.fontWeightMedium,
-            '$expanded > &': {
-                fontWeight: theme.typography.fontWeightRegular,
-            },
-        },
-        group: {
-            marginLeft: 0,
-            '& $content': {
-                paddingLeft: theme.spacing(2),
-            },
-        },
-        expanded: {},
-        selected: {},
-        label: {
-            fontWeight: 'inherit',
-            color: 'inherit',
-        },
-        labelRoot: {
-            display: 'flex',
-            alignItems: 'center',
-            padding: theme.spacing(0.5, 0),
-        },
-        labelIcon: {
-            marginRight: theme.spacing(1),
-        },
-        labelText: {
-            fontWeight: 'inherit',
-            flexGrow: 1,
-        },
-    }),
-);
-
-function StyledTreeItem(props: TreeItemProps & {
-    nodeId: string;
-    bgColor?: string;
-    color?: string;
-    kind?: string;
-    alert?: string;
-    labelInfo?: string;
-    labelText: string;
-    checked?: boolean;
-    setChecked?: (state: boolean) => void;
-    actions?: JSX.Element | JSX.Element[]
-}) {
-    const classes = useTreeItemStyles();
-    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, alert, ...other } = props;
-    const [checkedState, setCheckedState] = useState(checked)
-
-    const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
-        ev.stopPropagation()
-        setChecked(c)
-        setCheckedState(c)
-    }
-    return (
-        <TreeItem
-            nodeId={nodeId}
-            label={
-                <div className={classes.labelRoot}>
-                    {setChecked && <Switch
-                        checked={checkedState}
-                        color="primary"
-                        inputProps={{ 'aria-label': 'secondary checkbox' }}
-                        onChange={handleChecked}
-                    />}
-                    <KindIcon kind={kind} className={classes.labelIcon} />
-                    <Typography variant="body2" className={classes.labelText}>
-                        {labelText}
-                    </Typography>
-                    {alert && <NotificationImportantIcon />}
-                    <Typography variant="caption" color="inherit">
-                        {alert && <Typography component="span">
-                            {alert}
-                        </Typography>}
-                        {labelInfo}
-                        {actions}
-                    </Typography>
-                </div>
-            }
-            style={{
-                '--tree-view-color': color,
-                '--tree-view-bg-color': bgColor,
-            }}
-            classes={{
-                root: classes.root,
-                content: classes.content,
-                expanded: classes.expanded,
-                selected: classes.selected,
-                group: classes.group,
-                label: classes.label,
-            }}
-            {...other}
-        />
-    );
-}
-
-const useStyles = makeStyles(
-    createStyles({
-        root: {
-            flexGrow: 1,
-        },
-    }),
-);
-
-interface JDomTreeViewItemProps {
-    key: string;
-    expanded: string[];
-    selected: string[];
-    checked?: string[];
-    setChecked?: (id: string, value: boolean) => void;
-}
-
-function DeviceTreeItem(props: { device: JDDevice } & JDomTreeViewItemProps & JDomTreeViewProps) {
+function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
     const name = useDeviceName(device, true)
@@ -207,7 +69,7 @@ function DeviceTreeItem(props: { device: JDDevice } & JDomTreeViewItemProps & JD
     </StyledTreeItem>
 }
 
-function ServiceTreeItem(props: { service: JDService } & JDomTreeViewItemProps & JDomTreeViewProps) {
+function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { service, checked, setChecked, checkboxes, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
     const id = service.id
@@ -254,7 +116,7 @@ function ServiceTreeItem(props: { service: JDService } & JDomTreeViewItemProps &
     </StyledTreeItem>
 }
 
-function RegisterTreeItem(props: { register: JDRegister } & JDomTreeViewItemProps & JDomTreeViewProps) {
+function RegisterTreeItem(props: { register: JDRegister } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
     const humanValue = useRegisterHumanValue(register)
@@ -273,7 +135,7 @@ function RegisterTreeItem(props: { register: JDRegister } & JDomTreeViewItemProp
     />
 }
 
-function EventTreeItem(props: { event: JDEvent } & JDomTreeViewItemProps & JDomTreeViewProps) {
+function EventTreeItem(props: { event: JDEvent } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { event, checked, setChecked, checkboxes } = props;
     const { specification, id } = event
     const count = useEventCount(event)
@@ -306,6 +168,14 @@ export interface JDomTreeViewProps {
     registerFilter?: (register: JDRegister) => boolean;
     eventFilter?: (event: JDEvent) => boolean;
 }
+
+const useStyles = makeStyles(
+    createStyles({
+        root: {
+            flexGrow: 1,
+        },
+    }),
+);
 
 export default function JDomTreeView(props: JDomTreeViewProps) {
     const {
