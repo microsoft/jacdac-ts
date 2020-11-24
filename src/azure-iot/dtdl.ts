@@ -402,7 +402,7 @@ export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDL
         else {
             let count = 2;
             while (names.indexOf(name + count) > -1)
-                count;
+                count++;
             names.push(name + count);
         }
     })
