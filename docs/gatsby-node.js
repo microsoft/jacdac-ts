@@ -186,14 +186,14 @@ async function generateDTMI() {
   const services = serviceSpecifications()
   const dir = './public/dtmi'
   await fs.emptyDir(dir)
-  for (const service of services.filter(srv => !/^_/.test(srv.shortId))) {
-    const dtml = serviceSpecificationToDTDL(service)
-    const route = dtml["@id"].replace(/^dtmi\:/, '')
+  const models = services.filter(srv => !/^_/.test(srv.shortId)).map(serviceSpecificationToDTDL);
+  for (const model of models) {
+    const route = model["@id"].replace(/^dtmi\:/, '')
       .replace(/;\d*$/, '')
       .replace(/:/g, "/");
     const f = path.join(dir, route + ".json")
-    console.log(`dtml ${service.shortId} => ${f}`)
-    await fs.outputFile(f, JSON.stringify(dtml, null, 2))
+    console.log(`dtml ${model["@id"]} => ${f}`)
+    await fs.outputFile(f, JSON.stringify(model, null, 2))
   }
 }
 

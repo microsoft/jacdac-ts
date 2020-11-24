@@ -385,7 +385,7 @@ export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
 }
 
 export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
-    return toDTMI([dev.id]);
+    return toDTMI(["devices", dev.id.replace(/-/g, ':')]);
 }
 
 export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
