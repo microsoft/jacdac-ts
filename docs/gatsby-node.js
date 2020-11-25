@@ -183,13 +183,13 @@ async function createSpecPages(graphql, actions, reporter) {
 }
 
 async function generateDTMI() {
+  const dir = './public'
   const services = serviceSpecifications()
-  const dir = './public/dtmi'
-  await fs.emptyDir(dir)
-  const models = services.filter(srv => !/^_/.test(srv.shortId)).map(serviceSpecificationToDTDL);
+  const models = services.filter(srv => !/^_/.test(srv.shortId))
+    .map(serviceSpecificationToDTDL)
   for (const model of models) {
-    const route = model["@id"].replace(/^dtmi\:/, '')
-      .replace(/;\d*$/, '')
+    const route = model["@id"]
+      .replace(/;/, '-')
       .replace(/:/g, "/");
     const f = path.join(dir, route + ".json")
     console.log(`dtml ${model["@id"]} => ${f}`)

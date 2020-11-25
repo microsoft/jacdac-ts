@@ -4,12 +4,70 @@ title: JACDAC
 ---
 
 import { serviceSpecificationFromName, deviceSpecificationFromFirmwareIdentifier } from "../../../../src/jdom/spec"
+import { serviceSpecificationToDTDL } from "../../../../src/azure-iot/dtdl"
 
 # JACDAC
 
-## Cheap Plug and Play
+Plug-n-Play for micro-controllers
 
-# Single Wire Serial
+[https://aka.ms/jacdac](https://aka.ms/jacdac)
+
+# Service specification
+
+Define registers, events, commands.
+
+<pre>
+    <code className="language-markdown">{serviceSpecificationFromName("slider").source}</code>
+</pre>
+
+# Services Catalog
+
+Discover registers, events, and commands on the fly.
+
+<ServiceSpecificationList count={3} shuffle={true} />
+
+# Service Twins
+
+Repository of DTDL models for the services ([more...](/dtmi)).
+
+<pre>
+    <code className="language-json">{JSON.stringify(serviceSpecificationToDTDL(serviceSpecificationFromName("slider")), null, 2)}</code>
+</pre>
+
+# Device specification
+
+Define metadata, services and firmware identifiers.
+
+<pre>
+    <code className="language-json">{JSON.stringify(deviceSpecificationFromFirmwareIdentifier(0x30838b8e), null, 2)}</code>
+</pre>
+
+# Device catalog
+
+Identify module, discover metadata and firmware updates.
+
+<DeviceSpecificationList count={4} shuffle={true} />
+
+# Centralized Decentralized Catalog
+
+* Device list in [JACDAC repo](https://github.com/microsoft/jacdac) 
+* Vendor-specific repos for firmware releases
+
+# WebUSB
+
+Discovery, data streaming, tracing in your browser.
+
+<PacketsPreview />
+
+# [Firmware](/tools/updater) 
+
+* Sniff firmware identifier
+    * Query Devices Catalog
+        * Check GitHub Release
+            * Download firmware
+                * Deploy firmware over JACDAC
+
+# Physical layer
 
 ![An image depicting a JACDAC transmission. A JACDAC transmission begins with a start pulse of 11-14 us, a inter lo data spacing of minimally 40 us before data commences. A JACDAC transmission ends with an end pulse of 11-14 us.](../../../../jacdac-spec/spec/images/jacdac-activity.png)
 
@@ -31,47 +89,3 @@ import { serviceSpecificationFromName, deviceSpecificationFromFirmwareIdentifier
 | 13 | 1	|`service_instance`	| The instance number of the destination service.	|
 | 14 | 2	|`service_command`	| A number that specifies an operation and code combination.	|
 | 16 | 1 * packet_size	|`payload`	| The packet data payload destined for a particular service.	|
-
-# Service specification
-
-Define registers, events, commands.
-
-<pre>
-    <code className="language-markdown">{serviceSpecificationFromName("slider").source}</code>
-</pre>
-
-# Services Catalog
-
-Discover registers, events, and commands on the fly.
-
-<ServiceSpecificationList count={3} shuffle={true} />
-
-# Device specification
-
-Define metadata, services and firmware identifiers.
-
-<pre>
-    <code className="language-markdown">{deviceSpecificationFromFirmwareIdentifier(0x30838b8e).source}</code>
-</pre>
-
-# Device catalog
-
-Identify module, discover metadata and firmware updates.
-
-<DeviceSpecificationList count={4} shuffle={true} />
-
-# WebUSB
-
-JACDAC talks to the browser via WebUSB.
-
-<PacketsPreview />
-
-# [Firmware](/tools/updater) 
-
-* Sniff firmware identifier
-    * Query Devices Catalog
-        * Check GitHub Release
-            * Download firmware
-                * Deploy firmware over JACDAC
-
-
