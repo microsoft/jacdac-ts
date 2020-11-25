@@ -377,7 +377,7 @@ function serviceSpecificationToComponent(srv: jdspec.ServiceSpec, name: string):
 }
 
 export interface DTDLGenerationOptions {
-    services?: boolean; // generate all services
+    inlineServices?: boolean; // generate all services
 }
 
 export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
@@ -421,7 +421,7 @@ export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDL
         "contents": services.map((srv, i) => serviceSpecificationToComponent(srv, names[i])),
         "@context": CONTEXT
     }
-    if (options?.services)
+    if (options?.inlineServices)
         return [dtdl, ...schemas]
     else
         return dtdl
