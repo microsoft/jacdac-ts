@@ -1,10 +1,9 @@
 import Packet from "./packet"
 import {
-    JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, CONNECT,
-    JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
+    JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, CtrlReg
 } from "./constants"
-import { hash, fromHex, idiv, read32, SMap, bufferEq, assert } from "./utils"
+import { fromHex, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";

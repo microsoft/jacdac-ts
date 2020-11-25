@@ -20,7 +20,7 @@ function DeviceFirmwareChip(props: { device: JDDevice }) {
 
 function DeviceTemperatureChip(props: { device: JDDevice }) {
     const { device } = props;
-    const tempRegister = device?.service(0)?.register(CtrlReg.Temperature)
+    const tempRegister = device?.service(0)?.register(CtrlReg.McuTemperature)
     const temperature = useRegisterIntValue(tempRegister);
     return (temperature !== undefined && <Chip size="small" label={`${temperature}°`} />) || <></>
 }
