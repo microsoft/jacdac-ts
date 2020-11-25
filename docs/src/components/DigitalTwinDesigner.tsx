@@ -51,6 +51,10 @@ export default function DigitalTwinDesigner() {
         })
         update();
     }
+    const handleSetService = (c: DigitalTwinComponent) => (serviceClass: number) => {
+        c.service = serviceSpecificationFromClassIdentifier(serviceClass);
+        update();
+    }
     const nameError = ""
 
     return <Grid container direction="row" spacing={2}>
@@ -72,7 +76,7 @@ export default function DigitalTwinDesigner() {
                 {twin.components.map(c => <ListItem>
                     <div>
                         <TextField variant="outlined" label="role" value={c.name} />
-                        <ServiceSpecificationSelect />
+                        <ServiceSpecificationSelect label="service" serviceClass={c.service.classIdentifier} setServiceClass={handleSetService(c)} />
                     </div>
                 </ListItem>)}
             </List>
