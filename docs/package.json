@@ -55,7 +55,6 @@
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.6",
     "slug": "^4.0.0",
-    "spectacle": "^6.2.0",
     "use-debounce": "^5.1.0"
   },
   "keywords": [
