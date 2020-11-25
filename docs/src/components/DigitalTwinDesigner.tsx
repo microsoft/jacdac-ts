@@ -41,8 +41,10 @@ export default function DigitalTwinDesigner() {
             displayName: "mydesigner",
             components: []
         } as DigitalTwinSpec);
+
     const dtdl = {
         "@type": "Interface",
+        "@id": "dtmi:jacdac:devices:TBD,1",
         displayName: twin.displayName,
         contents: twin.components.map(c => serviceSpecificationToComponent(c.service, c.name)),
         "@context": DTDL_CONTEXT
@@ -93,13 +95,13 @@ export default function DigitalTwinDesigner() {
         </Grid>
         {twin.components.map(c => <Grid item xs={12}>
             <Grid container spacing={2}>
-                <Grid item xs={4}>
+                <Grid item xs={6}>
                     <TextField fullWidth={true} variant="outlined" label="name" value={c.name} onChange={handleComponentNameChange(c)} />
                 </Grid>
-                <Grid item xs={5}>
+                <Grid item>
                     <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={c.service.classIdentifier} setServiceClass={handleSetService(c)} />
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item>
                     <IconButtonWithTooltip title="Remove service" onClick={handleComponentDelete(c)}>
                         <DeleteIcon />
                     </IconButtonWithTooltip>
