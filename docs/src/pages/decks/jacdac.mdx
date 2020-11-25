@@ -8,13 +8,23 @@ import { serviceSpecificationToDTDL } from "../../../../src/azure-iot/dtdl"
 
 # JACDAC
 
-Plug-n-Play for micro-controllers
+USB for low-cost micro-controllers
 
 [https://aka.ms/jacdac](https://aka.ms/jacdac)
 
+# Like USB... for MCUs
+
+* Dynamic Connectivity
+* Dynamic Device Discovery
+* Hardware abstraction
+
+# Bus, Devices, Services
+
+![JACDAC stack](../../../../jacdac-spec/spec/images/jacdac-stack.png)
+
 # Service specification
 
-Define registers, events, commands.
+Hardware abstraction: registers, events, commands.
 
 <pre>
     <code className="language-markdown">{serviceSpecificationFromName("slider").source}</code>
@@ -48,10 +58,11 @@ Identify module, discover metadata and firmware updates.
 
 <DeviceSpecificationList count={4} shuffle={true} />
 
-# Centralized Decentralized Catalog
+# Open Source Catalog
 
+* Service list in [JACDAC repo](https://github.com/microsoft/jacdac) 
 * Device list in [JACDAC repo](https://github.com/microsoft/jacdac) 
-* Vendor-specific repos for firmware releases
+* Vendor-specific repos for device firmware releases
 
 # WebUSB
 
@@ -59,7 +70,7 @@ Discovery, data streaming, tracing in your browser.
 
 <PacketsPreview />
 
-# [Firmware](/tools/updater) 
+# [Firmware updates](/tools/updater) 
 
 * Sniff firmware identifier
     * Query Devices Catalog
