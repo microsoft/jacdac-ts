@@ -4,11 +4,13 @@ title: JACDAC
 ---
 
 import { serviceSpecificationFromName, deviceSpecificationFromFirmwareIdentifier } from "../../../../src/jdom/spec"
+import { serviceSpecificationToDTDL } from "../../../../src/azure-iot/dtdl"
 
 # JACDAC
 
-## Plug-n-Play
-## for micro-controllers
+Plug-n-Play for micro-controllers
+
+[https://aka.ms/jacdac](https://aka.ms/jacdac)
 
 # Service specification
 
@@ -24,16 +26,20 @@ Discover registers, events, and commands on the fly.
 
 <ServiceSpecificationList count={3} shuffle={true} />
 
-# Twin compatible
+# Service Twins
 
-Generate DTDL models on the fly.
+Automatic generation of service DTDL models.
+
+<pre>
+    <code className="language-json">{JSON.stringify(serviceSpecificationToDTDL(serviceSpecificationFromName("slider")), null, 2)}</code>
+</pre>
 
 # Device specification
 
 Define metadata, services and firmware identifiers.
 
 <pre>
-    <code className="language-markdown">{deviceSpecificationFromFirmwareIdentifier(0x30838b8e).source}</code>
+    <code className="language-json">{JSON.stringify(deviceSpecificationFromFirmwareIdentifier(0x30838b8e), null, 2)}</code>
 </pre>
 
 # Device catalog
@@ -42,9 +48,14 @@ Identify module, discover metadata and firmware updates.
 
 <DeviceSpecificationList count={4} shuffle={true} />
 
+# Centralized Decentralized Catalog
+
+* Device list in [JACDAC repo](https://github.com/microsoft/jacdac) 
+* Vendor-specific repos for firmware releases
+
 # WebUSB
 
-JACDAC talks to the browser via WebUSB.
+Discovery, data streaming, tracing in your browser.
 
 <PacketsPreview />
 
