@@ -34,7 +34,7 @@ interface DigitalTwinSpec {
     components: DigitalTwinComponent[];
 }
 
-export default function DigitalTwinDesigner() {
+export default function AzureTwinDesigner() {
     const variant = "outlined";
     const { value: twin, setValue: setTwin } = useLocalStorage<DigitalTwinSpec>('jacdac:digitaltwin;1',
         {
