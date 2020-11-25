@@ -13,9 +13,11 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function ServiceSpecificationSelect(props: {
     label: string,
     serviceClass: number;
-    setServiceClass: (serviceClass: number) => void
+    setServiceClass: (serviceClass: number) => void;
+    variant?: "outlined" | "filled" | "standard";
+    fullWidth?: boolean;
 }) {
-    const { label, serviceClass, setServiceClass } = props;
+    const { label, serviceClass, setServiceClass, variant, fullWidth } = props;
     const [labelId] = useState('select-' + Math.random());
     const classes = useStyles();
     const specs = serviceSpecifications().filter(spec => !/^_/.test(spec.shortId))
@@ -29,6 +31,8 @@ export default function ServiceSpecificationSelect(props: {
         label={label}
         value={serviceClass}
         select
+        variant={variant}
+        fullWidth={fullWidth}
         onChange={handleChange}>
         <MenuItem key="none" value="NaN">No service selected</MenuItem>
         {specs.map(spec => <MenuItem

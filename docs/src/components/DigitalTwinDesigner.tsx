@@ -12,11 +12,17 @@ import Typography from '@material-ui/core/Typography';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import DeleteIcon from '@material-ui/icons/Delete';
 import { StyledTreeItem, StyledTreeViewItemProps } from "./StyledTreeView";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import AddServiceIconButton from "./AddServiceIconButton";
 import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec";
 import ServiceSpecificationSelect from "./ServiceSpecificationSelect"
+import { DTDL_CONTEXT, escapeName, serviceSpecificationToComponent } from "../../../src/azure-iot/dtdl"
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import Snippet from "./Snippet";
+import PaperBox from "./PaperBox";
 
 interface DigitalTwinComponent {
     name: string;
@@ -35,7 +41,13 @@ export default function DigitalTwinDesigner() {
             displayName: "mydesigner",
             components: []
         } as DigitalTwinSpec);
-
+    const dtdl = {
+        "@type": "Interface",
+        displayName: twin.displayName,
+        contents: twin.components.map(c => serviceSpecificationToComponent(c.service, c.name)),
+        "@context": DTDL_CONTEXT
+    }
+    const dtdlSource = JSON.stringify(dtdl, null, 2);
 
     const update = () => {
         setTwin(clone(twin));
@@ -51,8 +63,16 @@ export default function DigitalTwinDesigner() {
         })
         update();
     }
+    const handleComponentNameChange = (c: DigitalTwinComponent) => (ev: ChangeEvent<HTMLInputElement>) => {
+        c.name = escapeName(ev.target.value);
+        update();
+    }
     const handleSetService = (c: DigitalTwinComponent) => (serviceClass: number) => {
         c.service = serviceSpecificationFromClassIdentifier(serviceClass);
+        update();
+    }
+    const handleComponentDelete = (c: DigitalTwinComponent) => () => {
+        twin.components.splice(twin.components.indexOf(c), 1);
         update();
     }
     const nameError = ""
@@ -71,21 +91,28 @@ export default function DigitalTwinDesigner() {
                 variant={variant}
             />
         </Grid>
-        <Grid item xs={12}>
-            <List>
-                {twin.components.map(c => <ListItem>
-                    <div>
-                        <TextField variant="outlined" label="name" value={c.name} />
-                        <ServiceSpecificationSelect label="service" serviceClass={c.service.classIdentifier} setServiceClass={handleSetService(c)} />
-                    </div>
-                </ListItem>)}
-            </List>
-        </Grid>
+        {twin.components.map(c => <Grid item xs={12}>
+            <Grid container spacing={2}>
+                <Grid item xs={4}>
+                    <TextField fullWidth={true} variant="outlined" label="name" value={c.name} onChange={handleComponentNameChange(c)} />
+                </Grid>
+                <Grid item xs={5}>
+                    <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={c.service.classIdentifier} setServiceClass={handleSetService(c)} />
+                </Grid>
+                <Grid item xs={1}>
+                    <IconButtonWithTooltip title="Remove service" onClick={handleComponentDelete(c)}>
+                        <DeleteIcon />
+                    </IconButtonWithTooltip>
+                </Grid>
+            </Grid>
+        </Grid>)}
         <Grid item xs={12}>
             <AddServiceIconButton onAdd={handleAddService} />
         </Grid>
         <Grid item xs={12}>
-
+            <PaperBox>
+                <Snippet value={dtdlSource} mode="json" download="model" />
+            </PaperBox>
         </Grid>
     </Grid>
 }
