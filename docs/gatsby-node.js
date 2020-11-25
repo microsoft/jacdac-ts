@@ -195,6 +195,7 @@ async function generateDTMI() {
     console.log(`dtml ${model["@id"]} => ${f}`)
     await fs.outputFile(f, JSON.stringify(model, null, 2))
   }
+  await fs.outputFile('./public/dtmi/jacdac/services.json', JSON.stringify(models, null, 2))
 }
 
 // Implement the Gatsby API “createPages”. This is
