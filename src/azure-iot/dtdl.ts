@@ -9,7 +9,7 @@ import { uniqueMap } from "../jdom/utils";
 
 export const DTDL_REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
 export const DTDL_NAME = "Digital Twins Definition Language"
-const CONTEXT = "dtmi:dtdl:context;2";
+export const DTDL_CONTEXT = "dtmi:dtdl:context;2";
 
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
@@ -324,7 +324,7 @@ interface DTDLInterface extends DTDLContent {
     '@context'?: string;
 }
 
-function escapeName(name: string) {
+export function escapeName(name: string) {
     name = name.trim().replace(/[^a-zA-Z0-9_]/g, '_');
     if (!/^[a-zA-Z]/.test(name))
         name = "a" + name;
@@ -362,11 +362,11 @@ export function serviceSpecificationToDTDL(srv: jdspec.ServiceSpec): DTDLInterfa
         if (hasEnums)
             dtdl.schemas = dtdl.schemas.concat(Object.keys(srv.enums).map(en => enumSchema(srv, srv.enums[en])));
     }
-    dtdl["@context"] = CONTEXT
+    dtdl["@context"] = DTDL_CONTEXT
     return dtdl;
 }
 
-function serviceSpecificationToComponent(srv: jdspec.ServiceSpec, name: string): any {
+export function serviceSpecificationToComponent(srv: jdspec.ServiceSpec, name: string): any {
     const dtdl = {
         "@type": "Component",
         "name": name,
@@ -377,7 +377,7 @@ function serviceSpecificationToComponent(srv: jdspec.ServiceSpec, name: string):
 }
 
 export interface DTDLGenerationOptions {
-    services?: boolean; // generate all services
+    inlineServices?: boolean; // generate all services
 }
 
 export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
@@ -386,6 +386,12 @@ export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
 
 export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
     return toDTMI(["devices", dev.id.replace(/-/g, ':')]);
+}
+
+export function DTMIToRoute(dtmi: string) {
+    const route = dtmi.replace(/;/, '-')
+        .replace(/:/g, "/") + ".json";
+    return route;
 }
 
 export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
@@ -413,9 +419,9 @@ export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDL
         "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
         "contents": services.map((srv, i) => serviceSpecificationToComponent(srv, names[i])),
-        "@context": CONTEXT
+        "@context": DTDL_CONTEXT
     }
-    if (options?.services)
+    if (options?.inlineServices)
         return [dtdl, ...schemas]
     else
         return dtdl

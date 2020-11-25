@@ -9,6 +9,8 @@ import TabPanel, { a11yProps } from './TabPanel';
 import Snippet from './Snippet';
 import { converters } from '../../../jacdac-spec/spectool/jdspec'
 import ServiceSpecification from './ServiceSpecification';
+import { DTMIToRoute, serviceSpecificationDTMI, serviceSpecificationToDTDL } from '../../../src/azure-iot/dtdl'
+import { Link } from 'gatsby-theme-material-ui';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -50,7 +52,9 @@ export default function ServiceSpecificationSource(props: {
                         showSpecification && "Specification",
                         "TypeScript",
                         "C",
-                        "JSON"].filter(n => !!n)
+                        "JSON",
+                        "DTDL"]
+                        .filter(n => !!n)
                         .map((n, i) => <Tab key={n} label={n} {...a11yProps(i)} />)}
                 </Tabs>
                 {showMarkdown && <TabPanel value={tab} index={index++}>
@@ -60,9 +64,15 @@ export default function ServiceSpecificationSource(props: {
                     <ServiceSpecification service={spec} />
                 </TabPanel>}
                 {["ts", "c", "json"].map((lang, i) =>
-                    <TabPanel key={`conv${lang}`} value={tab} index={i + 1}>
+                    <TabPanel key={`conv${lang}`} value={tab} index={index++}>
                         <Snippet value={convs[lang](spec)} mode={lang} />
                     </TabPanel>)}
+                <TabPanel key="dtdl" value={tab} index={index++}>
+                    <Snippet value={JSON.stringify(serviceSpecificationToDTDL(spec), null, 2)} mode={"json"}
+                        download={`dtmi-${spec.shortId}.json`}
+                        url={"/" + DTMIToRoute(serviceSpecificationDTMI(spec))}
+                        caption={<><Link to="/dtmi">DTDL</Link> is an open source modelling language developed by Microsoft Azure.</>} />
+                </TabPanel>
             </Paper>
         </div>
     );

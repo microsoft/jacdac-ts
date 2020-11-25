@@ -62,20 +62,12 @@ export default function DeviceDesigner() {
     const updateDevice = () => {
         setDevice(clone(device));
     }
-    const [servicesAnchorEl, setServicesAnchorEl] = React.useState<null | HTMLElement>(null);
     const [firmwaresAnchorEl, setFirmwaresAnchorEl] = React.useState<null | HTMLElement>(null);
     const [imageBase64, setImageBase64] = useState<string>(undefined);
     const firmwareMenuId = useId();
-    const servicesMenuId = useId();
-    const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setServicesAnchorEl(event.currentTarget);
-    };
-    const handleServiceAddClose = (id: number) => () => {
-        setServicesAnchorEl(null);
-        if (id !== undefined) {
-            device.services.push(id)
-            updateDevice();
-        }
+    const handleServiceAdd = (srv: jdspec.ServiceSpec) => () => {
+        device.services.push(srv.classIdentifier)
+        updateDevice();
     };
     const companyRepos = useMemo(() => unique(deviceSpecifications()
         .filter(d => d.company === device.company)
@@ -179,6 +171,19 @@ export default function DeviceDesigner() {
 
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12}>
+            <TextField
+                required
+                error={!!nameError}
+                helperText={nameError}
+                fullWidth={true}
+                label="Name"
+                placeholder="My module"
+                value={device.name || ""}
+                onChange={handleNameChange}
+                variant={variant}
+            />
+        </Grid>
+        <Grid item xs={12}>
             <CompanySelect value={device?.company} error={companyError} onValueChange={handleCompanyChanged} />
         </Grid>
         <Grid item xs={12}>
@@ -245,40 +250,8 @@ export default function DeviceDesigner() {
                         onDelete={handleDeleteService(i)}
                     />
                 </Box>)}
-                <IconButtonWithTooltip title="Add a known service" aria-controls={servicesMenuId} aria-haspopup="true" onClick={handleServiceAddClick}>
-                    <AddIcon />
-                </IconButtonWithTooltip>
-                <Menu
-                    id={servicesMenuId}
-                    anchorEl={servicesAnchorEl}
-                    keepMounted
-                    open={Boolean(servicesAnchorEl)}
-                    onClose={handleServiceAddClose(undefined)}
-                >
-                    {serviceSpecifications()
-                        .filter(srv => srv.classIdentifier !== SRV_CTRL && !/^_/.test(srv.shortId))
-                        .map(srv => <MenuItem key={srv.classIdentifier} value={srv.classIdentifier.toString(16)}
-                            onClick={handleServiceAddClose(srv.classIdentifier)}>
-                            {srv.name}
-                        </MenuItem>)}
-                </Menu>
-                <Typography variant="caption" color={servicesError ? "error" : "inherit"} component="div">
-                    {servicesError || "Select one or more services."}
-                </Typography>
+                <AddServiceIconButton onAdd={handleServiceAdd} />
             </PaperBox>
-        </Grid>
-        <Grid item xs={12}>
-            <TextField
-                required
-                error={!!nameError}
-                helperText={nameError}
-                fullWidth={true}
-                label="Name"
-                placeholder="My module"
-                value={device.name || ""}
-                onChange={handleNameChange}
-                variant={variant}
-            />
         </Grid>
         <Grid item xs={12}>
             <TextField

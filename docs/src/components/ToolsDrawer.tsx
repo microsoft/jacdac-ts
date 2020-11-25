@@ -22,6 +22,8 @@ import HistoryIcon from '@material-ui/icons/History';
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import CloudIcon from '@material-ui/icons/Cloud';
 import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./DarkModeContext";
 import KindIcon from "./KindIcon";
@@ -138,6 +140,11 @@ export default function ToolsDrawer() {
             text: "Device designer",
             url: "/tools/device-designer",
             icon: <KindIcon kind={"device"} />
+        },
+        {
+            text: "Azure Twin Designer",
+            url: "/tools/azure-twin-designer",
+            icon: <CloudIcon />
         },
     ]
 
