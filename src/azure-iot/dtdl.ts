@@ -389,7 +389,7 @@ export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
 }
 
 export function DTMIToRoute(dtmi: string) {
-    const route = dtmi.replace(/;/, '-')
+    const route = dtmi.toLowerCase().replace(/;/, '-')
         .replace(/:/g, "/") + ".json";
     return route;
 }
