@@ -7,30 +7,8 @@ import { serviceSpecificationFromName, deviceSpecificationFromFirmwareIdentifier
 
 # JACDAC
 
-## Cheap Plug and Play
-
-# Single Wire Serial
-
-![An image depicting a JACDAC transmission. A JACDAC transmission begins with a start pulse of 11-14 us, a inter lo data spacing of minimally 40 us before data commences. A JACDAC transmission ends with an end pulse of 11-14 us.](../../../../jacdac-spec/spec/images/jacdac-activity.png)
-
-# Frames
-
-| Memory offset | Field size (bytes) 	| Field name 	| Description  	|
-|--------|------------	|-------------	|----------	|
-| 0 | 2          	|`frame_crc`	| [16-bit CRC CCITT](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) of all following fields. |
-| 2 | 1          	|`frame_size`	| Size of the data field.	|
-| 3 | 1          	|`frame_flags`	| Flags specific to this frame.	|
-| 4 | 8          	|`device_identifier`	| 64-bit device identifier.	|
-| 12 | 1 * `frame_size`   	|`data`	| The data payload of the frame.	|
-
-# Packets
-
-| Memory offset | Field size (bytes) 	| Field name 	| Description  	|
-|--------|------------	|-------------	|----------	|
-| 12 | 1	|`packet_size`	| The size of the payload field. Maximum size is 236 bytes. |
-| 13 | 1	|`service_instance`	| The instance number of the destination service.	|
-| 14 | 2	|`service_command`	| A number that specifies an operation and code combination.	|
-| 16 | 1 * packet_size	|`payload`	| The packet data payload destined for a particular service.	|
+## Plug-n-Play
+## for micro-controllers
 
 # Service specification
 
@@ -45,6 +23,10 @@ Define registers, events, commands.
 Discover registers, events, and commands on the fly.
 
 <ServiceSpecificationList count={3} shuffle={true} />
+
+# Twin compatible
+
+Generate DTDL models on the fly.
 
 # Device specification
 
@@ -74,4 +56,25 @@ JACDAC talks to the browser via WebUSB.
             * Download firmware
                 * Deploy firmware over JACDAC
 
+# Physical layer
 
+![An image depicting a JACDAC transmission. A JACDAC transmission begins with a start pulse of 11-14 us, a inter lo data spacing of minimally 40 us before data commences. A JACDAC transmission ends with an end pulse of 11-14 us.](../../../../jacdac-spec/spec/images/jacdac-activity.png)
+
+# Frames
+
+| Memory offset | Field size (bytes) 	| Field name 	| Description  	|
+|--------|------------	|-------------	|----------	|
+| 0 | 2          	|`frame_crc`	| [16-bit CRC CCITT](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) of all following fields. |
+| 2 | 1          	|`frame_size`	| Size of the data field.	|
+| 3 | 1          	|`frame_flags`	| Flags specific to this frame.	|
+| 4 | 8          	|`device_identifier`	| 64-bit device identifier.	|
+| 12 | 1 * `frame_size`   	|`data`	| The data payload of the frame.	|
+
+# Packets
+
+| Memory offset | Field size (bytes) 	| Field name 	| Description  	|
+|--------|------------	|-------------	|----------	|
+| 12 | 1	|`packet_size`	| The size of the payload field. Maximum size is 236 bytes. |
+| 13 | 1	|`service_instance`	| The instance number of the destination service.	|
+| 14 | 2	|`service_command`	| A number that specifies an operation and code combination.	|
+| 16 | 1 * packet_size	|`payload`	| The packet data payload destined for a particular service.	|
