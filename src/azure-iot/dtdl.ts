@@ -388,6 +388,12 @@ export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
     return toDTMI(["devices", dev.id.replace(/-/g, ':')]);
 }
 
+export function DTMIToRoute(dtmi: string) {
+    const route = dtmi.replace(/;/, '-')
+        .replace(/:/g, "/") + ".json";
+    return route;
+}
+
 export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
     const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
     const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);

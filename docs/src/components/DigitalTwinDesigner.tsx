@@ -75,7 +75,7 @@ export default function DigitalTwinDesigner() {
             <List>
                 {twin.components.map(c => <ListItem>
                     <div>
-                        <TextField variant="outlined" label="role" value={c.name} />
+                        <TextField variant="outlined" label="name" value={c.name} />
                         <ServiceSpecificationSelect label="service" serviceClass={c.service.classIdentifier} setServiceClass={handleSetService(c)} />
                     </div>
                 </ListItem>)}
@@ -83,6 +83,9 @@ export default function DigitalTwinDesigner() {
         </Grid>
         <Grid item xs={12}>
             <AddServiceIconButton onAdd={handleAddService} />
+        </Grid>
+        <Grid item xs={12}>
+
         </Grid>
     </Grid>
 }

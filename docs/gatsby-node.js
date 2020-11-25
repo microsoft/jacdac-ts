@@ -3,7 +3,7 @@ const fs = require(`fs-extra`)
 const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
 const { serviceSpecifications } = require(`../dist/jacdac-jdom.cjs`)
-const { serviceSpecificationToDTDL } = require(`../dist/jacdac-azure-iot.cjs`)
+const { serviceSpecificationToDTDL, DTMIToRoute } = require(`../dist/jacdac-azure-iot.cjs`)
 
 async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
@@ -188,10 +188,8 @@ async function generateDTMI() {
   const models = services.filter(srv => !/^_/.test(srv.shortId))
     .map(serviceSpecificationToDTDL)
   for (const model of models) {
-    const route = model["@id"]
-      .replace(/;/, '-')
-      .replace(/:/g, "/");
-    const f = path.join(dir, route + ".json")
+    const route = DTMIToRoute(model["@id"])
+    const f = path.join(dir, route)
     console.log(`dtml ${model["@id"]} => ${f}`)
     await fs.outputFile(f, JSON.stringify(model, null, 2))
   }
