@@ -1,4 +1,4 @@
-import { Grid, TextField } from "@material-ui/core";
+import { Grid, List, ListItem, ListItemText, TextField } from "@material-ui/core";
 import React, { ChangeEvent, useState } from "react";
 import { clone } from "../../../src/jdom/utils";
 import useLocalStorage from "./useLocalStorage";
@@ -12,20 +12,20 @@ import Typography from '@material-ui/core/Typography';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+import { StyledTreeItem, StyledTreeViewItemProps } from "./StyledTreeView";
+import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
+import AddServiceIconButton from "./AddServiceIconButton";
+import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec";
+import ServiceSpecificationSelect from "./ServiceSpecificationSelect"
 
 interface DigitalTwinComponent {
     name: string;
-    serviceClass: number;
-    packetIds: jdspec.PacketInfoRef;
+    service: jdspec.ServiceSpec;
 }
 
 interface DigitalTwinSpec {
     displayName: string;
     components: DigitalTwinComponent[];
-}
-
-function ComponentTreeItem(props: { component: DigitalTwinComponent }) {
-
 }
 
 export default function DigitalTwinDesigner() {
@@ -36,21 +36,19 @@ export default function DigitalTwinDesigner() {
             components: []
         } as DigitalTwinSpec);
 
-    // tree view
-    const [expanded, setExpanded] = useState<string[]>([]);
-    const [selected, setSelected] = useState<string[]>([]);
-    const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
-        setExpanded(nodeIds);
-    };
-    const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
-        setSelected(nodeIds);
-    };
 
     const update = () => {
         setTwin(clone(twin));
     }
     const handleDisplayNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         twin.displayName = ev.target.value;
+        update();
+    }
+    const handleAddService = (service: jdspec.ServiceSpec) => {
+        twin.components.push({
+            name: service.shortId,
+            service
+        })
         update();
     }
     const nameError = ""
@@ -70,21 +68,17 @@ export default function DigitalTwinDesigner() {
             />
         </Grid>
         <Grid item xs={12}>
-            <TreeView
-                defaultCollapseIcon={<ArrowDropDownIcon />}
-                defaultExpandIcon={<ArrowRightIcon />}
-                expanded={expanded}
-                selected={selected}
-                onNodeToggle={handleToggle}
-                onNodeSelect={handleSelect}
-            >
-                {twin?.components?.map((component, i) => <ComponentTreeItem
-                    key={`component${i}`}
-                    component={component}
-                    expanded={expanded}
-                    selected={selected}
-                />)}
-            </TreeView>
+            <List>
+                {twin.components.map(c => <ListItem>
+                    <div>
+                        <TextField variant="outlined" label="role" value={c.name} />
+                        <ServiceSpecificationSelect />
+                    </div>
+                </ListItem>)}
+            </List>
+        </Grid>
+        <Grid item xs={12}>
+            <AddServiceIconButton onAdd={handleAddService} />
         </Grid>
     </Grid>
 }

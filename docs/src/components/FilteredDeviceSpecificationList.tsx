@@ -17,6 +17,7 @@ export default function FilteredDeviceSpecificationList(props: {
     return <>
         <Box mb={1}>
             <ServiceSpecificationSelect
+                label="Filter by Service"
                 serviceClass={serviceClass}
                 setServiceClass={handleServiceChanged} />
         </Box>

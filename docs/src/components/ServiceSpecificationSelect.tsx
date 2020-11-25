@@ -11,10 +11,11 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export default function ServiceSpecificationSelect(props: {
+    label: string,
     serviceClass: number;
     setServiceClass: (serviceClass: number) => void
 }) {
-    const { serviceClass, setServiceClass } = props;
+    const { label, serviceClass, setServiceClass } = props;
     const [labelId] = useState('select-' + Math.random());
     const classes = useStyles();
     const specs = serviceSpecifications().filter(spec => !/^_/.test(spec.shortId))
@@ -25,7 +26,7 @@ export default function ServiceSpecificationSelect(props: {
     return <TextField
         id={labelId}
         className={classes.root}
-        label="Filter by Service"
+        label={label}
         value={serviceClass}
         select
         onChange={handleChange}>
