@@ -328,6 +328,7 @@ function escapeName(name: string) {
     name = name.trim().replace(/[^a-zA-Z0-9_]/g, '_');
     if (!/^[a-zA-Z]/.test(name))
         name = "a" + name;
+    name = name[0].toLowerCase() + name.slice(1);
     return name.slice(0, 64);
 }
 
@@ -335,10 +336,10 @@ function escapeDisplayName(name: string) {
     return name.slice(0, 64);
 }
 
-export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
+export function serviceSpecificationToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": serviceDTMI(srv),
+        "@id": serviceSpecificationDTMI(srv),
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets
@@ -365,12 +366,12 @@ export function serviceToDTDL(srv: jdspec.ServiceSpec): DTDLInterface {
     return dtdl;
 }
 
-function serviceToComponent(srv: jdspec.ServiceSpec, serviceIndex: number): any {
+function serviceSpecificationToComponent(srv: jdspec.ServiceSpec, name: string): any {
     const dtdl = {
         "@type": "Component",
-        "name": escapeName(srv.shortName),
+        "name": name,
         "displayName": escapeDisplayName(srv.name),
-        "schema": serviceDTMI(srv)
+        "schema": serviceSpecificationDTMI(srv)
     }
     return dtdl;
 }
@@ -379,25 +380,39 @@ export interface DTDLGenerationOptions {
     services?: boolean; // generate all services
 }
 
-export function serviceDTMI(srv: jdspec.ServiceSpec) {
-    return toDTMI([srv.classIdentifier])
+export function serviceSpecificationDTMI(srv: jdspec.ServiceSpec) {
+    return toDTMI(["services", srv.classIdentifier])
 }
 
-export function deviceDTMI(dev: jdspec.DeviceSpec) {
-    return toDTMI([dev.id]);
+export function deviceSpecificationDTMI(dev: jdspec.DeviceSpec) {
+    return toDTMI(["devices", dev.id.replace(/-/g, ':')]);
 }
 
-export function deviceToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
+export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDLGenerationOptions): any {
     const services = dev.services.map(srv => serviceSpecificationFromClassIdentifier(srv));
     const uniqueServices = uniqueMap(services, srv => srv.classIdentifier.toString(), srv => srv);
-    const schemas = uniqueServices.map(srv => serviceToDTDL(srv));
+    const schemas = uniqueServices.map(srv => serviceSpecificationToDTDL(srv));
+
+    // allocate names
+    let names: string[] = [];
+    services.forEach((srv, i) => {
+        let name = escapeName(srv.shortId || srv.shortName)
+        if (names.indexOf(name) < 0)
+            names.push(name)
+        else {
+            let count = 2;
+            while (names.indexOf(name + count) > -1)
+                count++;
+            names.push(name + count);
+        }
+    })
 
     const dtdl: DTDLInterface = {
         "@type": "Interface",
-        "@id": deviceDTMI(dev),
+        "@id": deviceSpecificationDTMI(dev),
         "displayName": escapeDisplayName(dev.name),
         "description": dev.description,
-        "contents": services.map((srv, i) => serviceToComponent(srv, i)),
+        "contents": services.map((srv, i) => serviceSpecificationToComponent(srv, names[i])),
         "@context": CONTEXT
     }
     if (options?.services)
