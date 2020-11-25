@@ -565,3 +565,13 @@ export function arrayShuffle<T>(a: T[]): T[] {
     }
     return a;
 }
+
+export function uniqueName(names: string[], name: string): string {
+    if (names.indexOf(name) < 0)
+        return name;
+    // allocate names
+    let count = 2;
+    while (names.indexOf(`${name}${count}`) > -1)
+        count++;
+    return `${name}${count}`;
+}

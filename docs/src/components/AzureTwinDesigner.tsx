@@ -1,23 +1,16 @@
-import { Grid, List, ListItem, ListItemText, TextField } from "@material-ui/core";
-import React, { ChangeEvent, useState } from "react";
-import { clone } from "../../../src/jdom/utils";
+import { Grid, TextField } from "@material-ui/core";
+import React, { ChangeEvent } from "react";
+import { clone, uniqueName } from "../../../src/jdom/utils";
 import useLocalStorage from "./useLocalStorage";
 // tslint:disable-next-line: no-submodule-imports
-import TreeView from '@material-ui/lab/TreeView';
 // tslint:disable-next-line: no-submodule-imports
-import TreeItem, { TreeItemProps } from '@material-ui/lab/TreeItem';
 // tslint:disable-next-line: no-submodule-imports
-import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { StyledTreeItem, StyledTreeViewItemProps } from "./StyledTreeView";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import AddServiceIconButton from "./AddServiceIconButton";
-import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec";
 import ServiceSpecificationSelect from "./ServiceSpecificationSelect"
 import { DTDL_CONTEXT, escapeName, serviceSpecificationToComponent } from "../../../src/azure-iot/dtdl"
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
@@ -59,8 +52,9 @@ export default function AzureTwinDesigner() {
         update();
     }
     const handleAddService = (service: jdspec.ServiceSpec) => {
+        const names = twin.components.map(c => c.name)
         twin.components.push({
-            name: service.shortId,
+            name: uniqueName(names, service.shortId),
             service
         })
         update();
