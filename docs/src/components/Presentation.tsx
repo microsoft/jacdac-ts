@@ -1,9 +1,11 @@
-import { Box, CircularProgress, createStyles, Grow, makeStyles, NoSsr, useTheme } from "@material-ui/core";
+import { Box, CircularProgress, createStyles, Grow, IconButton, makeStyles, NoSsr, useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect, useState } from "react"
 
 import useEffectAsync from "./useEffectAsync"
 import DarkModeContext from "./DarkModeContext";
 import Footer from "./Footer";
+import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -38,13 +40,9 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const { children } = props
     const theme = useTheme();
     const { darkMode } = useContext(DarkModeContext)
-    const [spectable, setSpectable] = useState(undefined)
     const classes = useStyles()
+    const [index, setIndex] = useState(0);
 
-    useEffectAsync(async () => {
-        const s = await import('spectacle');
-        setSpectable(s);
-    }, [])
     useLayoutEffect(() => {
         // don't override theme background
         if (browser)
@@ -54,9 +52,6 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
                 document.body.style.background = ''
         }
     })
-
-    if (!spectable)
-        return <><CircularProgress /></>
 
     const browser = typeof window !== "undefined"
     const controlColor = darkMode === "dark" ? "#fff" : "#000"
@@ -72,19 +67,14 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         space: [16, 24, 32]
     };
     const template = () => (
-        <spectable.FlexBox
-            justifyContent="space-between"
+        <Box justifyContent="space-between"
             position="absolute"
             bottom={0}
             width={1}
         >
-            {browser && <spectable.Box padding="0 1em">
-                <spectable.FullScreen color={controlColor} size={theme.spacing(3)} />
-            </spectable.Box>}
-            <spectable.Box padding="1em">
-                <spectable.Progress color={controlColor} size={theme.spacing(2)} />
-            </spectable.Box>
-        </spectable.FlexBox>
+            <Box padding="1em">
+            </Box>
+        </Box>
     )
 
     // split children in pages
@@ -104,23 +94,26 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         if (slide.note) slide.note.push(child);
         else slide.content.push(child);
     })
-
+    const slide = index !== undefined && slides[index];
+    const handlePreviousSlide = () => {
+        setIndex(undefined);
+        setTimeout(() => setIndex(Math.max(0, index - 1)), 100)
+    }
+    const handleNextSlide = async () => {
+        setIndex(undefined);
+        setTimeout(() => setIndex(Math.min(slides.length - 1, index + 1)), 100)
+    }
     // assemble in deck
-    return <Box className={classes.root}>
-        <spectable.Deck
-            theme={deckTheme}
-            template={template}
-            transitionEffect="slide"
-            backgroundColor={backgroundColor}>
-            {slides.map((slide, i) =>
-                <spectable.Slide key={i} backgroundColor={backgroundColor}>
-                    <>
-                        {slide.content.map((el, i) => <Grow key={i} in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
-                    </>
-                    <spectable.Notes>{slide.note || <></>}</spectable.Notes>
-                </spectable.Slide>)}
-        </spectable.Deck>
-        <Footer />
+    return <Box m={theme.spacing(1)} className={classes.root} bgcolor={backgroundColor}>
+        {slide?.content?.map((el, i) => <Grow key={i} in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
+        <Box position="absolute" right={theme.spacing(1)} bottom={theme.spacing(2)}>
+            <IconButton onClick={handlePreviousSlide}>
+                <NavigateBeforeIcon />
+            </IconButton>
+            <IconButton onClick={handleNextSlide}>
+                <NavigateNextIcon />
+            </IconButton>
+        </Box>
     </Box>
 }
 
