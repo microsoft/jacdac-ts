@@ -1,4 +1,4 @@
-import { Box, CircularProgress, createStyles, Grow, IconButton, makeStyles, NoSsr, Typography, useTheme } from "@material-ui/core";
+import { Box, createStyles, makeStyles, NoSsr, Typography, useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect, useState } from "react"
 
 import DarkModeContext from "./DarkModeContext";
@@ -7,7 +7,6 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import { useHotkeys } from 'react-hotkeys-hook';
 import IconButtonWithTooltip from "./IconButtonWithTooltip"
-import { delay } from "../../../src/jdom/utils";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -55,7 +54,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const { darkMode } = useContext(DarkModeContext)
     const classes = useStyles()
     const [index, setIndex] = useState(0);
-    const [grow, setGrow] = useState(true)
+    const [] = useState(true)
 
     useLayoutEffect(() => {
         // don't override theme background
@@ -68,18 +67,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     })
 
     const browser = typeof window !== "undefined"
-    const controlColor = darkMode === "dark" ? "#fff" : "#000"
     const backgroundColor = darkMode === "dark" ? "#000" : "#fff"
-    const template = () => (
-        <Box justifyContent="space-between"
-            position="absolute"
-            bottom={0}
-            width={1}
-        >
-            <Box padding="1em">
-            </Box>
-        </Box>
-    )
 
     // split children in pages
     const slides: {
@@ -100,25 +88,17 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     })
     const handlePreviousSlide = async () => {
         if (index == 0) return;
-        setGrow(false)
-        await delay(1200)
         setIndex(Math.max(0, index - 1))
-        setGrow(true)
     }
     const handleNextSlide = async () => {
         if (index == slides.length - 1) return;
-        setGrow(false)
-        await delay(1200)
         setIndex(Math.min(slides.length - 1, index + 1))
-        setGrow(true)
     }
     useHotkeys('left', () => { handlePreviousSlide() }, {}, [index])
     useHotkeys('right', () => { handleNextSlide() }, {}, [index])
     const slide = slides[index];
     return <Box m={theme.spacing(1)} className={classes.root} bgcolor={backgroundColor}>
-        {slide.content?.map((el, i) => <Grow key={i}
-            in={grow}
-            timeout={(1 + i) * 800}>{el}</Grow>)}
+        {slide.content}
         <Box position="absolute" right={theme.spacing(1)} bottom={theme.spacing(2)}>
             <IconButtonWithTooltip title="previous slide (Left)" onClick={handlePreviousSlide}>
                 <NavigateBeforeIcon />
