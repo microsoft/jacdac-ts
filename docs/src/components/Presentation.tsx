@@ -1,14 +1,18 @@
-import { Box, CircularProgress, createStyles, Grow, IconButton, makeStyles, NoSsr, useTheme } from "@material-ui/core";
+import { Box, CircularProgress, createStyles, Grow, IconButton, makeStyles, NoSsr, Typography, useTheme } from "@material-ui/core";
 import React, { useContext, useLayoutEffect, useState } from "react"
 
-import useEffectAsync from "./useEffectAsync"
 import DarkModeContext from "./DarkModeContext";
 import Footer from "./Footer";
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import { useHotkeys } from 'react-hotkeys-hook';
+import IconButtonWithTooltip from "./IconButtonWithTooltip"
+import { delay } from "../../../src/jdom/utils";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
+        marginTop: theme.spacing(8),
+        width: "100%",
         fontSize: theme.spacing(6),
         "& h1": {
             fontSize: theme.spacing(9)
@@ -34,6 +38,15 @@ const useStyles = makeStyles((theme) => createStyles({
             right: theme.spacing(0.5)
         }
     },
+    footer: {
+        position: "absolute",
+        left: "1rem",
+        bottom: "1rem",
+        width: "40%"
+    },
+    slideIndex: {
+        verticalAlign: "middle"
+    }
 }));
 
 function PresentationNoSsr(props: { children: JSX.Element[] }) {
@@ -42,6 +55,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const { darkMode } = useContext(DarkModeContext)
     const classes = useStyles()
     const [index, setIndex] = useState(0);
+    const [grow, setGrow] = useState(true)
 
     useLayoutEffect(() => {
         // don't override theme background
@@ -56,16 +70,6 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     const browser = typeof window !== "undefined"
     const controlColor = darkMode === "dark" ? "#fff" : "#000"
     const backgroundColor = darkMode === "dark" ? "#000" : "#fff"
-    const deckTheme = {
-        colors: {
-            primary: theme.palette.text,
-            secondary: theme.palette.grey,
-        },
-        fonts: {
-            fontFamily: theme.typography.fontFamily
-        },
-        space: [16, 24, 32]
-    };
     const template = () => (
         <Box justifyContent="space-between"
             position="absolute"
@@ -94,26 +98,41 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         if (slide.note) slide.note.push(child);
         else slide.content.push(child);
     })
-    const slide = index !== undefined && slides[index];
-    const handlePreviousSlide = () => {
-        setIndex(undefined);
-        setTimeout(() => setIndex(Math.max(0, index - 1)), 100)
+    const handlePreviousSlide = async () => {
+        if (index == 0) return;
+        setGrow(false)
+        await delay(1200)
+        setIndex(Math.max(0, index - 1))
+        setGrow(true)
     }
     const handleNextSlide = async () => {
-        setIndex(undefined);
-        setTimeout(() => setIndex(Math.min(slides.length - 1, index + 1)), 100)
+        if (index == slides.length - 1) return;
+        setGrow(false)
+        await delay(1200)
+        setIndex(Math.min(slides.length - 1, index + 1))
+        setGrow(true)
     }
-    // assemble in deck
+    useHotkeys('left', () => { handlePreviousSlide() }, {}, [index])
+    useHotkeys('right', () => { handleNextSlide() }, {}, [index])
+    const slide = slides[index];
     return <Box m={theme.spacing(1)} className={classes.root} bgcolor={backgroundColor}>
-        {slide?.content?.map((el, i) => <Grow key={i} in={true} timeout={(1 + i) * 800}>{el}</Grow>)}
+        {slide.content?.map((el, i) => <Grow key={i}
+            in={grow}
+            timeout={(1 + i) * 800}>{el}</Grow>)}
         <Box position="absolute" right={theme.spacing(1)} bottom={theme.spacing(2)}>
-            <IconButton onClick={handlePreviousSlide}>
+            <IconButtonWithTooltip title="previous slide (Left)" onClick={handlePreviousSlide}>
                 <NavigateBeforeIcon />
-            </IconButton>
-            <IconButton onClick={handleNextSlide}>
+            </IconButtonWithTooltip>
+            <Typography variant="subtitle1" component="span" className={classes.slideIndex}>
+                {index + 1}/{slides.length}
+            </Typography>
+            <IconButtonWithTooltip title="next slide (Right)" onClick={handleNextSlide}>
                 <NavigateNextIcon />
-            </IconButton>
+            </IconButtonWithTooltip>
         </Box>
+        <div className={classes.footer}>
+            <Footer />
+        </div>
     </Box>
 }
 
