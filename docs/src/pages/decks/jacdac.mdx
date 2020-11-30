@@ -14,27 +14,21 @@ import { serviceSpecificationToDTDL } from "../../../../src/azure-iot/dtdl"
 
 # "USB" for low-cost micro-controllers
 
-* Dynamic Connectivity
-* Dynamic Device Discovery
-* Hardware abstraction
+* One wire protocol, runs on 8-bit MCU
+* Dynamic Connectivity / Device Discovery
+* Service/Hardware abstraction
 
 # Bus, Devices, Services
 
 ![JACDAC stack](../../../../jacdac-spec/spec/images/jacdac-stack.png)
 
-# Service specification
+# Service specification / Hardware abstraction
 
 Hardware abstraction: registers, events, commands.
 
 <pre>
     <code className="language-markdown">{serviceSpecificationFromName("slider").source}</code>
 </pre>
-
-# Services Catalog
-
-Discover registers, events, and commands on the fly.
-
-<ServiceSpecificationList count={3} shuffle={true} />
 
 # Service Twins
 
@@ -43,6 +37,12 @@ Repository of DTDL models for the services ([more...](/dtmi)).
 <pre>
     <code className="language-json">{JSON.stringify(serviceSpecificationToDTDL(serviceSpecificationFromName("slider")), null, 2)}</code>
 </pre>
+
+# Services Catalog
+
+Discover registers, events, and commands on the fly.
+
+<ServiceSpecificationList count={3} shuffle={true} />
 
 # Device specification
 
