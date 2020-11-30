@@ -5,7 +5,7 @@ import { Observable } from "./observable";
 import { EventTargetObservable } from "./eventtargetobservable";
 import { delay } from "./utils";
 
-const HF2 = "HF2"
+export const USB_TRANSPORT = "usb"
 
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>;
@@ -71,13 +71,15 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
             }
             const transport = new Transport(options);
             transport.onError = (e) => {
-                bus.errorHandler(HF2, e)
+                bus.errorHandler(USB_TRANSPORT, e)
                 bus.disconnectAsync()
             }
             const onJDMessage = (buf: Uint8Array) => {
                 const pkts = Packet.fromFrame(buf, bus.timestamp)
-                for (const pkt of pkts)
+                for (const pkt of pkts) {
+                    pkt.sender = USB_TRANSPORT;
                     bus.processPacket(pkt);
+                }
             }
             hf2 = await transport.connectAsync(background)
             hf2.onJDMessage(onJDMessage)
