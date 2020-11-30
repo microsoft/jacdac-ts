@@ -26,6 +26,10 @@ interface AckAwaiter {
 
 export class JDDevice extends JDNode {
     connected: boolean;
+    /*
+    * Identifies where the packets are coming from
+    */
+    source: string;
     private _name: string;
     private _lost: boolean;
     servicesData: Uint8Array
@@ -220,6 +224,7 @@ export class JDDevice extends JDNode {
     }
 
     processAnnouncement(pkt: Packet) {
+        this.source = pkt.sender || this.source; // remember who's sending those packets
         const w0 = this.servicesData ? getNumber(this.servicesData, NumberFormat.UInt32LE, 0) : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
 
