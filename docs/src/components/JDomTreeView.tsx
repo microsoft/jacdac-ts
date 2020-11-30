@@ -43,15 +43,18 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
     const theme = useTheme()
     const showActions = useMediaQuery(theme.breakpoints.up('sm'))
 
-    const readings = ellipseJoin(services
+    const serviceNames = ellipseJoin(services
         .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
         .map(service => service.name), 2)
+    const readingRegister = services.find(srv => srv.readingRegister)?.readingRegister;
+    const reading = useRegisterHumanValue(readingRegister);
+    const labelInfo = [reading, serviceNames].filter(r => !!r).join(', ');
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
-        labelInfo={readings}
+        labelInfo={labelInfo}
         alert={lost && "Lost device..."}
         kind={"device"}
         checked={checked?.indexOf(id) > -1}
