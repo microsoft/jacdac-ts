@@ -97,7 +97,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     useHotkeys('left', () => { handlePreviousSlide() }, {}, [index])
     useHotkeys('right', () => { handleNextSlide() }, {}, [index])
     const slide = slides[index];
-    return <Box m={theme.spacing(1)} className={classes.root} bgcolor={backgroundColor}>
+    return <Box mt={theme.spacing(1)} ml={theme.spacing(2)} mr={theme.spacing(2)} className={classes.root} bgcolor={backgroundColor}>
         {slide.content}
         <Box position="absolute" right={theme.spacing(1)} bottom={theme.spacing(2)}>
             <IconButtonWithTooltip title="previous slide (Left)" onClick={handlePreviousSlide}>
