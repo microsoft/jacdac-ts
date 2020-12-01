@@ -192,6 +192,11 @@ export class Packet {
         return read32(buf, 0)
     }
 
+    get stringData(): string {
+        // TODO better?
+        return this.decoded.decoded[0].value as string;
+    }
+
     get intData() {
         let fmt: NumberFormat
         switch (this._data.length) {
