@@ -4,8 +4,7 @@ import useLocalStorage from './useLocalStorage';
 import { clone, unique } from '../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
 import { ChangeEvent } from 'react';
-import { SRV_CTRL } from '../../../src/jdom/constants';
-import { deviceSpecifications, serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
+import { deviceSpecifications, serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
 import PaperBox from "./PaperBox"
 import { uniqueFirmwareId } from './RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
@@ -23,6 +22,7 @@ import { Autocomplete } from '@material-ui/lab/';
 import { useFirmwareBlob } from './useFirmwareBlobs';
 import { FirmwareBlob } from '../../../src/jdom/flashing';
 import { useId } from "react-use-id-hook"
+import AddServiceIconButton from "./AddServiceIconButton";
 
 function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
     const { onValueChange, value, error } = props;
