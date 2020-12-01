@@ -42,7 +42,8 @@ import {
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
     REGISTER_OPTIONAL_POLL_COUNT,
-    PACKET_PRE_PROCESS
+    PACKET_PRE_PROCESS,
+    STREAMING_DEFAULT_INTERVAL
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -627,11 +628,13 @@ export class JDBus extends JDNode {
                 let interval = intervalRegister.intValue;
                 if (!interval) {
                     // console.log(`auto-refresh - update interval`, register)
-                    // no interval data, ask register again
-                    interval = 50;
+                    // no interval data
+                    // use preferred interval data or default to 50
+                    const preferredInterval = register.service.register(SensorReg.StreamingPreferredInterval);
+                    interval = preferredInterval?.intValue || STREAMING_DEFAULT_INTERVAL;
                     await intervalRegister.sendGetAsync();
                 }
-                const samplesRegister = register.service.register(SensorReg.StreamSamples);
+                const samplesRegister = register.service.register(SensorReg.StreamingSamples);
                 const age = this.timestamp - samplesRegister.lastSetTimestamp;
                 // need to figure out when we asked for streaming
                 const midAge = interval * 0xff / 2;

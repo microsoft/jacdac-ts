@@ -7,6 +7,7 @@ import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isInstanceOf, isReading, isEvent } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
+import { SystemReg } from "../../jacdac-spec/dist/specconstants";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -52,9 +53,22 @@ export class JDService extends JDNode {
         return this.device
     }
 
+    private _readingRegister: JDRegister;
     get readingRegister(): JDRegister {
-        const pkt = this.specification?.packets.find(pkt => isReading(pkt))
-        return pkt && this.register(pkt.identifier)
+        if (!this._readingRegister) {
+            const pkt = this.specification?.packets.find(pkt => isReading(pkt))
+            this._readingRegister = pkt && this.register(pkt.identifier)
+        }
+        return this._readingRegister;
+    }
+
+    private _statusCodeRegister: JDRegister;
+    get statusCodeRegister(): JDRegister {
+        if (!this._statusCodeRegister) {
+            const pkt = this.specification?.packets.find(pkt => pkt.identifier === SystemReg.StatusCode)
+            this._statusCodeRegister = pkt && this.register(pkt.identifier);
+        }
+        return this._statusCodeRegister;
     }
 
     /**
@@ -160,7 +174,8 @@ export class JDService extends JDNode {
                 .then(() => {
                     this.on(REPORT_RECEIVE, handleRes)
                 })
-                // the handler remove either upon timeout, or on first invocation of handleRes()
+            // the handler remove either upon timeout, 
+            // or on first invocation of handleRes()
         })
     }
 

@@ -4,7 +4,7 @@ import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap } from "./utils";
-import { BaseReg, SensorReg } from "./constants";
+import { SystemReg, SensorReg } from "./constants";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
@@ -107,7 +107,7 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
 export function isSensor(spec: jdspec.ServiceSpec): boolean {
     return spec
         && spec.packets.some(pkt => isReading(pkt))
-        && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamSamples)
+        && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingSamples)
         && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 
@@ -116,7 +116,7 @@ export function isRegister(pkt: jdspec.PacketInfo) {
 }
 
 export function isReading(pkt: jdspec.PacketInfo) {
-    return pkt && (pkt.kind == "ro" && pkt.identifier == BaseReg.Reading)
+    return pkt && (pkt.kind == "ro" && pkt.identifier == SystemReg.Reading)
 }
 
 export function isConstRegister(pkt: jdspec.PacketInfo) {

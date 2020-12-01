@@ -24,7 +24,7 @@ import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
-import { BaseCmd } from "../../jacdac-spec/dist/specconstants";
+import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
 
 export class Packet {
     private _header: Uint8Array;
@@ -214,7 +214,7 @@ export class Packet {
     get isAnnounce() {
         return this.service_index == SRV_CTRL
             && this.is_report
-            && this.service_command == BaseCmd.Announce;
+            && this.service_command == SystemCmd.Announce;
     }
 
     get isRepeatedAnnounce() {
