@@ -82,6 +82,7 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
     const registers = packets?.filter(isRegister)
         .map(info => service.register(info.identifier))
         .filter(reg => !registerFilter || registerFilter(reg))
+        .sort((l,r) => l.name.localeCompare(r.name))
     const events = packets?.filter(isEvent)
         .map(info => service.event(info.identifier))
         .filter(ev => !eventFilter || eventFilter(ev))
@@ -140,7 +141,7 @@ function RegisterTreeItem(props: { register: JDRegister } & StyledTreeViewItemPr
         labelText={labelText}
         labelInfo={humanValue}
         kind={specification?.kind || "register"}
-        alert={failedGet && !optional && "???"}
+        alert={failedGet && !optional && humanValue === undefined && "???"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
     />
