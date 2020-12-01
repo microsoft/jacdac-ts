@@ -1,6 +1,6 @@
 import { Grid, TextField } from "@material-ui/core";
 import React, { ChangeEvent } from "react";
-import { clone, uniqueName } from "../../../src/jdom/utils";
+import { clone, SMap, uniqueName } from "../../../src/jdom/utils";
 import useLocalStorage from "./useLocalStorage";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -11,15 +11,73 @@ import { DTDL_CONTEXT, escapeName, serviceSpecificationToComponent } from "../..
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import Snippet from "./Snippet";
 import PaperBox from "./PaperBox";
+import Alert from "./Alert"
 
 interface DigitalTwinComponent {
     name: string;
     service: jdspec.ServiceSpec;
+    // validation error
+    nameError?: string;
+    serviceError?: string;
 }
 
 interface DigitalTwinSpec {
     displayName: string;
     components: DigitalTwinComponent[];
+
+    // validation error
+    error?: string;
+}
+
+
+function ComponentRow(props: { twin: DigitalTwinSpec, component: DigitalTwinComponent, onUpdate: () => void }) {
+    const { component, onUpdate, twin } = props;
+    const { name, service, nameError, serviceError } = component;
+    const handleComponentNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
+        component.name = escapeName(ev.target.value);
+        onUpdate();
+    }
+    const handleSetService = (serviceClass: number) => {
+        component.service = serviceSpecificationFromClassIdentifier(serviceClass);
+        onUpdate();
+    }
+    const handleComponentDelete = () => {
+        twin.components.splice(twin.components.indexOf(component), 1);
+        onUpdate();
+    }
+    return <Grid item xs={12}>
+        <Grid container spacing={2}>
+            <Grid item xs={6}>
+                <TextField fullWidth={true} error={!!nameError} variant="outlined" label="name" helperText={nameError} value={name} onChange={handleComponentNameChange} />
+            </Grid>
+            <Grid item>
+                <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={service.classIdentifier} setServiceClass={handleSetService} error={serviceError} />
+            </Grid>
+            <Grid item>
+                <IconButtonWithTooltip title="Remove service" onClick={handleComponentDelete}>
+                    <DeleteIcon />
+                </IconButtonWithTooltip>
+            </Grid>
+        </Grid>
+    </Grid>
+}
+
+function validateTwin(twin: DigitalTwinSpec) {
+    // clear errors
+    delete twin.error;
+    twin.components.forEach(c => { delete c.nameError; delete c.serviceError });
+    // check names
+
+    // check services
+    const srvs: SMap<number> = {};
+    // count service occurences
+    twin.components.forEach(
+        c => srvs[c.service.classIdentifier]
+            = (srvs[c.service.classIdentifier] || (srvs[c.service.classIdentifier] = 0)) + 1
+    )
+    // TODO remove this in future
+    twin.components.filter(c => srvs[c.service.classIdentifier] > 1)
+        .forEach(c => c.serviceError = `Only one service occurence per device supported`);
 }
 
 export default function AzureDeviceTwinDesigner() {
@@ -40,6 +98,7 @@ export default function AzureDeviceTwinDesigner() {
     const dtdlSource = JSON.stringify(dtdl, null, 2);
 
     const update = () => {
+        validateTwin(twin);
         setTwin(clone(twin));
     }
     const handleDisplayNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -54,26 +113,13 @@ export default function AzureDeviceTwinDesigner() {
         })
         update();
     }
-    const handleComponentNameChange = (c: DigitalTwinComponent) => (ev: ChangeEvent<HTMLInputElement>) => {
-        c.name = escapeName(ev.target.value);
-        update();
-    }
-    const handleSetService = (c: DigitalTwinComponent) => (serviceClass: number) => {
-        c.service = serviceSpecificationFromClassIdentifier(serviceClass);
-        update();
-    }
-    const handleComponentDelete = (c: DigitalTwinComponent) => () => {
-        twin.components.splice(twin.components.indexOf(c), 1);
-        update();
-    }
-    const nameError = ""
 
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12}>
             <TextField
                 required
-                error={!!nameError}
-                helperText={nameError}
+                error={!!twin.error}
+                helperText={twin.error}
                 fullWidth={true}
                 label="Display name"
                 placeholder="My device"
@@ -82,21 +128,7 @@ export default function AzureDeviceTwinDesigner() {
                 variant={variant}
             />
         </Grid>
-        {twin.components.map(c => <Grid item xs={12}>
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
-                    <TextField fullWidth={true} variant="outlined" label="name" value={c.name} onChange={handleComponentNameChange(c)} />
-                </Grid>
-                <Grid item>
-                    <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={c.service.classIdentifier} setServiceClass={handleSetService(c)} />
-                </Grid>
-                <Grid item>
-                    <IconButtonWithTooltip title="Remove service" onClick={handleComponentDelete(c)}>
-                        <DeleteIcon />
-                    </IconButtonWithTooltip>
-                </Grid>
-            </Grid>
-        </Grid>)}
+        {twin.components.map(c => <ComponentRow twin={twin} component={c} onUpdate={update} />)}
         <Grid item xs={12}>
             <AddServiceIconButton onAdd={handleAddService} />
         </Grid>

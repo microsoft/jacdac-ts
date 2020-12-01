@@ -16,6 +16,7 @@ export default function ServiceSpecificationSelect(props: {
     setServiceClass: (serviceClass: number) => void;
     variant?: "outlined" | "filled" | "standard";
     fullWidth?: boolean;
+    error?: string;
 }) {
     const { label, serviceClass, setServiceClass, variant, fullWidth, error } = props;
     const [labelId] = useState('select-' + Math.random());
@@ -29,6 +30,8 @@ export default function ServiceSpecificationSelect(props: {
         id={labelId}
         className={classes.root}
         label={label}
+        error={!!error}
+        helperText={error}
         value={serviceClass}
         select
         variant={variant}
