@@ -122,17 +122,25 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
 function RegisterTreeItem(props: { register: JDRegister } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
+    const optional = specification?.optional;
+    const failedGet = register.lastGetAttempts > 2;
+    const labelText = specification?.name || register.id;
     const humanValue = useRegisterHumanValue(register)
 
     const handleChecked = c => {
         setChecked(id, c)
     }
+
+    // if register is optional and no data, hide
+    if (optional && failedGet && humanValue === undefined)
+        return <></>;
+
     return <StyledTreeItem
         nodeId={id}
-        labelText={specification?.name || register.id}
+        labelText={labelText}
         labelInfo={humanValue}
         kind={specification?.kind || "register"}
-        alert={register.lastGetAttempts > 2 && "???"}
+        alert={failedGet && !optional && "???"}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
     />
