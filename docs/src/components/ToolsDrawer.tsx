@@ -24,6 +24,8 @@ import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CloudIcon from '@material-ui/icons/Cloud';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./DarkModeContext";
 import KindIcon from "./KindIcon";
@@ -92,6 +94,11 @@ export default function ToolsDrawer() {
             text: "Model Uploader",
             url: "/tools/model-uploader",
             icon: <EmojiNatureIcon />
+        },
+        {
+            text: "Settings Manager",
+            url: "/tools/settings-manager",
+            icon: <PhonelinkSetupIcon />
         },
         {
             // separator

@@ -9,6 +9,7 @@ import CmdButton from "./CmdButton"
 import { Alert, AlertTitle } from "@material-ui/lab"
 import DeviceCardHeader from "./DeviceCardHeader"
 import { SelectWithLabel } from "./SelectWithLabel"
+import useServiceClient from "./useServiceClient"
 
 function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: RoleManagerClient }) {
     const { rdev, client } = props
@@ -40,6 +41,7 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
             disabled={disabled}
             label={label}
             value={value}
+            onChange={handleChange}
             error={error}>
             {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
                 <DeviceName device={candidate} />
@@ -56,16 +58,8 @@ export default function RoleManagerService(props: {
     service: JDService
 }) {
     const { service } = props
-    const [client, setClient] = useState<RoleManagerClient>(undefined)
-
+    const client = useServiceClient(service, srv => new RoleManagerClient(srv));
     useChange(client)
-    useEffect(() => {
-        console.log(`creating client`)
-        const c = new RoleManagerClient(service)
-        setClient(c)
-        return () => c.unmount()
-    }, [service])
-
     if (!client)
         return null // wait till loaded
 

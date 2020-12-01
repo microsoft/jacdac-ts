@@ -575,3 +575,7 @@ export function uniqueName(names: string[], name: string): string {
         count++;
     return `${name}${count}`;
 }
+
+export function stringToBuffer(str: string) {
+    return stringToUint8Array(toUTF8(str))
+}
