@@ -45,7 +45,7 @@ function UpdateDeviceCard(props: {
         action={flashing ? <CircularProgressWithLabel value={progress} />
             : updateApplicable(firmware, blob)
                 ? <Button aria-label="deploy new firmware to device" disabled={flashing} variant="contained"
-                    color="primary" onClick={() => handleFlashing()}>Flash</Button>
+                    color="primary" onClick={handleFlashing}>Flash</Button>
                 : <Alert severity="success">Up to date!</Alert>} />
 }
 
