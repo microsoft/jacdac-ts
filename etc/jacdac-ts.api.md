@@ -56,25 +56,8 @@ export function arrayShuffle<T>(a: T[]): T[];
 export function assert(cond: boolean, msg?: string): void;
 
 // @public (undocumented)
-export enum BaseCmd {
-    Announce = 0,
-    Calibrate = 2,
-    Description = 3,
-    Event = 1,
-    GetRegister = 4096,
-    SetRegister = 8192
-}
-
-// @public (undocumented)
 export enum BaseReg {
-    HighThreshold = 6,
-    Intensity = 1,
-    LowThreshold = 5,
-    MaxPower = 7,
-    Reading = 257,
-    StreamingInterval = 4,
-    StreamSamples = 3,
-    Value = 2
+    StatusCode = 7
 }
 
 // @public (undocumented)
@@ -285,9 +268,11 @@ export enum CtrlCmd {
 export enum CtrlReg {
     BootloaderFirmwareIdentifier = 388,
     DeviceDescription = 384,
+    DeviceUrl = 391,
     FirmwareIdentifier = 385,
+    FirmwareUrl = 392,
     FirmwareVersion = 389,
-    Temperature = 386,
+    McuTemperature = 386,
     Uptime = 390
 }
 
@@ -671,6 +656,9 @@ export enum HumidityReg {
 }
 
 // @public (undocumented)
+export function identifierToUrlPath(id: string): string;
+
+// @public (undocumented)
 export interface IDeviceNameSettings {
     // (undocumented)
     notifyUpdate(device: JDDevice, name: string): void;
@@ -978,7 +966,9 @@ export class JDDevice extends JDNode {
     servicesData: Uint8Array;
     // (undocumented)
     get shortId(): string;
-    }
+    // (undocumented)
+    source: string;
+}
 
 // @public (undocumented)
 export class JDEvent extends JDServiceMemberNode {
@@ -1176,6 +1166,8 @@ export class JDService extends JDNode {
     // (undocumented)
     get serviceClass(): number;
     get specification(): jdspec.ServiceSpec;
+    // (undocumented)
+    get statusCodeRegister(): JDRegister;
     }
 
 // @public (undocumented)
@@ -2070,7 +2062,8 @@ export interface SensorAggregatorStats {
 // @public (undocumented)
 export enum SensorReg {
     StreamingInterval = 4,
-    StreamSamples = 3
+    StreamingPreferredInterval = 258,
+    StreamingSamples = 3
 }
 
 // @public (undocumented)
@@ -2257,7 +2250,33 @@ export function storageTypeRange(tp: jdspec.StorageType): [number, number];
 export function strcmp(a: string, b: string): 0 | 1 | -1;
 
 // @public (undocumented)
+export const STREAMING_DEFAULT_INTERVAL = 50;
+
+// @public (undocumented)
 export function stringToUint8Array(input: string): Uint8Array;
+
+// @public (undocumented)
+export enum SystemCmd {
+    Announce = 0,
+    Calibrate = 2,
+    Event = 1,
+    GetRegister = 4096,
+    SetRegister = 8192
+}
+
+// @public (undocumented)
+export enum SystemReg {
+    HighThreshold = 6,
+    Intensity = 1,
+    LowThreshold = 5,
+    MaxPower = 7,
+    Reading = 257,
+    StatusCode = 7,
+    StreamingInterval = 4,
+    StreamingPreferredInterval = 258,
+    StreamingSamples = 3,
+    Value = 2
+}
 
 // @public (undocumented)
 export enum TCPCmd {
@@ -2388,6 +2407,9 @@ export function unique(values: string[]): string[];
 export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted: (value: T) => U): U[];
 
 // @public (undocumented)
+export function uniqueName(names: string[], name: string): string;
+
+// @public (undocumented)
 export function unpack(buf: Uint8Array, format: string, offset?: number): number[];
 
 // @public
@@ -2395,6 +2417,9 @@ export function unpackNumberArray(buf: Uint8Array, offset?: number): number[];
 
 // @public (undocumented)
 export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob): boolean;
+
+// @public (undocumented)
+export const USB_TRANSPORT = "usb";
 
 // @public (undocumented)
 export interface USBOptions {

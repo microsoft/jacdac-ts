@@ -702,147 +702,6 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!BaseCmd:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum BaseCmd "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "BaseCmd",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseCmd.Announce:member",
-              "docComment": "/**\n * No args. Enumeration data for control service; service-specific advertisement data otherwise. Control broadcasts it automatically every 500ms, but other service have to be queried to provide it.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Announce = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "0"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Announce",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseCmd.Calibrate:member",
-              "docComment": "/**\n * No args. Request to calibrate a sensor. The report indicates the calibration is done.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Calibrate = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "2"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Calibrate",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseCmd.Description:member",
-              "docComment": "/**\n * No args. Request human-readable description of service.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Description = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "3"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Description",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseCmd.Event:member",
-              "docComment": "/**\n * Event from sensor or a broadcast service.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Event = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "1"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Event",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseCmd.GetRegister:member",
-              "docComment": "/**\n * No args. Registers number `N` is fetched by issuing command `0x1000 | N`. The report format is the same as the format of the register.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "GetRegister = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "4096"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "GetRegister",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseCmd.SetRegister:member",
-              "docComment": "/**\n * No args. Registers number `N` is set by issuing command `0x2000 | N`, with the format the same as the format of the register.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "SetRegister = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "8192"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "SetRegister",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
           "canonicalReference": "jacdac-ts!BaseReg:enum",
           "docComment": "",
           "excerptTokens": [
@@ -856,75 +715,12 @@
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.HighThreshold:member",
-              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n */\n",
+              "canonicalReference": "jacdac-ts!BaseReg.StatusCode:member",
+              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "HighThreshold = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "6"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "HighThreshold",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.Intensity:member",
-              "docComment": "/**\n * Read-write uint32_t. This is either binary on/off (0 or non-zero), or can be gradual (eg. brightness of an RGB LED strip).\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Intensity = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "1"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Intensity",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.LowThreshold:member",
-              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "LowThreshold = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "5"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "LowThreshold",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.MaxPower:member",
-              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the service, in mA.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "MaxPower = "
+                  "text": "StatusCode = "
                 },
                 {
                   "kind": "Content",
@@ -932,91 +728,7 @@
                 }
               ],
               "releaseTag": "Public",
-              "name": "MaxPower",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.Reading:member",
-              "docComment": "/**\n * Read-only int32_t. Read-only value of the sensor, also reported in streaming.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Reading = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "257"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Reading",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.StreamingInterval:member",
-              "docComment": "/**\n * Read-write ms uint32_t. Period between packets of data when streaming in milliseconds.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "StreamingInterval = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "4"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "StreamingInterval",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.StreamSamples:member",
-              "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "StreamSamples = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "3"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "StreamSamples",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!BaseReg.Value:member",
-              "docComment": "/**\n * Read-write int32_t. The primary value of actuator (eg. servo pulse length, or motor duty cycle).\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Value = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "2"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Value",
+              "name": "StatusCode",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -3198,6 +2910,27 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!CtrlReg.DeviceUrl:member",
+              "docComment": "/**\n * Constant string (bytes). Request the information web site for this device\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "DeviceUrl = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "391"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "DeviceUrl",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!CtrlReg.FirmwareIdentifier:member",
               "docComment": "/**\n * Constant uint32_t. A numeric code for the string above; used to identify firmware images and devices.\n */\n",
               "excerptTokens": [
@@ -3212,6 +2945,27 @@
               ],
               "releaseTag": "Public",
               "name": "FirmwareIdentifier",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!CtrlReg.FirmwareUrl:member",
+              "docComment": "/**\n * Constant string (bytes). URL with machine-readable metadata information about updating device firmware\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "FirmwareUrl = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "392"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "FirmwareUrl",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -3240,12 +2994,12 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.Temperature:member",
+              "canonicalReference": "jacdac-ts!CtrlReg.McuTemperature:member",
               "docComment": "/**\n * Read-only °C int16_t. MCU temperature in degrees Celsius (approximate).\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "Temperature = "
+                  "text": "McuTemperature = "
                 },
                 {
                   "kind": "Content",
@@ -3253,7 +3007,7 @@
                 }
               ],
               "releaseTag": "Public",
-              "name": "Temperature",
+              "name": "McuTemperature",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -7195,6 +6949,49 @@
               }
             }
           ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!identifierToUrlPath:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function identifierToUrlPath(id: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "id",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "identifierToUrlPath"
         },
         {
           "kind": "Interface",
@@ -11623,6 +11420,32 @@
                 "endIndex": 2
               },
               "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#source:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "source: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "source",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
             }
           ],
           "extendsTokenRange": {
@@ -15121,6 +14944,33 @@
               ],
               "releaseTag": "Public",
               "name": "specification",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDService#statusCodeRegister:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get statusCodeRegister(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDRegister",
+                  "canonicalReference": "jacdac-ts!JDRegister:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "statusCodeRegister",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -25948,12 +25798,33 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!SensorReg.StreamSamples:member",
+              "canonicalReference": "jacdac-ts!SensorReg.StreamingPreferredInterval:member",
+              "docComment": "/**\n * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StreamingPreferredInterval = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "258"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StreamingPreferredInterval",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SensorReg.StreamingSamples:member",
               "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "StreamSamples = "
+                  "text": "StreamingSamples = "
                 },
                 {
                   "kind": "Content",
@@ -25961,7 +25832,7 @@
                 }
               ],
               "releaseTag": "Public",
-              "name": "StreamSamples",
+              "name": "StreamingSamples",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -27664,6 +27535,23 @@
           "name": "strcmp"
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!STREAMING_DEFAULT_INTERVAL:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "STREAMING_DEFAULT_INTERVAL = 50"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "STREAMING_DEFAULT_INTERVAL",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!stringToUint8Array:function(1)",
           "docComment": "",
@@ -27706,6 +27594,351 @@
             }
           ],
           "name": "stringToUint8Array"
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SystemCmd:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SystemCmd "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SystemCmd",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemCmd.Announce:member",
+              "docComment": "/**\n * No args. Enumeration data for control service; service-specific advertisement data otherwise. Control broadcasts it automatically every 500ms, but other service have to be queried to provide it.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Announce = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "0"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Announce",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemCmd.Calibrate:member",
+              "docComment": "/**\n * No args. Request to calibrate a sensor. The report indicates the calibration is done.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Calibrate = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Calibrate",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemCmd.Event:member",
+              "docComment": "/**\n * Event from sensor or a broadcast service.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Event = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Event",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemCmd.GetRegister:member",
+              "docComment": "/**\n * No args. Registers number `N` is fetched by issuing command `0x1000 | N`. The report format is the same as the format of the register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "GetRegister = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4096"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "GetRegister",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemCmd.SetRegister:member",
+              "docComment": "/**\n * No args. Registers number `N` is set by issuing command `0x2000 | N`, with the format the same as the format of the register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "SetRegister = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "8192"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "SetRegister",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SystemReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SystemReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SystemReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.HighThreshold:member",
+              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "HighThreshold = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "6"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "HighThreshold",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.Intensity:member",
+              "docComment": "/**\n * Read-write uint32_t. This is either binary on/off (0 or non-zero), or can be gradual (eg. brightness of an RGB LED strip).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Intensity = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Intensity",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.LowThreshold:member",
+              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "LowThreshold = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "5"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "LowThreshold",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.MaxPower:member",
+              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the service, in mA.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxPower = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "7"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxPower",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.Reading:member",
+              "docComment": "/**\n * Read-only int32_t. Read-only value of the sensor, also reported in streaming.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Reading = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "257"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Reading",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.StatusCode:member",
+              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StatusCode = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "7"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StatusCode",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.StreamingInterval:member",
+              "docComment": "/**\n * Read-write ms uint32_t. Period between packets of data when streaming in milliseconds.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StreamingInterval = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StreamingInterval",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.StreamingPreferredInterval:member",
+              "docComment": "/**\n * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StreamingPreferredInterval = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "258"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StreamingPreferredInterval",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.StreamingSamples:member",
+              "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StreamingSamples = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "3"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StreamingSamples",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.Value:member",
+              "docComment": "/**\n * Read-write int32_t. The primary value of actuator (eg. servo pulse length, or motor duty cycle).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Value = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Value",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
         },
         {
           "kind": "Enum",
@@ -29382,6 +29615,64 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!uniqueName:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function uniqueName(names: "
+            },
+            {
+              "kind": "Content",
+              "text": "string[]"
+            },
+            {
+              "kind": "Content",
+              "text": ", name: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "names",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "parameterName": "name",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            }
+          ],
+          "name": "uniqueName"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!unpack:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -29572,6 +29863,23 @@
             }
           ],
           "name": "updateApplicable"
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!USB_TRANSPORT:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "USB_TRANSPORT = \"usb\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "USB_TRANSPORT",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
         },
         {
           "kind": "Interface",
