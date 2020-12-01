@@ -20,7 +20,7 @@ export default function RoleManager() {
         {!services.length && connectionState == BusState.Connected && <Alert severity="info">We could not find any device with the role manager service on the bus!</Alert>}
         <Grid container spacing={2}>
             {services.map(service => <Grid key={service.id} item {...gridBreakpoints}>
-                <RoleManagerService key={service.id} service={service} />
+                <RoleManagerService service={service} />
             </Grid>)}
         </Grid>
     </>
