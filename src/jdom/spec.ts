@@ -107,7 +107,7 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
 export function isSensor(spec: jdspec.ServiceSpec): boolean {
     return spec
         && spec.packets.some(pkt => isReading(pkt))
-        && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamSamples)
+        && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingSamples)
         && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 

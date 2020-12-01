@@ -631,7 +631,7 @@ export class JDBus extends JDNode {
                     interval = 50;
                     await intervalRegister.sendGetAsync();
                 }
-                const samplesRegister = register.service.register(SensorReg.StreamSamples);
+                const samplesRegister = register.service.register(SensorReg.StreamingSamples);
                 const age = this.timestamp - samplesRegister.lastSetTimestamp;
                 // need to figure out when we asked for streaming
                 const midAge = interval * 0xff / 2;
