@@ -139,5 +139,6 @@ export const REGISTER_REFRESH_RETRY_1 = 80
 export const REGISTER_POLL_REPORT_INTERVAL = 799
 export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
+export const STREAMING_DEFAULT_INTERVAL = 50
 
 export * from "../../jacdac-spec/dist/specconstants";
