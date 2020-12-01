@@ -24,7 +24,7 @@ import { NumberFormat, getNumber } from "./buffer";
 import { pack } from "./struct";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
-import { BaseCmd, SystemCmd } from "../../jacdac-spec/dist/specconstants";
+import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
 
 export class Packet {
     private _header: Uint8Array;
