@@ -142,8 +142,8 @@ export default function ToolsDrawer() {
             icon: <KindIcon kind={"device"} />
         },
         {
-            text: "Azure Twin Designer",
-            url: "/tools/azure-twin-designer",
+            text: "Azure Device Twin Designer",
+            url: "/tools/azure-device-twin-designer",
             icon: <CloudIcon />
         },
     ]

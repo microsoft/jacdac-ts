@@ -17,7 +17,7 @@ export default function ServiceSpecificationSelect(props: {
     variant?: "outlined" | "filled" | "standard";
     fullWidth?: boolean;
 }) {
-    const { label, serviceClass, setServiceClass, variant, fullWidth } = props;
+    const { label, serviceClass, setServiceClass, variant, fullWidth, error } = props;
     const [labelId] = useState('select-' + Math.random());
     const classes = useStyles();
     const specs = serviceSpecifications().filter(spec => !/^_/.test(spec.shortId))

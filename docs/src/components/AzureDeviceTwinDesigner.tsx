@@ -2,11 +2,6 @@ import { Grid, TextField } from "@material-ui/core";
 import React, { ChangeEvent } from "react";
 import { clone, uniqueName } from "../../../src/jdom/utils";
 import useLocalStorage from "./useLocalStorage";
-// tslint:disable-next-line: no-submodule-imports
-// tslint:disable-next-line: no-submodule-imports
-// tslint:disable-next-line: no-submodule-imports
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
 import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
@@ -27,7 +22,7 @@ interface DigitalTwinSpec {
     components: DigitalTwinComponent[];
 }
 
-export default function AzureTwinDesigner() {
+export default function AzureDeviceTwinDesigner() {
     const variant = "outlined";
     const { value: twin, setValue: setTwin } = useLocalStorage<DigitalTwinSpec>('jacdac:digitaltwin;1',
         {
