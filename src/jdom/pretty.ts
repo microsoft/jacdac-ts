@@ -6,7 +6,7 @@ import {
     JD_SERVICE_INDEX_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_INDEX_CRC_ACK, CMD_ADVERTISEMENT_DATA
 } from "./constants"
-import { BaseCmd, BaseReg, CtrlReg, SensorReg } from "../../jacdac-spec/dist/specconstants"
+import { SystemCmd, SystemReg, CtrlReg, SensorReg } from "../../jacdac-spec/dist/specconstants"
 
 export enum RegisterType {
     UInt, // default
@@ -444,7 +444,7 @@ export function commandName(n: number, serviceClass?: number): string {
     else if ((n & CMD_TOP_MASK) == CMD_GET_REG) pref = "GET["
     if (pref) {
         const reg = n & CMD_REG_MASK
-        let regName = BaseReg[reg]?.toLowerCase() // try reserved registers first, fast path
+        let regName = SystemReg[reg]?.toLowerCase() // try reserved registers first, fast path
         if (regName === undefined) {
             const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
             regName = serviceSpec?.packets.find(pkt => pkt.identifier === reg)?.name
@@ -452,7 +452,7 @@ export function commandName(n: number, serviceClass?: number): string {
         return pref + (regName !== undefined ? regName : `x${reg.toString(16)}` ) + "]"
     }
 
-    let r = BaseCmd[n]?.toLowerCase()
+    let r = SystemCmd[n]?.toLowerCase()
     if (r === undefined) {
         const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
         r = serviceSpec?.packets.find(pkt => pkt.identifier === n)?.name
