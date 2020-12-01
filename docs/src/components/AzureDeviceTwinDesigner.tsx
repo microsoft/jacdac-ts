@@ -1,5 +1,5 @@
 import { Grid, TextField } from "@material-ui/core";
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useMemo } from "react";
 import { clone, SMap, uniqueName } from "../../../src/jdom/utils";
 import useLocalStorage from "./useLocalStorage";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -16,23 +16,18 @@ import Alert from "./Alert"
 interface DigitalTwinComponent {
     name: string;
     service: jdspec.ServiceSpec;
-    // validation error
-    nameError?: string;
-    serviceError?: string;
 }
 
 interface DigitalTwinSpec {
     displayName: string;
     components: DigitalTwinComponent[];
-
-    // validation error
-    error?: string;
 }
 
 
 function ComponentRow(props: { twin: DigitalTwinSpec, component: DigitalTwinComponent, onUpdate: () => void }) {
     const { component, onUpdate, twin } = props;
-    const { name, service, nameError, serviceError } = component;
+    const { name, service } = component;
+    const { nameError, serviceError } = useMemo(() => validateTwinComponent(twin, component), [twin, component]);
     const handleComponentNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         component.name = escapeName(ev.target.value);
         onUpdate();
@@ -62,22 +57,13 @@ function ComponentRow(props: { twin: DigitalTwinSpec, component: DigitalTwinComp
     </Grid>
 }
 
-function validateTwin(twin: DigitalTwinSpec) {
-    // clear errors
-    delete twin.error;
-    twin.components.forEach(c => { delete c.nameError; delete c.serviceError });
-    // check names
-
-    // check services
-    const srvs: SMap<number> = {};
-    // count service occurences
-    twin.components.forEach(
-        c => srvs[c.service.classIdentifier]
-            = (srvs[c.service.classIdentifier] || (srvs[c.service.classIdentifier] = 0)) + 1
-    )
-    // TODO remove this in future
-    twin.components.filter(c => srvs[c.service.classIdentifier] > 1)
-        .forEach(c => c.serviceError = `Only one service occurence per device supported`);
+function validateTwinComponent(twin: DigitalTwinSpec, component: DigitalTwinComponent) {
+    let serviceError: string = undefined;
+    let nameError: string = undefined;
+    const count = twin.components.filter(c => c.service.classIdentifier === component.service.classIdentifier).length
+    if (count > 1)
+        serviceError = `Multiple same service not supported.`
+    return { serviceError, nameError }
 }
 
 export default function AzureDeviceTwinDesigner() {
@@ -98,7 +84,6 @@ export default function AzureDeviceTwinDesigner() {
     const dtdlSource = JSON.stringify(dtdl, null, 2);
 
     const update = () => {
-        validateTwin(twin);
         setTwin(clone(twin));
     }
     const handleDisplayNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -118,8 +103,6 @@ export default function AzureDeviceTwinDesigner() {
         <Grid item xs={12}>
             <TextField
                 required
-                error={!!twin.error}
-                helperText={twin.error}
                 fullWidth={true}
                 label="Display name"
                 placeholder="My device"
