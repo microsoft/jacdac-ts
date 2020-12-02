@@ -28,7 +28,7 @@ function readBlobToCanvas(blob: Blob, width: number, height: number): Promise<HT
             } else { // klip top
                 const dh = ih - ch;
                 sy = dh >> 1
-                sw = ih - dh;
+                sh = ih - dh;
             }
             ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
 
