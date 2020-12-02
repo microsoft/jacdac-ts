@@ -182,18 +182,29 @@ async function createSpecPages(graphql, actions, reporter) {
   })
 }
 
-async function generateDTMI() {
+async function generateServicesJSON() {
   const dir = './public'
   const services = serviceSpecifications()
-  const models = services.filter(srv => srv.shortId !== "_system")
-    .map(serviceSpecificationToDTDL)
-  for (const model of models) {
-    const route = DTMIToRoute(model["@id"])
-    const f = path.join(dir, route)
-    console.log(`dtml ${model["@id"]} => ${f}`)
-    await fs.outputFile(f, JSON.stringify(model, null, 2))
+
+  // JSON
+  for (const srv of services) {
+    const f = path.join(dir, "services", `x${srv.classIdentifier.toString(16)}.json`)
+    console.log(`json x${srv.classIdentifier.toString(16)} => ${f}`)
+    await fs.outputFile(f, JSON.stringify(srv, null, 2))
   }
-  await fs.outputFile('./public/dtmi/jacdac/services.json', JSON.stringify(models, null, 2))
+
+  // DTMI
+  {
+    const models = services.filter(srv => srv.shortId !== "_system")
+      .map(serviceSpecificationToDTDL)
+    for (const model of models) {
+      const route = DTMIToRoute(model["@id"])
+      const f = path.join(dir, route)
+      console.log(`dtml ${model["@id"]} => ${f}`)
+      await fs.outputFile(f, JSON.stringify(model, null, 2))
+    }
+    await fs.outputFile('./public/dtmi/jacdac/services.json', JSON.stringify(models, null, 2))
+  }
 }
 
 // Implement the Gatsby API “createPages”. This is
@@ -204,8 +215,8 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
   await createServicePages(graphql, actions, reporter)
   await createSpecPages(graphql, actions, reporter)
   await createDevicePages(graphql, actions, reporter)
-  // generate JSON for DTMI models
-  await generateDTMI();
+  // generate JSON for Services/DTMI models
+  await generateServicesJSON();
 }
 
 exports.onCreateNode = ({ node, actions, getNode }) => {
