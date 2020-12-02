@@ -12,9 +12,7 @@ export default class SettingsClient extends JDServiceClient {
 
     async listKeys(): Promise<string[]> {
         const inp = new InPipeReader(this.bus)
-        await this.service.sendPacketAsync(
-            inp.openCommand(SettingsCmd.ListKeys),
-            true)
+        await this.service.sendPacketAsync(inp.openCommand(SettingsCmd.ListKeys))
         const { output } = await inp.readAll();
         const keys = output.map(pkt => pkt.stringData);
         return keys;
@@ -25,7 +23,7 @@ export default class SettingsClient extends JDServiceClient {
             await this.deleteValue(key);
         } else {
             const pkt = Packet.from(SettingsCmd.Set, stringToBuffer(key + "\u0000" + value));
-            await this.service.sendPacketAsync(pkt, true);
+            await this.service.sendPacketAsync(pkt);
 
             this.emit(CHANGE);
         }
@@ -33,7 +31,7 @@ export default class SettingsClient extends JDServiceClient {
 
     async getValue(key: string) {
         const pkt = Packet.from(SettingsCmd.Get, stringToBuffer(key));
-        await this.service.sendPacketAsync(pkt, true);
+        await this.service.sendPacketAsync(pkt);
 
         this.emit(CHANGE);
     }
@@ -41,7 +39,7 @@ export default class SettingsClient extends JDServiceClient {
 
     async deleteValue(key: string) {
         const pkt = Packet.from(SettingsCmd.Delete, stringToBuffer(key));
-        await this.service.sendPacketAsync(pkt, true);
+        await this.service.sendPacketAsync(pkt);
 
         this.emit(CHANGE);
     }

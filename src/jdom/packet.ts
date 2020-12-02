@@ -1,4 +1,4 @@
-import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, throwError, read32, read16, write32, hexNum } from "./utils";
+import { warn, crc, ALIGN, write16, bufferConcat, toHex, fromHex, throwError, read32, read16, write32, hexNum, bufferToString } from "./utils";
 import {
     JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -193,8 +193,7 @@ export class Packet {
     }
 
     get stringData(): string {
-        // TODO better?
-        return this.decoded.decoded[0].value as string;
+        return this._data && bufferToString(this._data)
     }
 
     get intData() {

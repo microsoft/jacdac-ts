@@ -7,6 +7,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/jdom/utils";
+import IconButtonWithTooltip from "./IconButtonWithTooltip";
 
 const ACK_RESET_DELAY = 1000
 const ERROR_RESET_DELAY = 2000
@@ -72,13 +73,13 @@ export default function CmdButton(props: {
     const className = error ? classes.error : ack ? classes.ack : undefined;
 
     if (!children && icon)
-        return <IconButton
+        return <IconButtonWithTooltip
             className={className}
             onClick={handleClick}
             aria-label={title}
             title={title}
             disabled={_disabled}
-            {...others}>{statusIcon || icon}</IconButton>
+            {...others}>{statusIcon || icon}</IconButtonWithTooltip>
     else
         return <Button
             className={className}
