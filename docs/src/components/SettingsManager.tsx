@@ -18,7 +18,7 @@ export default function SettingsManager() {
         {!services.length && connectionState == BusState.Connected && <Alert severity="info">We could not find any device with the settings storage service on the bus!</Alert>}
         <Grid container spacing={2}>
             {services.map(service => <Grid key={service.id} item xs={12}>
-                <SettingsCard service={service} />
+                <SettingsCard service={service} mutable={true} />
             </Grid>)}
         </Grid>
     </>

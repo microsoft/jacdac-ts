@@ -24,16 +24,14 @@ export default class SettingsClient extends JDServiceClient {
         } else {
             const pkt = Packet.from(SettingsCmd.Set, stringToBuffer(key + "\u0000" + value));
             await this.service.sendPacketAsync(pkt);
-
             this.emit(CHANGE);
         }
     }
 
-    async getValue(key: string) {
+    async getValue(key: string): Promise<string> {
         const pkt = Packet.from(SettingsCmd.Get, stringToBuffer(key));
-        await this.service.sendPacketAsync(pkt);
-
-        this.emit(CHANGE);
+        const resp = await this.service.sendCmdAwaitResponseAsync(pkt);
+        return resp?.stringData;
     }
 
 

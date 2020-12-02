@@ -12,20 +12,27 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import CmdButton from "./CmdButton";
 
-function SettingRow(props: { client: SettingsClient, key: string }) {
-    const { client, key } = props;
+function SettingRow(props: { client: SettingsClient, key: string, mutable?: boolean }) {
+    const { client, key, mutable } = props;
+    const isSecret = key[0] == "$";
+    const name = isSecret ? key.slice(1) : key;
+    const value = useChangeAsync(client, c => !isSecret && c?.getValue(key));
     const handleComponentDelete = async () => {
         await client.deleteValue(key)
     }
     const keyError = ""
+    const valueError = ""
     return <Grid item xs={12}>
         <Grid container spacing={1}>
-            <Grid item xs={10}>
-                <TextField fullWidth={true} error={!!keyError} variant="outlined" label="key" helperText={keyError} value={key} />
+            <Grid item xs={5}>
+                <TextField fullWidth={true} error={!!keyError} variant="outlined" label="key" helperText={keyError} value={name} type={isSecret ? "password" : "text"} disabled={true} />
             </Grid>
-            <Grid item>
+            <Grid item xs={5}>
+                <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} type={isSecret ? "password" : "text"} disabled={true} />
+            </Grid>
+            {mutable && <Grid item>
                 <CmdButton title="Delete settings" onClick={handleComponentDelete} icon={<DeleteIcon />} />
-            </Grid>
+            </Grid>}
         </Grid>
     </Grid>
 }
@@ -64,18 +71,20 @@ function AddSettingRow(props: { client: SettingsClient }) {
     </Grid>
 }
 
-export default function SettingsCard(props: { service: JDService }) {
-    const { service } = props;
+export default function SettingsCard(props: { service: JDService, mutable?: boolean }) {
+    const { service, mutable } = props;
     const client = useServiceClient(service, srv => new SettingsClient(srv));
     const keys = useChangeAsync(client, c => c?.listKeys());
     if (!client)
         return null // wait till loaded
+
+    console.log(keys)
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
             <Grid container spacing={2}>
-                {keys?.map(key => <SettingRow key={key} client={client} />)}
-                <AddSettingRow client={client} key="add" />
+                {keys?.map(key => <SettingRow key={key} client={client} mutable={mutable} />)}
+                {mutable && <AddSettingRow client={client} key="add" />}
             </Grid>
         </CardContent>
     </Card >
