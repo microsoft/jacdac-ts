@@ -4,7 +4,7 @@
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */
 
-import { serviceSpecificationFromClassIdentifier } from "../jdom/spec";
+import { serviceSpecificationFromClassIdentifier, serviceSpecificationFromName } from "../jdom/spec";
 import { uniqueMap } from "../jdom/utils";
 
 export const DTDL_REFERENCE_URL = "https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"
@@ -249,7 +249,7 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
     const types: jdspec.SMap<string> = {
         "const": "Property",
         "rw": "Property",
-        "ro": "Property",
+        "ro": "Telemetry",
         "event": "Telemetry"
     }
     const dtdl: any = {
@@ -320,6 +320,7 @@ interface DTDLContent extends DTDLNode {
 
 interface DTDLInterface extends DTDLContent {
     contents: DTDLContent[];
+    extends?: string | string[];
     schemas?: (DTDLSchema | DTDLInterface)[];
     '@context'?: string;
 }
@@ -346,6 +347,9 @@ export function serviceSpecificationToDTDL(srv: jdspec.ServiceSpec): DTDLInterfa
             .filter(pkt => !pkt.derived)
             .map(pkt => packetToDTDL(srv, pkt)).filter(c => !!c)
     }
+    if (srv.extends.length)
+        dtdl.extends = srv.extends.map(id => serviceSpecificationDTMI(serviceSpecificationFromName(id)))
+
     const hasEvents = srv.packets.find(pkt => pkt.kind === "event");
     const hasEnums = Object.keys(srv.enums).length;
     if (hasEvents || hasEnums) {

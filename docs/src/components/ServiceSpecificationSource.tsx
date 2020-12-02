@@ -37,6 +37,7 @@ export default function ServiceSpecificationSource(props: {
     const [tab, setTab] = useState(0);
     const spec = serviceSpecification || serviceSpecificationFromClassIdentifier(classIdentifier)
     const convs = converters();
+    const showDTDL = spec?.camelName !== "system"
 
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
@@ -53,7 +54,8 @@ export default function ServiceSpecificationSource(props: {
                         "TypeScript",
                         "C",
                         "JSON",
-                        "DTDL"]
+                        showDTDL && "Module Twin"
+                    ]
                         .filter(n => !!n)
                         .map((n, i) => <Tab key={n} label={n} {...a11yProps(i)} />)}
                 </Tabs>
@@ -67,12 +69,12 @@ export default function ServiceSpecificationSource(props: {
                     <TabPanel key={`conv${lang}`} value={tab} index={index++}>
                         <Snippet value={convs[lang](spec)} mode={lang} />
                     </TabPanel>)}
-                <TabPanel key="dtdl" value={tab} index={index++}>
+                {showDTDL && <TabPanel key="dtdl" value={tab} index={index++}>
                     <Snippet value={JSON.stringify(serviceSpecificationToDTDL(spec), null, 2)} mode={"json"}
                         download={`dtmi-${spec.shortId}.json`}
                         url={"/" + DTMIToRoute(serviceSpecificationDTMI(spec))}
                         caption={<><Link to="/dtmi">DTDL</Link> is an open source modelling language developed by Microsoft Azure.</>} />
-                </TabPanel>
+                </TabPanel>}
             </Paper>
         </div>
     );

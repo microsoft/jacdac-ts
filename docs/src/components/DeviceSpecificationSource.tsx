@@ -47,7 +47,7 @@ export default function DeviceSpecificationSource(props: {
                     {[
                         showSpecification && "Specification",
                         showJSON && "JSON",
-                        showDTDL && "DTDL",
+                        showDTDL && "Device Twin",
                     ].filter(n => !!n)
                         .map((n, i) => <Tab key={n} label={n} {...a11yProps(i)} />)}
                 </Tabs>
