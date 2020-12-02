@@ -40,7 +40,7 @@ export default function ImportImageCanvas(props: { width: number, height: number
     return <div className={classes.root}>
         <div className={classes.img}>
             {!canvasUrl && <Skeleton variant="rect" width={"100%"} height={"18rem"} />}
-            {canvasUrl && <img src={canvasUrl} width={"100%"} height={"100%"} />}
+            {canvasUrl && <img alt="the imported image" src={canvasUrl} width={"100%"} height={"100%"} />}
         </div>
         <Box className={classes.btn}>
             <ImportButton
