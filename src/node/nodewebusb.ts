@@ -23,7 +23,7 @@ export async function requestDevice(options: USBDeviceRequestOptions): Promise<U
     try {
         const device = await usb.requestDevice(options);
         return device;
-    } catch (e: unknown) {
+    } catch (e) {
         console.debug(e);
         return undefined;
     }
