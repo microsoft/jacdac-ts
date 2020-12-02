@@ -1,9 +1,10 @@
 import { CHANGE, SettingsCmd } from "./constants";
+import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { bufferToString, jdpack, jdunpack, stringToBuffer } from "./utils";
+import { bufferToString, stringToBuffer } from "./utils";
 
 export default class SettingsClient extends JDServiceClient {
     constructor(service: JDService) {

@@ -39,3 +39,4 @@ export * from './traceview'
 export * from "./traceplayer"
 export * from "./flags"
 export * from "./settingsclient"
+export * from "./pack"
