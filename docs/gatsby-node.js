@@ -185,7 +185,7 @@ async function createSpecPages(graphql, actions, reporter) {
 async function generateDTMI() {
   const dir = './public'
   const services = serviceSpecifications()
-  const models = services.filter(srv => !/^_/.test(srv.shortId))
+  const models = services.filter(srv => srv.shortId !== "_system")
     .map(serviceSpecificationToDTDL)
   for (const model of models) {
     const route = DTMIToRoute(model["@id"])
