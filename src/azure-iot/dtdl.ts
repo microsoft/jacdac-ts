@@ -344,7 +344,7 @@ export function serviceSpecificationToDTDL(srv: jdspec.ServiceSpec): DTDLInterfa
         "displayName": escapeDisplayName(srv.name),
         "description": srv.notes["short"],
         "contents": srv.packets
-            .filter(pkt => !pkt.derived)
+            .filter(pkt => !pkt.derived && !pkt.internal)
             .map(pkt => packetToDTDL(srv, pkt)).filter(c => !!c)
     }
     if (srv.extends.length)
