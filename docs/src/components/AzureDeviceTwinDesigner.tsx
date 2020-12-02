@@ -76,7 +76,7 @@ export default function AzureDeviceTwinDesigner() {
 
     const dtdl = {
         "@type": "Interface",
-        "@id": "dtmi:jacdac:devices:TBD,1",
+        "@id": `dtmi:jacdac:devices:${escapeName(twin.displayName)},1`,
         displayName: twin.displayName,
         contents: twin.components.map(c => serviceSpecificationToComponent(c.service, c.name)),
         "@context": DTDL_CONTEXT
