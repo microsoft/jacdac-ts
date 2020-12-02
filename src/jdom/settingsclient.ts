@@ -3,7 +3,7 @@ import Packet from "./packet";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { stringToBuffer } from "./utils";
+import { bufferToString, jdpack, jdunpack, stringToBuffer } from "./utils";
 
 export default class SettingsClient extends JDServiceClient {
     constructor(service: JDService) {
@@ -22,21 +22,26 @@ export default class SettingsClient extends JDServiceClient {
         if (value === undefined) {
             await this.deleteValue(key);
         } else {
-            const pkt = Packet.from(SettingsCmd.Set, stringToBuffer(key + "\u0000" + value));
+            const pkt = Packet.from(SettingsCmd.Set, jdpack("z b", [key, stringToBuffer(value)]));
             await this.service.sendPacketAsync(pkt);
             this.emit(CHANGE);
         }
     }
 
     async getValue(key: string): Promise<string> {
-        const pkt = Packet.from(SettingsCmd.Get, stringToBuffer(key));
+        const pkt = Packet.from(SettingsCmd.Get, jdpack("s", [key]));
         const resp = await this.service.sendCmdAwaitResponseAsync(pkt);
-        return resp?.stringData;
+        const [rkey, value] = jdunpack(resp.data, "z b");
+        if (key !== rkey) {
+            console.error(`device returned different key, got ${rkey}, expected ${key}`)
+            return undefined;
+        }
+        return bufferToString(value);
     }
 
 
     async deleteValue(key: string) {
-        const pkt = Packet.from(SettingsCmd.Delete, stringToBuffer(key));
+        const pkt = Packet.from(SettingsCmd.Delete, jdpack("s", [key]));
         await this.service.sendPacketAsync(pkt);
 
         this.emit(CHANGE);
