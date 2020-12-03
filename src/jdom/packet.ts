@@ -24,6 +24,7 @@ import { pack } from "./struct";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
+import { jdunpack } from "./pack";
 
 export class Packet {
     private _header: Uint8Array;
@@ -178,6 +179,10 @@ export class Packet {
         this._header[12] = buf.length
         this._data = buf
         this._decoded = undefined;
+    }
+
+    unpack(fmt: string): any[] {
+        return (this._data && fmt && jdunpack(this._data, fmt)) || [];
     }
 
     get uintData() {
