@@ -74,7 +74,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     const { rw, ro } = props;
     const { specification, fields } = rw;
     const name = specification.name.replace(/^rw_/, "")
-    
+
     const handleClick = async () => {
         const payload = randomPayload(fields);
         if (!payload) throw "data layout not supported"
@@ -132,8 +132,10 @@ export default function ProtocolTest() {
     const services = useChange(bus, b => b.services({ serviceClass: SRV_PROTOCOL_TEST }))
 
     return <Grid container direction="row" spacing={2}>
-        <ConnectAlert serviceClass={SRV_PROTOCOL_TEST} />
-        {services?.map(service => <Grid key={service.id} item>
+        <Grid key="connect" item xs={12}>
+            <ConnectAlert serviceClass={SRV_PROTOCOL_TEST} />
+        </Grid>
+        {services?.map(service => <Grid key={service.id} item xs={12}>
             <ServiceProtocolTest service={service} />
         </Grid>)}
     </Grid>

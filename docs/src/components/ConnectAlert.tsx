@@ -9,6 +9,7 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import ConnectButton from "../jacdac/ConnectButton";
 import { isWebUSBSupported } from "../../../src/jdom/usb"
 import { NoSsr } from '@material-ui/core';
+import useChange from "../jacdac/useChange";
 
 const useStyles = makeStyles((theme) => createStyles({
     button: {
@@ -18,12 +19,14 @@ const useStyles = makeStyles((theme) => createStyles({
 
 function NoSsrConnectAlert(props: { serviceClass?: number }) {
     const classes = useStyles()
-    const { connectionState } = useContext<JDContextProps>(JACDACContext)
+    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const { serviceClass } = props
+    const devices = useChange(bus, b => b.devices({ serviceClass }))
     const spec = serviceSpecificationFromClassIdentifier(serviceClass)
     const supported = isWebUSBSupported()
 
-    if (supported && connectionState === BusState.Disconnected)
+    if (!devices?.length &&
+        supported && connectionState === BusState.Disconnected)
         return <Box displayPrint="none">
             <Alert severity="info" closeable={true}>
                 {!spec && <span>Don't forget to connect!</span>}
