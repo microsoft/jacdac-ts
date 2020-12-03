@@ -11,6 +11,10 @@ export default class SettingsClient extends JDServiceClient {
         super(service)
     }
 
+    async clear() {
+        await this.service.sendCmdAsync(SettingsCmd.Clear);
+    }
+
     async listKeys(): Promise<string[]> {
         const inp = new InPipeReader(this.bus)
         await this.service.sendPacketAsync(inp.openCommand(SettingsCmd.ListKeys))

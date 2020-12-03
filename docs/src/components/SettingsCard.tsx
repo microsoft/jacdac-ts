@@ -1,4 +1,4 @@
-import { Card, CardContent, FormLabel, Grid, Switch, TextField } from "@material-ui/core";
+import { Card, CardActions, CardContent, FormLabel, Grid, Switch, TextField } from "@material-ui/core";
 import React, { ChangeEvent, useState } from "react";
 import { JDService } from "../../../src/jdom/service";
 import DeviceCardHeader from "./DeviceCardHeader";
@@ -89,6 +89,7 @@ export default function SettingsCard(props: { service: JDService, mutable?: bool
     if (!client)
         return null // wait till loaded
 
+    const handleClear = async () => await client?.clear();
     console.log({ keys })
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
@@ -98,5 +99,10 @@ export default function SettingsCard(props: { service: JDService, mutable?: bool
                 {mutable && <AddSettingRow client={client} key="add" />}
             </Grid>
         </CardContent>
+        {mutable && <CardActions>
+            <CmdButton title="Clear all settings" icon={<DeleteIcon />} onClick={handleClear}>
+                Clear
+            </CmdButton>
+        </CardActions>}
     </Card >
 }
