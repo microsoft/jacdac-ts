@@ -121,7 +121,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: boolean) {
             res.push(v)
             off += parser.size
         } else {
-            const subbuf = buf.slice(off, off + sz)
+            const subbuf = bufferSlice(buf, off, off + sz)
             if (c0 == ch_z || c0 == ch_s) {
                 let zerop = 0
                 while (zerop < subbuf.length && subbuf[zerop] != 0)
