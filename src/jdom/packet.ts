@@ -8,7 +8,6 @@ import {
     JD_SERVICE_INDEX_MASK,
     JD_SERVICE_INDEX_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
-    CMD_ADVERTISEMENT_DATA,
     CMD_EVENT,
     JD_SERVICE_INDEX_CRC_ACK,
     JD_SERVICE_INDEX_PIPE,
@@ -17,7 +16,7 @@ import {
     PIPE_METADATA_MASK,
     PIPE_CLOSE_MASK,
     CMD_GET_REG,
-    SRV_CTRL
+    JD_SERVICE_INDEX_CTRL
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -216,7 +215,7 @@ export class Packet {
     }
 
     get isAnnounce() {
-        return this.service_index == SRV_CTRL
+        return this.service_index == JD_SERVICE_INDEX_CTRL
             && this.is_report
             && this.service_command == SystemCmd.Announce;
     }

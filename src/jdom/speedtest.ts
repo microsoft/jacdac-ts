@@ -1,8 +1,7 @@
 import * as U from "./utils"
-import { JDBus } from "./bus"
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import { PACKET_REPORT, CMD_GET_REG, PACKET_RECEIVE } from "./constants"
+import { PACKET_REPORT, CMD_GET_REG, JD_SERVICE_INDEX_CTRL } from "./constants"
 
 const REG_CTRL_FIRMWARE_IDENTIFIER = 0x181
 
@@ -49,7 +48,7 @@ export async function packetSpeedTest(dev: JDDevice) {
     }
 
     async function onPacket(p: Packet) {
-        if (p.service_index == 0 && p.service_command == pingCmd) {
+        if (p.service_index == JD_SERVICE_INDEX_CTRL && p.service_command == pingCmd) {
             numrecv++
             if (!done)
                 await ask()

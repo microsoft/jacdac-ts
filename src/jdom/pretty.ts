@@ -3,10 +3,10 @@ import { NumberFormat } from "./buffer"
 import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum } from "./utils"
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
-    JD_SERVICE_INDEX_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_CLOSE_MASK, PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, JD_FRAME_FLAG_COMMAND,
-    JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS, JD_SERVICE_INDEX_CRC_ACK, CMD_ADVERTISEMENT_DATA
+    JD_SERVICE_INDEX_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_PORT_SHIFT, JD_FRAME_FLAG_COMMAND,
+    JD_FRAME_FLAG_ACK_REQUESTED, CMD_ADVERTISEMENT_DATA, JD_SERVICE_INDEX_CTRL
 } from "./constants"
-import { SystemCmd, SystemReg, CtrlReg, SensorReg } from "../../jacdac-spec/dist/specconstants"
+import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
 
 export enum RegisterType {
     UInt, // default
@@ -517,7 +517,7 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         pdesc = `[ack:${hexNum(pkt.crc)}] ` + pdesc
 
     const d = pkt.data
-    if (pkt.device && pkt.service_index == 0 && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+    if (pkt.device && pkt.service_index == JD_SERVICE_INDEX_CTRL && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
         if (pkt.device.lastServiceUpdate < pkt.timestamp) {
             if (opts.skipRepeatedAnnounce)
                 return ""
