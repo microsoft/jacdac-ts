@@ -1,4 +1,4 @@
-import { Card, CardActions, CardContent, CardHeader, Grid } from "@material-ui/core";
+import { Card, CardActions, CardContent, CardHeader, Grid, Typography } from "@material-ui/core";
 import React, { useContext } from "react";
 import { cryptoRandomUint32, toHex } from "../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -12,6 +12,8 @@ import RegisterInput from "./RegisterInput";
 import ConnectAlert from "./ConnectAlert";
 import { JDField } from "../../../src/jdom/field";
 import { jdpack } from "../../../src/jdom/pack";
+import DeviceName from "./DeviceName";
+import DeviceActions from "./DeviceActions";
 
 
 function pick(...values: number[]) {
@@ -101,17 +103,18 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     return <Card>
         <CardHeader title={name} />
         <CardContent>
-            <RegisterInput register={rw} showDeviceName={false} showName={true} />
-            <RegisterInput register={ro} showDeviceName={false} showName={true} />
+            <Typography>{"rw: " + rw.decoded?.decoded?.map(d => d.humanValue || "?").join(", ") || "?"}</Typography>
+            <Typography>{"rw: " + rw.decoded?.decoded?.map(d => d.humanValue || "?").join(", ") || "?"}</Typography>
         </CardContent>
         <CardActions>
-            <CmdButton onClick={handleClick}>Write RW</CmdButton>
+            <CmdButton variant="outlined" onClick={handleClick}>Test</CmdButton>
         </CardActions>
     </Card>
 }
 
 function ServiceProtocolTest(props: { service: JDService }) {
     const { service } = props;
+    const { device } = service;
 
     const regs = service.registers();
     const rws = service.registers().filter(reg => reg.specification.kind == "rw")
@@ -121,10 +124,17 @@ function ServiceProtocolTest(props: { service: JDService }) {
             return { rw, ro }
         });
 
-    return <>
-        {service.device.name}
-        {rws?.map(rw => <RegisterProtocolTest key={rw.rw.id} {...rw} />)}
-    </>
+    return <Grid container spacing={1}>
+        <Grid item xs={10}>
+            <Typography variant="h4">
+                <DeviceName device={device} />
+            </Typography>
+        </Grid>
+        <Grid item xs={2}>
+            <DeviceActions device={device} reset={true} />
+        </Grid>
+        {rws?.map(rw => <Grid item><RegisterProtocolTest key={rw.rw.id} {...rw} /></Grid>)}
+    </Grid>
 }
 
 export default function ProtocolTest() {
