@@ -15,7 +15,7 @@ function SettingRow(props: { client: SettingsClient, name: string, mutable?: boo
     const { client, name, mutable } = props;
     const isSecret = name[0] == "$";
     const displayName = isSecret ? name.slice(1) : name;
-    const value = useChangeAsync(client, c => isSecret ? Promise.resolve("...") : c?.getValue(name));
+    const value = useChangeAsync(client, c => isSecret ? Promise.resolve("...") : c?.getValue(name), [name]);
     const handleComponentDelete = async () => {
         await client.deleteValue(name)
     }
@@ -24,10 +24,10 @@ function SettingRow(props: { client: SettingsClient, name: string, mutable?: boo
     return <Grid item xs={12}>
         <Grid container spacing={1}>
             <Grid item xs={4}>
-                <TextField fullWidth={true} error={!!nameError} variant="outlined" label="key" helperText={nameError} value={displayName} type={isSecret ? "password" : "text"} disabled={true} />
+                <TextField fullWidth={true} error={!!nameError} variant="outlined" label="key" helperText={nameError} value={displayName} disabled={true} />
             </Grid>
             <Grid item xs={4}>
-                <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} type={isSecret ? "password" : "text"} disabled={true} />
+                <TextField fullWidth={true} error={!!valueError} variant="outlined" helperText={valueError} value={isSecret ? "..." : value} disabled={true} />
             </Grid>
             {mutable && <Grid item>
                 <CmdButton title="Delete settings" onClick={handleComponentDelete} icon={<DeleteIcon />} />
@@ -38,12 +38,12 @@ function SettingRow(props: { client: SettingsClient, name: string, mutable?: boo
 
 function AddSettingRow(props: { client: SettingsClient }) {
     const { client } = props;
-    const [key, setKey] = useState("")
+    const [name, setName] = useState("")
     const [value, setValue] = useState("")
     const [secret, setSecret] = useState(true)
 
-    const handleKeyChange = (ev: ChangeEvent<HTMLInputElement>) => {
-        setKey(ev.target.value.trim())
+    const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
+        setName(ev.target.value.trim())
     }
     const handleValueChange = (ev: ChangeEvent<HTMLInputElement>) => {
         setValue(ev.target.value)
@@ -52,8 +52,8 @@ function AddSettingRow(props: { client: SettingsClient }) {
         setSecret(checked);
     }
     const handleAdd = async () => {
-        await client.setValue(`${secret ? "$" : ""}${key}`, value)
-        setKey("")
+        await client.setValue(`${secret ? "$" : ""}${name}`, value)
+        setName("")
         setValue("")
         setSecret(true)
     }
@@ -63,7 +63,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
     return <Grid item xs={12}>
         <Grid container spacing={1}>
             <Grid item>
-                <TextField fullWidth={true} error={!!keyError} variant="outlined" label="Add key" helperText={keyError} value={key} onChange={handleKeyChange} />
+                <TextField fullWidth={true} error={!!keyError} variant="outlined" label="Add key" helperText={keyError} value={name} onChange={handleNameChange} />
             </Grid>
             <Grid item>
                 <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} onChange={handleValueChange} />
