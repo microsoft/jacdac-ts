@@ -14,9 +14,8 @@ export const DTDL_CONTEXT = "dtmi:dtdl:context;2";
 // https://github.com/Azure/digital-twin-model-identifier
 // ^dtmi:(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::(?:_+[A-Za-z0-9]|[A-Za-z])(?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$
 function toDTMI(segments: (string | number)[], version?: number) {
-    if (!segments) return undefined;
     return `dtmi:jacdac:${[...segments]
-        .map(seg => !seg ? "???" : typeof seg === "string" ? seg : `x${seg.toString(16)}`)
+        .map(seg => seg === undefined ? "???" : typeof seg === "string" ? seg : `x${seg.toString(16)}`)
         .map(seg => seg.replace(/(-|_)/g, ''))
         .join(':')};${version !== undefined ? version : 1}`.toLowerCase();
 }
