@@ -20,6 +20,7 @@ export default class SettingsClient extends JDServiceClient {
     }
 
     async setValue(key: string, value: string) {
+        key = key.trim();
         if (value === undefined) {
             await this.deleteValue(key);
         } else {
@@ -30,6 +31,9 @@ export default class SettingsClient extends JDServiceClient {
     }
 
     async getValue(key: string): Promise<string> {
+        if (!key) return undefined;
+
+        key = key.trim();
         const pkt = Packet.from(SettingsCmd.Get, jdpack("s", [key]));
         const resp = await this.service.sendCmdAwaitResponseAsync(pkt);
         const [rkey, value] = jdunpack(resp.data, "z b");
@@ -42,6 +46,8 @@ export default class SettingsClient extends JDServiceClient {
 
 
     async deleteValue(key: string) {
+        if (!key) return;
+        key = key.trim();
         const pkt = Packet.from(SettingsCmd.Delete, jdpack("s", [key]));
         await this.service.sendPacketAsync(pkt);
 
