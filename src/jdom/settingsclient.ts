@@ -34,7 +34,7 @@ export default class SettingsClient extends JDServiceClient {
         const resp = await this.service.sendCmdAwaitResponseAsync(pkt);
         const [rkey, value] = jdunpack(resp.data, "z b");
         if (key !== rkey) {
-            console.error(`device returned different key, got ${rkey}, expected ${key}`)
+            console.error(`device returned different key, got "${rkey}", expected "${key}"`)
             return undefined;
         }
         return bufferToString(value);
