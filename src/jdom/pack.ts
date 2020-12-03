@@ -24,6 +24,10 @@ function numberFormatOfType(tp: string): NumberFormat {
     }
 }
 
+function bufferSlice(buf: Uint8Array, start: number, end: number) {
+    return buf.slice(start, end)
+}
+
 class TokenParser {
     c0: number
     size: number
@@ -122,7 +126,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: boolean) {
                 let zerop = 0
                 while (zerop < subbuf.length && subbuf[zerop] != 0)
                     zerop++
-                res.push(bufferToString(subbuf.slice(0, zerop)))
+                res.push(bufferToString(bufferSlice(subbuf, 0, zerop)))
             } else if (c0 == ch_b) {
                 res.push(subbuf)
             } else if (c0 == ch_x) {
@@ -203,7 +207,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
             let sz = parser.size
             if (sz >= 0) {
                 if (buf.length > sz)
-                    buf = buf.slice(0, sz)
+                    buf = bufferSlice(buf, 0, sz)
             } else {
                 sz = buf.length
             }
