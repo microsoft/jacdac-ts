@@ -63,7 +63,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
     return <Grid item xs={12}>
         <Grid container spacing={1}>
             <Grid item>
-                <TextField fullWidth={true} error={!!keyError} variant="outlined" label="key" helperText={keyError} value={key} onChange={handleKeyChange} />
+                <TextField fullWidth={true} error={!!keyError} variant="outlined" label="Add key" helperText={keyError} value={key} onChange={handleKeyChange} />
             </Grid>
             <Grid item>
                 <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} onChange={handleValueChange} />
