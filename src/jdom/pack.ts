@@ -1,6 +1,29 @@
 import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer"
 import { bufferToString, stringToBuffer } from "./utils"
 
+/*
+
+## Format strings
+
+Format strings are space-separated sequences of type descriptions.
+All numbers are understood to be little endian.
+The following type descriptions are supported:
+
+* `u8`, `u16`, `u32` - unsigned, 1, 2, and 4 bytes long respectively
+* `i8`, `i16`, `i32` - similar, but signed
+* `b` - buffer until the end of input (has to be last)
+* `s` - similar, but utf-8 encoded string
+* `z` - NUL-terminated utf-8 string
+* `b[10]` - 10 byte buffer (10 is just an example, here and below)
+* `s[10]` - 10 byte utf-8 string; trailing NUL bytes (if any) are removed
+* `x[10]` - 10 bytes of padding
+
+There is one more token, `r:`. The type descriptions following it are repeated in order
+until the input buffer is exhausted.
+
+*/
+
+// ASCII codes of characters
 const ch_b = 98
 const ch_i = 105
 const ch_r = 114
@@ -11,6 +34,7 @@ const ch_z = 122
 const ch_0 = 48
 const ch_9 = 57
 const ch_colon = 58
+const ch_sq_open = 91
 
 function numberFormatOfType(tp: string): NumberFormat {
     switch (tp) {
@@ -62,8 +86,8 @@ class TokenParser {
             }
 
             const c1 = word.charCodeAt(1)
-            if (ch_0 <= c1 && c1 <= ch_9) {
-                this.size = parseInt(word.slice(1))
+            if (c1 == ch_sq_open) {
+                this.size = parseInt(word.slice(2))
             } else {
                 this.size = -1
             }
@@ -169,6 +193,13 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     const parser = new TokenParser(fmt)
     while (parser.parse()) {
         const c0 = parser.c0
+
+        if (c0 == ch_x) {
+            // skip padding
+            off += parser.size
+            continue
+        }
+
         const v = data[idx++]
 
         if (c0 == ch_r) {
@@ -232,6 +263,7 @@ export function jdpack<T extends any[]>(fmt: string, data: T) {
 }
 
 /*
+import { bufferEq, toHex } from "./utils"
 export function jdpackTest() {
     function testOne(fmt: string, data0: any[]) {
         function checksame(a: any, b: any) {
@@ -270,8 +302,9 @@ export function jdpackTest() {
     testOne("u8 r: u8 z", [42, [[17, "xy"], [18, "xx"]]])
     testOne("z b", ["foo12", stringToBuffer("bar")])
     testOne("u16 r: u16", [42, [[17], [18]]])
-    testOne("i8 s9 u16 s10 u8", [-100, "foo", 1000, "barbaz", 250])
+    testOne("i8 s[9] u16 s[10] u8", [-100, "foo", 1000, "barbaz", 250])
+    testOne("i8 x[4] s[9] u16 x[2] s[10] x[3] u8", [-100, "foo", 1000, "barbaz", 250])
 }
 
- jdpackTest()
+jdpackTest()
 */
