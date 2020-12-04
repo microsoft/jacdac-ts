@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import CmdButton from "./CmdButton";
 import Snippet from "./Snippet"
 
-export type Test = () => Promise<void>;
+export type TestLogger = (name: string, ...msg: any) => void;
+export type Test = (log: TestLogger) => Promise<void>;
 
 export default function TestCard(props: {
     title: string,
@@ -11,15 +12,30 @@ export default function TestCard(props: {
     onTest: Test
 }) {
     const { title, onTest, children } = props;
-    const [error, setError] = useState<any>(undefined)
+    const [output, setOutput] = useState("");
 
     const handleClick = async () => {
+        const log: string[] = [];
+        const logger = (msg: any) => {
+            if (msg === undefined || msg === null)
+                log.push("")
+            else if (Array.isArray(msg)) {
+                log.push(JSON.stringify(msg))
+            } else if (typeof msg === "object") {
+                Object.keys(msg)
+                    .forEach(k => log.push(`${k}: ${JSON.stringify(msg[k])}`))
+            } else
+                log.push("" + msg);
+        }
+
         try {
-            setError(undefined);
-            await onTest();
+            setOutput("");
+            await onTest(logger);
         } catch (e) {
-            setError(e);
+            logger(e);
             throw e;
+        } finally {
+            setOutput(log.join('\n'))
         }
     }
 
@@ -27,7 +43,7 @@ export default function TestCard(props: {
         <CardHeader title={title} />
         <CardContent>
             {children}
-            {error && <Snippet value={error.toString().trim()} />}
+            {output && <Snippet value={output} />}
         </CardContent>
         <CardActions>
             <CmdButton variant="outlined" onClick={handleClick} disableReset={true}>Test</CmdButton>
