@@ -22,8 +22,8 @@ const useStyles = makeStyles((theme: Theme) => {
             backgroundColor: theme.palette.success.main
         },
         error: {
-            color: getColor(theme.palette.error.main, 0.6),
-            backgroundColor: getBackgroundColor(theme.palette.error.main, 0.9),
+            color: '#fff',
+            backgroundColor: getBackgroundColor(theme.palette.error.main, 0.6),
         },
     })
 })
@@ -36,16 +36,17 @@ export default function CmdButton(props: {
     icon?: JSX.Element,
     size?: "small" | undefined,
     variant?: "outlined" | "contained" | undefined,
-    disabled?: boolean
+    disabled?: boolean,
+    disableReset?: boolean
 }) {
-    const { onClick, children, icon, title, disabled, ...others } = props
+    const { onClick, children, icon, title, disabled, disableReset, ...others } = props
     const { setError: setAppError } = useContext(AppContext)
     const classes = useStyles()
     const [working, setWorking] = useState(false)
     const [ack, setAck] = useState(false)
     const [error, setError] = useState(undefined)
 
-    const _disabled = disabled || working || error;
+    const _disabled = disabled || working;
 
     const handleClick = async (ev: React.MouseEvent<HTMLButtonElement>) => {
         ev.stopPropagation()
@@ -55,14 +56,18 @@ export default function CmdButton(props: {
             setWorking(true)
             await onClick(ev)
             setAck(true)
-            await delay(ACK_RESET_DELAY)
-            setAck(false)
+            if (!disableReset) {
+                await delay(ACK_RESET_DELAY)
+                setAck(false)
+            }
         }
         catch (e) {
             setAppError(e)
             setError(e)
-            await delay(ERROR_RESET_DELAY)
-            setError(undefined)
+            if (!disableReset) {
+                await delay(ERROR_RESET_DELAY)
+                setError(undefined)
+            }
         }
         finally {
             setWorking(false)

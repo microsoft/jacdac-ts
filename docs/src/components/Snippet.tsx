@@ -8,7 +8,7 @@ export default function Snippet(props: {
     mode?: string,
     download?: string;
     url?: string;
-    caption?: JSX.Element | JSX.Element[];
+    caption?: string | JSX.Element | JSX.Element[];
 }) {
     const { value, mode, download, url, caption } = props
     const className = mode && `language-${mode}`

@@ -1,4 +1,4 @@
-import { Card, CardActions, CardContent, CardHeader, Grid, Typography } from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import React, { useContext } from "react";
 import { cryptoRandomUint32, toHex } from "../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -7,13 +7,13 @@ import { SRV_PROTOCOL_TEST } from "../../../src/jdom/constants";
 import useChange from "../jacdac/useChange"
 import { JDService } from "../../../src/jdom/service";
 import { JDRegister } from "../../../src/jdom/register";
-import CmdButton from "./CmdButton"
-import RegisterInput from "./RegisterInput";
 import ConnectAlert from "./ConnectAlert";
 import { JDField } from "../../../src/jdom/field";
 import { jdpack } from "../../../src/jdom/pack";
 import DeviceName from "./DeviceName";
 import DeviceActions from "./DeviceActions";
+import useEffectAsync from "./useEffectAsync";
+import TestCard from "./TestCard";
 
 
 function pick(...values: number[]) {
@@ -77,12 +77,22 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     const { specification, fields } = rw;
     const name = specification.name.replace(/^rw_/, "")
 
-    const handleClick = async () => {
-        const payload = randomPayload(fields);
-        if (!payload) throw "data layout not supported"
-        if (!specification.packFormat) throw "format unknown"
+    const rxValue = r => r.decoded?.decoded?.map(d => d.humanValue || "?").join(", ") || "?";
+    const rwValue = useChange(rw, rxValue);
+    const roValue = useChange(ro, rxValue);
 
-        const data = jdpack(specification.packFormat, payload);
+    useEffectAsync(async () => {
+        await rw.sendGetAsync();
+        await ro.sendGetAsync();
+    }, []);
+
+    const test = async () => {
+        const payload = randomPayload(fields);
+        const packFormat = specification.packFormat;
+        if (!payload) throw "data layout not supported"
+        if (!packFormat) throw "format unknown"
+
+        const data = jdpack(packFormat, payload);
         const xdata = toHex(data);
         console.log({ payload, data: xdata })
         // send over packet
@@ -100,16 +110,10 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
             throw `expected ro ${xdata}, got ${roData}`
     }
 
-    return <Card>
-        <CardHeader title={name} />
-        <CardContent>
-            <Typography>{"rw: " + rw.decoded?.decoded?.map(d => d.humanValue || "?").join(", ") || "?"}</Typography>
-            <Typography>{"rw: " + rw.decoded?.decoded?.map(d => d.humanValue || "?").join(", ") || "?"}</Typography>
-        </CardContent>
-        <CardActions>
-            <CmdButton variant="outlined" onClick={handleClick}>Test</CmdButton>
-        </CardActions>
-    </Card>
+    return <TestCard title={name} onTest={test}>
+            <Typography>{`rw: ${rwValue}`}</Typography>
+            <Typography>{`ro: ${roValue}`}</Typography>
+    </TestCard>
 }
 
 function ServiceProtocolTest(props: { service: JDService }) {
@@ -133,7 +137,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
         <Grid item xs={2}>
             <DeviceActions device={device} reset={true} />
         </Grid>
-        {rws?.map(rw => <Grid item><RegisterProtocolTest key={rw.rw.id} {...rw} /></Grid>)}
+        {rws?.map(rw => <Grid item xs={12} md={6}><RegisterProtocolTest key={rw.rw.id} {...rw} /></Grid>)}
     </Grid>
 }
 
