@@ -237,7 +237,14 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
             break
         }
 
-        for (const v of parser.isArray ? (dataItem as any[]) : [dataItem]) {
+        // use temporary variable to avoid a Gatsby build bug
+        let arr: any[]
+        if (parser.isArray)
+            arr = dataItem
+        else
+            arr = [dataItem]
+
+        for (const v of arr) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
                     throw new Error(`expecting number`)
