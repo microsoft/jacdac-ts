@@ -27,7 +27,7 @@ import { serviceSpecificationFromClassIdentifier } from "./spec"
         samples_in_window: u16
         reserved: u32
     repeats:
-        device_id: u64
+        device_id: devid
         service_class: u32
         service_num: u8
         sample_size: u8 B
