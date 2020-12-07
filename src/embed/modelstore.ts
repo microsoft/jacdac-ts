@@ -6,7 +6,7 @@ import { ITransport } from "./transport";
 export abstract class ModelStore extends JDEventSource {
     abstract models(): IFile[];
     abstract inputConfigurations(): IFile[];
-    abstract async loadFile(model: IFile): Promise<any>;
+    abstract loadFile(model: IFile): Promise<any>;
 }
 
 export class HostedModelStore extends JDEventSource {

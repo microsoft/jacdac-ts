@@ -7,6 +7,10 @@ module.exports = {
     siteUrl: `https://microsoft.github.io/jacdac-ts`
   },
   pathPrefix: "/jacdac-ts",
+  flags: {
+    PRESERVE_FILE_DOWNLOAD_CACHE: true,
+    PRESERVE_WEBPACK_CACHE: true
+  },
   plugins: [
     `gatsby-transformer-plaintext`,
     {
