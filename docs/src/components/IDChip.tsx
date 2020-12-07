@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FingerprintIcon from '@material-ui/icons/Fingerprint';
-import { Chip, Tooltip } from '@material-ui/core';
+import { Chip, IconButton, Tooltip } from '@material-ui/core';
 import PacketsContext from "./PacketsContext";
 import AppContext, { DrawerType } from "./AppContext";
 
@@ -12,7 +12,7 @@ export default function IDChip(props: { id: number | string, className?: string,
 
     const ids = typeof id === "string" ? id : `0x${id !== undefined ? (id as number).toString(16) : "???"}`
     const filtered = packetFilter && packetFilter.indexOf(filter) > -1
-    const handleClick = () => {
+    const handleFilterClick = () => {
         if (filtered)
             setPacketFilter(packetFilter?.replace(filter, '')?.trim())
         else
@@ -22,7 +22,11 @@ export default function IDChip(props: { id: number | string, className?: string,
 
     return <Tooltip title={!!filter && (filtered ? `remove filter ${filter}` : `add filter ${filter}`)}>
         <span>
-            <Chip onClick={!!filter && handleClick} className={className} size="small" icon={<FingerprintIcon />} title={`identifier ${ids}`} label={ids} />
+            <Chip className={className} size="small" icon={
+                <IconButton onClick={!!filter && handleFilterClick}>
+                    <FingerprintIcon />
+                </IconButton>
+            } title={`identifier ${ids}`} label={ids} />
         </span>
     </Tooltip>
 }

@@ -126,8 +126,8 @@
     ]
   },
   "devDependencies": {
-    "@microsoft/api-documenter": "^7.9.33",
-    "@microsoft/api-extractor": "^7.11.4",
+    "@microsoft/api-documenter": "^7.11.3",
+    "@microsoft/api-extractor": "^7.12.0",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "cli": "^1.0.1",
@@ -149,18 +149,18 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "semantic-release": "^17.2.3",
+    "semantic-release": "^17.3.0",
     "shelljs": "^0.8.3",
     "travis-deploy-once": "^5.0.9",
     "ts-jest": "^23.10.2",
-    "ts-node": "^9",
+    "ts-node": "^9.1.1",
     "tslint": "^6",
     "tslint-microsoft-contrib": "^6",
-    "typescript": "^4",
+    "typescript": "^4.1.2",
     "webusb": "^2.2.0"
   },
   "dependencies": {
-    "@types/node": "^14",
+    "@types/node": "^14.14.10",
     "@types/w3c-web-usb": "^1.0.4",
     "fs-extra": "^9.0.1"
   }
