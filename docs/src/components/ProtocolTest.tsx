@@ -1,6 +1,6 @@
 import { Grid, Typography } from "@material-ui/core";
 import React, { useContext } from "react";
-import { cryptoRandomUint32, toHex } from "../../../src/jdom/utils";
+import { cryptoRandomUint32, delay, toHex } from "../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { SRV_PROTO_TEST } from "../../../src/jdom/constants";
@@ -88,8 +88,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     const test = async (log) => {
         const packFormat = specification.packFormat;
         const payload = randomPayload(fields);
-        const json = JSON.stringify(payload)
-        log({ packFormat, payload, json })
+        log({ packFormat, payload })
         if (!payload) throw "data layout not supported"
         if (!packFormat) throw "format unknown"
 
@@ -101,16 +100,13 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         await rw.sendSetAsync(data);
         // read packet
         await rw.sendGetAsync();
+        // wait for response
+        await delay(100);
         // check read
         const rwData = toHex(rw.data)
         log({ rwData })
         const undata = jdunpack(rw.data, packFormat);
         log({ undata });
-        // check top elements are same
-        const unjson = JSON.stringify(undata);
-        log({ unjson })
-        if (unjson !== json)
-            throw `expected rw ${json}, got ${unjson}`
         // check ro
         await ro.sendGetAsync();
         const roData = toHex(rw.data)
@@ -146,7 +142,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
         <Grid item xs={2}>
             <DeviceActions device={device} reset={true} />
         </Grid>
-        {rws?.map(rw => <Grid item xs={12} md={6}><RegisterProtocolTest key={rw.rw.id} {...rw} /></Grid>)}
+        {rws?.map(rw => <Grid key={rw.rw.id} item xs={12} md={6}><RegisterProtocolTest {...rw} /></Grid>)}
     </Grid>
 }
 

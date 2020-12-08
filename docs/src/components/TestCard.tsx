@@ -1,5 +1,6 @@
 import { Card, CardActions, CardContent, CardHeader } from "@material-ui/core";
 import React, { useState } from "react";
+import { toHex } from "../../../src/jdom/utils";
 import CmdButton from "./CmdButton";
 import Snippet from "./Snippet"
 
@@ -17,18 +18,26 @@ export default function TestCard(props: {
 
     const handleClick = async () => {
         const log: string[] = [];
-        const logger = (msg: any) => {
+
+        const toValue = (msg: any) => {
             if (msg === undefined || msg === null)
-                log.push("")
+                return ""
             else if (typeof msg === "string")
-                log.push(msg);
-            else if (Array.isArray(msg)) {
-                log.push(JSON.stringify(msg))
-            } else if (typeof msg === "object") {
+                return msg;
+            else if (msg instanceof Uint8Array)
+                return toHex(msg)
+            else if (Array.isArray(msg))
+                return msg.map(toValue);
+            else
+                return JSON.stringify(msg);
+        }
+
+        const logger = (msg: any) => {
+            if (typeof msg === "object") {
                 Object.keys(msg)
-                    .forEach(k => log.push(`${k}: ${JSON.stringify(msg[k])}`))
+                    .forEach(k => log.push(`${k}: ${toValue(msg[k])}`))
             } else
-                log.push("" + msg);
+                log.push(toValue(msg));
         }
 
         try {
