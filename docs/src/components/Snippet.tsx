@@ -11,7 +11,7 @@ export default function Snippet(props: {
     caption?: string | JSX.Element | JSX.Element[];
 }) {
     const { value, mode, download, url, caption } = props
-    const className = mode && `language-${mode}`
+    const className = mode && `language-${mode === "sts" ? "ts" : mode}`
     return <>
         <CodeBlock className={className} downloadName={download} downloadText={download && value} url={url}>{value}</CodeBlock>
         {caption && <Typography variant="caption">{caption}</Typography>}

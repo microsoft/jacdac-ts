@@ -51,6 +51,7 @@ export default function ServiceSpecificationSource(props: {
                     {[
                         showMarkdown && "Markdown",
                         showSpecification && "Specification",
+                        "MakeCode",
                         "TypeScript",
                         "C",
                         "JSON",
@@ -65,7 +66,7 @@ export default function ServiceSpecificationSource(props: {
                 {showSpecification && <TabPanel key="spec" value={tab} index={index++}>
                     <ServiceSpecification service={spec} />
                 </TabPanel>}
-                {["ts", "c", "json"].map((lang, i) =>
+                {["sts", "ts", "c", "json"].map((lang, i) =>
                     <TabPanel key={`conv${lang}`} value={tab} index={index++}>
                         <Snippet value={convs[lang](spec)} mode={lang} />
                     </TabPanel>)}
