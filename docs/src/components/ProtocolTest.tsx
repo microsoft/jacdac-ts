@@ -38,7 +38,7 @@ function randomFieldPayload(field: JDField) {
         case "u16":
         case "u32": {
             const unsigned = specification.type[0] === "u";
-            const n = parseInt(specification.type.slice(1));
+            const n = Math.min(30, parseInt(specification.type.slice(1)));
             const min = pick(specification.typicalMin, specification.absoluteMin, unsigned ? 0 : -((1 << (n - 1)) - 1));
             const max = pick(specification.typicalMax, specification.absoluteMax, unsigned ? (1 << n) - 1 : (1 << (n - 1)) - 1);
             r = randomRange(min, max);
