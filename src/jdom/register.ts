@@ -1,5 +1,9 @@
 import Packet from "./packet";
-import { CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG, REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1, REGISTER_REFRESH_RETRY_0, CtrlReg } from "./constants";
+import {
+    CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG,
+    REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1,
+    REGISTER_REFRESH_RETRY_0, ControlCmd
+} from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";

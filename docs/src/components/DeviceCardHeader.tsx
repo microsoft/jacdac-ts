@@ -1,4 +1,4 @@
-import { CtrlReg, SRV_CTRL } from "../../../src/jdom/constants";
+import { ControlReg, SRV_CTRL } from "../../../src/jdom/constants";
 import { CardHeader, Chip, Typography } from "@material-ui/core";
 // tslint:disable-next-line: no-submodule-imports
 import { Link } from 'gatsby-theme-material-ui';
@@ -13,14 +13,14 @@ import { identifierToUrlPath } from "../../../src/jdom/spec";
 
 function DeviceFirmwareChip(props: { device: JDDevice }) {
     const { device } = props;
-    const firmwareRegister = device?.service(0)?.register(CtrlReg.FirmwareVersion)
+    const firmwareRegister = device?.service(0)?.register(ControlReg.FirmwareVersion)
     const firmware = useRegisterStringValue(firmwareRegister);
     return (firmware && <Chip size="small" label={firmware} />) || <></>
 }
 
 function DeviceTemperatureChip(props: { device: JDDevice }) {
     const { device } = props;
-    const tempRegister = device?.service(0)?.register(CtrlReg.McuTemperature)
+    const tempRegister = device?.service(0)?.register(ControlReg.McuTemperature)
     const temperature = useRegisterIntValue(tempRegister);
     return (temperature !== undefined && <Chip size="small" label={`${temperature}°`} />) || <></>
 }

@@ -2,7 +2,7 @@ import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import { CtrlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, CtrlReg, PACKET_REPORT } from "./constants"
+import { ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
 import { unpack, pack } from "./struct"
 import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array } from "./utils"
 
@@ -118,7 +118,7 @@ class FlashClient {
     private async endFlashAsync() {
         for (let f of this.classClients) {
             await delay(10)
-            await f.device.sendCtrlCommand(CtrlCmd.Reset)
+            await f.device.sendCtrlCommand(ControlCmd.Reset)
         }
     }
 
@@ -351,10 +351,10 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             // ask all CTRL services for bootloader info
             if (!makeFlashers) {
                 for (const reg of [
-                    CtrlReg.BootloaderFirmwareIdentifier,
-                    CtrlReg.FirmwareIdentifier,
-                    CtrlReg.FirmwareVersion,
-                    CtrlReg.DeviceDescription,
+                    ControlReg.BootloaderFirmwareIdentifier,
+                    ControlReg.FirmwareIdentifier,
+                    ControlReg.FirmwareVersion,
+                    ControlReg.DeviceDescription,
                 ]) {
                     const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
                     await pkt.sendAsMultiCommandAsync(bus, SRV_CTRL)
@@ -417,13 +417,13 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
 
         if (!makeFlashers && p.service_index == 0 && p.service_command & CMD_GET_REG) {
             const reg = p.service_command & CMD_REG_MASK
-            if (reg == CtrlReg.BootloaderFirmwareIdentifier)
+            if (reg == ControlReg.BootloaderFirmwareIdentifier)
                 dev.blFirmwareIdentifier = p.uintData
-            else if (reg == CtrlReg.FirmwareIdentifier)
+            else if (reg == ControlReg.FirmwareIdentifier)
                 dev.firmwareIdentifier = p.uintData
-            else if (reg == CtrlReg.DeviceDescription)
+            else if (reg == ControlReg.DeviceDescription)
                 dev.name = bufferToString(p.data)
-            else if (reg == CtrlReg.FirmwareVersion)
+            else if (reg == ControlReg.FirmwareVersion)
                 dev.version = bufferToString(p.data)
         }
     }
@@ -459,7 +459,7 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
     for (const d of updateCandidates) {
         const device = bus.device(d.deviceId);
         log(`resetting ${device}`)
-        await device.sendCtrlCommand(CtrlCmd.Reset)
+        await device.sendCtrlCommand(ControlCmd.Reset)
     }
     const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.firmwareIdentifier)
     if (!flashers.length)

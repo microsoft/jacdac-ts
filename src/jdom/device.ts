@@ -1,7 +1,8 @@
 import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, CtrlCmd, DEVICE_NODE_NAME, LOST, DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, CtrlReg
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, ControlCmd, DEVICE_NODE_NAME, LOST,
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg
 } from "./constants"
 import { fromHex, read32, SMap, bufferEq, assert } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -267,22 +268,22 @@ export class JDDevice extends JDNode {
 
     identify() {
         return this.service(SRV_CTRL)
-            ?.sendCmdAsync(CtrlCmd.Identify, true)
+            ?.sendCmdAsync(ControlCmd.Identify, true)
     }
 
     reset() {
         return this.service(SRV_CTRL)
-            ?.sendCmdAsync(CtrlCmd.Reset)
+            ?.sendCmdAsync(ControlCmd.Reset)
     }
 
     async resolveFirmwareIdentifier(): Promise<number> {
-        const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
+        const fwIdRegister = this.service(0)?.register(ControlReg.FirmwareIdentifier);
         await fwIdRegister?.refresh(true);
         return fwIdRegister?.intValue;
     }
 
     get firmwareIdentifier(): number {
-        const fwIdRegister = this.service(0)?.register(CtrlReg.FirmwareIdentifier);
+        const fwIdRegister = this.service(0)?.register(ControlReg.FirmwareIdentifier);
         const v = fwIdRegister?.intValue;
         if (fwIdRegister && v === undefined)
             fwIdRegister?.refresh(true);

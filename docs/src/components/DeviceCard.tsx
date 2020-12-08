@@ -8,7 +8,7 @@ import CardContent from '@material-ui/core/CardContent';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
 import { JDDevice } from '../../../src/jdom/device';
-import { SRV_CTRL, SRV_LOGGER, CtrlReg } from '../../../src/jdom/constants';
+import { SRV_CTRL, SRV_LOGGER, ControlReg } from '../../../src/jdom/constants';
 import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
@@ -42,7 +42,7 @@ function navigateToService(service: JDService) {
 
 function DeviceDescription(props: { device: JDDevice }) {
     const { device } = props;
-    const register = device?.service(0)?.register(CtrlReg.DeviceDescription)
+    const register = device?.service(0)?.register(ControlReg.DeviceDescription)
     const description = useRegisterStringValue(register)
     return <span>{description || ""}</span>
 }
