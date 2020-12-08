@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.11.4",
+    "toolVersion": "7.12.0",
     "schemaVersion": 1003,
     "oldestForwardsCompatibleVersion": 1001
   },
@@ -17,20 +17,20 @@
       "members": [
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!AccelEvent:enum",
+          "canonicalReference": "jacdac-ts!AccelerometerEvent:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum AccelEvent "
+              "text": "export declare enum AccelerometerEvent "
             }
           ],
           "releaseTag": "Public",
-          "name": "AccelEvent",
+          "name": "AccelerometerEvent",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.FaceDown:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.FaceDown:member",
               "docComment": "/**\n * Emitted when accelerometer is laying flat in the given direction.\n */\n",
               "excerptTokens": [
                 {
@@ -51,7 +51,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.FaceUp:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.FaceUp:member",
               "docComment": "/**\n * Emitted when accelerometer is laying flat in the given direction.\n */\n",
               "excerptTokens": [
                 {
@@ -72,7 +72,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.Force_2g:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.Force_2g:member",
               "docComment": "/**\n * Emitted when force in any direction exceeds given threshold.\n */\n",
               "excerptTokens": [
                 {
@@ -93,7 +93,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.Force_3g:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.Force_3g:member",
               "docComment": "/**\n * Emitted when force in any direction exceeds given threshold.\n */\n",
               "excerptTokens": [
                 {
@@ -114,7 +114,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.Force_6g:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.Force_6g:member",
               "docComment": "/**\n * Emitted when force in any direction exceeds given threshold.\n */\n",
               "excerptTokens": [
                 {
@@ -135,7 +135,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.Force_8g:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.Force_8g:member",
               "docComment": "/**\n * Emitted when force in any direction exceeds given threshold.\n */\n",
               "excerptTokens": [
                 {
@@ -156,7 +156,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.Freefall:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.Freefall:member",
               "docComment": "/**\n * Emitted when total force acting on accelerometer is much less than 1g.\n */\n",
               "excerptTokens": [
                 {
@@ -177,7 +177,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.Shake:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.Shake:member",
               "docComment": "/**\n * Emitted when forces change violently a few times.\n */\n",
               "excerptTokens": [
                 {
@@ -198,7 +198,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.TiltDown:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.TiltDown:member",
               "docComment": "/**\n * Emitted when accelerometer is tilted in the given direction.\n */\n",
               "excerptTokens": [
                 {
@@ -219,7 +219,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.TiltLeft:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.TiltLeft:member",
               "docComment": "/**\n * Emitted when accelerometer is tilted in the given direction.\n */\n",
               "excerptTokens": [
                 {
@@ -240,7 +240,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.TiltRight:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.TiltRight:member",
               "docComment": "/**\n * Emitted when accelerometer is tilted in the given direction.\n */\n",
               "excerptTokens": [
                 {
@@ -261,7 +261,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelEvent.TiltUp:member",
+              "canonicalReference": "jacdac-ts!AccelerometerEvent.TiltUp:member",
               "docComment": "/**\n * Emitted when accelerometer is tilted in the given direction.\n */\n",
               "excerptTokens": [
                 {
@@ -284,21 +284,21 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!AccelReg:enum",
+          "canonicalReference": "jacdac-ts!AccelerometerReg:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum AccelReg "
+              "text": "export declare enum AccelerometerReg "
             }
           ],
           "releaseTag": "Public",
-          "name": "AccelReg",
+          "name": "AccelerometerReg",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!AccelReg.Forces:member",
-              "docComment": "/**\n * Indicates the current forces acting on accelerometer.\n */\n",
+              "canonicalReference": "jacdac-ts!AccelerometerReg.Forces:member",
+              "docComment": "/**\n * Indicates the current forces acting on accelerometer.\n * ```\n * const [x, y, z] = jdunpack<[number, number, number]>(buf, \"i6.10 i6.10 i6.10\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -716,7 +716,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!BaseReg.StatusCode:member",
-              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n */\n",
+              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n * ```\n * const [code, vendorCode] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -724,7 +724,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "7"
+                  "text": "259"
                 }
               ],
               "releaseTag": "Public",
@@ -773,7 +773,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!BootloaderCmd.PageData:member",
-              "docComment": "/**\n * Use to send flashing data. A physical page is split into `chunk_max + 1` chunks, where `chunk_no = 0 ... chunk_max`. Each chunk is stored at `page_address + page_offset`. `page_address` has to be equal in all chunks, and is included in response. Only the last chunk causes writing to flash and elicits response.\n */\n",
+              "docComment": "/**\n * Use to send flashing data. A physical page is split into `chunk_max + 1` chunks, where `chunk_no = 0 ... chunk_max`. Each chunk is stored at `page_address + page_offset`. `page_address` has to be equal in all chunks, and is included in response. Only the last chunk causes writing to flash and elicits response.\n * ```\n * const [pageAddress, pageOffset, chunkNo, chunkMax, sessionId, pageData] = jdunpack<[number, number, number, number, number, UInt8Array]>(buf, \"u32 u16 u8 u8 u32 x[4] x[4] x[4] x[4] b[208]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1305,6 +1305,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "deviceNameSettings",
               "propertyTypeTokenRange": {
@@ -1331,6 +1332,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "log",
               "propertyTypeTokenRange": {
@@ -1372,6 +1374,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "deviceDisconnectedDelay",
               "propertyTypeTokenRange": {
@@ -1397,6 +1400,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "deviceId",
               "propertyTypeTokenRange": {
@@ -1422,6 +1426,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "deviceLostDelay",
               "propertyTypeTokenRange": {
@@ -1447,6 +1452,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "parentOrigin",
               "propertyTypeTokenRange": {
@@ -1684,6 +1690,78 @@
               ],
               "releaseTag": "Public",
               "name": "Pressed",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!BuzzerCmd:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum BuzzerCmd "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "BuzzerCmd",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!BuzzerCmd.PlayTone:member",
+              "docComment": "/**\n * Play a PWM tone with given period and duty for given duration. The duty is scaled down with `volume` register. To play tone at frequency `F` Hz and volume `V` (in `0..1`) you will want to send `P = 1000000 / F` and `D = P * V / 2`.\n * ```\n * const [period, duty, duration] = jdunpack<[number, number, number]>(buf, \"u16 u16 u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "PlayTone = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "128"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "PlayTone",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!BuzzerReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum BuzzerReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "BuzzerReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!BuzzerReg.Volume:member",
+              "docComment": "/**\n * Read-write ratio uint8_t. The volume (duty cycle) of the buzzer.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Volume = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Volume",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -2075,21 +2153,21 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!CODALMessageBusCmd:enum",
+          "canonicalReference": "jacdac-ts!CodalMessageBusCmd:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum CODALMessageBusCmd "
+              "text": "export declare enum CodalMessageBusCmd "
             }
           ],
           "releaseTag": "Public",
-          "name": "CODALMessageBusCmd",
+          "name": "CodalMessageBusCmd",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CODALMessageBusCmd.Send:member",
-              "docComment": "/**\n * Sends a new event on the message bus.\n */\n",
+              "canonicalReference": "jacdac-ts!CodalMessageBusCmd.Send:member",
+              "docComment": "/**\n * Sends a new event on the message bus.\n * ```\n * const [id, event] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2570,6 +2648,324 @@
           ]
         },
         {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ControlAnnounceFlags:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ControlAnnounceFlags "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ControlAnnounceFlags",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlAnnounceFlags.SupportsACK:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "SupportsACK = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "SupportsACK",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ControlCmd:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ControlCmd "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ControlCmd",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlCmd.Identify:member",
+              "docComment": "/**\n * No args. Blink an LED or otherwise draw user's attention.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Identify = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "129"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Identify",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlCmd.Noop:member",
+              "docComment": "/**\n * No args. Do nothing. Always ignored. Can be used to test ACKs.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Noop = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "128"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Noop",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlCmd.Reset:member",
+              "docComment": "/**\n * No args. Reset device. ACK may or may not be sent.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Reset = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "130"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Reset",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlCmd.Services:member",
+              "docComment": "/**\n * No args. The `restart_counter` starts at `0x1` and increments by one until it reaches `0xf`, then it stays at `0xf`. If this number ever goes down, it indicates that the device restarted. The upper 4 bits of `restart_counter` are reserved. `service_class` indicates class identifier for each service index (service index `0` is always control, so it's skipped in this enumeration). The command form can be used to induce report, which is otherwise broadcast every 500ms.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Services = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "0"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Services",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ControlReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ControlReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ControlReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.BootloaderFirmwareIdentifier:member",
+              "docComment": "/**\n * Constant uint32_t. Typically the same as `firmware_identifier` unless device was flashed by hand; the bootloader will respond to that code.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "BootloaderFirmwareIdentifier = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "388"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "BootloaderFirmwareIdentifier",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.DeviceDescription:member",
+              "docComment": "/**\n * Constant string (bytes). Identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C)\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "DeviceDescription = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "384"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "DeviceDescription",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.DeviceUrl:member",
+              "docComment": "/**\n * Constant string (bytes). Request the information web site for this device\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "DeviceUrl = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "391"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "DeviceUrl",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.FirmwareIdentifier:member",
+              "docComment": "/**\n * Constant uint32_t. A numeric code for the string above; used to identify firmware images and devices.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "FirmwareIdentifier = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "385"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "FirmwareIdentifier",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.FirmwareUrl:member",
+              "docComment": "/**\n * Constant string (bytes). URL with machine-readable metadata information about updating device firmware\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "FirmwareUrl = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "392"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "FirmwareUrl",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.FirmwareVersion:member",
+              "docComment": "/**\n * Constant string (bytes). A string describing firmware version; typically semver.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "FirmwareVersion = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "389"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "FirmwareVersion",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.McuTemperature:member",
+              "docComment": "/**\n * Read-only °C int16_t. MCU temperature in degrees Celsius (approximate).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "McuTemperature = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "386"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "McuTemperature",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.Uptime:member",
+              "docComment": "/**\n * Read-only μs uint64_t. Number of microseconds since boot.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Uptime = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "390"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Uptime",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!crc:function(1)",
           "docComment": "",
@@ -2717,324 +3113,6 @@
             }
           ],
           "name": "cryptoRandomUint32"
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!CtrlAnnounceFlags:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum CtrlAnnounceFlags "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "CtrlAnnounceFlags",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlAnnounceFlags.SupportsACK:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "SupportsACK = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "1"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "SupportsACK",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!CtrlCmd:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum CtrlCmd "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "CtrlCmd",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlCmd.Identify:member",
-              "docComment": "/**\n * No args. Blink an LED or otherwise draw user's attention.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Identify = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "129"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Identify",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlCmd.Noop:member",
-              "docComment": "/**\n * No args. Do nothing. Always ignored. Can be used to test ACKs.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Noop = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "128"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Noop",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlCmd.Reset:member",
-              "docComment": "/**\n * No args. Reset device. ACK may or may not be sent.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Reset = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "130"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Reset",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlCmd.Services:member",
-              "docComment": "/**\n * No args. The `restart_counter` starts at `0x1` and increments by one until it reaches `0xf`, then it stays at `0xf`. If this number ever goes down, it indicates that the device restarted. The upper 4 bits of `restart_counter` are reserved. `service_class` indicates class identifier for each service index (service index `0` is always control, so it's skipped in this enumeration). The command form can be used to induce report, which is otherwise broadcast every 500ms.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Services = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "0"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Services",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!CtrlReg:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum CtrlReg "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "CtrlReg",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.BootloaderFirmwareIdentifier:member",
-              "docComment": "/**\n * Constant uint32_t. Typically the same as `firmware_identifier` unless device was flashed by hand; the bootloader will respond to that code.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "BootloaderFirmwareIdentifier = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "388"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "BootloaderFirmwareIdentifier",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.DeviceDescription:member",
-              "docComment": "/**\n * Constant string (bytes). Identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C)\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "DeviceDescription = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "384"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "DeviceDescription",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.DeviceUrl:member",
-              "docComment": "/**\n * Constant string (bytes). Request the information web site for this device\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "DeviceUrl = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "391"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "DeviceUrl",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.FirmwareIdentifier:member",
-              "docComment": "/**\n * Constant uint32_t. A numeric code for the string above; used to identify firmware images and devices.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "FirmwareIdentifier = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "385"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "FirmwareIdentifier",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.FirmwareUrl:member",
-              "docComment": "/**\n * Constant string (bytes). URL with machine-readable metadata information about updating device firmware\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "FirmwareUrl = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "392"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "FirmwareUrl",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.FirmwareVersion:member",
-              "docComment": "/**\n * Constant string (bytes). A string describing firmware version; typically semver.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "FirmwareVersion = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "389"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "FirmwareVersion",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.McuTemperature:member",
-              "docComment": "/**\n * Read-only °C int16_t. MCU temperature in degrees Celsius (approximate).\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "McuTemperature = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "386"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "McuTemperature",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!CtrlReg.Uptime:member",
-              "docComment": "/**\n * Read-only μs uint64_t. Number of microseconds since boot.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Uptime = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "390"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Uptime",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
         },
         {
           "kind": "Variable",
@@ -3209,6 +3287,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "execute",
               "propertyTypeTokenRange": {
@@ -3234,6 +3313,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "stop",
               "propertyTypeTokenRange": {
@@ -3357,6 +3437,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "description",
               "propertyTypeTokenRange": {
@@ -3382,6 +3463,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "humanValue",
               "propertyTypeTokenRange": {
@@ -3408,6 +3490,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "info",
               "propertyTypeTokenRange": {
@@ -3433,6 +3516,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "numValue",
               "propertyTypeTokenRange": {
@@ -3458,6 +3542,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "scaledValue",
               "propertyTypeTokenRange": {
@@ -3483,6 +3568,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "size",
               "propertyTypeTokenRange": {
@@ -3508,6 +3594,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "value",
               "propertyTypeTokenRange": {
@@ -3554,6 +3641,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "decoded",
               "propertyTypeTokenRange": {
@@ -3579,6 +3667,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "description",
               "propertyTypeTokenRange": {
@@ -3605,6 +3694,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "info",
               "propertyTypeTokenRange": {
@@ -3631,6 +3721,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service",
               "propertyTypeTokenRange": {
@@ -4574,6 +4665,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "context",
               "propertyTypeTokenRange": {
@@ -4599,6 +4691,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "exception",
               "propertyTypeTokenRange": {
@@ -4785,6 +4878,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "element",
               "propertyTypeTokenRange": {
@@ -4811,6 +4905,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "eventName",
               "propertyTypeTokenRange": {
@@ -4850,6 +4945,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 4,
@@ -4958,6 +5054,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "firmwareIdentifier",
               "propertyTypeTokenRange": {
@@ -4983,6 +5080,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -5013,6 +5111,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "pages",
               "propertyTypeTokenRange": {
@@ -5038,6 +5137,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "pageSize",
               "propertyTypeTokenRange": {
@@ -5063,6 +5163,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "store",
               "propertyTypeTokenRange": {
@@ -5088,6 +5189,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "version",
               "propertyTypeTokenRange": {
@@ -5129,6 +5231,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "blFirmwareIdentifier",
               "propertyTypeTokenRange": {
@@ -5154,6 +5257,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "deviceId",
               "propertyTypeTokenRange": {
@@ -5179,6 +5283,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "firmwareIdentifier",
               "propertyTypeTokenRange": {
@@ -5204,6 +5309,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -5229,6 +5335,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "version",
               "propertyTypeTokenRange": {
@@ -5271,6 +5378,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "data",
               "propertyTypeTokenRange": {
@@ -5296,6 +5404,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "targetAddress",
               "propertyTypeTokenRange": {
@@ -6016,7 +6125,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!GamepadEvent_2.Down:member",
-              "docComment": "/**\n * Emitted when button goes from inactive to active.\n */\n",
+              "docComment": "/**\n * Emitted when button goes from inactive to active.\n * ```\n * const [button, playerIndex] = jdunpack<[GamepadButton, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -6037,7 +6146,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!GamepadEvent_2.Up:member",
-              "docComment": "/**\n * Emitted when button goes from active to inactive.\n */\n",
+              "docComment": "/**\n * Emitted when button goes from active to inactive.\n * ```\n * const [button, playerIndex] = jdunpack<[GamepadButton, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -6073,7 +6182,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!GamepadReg.Buttons:member",
-              "docComment": "/**\n * Indicates which buttons are currently active (pressed). `pressure` should be `0xff` for digital buttons, and proportional for analog ones.\n */\n",
+              "docComment": "/**\n * Indicates which buttons are currently active (pressed). `pressure` should be `0xff` for digital buttons, and proportional for analog ones.\n * ```\n * const [rest] = jdunpack<[([GamepadButton, number, number])[]]>(buf, \"r: u16 u8 u8\")\n * const [button, playerIndex, pressure] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7041,6 +7150,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
                 "endIndex": 6
@@ -7092,6 +7202,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
                 "endIndex": 4
@@ -7385,7 +7496,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.RespondToMethod:member",
-              "docComment": "/**\n * Respond to a direct method call (`request_id` comes from `subscribe_method` pipe).\n */\n",
+              "docComment": "/**\n * Respond to a direct method call (`request_id` comes from `subscribe_method` pipe).\n * ```\n * const [status, requestId] = jdunpack<[number, string]>(buf, \"u32 z\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7427,7 +7538,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.SendStringMsg:member",
-              "docComment": "/**\n * Sends a short message in string format (it's typically JSON-encoded). Multiple properties can be attached.\n */\n",
+              "docComment": "/**\n * Sends a short message in string format (it's typically JSON-encoded). Multiple properties can be attached.\n * ```\n * const [msg, rest] = jdunpack<[string, ([string, string])[]]>(buf, \"z r: z z\")\n * const [propertyName, propertyValue] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7568,7 +7679,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubEvent.DeviceboundStr:member",
-              "docComment": "/**\n * This event is emitted upon reception of a cloud to device message, that is a string (doesn't contain NUL bytes) and fits in a single event packet. For reliable reception, use the `subscribe` command above.\n */\n",
+              "docComment": "/**\n * This event is emitted upon reception of a cloud to device message, that is a string (doesn't contain NUL bytes) and fits in a single event packet. For reliable reception, use the `subscribe` command above.\n * ```\n * const [msg, rest] = jdunpack<[string, ([string, string])[]]>(buf, \"z r: z z\")\n * const [propertyName, propertyValue] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7604,7 +7715,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubPipeCmd.DeviceboundProperties:member",
-              "docComment": "/**\n * If there are any properties, this meta-report is send one or more times. All properties of a given message are always sent before the body.\n */\n",
+              "docComment": "/**\n * If there are any properties, this meta-report is send one or more times. All properties of a given message are always sent before the body.\n * ```\n * const [rest] = jdunpack<[([string, string])[]]>(buf, \"r: z z\")\n * const [propertyName, propertyValue] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7625,7 +7736,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubPipeCmd.MethodCall:member",
-              "docComment": "/**\n * This is sent after the last part of the `method_call_body`.\n */\n",
+              "docComment": "/**\n * This is sent after the last part of the `method_call_body`.\n * ```\n * const [methodName, requestId] = jdunpack<[string, string]>(buf, \"z z\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7646,7 +7757,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubPipeCmd.Properties:member",
-              "docComment": "/**\n * Set properties on the message. Can be repeated multiple times.\n */\n",
+              "docComment": "/**\n * Set properties on the message. Can be repeated multiple times.\n * ```\n * const [rest] = jdunpack<[([string, string])[]]>(buf, \"r: z z\")\n * const [propertyName, propertyValue] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -8921,6 +9032,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -8947,6 +9059,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -8988,6 +9101,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9024,6 +9138,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "connected",
               "propertyTypeTokenRange": {
@@ -9050,6 +9165,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "connecting",
               "propertyTypeTokenRange": {
@@ -9077,6 +9193,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "connectionState",
               "propertyTypeTokenRange": {
@@ -9112,6 +9229,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9161,6 +9279,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9202,6 +9321,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -9230,6 +9350,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "disconnected",
               "propertyTypeTokenRange": {
@@ -9256,6 +9377,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "disconnecting",
               "propertyTypeTokenRange": {
@@ -9282,6 +9404,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -9326,6 +9449,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -9387,6 +9511,7 @@
                   "text": "[]);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "firmwareBlobs",
               "propertyTypeTokenRange": {
@@ -9413,6 +9538,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyName",
               "propertyTypeTokenRange": {
@@ -9440,6 +9566,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "host",
               "propertyTypeTokenRange": {
@@ -9466,6 +9593,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "id",
               "propertyTypeTokenRange": {
@@ -9493,6 +9621,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "logger",
               "propertyTypeTokenRange": {
@@ -9533,6 +9662,7 @@
                   "text": ");"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "minConsolePriority",
               "propertyTypeTokenRange": {
@@ -9559,6 +9689,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -9594,6 +9725,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9630,6 +9762,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -9657,6 +9790,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "options",
               "propertyTypeTokenRange": {
@@ -9684,6 +9818,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -9719,6 +9854,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9755,6 +9891,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
               "propertyTypeTokenRange": {
@@ -9782,6 +9919,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "selfDevice",
               "propertyTypeTokenRange": {
@@ -9808,6 +9946,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "selfDeviceId",
               "propertyTypeTokenRange": {
@@ -9848,6 +9987,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9897,6 +10037,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9941,6 +10082,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -9977,6 +10119,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "timestamp",
               "propertyTypeTokenRange": {
@@ -10003,6 +10146,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -10032,6 +10176,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "transport",
               "propertyTypeTokenRange": {
@@ -10084,6 +10229,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 6,
@@ -10191,6 +10337,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -10227,6 +10374,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -10330,6 +10478,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "announced",
               "propertyTypeTokenRange": {
@@ -10357,6 +10506,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "bus",
               "propertyTypeTokenRange": {
@@ -10388,6 +10538,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -10414,6 +10565,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "connected",
               "propertyTypeTokenRange": {
@@ -10440,6 +10592,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "deviceId",
               "propertyTypeTokenRange": {
@@ -10466,6 +10619,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -10494,6 +10648,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "firmwareIdentifier",
               "propertyTypeTokenRange": {
@@ -10534,6 +10689,7 @@
                   "text": ");"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "firmwareInfo",
               "propertyTypeTokenRange": {
@@ -10560,6 +10716,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyName",
               "propertyTypeTokenRange": {
@@ -10594,6 +10751,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -10630,6 +10788,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "id",
               "propertyTypeTokenRange": {
@@ -10661,6 +10820,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -10689,6 +10849,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastSeen",
               "propertyTypeTokenRange": {
@@ -10715,6 +10876,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastServiceUpdate",
               "propertyTypeTokenRange": {
@@ -10745,6 +10907,7 @@
                   "text": "\n\nset lost(v: boolean);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lost",
               "propertyTypeTokenRange": {
@@ -10775,6 +10938,7 @@
                   "text": "\n\nset name(value: string);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -10801,6 +10965,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -10828,6 +10993,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -10863,6 +11029,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -10908,6 +11075,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -10953,6 +11121,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -10989,6 +11158,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
               "propertyTypeTokenRange": {
@@ -11020,6 +11190,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -11053,6 +11224,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -11103,6 +11275,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -11160,6 +11333,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -11205,6 +11379,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -11249,6 +11424,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -11285,6 +11461,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "serviceClasses",
               "propertyTypeTokenRange": {
@@ -11311,6 +11488,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "serviceLength",
               "propertyTypeTokenRange": {
@@ -11350,6 +11528,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -11387,6 +11566,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "servicesData",
               "propertyTypeTokenRange": {
@@ -11413,6 +11593,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "shortId",
               "propertyTypeTokenRange": {
@@ -11439,6 +11620,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "source",
               "propertyTypeTokenRange": {
@@ -11545,6 +11727,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -11571,6 +11754,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "count",
               "propertyTypeTokenRange": {
@@ -11598,6 +11782,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "data",
               "propertyTypeTokenRange": {
@@ -11624,6 +11809,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "intValue",
               "propertyTypeTokenRange": {
@@ -11650,6 +11836,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastDataTimestamp",
               "propertyTypeTokenRange": {
@@ -11676,6 +11863,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -11711,6 +11899,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -11781,6 +11970,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "changeId",
               "propertyTypeTokenRange": {
@@ -11823,6 +12013,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -11866,6 +12057,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -11899,6 +12091,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "eventStats",
               "propertyTypeTokenRange": {
@@ -11933,6 +12126,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -11977,6 +12171,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -12018,6 +12213,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "newListenerStats",
               "propertyTypeTokenRange": {
@@ -12057,6 +12253,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -12123,6 +12320,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -12183,6 +12381,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -12243,6 +12442,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -12302,6 +12502,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -12450,6 +12651,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -12477,6 +12679,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "decoded",
               "propertyTypeTokenRange": {
@@ -12503,6 +12706,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyName",
               "propertyTypeTokenRange": {
@@ -12529,6 +12733,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "id",
               "propertyTypeTokenRange": {
@@ -12555,6 +12760,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "index",
               "propertyTypeTokenRange": {
@@ -12581,6 +12787,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -12607,6 +12814,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -12634,6 +12842,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -12660,6 +12869,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
               "propertyTypeTokenRange": {
@@ -12687,6 +12897,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "register",
               "propertyTypeTokenRange": {
@@ -12714,6 +12925,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "specification",
               "propertyTypeTokenRange": {
@@ -12741,6 +12953,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "unit",
               "propertyTypeTokenRange": {
@@ -12767,6 +12980,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "value",
               "propertyTypeTokenRange": {
@@ -12841,6 +13055,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -12867,6 +13082,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyName",
               "propertyTypeTokenRange": {
@@ -12893,6 +13109,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "id",
               "propertyTypeTokenRange": {
@@ -12936,6 +13153,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -12980,6 +13198,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "logger",
               "propertyTypeTokenRange": {
@@ -13006,6 +13225,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -13032,6 +13252,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeId",
               "propertyTypeTokenRange": {
@@ -13058,6 +13279,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -13085,6 +13307,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -13111,6 +13334,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
               "propertyTypeTokenRange": {
@@ -13137,6 +13361,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -13153,6 +13378,86 @@
             "endIndex": 3
           },
           "implementsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!jdpack:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function jdpack<T extends "
+            },
+            {
+              "kind": "Content",
+              "text": "any[]"
+            },
+            {
+              "kind": "Content",
+              "text": ">(fmt: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", data: "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Uint8Array",
+              "canonicalReference": "!Uint8Array:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 7,
+            "endIndex": 8
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "fmt",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            },
+            {
+              "parameterName": "data",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              }
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "jdpack"
         },
         {
           "kind": "Class",
@@ -13240,6 +13545,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "boolValue",
               "propertyTypeTokenRange": {
@@ -13271,6 +13577,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -13306,6 +13613,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -13343,6 +13651,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "data",
               "propertyTypeTokenRange": {
@@ -13370,34 +13679,9 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "decoded",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!JDRegister#decodedValues:member",
-              "docComment": "/**\n * Gets all the decoded values as an array\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get decodedValues(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "any[]"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "decodedValues",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -13427,6 +13711,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "fields",
               "propertyTypeTokenRange": {
@@ -13453,6 +13738,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "humanValue",
               "propertyTypeTokenRange": {
@@ -13479,6 +13765,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "intValue",
               "propertyTypeTokenRange": {
@@ -13505,6 +13792,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "isReading",
               "propertyTypeTokenRange": {
@@ -13531,6 +13819,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastDataTimestamp",
               "propertyTypeTokenRange": {
@@ -13557,6 +13846,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastGetAttempts",
               "propertyTypeTokenRange": {
@@ -13583,6 +13873,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastGetTimestamp",
               "propertyTypeTokenRange": {
@@ -13609,6 +13900,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastSetTimestamp",
               "propertyTypeTokenRange": {
@@ -13635,6 +13927,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -13670,6 +13963,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -13719,6 +14013,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -13760,6 +14055,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -13810,6 +14106,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -13874,6 +14171,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -13938,6 +14236,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -14002,6 +14301,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -14045,6 +14345,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "stringValue",
               "propertyTypeTokenRange": {
@@ -14071,6 +14372,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -14179,6 +14481,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
               "propertyTypeTokenRange": {
@@ -14214,6 +14517,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -14251,6 +14555,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "device",
               "propertyTypeTokenRange": {
@@ -14286,6 +14591,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -14327,6 +14633,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "events",
               "propertyTypeTokenRange": {
@@ -14353,6 +14660,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyName",
               "propertyTypeTokenRange": {
@@ -14379,6 +14687,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "id",
               "propertyTypeTokenRange": {
@@ -14405,6 +14714,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -14431,6 +14741,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "nodeKind",
               "propertyTypeTokenRange": {
@@ -14458,6 +14769,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -14493,6 +14805,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -14529,6 +14842,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
               "propertyTypeTokenRange": {
@@ -14556,6 +14870,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "readingRegister",
               "propertyTypeTokenRange": {
@@ -14591,6 +14906,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -14632,6 +14948,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -14660,6 +14977,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "registersUseAcks",
               "propertyTypeTokenRange": {
@@ -14707,6 +15025,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -14781,6 +15100,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -14846,6 +15166,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -14889,6 +15210,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service_index",
               "propertyTypeTokenRange": {
@@ -14915,6 +15237,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "serviceClass",
               "propertyTypeTokenRange": {
@@ -14942,6 +15265,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "specification",
               "propertyTypeTokenRange": {
@@ -14969,6 +15293,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "statusCodeRegister",
               "propertyTypeTokenRange": {
@@ -15056,6 +15381,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "bus",
               "propertyTypeTokenRange": {
@@ -15083,6 +15409,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "device",
               "propertyTypeTokenRange": {
@@ -15110,6 +15437,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service",
               "propertyTypeTokenRange": {
@@ -15136,6 +15464,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -15263,6 +15592,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "address",
               "propertyTypeTokenRange": {
@@ -15289,6 +15619,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyName",
               "propertyTypeTokenRange": {
@@ -15315,6 +15646,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "id",
               "propertyTypeTokenRange": {
@@ -15341,6 +15673,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -15368,6 +15701,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -15394,6 +15728,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
               "propertyTypeTokenRange": {
@@ -15421,6 +15756,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service",
               "propertyTypeTokenRange": {
@@ -15448,6 +15784,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "specification",
               "propertyTypeTokenRange": {
@@ -15462,6 +15799,86 @@
             "endIndex": 3
           },
           "implementsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!jdunpack:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function jdunpack<T extends "
+            },
+            {
+              "kind": "Content",
+              "text": "any[]"
+            },
+            {
+              "kind": "Content",
+              "text": ">(buf: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Uint8Array",
+              "canonicalReference": "!Uint8Array:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", fmt: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 7,
+            "endIndex": 8
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "buf",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            },
+            {
+              "parameterName": "fmt",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              }
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "jdunpack"
         },
         {
           "kind": "Function",
@@ -15692,7 +16109,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!KeyboardCmd.Key:member",
-              "docComment": "/**\n * Presses a key or a sequence of keys down.\n */\n",
+              "docComment": "/**\n * Presses a key or a sequence of keys down.\n * ```\n * const [rest] = jdunpack<[([number, KeyboardModifiers, KeyboardAction])[]]>(buf, \"r: u16 u8 u8\")\n * const [selector, modifiers, action] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -15914,20 +16331,20 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!LEDMatrixControllerCmd:enum",
+          "canonicalReference": "jacdac-ts!LedMatrixControllerCmd:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum LEDMatrixControllerCmd "
+              "text": "export declare enum LedMatrixControllerCmd "
             }
           ],
           "releaseTag": "Public",
-          "name": "LEDMatrixControllerCmd",
+          "name": "LedMatrixControllerCmd",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixControllerCmd.Clear:member",
+              "canonicalReference": "jacdac-ts!LedMatrixControllerCmd.Clear:member",
               "docComment": "/**\n * No args. Shorthand command to clear all the LEDs on the screen.\n */\n",
               "excerptTokens": [
                 {
@@ -15950,20 +16367,20 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!LEDMatrixControllerReg:enum",
+          "canonicalReference": "jacdac-ts!LedMatrixControllerReg:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum LEDMatrixControllerReg "
+              "text": "export declare enum LedMatrixControllerReg "
             }
           ],
           "releaseTag": "Public",
-          "name": "LEDMatrixControllerReg",
+          "name": "LedMatrixControllerReg",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixControllerReg.Brightness:member",
+              "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Brightness:member",
               "docComment": "/**\n * Read-write uint8_t. Sets the general brightness of the LEDs.\n */\n",
               "excerptTokens": [
                 {
@@ -15984,7 +16401,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixControllerReg.Columns:member",
+              "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Columns:member",
               "docComment": "/**\n * Constant # uint16_t. Number of columns on the screen\n */\n",
               "excerptTokens": [
                 {
@@ -16005,7 +16422,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixControllerReg.Enabled:member",
+              "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Enabled:member",
               "docComment": "/**\n * Read-write bool (uint8_t). Disables or enables the whole screen.\n */\n",
               "excerptTokens": [
                 {
@@ -16026,7 +16443,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixControllerReg.Leds:member",
+              "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Leds:member",
               "docComment": "/**\n * Read-write bytes. Read or writes the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n */\n",
               "excerptTokens": [
                 {
@@ -16047,7 +16464,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixControllerReg.Rows:member",
+              "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Rows:member",
               "docComment": "/**\n * Constant # uint16_t. Number of rows on the screen\n */\n",
               "excerptTokens": [
                 {
@@ -16070,20 +16487,20 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!LEDMatrixDisplayReg:enum",
+          "canonicalReference": "jacdac-ts!LedMatrixDisplayReg:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum LEDMatrixDisplayReg "
+              "text": "export declare enum LedMatrixDisplayReg "
             }
           ],
           "releaseTag": "Public",
-          "name": "LEDMatrixDisplayReg",
+          "name": "LedMatrixDisplayReg",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LEDMatrixDisplayReg.Leds:member",
+              "canonicalReference": "jacdac-ts!LedMatrixDisplayReg.Leds:member",
               "docComment": "/**\n * Read-only bytes. Streams the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n */\n",
               "excerptTokens": [
                 {
@@ -16831,7 +17248,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MicrophoneCmd.Sample:member",
-              "docComment": "/**\n * The samples will be streamed back over the `samples` pipe. If `num_samples` is `0`, streaming will only stop when the pipe is closed. Otherwise the specified number of samples is streamed. Samples are sent as `i16`.\n */\n",
+              "docComment": "/**\n * The samples will be streamed back over the `samples` pipe. If `num_samples` is `0`, streaming will only stop when the pipe is closed. Otherwise the specified number of samples is streamed. Samples are sent as `i16`.\n * ```\n * const [samples, numSamples] = jdunpack<[UInt8Array, number]>(buf, \"b[12] u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16971,6 +17388,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -17029,6 +17447,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -17086,6 +17505,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -17136,6 +17556,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -17172,6 +17593,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -17432,7 +17854,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.InputShape:member",
-              "docComment": "/**\n * Read-only dimension uint16_t. The shape of the input tensor.\n */\n",
+              "docComment": "/**\n * Read-only. The shape of the input tensor.\n * ```\n * const [dimension] = jdunpack<[number[]]>(buf, \"u16[]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17516,7 +17938,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.Outputs:member",
-              "docComment": "/**\n * Read-only output f32 (uint32_t). Results of last model invocation as `float32` array.\n */\n",
+              "docComment": "/**\n * Read-only. Results of last model invocation as `float32` array.\n * ```\n * const [output] = jdunpack<[number[]]>(buf, \"f32[]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17537,7 +17959,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.OutputShape:member",
-              "docComment": "/**\n * Read-only dimension uint16_t. The shape of the output tensor.\n */\n",
+              "docComment": "/**\n * Read-only. The shape of the output tensor.\n * ```\n * const [dimension] = jdunpack<[number[]]>(buf, \"u16[]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17828,7 +18250,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MouseCmd.Move:member",
-              "docComment": "/**\n * Moves the mouse by the distance specified. If the time is positive, it specifies how long to make the move.\n */\n",
+              "docComment": "/**\n * Moves the mouse by the distance specified. If the time is positive, it specifies how long to make the move.\n * ```\n * const [dx, dy, time] = jdunpack<[number, number, number]>(buf, \"i16 i16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17849,7 +18271,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MouseCmd.SetButton:member",
-              "docComment": "/**\n * Sets the up/down state of one or more buttons. A ``Click`` is the same as ``Down`` followed by ``Up`` after 100ms. A ``DoubleClick`` is two clicks with ``150ms`` gap between them (that is, ``100ms`` first click, ``150ms`` gap, ``100ms`` second click).\n */\n",
+              "docComment": "/**\n * Sets the up/down state of one or more buttons. A ``Click`` is the same as ``Down`` followed by ``Up`` after 100ms. A ``DoubleClick`` is two clicks with ``150ms`` gap between them (that is, ``100ms`` first click, ``150ms`` gap, ``100ms`` second click).\n * ```\n * const [buttons, event] = jdunpack<[MouseButton, MouseButtonEvent]>(buf, \"u16 u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17870,7 +18292,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MouseCmd.Wheel:member",
-              "docComment": "/**\n * Turns the wheel up or down. Positive if scrolling up. If the time is positive, it specifies how long to make the move.\n */\n",
+              "docComment": "/**\n * Turns the wheel up or down. Positive if scrolling up. If the time is positive, it specifies how long to make the move.\n * ```\n * const [dy, time] = jdunpack<[number, number]>(buf, \"i16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18047,7 +18469,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MultitouchReg.Capacity:member",
-              "docComment": "/**\n * Read-only capacitance int32_t. Capacitance of channels. The capacitance is continuously calibrated, and a value of `0` indicates no touch, wheres a value of around `100` or more indicates touch. It's best to ignore this (unless debugging), and use events.\n */\n",
+              "docComment": "/**\n * Read-only. Capacitance of channels. The capacitance is continuously calibrated, and a value of `0` indicates no touch, wheres a value of around `100` or more indicates touch. It's best to ignore this (unless debugging), and use events.\n * ```\n * const [capacitance] = jdunpack<[number[]]>(buf, \"i32[]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18060,78 +18482,6 @@
               ],
               "releaseTag": "Public",
               "name": "Capacity",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!MusicCmd:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum MusicCmd "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "MusicCmd",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!MusicCmd.PlayTone:member",
-              "docComment": "/**\n * Play a PWM tone with given period and duty for given duration. The duty is scaled down with `volume` register. To play tone at frequency `F` Hz and volume `V` (in `0..1`) you will want to send `P = 1000000 / F` and `D = P * V / 2`.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "PlayTone = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "128"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "PlayTone",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!MusicReg:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum MusicReg "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "MusicReg",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!MusicReg.Volume:member",
-              "docComment": "/**\n * Read-write ratio uint8_t. The volume (duty cycle) of the buzzer.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Volume = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "1"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Volume",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -18225,6 +18575,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "length",
               "propertyTypeTokenRange": {
@@ -18869,6 +19220,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 4,
                 "endIndex": 5
@@ -18933,6 +19285,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "complete",
               "propertyTypeTokenRange": {
@@ -18967,6 +19320,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "error",
               "propertyTypeTokenRange": {
@@ -18992,6 +19346,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "next",
               "propertyTypeTokenRange": {
@@ -19388,6 +19743,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -19429,6 +19785,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 4,
@@ -19465,6 +19822,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "crc",
               "propertyTypeTokenRange": {
@@ -19505,6 +19863,7 @@
                   "text": ");"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "data",
               "propertyTypeTokenRange": {
@@ -19532,6 +19891,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "decoded",
               "propertyTypeTokenRange": {
@@ -19562,6 +19922,7 @@
                   "text": "\n\nset device_identifier(id: string);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "device_identifier",
               "propertyTypeTokenRange": {
@@ -19589,6 +19950,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "device",
               "propertyTypeTokenRange": {
@@ -19615,6 +19977,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "frame_flags",
               "propertyTypeTokenRange": {
@@ -19641,6 +20004,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyCommandName",
               "propertyTypeTokenRange": {
@@ -19667,6 +20031,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyDeviceName",
               "propertyTypeTokenRange": {
@@ -19693,6 +20058,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "friendlyServiceName",
               "propertyTypeTokenRange": {
@@ -19737,6 +20103,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -19798,6 +20165,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -19863,6 +20231,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -19923,6 +20292,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -19967,6 +20337,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "header",
               "propertyTypeTokenRange": {
@@ -19993,6 +20364,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "intData",
               "propertyTypeTokenRange": {
@@ -20023,6 +20395,7 @@
                   "text": "\n\nset is_command(value: boolean);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "is_command",
               "propertyTypeTokenRange": {
@@ -20049,6 +20422,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "is_event",
               "propertyTypeTokenRange": {
@@ -20075,6 +20449,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "is_reg_get",
               "propertyTypeTokenRange": {
@@ -20101,6 +20476,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "is_reg_set",
               "propertyTypeTokenRange": {
@@ -20127,6 +20503,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "is_report",
               "propertyTypeTokenRange": {
@@ -20153,6 +20530,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "isAnnounce",
               "propertyTypeTokenRange": {
@@ -20179,6 +20557,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "isRepeatedAnnounce",
               "propertyTypeTokenRange": {
@@ -20205,6 +20584,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "key",
               "propertyTypeTokenRange": {
@@ -20231,6 +20611,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "multicommand_class",
               "propertyTypeTokenRange": {
@@ -20266,6 +20647,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -20327,6 +20709,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 7,
@@ -20387,6 +20770,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -20427,6 +20811,7 @@
                   "text": "\n\nset requires_ack(ack: boolean);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "requires_ack",
               "propertyTypeTokenRange": {
@@ -20475,6 +20860,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -20532,6 +20918,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -20582,6 +20969,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -20618,6 +21006,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "sender",
               "propertyTypeTokenRange": {
@@ -20658,6 +21047,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -20694,6 +21084,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service_class",
               "propertyTypeTokenRange": {
@@ -20724,6 +21115,7 @@
                   "text": "\n\nset service_command(cmd: number);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service_command",
               "propertyTypeTokenRange": {
@@ -20754,6 +21146,7 @@
                   "text": "\n\nset service_index(value: number);"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "service_index",
               "propertyTypeTokenRange": {
@@ -20780,6 +21173,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "serviceClass",
               "propertyTypeTokenRange": {
@@ -20806,8 +21200,36 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "size",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#stringData:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get stringData(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "stringData",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -20832,6 +21254,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "timestamp",
               "propertyTypeTokenRange": {
@@ -20859,6 +21282,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -20887,6 +21311,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -20915,6 +21340,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "uintData",
               "propertyTypeTokenRange": {
@@ -20922,6 +21348,51 @@
                 "endIndex": 2
               },
               "isStatic": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!Packet#unpack:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "unpack(fmt: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "fmt",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "unpack"
             },
             {
               "kind": "Method",
@@ -20942,6 +21413,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -20987,6 +21459,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "filter",
               "propertyTypeTokenRange": {
@@ -21013,6 +21486,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "props",
               "propertyTypeTokenRange": {
@@ -21038,6 +21512,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "source",
               "propertyTypeTokenRange": {
@@ -21079,6 +21554,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "after",
               "propertyTypeTokenRange": {
@@ -21104,6 +21580,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "announce",
               "propertyTypeTokenRange": {
@@ -21129,6 +21606,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "before",
               "propertyTypeTokenRange": {
@@ -21159,6 +21637,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "devices",
               "propertyTypeTokenRange": {
@@ -21184,6 +21663,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "firmwareIdentifiers",
               "propertyTypeTokenRange": {
@@ -21209,6 +21689,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "flags",
               "propertyTypeTokenRange": {
@@ -21234,6 +21715,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "log",
               "propertyTypeTokenRange": {
@@ -21259,6 +21741,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "pkts",
               "propertyTypeTokenRange": {
@@ -21284,6 +21767,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "regGet",
               "propertyTypeTokenRange": {
@@ -21309,6 +21793,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "regSet",
               "propertyTypeTokenRange": {
@@ -21334,6 +21819,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "repeatedAnnounce",
               "propertyTypeTokenRange": {
@@ -21359,6 +21845,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "requiresAck",
               "propertyTypeTokenRange": {
@@ -21384,6 +21871,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "serviceClasses",
               "propertyTypeTokenRange": {
@@ -21425,6 +21913,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "broadcast",
               "propertyTypeTokenRange": {
@@ -21450,6 +21939,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "channel",
               "propertyTypeTokenRange": {
@@ -21476,6 +21966,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "data",
               "propertyTypeTokenRange": {
@@ -21501,6 +21992,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "outer",
               "propertyTypeTokenRange": {
@@ -21526,6 +22018,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "type",
               "propertyTypeTokenRange": {
@@ -21625,6 +22118,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "connectAsync",
               "propertyTypeTokenRange": {
@@ -21659,6 +22153,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "disconnectAsync",
               "propertyTypeTokenRange": {
@@ -21702,6 +22197,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "sendPacketAsync",
               "propertyTypeTokenRange": {
@@ -22188,6 +22684,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "localPipe",
               "propertyTypeTokenRange": {
@@ -22213,6 +22710,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "pipeType",
               "propertyTypeTokenRange": {
@@ -22648,6 +23146,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "showTime",
               "propertyTypeTokenRange": {
@@ -22673,6 +23172,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "skipRepeatedAnnounce",
               "propertyTypeTokenRange": {
@@ -22744,6 +23244,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -22780,6 +23281,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -22825,6 +23327,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -22874,6 +23377,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -22956,6 +23460,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 7,
@@ -23026,6 +23531,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "promises",
               "propertyTypeTokenRange": {
@@ -23073,6 +23579,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 3
@@ -23117,6 +23624,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
                 "endIndex": 6
@@ -23157,6 +23665,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 3
@@ -23198,6 +23707,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
                 "endIndex": 5
@@ -23217,6 +23727,387 @@
             }
           ],
           "extendsTokenRanges": []
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ProtoTestCmd:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ProtoTestCmd "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ProtoTestCmd",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CBool:member",
+              "docComment": "/**\n * Argument: bool bool (uint8_t). A command to set rw_bool. Returns the value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CBool = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "128"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CBool",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CI32:member",
+              "docComment": "/**\n * Argument: i32 int32_t. A command to set rw_i32. Returns the value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CI32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "130"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CU32:member",
+              "docComment": "/**\n * Argument: u32 uint32_t. A command to set rw_u32. Returns the value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CU32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "129"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CU32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ProtoTestEvent:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ProtoTestEvent "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ProtoTestEvent",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestEvent.EBool:member",
+              "docComment": "/**\n * Argument: bool bool (uint8_t). An event raised when rw_bool is modified\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "EBool = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "384"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "EBool",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestEvent.EI32:member",
+              "docComment": "/**\n * Argument: i32 int32_t. An event raised when rw_i32 is modified\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "EI32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "402"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "EI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestEvent.EU32:member",
+              "docComment": "/**\n * Argument: u32 uint32_t. An event raised when rw_u32 is modified\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "EU32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "400"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "EU32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ProtoTestReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ProtoTestReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ProtoTestReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RoBool:member",
+              "docComment": "/**\n * Read-only bool (uint8_t). A read only bool register. Mirrors rw_bool.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RoBool = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "385"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RoBool",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RoBytes:member",
+              "docComment": "/**\n * Read-only bytes. A read only string register. Mirrors ro_bytes.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RoBytes = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "389"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RoBytes",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RoI32:member",
+              "docComment": "/**\n * Read-only int32_t. A read only i32 register.. Mirrors rw_i32.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RoI32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "387"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RoI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RoString:member",
+              "docComment": "/**\n * Read-only string (bytes). A read only string register. Mirrors rw_string.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RoString = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "388"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RoString",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RoU32:member",
+              "docComment": "/**\n * Read-only uint32_t. A read only u32 register.. Mirrors rw_u32.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RoU32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "386"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RoU32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RwBool:member",
+              "docComment": "/**\n * Read-write bool (uint8_t). A read write bool register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RwBool = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "129"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RwBool",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RwBytes:member",
+              "docComment": "/**\n * Read-write bytes. A read write string register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RwBytes = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "133"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RwBytes",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RwI32:member",
+              "docComment": "/**\n * Read-write int32_t. A read write i32 register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RwI32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "131"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RwI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RwString:member",
+              "docComment": "/**\n * Read-write string (bytes). A read write string register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RwString = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "132"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RwString",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RwU32:member",
+              "docComment": "/**\n * Read-write uint32_t. A read write u32 register.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RwU32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "130"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RwU32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
         },
         {
           "kind": "Enum",
@@ -23339,7 +24230,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PwmLightReg.Steps:member",
-              "docComment": "/**\n * The steps of current animation. Setting this also sets `current_iteration` to `0`. Step with `duration == 0` is treated as an end marker.\n */\n",
+              "docComment": "/**\n * The steps of current animation. Setting this also sets `current_iteration` to `0`. Step with `duration == 0` is treated as an end marker.\n * ```\n * const [rest] = jdunpack<[([number, number])[]]>(buf, \"r: u16 u16\")\n * const [startIntensity, duration] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23952,6 +24843,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "boundTo",
               "propertyTypeTokenRange": {
@@ -23983,6 +24875,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "candidates",
               "propertyTypeTokenRange": {
@@ -24018,6 +24911,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -24054,6 +24948,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "name",
               "propertyTypeTokenRange": {
@@ -24081,6 +24976,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "parent",
               "propertyTypeTokenRange": {
@@ -24116,6 +25012,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -24152,6 +25049,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "services",
               "propertyTypeTokenRange": {
@@ -24386,6 +25284,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -24432,6 +25331,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": true,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -24480,6 +25380,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "remoteRequestedDevices",
               "propertyTypeTokenRange": {
@@ -24528,6 +25429,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -24597,7 +25499,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.GetRole:member",
-              "docComment": "/**\n * Argument: device_id uint64_t. Get the role corresponding to given device identifer. Returns empty string if unset.\n */\n",
+              "docComment": "/**\n * Argument: device_id devid (uint64_t). Get the role corresponding to given device identifer. Returns empty string if unset.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24660,7 +25562,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.SetRole:member",
-              "docComment": "/**\n * Set role. Can set to empty to remove role binding.\n */\n",
+              "docComment": "/**\n * Set role. Can set to empty to remove role binding.\n * ```\n * const [deviceId, role] = jdunpack<[UInt8Array, string]>(buf, \"b[8] s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24673,6 +25575,78 @@
               ],
               "releaseTag": "Public",
               "name": "SetRole",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!RoleManagerEvent:enum",
+          "docComment": "/**\n * pipe_report RequiredRoles\n * ```\n * const [deviceId, serviceClass, roles] = jdunpack<[UInt8Array, number, string]>(buf, \"b[8] u32 s\")\n * ```\n *\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum RoleManagerEvent "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "RoleManagerEvent",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!RoleManagerEvent.Change:member",
+              "docComment": "/**\n * Emit notifying that the internal state of the service changed.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Change = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Change",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!RoleManagerReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum RoleManagerReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "RoleManagerReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!RoleManagerReg.AllRolesAllocated:member",
+              "docComment": "/**\n * Read-only bool (uint8_t). Indicates if all required roles have been allocated to devices.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "AllRolesAllocated = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "385"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "AllRolesAllocated",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -25087,6 +26061,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -25137,6 +26112,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -25187,6 +26163,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -25223,6 +26200,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -25284,6 +26262,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "inputs",
               "propertyTypeTokenRange": {
@@ -25309,6 +26288,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "samplesInWindow",
               "propertyTypeTokenRange": {
@@ -25334,6 +26314,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "samplingInterval",
               "propertyTypeTokenRange": {
@@ -25375,6 +26356,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "deviceId",
               "propertyTypeTokenRange": {
@@ -25400,6 +26382,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "serviceClass",
               "propertyTypeTokenRange": {
@@ -25425,6 +26408,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "serviceIndex",
               "propertyTypeTokenRange": {
@@ -25472,7 +26456,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.Inputs:member",
-              "docComment": "/**\n * Set automatic input collection. These settings are stored in flash.\n */\n",
+              "docComment": "/**\n * Set automatic input collection. These settings are stored in flash.\n * ```\n * const [samplingInterval, samplesInWindow, rest] = jdunpack<[number, number, ([UInt8Array, number, number, number, SensorAggregatorSampleType, number])[]]>(buf, \"u16 u16 x[4] r: b[8] u32 u8 u8 u8 i8\")\n * const [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25534,12 +26518,12 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!SensorAggregatorReg.StreamSamples:member",
+              "canonicalReference": "jacdac-ts!SensorAggregatorReg.StreamingSamples:member",
               "docComment": "/**\n * Read-write uint32_t. When set to `N`, will stream `N` samples as `current_sample` reading.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "StreamSamples = "
+                  "text": "StreamingSamples = "
                 },
                 {
                   "kind": "Content",
@@ -25547,7 +26531,7 @@
                 }
               ],
               "releaseTag": "Public",
-              "name": "StreamSamples",
+              "name": "StreamingSamples",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -25727,6 +26711,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "numSamples",
               "propertyTypeTokenRange": {
@@ -25752,6 +26737,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "sampleSize",
               "propertyTypeTokenRange": {
@@ -26388,6 +27374,48 @@
           "members": [
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SettingsCmd.Clear:member",
+              "docComment": "/**\n * No args. Clears all keys.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Clear = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "133"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Clear",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SettingsCmd.Delete:member",
+              "docComment": "/**\n * Argument: key string (bytes). Delete a given setting.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Delete = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "132"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Delete",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.Get:member",
               "docComment": "/**\n * Argument: key string (bytes). Get the value of given setting. If no such entry exists, the value returned is empty.\n */\n",
               "excerptTokens": [
@@ -26452,7 +27480,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.Set:member",
-              "docComment": "/**\n * Set the value of a given setting. Empty value indicates that the setting should be deleted.\n */\n",
+              "docComment": "/**\n * Set the value of a given setting.\n * ```\n * const [key, value] = jdunpack<[string, UInt8Array]>(buf, \"z b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26574,6 +27602,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "signal",
               "propertyTypeTokenRange": {
@@ -26604,6 +27633,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "signalled",
               "propertyTypeTokenRange": {
@@ -26784,23 +27814,6 @@
         },
         {
           "kind": "Variable",
-          "canonicalReference": "jacdac-ts!SRV_AZURE_IOT_HUB:var",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "SRV_AZURE_IOT_HUB = 434976332"
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "SRV_AZURE_IOT_HUB",
-          "variableTypeTokenRange": {
-            "startIndex": 0,
-            "endIndex": 0
-          }
-        },
-        {
-          "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_BOOTLOADER:var",
           "docComment": "",
           "excerptTokens": [
@@ -26828,6 +27841,23 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_BUTTON",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_BUZZER:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_BUZZER = 458731991"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_BUZZER",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -26913,6 +27943,23 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_HUMIDITY",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_IOT_HUB:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_IOT_HUB = 434976332"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_IOT_HUB",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -27090,23 +28137,6 @@
         },
         {
           "kind": "Variable",
-          "canonicalReference": "jacdac-ts!SRV_MUSIC:var",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "SRV_MUSIC = 458731991"
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "SRV_MUSIC",
-          "variableTypeTokenRange": {
-            "startIndex": 0,
-            "endIndex": 0
-          }
-        },
-        {
-          "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_POWER:var",
           "docComment": "",
           "excerptTokens": [
@@ -27117,6 +28147,23 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_POWER",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_PROTO_TEST:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_PROTO_TEST = 382158442"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_PROTO_TEST",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -27209,16 +28256,16 @@
         },
         {
           "kind": "Variable",
-          "canonicalReference": "jacdac-ts!SRV_SETTINGS_STORAGE:var",
+          "canonicalReference": "jacdac-ts!SRV_SETTINGS:var",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "SRV_SETTINGS_STORAGE = 285727818"
+              "text": "SRV_SETTINGS = 285727818"
             }
           ],
           "releaseTag": "Public",
-          "name": "SRV_SETTINGS_STORAGE",
+          "name": "SRV_SETTINGS",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -27227,7 +28274,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_SLIDER:var",
-          "docComment": "",
+          "docComment": "/**\n * pipe_report ListedEntry\n * ```\n * const [key, value] = jdunpack<[string, UInt8Array]>(buf, \"z b\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -27260,16 +28307,16 @@
         },
         {
           "kind": "Variable",
-          "canonicalReference": "jacdac-ts!SRV_TEMPERATURE:var",
+          "canonicalReference": "jacdac-ts!SRV_THERMOMETER:var",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "SRV_TEMPERATURE = 337754823"
+              "text": "SRV_THERMOMETER = 337754823"
             }
           ],
           "releaseTag": "Public",
-          "name": "SRV_TEMPERATURE",
+          "name": "SRV_THERMOMETER",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -27553,6 +28600,50 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!stringToBuffer:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function stringToBuffer(str: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Uint8Array",
+              "canonicalReference": "!Uint8Array:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "str",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "stringToBuffer"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!stringToUint8Array:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -27653,7 +28744,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemCmd.Event:member",
-              "docComment": "/**\n * Event from sensor or a broadcast service.\n */\n",
+              "docComment": "/**\n * Event from sensor or a broadcast service.\n * ```\n * const [eventId, eventArgument] = jdunpack<[number, number]>(buf, \"u32 u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27708,6 +28799,42 @@
               ],
               "releaseTag": "Public",
               "name": "SetRegister",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SystemEvent:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SystemEvent "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SystemEvent",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemEvent.Change:member",
+              "docComment": "/**\n * Emit notifying that the internal state of the service changed.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Change = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Change",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -27836,7 +28963,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.StatusCode:member",
-              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n */\n",
+              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n * ```\n * const [code, vendorCode] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27844,7 +28971,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "7"
+                  "text": "259"
                 }
               ],
               "releaseTag": "Public",
@@ -27942,20 +29069,20 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!TCPCmd:enum",
+          "canonicalReference": "jacdac-ts!TcpCmd:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum TCPCmd "
+              "text": "export declare enum TcpCmd "
             }
           ],
           "releaseTag": "Public",
-          "name": "TCPCmd",
+          "name": "TcpCmd",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!TCPCmd.Open:member",
+              "canonicalReference": "jacdac-ts!TcpCmd.Open:member",
               "docComment": "/**\n * Argument: inbound pipe (bytes). Open pair of pipes between network peripheral and a controlling device. In/outbound refers to direction from/to internet.\n */\n",
               "excerptTokens": [
                 {
@@ -27978,20 +29105,20 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!TCPPipeCmd:enum",
+          "canonicalReference": "jacdac-ts!TcpPipeCmd:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum TCPPipeCmd "
+              "text": "export declare enum TcpPipeCmd "
             }
           ],
           "releaseTag": "Public",
-          "name": "TCPPipeCmd",
+          "name": "TcpPipeCmd",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!TCPPipeCmd.Error:member",
+              "canonicalReference": "jacdac-ts!TcpPipeCmd.Error:member",
               "docComment": "/**\n * Argument: error TcpError (int32_t). Reported when an error is encountered. Negative error codes come directly from the SSL implementation.\n */\n",
               "excerptTokens": [
                 {
@@ -28012,8 +29139,8 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!TCPPipeCmd.OpenSsl:member",
-              "docComment": "/**\n * Open an SSL connection to a given host:port pair. Can be issued only once on given pipe. After the connection is established, an empty data report is sent. Connection is closed by closing the pipe.\n */\n",
+              "canonicalReference": "jacdac-ts!TcpPipeCmd.OpenSsl:member",
+              "docComment": "/**\n * Open an SSL connection to a given host:port pair. Can be issued only once on given pipe. After the connection is established, an empty data report is sent. Connection is closed by closing the pipe.\n * ```\n * const [tcpPort, hostname] = jdunpack<[number, string]>(buf, \"u16 s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -28035,20 +29162,20 @@
         },
         {
           "kind": "Enum",
-          "canonicalReference": "jacdac-ts!TCPTcpError:enum",
+          "canonicalReference": "jacdac-ts!TcpTcpError:enum",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum TCPTcpError "
+              "text": "export declare enum TcpTcpError "
             }
           ],
           "releaseTag": "Public",
-          "name": "TCPTcpError",
+          "name": "TcpTcpError",
           "members": [
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!TCPTcpError.InvalidCommand:member",
+              "canonicalReference": "jacdac-ts!TcpTcpError.InvalidCommand:member",
               "docComment": "",
               "excerptTokens": [
                 {
@@ -28069,7 +29196,7 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!TCPTcpError.InvalidCommandPayload:member",
+              "canonicalReference": "jacdac-ts!TcpTcpError.InvalidCommandPayload:member",
               "docComment": "",
               "excerptTokens": [
                 {
@@ -28083,42 +29210,6 @@
               ],
               "releaseTag": "Public",
               "name": "InvalidCommandPayload",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!TemperatureReg:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum TemperatureReg "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "TemperatureReg",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!TemperatureReg.Temperature:member",
-              "docComment": "/**\n * Read-only °C u22.10 (uint32_t). The temperature.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Temperature = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "257"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Temperature",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -28157,6 +29248,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "arenaSize",
               "propertyTypeTokenRange": {
@@ -28182,6 +29274,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "inputShape",
               "propertyTypeTokenRange": {
@@ -28207,6 +29300,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "lastError",
               "propertyTypeTokenRange": {
@@ -28232,6 +29326,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "modelSize",
               "propertyTypeTokenRange": {
@@ -28257,6 +29352,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "outputShape",
               "propertyTypeTokenRange": {
@@ -28266,6 +29362,42 @@
             }
           ],
           "extendsTokenRanges": []
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ThermometerReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ThermometerReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ThermometerReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerReg.Temperature:member",
+              "docComment": "/**\n * Read-only °C u22.10 (uint32_t). The temperature.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Temperature = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "257"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Temperature",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
         },
         {
           "kind": "Function",
@@ -28663,6 +29795,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "count",
               "propertyTypeTokenRange": {
@@ -28688,6 +29821,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "key",
               "propertyTypeTokenRange": {
@@ -28714,6 +29848,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "packet",
               "propertyTypeTokenRange": {
@@ -28787,6 +29922,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "altIface",
               "propertyTypeTokenRange": {
@@ -28835,6 +29971,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -28872,6 +30009,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "dev",
               "propertyTypeTokenRange": {
@@ -28903,6 +30041,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -28932,6 +30071,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "epIn",
               "propertyTypeTokenRange": {
@@ -28959,6 +30099,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "epOut",
               "propertyTypeTokenRange": {
@@ -28993,6 +30134,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -29030,6 +30172,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "iface",
               "propertyTypeTokenRange": {
@@ -29056,6 +30199,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "isMicrobit",
               "propertyTypeTokenRange": {
@@ -29098,6 +30242,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 5,
@@ -29150,6 +30295,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "onData",
               "propertyTypeTokenRange": {
@@ -29185,6 +30331,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "onError",
               "propertyTypeTokenRange": {
@@ -29211,6 +30358,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "rawMode",
               "propertyTypeTokenRange": {
@@ -29237,6 +30385,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "readLoopStarted",
               "propertyTypeTokenRange": {
@@ -29263,6 +30412,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "ready",
               "propertyTypeTokenRange": {
@@ -29303,6 +30453,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 1,
@@ -29345,6 +30496,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
@@ -29926,6 +31078,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "connectObservable",
               "propertyTypeTokenRange": {
@@ -29965,6 +31118,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": true,
               "releaseTag": "Public",
               "name": "disconnectObservable",
               "propertyTypeTokenRange": {
@@ -30008,6 +31162,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "getDevices",
               "propertyTypeTokenRange": {
@@ -30060,6 +31215,7 @@
                   "text": ";"
                 }
               ],
+              "isOptional": false,
               "releaseTag": "Public",
               "name": "requestDevice",
               "propertyTypeTokenRange": {
@@ -30517,7 +31673,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!WifiCmd.Connect:member",
-              "docComment": "/**\n * Connect to named network.\n */\n",
+              "docComment": "/**\n * Connect to named network.\n * ```\n * const [ssid, password] = jdunpack<[string, string]>(buf, \"z z\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -30639,7 +31795,7 @@
         {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!WifiReg:enum",
-          "docComment": "",
+          "docComment": "/**\n * pipe_report Results\n * ```\n * const [flags, rssi, channel, bssid, ssid] = jdunpack<[WifiAPFlags, number, number, UInt8Array, string]>(buf, \"u32 x[4] i8 u8 b[6] s[33]\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

@@ -5,7 +5,7 @@
 ```ts
 
 // @public (undocumented)
-export enum AccelEvent {
+export enum AccelerometerEvent {
     FaceDown = 6,
     FaceUp = 5,
     Force_2g = 12,
@@ -21,7 +21,7 @@ export enum AccelEvent {
 }
 
 // @public (undocumented)
-export enum AccelReg {
+export enum AccelerometerReg {
     Forces = 257
 }
 
@@ -57,7 +57,7 @@ export function assert(cond: boolean, msg?: string): void;
 
 // @public (undocumented)
 export enum BaseReg {
-    StatusCode = 7
+    StatusCode = 259
 }
 
 // @public (undocumented)
@@ -148,6 +148,16 @@ export enum ButtonReg {
 }
 
 // @public (undocumented)
+export enum BuzzerCmd {
+    PlayTone = 128
+}
+
+// @public (undocumented)
+export enum BuzzerReg {
+    Volume = 1
+}
+
+// @public (undocumented)
 export function calibrateAsync(service: JDService): Promise<void>;
 
 // @public (undocumented)
@@ -193,7 +203,7 @@ export const CMD_SET_REG = 8192;
 export const CMD_TOP_MASK = 61440;
 
 // @public (undocumented)
-export enum CODALMessageBusCmd {
+export enum CodalMessageBusCmd {
     Send = 128
 }
 
@@ -242,22 +252,13 @@ export enum ConsolePriority {
 }
 
 // @public (undocumented)
-export function crc(p: Uint8Array): number;
-
-// @public (undocumented)
-export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDBus;
-
-// @public (undocumented)
-export function cryptoRandomUint32(length: number): Uint32Array;
-
-// @public (undocumented)
-export enum CtrlAnnounceFlags {
+export enum ControlAnnounceFlags {
     // (undocumented)
     SupportsACK = 1
 }
 
 // @public (undocumented)
-export enum CtrlCmd {
+export enum ControlCmd {
     Identify = 129,
     Noop = 128,
     Reset = 130,
@@ -265,7 +266,7 @@ export enum CtrlCmd {
 }
 
 // @public (undocumented)
-export enum CtrlReg {
+export enum ControlReg {
     BootloaderFirmwareIdentifier = 388,
     DeviceDescription = 384,
     DeviceUrl = 391,
@@ -275,6 +276,15 @@ export enum CtrlReg {
     McuTemperature = 386,
     Uptime = 390
 }
+
+// @public (undocumented)
+export function crc(p: Uint8Array): number;
+
+// @public (undocumented)
+export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDBus;
+
+// @public (undocumented)
+export function cryptoRandomUint32(length: number): Uint32Array;
 
 // @public (undocumented)
 export const DATA = "data";
@@ -1065,6 +1075,9 @@ export abstract class JDNode extends JDEventSource {
 }
 
 // @public (undocumented)
+export function jdpack<T extends any[]>(fmt: string, data: T): Uint8Array;
+
+// @public (undocumented)
 export class JDRegister extends JDServiceMemberNode {
     constructor(service: JDService, address: number);
     // (undocumented)
@@ -1077,7 +1090,6 @@ export class JDRegister extends JDServiceMemberNode {
     get data(): Uint8Array;
     // (undocumented)
     get decoded(): DecodedPacket;
-    get decodedValues(): any[];
     // (undocumented)
     get fields(): JDField[];
     // (undocumented)
@@ -1205,6 +1217,9 @@ export abstract class JDServiceMemberNode extends JDNode {
     }
 
 // @public (undocumented)
+export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T;
+
+// @public (undocumented)
 export function jsonCopyFrom<T>(trg: T, src: T): void;
 
 // @public (undocumented)
@@ -1250,12 +1265,12 @@ export enum KeyboardModifiers {
 export const LATE = "late";
 
 // @public (undocumented)
-export enum LEDMatrixControllerCmd {
+export enum LedMatrixControllerCmd {
     Clear = 128
 }
 
 // @public (undocumented)
-export enum LEDMatrixControllerReg {
+export enum LedMatrixControllerReg {
     Brightness = 130,
     Columns = 132,
     Enabled = 129,
@@ -1264,7 +1279,7 @@ export enum LEDMatrixControllerReg {
 }
 
 // @public (undocumented)
-export enum LEDMatrixDisplayReg {
+export enum LedMatrixDisplayReg {
     Leds = 257
 }
 
@@ -1436,16 +1451,6 @@ export enum MultitouchEvent {
 // @public (undocumented)
 export enum MultitouchReg {
     Capacity = 257
-}
-
-// @public (undocumented)
-export enum MusicCmd {
-    PlayTone = 128
-}
-
-// @public (undocumented)
-export enum MusicReg {
-    Volume = 1
 }
 
 // @public (undocumented)
@@ -1625,6 +1630,8 @@ export class Packet {
     // (undocumented)
     get size(): number;
     // (undocumented)
+    get stringData(): string;
+    // (undocumented)
     timestamp: number;
     // (undocumented)
     toBuffer(): Uint8Array;
@@ -1632,6 +1639,8 @@ export class Packet {
     toString(): string;
     // (undocumented)
     get uintData(): number;
+    // (undocumented)
+    unpack(fmt: string): any[];
     // (undocumented)
     withFrameStripped(): Uint8Array;
 }
@@ -1857,6 +1866,34 @@ export interface Proto {
 }
 
 // @public (undocumented)
+export enum ProtoTestCmd {
+    CBool = 128,
+    CI32 = 130,
+    CU32 = 129
+}
+
+// @public (undocumented)
+export enum ProtoTestEvent {
+    EBool = 384,
+    EI32 = 402,
+    EU32 = 400
+}
+
+// @public (undocumented)
+export enum ProtoTestReg {
+    RoBool = 385,
+    RoBytes = 389,
+    RoI32 = 387,
+    RoString = 388,
+    RoU32 = 386,
+    RwBool = 129,
+    RwBytes = 133,
+    RwI32 = 131,
+    RwString = 132,
+    RwU32 = 130
+}
+
+// @public (undocumented)
 export enum PwmLightReg {
     Brightness = 1,
     CurrentIteration = 128,
@@ -1972,6 +2009,16 @@ export enum RoleManagerCmd {
     SetRole = 129
 }
 
+// @public
+export enum RoleManagerEvent {
+    Change = 2
+}
+
+// @public (undocumented)
+export enum RoleManagerReg {
+    AllRolesAllocated = 385
+}
+
 // @public (undocumented)
 export enum RotaryEncoderReg {
     ClicksPerTurn = 384,
@@ -2032,7 +2079,7 @@ export enum SensorAggregatorReg {
     Inputs = 128,
     NumSamples = 384,
     SampleSize = 385,
-    StreamSamples = 129
+    StreamingSamples = 129
 }
 
 // @public (undocumented)
@@ -2104,6 +2151,8 @@ export function setThresholdAsync(service: JDService, low: boolean, value: numbe
 
 // @public (undocumented)
 export enum SettingsCmd {
+    Clear = 133,
+    Delete = 132,
     Get = 128,
     List = 131,
     ListKeys = 130,
@@ -2142,13 +2191,13 @@ export interface SMap<T> {
 export const SRV_ACCELEROMETER = 521405449;
 
 // @public (undocumented)
-export const SRV_AZURE_IOT_HUB = 434976332;
-
-// @public (undocumented)
 export const SRV_BOOTLOADER = 536516936;
 
 // @public (undocumented)
 export const SRV_BUTTON = 343122531;
+
+// @public (undocumented)
+export const SRV_BUZZER = 458731991;
 
 // @public (undocumented)
 export const SRV_CODAL_MESSAGE_BUS = 380468437;
@@ -2164,6 +2213,9 @@ export const SRV_GAMEPAD = 501915758;
 
 // @public (undocumented)
 export const SRV_HUMIDITY = 382210232;
+
+// @public (undocumented)
+export const SRV_IOT_HUB = 434976332;
 
 // @public (undocumented)
 export const SRV_KEYBOARD = 414210922;
@@ -2196,10 +2248,10 @@ export const SRV_MOUSE = 411425820;
 export const SRV_MULTITOUCH = 416636459;
 
 // @public (undocumented)
-export const SRV_MUSIC = 458731991;
+export const SRV_POWER = 530893146;
 
 // @public (undocumented)
-export const SRV_POWER = 530893146;
+export const SRV_PROTO_TEST = 382158442;
 
 // @public (undocumented)
 export const SRV_PWM_LIGHT = 531985491;
@@ -2217,16 +2269,16 @@ export const SRV_SENSOR_AGGREGATOR = 496034245;
 export const SRV_SERVO = 318542083;
 
 // @public (undocumented)
-export const SRV_SETTINGS_STORAGE = 285727818;
+export const SRV_SETTINGS = 285727818;
 
-// @public (undocumented)
+// @public
 export const SRV_SLIDER = 522667846;
 
 // @public (undocumented)
 export const SRV_TCP = 457422603;
 
 // @public (undocumented)
-export const SRV_TEMPERATURE = 337754823;
+export const SRV_THERMOMETER = 337754823;
 
 // @public (undocumented)
 export const SRV_WIFI = 413852154;
@@ -2253,6 +2305,9 @@ export function strcmp(a: string, b: string): 0 | 1 | -1;
 export const STREAMING_DEFAULT_INTERVAL = 50;
 
 // @public (undocumented)
+export function stringToBuffer(str: string): Uint8Array;
+
+// @public (undocumented)
 export function stringToUint8Array(input: string): Uint8Array;
 
 // @public (undocumented)
@@ -2265,13 +2320,18 @@ export enum SystemCmd {
 }
 
 // @public (undocumented)
+export enum SystemEvent {
+    Change = 2
+}
+
+// @public (undocumented)
 export enum SystemReg {
     HighThreshold = 6,
     Intensity = 1,
     LowThreshold = 5,
     MaxPower = 7,
     Reading = 257,
-    StatusCode = 7,
+    StatusCode = 259,
     StreamingInterval = 4,
     StreamingPreferredInterval = 258,
     StreamingSamples = 3,
@@ -2279,27 +2339,22 @@ export enum SystemReg {
 }
 
 // @public (undocumented)
-export enum TCPCmd {
+export enum TcpCmd {
     Open = 128
 }
 
 // @public (undocumented)
-export enum TCPPipeCmd {
+export enum TcpPipeCmd {
     Error = 0,
     OpenSsl = 1
 }
 
 // @public (undocumented)
-export enum TCPTcpError {
+export enum TcpTcpError {
     // (undocumented)
     InvalidCommand = 1,
     // (undocumented)
     InvalidCommandPayload = 2
-}
-
-// @public (undocumented)
-export enum TemperatureReg {
-    Temperature = 257
 }
 
 // @public (undocumented)
@@ -2314,6 +2369,11 @@ export interface TFModelStats {
     "modelSize": number;
     // (undocumented)
     "outputShape": number[];
+}
+
+// @public (undocumented)
+export enum ThermometerReg {
+    Temperature = 257
 }
 
 // @public (undocumented)
@@ -2481,7 +2541,7 @@ export enum WifiEvent {
     LostIp = 2
 }
 
-// @public (undocumented)
+// @public
 export enum WifiReg {
     Connected = 384
 }
