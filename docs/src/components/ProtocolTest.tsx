@@ -3,13 +3,13 @@ import React, { useContext } from "react";
 import { cryptoRandomUint32, toHex } from "../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { SRV_PROTOCOL_TEST } from "../../../src/jdom/constants";
+import { SRV_PROTO_TEST } from "../../../src/jdom/constants";
 import useChange from "../jacdac/useChange"
 import { JDService } from "../../../src/jdom/service";
 import { JDRegister } from "../../../src/jdom/register";
 import ConnectAlert from "./ConnectAlert";
 import { JDField } from "../../../src/jdom/field";
-import { jdpack } from "../../../src/jdom/pack";
+import { jdpack, jdunpack } from "../../../src/jdom/pack";
 import DeviceName from "./DeviceName";
 import DeviceActions from "./DeviceActions";
 import useEffectAsync from "./useEffectAsync";
@@ -76,7 +76,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     const { specification, fields } = rw;
     const name = specification.name.replace(/^rw_/, "")
 
-    const rxValue = r => r.decoded?.decoded?.map(d => d.humanValue || "?").join(", ") || "?";
+    const rxValue = (r: JDRegister) => jdunpack(r.data, specification.packFormat)
     const rwValue = useChange(rw, rxValue);
     const roValue = useChange(ro, rxValue);
 
@@ -87,9 +87,9 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
 
     const test = async (log) => {
         const packFormat = specification.packFormat;
-        log({ packFormat })
         const payload = randomPayload(fields);
-        log({ payload })
+        const json = JSON.stringify(payload)
+        log({ packFormat, payload, json })
         if (!payload) throw "data layout not supported"
         if (!packFormat) throw "format unknown"
 
@@ -98,14 +98,19 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         log({ data: xdata })
 
         // send over packet
-        await rw.sendSetAsync(data, true);
+        await rw.sendSetAsync(data);
         // read packet
         await rw.sendGetAsync();
         // check read
         const rwData = toHex(rw.data)
-        console.log({ rwData })
-        if (rwData !== xdata)
-            throw `expected rw ${xdata}, got ${rwData}`
+        log({ rwData })
+        const undata = jdunpack(rw.data, packFormat);
+        log({ undata });
+        // check top elements are same
+        const unjson = JSON.stringify(undata);
+        log({ unjson })
+        if (unjson !== json)
+            throw `expected rw ${json}, got ${unjson}`
         // check ro
         await ro.sendGetAsync();
         const roData = toHex(rw.data)
@@ -114,7 +119,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
             throw `expected ro ${xdata}, got ${roData}`
     }
 
-    return <TestCard title={name} onTest={test}>
+    return <TestCard title={name} subheader={specification.packFormat || "?"} onTest={test}>
         <Typography>{`rw: ${rwValue}`}</Typography>
         <Typography>{`ro: ${roValue}`}</Typography>
     </TestCard>
@@ -147,11 +152,11 @@ function ServiceProtocolTest(props: { service: JDService }) {
 
 export default function ProtocolTest() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const services = useChange(bus, b => b.services({ serviceClass: SRV_PROTOCOL_TEST }))
+    const services = useChange(bus, b => b.services({ serviceClass: SRV_PROTO_TEST }))
 
     return <Grid container direction="row" spacing={2}>
         <Grid key="connect" item xs={12}>
-            <ConnectAlert serviceClass={SRV_PROTOCOL_TEST} />
+            <ConnectAlert serviceClass={SRV_PROTO_TEST} />
         </Grid>
         {services?.map(service => <Grid key={service.id} item xs={12}>
             <ServiceProtocolTest service={service} />

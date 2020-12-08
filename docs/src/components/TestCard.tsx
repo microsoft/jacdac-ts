@@ -8,10 +8,11 @@ export type Test = (log: TestLogger) => Promise<void>;
 
 export default function TestCard(props: {
     title: string,
+    subheader?: string;
     children: any,
     onTest: Test
 }) {
-    const { title, onTest, children } = props;
+    const { title, subheader, onTest, children } = props;
     const [output, setOutput] = useState("");
 
     const handleClick = async () => {
@@ -19,6 +20,8 @@ export default function TestCard(props: {
         const logger = (msg: any) => {
             if (msg === undefined || msg === null)
                 log.push("")
+            else if (typeof msg === "string")
+                log.push(msg);
             else if (Array.isArray(msg)) {
                 log.push(JSON.stringify(msg))
             } else if (typeof msg === "object") {
@@ -40,7 +43,7 @@ export default function TestCard(props: {
     }
 
     return <Card>
-        <CardHeader title={title} />
+        <CardHeader title={title} subheader={subheader} />
         <CardContent>
             {children}
             {output && <Snippet value={output} />}

@@ -212,6 +212,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 }
 
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
+    if (!buf) return undefined;
     return jdunpackCore(buf, fmt, 0) as T
 }
 
