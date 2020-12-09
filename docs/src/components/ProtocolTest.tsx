@@ -15,6 +15,7 @@ import DeviceActions from "./DeviceActions";
 import useEffectAsync from "./useEffectAsync";
 import TestCard from "./TestCard";
 import Packet from "../../../src/jdom/packet";
+import { JDEvent } from "../../../src/jdom/event";
 
 
 function pick(...values: number[]) {
@@ -70,15 +71,15 @@ function randomFieldPayload(field: JDField) {
 
 function randomPayload(packFormat: string, fields: JDField[]) {
     if (!packFormat)
-        throw "pack format unknown"
+        throw new Error("pack format unknown")
     const rs = fields.map(randomFieldPayload);
     if (rs.some(r => r === undefined))
-        throw 'unsupported data layout'
+        throw new Error("unsupported data layout")
     return rs;
 }
 
-function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
-    const { rw, ro } = props;
+function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEvent }) {
+    const { rw, ro, ev } = props;
     const { specification, fields } = rw;
     const name = specification.name.replace(/^rw_/, "")
 
@@ -102,6 +103,9 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         const data = jdpack(packFormat, payload);
         log({ data: toHex(data) })
 
+        // setup observer for event counts
+        const evCount = ev.count;
+
         // send over packet
         await rw.sendSetAsync(data);
         // read packet
@@ -113,7 +117,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         const rwpayload = jdunpack(rw.data, packFormat);
         log({ rwpayload });
         if (!jdpackEqual(packFormat, payload, rwpayload))
-            throw `expected rw ${payload}, got ${rwpayload}`
+            throw new Error(`expected rw ${payload}, got ${rwpayload}`)
 
         // check ro
         log(`testing ro`)
@@ -123,7 +127,11 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         const ropayload = jdunpack(ro.data, packFormat);
         log({ ropayload })
         if (!jdpackEqual(packFormat, payload, ropayload))
-            throw `expected ro ${payload}, got ${ropayload}`
+            throw new Error(`expected ro ${payload}, got ${ropayload}`)
+
+        // the event should have triggered once
+        if (evCount + 1 !== ev.count)
+            throw new Error(`expected 1 event, got ${ev.count - evCount}`)
     }
 
     const testCommand = async (log) => {
@@ -145,7 +153,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         const rwpayload = jdunpack(rw.data, packFormat);
         log({ rwpayload });
         if (!jdpackEqual(packFormat, payload, rwpayload))
-            throw `expected rw ${payload}, got ${rwpayload}`
+            throw new Error(`expected rw ${payload}, got ${rwpayload}`)
     }
 
     const test = async (log) => {
@@ -166,7 +174,8 @@ function ServiceProtocolTest(props: { service: JDService }) {
         .map(rw => {
             const roname = rw.name.replace(/^rw_/, "ro_");
             const ro = regs.find(r => r.specification.kind === "ro" && r.specification.name === roname)
-            return { rw, ro }
+            const ev = service.event(rw.address);
+            return { rw, ro, ev }
         });
 
     return <Grid container spacing={1}>

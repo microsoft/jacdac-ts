@@ -10,7 +10,7 @@ export default function EventInput(props: { event: JDEvent, showDeviceName?: boo
     const count = useEventCount(event)
     const spec = event.specification
 
-    return <React.Fragment>
+    return <>
         {showDeviceName && <Typography>
             <DeviceName device={event.service.device} />/
         </Typography>}
@@ -20,5 +20,5 @@ export default function EventInput(props: { event: JDEvent, showDeviceName?: boo
         <Badge badgeContent={count} color="primary">
             <KindIcon kind={"event"} />
         </Badge>
-    </React.Fragment>
+    </>
 }
