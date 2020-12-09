@@ -1,5 +1,5 @@
 import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer"
-import { bufferToString, stringToBuffer } from "./utils"
+import { bufferEq, bufferToString, stringToBuffer } from "./utils"
 
 /*
 
@@ -297,6 +297,12 @@ export function jdpack<T extends any[]>(fmt: string, data: T) {
     const res = new Uint8Array(len)
     jdpackCore(res, fmt, data, 0)
     return res
+}
+
+export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
+    const leftBuffer = jdpack<T>(fmt, left);
+    const rightBuffer = jdpack<T>(fmt, right);
+    return bufferEq(leftBuffer, rightBuffer);
 }
 
 /*

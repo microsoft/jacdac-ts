@@ -9,7 +9,7 @@ import { JDService } from "../../../src/jdom/service";
 import { JDRegister } from "../../../src/jdom/register";
 import ConnectAlert from "./ConnectAlert";
 import { JDField } from "../../../src/jdom/field";
-import { jdpack, jdunpack } from "../../../src/jdom/pack";
+import { jdpack, jdpackEqual, jdunpack } from "../../../src/jdom/pack";
 import DeviceName from "./DeviceName";
 import DeviceActions from "./DeviceActions";
 import useEffectAsync from "./useEffectAsync";
@@ -103,16 +103,17 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         // wait for response
         await delay(100);
         // check read
-        const rwData = toHex(rw.data)
-        log({ rwData })
-        const undata = jdunpack(rw.data, packFormat);
-        log({ undata });
+        const rwpayload = jdunpack(rw.data, packFormat);
+        log({ rwpayload });
+        if (!jdpackEqual(packFormat, payload, rwpayload))
+            throw `expected rw ${payload}, got ${rwpayload}`
         // check ro
         await ro.sendGetAsync();
-        const roData = toHex(rw.data)
-        console.log({ roData })
-        if (roData !== xdata)
-            throw `expected ro ${xdata}, got ${roData}`
+        // wait for response
+        await delay(100);
+        const ropayload = jdunpack(ro.data, packFormat);
+        if (!jdpackEqual(packFormat, payload, ropayload))
+            throw `expected ro ${payload}, got ${ropayload}`
     }
 
     return <TestCard title={name} subheader={specification.packFormat || "?"} onTest={test}>
