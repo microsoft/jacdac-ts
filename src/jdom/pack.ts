@@ -213,6 +213,16 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
     if (!buf) return undefined;
+
+    // hot path
+    const nf = numberFormatOfType(fmt);
+    if (nf !== null) {
+        const sz = sizeOfNumberFormat(nf);
+        if (buf.length != sz)
+            throw new Error("size mistmatch");
+        return [getNumber(buf, nf, 0)] as T;
+    }
+    // slow path
     return jdunpackCore(buf, fmt, 0) as T
 }
 
@@ -293,6 +303,16 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 }
 
 export function jdpack<T extends any[]>(fmt: string, data: T) {
+    if (data === undefined)
+        return undefined;
+    // hot path
+    const nf = numberFormatOfType(fmt);
+    if (nf !== null) {
+        const buf = new Uint8Array(sizeOfNumberFormat(nf));
+        setNumber(buf, nf, 0, data[0]);
+        return buf;
+    }
+    // slow path
     const len = jdpackCore(null, fmt, data, 0)
     const res = new Uint8Array(len)
     jdpackCore(res, fmt, data, 0)
@@ -310,7 +330,7 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
 }
 
 export function bufferOfInt(value: number) {
-    return jdpack("i32", [value | 0]    
+    return jdpack("i32", [value | 0])
 }
 
 /*
