@@ -248,7 +248,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
         for (const v of arr) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
-                    throw new Error(`expecting number`)
+                    throw new Error(`expecting number, got ` + typeof v)
                 if (trg)
                     setNumber(trg, parser.nfmt, off, (v * parser.div) | 0)
                 off += parser.size
