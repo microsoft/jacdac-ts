@@ -13,6 +13,7 @@ import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
 import { JDNode } from "./node";
+import { jdunpack } from "./pack";
 
 
 export class JDRegister extends JDServiceMemberNode {
@@ -98,6 +99,12 @@ export class JDRegister extends JDServiceMemberNode {
 
     get lastDataTimestamp() {
         return this._lastReportPkt?.timestamp
+    }
+
+    get unpackedValue(): any[] {
+        const d = this.data;
+        const fmt = this.specification?.packFormat;
+        return d && fmt && jdunpack(this.data, fmt);
     }
 
     get intValue(): number {

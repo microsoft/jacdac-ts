@@ -20,6 +20,14 @@ export function useRegisterIntValue(register: JDRegister): number {
     return value;
 }
 
+export function useRegisterUnpackedValue<T extends any[]>(register: JDRegister): T {
+    const [value, setValue] = useState<T>(register?.unpackedValue as T)
+    useEffect(() => register?.subscribe(REPORT_UPDATE, () => {
+        setValue(register?.unpackedValue as T)
+    }), [register])
+    return value || ([] as T);
+}
+
 export function useRegisterStringValue(register: JDRegister): string {
     const [value, setValue] = useState<string>(register?.stringValue)
     // update value
