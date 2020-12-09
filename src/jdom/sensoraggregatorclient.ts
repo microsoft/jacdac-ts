@@ -1,6 +1,7 @@
 import { SensorAggregatorReg, SensorAggregatorSampleType } from "../../jacdac-spec/dist/specconstants"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { JD_SERIAL_MAX_PAYLOAD_SIZE, REPORT_RECEIVE } from "./constants"
+import { jdpack } from "./pack"
 import { JDRegister } from "./register"
 import { JDService } from "./service"
 import { JDServiceClient } from "./serviceclient"
@@ -78,7 +79,7 @@ export class SensorAggregatorClient extends JDServiceClient {
             totalSampleSize += sampleSize
             return bufferConcat(
                 freeze ? fromHex(deviceId) : new Uint8Array(8),
-                pack("IBBBb", [
+                jdpack("u32 u8 u8 u8 i8", [
                     serviceClass,
                     freeze ? serviceIndex : 0,
                     sampleSize,
@@ -91,7 +92,7 @@ export class SensorAggregatorClient extends JDServiceClient {
         if (totalSampleSize > JD_SERIAL_MAX_PAYLOAD_SIZE)
             error("samples won't fit in packet")
 
-        inputs.unshift(pack("HHI", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
+        inputs.unshift(jdpack("u16 u16 i32", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
         await this.service.register(SensorAggregatorReg.Inputs)
             .sendSetAsync(bufferConcatMany(inputs))
     }
