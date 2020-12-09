@@ -42,7 +42,6 @@ export default function TestCard(props: {
         }
 
         try {
-            setOutput("");
             await onTest(logger);
         } catch (e) {
             logger(e);
