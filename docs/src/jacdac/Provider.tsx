@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import JACDACContext from "../../../src/react/Context";
-import { BusState } from "../../../src/jdom/bus";
+import { BusState, JDBus } from "../../../src/jdom/bus";
 import { createUSBBus } from "../../../src/jdom/usb";
 import { CONNECTION_STATE } from "../../../src/jdom/constants";
 import IFrameBridgeClient from "../../../src/jdom/iframebridgeclient"
@@ -17,8 +17,11 @@ function sniffQueryArguments() {
     }
 }
 
+Flags.diagnostics = typeof window !== "undefined" && /dbg=1/.test(window.location.href);
+Flags.noWebUSB = typeof window !== "undefined" && /webusb=0/.test(window.location.href);
+
 const args = sniffQueryArguments();
-const bus = createUSBBus(undefined, {
+const bus = Flags.noWebUSB ? new JDBus(undefined) : createUSBBus(undefined, {
     parentOrigin: args.parentOrigin
 });
 bus.setBackgroundFirmwareScans(true);
@@ -26,7 +29,6 @@ bus.setBackgroundFirmwareScans(true);
 if (inIFrame()) {
     new IFrameBridgeClient(bus); // start bridge
 }
-Flags.diagnostics = typeof window !== "undefined" && /dbg=1/.test(window.location.href);
 
 
 const JACDACProvider = ({ children }) => {

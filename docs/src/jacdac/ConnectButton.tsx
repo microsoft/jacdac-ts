@@ -7,6 +7,7 @@ import UsbIcon from '@material-ui/icons/Usb';
 import { useMediaQuery, useTheme } from "@material-ui/core";
 import KindIcon from "../components/KindIcon";
 import IconButtonWithProgress from "../components/IconButtonWithProgress"
+import Flags from "../../../src/jdom/flags";
 
 export default function ConnectButton(props: { full?: boolean, className?: string, transparent?: boolean }) {
     const { full, className, transparent } = props
@@ -19,6 +20,9 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const onClick = showDisconnect ? disconnectAsync : connectAsync;
     const icon = showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />
     const title = showDisconnect ? "disconnect" : "connect";
+
+    if (Flags.noWebUSB)
+        return <></>
 
     if (small)
         return <span><IconButtonWithProgress
