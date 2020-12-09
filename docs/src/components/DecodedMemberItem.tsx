@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, ChangeEvent } from "react";
 import { JDRegister } from "../../../src/jdom/register";
 import { Slider, Typography, Switch, TextField, Select, MenuItem, Theme, createStyles, makeStyles } from "@material-ui/core";
 import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/jdom/pretty";
@@ -17,10 +17,10 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     const { info } = member;
     const { setError: setAppError } = useContext(AppContext)
     const [working, setWorking] = useState(false)
-    const mod = specification.kind == "rw";
+    const mod = specification.kind === "rw";
     const enumInfo = serviceSpecification?.enums[info.type]
 
-    const readOnly = !register;
+    const readOnly = !register || !mod;
     const workingIndicator = working ? "*" : ""
 
     const handeler = (handler: (ev: any) => Promise<void>) => async (ev: any) => {
@@ -35,20 +35,25 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
         }
     }
 
-    const handleSwitch = handeler(async () => await register.sendSetBoolAsync(!register.boolValue, true))
-    const handleNumChange = handeler(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSwitchChange = handeler(async () => await register.sendSetBoolAsync(!register.boolValue, true))
+    const handleNumChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
         const v = parseInt(event.target.value.replace(/[^\d]+$/, ''));
         if (!isNaN(v))
             await register.sendSetIntAsync(parseInt(event.target.value), true);
     })
-    const handleEnumChange = handeler(async (event: React.ChangeEvent<{ value: any }>) => {
+    const handleEnumChange = handeler(async (event: ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
         await register.sendSetIntAsync(v, true);
     })
+    const handleStringChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
+        const s = event.target.value as string;
+        await register.sendSetStringAsync(s, true);
+    })
 
-    if (info.type == "bool") {
-        return <Switch checked={member.value} onClick={mod && handleSwitch} readOnly={readOnly} />
-    }
+    if (info.type === "bool")
+        return <Switch checked={member.value} onClick={mod && handleSwitchChange} readOnly={readOnly} />
+    else if (info.type === "string")
+        return <TextField disabled={readOnly} value={member.value} onChange={mod && handleStringChange} />
     else if (enumInfo !== undefined && member.numValue !== undefined) {
         return <Select
             readOnly={readOnly}
