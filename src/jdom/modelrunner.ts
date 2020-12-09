@@ -5,13 +5,13 @@ import {
     SRV_MODEL_RUNNER
 } from "./constants"
 import { JDService } from "./service"
-import { pack, unpack } from "./struct"
 import { ModelRunnerCmd, ModelRunnerReg } from "./constants"
 import { bufferToArray, NumberFormat } from "./buffer"
 import { OutPipe } from "./pipes"
 import { JDRegister } from "./register"
 import { JDServiceClient } from "./serviceclient"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
+import { jdunpack } from "./pack"
 
 /*
     enum SampleType : u8 {
@@ -73,9 +73,9 @@ export class ModelRunnerClient extends JDServiceClient {
 
     async deployModel(model: Uint8Array, progress: (p: number) => void = () => { }) {
         progress(0)
-        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.packed(ModelRunnerCmd.SetModel, "I", [model.length]), 3000)
+        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.jdpacked(ModelRunnerCmd.SetModel, "i32", [model.length]), 3000)
         progress(0.05)
-        const [pipePort] = unpack(resp.data, "H")
+        const [pipePort] = jdunpack(resp.data, "u32")
         if (!pipePort)
             throw new Error("wrong port " + pipePort)
         const pipe = new OutPipe(this.service.device, pipePort)

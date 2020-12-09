@@ -3,7 +3,6 @@ import { JDBus } from "./bus"
 import Packet from "./packet"
 import { JDDevice } from "./device"
 import { ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
-import { unpack, pack } from "./struct"
 import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array } from "./utils"
 
 const BL_CMD_PAGE_DATA = 0x80
@@ -89,7 +88,7 @@ class FlashClient {
             log(`flashing ${d.device.shortId}; available flash=${d.flashSize / 1024}kb; page=${d.pageSize}b`)
         }
 
-        const setsession = Packet.packed(BL_CMD_SET_SESSION, "I", [this.sessionId])
+        const setsession = Packet.jdpacked(BL_CMD_SET_SESSION, "i32", [this.sessionId])
 
         this.allPending()
 

@@ -5,7 +5,6 @@ import { JDRegister } from "./register"
 import { JDService } from "./service"
 import { JDServiceClient } from "./serviceclient"
 import { isReading, serviceSpecificationFromClassIdentifier } from "./spec"
-import { pack } from "./struct"
 import { bufferConcat, bufferConcatMany, fromHex } from "./utils"
 
 export interface SensorAggregatorInputConfig {

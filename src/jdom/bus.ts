@@ -291,7 +291,7 @@ export class JDBus extends JDNode {
 
     private async pingLoggers() {
         if (this._minConsolePriority < ConsolePriority.Silent) {
-            const pkt = Packet.packed(CMD_CONSOLE_SET_MIN_PRIORITY, "i", [this._minConsolePriority]);
+            const pkt = Packet.jdpacked(CMD_CONSOLE_SET_MIN_PRIORITY, "i8", [this._minConsolePriority]);
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
@@ -587,7 +587,7 @@ export class JDBus extends JDNode {
         this.on(SELF_ANNOUNCE, () => {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
-            const pkt = Packet.packed(CMD_ADVERTISEMENT_DATA, "I", [restartCounter | 0x100])
+            const pkt = Packet.jdpacked(CMD_ADVERTISEMENT_DATA, "i32", [restartCounter | 0x100])
             pkt.service_index = JD_SERVICE_INDEX_CTRL
             pkt.device_identifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)

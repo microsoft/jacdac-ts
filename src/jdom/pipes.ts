@@ -3,7 +3,6 @@ import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_INDEX_P
 import Packet from "./packet"
 import { JDBus } from "./bus"
 import { randomUInt, signal, fromHex, throwError, warn } from "./utils"
-import { pack } from "./struct"
 import { JDClient } from "./client"
 
 export class OutPipe {

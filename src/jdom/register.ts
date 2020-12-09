@@ -7,13 +7,12 @@ import {
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
-import { bufferOfInt } from "./struct";
 import { DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
 import { JDNode } from "./node";
-import { jdunpack } from "./pack";
+import { jdpack, jdunpack, bufferOfInt } from "./pack";
 
 
 export class JDRegister extends JDServiceMemberNode {
@@ -79,7 +78,7 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetAsync(bufferOfInt(value | 0), autoRefresh)
+        return this.sendSetAsync(bufferOfInt(value), autoRefresh)
     }
 
     sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void> {
@@ -87,7 +86,7 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetAsync(stringToUint8Array(toUTF8(value || "")), autoRefresh)
+        return this.sendSetAsync(jdpack("s", [value || ""]), autoRefresh)
     }
 
     get isReading() {

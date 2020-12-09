@@ -20,11 +20,10 @@ import {
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
-import { pack } from "./struct";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
-import { jdunpack } from "./pack";
+import { jdpack, jdunpack } from "./pack";
 
 export class Packet {
     private _header: Uint8Array;
@@ -322,8 +321,8 @@ export class Packet {
         return frameToPackets(frame, timestamp)
     }
 
-    static packed(service_command: number, fmt: string, nums: number[]) {
-        return Packet.from(service_command, pack(fmt, nums))
+    static jdpacked(service_command: number, fmt: string, nums: any[]) {
+        return Packet.from(service_command, jdpack(fmt, nums))
     }
 
     // helpers
