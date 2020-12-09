@@ -600,7 +600,7 @@ export class JDBus extends JDNode {
     private async refreshRegisters() {
         const devices = this.devices()
             .filter(device => !device.lost); // don't try lost devices
-        if (devices.length)
+        if (!devices.length)
             return; // no devices, we're done
         // collect registers
         const registers = arrayConcatMany(devices
