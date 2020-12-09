@@ -154,8 +154,6 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     }
 
     return <TestCard title={name} subheader={specification.packFormat || "?"} onTest={test}>
-        <Typography>{`rw: ${rwValue}`}</Typography>
-        <Typography>{`ro: ${roValue}`}</Typography>
     </TestCard>
 }
 
