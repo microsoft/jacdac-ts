@@ -14,10 +14,10 @@ export default function DeviceActions(props: { device: JDDevice, reset?: boolean
     const { device, reset, rename } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
 
-    const handleIdentify = async (ev: React.MouseEvent<HTMLButtonElement>) => {
+    const handleIdentify = async () => {
         await device.identify()
     }
-    const handleReset = async (ev: React.MouseEvent<HTMLButtonElement>) => {
+    const handleReset = async () => {
         await device.reset()
     }
     return <>

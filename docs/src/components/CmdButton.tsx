@@ -1,6 +1,6 @@
 import { createStyles, darken, IconButton, lighten, makeStyles, Theme } from "@material-ui/core"
 import { Button } from "gatsby-theme-material-ui"
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import AppContext from "./AppContext"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import ErrorIcon from '@material-ui/icons/Error';
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
 })
 
 export default function CmdButton(props: {
-    onClick: (ev: React.MouseEvent<HTMLButtonElement>) => Promise<void>,
+    onClick: () => Promise<void>,
     className?: string,
     title?: string,
     children?: any,
@@ -37,9 +37,10 @@ export default function CmdButton(props: {
     size?: "small" | undefined,
     variant?: "outlined" | "contained" | undefined,
     disabled?: boolean,
-    disableReset?: boolean
+    disableReset?: boolean,
+    autoRun?: boolean
 }) {
-    const { onClick, children, icon, title, disabled, disableReset, ...others } = props
+    const { onClick, children, icon, title, disabled, disableReset, autoRun, ...others } = props
     const { setError: setAppError } = useContext(AppContext)
     const classes = useStyles()
     const [working, setWorking] = useState(false)
@@ -48,13 +49,14 @@ export default function CmdButton(props: {
 
     const _disabled = disabled || working;
 
-    const handleClick = async (ev: React.MouseEvent<HTMLButtonElement>) => {
-        ev.stopPropagation()
+    const run = async () => {
+        if (working) return; // already working
+
         try {
             setError(undefined)
             setAck(false)
             setWorking(true)
-            await onClick(ev)
+            await onClick()
             setAck(true)
             if (!disableReset) {
                 await delay(ACK_RESET_DELAY)
@@ -74,8 +76,19 @@ export default function CmdButton(props: {
         }
     }
 
+    const handleClick = async (ev: React.MouseEvent<HTMLButtonElement>) => {
+        ev.stopPropagation()
+        run();
+    }
+
     const statusIcon = error ? <ErrorIcon /> : ack ? <CheckIcon /> : undefined;
     const className = error ? classes.error : ack ? classes.ack : undefined;
+
+    // run once
+    useEffect(() => {
+        if (autoRun)
+            run()
+    }, [autoRun]);
 
     if (!children && icon)
         return <IconButtonWithTooltip

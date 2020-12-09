@@ -52,12 +52,6 @@ export default function TestCard(props: {
         }
     }
 
-    // auto run test once
-    useEffectAsync(async () => {
-        await delay(Math.random() * 500);
-        await runTest();
-    },[])
-
     const handleClick = async () => await runTest();
 
     return <Card>
@@ -67,7 +61,7 @@ export default function TestCard(props: {
             {output && <Snippet value={output} />}
         </CardContent>
         <CardActions>
-            <CmdButton variant="outlined" onClick={handleClick} disableReset={true}>Test</CmdButton>
+            <CmdButton variant="outlined" onClick={handleClick} disableReset={true} autoRun={true}>Test</CmdButton>
         </CardActions>
     </Card>
 }
