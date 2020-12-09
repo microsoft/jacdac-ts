@@ -1,8 +1,9 @@
 import { Card, CardActions, CardContent, CardHeader } from "@material-ui/core";
-import React, { useState } from "react";
-import { toHex } from "../../../src/jdom/utils";
+import React, { useEffect, useState } from "react";
+import { delay, toHex } from "../../../src/jdom/utils";
 import CmdButton from "./CmdButton";
 import Snippet from "./Snippet"
+import useEffectAsync from "./useEffectAsync";
 
 export type TestLogger = (name: string, ...msg: any) => void;
 export type Test = (log: TestLogger) => Promise<void>;
@@ -16,7 +17,7 @@ export default function TestCard(props: {
     const { title, subheader, onTest, children } = props;
     const [output, setOutput] = useState("");
 
-    const handleClick = async () => {
+    const runTest = async () => {
         const log: string[] = [];
 
         const toValue = (msg: any) => {
@@ -50,6 +51,14 @@ export default function TestCard(props: {
             setOutput(log.join('\n'))
         }
     }
+
+    // auto run test once
+    useEffectAsync(async () => {
+        await delay(Math.random() * 500);
+        await runTest();
+    },[])
+
+    const handleClick = async () => await runTest();
 
     return <Card>
         <CardHeader title={title} subheader={subheader} />

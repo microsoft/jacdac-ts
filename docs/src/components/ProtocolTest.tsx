@@ -14,6 +14,7 @@ import DeviceName from "./DeviceName";
 import DeviceActions from "./DeviceActions";
 import useEffectAsync from "./useEffectAsync";
 import TestCard from "./TestCard";
+import Packet from "../../../src/jdom/packet";
 
 
 function pick(...values: number[]) {
@@ -67,8 +68,13 @@ function randomFieldPayload(field: JDField) {
     return r;
 }
 
-function randomPayload(fields: JDField[]) {
-    return fields.map(randomFieldPayload);
+function randomPayload(packFormat: string, fields: JDField[]) {
+    if (!packFormat)
+        throw "pack format unknown"
+    const rs = fields.map(randomFieldPayload);
+    if (rs.some(r => r === undefined))
+        throw 'unsupported data layout'
+    return rs;
 }
 
 function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
@@ -80,21 +86,21 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
     const rwValue = useChange(rw, rxValue);
     const roValue = useChange(ro, rxValue);
 
+    // event code and command code are the same as rw register
+
     useEffectAsync(async () => {
         await rw.sendGetAsync();
         await ro.sendGetAsync();
     }, []);
 
-    const test = async (log) => {
+    const testRwRo = async (log) => {
+        log(`testing rw`)
         const packFormat = specification.packFormat;
-        const payload = randomPayload(fields);
-        log({ packFormat, payload })
-        if (!payload) throw "data layout not supported"
-        if (!packFormat) throw "format unknown"
+        const payload = randomPayload(packFormat, fields);
+        log({ payload })
 
         const data = jdpack(packFormat, payload);
-        const xdata = toHex(data);
-        log({ data: xdata })
+        log({ data: toHex(data) })
 
         // send over packet
         await rw.sendSetAsync(data);
@@ -103,17 +109,48 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister }) {
         // wait for response
         await delay(100);
         // check read
+        log({ rwdata: toHex(rw.data) });
         const rwpayload = jdunpack(rw.data, packFormat);
         log({ rwpayload });
         if (!jdpackEqual(packFormat, payload, rwpayload))
             throw `expected rw ${payload}, got ${rwpayload}`
+
         // check ro
+        log(`testing ro`)
         await ro.sendGetAsync();
         // wait for response
         await delay(100);
         const ropayload = jdunpack(ro.data, packFormat);
+        log({ ropayload })
         if (!jdpackEqual(packFormat, payload, ropayload))
             throw `expected ro ${payload}, got ${ropayload}`
+    }
+
+    const testCommand = async (log) => {
+        log(`testing cmd`)
+
+        const packFormat = specification.packFormat;
+        const payload = randomPayload(packFormat, fields);
+        log({ payload })
+        const data = jdpack(packFormat, payload);
+        log({ data: toHex(data) })
+        // send over cmd packet
+        await rw.service.sendPacketAsync(Packet.from(rw.address, data))
+        // read packet
+        await rw.sendGetAsync();
+        // wait for response
+        await delay(100);
+        // check read
+        log({ rwdata: toHex(rw.data) });
+        const rwpayload = jdunpack(rw.data, packFormat);
+        log({ rwpayload });
+        if (!jdpackEqual(packFormat, payload, rwpayload))
+            throw `expected rw ${payload}, got ${rwpayload}`
+    }
+
+    const test = async (log) => {
+        await testRwRo(log);
+        await testCommand(log);
     }
 
     return <TestCard title={name} subheader={specification.packFormat || "?"} onTest={test}>

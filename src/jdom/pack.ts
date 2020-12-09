@@ -300,6 +300,10 @@ export function jdpack<T extends any[]>(fmt: string, data: T) {
 }
 
 export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
+    if ((!left) !== (!right))
+        return false;
+    if (!left) return true;
+
     const leftBuffer = jdpack<T>(fmt, left);
     const rightBuffer = jdpack<T>(fmt, right);
     return bufferEq(leftBuffer, rightBuffer);

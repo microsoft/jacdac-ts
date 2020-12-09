@@ -15,6 +15,7 @@ export interface PacketsProps {
     selectedPacket: Packet,
     setSelectedPacket: (pkt: Packet) => void,
     clearPackets: () => void,
+    clearBus: () => void,
     filter: string,
     setFilter: (filter: string) => void,
     replayTrace: Trace,
@@ -35,6 +36,7 @@ const PacketsContext = createContext<PacketsProps>({
     selectedPacket: undefined,
     setSelectedPacket: () => { },
     clearPackets: () => { },
+    clearBus: () => { },
     filter: "",
     setFilter: () => { },
     replayTrace: undefined,
@@ -76,6 +78,11 @@ export const PacketsProvider = ({ children }) => {
         player.current.stop();
         recorder.current.stop();
         view.current.clear();
+        // don't clear the bus, it's too disrupting
+        //bus.clear();
+    }
+    const clearBus = () => {
+        clearPackets();
         bus.clear();
     }
     const setReplayTrace = (trace: Trace) => {
@@ -133,7 +140,7 @@ export const PacketsProvider = ({ children }) => {
         player.current.mount(player.current.subscribe(PROGRESS, () => {
             setProgress(player.current.progress);
         }))
-    
+
         return () => {
             recorder.current.unmount();
             view.current.unmount();
@@ -153,7 +160,7 @@ export const PacketsProvider = ({ children }) => {
     return (
         <PacketsContext.Provider value={{
             trace,
-            packets, clearPackets,
+            packets, clearPackets, clearBus,
             selectedPacket, setSelectedPacket,
             filter, setFilter,
             replayTrace, setReplayTrace,
