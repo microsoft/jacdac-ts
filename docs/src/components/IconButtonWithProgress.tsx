@@ -27,7 +27,7 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
         <span><IconButton {...others}>
             {!indeterminate && badge}
             {indeterminate && <Box position="relative" display="inline-flex">
-                <CircularProgress variant={hasProgress ? "static" : "indeterminate"}
+                <CircularProgress variant={hasProgress ? "determinate" : "indeterminate"}
                     disableShrink={!hasProgress}
                     value={progress}
                     size={progressSize || theme.spacing(3)}

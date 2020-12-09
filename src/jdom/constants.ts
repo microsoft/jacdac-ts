@@ -87,6 +87,7 @@ export const FIRMWARE_INFO = 'firmwareInfo'
 export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 export const NAME_CHANGE = 'nameChange'
 export const LATE = 'late'
+export const GET_ATTEMPT = 'getAttempt'
 
 export const DATA = 'data'
 export const CLOSE = 'close'

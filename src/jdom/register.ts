@@ -2,7 +2,7 @@ import Packet from "./packet";
 import {
     CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG,
     REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1,
-    REGISTER_REFRESH_RETRY_0, ControlCmd
+    REGISTER_REFRESH_RETRY_0, ControlCmd, GET_ATTEMPT
 } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
@@ -74,7 +74,8 @@ export class JDRegister extends JDServiceMemberNode {
         this._lastGetTimestamp = this.service.device.bus.timestamp;
         this._lastGetAttempts++;
         const cmd = CMD_GET_REG | this.address;
-        return this.service.sendCmdAsync(cmd)
+        return this.service.sendCmdAsync(cmd, this.service.registersUseAcks)
+            .then(() => { this.emit(GET_ATTEMPT) });
     }
 
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void> {

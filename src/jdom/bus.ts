@@ -598,11 +598,10 @@ export class JDBus extends JDNode {
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
     private async refreshRegisters() {
-        // not connected, don't try
-        if (!this.connected)
-            return;
         const devices = this.devices()
             .filter(device => !device.lost); // don't try lost devices
+        if (devices.length)
+            return; // no devices, we're done
         // collect registers
         const registers = arrayConcatMany(devices
             .map(device => arrayConcatMany(

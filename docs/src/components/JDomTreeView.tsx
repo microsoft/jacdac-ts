@@ -1,4 +1,4 @@
-import React, { useContext, useState, ChangeEvent } from 'react';
+import React, { useContext, useState, ChangeEvent, useEffect } from 'react';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
@@ -23,7 +23,7 @@ import { Switch, useMediaQuery, useTheme } from '@material-ui/core';
 import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE } from '../../../src/jdom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE, GET_ATTEMPT } from '../../../src/jdom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
@@ -123,10 +123,15 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
 function RegisterTreeItem(props: { register: JDRegister } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { register, checked, setChecked, checkboxes } = props;
     const { specification, id } = register
-    const optional = specification?.optional;
-    const failedGet = register.lastGetAttempts > 2;
-    const labelText = specification?.name || register.id;
+    const [attempts, setAttempts] = useState(register.lastGetAttempts);
+    const optional = !!specification?.optional;
+    const failedGet = attempts > 2;
+    const labelText = `${specification?.name || register.id}${optional ? "?" : ""}`;
     const humanValue = useRegisterHumanValue(register)
+
+    useEffect(() => register?.subscribe(GET_ATTEMPT, () => {
+        setAttempts(register.lastGetAttempts)
+    }), [register]);
 
     const handleChecked = c => {
         setChecked(id, c)
@@ -139,9 +144,9 @@ function RegisterTreeItem(props: { register: JDRegister } & StyledTreeViewItemPr
     return <StyledTreeItem
         nodeId={id}
         labelText={labelText}
-        labelInfo={humanValue}
+        labelInfo={humanValue || `#${attempts}`}
         kind={specification?.kind || "register"}
-        alert={failedGet && !optional && humanValue === undefined && "???"}
+        alert={failedGet && !optional && humanValue === undefined && `???`}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes?.indexOf("register") > -1 && setChecked && handleChecked}
     />
