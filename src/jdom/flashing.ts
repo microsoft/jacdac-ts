@@ -4,6 +4,7 @@ import Packet from "./packet"
 import { JDDevice } from "./device"
 import { ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
 import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array } from "./utils"
+import { jdpack, jdunpack } from "./pack"
 
 const BL_CMD_PAGE_DATA = 0x80
 const BL_CMD_SET_SESSION = 0x81
@@ -160,7 +161,7 @@ class FlashClient {
                 let sz = BL_SUBPAGE_SIZE
                 if (suboff + sz > pageSize)
                     sz = pageSize - suboff
-                const hd = pack("IHBB5I", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
+                const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32 b", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
                 assert(hd.length == 4 * 7)
                 const p = Packet.from(BL_CMD_PAGE_DATA, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
 
@@ -184,7 +185,7 @@ class FlashClient {
                 if (f.pending) {
                     let err = ""
                     if (f.lastStatus) {
-                        const [sess, berr, pageAddrR] = unpack(f.lastStatus.data, "III")
+                        const [sess, berr, pageAddrR] = jdunpack(f.lastStatus.data, "i32 i32 i32")
                         if (sess != this.sessionId)
                             err = "invalid session_id"
                         else if (pageAddrR != pageAddr)

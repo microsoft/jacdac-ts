@@ -180,7 +180,7 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    unpack(fmt: string): any[] {
+    jdunpack(fmt: string): any[] {
         return (this._data && fmt && jdunpack(this._data, fmt)) || [];
     }
 
