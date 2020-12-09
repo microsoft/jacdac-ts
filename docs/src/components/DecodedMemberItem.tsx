@@ -51,9 +51,9 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     })
 
     if (info.type === "bool")
-        return <Switch checked={member.value} onClick={mod && handleSwitchChange} readOnly={readOnly} />
+        return <Switch checked={member.value} onClick={mod ? handleSwitchChange : undefined} readOnly={readOnly} />
     else if (info.type === "string")
-        return <TextField disabled={readOnly} value={member.value} onChange={mod && handleStringChange} />
+        return <TextField disabled={readOnly} value={member.value} onChange={mod ? handleStringChange : undefined} />
     else if (enumInfo !== undefined && member.numValue !== undefined) {
         return <Select
             readOnly={readOnly}
