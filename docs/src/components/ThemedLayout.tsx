@@ -13,7 +13,7 @@ export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, c
     const { theme, maxSnack, children } = props;
     return (
         <ThemeProvider theme={theme}>
-            <SnackbarProvider maxSnack={maxSnack || 1}>
+            <SnackbarProvider maxSnack={maxSnack || 1} dense={true}>
                 <IdProvider>
                     <ConfirmProvider>
                         <DbProvider>

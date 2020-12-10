@@ -1,7 +1,7 @@
 import React from "react"
-import DeviceList from "../../components/DeviceList";
 import { createMuiTheme, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ThemedLayout";
+import JDomTreeView from "../../components/JDomTreeView";
 
 export default function Page() {
     const rawTheme = createMuiTheme({
@@ -16,6 +16,6 @@ export default function Page() {
     })
     const theme = responsiveFontSizes(rawTheme);
     return <ThemedLayout theme={theme}>
-        <DeviceList />
+        <JDomTreeView />
     </ThemedLayout>
 }
