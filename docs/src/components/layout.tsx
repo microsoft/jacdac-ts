@@ -58,6 +58,7 @@ import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
 import { ConfirmProvider } from "material-ui-confirm"
 import { IdProvider } from "react-use-id-hook"
+import ThemedLayout from "./ThemedLayout";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -170,13 +171,18 @@ const useStyles = makeStyles((theme) => createStyles({
   },
 }));
 
-export default function Layout(props: { pageContext?: any; children: any; }) {
+export interface LayoutProps {
+  pageContext?: any;
+  children: any;
+}
+
+export default function Layout(props: LayoutProps) {
   return <DarkModeProvider>
     <LayoutWithDarkMode {...props} />
   </DarkModeProvider>
 }
 
-function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
+function LayoutWithDarkMode(props: LayoutProps) {
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   const rawTheme = createMuiTheme({
     palette: {
@@ -195,40 +201,21 @@ function LayoutWithDarkMode(props: { pageContext?: any; children: any; }) {
   if (!darkModeMounted)
     return <div />
 
-  return (
-    <ThemeProvider theme={theme}>
-      <SnackbarProvider maxSnack={3}>
-        <IdProvider prefix="jd-">
-          <ConfirmProvider>
-            <DbProvider>
-              <JACDACProvider>
-                <ServiceManagerProvider>
-                  <PacketsProvider>
-                    <MDXProvider components={mdxComponents}>
-                      <AppProvider>
-                        <LayoutWithContext {...props} />
-                      </AppProvider>
-                    </MDXProvider>
-                  </PacketsProvider>
-                </ServiceManagerProvider>
-              </JACDACProvider>
-            </DbProvider>
-          </ConfirmProvider>
-        </IdProvider>
-      </SnackbarProvider>
-    </ThemeProvider>
-  )
+  return <ThemedLayout theme={theme}>
+    <MDXProvider components={mdxComponents}>
+      <LayoutWithContext {...props} />
+    </MDXProvider>
+  </ThemedLayout>
 }
 
-function MainAppBar(props: { pageContext?: any }) {
+function MainAppBar(props: LayoutProps) {
   const { pageContext } = props;
   const classes = useStyles();
-  const { drawerType, toolsMenu, setToolsMenu } = useContext(AppContext)
+  const { drawerType, widgetMode, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
   const pageTitle = pageContext?.frontmatter?.title;
   const pageDeck = !!pageContext?.frontmatter?.deck;
-  const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
   const appBarColor = pageDeck ? "transparent"
     : darkMode === "dark" ? "inherit"
       : widgetMode ? "default" : undefined;
@@ -301,10 +288,7 @@ function FabBar() {
 }
 */
 
-function LayoutWithContext(props: {
-  pageContext?: any;
-  children: any;
-}) {
+function LayoutWithContext(props: LayoutProps) {
   const { pageContext, children, } = props;
   const classes = useStyles();
   const theme = useTheme();

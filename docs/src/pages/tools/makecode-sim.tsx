@@ -1,9 +1,21 @@
 import React from "react"
-import Layout from "../../components/layout"
-import MakeCodeSim from "../../components/MakeCodeSim"
+import DeviceList from "../../components/DeviceList";
+import { createMuiTheme, responsiveFontSizes } from "@material-ui/core";
+import ThemedLayout from "../../components/ThemedLayout";
 
 export default function Page() {
-    return <Layout>
-        <MakeCodeSim />
-    </Layout>
+    const rawTheme = createMuiTheme({
+        palette: {
+            primary: {
+                main: '#2e7d32',
+            },
+            secondary: {
+                main: '#ffc400',
+            },
+        }
+    })
+    const theme = responsiveFontSizes(rawTheme);
+    return <ThemedLayout theme={theme}>
+        <DeviceList />
+    </ThemedLayout>
 }
