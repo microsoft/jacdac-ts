@@ -37,12 +37,30 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         if (!this.isOriginValid(event))
             return;
 
-        const msg = event.data as PacketMessage;
-        if (!msg
-            || msg.channel !== "jacdac"
-            || msg.type !== "messagepacket")
-            return; // not our message
+        const { data } = event;
+        const msg = data as PacketMessage;
+        if (msg
+            && msg.channel === "jacdac"
+            && msg.type === "messagepacket") {
+            this.handleMessageJacdac(msg);
+        }
+        else if (data?.source === "pxtdriver") {
+            this.handleDriverMessage(data);
+        }
+        else {
+            console.log({ data })
+        }
+    }
 
+    private handleDriverMessage(msg: { type: string }) {
+        switch(msg.type) {
+            case "stop": // start again
+                this.bus.clear();
+                break;
+        }
+    }
+
+    private handleMessageJacdac(msg: PacketMessage) {
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
         if (!pkt)
             return;
