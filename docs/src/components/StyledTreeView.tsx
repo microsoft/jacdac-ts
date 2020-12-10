@@ -23,7 +23,6 @@ declare module 'csstype' {
 const useTreeItemStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            marginLeft: theme.spacing(1),
             color: theme.palette.text.secondary,
             '&:hover > $content': {
                 backgroundColor: theme.palette.action.hover,
@@ -38,9 +37,6 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
         },
         content: {
             color: theme.palette.text.secondary,
-            borderTopRightRadius: theme.spacing(2),
-            borderBottomRightRadius: theme.spacing(2),
-            paddingRight: theme.spacing(1),
             fontWeight: theme.typography.fontWeightMedium,
             '$expanded > &': {
                 fontWeight: theme.typography.fontWeightRegular,
@@ -49,7 +45,7 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
         group: {
             marginLeft: 0,
             '& $content': {
-                paddingLeft: theme.spacing(2),
+                paddingLeft: theme.spacing(1),
             },
         },
         expanded: {},
@@ -64,7 +60,7 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(0.5, 0),
         },
         labelIcon: {
-            marginRight: theme.spacing(1),
+            marginRight: theme.spacing(0.5),
         },
         labelText: {
             fontWeight: 'inherit',

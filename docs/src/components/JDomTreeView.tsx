@@ -221,7 +221,7 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             className={classes.root}
             defaultCollapseIcon={<ArrowDropDownIcon />}
             defaultExpandIcon={<ArrowRightIcon />}
-            defaultEndIcon={<div style={{ width: 24 }} />}
+            defaultEndIcon={<div style={{ width: 12 }} />}
             expanded={expanded}
             selected={selected}
             onNodeToggle={handleToggle}
