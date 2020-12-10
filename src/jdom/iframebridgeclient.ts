@@ -8,7 +8,6 @@ export interface PacketMessage {
     channel: "jacdac";
     type: "messagepacket";
     broadcast: true;
-    outer: true;
     data: Uint8Array;
 }
 
@@ -40,10 +39,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
 
         const msg = event.data as PacketMessage;
         if (!msg
-            || !msg.broadcast
             || msg.channel !== "jacdac"
-            || msg.type !== "messagepacket"
-            || !msg.outer)
+            || msg.type !== "messagepacket")
             return; // not our message
 
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
@@ -68,7 +65,6 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             type: "messagepacket",
             channel: "jacdac",
             broadcast: true,
-            outer: true,
             data: pkt.toBuffer()
         }
         // may not be in iframe
