@@ -11,6 +11,7 @@ import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import ConnectButton from "../jacdac/ConnectButton";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { DEVICE_CHANGE } from "../../../src/jdom/constants";
+import WebUSBSupported from "./WebUSBSupported";
 
 export default function DrawerToolsButtonGroup(props: { className?: string, showToc?: boolean, showCurrent?: boolean, showConnect?: boolean }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
@@ -53,6 +54,6 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
                 edge="start"
             > {drawer.icon}
             </IconButtonWithTooltip>)}
-        {showConnect && <ConnectButton transparent={true} full={false} />}
+        {showConnect && <WebUSBSupported><ConnectButton transparent={true} full={false} /></WebUSBSupported>}
     </>
 }

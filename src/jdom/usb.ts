@@ -4,6 +4,7 @@ import Packet from "./packet";
 import { Observable } from "./observable";
 import { EventTargetObservable } from "./eventtargetobservable";
 import { delay } from "./utils";
+import Flags from "./flags";
 
 export const USB_TRANSPORT = "usb"
 
@@ -12,6 +13,10 @@ export interface USBOptions {
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>,
     connectObservable?: Observable<USBConnectionEvent>;
     disconnectObservable?: Observable<USBConnectionEvent>;
+}
+
+export function isWebUSBEnabled(): boolean {
+    return !!Flags.webUSB;
 }
 
 export function isWebUSBSupported(): boolean {

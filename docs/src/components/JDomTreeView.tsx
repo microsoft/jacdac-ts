@@ -1,13 +1,11 @@
-import React, { useContext, useState, ChangeEvent, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
 import TreeView from '@material-ui/lab/TreeView';
 // tslint:disable-next-line: no-submodule-imports
-import TreeItem, { TreeItemProps } from '@material-ui/lab/TreeItem';
 // tslint:disable-next-line: no-submodule-imports
-import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -18,20 +16,18 @@ import { JDEvent } from '../../../src/jdom/event';
 import { JDService } from '../../../src/jdom/service';
 import { JDRegister } from '../../../src/jdom/register';
 import useChange from "../jacdac/useChange";
-import { isRegister, isEvent, isReading } from '../../../src/jdom/spec';
-import { Switch, useMediaQuery, useTheme } from '@material-ui/core';
+import { isRegister, isEvent } from '../../../src/jdom/spec';
+import { useMediaQuery, useTheme } from '@material-ui/core';
 import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE, GET_ATTEMPT } from '../../../src/jdom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, GET_ATTEMPT } from '../../../src/jdom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
 import { ellipseJoin } from '../../../src/jdom/utils';
 import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
-import { isWebUSBSupported } from '../../../src/jdom/usb';
 import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './StyledTreeView';
 
 function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & JDomTreeViewProps) {
@@ -219,10 +215,8 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             onChecked(checked)
     };
 
-    if (!devices?.length && isWebUSBSupported())
-        return <ConnectAlert />
-
-    return (
+    return (<>
+        <ConnectAlert />
         <TreeView
             className={classes.root}
             defaultCollapseIcon={<ArrowDropDownIcon />}
@@ -244,5 +238,5 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
                 {...other}
             />)}
         </TreeView>
-    );
+    </>);
 }

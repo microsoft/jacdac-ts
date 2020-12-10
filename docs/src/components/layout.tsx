@@ -280,6 +280,7 @@ function MainAppBar(props: { pageContext?: any }) {
   </AppBar></Box>
 }
 
+/*
 function FabBar() {
   const classes = useStyles();
   const theme = useTheme();
@@ -298,6 +299,7 @@ function FabBar() {
     </Zoom>}
   </Box>
 }
+*/
 
 function LayoutWithContext(props: {
   pageContext?: any;

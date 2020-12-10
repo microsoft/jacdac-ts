@@ -4,7 +4,7 @@ export default class Flags {
      */
     static diagnostics = false;
     /**
-     * Disables WebUSB
+     * Enables/disabled WebUSB
      */
-    static noWebUSB = false;
+    static webUSB = true;
 }
