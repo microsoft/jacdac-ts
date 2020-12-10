@@ -77,9 +77,11 @@ export const AppProvider = ({ children }) => {
     useEffect(() => bus.subscribe(CONNECTION_STATE, cs => {
         switch (cs) {
             case BusState.Connected:
-                enqueueSnackbar("connected...", {
-                    variant: "info"
-                })
+                if (!!bus.transport)
+                    enqueueSnackbar("connected...", {
+                        variant: "info"
+                    })
+                break;
         }
     }), [])
 
