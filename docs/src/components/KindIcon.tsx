@@ -27,6 +27,7 @@ import {
     SERVICE_NODE_NAME, EVENT_NODE_NAME
 } from "../../../src/jdom/constants";
 import { Tooltip } from "@material-ui/core";
+import JacdacIcon from "./JacdacIcon";
 
 export default function KindIcon(props: { kind: string, className?: string, tooltip?: boolean }) {
     const { kind, className, tooltip } = props
@@ -40,7 +41,7 @@ export default function KindIcon(props: { kind: string, className?: string, tool
         case EVENT_NODE_NAME: icon = <FlashOnIcon className={className} />; break;
         case REPORT_NODE_NAME: icon = <ReplyIcon className={className} />; break;
         case BUS_NODE_NAME: icon = <DeviceHubIcon className={className} />; break;
-        case DEVICE_NODE_NAME: icon = <DockIcon className={className} />; break;
+        case DEVICE_NODE_NAME: icon = <JacdacIcon className={className} />; break;
         case VIRTUAL_DEVICE_NODE_NAME: icon = <ComputerIcon className={className} />; break;
         case SERVICE_NODE_NAME: icon = <BubbleChartIcon className={className} />; break;
         default: icon = <DeviceUnknownIcon className={className} />; break;
