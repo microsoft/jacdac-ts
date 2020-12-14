@@ -9,6 +9,7 @@ export interface PacketMessage {
     type: "messagepacket";
     broadcast: true;
     data: Uint8Array;
+    sender?: string;
 }
 
 /**
@@ -83,7 +84,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             type: "messagepacket",
             channel: "jacdac",
             broadcast: true,
-            data: pkt.toBuffer()
+            data: pkt.toBuffer(),
+            sender: this.bridgeId
         }
         // may not be in iframe
         window.parent?.postMessage(msg, this.origin)

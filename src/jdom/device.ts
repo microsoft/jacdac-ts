@@ -12,6 +12,7 @@ import { serviceClass, shortDeviceId } from "./pretty";
 import { JDNode } from "./node";
 import { isInstanceOf } from "./spec";
 import { FirmwareInfo } from "./flashing";
+import { PACKETIO_TRANSPORT, USB_TRANSPORT } from "./usb";
 
 export interface PipeInfo {
     pipeType?: string;
@@ -30,7 +31,7 @@ export class JDDevice extends JDNode {
     /*
     * Identifies where the packets are coming from
     */
-    source: string;
+    private _source: string;
     private _name: string;
     private _lost: boolean;
     servicesData: Uint8Array
@@ -40,7 +41,7 @@ export class JDDevice extends JDNode {
     private _services: JDService[]
     private _ports: SMap<PipeInfo>;
     private _firmwareInfo: FirmwareInfo;
-    private _ackAwaiting: AckAwaiter[]
+    private _ackAwaiting: AckAwaiter[];
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
@@ -54,6 +55,17 @@ export class JDDevice extends JDNode {
 
     get nodeKind() {
         return DEVICE_NODE_NAME
+    }
+
+    get source() {
+        return this._source;
+    }
+
+    /**
+     * Indicates if the devices is a physical device, not emulated.
+     */
+    get physical() {
+        return this._source === USB_TRANSPORT || this._source === PACKETIO_TRANSPORT;
     }
 
     get friendlyName() {
@@ -225,15 +237,18 @@ export class JDDevice extends JDNode {
     }
 
     processAnnouncement(pkt: Packet) {
-        this.source = pkt.sender || this.source; // remember who's sending those packets
+        let changed = false;
+        const oldSource = pkt.sender || this.source;
+        this._source = pkt.sender || this.source; // remember who's sending those packets
+        changed ||= oldSource !== this._source;
+
         const w0 = this.servicesData ? getNumber(this.servicesData, NumberFormat.UInt32LE, 0) : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
 
         if (w1 && (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) < (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)) {
             this.bus.emit(DEVICE_RESTART, this);
             this.emit(RESTART)
-            this.bus.emit(DEVICE_CHANGE, this);
-            this.emit(CHANGE)
+            changed = true;
         }
 
         if (!bufferEq(pkt.data, this.servicesData)) {
@@ -241,7 +256,10 @@ export class JDDevice extends JDNode {
             this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
-            this.emit(CHANGE)
+            changed = true;
+        }
+
+        if (changed) {
             this.bus.emit(DEVICE_CHANGE, this);
             this.bus.emit(CHANGE);
         }

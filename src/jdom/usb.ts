@@ -7,6 +7,7 @@ import { delay } from "./utils";
 import Flags from "./flags";
 
 export const USB_TRANSPORT = "usb"
+export const PACKETIO_TRANSPORT = "packetio"
 
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>;

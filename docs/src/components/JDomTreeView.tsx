@@ -34,6 +34,8 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
     const name = useDeviceName(device, true)
+    const physical = useChange(device, d => d.physical)
+    const kind = physical ? "device" : "virtualdevice"
     const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
     const theme = useTheme()
@@ -52,7 +54,7 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
         labelText={name}
         labelInfo={labelInfo}
         alert={lost && "Lost device..."}
-        kind={"device"}
+        kind={kind}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
         actions={showActions && <DeviceActions device={device} reset={true} rename={true} />}
