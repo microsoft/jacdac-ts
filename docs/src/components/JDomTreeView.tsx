@@ -73,8 +73,9 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
 }
 
 function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps & JDomTreeViewProps) {
-    const { service, checked, setChecked, checkboxes, registerFilter, eventFilter, ...other } = props;
+    const { service, checked, setChecked, checkboxes, dashboard, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
+    const showSpecificationAction = specification && !dashboard;
     const id = service.id
     const name = service.name
     const open = checked?.indexOf(id) > -1;
@@ -97,7 +98,7 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         kind={"service"}
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
-        actions={specification && <Link color="inherit" to={`/services/${specification.shortId}`}>
+        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}`}>
             <LaunchIcon fontSize={"small"} />
         </Link>}
     >
@@ -173,6 +174,8 @@ function EventTreeItem(props: { event: JDEvent } & StyledTreeViewItemProps & JDo
 export type CheckedMap = { [id: string]: boolean };
 
 export interface JDomTreeViewProps extends StyledTreeViewProps {
+    // don't render links to specification
+    dashboard?: boolean;
     checkboxes?: ("device" | "service" | "register" | "event")[];
     deviceFilter?: (devices: JDDevice) => boolean;
     serviceFilter?: (services: JDService) => boolean;
