@@ -29,6 +29,8 @@ import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
 import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './StyledTreeView';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import LaunchIcon from '@material-ui/icons/Launch';
 
 function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
@@ -96,7 +98,7 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
         actions={specification && <Link color="inherit" to={`/services/${specification.shortId}`}>
-            <KindIcon kind="service" />
+            <LaunchIcon fontSize={"small"} />
         </Link>}
     >
         {registers?.map(register => <RegisterTreeItem

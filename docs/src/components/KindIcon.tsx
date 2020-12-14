@@ -26,28 +26,36 @@ import {
     REPORT_NODE_NAME, BUS_NODE_NAME, DEVICE_NODE_NAME, VIRTUAL_DEVICE_NODE_NAME,
     SERVICE_NODE_NAME, EVENT_NODE_NAME
 } from "../../../src/jdom/constants";
+import { Tooltip } from "@material-ui/core";
 
-export default function KindIcon(props: { kind: string, className?: string }) {
-    const { kind, className } = props
+export default function KindIcon(props: { kind: string, className?: string, tooltip?: boolean }) {
+    const { kind, className, tooltip } = props
+
+    let icon: JSX.Element;
     switch (kind) {
-        case PACKET_KIND_RO: return <DataUsageIcon className={className} />;
-        case PACKET_KIND_RW: return <CreateIcon className={className} />;
-        case CONST_NODE_NAME: return <LockIcon className={className} />;
-        case COMMAND_NODE_NAME: return <CallToActionIcon className={className} />;
-        case EVENT_NODE_NAME: return <FlashOnIcon className={className} />;
-        case REPORT_NODE_NAME: return <ReplyIcon className={className} />;
-        case BUS_NODE_NAME: return <DeviceHubIcon className={className} />;
-        case DEVICE_NODE_NAME: return <DockIcon className={className} />;
-        case VIRTUAL_DEVICE_NODE_NAME: return <ComputerIcon className={className} />;
-        case SERVICE_NODE_NAME: return <BubbleChartIcon className={className} />
+        case PACKET_KIND_RO: icon = <DataUsageIcon className={className} />; break;
+        case PACKET_KIND_RW: icon = <CreateIcon className={className} />; break;
+        case CONST_NODE_NAME: icon = <LockIcon className={className} />; break;
+        case COMMAND_NODE_NAME: icon = <CallToActionIcon className={className} />; break;
+        case EVENT_NODE_NAME: icon = <FlashOnIcon className={className} />; break;
+        case REPORT_NODE_NAME: icon = <ReplyIcon className={className} />; break;
+        case BUS_NODE_NAME: icon = <DeviceHubIcon className={className} />; break;
+        case DEVICE_NODE_NAME: icon = <DockIcon className={className} />; break;
+        case VIRTUAL_DEVICE_NODE_NAME: icon = <ComputerIcon className={className} />; break;
+        case SERVICE_NODE_NAME: icon = <BubbleChartIcon className={className} />; break;
+        default: icon = <DeviceUnknownIcon className={className} />; break;
     }
-    return <DeviceUnknownIcon className={className} />;
+
+    return tooltip ? <Tooltip title={kindName(kind)}>
+        {icon}
+    </Tooltip> : icon;
 }
 
 export function kindName(kind: string) {
     switch (kind) {
-        case PACKET_KIND_RO: return "read-only";
-        case PACKET_KIND_RW: return "read-write";
+        case PACKET_KIND_RO: return "read only";
+        case PACKET_KIND_RW: return "read write";
+        case VIRTUAL_DEVICE_NODE_NAME: return "simulated device";
         default: return kind
     }
 }
