@@ -238,8 +238,8 @@ export class JDDevice extends JDNode {
 
     processAnnouncement(pkt: Packet) {
         let changed = false;
-        const oldSource = pkt.sender || this.source;
-        this._source = pkt.sender || this.source; // remember who's sending those packets
+        const oldSource = pkt.sender || this._source;
+        this._source = pkt.sender || this._source; // remember who's sending those packets
         changed ||= oldSource !== this._source;
 
         const w0 = this.servicesData ? getNumber(this.servicesData, NumberFormat.UInt32LE, 0) : 0

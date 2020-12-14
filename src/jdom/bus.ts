@@ -502,10 +502,6 @@ export class JDBus extends JDNode {
         const lostCutoff = this.timestamp - LOST_DELAY
         const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY;
 
-        // don't GC if bus is disconnected
-        if (!this.connected)
-            return;
-
         // cycle through events and disconnect devices that are long gone
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
