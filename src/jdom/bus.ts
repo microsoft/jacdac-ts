@@ -505,6 +505,11 @@ export class JDBus extends JDNode {
         // cycle through events and disconnect devices that are long gone
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
+
+            // don't gc traces
+            if (dev.replay)
+                continue;
+
             if (dev.lastSeen < disconnectedCutoff) {
                 this._devices.splice(i, 1)
                 i--

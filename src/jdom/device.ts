@@ -28,10 +28,8 @@ interface AckAwaiter {
 
 export class JDDevice extends JDNode {
     connected: boolean;
-    /*
-    * Identifies where the packets are coming from
-    */
     private _source: string;
+    private _replay: boolean;
     private _name: string;
     private _lost: boolean;
     servicesData: Uint8Array
@@ -57,15 +55,18 @@ export class JDDevice extends JDNode {
         return DEVICE_NODE_NAME
     }
 
-    get source() {
-        return this._source;
-    }
-
     /**
      * Indicates if the devices is a physical device, not emulated.
      */
     get physical() {
         return this._source === USB_TRANSPORT || this._source === PACKETIO_TRANSPORT;
+    }
+
+    /**
+     * Indicates if the device is part of a trace replay
+     */
+    get replay() {
+        return this._replay;
     }
 
     get friendlyName() {
@@ -238,10 +239,6 @@ export class JDDevice extends JDNode {
 
     processAnnouncement(pkt: Packet) {
         let changed = false;
-        const oldSource = pkt.sender || this._source;
-        this._source = pkt.sender || this._source; // remember who's sending those packets
-        changed ||= oldSource !== this._source;
-
         const w0 = this.servicesData ? getNumber(this.servicesData, NumberFormat.UInt32LE, 0) : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
 
@@ -252,6 +249,8 @@ export class JDDevice extends JDNode {
         }
 
         if (!bufferEq(pkt.data, this.servicesData)) {
+            this._source = pkt.sender || this._source; // remember who's sending those packets
+            this._replay = !!pkt.replay;
             this.servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this);

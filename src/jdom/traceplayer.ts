@@ -85,9 +85,6 @@ export default class TracePlayer extends JDClient {
         const packets = this.trace.packets;
         const packetStart = packets[0]?.timestamp || 0;
 
-        let nframes = 0;
-        let npackets = 0;
-
         while (this._index < packets.length) {
             const packet = packets[this._index];
             const packetElapsed = packet.timestamp - packetStart;
@@ -95,10 +92,10 @@ export default class TracePlayer extends JDClient {
                 break; // wait to catch up
             // clone packet and send
             const pkt = packet.clone();
+            pkt.replay = true;
             pkt.timestamp = this._busStartTimestamp + packetElapsed;
             this.bus.processPacket(pkt)
             this._index++;
-            nframes++;
         }
 
         //console.log(`replay ${this._index} ${nframes} frames, ${npackets} packets`)

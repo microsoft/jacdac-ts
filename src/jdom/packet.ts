@@ -36,6 +36,8 @@ export class Packet {
     // An optional tracing identity to avoid
     // resending own packets for bridges
     public sender: string;
+    // Replayed in a trace
+    public replay?: boolean;
 
     private static _nextKey = 1;
     private constructor() {
