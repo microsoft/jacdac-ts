@@ -6247,6 +6247,23 @@
           "name": "generateDeviceList"
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!GET_ATTEMPT:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "GET_ATTEMPT = \"getAttempt\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "GET_ATTEMPT",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!getMLModelFormatName:function(1)",
           "docComment": "",
@@ -8674,6 +8691,33 @@
             }
           ],
           "name": "isSensor"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!isWebUSBEnabled:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function isWebUSBEnabled(): "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [],
+          "name": "isWebUSBEnabled"
         },
         {
           "kind": "Function",
@@ -13460,6 +13504,100 @@
           "name": "jdpack"
         },
         {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!jdpackEqual:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function jdpackEqual<T extends "
+            },
+            {
+              "kind": "Content",
+              "text": "any[]"
+            },
+            {
+              "kind": "Content",
+              "text": ">(fmt: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", left: "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": ", right: "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 9,
+            "endIndex": 10
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "fmt",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            },
+            {
+              "parameterName": "left",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              }
+            },
+            {
+              "parameterName": "right",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              }
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "jdpackEqual"
+        },
+        {
           "kind": "Class",
           "canonicalReference": "jacdac-ts!JDRegister:class",
           "docComment": "",
@@ -14382,6 +14520,33 @@
               "overloadIndex": 1,
               "parameters": [],
               "name": "toString"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDRegister#unpackedValue:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get unpackedValue(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "unpackedValue",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
             }
           ],
           "extendsTokenRange": {
@@ -21976,32 +22141,6 @@
             },
             {
               "kind": "PropertySignature",
-              "canonicalReference": "jacdac-ts!PacketMessage#outer:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "outer: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "true"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "outer",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "PropertySignature",
               "canonicalReference": "jacdac-ts!PacketMessage#type:member",
               "docComment": "",
               "excerptTokens": [
@@ -23752,11 +23891,32 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "128"
+                  "text": "129"
                 }
               ],
               "releaseTag": "Public",
               "name": "CBool",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CBytes:member",
+              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_bytes. Returns the value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CBytes = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "133"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CBytes",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -23773,11 +23933,32 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "130"
+                  "text": "131"
                 }
               ],
               "releaseTag": "Public",
               "name": "CI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CString:member",
+              "docComment": "/**\n * Argument: string string (bytes). A command to set rw_string. Returns the value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CString = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "132"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CString",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -23794,7 +23975,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "129"
+                  "text": "130"
                 }
               ],
               "releaseTag": "Public",
@@ -23830,11 +24011,32 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "384"
+                  "text": "129"
                 }
               ],
               "releaseTag": "Public",
               "name": "EBool",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestEvent.EBytes:member",
+              "docComment": "/**\n * Argument: bytes bytes. An event raised when rw_bytes is modified\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "EBytes = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "133"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "EBytes",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -23851,11 +24053,32 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "402"
+                  "text": "131"
                 }
               ],
               "releaseTag": "Public",
               "name": "EI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestEvent.EString:member",
+              "docComment": "/**\n * Argument: string string (bytes). An event raised when rw_string is modified\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "EString = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "132"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "EString",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -23872,7 +24095,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "400"
+                  "text": "130"
                 }
               ],
               "releaseTag": "Public",
