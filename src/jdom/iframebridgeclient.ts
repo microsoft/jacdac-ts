@@ -53,7 +53,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private handleDriverMessage(msg: { type: string }) {
-        switch(msg.type) {
+        switch (msg.type) {
             case "stop": // start again
                 this.bus.clear();
                 break;
