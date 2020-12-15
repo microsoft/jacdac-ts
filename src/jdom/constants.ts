@@ -23,10 +23,6 @@ export const CMD_ADVERTISEMENT_DATA = 0x00
 // event from sensor or on broadcast service
 export const CMD_EVENT = 0x01
 
-export const CMD_CONSOLE_REG = 0x80
-export const CMD_CONSOLE_MESSAGE_DBG = 0x80
-export const CMD_CONSOLE_SET_MIN_PRIORITY = 0x2000 | CMD_CONSOLE_REG
-
 export const PIPE_PORT_SHIFT = 7
 export const PIPE_COUNTER_MASK = 0x001f
 export const PIPE_CLOSE_MASK = 0x0020

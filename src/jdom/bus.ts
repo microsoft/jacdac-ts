@@ -3,7 +3,6 @@ import { JDDevice } from "./device";
 import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
     ConsolePriority,
-    CMD_CONSOLE_SET_MIN_PRIORITY,
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT, DEVICE_ANNOUNCE,
@@ -50,7 +49,7 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
-import { SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
+import { LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -291,7 +290,7 @@ export class JDBus extends JDNode {
 
     private async pingLoggers() {
         if (this._minConsolePriority < ConsolePriority.Silent) {
-            const pkt = Packet.jdpacked(CMD_CONSOLE_SET_MIN_PRIORITY, "i8", [this._minConsolePriority]);
+            const pkt = Packet.jdpacked<[ConsolePriority]>(0x2000 | LoggerReg.MinPriority, "i8", [this._minConsolePriority]);
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
@@ -588,7 +587,7 @@ export class JDBus extends JDNode {
         this.on(SELF_ANNOUNCE, () => {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
-            const pkt = Packet.jdpacked(CMD_ADVERTISEMENT_DATA, "i32", [restartCounter | 0x100])
+            const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "i32", [restartCounter | 0x100])
             pkt.service_index = JD_SERVICE_INDEX_CTRL
             pkt.device_identifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)

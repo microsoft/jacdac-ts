@@ -323,8 +323,8 @@ export class Packet {
         return frameToPackets(frame, timestamp)
     }
 
-    static jdpacked(service_command: number, fmt: string, nums: any[]) {
-        return Packet.from(service_command, jdpack(fmt, nums))
+    static jdpacked<T extends any[]>(service_command: number, fmt: string, nums: T) {
+        return Packet.from(service_command, jdpack<T>(fmt, nums))
     }
 
     // helpers
