@@ -62,6 +62,5 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
     return <ThemedLayout theme={theme}>
         <JDomTreeView dashboard={true} />
-        <ReadingGrid />
     </ThemedLayout>
 }
