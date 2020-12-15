@@ -40,7 +40,7 @@ export default class SettingsClient extends JDServiceClient {
         key = key.trim();
         const pkt = Packet.from(SettingsCmd.Get, jdpack("s", [key]));
         const resp = await this.service.sendCmdAwaitResponseAsync(pkt);
-        const [rkey, value] = jdunpack(resp.data, "z b");
+        const [rkey, value] = jdunpack<[string, Uint8Array]>(resp.data, "z b");
         if (key !== rkey) {
             console.error(`device returned different key, got "${rkey}", expected "${key}"`)
             return undefined;

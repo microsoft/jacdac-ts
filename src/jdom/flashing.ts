@@ -185,7 +185,7 @@ class FlashClient {
                 if (f.pending) {
                     let err = ""
                     if (f.lastStatus) {
-                        const [sess, berr, pageAddrR] = jdunpack(f.lastStatus.data, "i32 i32 i32")
+                        const [sess, berr, pageAddrR] = jdunpack<[number, number, number]>(f.lastStatus.data, "i32 i32 i32")
                         if (sess != this.sessionId)
                             err = "invalid session_id"
                         else if (pageAddrR != pageAddr)

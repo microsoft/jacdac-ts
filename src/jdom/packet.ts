@@ -182,8 +182,8 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    jdunpack(fmt: string): any[] {
-        return (this._data && fmt && jdunpack(this._data, fmt)) || [];
+    jdunpack<T extends any[]>(fmt: string): T {
+        return (this._data && fmt && jdunpack<T>(this._data, fmt)) || [] as T;
     }
 
     get uintData() {
