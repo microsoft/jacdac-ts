@@ -73,7 +73,7 @@ export class ModelRunnerClient extends JDServiceClient {
 
     async deployModel(model: Uint8Array, progress: (p: number) => void = () => { }) {
         progress(0)
-        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.jdpacked(ModelRunnerCmd.SetModel, "i32", [model.length]), 3000)
+        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.jdpacked(ModelRunnerCmd.SetModel, "u32", [model.length]), 3000)
         progress(0.05)
         const [pipePort] = jdunpack<[number]>(resp.data, "u32")
         if (!pipePort)
