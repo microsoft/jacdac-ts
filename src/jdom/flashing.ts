@@ -161,7 +161,7 @@ class FlashClient {
                 let sz = BL_SUBPAGE_SIZE
                 if (suboff + sz > pageSize)
                     sz = pageSize - suboff
-                const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32 b", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
+                const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
                 assert(hd.length == 4 * 7)
                 const p = Packet.from(BL_CMD_PAGE_DATA, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
 
