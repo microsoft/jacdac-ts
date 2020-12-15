@@ -794,7 +794,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!BootloaderCmd.SetSession:member",
-              "docComment": "/**\n * Argument: session_id uint32_t. The flashing host should generate a random id, and use this command to set it.\n */\n",
+              "docComment": "/**\n * Argument: session_id uint32_t. The flashing host should generate a random id, and use this command to set it.\n * ```\n * const [sessionId] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1107,50 +1107,6 @@
             }
           ],
           "name": "bufferEq"
-        },
-        {
-          "kind": "Function",
-          "canonicalReference": "jacdac-ts!bufferOfInt:function(1)",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function bufferOfInt(value: "
-            },
-            {
-              "kind": "Content",
-              "text": "number"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Reference",
-              "text": "Uint8Array",
-              "canonicalReference": "!Uint8Array:interface"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 3,
-            "endIndex": 4
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "value",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ],
-          "name": "bufferOfInt"
         },
         {
           "kind": "Function",
@@ -1677,7 +1633,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ButtonReg.Pressed:member",
-              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether the button is currently active (pressed).\n */\n",
+              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether the button is currently active (pressed).\n * ```\n * const [pressed] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1749,7 +1705,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!BuzzerReg.Volume:member",
-              "docComment": "/**\n * Read-write ratio uint8_t. The volume (duty cycle) of the buzzer.\n */\n",
+              "docComment": "/**\n * Read-write ratio uint8_t. The volume (duty cycle) of the buzzer.\n * ```\n * const [volume] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2009,61 +1965,6 @@
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
-          }
-        },
-        {
-          "kind": "Variable",
-          "canonicalReference": "jacdac-ts!CMD_CONSOLE_MESSAGE_DBG:var",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "CMD_CONSOLE_MESSAGE_DBG = 128"
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "CMD_CONSOLE_MESSAGE_DBG",
-          "variableTypeTokenRange": {
-            "startIndex": 0,
-            "endIndex": 0
-          }
-        },
-        {
-          "kind": "Variable",
-          "canonicalReference": "jacdac-ts!CMD_CONSOLE_REG:var",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "CMD_CONSOLE_REG = 128"
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "CMD_CONSOLE_REG",
-          "variableTypeTokenRange": {
-            "startIndex": 0,
-            "endIndex": 0
-          }
-        },
-        {
-          "kind": "Variable",
-          "canonicalReference": "jacdac-ts!CMD_CONSOLE_SET_MIN_PRIORITY:var",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "CMD_CONSOLE_SET_MIN_PRIORITY: "
-            },
-            {
-              "kind": "Content",
-              "text": "number"
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "CMD_CONSOLE_SET_MIN_PRIORITY",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 2
           }
         },
         {
@@ -2528,124 +2429,21 @@
           }
         },
         {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!ConsolePriority:enum",
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!CONST_NODE_NAME:var",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export declare enum ConsolePriority "
+              "text": "CONST_NODE_NAME = \"const\""
             }
           ],
           "releaseTag": "Public",
-          "name": "ConsolePriority",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!ConsolePriority.Debug:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Debug = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "0"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Debug",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!ConsolePriority.Error:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Error = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "3"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Error",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!ConsolePriority.Log:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Log = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "1"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Log",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!ConsolePriority.Silent:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Silent = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "4"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Silent",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!ConsolePriority.Warning:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Warning = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "2"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Warning",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
+          "name": "CONST_NODE_NAME",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
         },
         {
           "kind": "Enum",
@@ -2696,6 +2494,27 @@
           "releaseTag": "Public",
           "name": "ControlCmd",
           "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlCmd.FloodPing:member",
+              "docComment": "/**\n * The device will respond `num_responses` times, as fast as it can, setting the `counter` field in the report to `start_counter`, then `start_counter + 1`, ..., and finally `start_counter + num_responses - 1`. The `dummy_payload` is `size` bytes long and contains bytes `0, 1, 2, ...`.\n * ```\n * const [numResponses, startCounter, size] = jdunpack<[number, number, number]>(buf, \"u32 u32 u8\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "FloodPing = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "131"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "FloodPing",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlCmd.Identify:member",
@@ -2762,7 +2581,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlCmd.Services:member",
-              "docComment": "/**\n * No args. The `restart_counter` starts at `0x1` and increments by one until it reaches `0xf`, then it stays at `0xf`. If this number ever goes down, it indicates that the device restarted. The upper 4 bits of `restart_counter` are reserved. `service_class` indicates class identifier for each service index (service index `0` is always control, so it's skipped in this enumeration). The command form can be used to induce report, which is otherwise broadcast every 500ms.\n */\n",
+              "docComment": "/**\n * No args. The `restart_counter` starts at `0x1` and increments by one until it reaches `0xf`, then it stays at `0xf`. If this number ever goes down, it indicates that the device restarted. The upper 4 bits of `restart_counter` are reserved. `service_class` indicates class identifier for each service index (service index `0` is always control, so it's skipped in this enumeration). `packet_count` indicates the number of packets sent by the current device since last announce, including the current announce packet (it is always 0 if this feature is not supported). The command form can be used to induce report, which is otherwise broadcast every 500ms.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2798,7 +2617,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.BootloaderFirmwareIdentifier:member",
-              "docComment": "/**\n * Constant uint32_t. Typically the same as `firmware_identifier` unless device was flashed by hand; the bootloader will respond to that code.\n */\n",
+              "docComment": "/**\n * Constant uint32_t. Typically the same as `firmware_identifier` unless device was flashed by hand; the bootloader will respond to that code.\n * ```\n * const [bootloaderFirmwareIdentifier] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2819,7 +2638,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.DeviceDescription:member",
-              "docComment": "/**\n * Constant string (bytes). Identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C)\n */\n",
+              "docComment": "/**\n * Constant string (bytes). Identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C)\n * ```\n * const [deviceDescription] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2840,7 +2659,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.DeviceUrl:member",
-              "docComment": "/**\n * Constant string (bytes). Request the information web site for this device\n */\n",
+              "docComment": "/**\n * Constant string (bytes). Request the information web site for this device\n * ```\n * const [deviceUrl] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2861,7 +2680,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.FirmwareIdentifier:member",
-              "docComment": "/**\n * Constant uint32_t. A numeric code for the string above; used to identify firmware images and devices.\n */\n",
+              "docComment": "/**\n * Constant uint32_t. A numeric code for the string above; used to identify firmware images and devices.\n * ```\n * const [firmwareIdentifier] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2882,7 +2701,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.FirmwareUrl:member",
-              "docComment": "/**\n * Constant string (bytes). URL with machine-readable metadata information about updating device firmware\n */\n",
+              "docComment": "/**\n * Constant string (bytes). URL with machine-readable metadata information about updating device firmware\n * ```\n * const [firmwareUrl] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2903,7 +2722,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.FirmwareVersion:member",
-              "docComment": "/**\n * Constant string (bytes). A string describing firmware version; typically semver.\n */\n",
+              "docComment": "/**\n * Constant string (bytes). A string describing firmware version; typically semver.\n * ```\n * const [firmwareVersion] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2924,7 +2743,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.McuTemperature:member",
-              "docComment": "/**\n * Read-only °C int16_t. MCU temperature in degrees Celsius (approximate).\n */\n",
+              "docComment": "/**\n * Read-only °C int16_t. MCU temperature in degrees Celsius (approximate).\n * ```\n * const [mcuTemperature] = jdunpack<[number]>(buf, \"i16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2945,7 +2764,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.Uptime:member",
-              "docComment": "/**\n * Read-only μs uint64_t. Number of microseconds since boot.\n */\n",
+              "docComment": "/**\n * Read-only μs uint64_t. Number of microseconds since boot.\n * ```\n * const [uptime] = jdunpack<[number]>(buf, \"u64\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7056,7 +6875,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!HumidityReg.Humidity:member",
-              "docComment": "/**\n * Read-only %RH u22.10 (uint32_t). The relative humidity in percentage of full water saturation.\n */\n",
+              "docComment": "/**\n * Read-only %RH u22.10 (uint32_t). The relative humidity in percentage of full water saturation.\n * ```\n * const [humidity] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7471,7 +7290,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.GetTwin:member",
-              "docComment": "/**\n * Argument: twin_result pipe (bytes). Ask for current device digital twin.\n */\n",
+              "docComment": "/**\n * Argument: twin_result pipe (bytes). Ask for current device digital twin.\n * ```\n * const [twinResult] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7576,7 +7395,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.Subscribe:member",
-              "docComment": "/**\n * Argument: devicebound pipe (bytes). Subscribes for cloud to device messages, which will be sent over the specified pipe.\n */\n",
+              "docComment": "/**\n * Argument: devicebound pipe (bytes). Subscribes for cloud to device messages, which will be sent over the specified pipe.\n * ```\n * const [devicebound] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7597,7 +7416,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.SubscribeMethod:member",
-              "docComment": "/**\n * Argument: method_call pipe (bytes). Subscribe to direct method calls.\n */\n",
+              "docComment": "/**\n * Argument: method_call pipe (bytes). Subscribe to direct method calls.\n * ```\n * const [methodCall] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7618,7 +7437,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.SubscribeTwin:member",
-              "docComment": "/**\n * Argument: twin_updates pipe (bytes). Subscribe to updates to our twin.\n */\n",
+              "docComment": "/**\n * Argument: twin_updates pipe (bytes). Subscribe to updates to our twin.\n * ```\n * const [twinUpdates] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7675,7 +7494,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubEvent.ConnectionError:member",
-              "docComment": "/**\n * Argument: reason string (bytes). Emitted when connection was lost.\n */\n",
+              "docComment": "/**\n * Argument: reason string (bytes). Emitted when connection was lost.\n * ```\n * const [reason] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7719,7 +7538,7 @@
         {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!IotHubPipeCmd:enum",
-          "docComment": "",
+          "docComment": "/**\n * pipe_command MethodResponse\n * ```\n * const [json] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -7795,7 +7614,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubPipeCmd.TwinError:member",
-              "docComment": "/**\n * Argument: status_code uint32_t. This emitted if status is not 200.\n */\n",
+              "docComment": "/**\n * Argument: status_code uint32_t. This emitted if status is not 200.\n * ```\n * const [statusCode] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7831,7 +7650,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubReg.ConnectionStatus:member",
-              "docComment": "/**\n * Read-only string (bytes). Returns `\"ok\"` when connected, and an error description otherwise.\n */\n",
+              "docComment": "/**\n * Read-only string (bytes). Returns `\"ok\"` when connected, and an error description otherwise.\n * ```\n * const [connectionStatus] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7852,7 +7671,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubReg.ConnectionString:member",
-              "docComment": "/**\n * Read-write string (bytes). Connection string typically looks something like `HostName=my-iot-hub.azure-devices.net;DeviceId=my-dev-007;SharedAccessKey=xyz+base64key`. You can get it in `Shared access policies -> iothubowner -> Connection string-primary key` in the Azure Portal. This register is write-only. You can use `hub_name` and `device_id` to check if connection string is set, but you cannot get the shared access key.\n */\n",
+              "docComment": "/**\n * Read-write string (bytes). Connection string typically looks something like `HostName=my-iot-hub.azure-devices.net;DeviceId=my-dev-007;SharedAccessKey=xyz+base64key`. You can get it in `Shared access policies -> iothubowner -> Connection string-primary key` in the Azure Portal. This register is write-only. You can use `hub_name` and `device_id` to check if connection string is set, but you cannot get the shared access key.\n * ```\n * const [connectionString] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7873,7 +7692,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubReg.DeviceId:member",
-              "docComment": "/**\n * Read-only string (bytes). Something like `my-dev-007`; empty string when `connection_string` is not set.\n */\n",
+              "docComment": "/**\n * Read-only string (bytes). Something like `my-dev-007`; empty string when `connection_string` is not set.\n * ```\n * const [deviceId] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7894,7 +7713,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubReg.HubName:member",
-              "docComment": "/**\n * Read-only string (bytes). Something like `my-iot-hub.azure-devices.net`; empty string when `connection_string` is not set.\n */\n",
+              "docComment": "/**\n * Read-only string (bytes). Something like `my-iot-hub.azure-devices.net`; empty string when `connection_string` is not set.\n * ```\n * const [hubName] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -9676,17 +9495,17 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!JDBus#minConsolePriority:member",
+              "canonicalReference": "jacdac-ts!JDBus#minLoggerPriority:member",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "get minConsolePriority(): "
+                  "text": "get minLoggerPriority(): "
                 },
                 {
                   "kind": "Reference",
-                  "text": "ConsolePriority",
-                  "canonicalReference": "jacdac-ts!ConsolePriority:enum"
+                  "text": "LoggerPriority",
+                  "canonicalReference": "jacdac-ts!LoggerPriority:enum"
                 },
                 {
                   "kind": "Content",
@@ -9694,12 +9513,12 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "\n\nset minConsolePriority(priority: "
+                  "text": "\n\nset minLoggerPriority(priority: "
                 },
                 {
                   "kind": "Reference",
-                  "text": "ConsolePriority",
-                  "canonicalReference": "jacdac-ts!ConsolePriority:enum"
+                  "text": "LoggerPriority",
+                  "canonicalReference": "jacdac-ts!LoggerPriority:enum"
                 },
                 {
                   "kind": "Content",
@@ -9708,7 +9527,7 @@
               ],
               "isOptional": false,
               "releaseTag": "Public",
-              "name": "minConsolePriority",
+              "name": "minLoggerPriority",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -11047,6 +10866,33 @@
               "isStatic": false
             },
             {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#physical:member",
+              "docComment": "/**\n * Indicates if the devices is a physical device, not emulated.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get physical(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "physical",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
               "kind": "Method",
               "canonicalReference": "jacdac-ts!JDDevice#port:member(1)",
               "docComment": "",
@@ -11205,6 +11051,33 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "qualifiedName",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#replay:member",
+              "docComment": "/**\n * Indicates if the device is part of a trace replay\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get replay(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "replay",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -11649,11 +11522,11 @@
             {
               "kind": "Property",
               "canonicalReference": "jacdac-ts!JDDevice#source:member",
-              "docComment": "",
+              "docComment": "/**\n * Indicates the source of packets\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "source: "
+                  "text": "get source(): "
                 },
                 {
                   "kind": "Content",
@@ -14402,6 +14275,107 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDRegister#sendSetPackedAsync:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "sendSetPackedAsync<T extends "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(fmt: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", values: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", autoRefresh?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 11
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "fmt",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "values",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                },
+                {
+                  "parameterName": "autoRefresh",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 7,
+                    "endIndex": 8
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "T",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "sendSetPackedAsync"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "jacdac-ts!JDRegister#sendSetStringAsync:member(1)",
               "docComment": "",
               "excerptTokens": [
@@ -16546,7 +16520,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Brightness:member",
-              "docComment": "/**\n * Read-write uint8_t. Sets the general brightness of the LEDs.\n */\n",
+              "docComment": "/**\n * Read-write uint8_t. Sets the general brightness of the LEDs.\n * ```\n * const [brightness] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16567,7 +16541,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Columns:member",
-              "docComment": "/**\n * Constant # uint16_t. Number of columns on the screen\n */\n",
+              "docComment": "/**\n * Constant # uint16_t. Number of columns on the screen\n * ```\n * const [columns] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16588,7 +16562,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Enabled:member",
-              "docComment": "/**\n * Read-write bool (uint8_t). Disables or enables the whole screen.\n */\n",
+              "docComment": "/**\n * Read-write bool (uint8_t). Disables or enables the whole screen.\n * ```\n * const [enabled] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16609,7 +16583,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Leds:member",
-              "docComment": "/**\n * Read-write bytes. Read or writes the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n */\n",
+              "docComment": "/**\n * Read-write bytes. Read or writes the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n * ```\n * const [leds] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16630,7 +16604,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Rows:member",
-              "docComment": "/**\n * Constant # uint16_t. Number of rows on the screen\n */\n",
+              "docComment": "/**\n * Constant # uint16_t. Number of rows on the screen\n * ```\n * const [rows] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16666,7 +16640,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixDisplayReg.Leds:member",
-              "docComment": "/**\n * Read-only bytes. Streams the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n */\n",
+              "docComment": "/**\n * Read-only bytes. Streams the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n * ```\n * const [leds] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16702,7 +16676,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightCmd.Run:member",
-              "docComment": "/**\n * Argument: program bytes. Run the given light \"program\". See service description for details.\n */\n",
+              "docComment": "/**\n * Argument: program bytes. Run the given light \"program\". See service description for details.\n * ```\n * const [program] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16816,7 +16790,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightReg.ActualBrightness:member",
-              "docComment": "/**\n * Read-only ratio uint8_t. This is the luminosity actually applied to the strip. May be lower than `brightness` if power-limited by the `max_power` register. It will rise slowly (few seconds) back to `brightness` is limits are no longer required.\n */\n",
+              "docComment": "/**\n * Read-only ratio uint8_t. This is the luminosity actually applied to the strip. May be lower than `brightness` if power-limited by the `max_power` register. It will rise slowly (few seconds) back to `brightness` is limits are no longer required.\n * ```\n * const [actualBrightness] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16837,7 +16811,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightReg.Brightness:member",
-              "docComment": "/**\n * Read-write ratio uint8_t. Set the luminosity of the strip. At `0` the power to the strip is completely shut down.\n */\n",
+              "docComment": "/**\n * Read-write ratio uint8_t. Set the luminosity of the strip. At `0` the power to the strip is completely shut down.\n * ```\n * const [brightness] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16858,7 +16832,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightReg.LightType:member",
-              "docComment": "/**\n * Read-write LightType (uint8_t). Specifies the type of light strip connected to controller. Controllers which are sold with lights should default to the correct type and could not allow change.\n */\n",
+              "docComment": "/**\n * Read-write LightType (uint8_t). Specifies the type of light strip connected to controller. Controllers which are sold with lights should default to the correct type and could not allow change.\n * ```\n * const [lightType] = jdunpack<[LightLightType]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16879,7 +16853,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightReg.MaxPower:member",
-              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the light-strip (and controller).\n */\n",
+              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the light-strip (and controller).\n * ```\n * const [maxPower] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -16900,7 +16874,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightReg.NumPixels:member",
-              "docComment": "/**\n * Read-write uint16_t. Specifies the number of pixels in the strip. Controllers which are sold with lights should default to the correct length and could not allow change. Increasing length at runtime leads to ineffective use of memory and may lead to controller reboot.\n */\n",
+              "docComment": "/**\n * Read-write uint16_t. Specifies the number of pixels in the strip. Controllers which are sold with lights should default to the correct length and could not allow change. Increasing length at runtime leads to ineffective use of memory and may lead to controller reboot.\n * ```\n * const [numPixels] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17028,7 +17002,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LoggerCmd.Debug:member",
-              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n */\n",
+              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n * ```\n * const [message] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17049,7 +17023,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LoggerCmd.Error:member",
-              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n */\n",
+              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n * ```\n * const [message] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17070,7 +17044,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LoggerCmd.Log:member",
-              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n */\n",
+              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n * ```\n * const [message] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17091,7 +17065,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LoggerCmd.Warn:member",
-              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n */\n",
+              "docComment": "/**\n * Argument: message string (bytes). Report a message.\n * ```\n * const [message] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17189,6 +17163,27 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LoggerPriority.Silent:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Silent = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Silent",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LoggerPriority.Warning:member",
               "docComment": "",
               "excerptTokens": [
@@ -17226,7 +17221,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LoggerReg.MinPriority:member",
-              "docComment": "/**\n * Read-write Priority (uint8_t). Messages with level lower than this won't be emitted. The default setting may vary. Loggers should revert this to their default setting if the register has not been updated in 3000ms, and also keep the lowest setting they have seen in the last 1500ms. Thus, clients should write this register every 1000ms and ignore messages which are too verbose for them.\n */\n",
+              "docComment": "/**\n * Read-write Priority (uint8_t). Messages with level lower than this won't be emitted. The default setting may vary. Loggers should revert this to their default setting if the register has not been updated in 3000ms, and also keep the lowest setting they have seen in the last 1500ms. Thus, clients should write this register every 1000ms and ignore messages which are too verbose for them.\n * ```\n * const [minPriority] = jdunpack<[LoggerPriority]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17449,7 +17444,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MicrophoneReg.SamplingPeriod:member",
-              "docComment": "/**\n * Read-write μs uint32_t. Get or set microphone sampling period. Sampling rate is `1_000_000 / sampling_period Hz`.\n */\n",
+              "docComment": "/**\n * Read-write μs uint32_t. Get or set microphone sampling period. Sampling rate is `1_000_000 / sampling_period Hz`.\n * ```\n * const [samplingPeriod] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17800,7 +17795,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerCmd.Predict:member",
-              "docComment": "/**\n * Argument: outputs pipe (bytes). Open channel that can be used to manually invoke the model. When enough data is sent over the `inputs` pipe, the model is invoked, and results are send over the `outputs` pipe.\n */\n",
+              "docComment": "/**\n * Argument: outputs pipe (bytes). Open channel that can be used to manually invoke the model. When enough data is sent over the `inputs` pipe, the model is invoked, and results are send over the `outputs` pipe.\n * ```\n * const [outputs] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17821,7 +17816,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerCmd.SetModel:member",
-              "docComment": "/**\n * Argument: model_size B uint32_t. Open pipe for streaming in the model. The size of the model has to be declared upfront. The model is streamed over regular pipe data packets. The format supported by this instance of the service is specified in `format` register. When the pipe is closed, the model is written all into flash, and the device running the service may reset.\n */\n",
+              "docComment": "/**\n * Argument: model_size B uint32_t. Open pipe for streaming in the model. The size of the model has to be declared upfront. The model is streamed over regular pipe data packets. The format supported by this instance of the service is specified in `format` register. When the pipe is closed, the model is written all into flash, and the device running the service may reset.\n * ```\n * const [modelSize] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17935,7 +17930,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.AllocatedArenaSize:member",
-              "docComment": "/**\n * Read-only B uint32_t. Number of RAM bytes allocated for model execution.\n */\n",
+              "docComment": "/**\n * Read-only B uint32_t. Number of RAM bytes allocated for model execution.\n * ```\n * const [allocatedArenaSize] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17956,7 +17951,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.AutoInvokeEvery:member",
-              "docComment": "/**\n * Read-write uint16_t. When register contains `N > 0`, run the model automatically every time new `N` samples are collected. Model may be run less often if it takes longer to run than `N * sampling_interval`. The `outputs` register will stream its value after each run. This register is not stored in flash.\n */\n",
+              "docComment": "/**\n * Read-write uint16_t. When register contains `N > 0`, run the model automatically every time new `N` samples are collected. Model may be run less often if it takes longer to run than `N * sampling_interval`. The `outputs` register will stream its value after each run. This register is not stored in flash.\n * ```\n * const [autoInvokeEvery] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17977,7 +17972,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.Format:member",
-              "docComment": "/**\n * Constant ModelFormat (uint32_t). The type of ML models supported by this service. `TFLite` is flatbuffer `.tflite` file. `ML4F` is compiled machine code model for Cortex-M4F. The format is typically present as first or second little endian word of model file.\n */\n",
+              "docComment": "/**\n * Constant ModelFormat (uint32_t). The type of ML models supported by this service. `TFLite` is flatbuffer `.tflite` file. `ML4F` is compiled machine code model for Cortex-M4F. The format is typically present as first or second little endian word of model file.\n * ```\n * const [format] = jdunpack<[ModelRunnerModelFormat]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17998,7 +17993,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.FormatVersion:member",
-              "docComment": "/**\n * Constant uint32_t. A version number for the format.\n */\n",
+              "docComment": "/**\n * Constant uint32_t. A version number for the format.\n * ```\n * const [formatVersion] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18040,7 +18035,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.LastError:member",
-              "docComment": "/**\n * Read-only string (bytes). Textual description of last error when running or loading model (if any).\n */\n",
+              "docComment": "/**\n * Read-only string (bytes). Textual description of last error when running or loading model (if any).\n * ```\n * const [lastError] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18061,7 +18056,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.LastRunTime:member",
-              "docComment": "/**\n * Read-only μs uint32_t. The time consumed in last model execution.\n */\n",
+              "docComment": "/**\n * Read-only μs uint32_t. The time consumed in last model execution.\n * ```\n * const [lastRunTime] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18082,7 +18077,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.ModelSize:member",
-              "docComment": "/**\n * Read-only B uint32_t. The size of the model in bytes.\n */\n",
+              "docComment": "/**\n * Read-only B uint32_t. The size of the model in bytes.\n * ```\n * const [modelSize] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18145,7 +18140,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerReg.Parallel:member",
-              "docComment": "/**\n * Constant bool (uint8_t). If present and true this service can run models independently of other instances of this service on the device.\n */\n",
+              "docComment": "/**\n * Constant bool (uint8_t). If present and true this service can run models independently of other instances of this service on the device.\n * ```\n * const [parallel] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18158,6 +18153,147 @@
               ],
               "releaseTag": "Public",
               "name": "Parallel",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!MonoLightReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum MonoLightReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "MonoLightReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MonoLightReg.Brightness:member",
+              "docComment": "/**\n * Read-write ratio uint16_t. Set the luminosity of the strip. The value is used to scale `start_intensity` in `steps` register. At `0` the power to the strip is completely shut down.\n * ```\n * const [brightness] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Brightness = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Brightness",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MonoLightReg.CurrentIteration:member",
+              "docComment": "/**\n * Read-write uint16_t. Currently excecuting iteration of animation. Can be set to `0` to restart current animation. If `current_iteration > max_iterations`, then no animation is currently running.\n * ```\n * const [currentIteration] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CurrentIteration = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "128"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CurrentIteration",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MonoLightReg.MaxIterations:member",
+              "docComment": "/**\n * Read-write uint16_t. The animation will be repeated `max_iterations + 1` times.\n * ```\n * const [maxIterations] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxIterations = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "129"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxIterations",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MonoLightReg.MaxPower:member",
+              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the light-strip (and controller).\n * ```\n * const [maxPower] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxPower = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "7"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxPower",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MonoLightReg.MaxSteps:member",
+              "docComment": "/**\n * Constant uint8_t. Maximum number of steps allowed in animation definition. This determines the size of the `steps` register.\n * ```\n * const [maxSteps] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxSteps = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "384"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxSteps",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MonoLightReg.Steps:member",
+              "docComment": "/**\n * The steps of current animation. Setting this also sets `current_iteration` to `0`. Step with `duration == 0` is treated as an end marker.\n * ```\n * const [rest] = jdunpack<[([number, number])[]]>(buf, \"r: u16 u16\")\n * const [startIntensity, duration] = rest[0]\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Steps = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "130"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Steps",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -18181,7 +18317,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MotorReg.Duty:member",
-              "docComment": "/**\n * Read-write ratio int16_t. PWM duty cycle of the motor. Use negative/positive values to run the motor forwards and backwards. Positive is recommended to be clockwise rotation and negative counterclockwise.\n */\n",
+              "docComment": "/**\n * Read-write ratio int16_t. PWM duty cycle of the motor. Use negative/positive values to run the motor forwards and backwards. Positive is recommended to be clockwise rotation and negative counterclockwise.\n * ```\n * const [duty] = jdunpack<[number]>(buf, \"i16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18202,7 +18338,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MotorReg.Enabled:member",
-              "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the motor on/off.\n */\n",
+              "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the motor on/off.\n * ```\n * const [enabled] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18493,7 +18629,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MultitouchEvent.LongPress:member",
-              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is touched for longer than 500ms. TODO Not implemented.\n */\n",
+              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is touched for longer than 500ms. TODO Not implemented.\n * ```\n * const [channel] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18514,7 +18650,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MultitouchEvent.Release:member",
-              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is no longer touched.\n */\n",
+              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is no longer touched.\n * ```\n * const [channel] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18577,7 +18713,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MultitouchEvent.Tap:member",
-              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is briefly touched. TODO Not implemented.\n */\n",
+              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is briefly touched. TODO Not implemented.\n * ```\n * const [channel] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18598,7 +18734,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MultitouchEvent.Touch:member",
-              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is touched.\n */\n",
+              "docComment": "/**\n * Argument: channel uint32_t. Emitted when an input is touched.\n * ```\n * const [channel] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -19524,65 +19660,6 @@
         },
         {
           "kind": "Function",
-          "canonicalReference": "jacdac-ts!pack:function(1)",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function pack(format: "
-            },
-            {
-              "kind": "Content",
-              "text": "string"
-            },
-            {
-              "kind": "Content",
-              "text": ", nums: "
-            },
-            {
-              "kind": "Content",
-              "text": "number[]"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Reference",
-              "text": "Uint8Array",
-              "canonicalReference": "!Uint8Array:interface"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 5,
-            "endIndex": 6
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "format",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "parameterName": "nums",
-              "parameterTypeTokenRange": {
-                "startIndex": 3,
-                "endIndex": 4
-              }
-            }
-          ],
-          "name": "pack"
-        },
-        {
-          "kind": "Function",
           "canonicalReference": "jacdac-ts!packArguments:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -19645,49 +19722,6 @@
             }
           ],
           "name": "packArguments"
-        },
-        {
-          "kind": "Function",
-          "canonicalReference": "jacdac-ts!packedSize:function(1)",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function packedSize(format: "
-            },
-            {
-              "kind": "Content",
-              "text": "string"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Content",
-              "text": "number"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 3,
-            "endIndex": 4
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "format",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ],
-          "name": "packedSize"
         },
         {
           "kind": "Variable",
@@ -20732,6 +20766,169 @@
               "isStatic": false
             },
             {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!Packet.jdpacked:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static jdpacked<T extends "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(service_command: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", fmt: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", nums: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Packet",
+                  "canonicalReference": "jacdac-ts!Packet:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 10
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "service_command",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "fmt",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                },
+                {
+                  "parameterName": "nums",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 7,
+                    "endIndex": 8
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "T",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "jdpacked"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!Packet#jdunpack:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "jdunpack<T extends "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(fmt: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "fmt",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "T",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "jdunpack"
+            },
+            {
               "kind": "Property",
               "canonicalReference": "jacdac-ts!Packet#key:member",
               "docComment": "",
@@ -20833,82 +21030,6 @@
             },
             {
               "kind": "Method",
-              "canonicalReference": "jacdac-ts!Packet.packed:member(1)",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "static packed(service_command: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "number"
-                },
-                {
-                  "kind": "Content",
-                  "text": ", fmt: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "string"
-                },
-                {
-                  "kind": "Content",
-                  "text": ", nums: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "number[]"
-                },
-                {
-                  "kind": "Content",
-                  "text": "): "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "Packet",
-                  "canonicalReference": "jacdac-ts!Packet:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "isStatic": true,
-              "returnTypeTokenRange": {
-                "startIndex": 7,
-                "endIndex": 8
-              },
-              "releaseTag": "Public",
-              "overloadIndex": 1,
-              "parameters": [
-                {
-                  "parameterName": "service_command",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                },
-                {
-                  "parameterName": "fmt",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 3,
-                    "endIndex": 4
-                  }
-                },
-                {
-                  "parameterName": "nums",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 5,
-                    "endIndex": 6
-                  }
-                }
-              ],
-              "name": "packed"
-            },
-            {
-              "kind": "Method",
               "canonicalReference": "jacdac-ts!Packet.patchBinary:member(1)",
               "docComment": "",
               "excerptTokens": [
@@ -20953,6 +21074,33 @@
                 }
               ],
               "name": "patchBinary"
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#replay:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "replay?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "replay",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
             },
             {
               "kind": "Property",
@@ -21516,51 +21664,6 @@
             },
             {
               "kind": "Method",
-              "canonicalReference": "jacdac-ts!Packet#unpack:member(1)",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "unpack(fmt: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "string"
-                },
-                {
-                  "kind": "Content",
-                  "text": "): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "any[]"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "isStatic": false,
-              "returnTypeTokenRange": {
-                "startIndex": 3,
-                "endIndex": 4
-              },
-              "releaseTag": "Public",
-              "overloadIndex": 1,
-              "parameters": [
-                {
-                  "parameterName": "fmt",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                }
-              ],
-              "name": "unpack"
-            },
-            {
-              "kind": "Method",
               "canonicalReference": "jacdac-ts!Packet#withFrameStripped:member(1)",
               "docComment": "",
               "excerptTokens": [
@@ -22048,6 +22151,23 @@
           "extendsTokenRanges": []
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!PACKETIO_TRANSPORT:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "PACKETIO_TRANSPORT = \"packetio\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PACKETIO_TRANSPORT",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Interface",
           "canonicalReference": "jacdac-ts!PacketMessage:interface",
           "docComment": "",
@@ -22134,6 +22254,32 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "data",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!PacketMessage#sender:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "sender?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "sender",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -22876,7 +23022,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.BatteryCapacity:member",
-              "docComment": "/**\n * Constant mWh uint32_t. Energy that can be delivered to the bus when battery is fully charged. This excludes conversion overheads if any.\n */\n",
+              "docComment": "/**\n * Constant mWh uint32_t. Energy that can be delivered to the bus when battery is fully charged. This excludes conversion overheads if any.\n * ```\n * const [batteryCapacity] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -22897,7 +23043,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.BatteryCharge:member",
-              "docComment": "/**\n * Read-only ratio uint16_t. Fraction of charge in the battery.\n */\n",
+              "docComment": "/**\n * Read-only ratio uint16_t. Fraction of charge in the battery.\n * ```\n * const [batteryCharge] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -22918,7 +23064,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.BatteryVoltage:member",
-              "docComment": "/**\n * Read-only mV uint16_t. Voltage on input.\n */\n",
+              "docComment": "/**\n * Read-only mV uint16_t. Voltage on input.\n * ```\n * const [batteryVoltage] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -22939,7 +23085,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.CurrentDraw:member",
-              "docComment": "/**\n * Read-only mA uint16_t. Present current draw from the bus.\n */\n",
+              "docComment": "/**\n * Read-only mA uint16_t. Present current draw from the bus.\n * ```\n * const [currentDraw] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -22960,7 +23106,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.Enabled:member",
-              "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the bus on/off.\n */\n",
+              "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the bus on/off.\n * ```\n * const [enabled] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -22981,7 +23127,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.KeepOnPulseDuration:member",
-              "docComment": "/**\n * Read-write ms uint16_t. Many USB power packs need current to be drawn from time to time to prevent shutdown. This regulates how often and for how long such current is drawn. Typically a 1/8W 22 ohm resistor is used as load. This limits the duty cycle to 10%.\n */\n",
+              "docComment": "/**\n * Read-write ms uint16_t. Many USB power packs need current to be drawn from time to time to prevent shutdown. This regulates how often and for how long such current is drawn. Typically a 1/8W 22 ohm resistor is used as load. This limits the duty cycle to 10%.\n * ```\n * const [keepOnPulseDuration] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23002,7 +23148,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.KeepOnPulsePeriod:member",
-              "docComment": "/**\n * Read-write ms uint16_t. Many USB power packs need current to be drawn from time to time to prevent shutdown. This regulates how often and for how long such current is drawn. Typically a 1/8W 22 ohm resistor is used as load. This limits the duty cycle to 10%.\n */\n",
+              "docComment": "/**\n * Read-write ms uint16_t. Many USB power packs need current to be drawn from time to time to prevent shutdown. This regulates how often and for how long such current is drawn. Typically a 1/8W 22 ohm resistor is used as load. This limits the duty cycle to 10%.\n * ```\n * const [keepOnPulsePeriod] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23023,7 +23169,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.MaxPower:member",
-              "docComment": "/**\n * Read-write mA uint16_t. Limit the power provided by the service. The actual maximum limit will depend on hardware. This field may be read-only in some implementations - you should read it back after setting.\n */\n",
+              "docComment": "/**\n * Read-write mA uint16_t. Limit the power provided by the service. The actual maximum limit will depend on hardware. This field may be read-only in some implementations - you should read it back after setting.\n * ```\n * const [maxPower] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23044,7 +23190,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!PowerReg.Overload:member",
-              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether the power has been shut down due to overdraw.\n */\n",
+              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether the power has been shut down due to overdraw.\n * ```\n * const [overload] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23883,7 +24029,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CBool:member",
-              "docComment": "/**\n * Argument: bool bool (uint8_t). A command to set rw_bool. Returns the value.\n */\n",
+              "docComment": "/**\n * Argument: bool bool (uint8_t). A command to set rw_bool. Returns the value.\n * ```\n * const [bool] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23904,7 +24050,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CBytes:member",
-              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_bytes. Returns the value.\n */\n",
+              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_bytes. Returns the value.\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23925,7 +24071,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CI32:member",
-              "docComment": "/**\n * Argument: i32 int32_t. A command to set rw_i32. Returns the value.\n */\n",
+              "docComment": "/**\n * Argument: i32 int32_t. A command to set rw_i32. Returns the value.\n * ```\n * const [i32] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23946,7 +24092,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CString:member",
-              "docComment": "/**\n * Argument: string string (bytes). A command to set rw_string. Returns the value.\n */\n",
+              "docComment": "/**\n * Argument: string string (bytes). A command to set rw_string. Returns the value.\n * ```\n * const [string] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -23967,7 +24113,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CU32:member",
-              "docComment": "/**\n * Argument: u32 uint32_t. A command to set rw_u32. Returns the value.\n */\n",
+              "docComment": "/**\n * Argument: u32 uint32_t. A command to set rw_u32. Returns the value.\n * ```\n * const [u32] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24003,7 +24149,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EBool:member",
-              "docComment": "/**\n * Argument: bool bool (uint8_t). An event raised when rw_bool is modified\n */\n",
+              "docComment": "/**\n * Argument: bool bool (uint8_t). An event raised when rw_bool is modified\n * ```\n * const [bool] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24024,7 +24170,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EBytes:member",
-              "docComment": "/**\n * Argument: bytes bytes. An event raised when rw_bytes is modified\n */\n",
+              "docComment": "/**\n * Argument: bytes bytes. An event raised when rw_bytes is modified\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24045,7 +24191,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EI32:member",
-              "docComment": "/**\n * Argument: i32 int32_t. An event raised when rw_i32 is modified\n */\n",
+              "docComment": "/**\n * Argument: i32 int32_t. An event raised when rw_i32 is modified\n * ```\n * const [i32] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24066,7 +24212,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EString:member",
-              "docComment": "/**\n * Argument: string string (bytes). An event raised when rw_string is modified\n */\n",
+              "docComment": "/**\n * Argument: string string (bytes). An event raised when rw_string is modified\n * ```\n * const [string] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24087,7 +24233,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EU32:member",
-              "docComment": "/**\n * Argument: u32 uint32_t. An event raised when rw_u32 is modified\n */\n",
+              "docComment": "/**\n * Argument: u32 uint32_t. An event raised when rw_u32 is modified\n * ```\n * const [u32] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24123,7 +24269,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoBool:member",
-              "docComment": "/**\n * Read-only bool (uint8_t). A read only bool register. Mirrors rw_bool.\n */\n",
+              "docComment": "/**\n * Read-only bool (uint8_t). A read only bool register. Mirrors rw_bool.\n * ```\n * const [roBool] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24144,7 +24290,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoBytes:member",
-              "docComment": "/**\n * Read-only bytes. A read only string register. Mirrors ro_bytes.\n */\n",
+              "docComment": "/**\n * Read-only bytes. A read only string register. Mirrors ro_bytes.\n * ```\n * const [roBytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24165,7 +24311,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoI32:member",
-              "docComment": "/**\n * Read-only int32_t. A read only i32 register.. Mirrors rw_i32.\n */\n",
+              "docComment": "/**\n * Read-only int32_t. A read only i32 register.. Mirrors rw_i32.\n * ```\n * const [roI32] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24186,7 +24332,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoString:member",
-              "docComment": "/**\n * Read-only string (bytes). A read only string register. Mirrors rw_string.\n */\n",
+              "docComment": "/**\n * Read-only string (bytes). A read only string register. Mirrors rw_string.\n * ```\n * const [roString] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24207,7 +24353,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoU32:member",
-              "docComment": "/**\n * Read-only uint32_t. A read only u32 register.. Mirrors rw_u32.\n */\n",
+              "docComment": "/**\n * Read-only uint32_t. A read only u32 register.. Mirrors rw_u32.\n * ```\n * const [roU32] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24228,7 +24374,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RwBool:member",
-              "docComment": "/**\n * Read-write bool (uint8_t). A read write bool register.\n */\n",
+              "docComment": "/**\n * Read-write bool (uint8_t). A read write bool register.\n * ```\n * const [rwBool] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24249,7 +24395,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RwBytes:member",
-              "docComment": "/**\n * Read-write bytes. A read write string register.\n */\n",
+              "docComment": "/**\n * Read-write bytes. A read write string register.\n * ```\n * const [rwBytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24270,7 +24416,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RwI32:member",
-              "docComment": "/**\n * Read-write int32_t. A read write i32 register.\n */\n",
+              "docComment": "/**\n * Read-write int32_t. A read write i32 register.\n * ```\n * const [rwI32] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24291,7 +24437,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RwString:member",
-              "docComment": "/**\n * Read-write string (bytes). A read write string register.\n */\n",
+              "docComment": "/**\n * Read-write string (bytes). A read write string register.\n * ```\n * const [rwString] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24312,7 +24458,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RwU32:member",
-              "docComment": "/**\n * Read-write uint32_t. A read write u32 register.\n */\n",
+              "docComment": "/**\n * Read-write uint32_t. A read write u32 register.\n * ```\n * const [rwU32] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24325,147 +24471,6 @@
               ],
               "releaseTag": "Public",
               "name": "RwU32",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!PwmLightReg:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum PwmLightReg "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "PwmLightReg",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!PwmLightReg.Brightness:member",
-              "docComment": "/**\n * Read-write ratio uint16_t. Set the luminosity of the strip. The value is used to scale `start_intensity` in `steps` register. At `0` the power to the strip is completely shut down.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Brightness = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "1"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Brightness",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!PwmLightReg.CurrentIteration:member",
-              "docComment": "/**\n * Read-write uint16_t. Currently excecuting iteration of animation. Can be set to `0` to restart current animation. If `current_iteration > max_iterations`, then no animation is currently running.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "CurrentIteration = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "128"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "CurrentIteration",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!PwmLightReg.MaxIterations:member",
-              "docComment": "/**\n * Read-write uint16_t. The animation will be repeated `max_iterations + 1` times.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "MaxIterations = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "129"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "MaxIterations",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!PwmLightReg.MaxPower:member",
-              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the light-strip (and controller).\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "MaxPower = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "7"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "MaxPower",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!PwmLightReg.MaxSteps:member",
-              "docComment": "/**\n * Constant uint8_t. Maximum number of steps allowed in animation definition. This determines the size of the `steps` register.\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "MaxSteps = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "384"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "MaxSteps",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!PwmLightReg.Steps:member",
-              "docComment": "/**\n * The steps of current animation. Setting this also sets `current_iteration` to `0`. Step with `duration == 0` is treated as an end marker.\n * ```\n * const [rest] = jdunpack<[([number, number])[]]>(buf, \"r: u16 u16\")\n * const [startIntensity, duration] = rest[0]\n * ```\n *\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Steps = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "130"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Steps",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -25382,6 +25387,23 @@
         },
         {
           "kind": "Variable",
+          "canonicalReference": "jacdac-ts!REPORT_NODE_NAME:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "REPORT_NODE_NAME = \"report\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "REPORT_NODE_NAME",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
           "canonicalReference": "jacdac-ts!REPORT_RECEIVE:var",
           "docComment": "",
           "excerptTokens": [
@@ -25722,7 +25744,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.GetRole:member",
-              "docComment": "/**\n * Argument: device_id devid (uint64_t). Get the role corresponding to given device identifer. Returns empty string if unset.\n */\n",
+              "docComment": "/**\n * Argument: device_id devid (uint64_t). Get the role corresponding to given device identifer. Returns empty string if unset.\n * ```\n * const [deviceId] = jdunpack<[UInt8Array]>(buf, \"b[8]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25743,7 +25765,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.ListRequiredRoles:member",
-              "docComment": "/**\n * Argument: required_roles pipe (bytes). List all roles required by the current program. `device_id` is `0` if role is unbound.\n */\n",
+              "docComment": "/**\n * Argument: required_roles pipe (bytes). List all roles required by the current program. `device_id` is `0` if role is unbound.\n * ```\n * const [requiredRoles] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25764,7 +25786,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.ListStoredRoles:member",
-              "docComment": "/**\n * Argument: stored_roles pipe (bytes). Return all roles stored internally.\n */\n",
+              "docComment": "/**\n * Argument: stored_roles pipe (bytes). Return all roles stored internally.\n * ```\n * const [storedRoles] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25857,7 +25879,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerReg.AllRolesAllocated:member",
-              "docComment": "/**\n * Read-only bool (uint8_t). Indicates if all required roles have been allocated to devices.\n */\n",
+              "docComment": "/**\n * Read-only bool (uint8_t). Indicates if all required roles have been allocated to devices.\n * ```\n * const [allRolesAllocated] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25893,7 +25915,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RotaryEncoderReg.ClicksPerTurn:member",
-              "docComment": "/**\n * Constant # uint16_t. This specifies by how much `position` changes when the crank does 360 degree turn. Typically 12 or 24.\n */\n",
+              "docComment": "/**\n * Constant # uint16_t. This specifies by how much `position` changes when the crank does 360 degree turn. Typically 12 or 24.\n * ```\n * const [clicksPerTurn] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25914,7 +25936,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RotaryEncoderReg.Position:member",
-              "docComment": "/**\n * Read-only # int32_t. Upon device reset starts at `0` (regardless of the shaft position). Increases by `1` for a clockwise \"click\", by `-1` for counter-clockwise.\n */\n",
+              "docComment": "/**\n * Read-only # int32_t. Upon device reset starts at `0` (regardless of the shaft position). Increases by `1` for a clockwise \"click\", by `-1` for counter-clockwise.\n * ```\n * const [position] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26658,7 +26680,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.CurrentSample:member",
-              "docComment": "/**\n * Read-only bytes. Last collected sample.\n */\n",
+              "docComment": "/**\n * Read-only bytes. Last collected sample.\n * ```\n * const [currentSample] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26700,7 +26722,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.NumSamples:member",
-              "docComment": "/**\n * Read-only uint32_t. Number of input samples collected so far.\n */\n",
+              "docComment": "/**\n * Read-only uint32_t. Number of input samples collected so far.\n * ```\n * const [numSamples] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26721,7 +26743,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.SampleSize:member",
-              "docComment": "/**\n * Read-only B uint8_t. Size of a single sample.\n */\n",
+              "docComment": "/**\n * Read-only B uint8_t. Size of a single sample.\n * ```\n * const [sampleSize] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26742,7 +26764,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.StreamingSamples:member",
-              "docComment": "/**\n * Read-write uint32_t. When set to `N`, will stream `N` samples as `current_sample` reading.\n */\n",
+              "docComment": "/**\n * Read-write uint32_t. When set to `N`, will stream `N` samples as `current_sample` reading.\n * ```\n * const [streamingSamples] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26987,7 +27009,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorReg.StreamingInterval:member",
-              "docComment": "/**\n * Read-write ms uint32_t. Period between packets of data when streaming in milliseconds.\n */\n",
+              "docComment": "/**\n * Read-write ms uint32_t. Period between packets of data when streaming in milliseconds.\n * ```\n * const [streamingInterval] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27008,7 +27030,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorReg.StreamingPreferredInterval:member",
-              "docComment": "/**\n * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.\n */\n",
+              "docComment": "/**\n * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.\n * ```\n * const [streamingPreferredInterval] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27029,7 +27051,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorReg.StreamingSamples:member",
-              "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n */\n",
+              "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n * ```\n * const [streamingSamples] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27372,7 +27394,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ServoReg.Enabled:member",
-              "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the servo on/off.\n */\n",
+              "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the servo on/off.\n * ```\n * const [enabled] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27393,7 +27415,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ServoReg.Pulse:member",
-              "docComment": "/**\n * Read-write μs uint32_t. Specifies length of the pulse in microseconds. The period is always 20ms.\n */\n",
+              "docComment": "/**\n * Read-write μs uint32_t. Specifies length of the pulse in microseconds. The period is always 20ms.\n * ```\n * const [pulse] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27619,7 +27641,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.Delete:member",
-              "docComment": "/**\n * Argument: key string (bytes). Delete a given setting.\n */\n",
+              "docComment": "/**\n * Argument: key string (bytes). Delete a given setting.\n * ```\n * const [key] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27640,7 +27662,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.Get:member",
-              "docComment": "/**\n * Argument: key string (bytes). Get the value of given setting. If no such entry exists, the value returned is empty.\n */\n",
+              "docComment": "/**\n * Argument: key string (bytes). Get the value of given setting. If no such entry exists, the value returned is empty.\n * ```\n * const [key] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27661,7 +27683,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.List:member",
-              "docComment": "/**\n * Argument: results pipe (bytes). Return keys and values of all settings.\n */\n",
+              "docComment": "/**\n * Argument: results pipe (bytes). Return keys and values of all settings.\n * ```\n * const [results] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27682,7 +27704,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.ListKeys:member",
-              "docComment": "/**\n * Argument: results pipe (bytes). Return keys of all settings.\n */\n",
+              "docComment": "/**\n * Argument: results pipe (bytes). Return keys of all settings.\n * ```\n * const [results] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27927,7 +27949,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SliderReg.Position:member",
-              "docComment": "/**\n * Read-only ratio uint16_t. The relative position of the slider between `0x0000` and `0xffff`.\n */\n",
+              "docComment": "/**\n * Read-only ratio uint16_t. The relative position of the slider between `0x0000` and `0xffff`.\n * ```\n * const [position] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -28309,6 +28331,23 @@
         },
         {
           "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_MONO_LIGHT:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_MONO_LIGHT = 531985491"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_MONO_LIGHT",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_MOTOR:var",
           "docComment": "",
           "excerptTokens": [
@@ -28387,23 +28426,6 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_PROTO_TEST",
-          "variableTypeTokenRange": {
-            "startIndex": 0,
-            "endIndex": 0
-          }
-        },
-        {
-          "kind": "Variable",
-          "canonicalReference": "jacdac-ts!SRV_PWM_LIGHT:var",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "SRV_PWM_LIGHT = 531985491"
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "SRV_PWM_LIGHT",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -28531,7 +28553,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_THERMOMETER:var",
-          "docComment": "",
+          "docComment": "/**\n * pipe_report Indata\n * ```\n * const [data] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -29081,7 +29103,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.HighThreshold:member",
-              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n */\n",
+              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n * ```\n * const [highThreshold] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29102,7 +29124,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.Intensity:member",
-              "docComment": "/**\n * Read-write uint32_t. This is either binary on/off (0 or non-zero), or can be gradual (eg. brightness of an RGB LED strip).\n */\n",
+              "docComment": "/**\n * Read-write uint32_t. This is either binary on/off (0 or non-zero), or can be gradual (eg. brightness of an RGB LED strip).\n * ```\n * const [intensity] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29123,7 +29145,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.LowThreshold:member",
-              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n */\n",
+              "docComment": "/**\n * Read-write int32_t. Thresholds for event generation for event generation for analog sensors.\n * ```\n * const [lowThreshold] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29144,7 +29166,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.MaxPower:member",
-              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the service, in mA.\n */\n",
+              "docComment": "/**\n * Read-write mA uint16_t. Limit the power drawn by the service, in mA.\n * ```\n * const [maxPower] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29165,7 +29187,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.Reading:member",
-              "docComment": "/**\n * Read-only int32_t. Read-only value of the sensor, also reported in streaming.\n */\n",
+              "docComment": "/**\n * Read-only int32_t. Read-only value of the sensor, also reported in streaming.\n * ```\n * const [reading] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29207,7 +29229,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.StreamingInterval:member",
-              "docComment": "/**\n * Read-write ms uint32_t. Period between packets of data when streaming in milliseconds.\n */\n",
+              "docComment": "/**\n * Read-write ms uint32_t. Period between packets of data when streaming in milliseconds.\n * ```\n * const [streamingInterval] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29228,7 +29250,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.StreamingPreferredInterval:member",
-              "docComment": "/**\n * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.\n */\n",
+              "docComment": "/**\n * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.\n * ```\n * const [streamingPreferredInterval] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29249,7 +29271,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.StreamingSamples:member",
-              "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n */\n",
+              "docComment": "/**\n * Read-write uint8_t. Asks device to stream a given number of samples (clients will typically write `255` to this register every second or so, while streaming is required).\n * ```\n * const [streamingSamples] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29270,7 +29292,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.Value:member",
-              "docComment": "/**\n * Read-write int32_t. The primary value of actuator (eg. servo pulse length, or motor duty cycle).\n */\n",
+              "docComment": "/**\n * Read-write int32_t. The primary value of actuator (eg. servo pulse length, or motor duty cycle).\n * ```\n * const [value] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29306,7 +29328,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!TcpCmd.Open:member",
-              "docComment": "/**\n * Argument: inbound pipe (bytes). Open pair of pipes between network peripheral and a controlling device. In/outbound refers to direction from/to internet.\n */\n",
+              "docComment": "/**\n * Argument: inbound pipe (bytes). Open pair of pipes between network peripheral and a controlling device. In/outbound refers to direction from/to internet.\n * ```\n * const [inbound] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29342,7 +29364,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!TcpPipeCmd.Error:member",
-              "docComment": "/**\n * Argument: error TcpError (int32_t). Reported when an error is encountered. Negative error codes come directly from the SSL implementation.\n */\n",
+              "docComment": "/**\n * Argument: error TcpError (int32_t). Reported when an error is encountered. Negative error codes come directly from the SSL implementation.\n * ```\n * const [error] = jdunpack<[TcpTcpError]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29602,7 +29624,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ThermometerReg.Temperature:member",
-              "docComment": "/**\n * Read-only °C u22.10 (uint32_t). The temperature.\n */\n",
+              "docComment": "/**\n * Read-only °C u22.10 (uint32_t). The temperature.\n * ```\n * const [temperature] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -31048,80 +31070,6 @@
         },
         {
           "kind": "Function",
-          "canonicalReference": "jacdac-ts!unpack:function(1)",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function unpack(buf: "
-            },
-            {
-              "kind": "Reference",
-              "text": "Uint8Array",
-              "canonicalReference": "!Uint8Array:interface"
-            },
-            {
-              "kind": "Content",
-              "text": ", format: "
-            },
-            {
-              "kind": "Content",
-              "text": "string"
-            },
-            {
-              "kind": "Content",
-              "text": ", offset?: "
-            },
-            {
-              "kind": "Content",
-              "text": "number"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Content",
-              "text": "number[]"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 7,
-            "endIndex": 8
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "buf",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "parameterName": "format",
-              "parameterTypeTokenRange": {
-                "startIndex": 3,
-                "endIndex": 4
-              }
-            },
-            {
-              "parameterName": "offset",
-              "parameterTypeTokenRange": {
-                "startIndex": 5,
-                "endIndex": 6
-              }
-            }
-          ],
-          "name": "unpack"
-        },
-        {
-          "kind": "Function",
           "canonicalReference": "jacdac-ts!unpackNumberArray:function(1)",
           "docComment": "/**\n * Unpacks a buffer into a number array.\n */\n",
           "excerptTokens": [
@@ -31507,6 +31455,23 @@
             }
           ],
           "name": "valueToFlags"
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!VIRTUAL_DEVICE_NODE_NAME:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "VIRTUAL_DEVICE_NODE_NAME = \"virtualdevice\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "VIRTUAL_DEVICE_NODE_NAME",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
         },
         {
           "kind": "Function",
@@ -31938,7 +31903,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!WifiCmd.Scan:member",
-              "docComment": "/**\n * Argument: results pipe (bytes). Initiate search for WiFi networks. Results are returned via pipe, one entry per packet.\n */\n",
+              "docComment": "/**\n * Argument: results pipe (bytes). Initiate search for WiFi networks. Results are returned via pipe, one entry per packet.\n * ```\n * const [results] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -32031,7 +31996,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!WifiReg.Connected:member",
-              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether or not we currently have an IP address assigned.\n */\n",
+              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether or not we currently have an IP address assigned.\n * ```\n * const [connected] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",

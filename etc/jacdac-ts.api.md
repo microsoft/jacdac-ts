@@ -91,9 +91,6 @@ export function bufferConcatMany(bufs: Uint8Array[]): Uint8Array;
 export function bufferEq(a: Uint8Array, b: ArrayLike<number>): boolean;
 
 // @public (undocumented)
-export function bufferOfInt(value: number): Uint8Array;
-
-// @public (undocumented)
 export function bufferToArray(data: Uint8Array, fmt: NumberFormat): number[];
 
 // @public (undocumented)
@@ -179,15 +176,6 @@ export const CLOSE = "close";
 export const CMD_ADVERTISEMENT_DATA = 0;
 
 // @public (undocumented)
-export const CMD_CONSOLE_MESSAGE_DBG = 128;
-
-// @public (undocumented)
-export const CMD_CONSOLE_REG = 128;
-
-// @public (undocumented)
-export const CMD_CONSOLE_SET_MIN_PRIORITY: number;
-
-// @public (undocumented)
 export const CMD_EVENT = 1;
 
 // @public (undocumented)
@@ -238,18 +226,7 @@ export const CONNECTING = "connecting";
 export const CONNECTION_STATE = "connectionState";
 
 // @public (undocumented)
-export enum ConsolePriority {
-    // (undocumented)
-    Debug = 0,
-    // (undocumented)
-    Error = 3,
-    // (undocumented)
-    Log = 1,
-    // (undocumented)
-    Silent = 4,
-    // (undocumented)
-    Warning = 2
-}
+export const CONST_NODE_NAME = "const";
 
 // @public (undocumented)
 export enum ControlAnnounceFlags {
@@ -259,6 +236,7 @@ export enum ControlAnnounceFlags {
 
 // @public (undocumented)
 export enum ControlCmd {
+    FloodPing = 131,
     Identify = 129,
     Noop = 128,
     Reset = 130,
@@ -712,7 +690,7 @@ export enum IotHubEvent {
     DeviceboundStr = 3
 }
 
-// @public (undocumented)
+// @public
 export enum IotHubPipeCmd {
     DeviceboundProperties = 1,
     MethodCall = 1,
@@ -861,8 +839,8 @@ export class JDBus extends JDNode {
     // (undocumented)
     protected get logger(): Log;
     // (undocumented)
-    get minConsolePriority(): ConsolePriority;
-    set minConsolePriority(priority: ConsolePriority);
+    get minLoggerPriority(): LoggerPriority;
+    set minLoggerPriority(priority: LoggerPriority);
     // (undocumented)
     get name(): string;
     // (undocumented)
@@ -948,6 +926,7 @@ export class JDDevice extends JDNode {
     get nodeKind(): string;
     // (undocumented)
     get parent(): JDNode;
+    get physical(): boolean;
     // (undocumented)
     port(id: number): PipeInfo;
     // (undocumented)
@@ -956,6 +935,7 @@ export class JDDevice extends JDNode {
     processPacket(pkt: Packet): void;
     // (undocumented)
     get qualifiedName(): string;
+    get replay(): boolean;
     // (undocumented)
     reset(): Promise<void>;
     // (undocumented)
@@ -982,9 +962,8 @@ export class JDDevice extends JDNode {
     servicesData: Uint8Array;
     // (undocumented)
     get shortId(): string;
-    // (undocumented)
-    source: string;
-}
+    get source(): string;
+    }
 
 // @public (undocumented)
 export class JDEvent extends JDServiceMemberNode {
@@ -1129,6 +1108,8 @@ export class JDRegister extends JDServiceMemberNode {
     sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void>;
     // (undocumented)
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void>;
+    // (undocumented)
+    sendSetPackedAsync<T extends any[]>(fmt: string, values: any[], autoRefresh?: boolean): Promise<void>;
     // (undocumented)
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void>;
     // (undocumented)
@@ -1341,6 +1322,8 @@ export enum LoggerPriority {
     // (undocumented)
     Log = 1,
     // (undocumented)
+    Silent = 4,
+    // (undocumented)
     Warning = 2
 }
 
@@ -1412,6 +1395,16 @@ export enum ModelRunnerReg {
     Outputs = 257,
     OutputShape = 385,
     Parallel = 392
+}
+
+// @public (undocumented)
+export enum MonoLightReg {
+    Brightness = 1,
+    CurrentIteration = 128,
+    MaxIterations = 129,
+    MaxPower = 7,
+    MaxSteps = 384,
+    Steps = 130
 }
 
 // @public (undocumented)
@@ -1544,13 +1537,7 @@ export interface Observer<T> {
 }
 
 // @public (undocumented)
-export function pack(format: string, nums: number[]): Uint8Array;
-
-// @public (undocumented)
 export function packArguments(info: jdspec.PacketInfo, args: ArgType[]): Packet;
-
-// @public (undocumented)
-export function packedSize(format: string): number;
 
 // @public (undocumented)
 export class Packet {
@@ -1606,15 +1593,19 @@ export class Packet {
     // (undocumented)
     get isRepeatedAnnounce(): boolean;
     // (undocumented)
+    static jdpacked<T extends any[]>(service_command: number, fmt: string, nums: T): Packet;
+    // (undocumented)
+    jdunpack<T extends any[]>(fmt: string): T;
+    // (undocumented)
     readonly key: number;
     // (undocumented)
     get multicommand_class(): number;
     // (undocumented)
     static onlyHeader(service_command: number): Packet;
     // (undocumented)
-    static packed(service_command: number, fmt: string, nums: number[]): Packet;
-    // (undocumented)
     static patchBinary(buf: Uint8Array): Uint8Array;
+    // (undocumented)
+    replay?: boolean;
     // (undocumented)
     get requires_ack(): boolean;
     set requires_ack(ack: boolean);
@@ -1650,8 +1641,6 @@ export class Packet {
     toString(): string;
     // (undocumented)
     get uintData(): number;
-    // (undocumented)
-    unpack(fmt: string): any[];
     // (undocumented)
     withFrameStripped(): Uint8Array;
 }
@@ -1733,6 +1722,9 @@ export interface PacketFilterProps {
 }
 
 // @public (undocumented)
+export const PACKETIO_TRANSPORT = "packetio";
+
+// @public (undocumented)
 export interface PacketMessage {
     // (undocumented)
     broadcast: true;
@@ -1740,6 +1732,8 @@ export interface PacketMessage {
     channel: "jacdac";
     // (undocumented)
     data: Uint8Array;
+    // (undocumented)
+    sender?: string;
     // (undocumented)
     type: "messagepacket";
 }
@@ -1907,16 +1901,6 @@ export enum ProtoTestReg {
 }
 
 // @public (undocumented)
-export enum PwmLightReg {
-    Brightness = 1,
-    CurrentIteration = 128,
-    MaxIterations = 129,
-    MaxPower = 7,
-    MaxSteps = 384,
-    Steps = 130
-}
-
-// @public (undocumented)
 export function randomUInt(max: number): number;
 
 // @public (undocumented)
@@ -1990,6 +1974,9 @@ export const REMOVE_LISTENER = "removeListener";
 
 // @public (undocumented)
 export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void;
+
+// @public (undocumented)
+export const REPORT_NODE_NAME = "report";
 
 // @public (undocumented)
 export const REPORT_RECEIVE = "reportReceive";
@@ -2252,6 +2239,9 @@ export const SRV_MICROPHONE = 289254534;
 export const SRV_MODEL_RUNNER = 336566904;
 
 // @public (undocumented)
+export const SRV_MONO_LIGHT = 531985491;
+
+// @public (undocumented)
 export const SRV_MOTOR = 385895640;
 
 // @public (undocumented)
@@ -2265,9 +2255,6 @@ export const SRV_POWER = 530893146;
 
 // @public (undocumented)
 export const SRV_PROTO_TEST = 382158442;
-
-// @public (undocumented)
-export const SRV_PWM_LIGHT = 531985491;
 
 // @public (undocumented)
 export const SRV_ROLE_MANAGER = 295451345;
@@ -2290,7 +2277,7 @@ export const SRV_SLIDER = 522667846;
 // @public (undocumented)
 export const SRV_TCP = 457422603;
 
-// @public (undocumented)
+// @public
 export const SRV_THERMOMETER = 337754823;
 
 // @public (undocumented)
@@ -2482,9 +2469,6 @@ export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted
 // @public (undocumented)
 export function uniqueName(names: string[], name: string): string;
 
-// @public (undocumented)
-export function unpack(buf: Uint8Array, format: string, offset?: number): number[];
-
 // @public
 export function unpackNumberArray(buf: Uint8Array, offset?: number): number[];
 
@@ -2508,6 +2492,9 @@ export interface USBOptions {
 
 // @public (undocumented)
 export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number): any[];
+
+// @public (undocumented)
+export const VIRTUAL_DEVICE_NODE_NAME = "virtualdevice";
 
 // @public (undocumented)
 export function visitNodes(node: JDNode, vis: (node: JDNode) => void): void;
