@@ -289,7 +289,7 @@ export class JDBus extends JDNode {
 
     private async pingLoggers() {
         if (this._minLoggerPriority < LoggerPriority.Silent) {
-            const pkt = Packet.jdpacked<[LoggerPriority]>(0x2000 | LoggerReg.MinPriority, "i8", [this._minLoggerPriority]);
+            const pkt = Packet.jdpacked<[LoggerPriority]>(0x2000 | LoggerReg.MinPriority, "i32", [this._minLoggerPriority]);
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
