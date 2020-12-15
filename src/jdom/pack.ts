@@ -212,7 +212,15 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 }
 
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
-    if (!buf) return undefined;
+    if (!buf || !fmt) 
+        return [] as T;
+
+    // shortcut
+    const storage = numberFormatOfType(fmt);
+    if (storage)
+        return [getNumber(buf, storage, 0)] as T;
+
+    // full parser
     return jdunpackCore(buf, fmt, 0) as T
 }
 
@@ -292,7 +300,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     return off
 }
 
-export function jdpack<T extends any[]>(fmt: string, data: T) {
+export function jdpack<T extends any[]>(fmt: string, data: T): Uint8Array {
     const len = jdpackCore(null, fmt, data, 0)
     const res = new Uint8Array(len)
     jdpackCore(res, fmt, data, 0)
@@ -310,7 +318,7 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
 }
 
 /*
-import { bufferEq, toHex } from "./utils"
+import { toHex } from "./utils"
 export function jdpackTest() {
     function testOne(fmt: string, data0: any[]) {
         function checksame(a: any, b: any) {
@@ -341,6 +349,9 @@ export function jdpackTest() {
         checksame(data0, data1)
     }
 
+    testOne("u16", [42])
+    testOne("u8", [42])
+    testOne("u32", [42])
     testOne("u16 u16 i16", [42, 77, -10])
     testOne("u16 z s", [42, "foo", "bar"])
     testOne("u32 z s", [42, "foo", "bar"])
