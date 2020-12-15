@@ -61,7 +61,7 @@ export class JDDevice extends JDNode {
     get physical() {
         return this._source === USB_TRANSPORT || this._source === PACKETIO_TRANSPORT;
     }
-    
+
     /**
      * Indicates the source of packets
      */
