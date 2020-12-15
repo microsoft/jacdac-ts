@@ -218,8 +218,8 @@ export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
     const nf = numberFormatOfType(fmt);
     if (nf !== null) {
         const sz = sizeOfNumberFormat(nf);
-        if (buf.length != sz)
-            throw new Error("size mistmatch");
+        if (buf.length < sz)
+            throw new Error(`size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`);
         return [getNumber(buf, nf, 0)] as T;
     }
     // slow path
@@ -303,7 +303,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 }
 
 export function jdpack<T extends any[]>(fmt: string, data: T) {
-    if (!fmt || data === undefined)
+    if (!fmt || !data)
         return undefined;
     // hot path
     const nf = numberFormatOfType(fmt);
