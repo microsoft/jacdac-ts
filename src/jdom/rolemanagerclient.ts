@@ -100,7 +100,7 @@ export class RoleManagerClient extends JDServiceClient {
         const devs: RemoteRequestedDevice[] = []
 
         for (const buf of await inp.readData()) {
-            const [devidbuf, service_class] = jdunpack<[Uint8Array, number]>(buf, "b[8] i32")
+            const [devidbuf, service_class] = jdunpack<[Uint8Array, number]>(buf, "b[8] u32")
             const devid = toHex(devidbuf);
             const name = fromUTF8(uint8ArrayToString(buf.slice(12)))
             const r = addRequested(devs, name, service_class, this)
