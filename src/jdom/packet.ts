@@ -20,11 +20,10 @@ import {
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
-import { pack } from "./struct";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
-import { jdunpack } from "./pack";
+import { jdpack, jdunpack } from "./pack";
 
 export class Packet {
     private _header: Uint8Array;
@@ -183,8 +182,8 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    unpack(fmt: string): any[] {
-        return (this._data && fmt && jdunpack(this._data, fmt)) || [];
+    jdunpack<T extends any[]>(fmt: string): T {
+        return (this._data && fmt && jdunpack<T>(this._data, fmt)) || [] as T;
     }
 
     get uintData() {
@@ -324,8 +323,8 @@ export class Packet {
         return frameToPackets(frame, timestamp)
     }
 
-    static packed(service_command: number, fmt: string, nums: number[]) {
-        return Packet.from(service_command, pack(fmt, nums))
+    static jdpacked<T extends any[]>(service_command: number, fmt: string, nums: T) {
+        return Packet.from(service_command, jdpack<T>(fmt, nums))
     }
 
     // helpers

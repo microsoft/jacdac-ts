@@ -5,8 +5,8 @@ import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
 import { SRV_ROLE_MANAGER, DEVICE_CONNECT, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
-import { unpack } from "./struct";
 import Packet from "./packet";
+import { jdunpack } from "./pack";
 
 export class RemoteRequestedDevice {
     services: number[] = [];
@@ -100,8 +100,8 @@ export class RoleManagerClient extends JDServiceClient {
         const devs: RemoteRequestedDevice[] = []
 
         for (const buf of await inp.readData()) {
-            const devid = toHex(buf.slice(0, 8))
-            const [service_class] = unpack(buf, "I", 8)
+            const [devidbuf, service_class] = jdunpack<[Uint8Array, number]>(buf, "b[8] u32")
+            const devid = toHex(devidbuf);
             const name = fromUTF8(uint8ArrayToString(buf.slice(12)))
             const r = addRequested(devs, name, service_class, this)
             const dev = localDevs.find(d => d.deviceId == devid)

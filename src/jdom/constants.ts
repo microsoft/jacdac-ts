@@ -23,10 +23,6 @@ export const CMD_ADVERTISEMENT_DATA = 0x00
 // event from sensor or on broadcast service
 export const CMD_EVENT = 0x01
 
-export const CMD_CONSOLE_REG = 0x80
-export const CMD_CONSOLE_MESSAGE_DBG = 0x80
-export const CMD_CONSOLE_SET_MIN_PRIORITY = 0x2000 | CMD_CONSOLE_REG
-
 export const PIPE_PORT_SHIFT = 7
 export const PIPE_COUNTER_MASK = 0x001f
 export const PIPE_CLOSE_MASK = 0x0020
@@ -56,14 +52,6 @@ export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 0x00000100
 export const JD_DEVICE_LOST_DELAY = 1500
 // time without seeing a packet to be considered "disconnected"
 export const JD_DEVICE_DISCONNECTED_DELAY = 5000
-
-export enum ConsolePriority {
-    Debug = 0,
-    Log = 1,
-    Warning = 2,
-    Error = 3,
-    Silent = 4
-}
 
 export const SRV_CTRL = 0;
 

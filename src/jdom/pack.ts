@@ -212,15 +212,17 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 }
 
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
-    if (!buf || !fmt)
-        return [] as T;
+    if (!buf || !fmt) return undefined;
 
-    // shortcut
-    const storage = numberFormatOfType(fmt);
-    if (storage)
-        return [getNumber(buf, storage, 0)] as T;
-
-    // full parser
+    // hot path
+    const nf = numberFormatOfType(fmt);
+    if (nf !== null) {
+        const sz = sizeOfNumberFormat(nf);
+        if (buf.length < sz)
+            throw new Error(`size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`);
+        return [getNumber(buf, nf, 0)] as T;
+    }
+    // slow path
     return jdunpackCore(buf, fmt, 0) as T
 }
 
@@ -300,7 +302,17 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     return off
 }
 
-export function jdpack<T extends any[]>(fmt: string, data: T): Uint8Array {
+export function jdpack<T extends any[]>(fmt: string, data: T) {
+    if (!fmt || !data)
+        return undefined;
+    // hot path
+    const nf = numberFormatOfType(fmt);
+    if (nf !== null) {
+        const buf = new Uint8Array(sizeOfNumberFormat(nf));
+        setNumber(buf, nf, 0, data[0]);
+        return buf;
+    }
+    // slow path
     const len = jdpackCore(null, fmt, data, 0)
     const res = new Uint8Array(len)
     jdpackCore(res, fmt, data, 0)
@@ -316,6 +328,7 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
     const rightBuffer = jdpack<T>(fmt, right);
     return bufferEq(leftBuffer, rightBuffer);
 }
+
 
 /*
 import { toHex } from "./utils"

@@ -3,8 +3,8 @@ import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_INDEX_P
 import Packet from "./packet"
 import { JDBus } from "./bus"
 import { randomUInt, signal, fromHex, throwError, warn } from "./utils"
-import { pack } from "./struct"
 import { JDClient } from "./client"
+import { jdpack } from "./pack"
 
 export class OutPipe {
     private count = 0
@@ -80,8 +80,7 @@ export class InPipe extends JDClient {
     openCommand(cmd: number) {
         if (!this.isOpen)
             throwError("trying to access a closed pipe")
-        const b = pack("IIHH", [0, 0, this._port, 0])
-        b.set(fromHex(this.bus.selfDeviceId), 0)
+        const b = jdpack<[Uint8Array, number, number]>("b[8] u16 u16", [fromHex(this.bus.selfDeviceId), this._port, 0])
         return Packet.from(cmd, b)
     }
 

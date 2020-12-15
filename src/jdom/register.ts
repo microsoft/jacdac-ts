@@ -7,13 +7,12 @@ import {
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
 import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
-import { bufferOfInt } from "./struct";
 import { DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
 import { JDNode } from "./node";
-import { jdunpack } from "./pack";
+import { jdpack, jdunpack } from "./pack";
 
 
 export class JDRegister extends JDServiceMemberNode {
@@ -78,16 +77,20 @@ export class JDRegister extends JDServiceMemberNode {
             .then(() => { this.emit(GET_ATTEMPT) });
     }
 
+    sendSetPackedAsync<T extends any[]>(fmt: string, values: any[], autoRefresh?: boolean): Promise<void> {
+        return this.sendSetAsync(jdpack(fmt, values), autoRefresh)
+    }
+
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetAsync(bufferOfInt(value | 0), autoRefresh)
+        return this.sendSetPackedAsync("i32", [value >> 0], autoRefresh)
     }
 
     sendSetBoolAsync(value: boolean, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetIntAsync(value ? 1 : 0, autoRefresh)
+        return this.sendSetPackedAsync("u8", [value ? 1 : 0], autoRefresh)
     }
 
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void> {
-        return this.sendSetAsync(stringToUint8Array(toUTF8(value || "")), autoRefresh)
+        return this.sendSetPackedAsync("s", [value || ""], autoRefresh)
     }
 
     get isReading() {

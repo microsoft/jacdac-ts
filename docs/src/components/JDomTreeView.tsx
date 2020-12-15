@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import clsx from 'clsx';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, createStyles } from '@material-ui/core/styles';
@@ -183,18 +184,22 @@ export interface JDomTreeViewProps extends StyledTreeViewProps {
     eventFilter?: (event: JDEvent) => boolean;
 }
 
-const useStyles = makeStyles(
+const useStyles = makeStyles(theme =>
     createStyles({
         root: {
             flexGrow: 1,
         },
+        margins: {
+            marginLeft: theme.spacing(0.5),
+            marginRight: theme.spacing(0.5)
+        }
     }),
 );
 
 export default function JDomTreeView(props: JDomTreeViewProps) {
     const {
         defaultExpanded, defaultSelected, defaultChecked,
-        onChecked, onToggle, onSelect, checkboxes, deviceFilter, ...other } = props;
+        onChecked, onToggle, onSelect, checkboxes, dashboard, deviceFilter, ...other } = props;
     const classes = useStyles();
     const [expanded, setExpanded] = useState<string[]>(defaultExpanded || []);
     const [selected, setSelected] = useState<string[]>(defaultSelected || []);
@@ -225,7 +230,7 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
     return (<>
         <ConnectAlert />
         <TreeView
-            className={classes.root}
+            className={clsx(classes.root, classes.margins)}
             defaultCollapseIcon={<ArrowDropDownIcon />}
             defaultExpandIcon={<ArrowRightIcon />}
             defaultEndIcon={<div style={{ width: 12 }} />}
@@ -234,16 +239,16 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             onNodeToggle={handleToggle}
             onNodeSelect={handleSelect}
         >
-            {devices?.map(device => <DeviceTreeItem
-                key={device.id}
-                device={device}
-                checked={checked}
-                setChecked={handleChecked}
-                checkboxes={checkboxes}
-                expanded={expanded}
-                selected={selected}
-                {...other}
-            />)}
-        </TreeView>
+        {devices?.map(device => <DeviceTreeItem
+            key={device.id}
+            device={device}
+            checked={checked}
+            setChecked={handleChecked}
+            checkboxes={checkboxes}
+            expanded={expanded}
+            selected={selected}
+            {...other}
+        />)}
+    </TreeView>
     </>);
 }

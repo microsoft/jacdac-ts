@@ -7,5 +7,5 @@ export function calibrateAsync(service: JDService) {
 
 export function setThresholdAsync(service: JDService, low: boolean, value: number) {
     const register = service.register(low ? SystemReg.LowThreshold : SystemReg.HighThreshold)
-    return register?.sendSetIntAsync(value) || Promise.resolve()
+    return register?.sendSetPackedAsync("i32", [value]) || Promise.resolve()
 }
