@@ -212,7 +212,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 }
 
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
-    if (!buf || !fmt) 
+    if (!buf || !fmt)
         return [] as T;
 
     // shortcut
