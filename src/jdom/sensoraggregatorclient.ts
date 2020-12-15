@@ -99,7 +99,7 @@ export class SensorAggregatorClient extends JDServiceClient {
 
     async collect(numSamples: number) {
         await this.service.register(SensorAggregatorReg.StreamingSamples)
-            .sendSetIntAsync(numSamples)
+            .sendSetPackedAsync("u32", [numSamples]);
     }
 
     subscribeSample(handler: (sample: number[]) => void): () => void {

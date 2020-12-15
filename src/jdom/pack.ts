@@ -212,7 +212,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 }
 
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
-    if (!buf) return undefined;
+    if (!buf || !fmt) return undefined;
 
     // hot path
     const nf = numberFormatOfType(fmt);
@@ -329,9 +329,6 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
     return bufferEq(leftBuffer, rightBuffer);
 }
 
-export function bufferOfInt(value: number) {
-    return jdpack("i32", [value | 0])
-}
 
 /*
 import { toHex } from "./utils"

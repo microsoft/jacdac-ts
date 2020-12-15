@@ -93,7 +93,7 @@ export class ModelRunnerClient extends JDServiceClient {
     }
 
     async autoInvoke(everySamples = 1) {
-        await this.service.register(ModelRunnerReg.AutoInvokeEvery).sendSetIntAsync(everySamples)
+        await this.service.register(ModelRunnerReg.AutoInvokeEvery).sendSetPackedAsync("u16", [everySamples])
     }
 
     private async getReg(id: ModelRunnerReg, f: (v: JDRegister) => any) {

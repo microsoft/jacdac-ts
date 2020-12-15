@@ -586,7 +586,7 @@ export class JDBus extends JDNode {
         this.on(SELF_ANNOUNCE, () => {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
-            const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "i32", [restartCounter | 0x100])
+            const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [restartCounter | 0x100])
             pkt.service_index = JD_SERVICE_INDEX_CTRL
             pkt.device_identifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)
@@ -639,7 +639,7 @@ export class JDBus extends JDNode {
                 // compute if half aged
                 if (age > midAge) {
                     //console.log(`auto-refresh - restream`, register)
-                    await samplesRegister.sendSetIntAsync(0xff);
+                    await samplesRegister.sendSetPackedAsync("u8", [0xff]);
                 }
             } // regular register, ping if data is old
             else {
