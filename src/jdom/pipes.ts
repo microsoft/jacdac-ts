@@ -80,8 +80,7 @@ export class InPipe extends JDClient {
     openCommand(cmd: number) {
         if (!this.isOpen)
             throwError("trying to access a closed pipe")
-        const b = jdpack("u32 u32 u16 u16", [0, 0, this._port, 0])
-        b.set(fromHex(this.bus.selfDeviceId), 0)
+        const b = jdpack<[Uint8Array, number, number]>("b[8] u16 u16", [fromHex(this.bus.selfDeviceId), this._port, 0])
         return Packet.from(cmd, b)
     }
 
