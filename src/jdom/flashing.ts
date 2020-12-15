@@ -89,7 +89,7 @@ class FlashClient {
             log(`flashing ${d.device.shortId}; available flash=${d.flashSize / 1024}kb; page=${d.pageSize}b`)
         }
 
-        const setsession = Packet.jdpacked<[number]>(BL_CMD_SET_SESSION, "i32", [this.sessionId])
+        const setsession = Packet.jdpacked<[number]>(BL_CMD_SET_SESSION, "u32", [this.sessionId])
 
         this.allPending()
 
