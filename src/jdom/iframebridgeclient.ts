@@ -49,7 +49,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             this.handleDriverMessage(data);
         }
         else {
-            console.log({ data })
+            // unknown message
+            // console.log({ data })
         }
     }
 
