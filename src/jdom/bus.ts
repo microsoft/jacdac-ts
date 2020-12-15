@@ -2,7 +2,6 @@ import Packet from "./packet";
 import { JDDevice } from "./device";
 import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
-    ConsolePriority,
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
     CMD_EVENT, DEVICE_ANNOUNCE,
@@ -49,7 +48,7 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares } from "./flashing";
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
-import { LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
+import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -113,7 +112,7 @@ export class JDBus extends JDNode {
     private _gcInterval: any;
     private _announceInterval: any;
     private _refreshRegistersInterval: any;
-    private _minConsolePriority = ConsolePriority.Log;
+    private _minLoggerPriority = LoggerPriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
     private _announcing = false;
 
@@ -269,8 +268,8 @@ export class JDBus extends JDNode {
         return Date.now() - this._startTime;
     }
 
-    get minConsolePriority(): ConsolePriority {
-        return this._minConsolePriority;
+    get minLoggerPriority(): LoggerPriority {
+        return this._minLoggerPriority;
     }
 
     get parent(): JDNode {
@@ -281,16 +280,16 @@ export class JDBus extends JDNode {
         return this.host.log
     }
 
-    set minConsolePriority(priority: ConsolePriority) {
-        if (priority !== this._minConsolePriority) {
-            this._minConsolePriority = priority;
+    set minLoggerPriority(priority: LoggerPriority) {
+        if (priority !== this._minLoggerPriority) {
+            this._minLoggerPriority = priority;
             this.emit(CHANGE)
         }
     }
 
     private async pingLoggers() {
-        if (this._minConsolePriority < ConsolePriority.Silent) {
-            const pkt = Packet.jdpacked<[ConsolePriority]>(0x2000 | LoggerReg.MinPriority, "i8", [this._minConsolePriority]);
+        if (this._minLoggerPriority < LoggerPriority.Silent) {
+            const pkt = Packet.jdpacked<[LoggerPriority]>(0x2000 | LoggerReg.MinPriority, "i8", [this._minLoggerPriority]);
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
