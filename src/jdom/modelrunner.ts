@@ -75,7 +75,7 @@ export class ModelRunnerClient extends JDServiceClient {
         progress(0)
         const resp = await this.service.sendCmdAwaitResponseAsync(Packet.jdpacked(ModelRunnerCmd.SetModel, "u32", [model.length]), 3000)
         progress(0.05)
-        const [pipePort] = jdunpack<[number]>(resp.data, "u32")
+        const [pipePort] = jdunpack<[number]>(resp.data, "u16")
         if (!pipePort)
             throw new Error("wrong port " + pipePort)
         const pipe = new OutPipe(this.service.device, pipePort)
