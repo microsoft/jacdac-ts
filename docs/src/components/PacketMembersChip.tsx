@@ -6,17 +6,17 @@ import CategoryIcon from '@material-ui/icons/Category';
 import { prettyUnit } from "../../../src/jdom/pretty";
 import { Tooltip } from "@material-ui/core";
 import { resolveUnit } from '../../../jacdac-spec/spectool/jdspec'
+import { Link } from "gatsby-theme-material-ui";
 
-export default function PacketMembersChip(props: { members: jdspec.PacketMember[], className?: string }) {
-    const { members, className } = props;
+export default function PacketMembersChip(props: { spec: jdspec.PacketInfo, members: jdspec.PacketMember[], className?: string }) {
+    const { members, className, spec } = props;
     if (!members?.length)
         return null
 
-    const label = members.map(member => `${member.type} ${prettyUnit(member.unit)}`).join(', ');
-    const title = members.map(member => `${resolveUnit(member.unit)?.name || ""}`).join(',\n');
+    const label = spec?.packFormat;
+    const title = "pack format";
     return <Tooltip title={title}>
-        <span>
-            <Chip className={className} size="small" icon={<CategoryIcon />} label={label} />
-        </span>
+        <Chip style={({ textDecoration: "none" })} href="/reference/pack-format" component="a"
+            clickable className={className} size="small" icon={<CategoryIcon />} label={label} />
     </Tooltip>
 }

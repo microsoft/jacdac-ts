@@ -303,7 +303,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 }
 
 export function jdpack<T extends any[]>(fmt: string, data: T) {
-    if (data === undefined)
+    if (!fmt || data === undefined)
         return undefined;
     // hot path
     const nf = numberFormatOfType(fmt);
@@ -334,7 +334,7 @@ export function bufferOfInt(value: number) {
 }
 
 /*
-import { bufferEq, toHex } from "./utils"
+import { toHex } from "./utils"
 export function jdpackTest() {
     function testOne(fmt: string, data0: any[]) {
         function checksame(a: any, b: any) {
@@ -365,6 +365,9 @@ export function jdpackTest() {
         checksame(data0, data1)
     }
 
+    testOne("u16", [42])
+    testOne("u8", [42])
+    testOne("u32", [42])
     testOne("u16 u16 i16", [42, 77, -10])
     testOne("u16 z s", [42, "foo", "bar"])
     testOne("u32 z s", [42, "foo", "bar"])

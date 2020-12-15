@@ -1,6 +1,6 @@
 {
   "name": "jacdac-ts",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "description": "",
   "keywords": [],
   "main": "dist/jacdac.umd.js",
@@ -96,7 +96,11 @@
         }
       ],
       [
-        "@semantic-release/github"
+        "@semantic-release/github",
+        {
+          "successComment": false,
+          "failComment": false
+        }
       ],
       [
         "@semantic-release/npm"

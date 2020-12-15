@@ -7,7 +7,7 @@ import { BusState } from "../../../src/jdom/bus";
 import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import ConnectButton from "../jacdac/ConnectButton";
-import { isWebUSBSupported } from "../../../src/jdom/usb"
+import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb"
 import { NoSsr } from '@material-ui/core';
 import useChange from "../jacdac/useChange";
 
@@ -23,17 +23,18 @@ function NoSsrConnectAlert(props: { serviceClass?: number }) {
     const { serviceClass } = props
     const devices = useChange(bus, b => b.devices({ serviceClass }))
     const spec = serviceSpecificationFromClassIdentifier(serviceClass)
-    const supported = isWebUSBSupported()
+    const webusb = isWebUSBEnabled() && isWebUSBSupported()
 
     if (!devices?.length &&
-        supported && connectionState === BusState.Disconnected)
+        webusb &&
+        connectionState === BusState.Disconnected)
         return <Box displayPrint="none">
             <Alert severity="info" closeable={true}>
                 {!spec && <span>Don't forget to connect!</span>}
                 {spec && <span>Don't forget to connect some {spec.name} devices!</span>}
                 <ConnectButton className={classes.button} full={true} transparent={true} />
             </Alert>
-    </Box>
+        </Box>
     return null
 }
 

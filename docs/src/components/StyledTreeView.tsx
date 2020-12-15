@@ -23,7 +23,6 @@ declare module 'csstype' {
 const useTreeItemStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            marginLeft: theme.spacing(1),
             color: theme.palette.text.secondary,
             '&:hover > $content': {
                 backgroundColor: theme.palette.action.hover,
@@ -38,9 +37,6 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
         },
         content: {
             color: theme.palette.text.secondary,
-            borderTopRightRadius: theme.spacing(2),
-            borderBottomRightRadius: theme.spacing(2),
-            paddingRight: theme.spacing(1),
             fontWeight: theme.typography.fontWeightMedium,
             '$expanded > &': {
                 fontWeight: theme.typography.fontWeightRegular,
@@ -49,7 +45,7 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
         group: {
             marginLeft: 0,
             '& $content': {
-                paddingLeft: theme.spacing(2),
+                paddingLeft: theme.spacing(1),
             },
         },
         expanded: {},
@@ -64,7 +60,7 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(0.5, 0),
         },
         labelIcon: {
-            marginRight: theme.spacing(1),
+            marginRight: theme.spacing(0.5),
         },
         labelText: {
             fontWeight: 'inherit',
@@ -78,6 +74,7 @@ export function StyledTreeItem(props: TreeItemProps & {
     bgColor?: string;
     color?: string;
     kind?: string;
+    icon?: JSX.Element;
     alert?: string;
     labelInfo?: string;
     labelText: string;
@@ -86,7 +83,7 @@ export function StyledTreeItem(props: TreeItemProps & {
     actions?: JSX.Element | JSX.Element[]
 }) {
     const classes = useTreeItemStyles();
-    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, alert, ...other } = props;
+    const { labelText, kind, icon, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, alert, ...other } = props;
     const [checkedState, setCheckedState] = useState(checked)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -105,7 +102,8 @@ export function StyledTreeItem(props: TreeItemProps & {
                         inputProps={{ 'aria-label': 'secondary checkbox' }}
                         onChange={handleChecked}
                     />}
-                    <KindIcon kind={kind} className={classes.labelIcon} />
+                    {kind && <KindIcon kind={kind} className={classes.labelIcon} tooltip={true} />}
+                    {icon}
                     <Typography variant="body2" className={classes.labelText}>
                         {labelText}
                     </Typography>

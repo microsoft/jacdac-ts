@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import JACDACContext from "../../../src/react/Context";
-import { BusState } from "../../../src/jdom/bus";
+import { BusState, JDBus } from "../../../src/jdom/bus";
 import { createUSBBus } from "../../../src/jdom/usb";
 import { CONNECTION_STATE } from "../../../src/jdom/constants";
 import IFrameBridgeClient from "../../../src/jdom/iframebridgeclient"
@@ -9,24 +9,30 @@ import Flags from "../../../src/jdom/flags"
 
 function sniffQueryArguments() {
     if (typeof window === "undefined" || typeof URLSearchParams === "undefined")
-        return {};
+        return {
+            diagnostic: false,
+            webUSB: true,
+        };
 
     const params = new URLSearchParams(window.location.search)
     return {
+        diagnostics: params.get(`dbg`) === "1",
+        webUSB: params.get(`webusb`) !== "0",
         parentOrigin: params.get('parentOrigin')
     }
 }
 
 const args = sniffQueryArguments();
-const bus = createUSBBus(undefined, {
-    parentOrigin: args.parentOrigin
-});
+Flags.diagnostics = args.diagnostics;
+Flags.webUSB = args.webUSB;
+
+const bus = Flags.webUSB ? createUSBBus(undefined, { parentOrigin: args.parentOrigin })
+    : new JDBus(undefined);
 bus.setBackgroundFirmwareScans(true);
 // tslint:disable-next-line: no-unused-expression
 if (inIFrame()) {
     new IFrameBridgeClient(bus); // start bridge
 }
-Flags.diagnostics = typeof window !== "undefined" && /dbg=1/.test(window.location.href);
 
 
 const JACDACProvider = ({ children }) => {

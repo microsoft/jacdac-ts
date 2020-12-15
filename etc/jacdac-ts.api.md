@@ -562,6 +562,9 @@ export enum GamepadReg {
 export function generateDeviceList(uf2: Uint8Array): string;
 
 // @public (undocumented)
+export const GET_ATTEMPT = "getAttempt";
+
+// @public (undocumented)
 export function getMLModelFormatName(model: Uint8Array): string;
 
 // @public (undocumented)
@@ -769,6 +772,9 @@ export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo): b
 
 // @public (undocumented)
 export function isSensor(spec: jdspec.ServiceSpec): boolean;
+
+// @public (undocumented)
+export function isWebUSBEnabled(): boolean;
 
 // @public (undocumented)
 export function isWebUSBSupported(): boolean;
@@ -1078,6 +1084,9 @@ export abstract class JDNode extends JDEventSource {
 export function jdpack<T extends any[]>(fmt: string, data: T): Uint8Array;
 
 // @public (undocumented)
+export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T): boolean;
+
+// @public (undocumented)
 export class JDRegister extends JDServiceMemberNode {
     constructor(service: JDService, address: number);
     // (undocumented)
@@ -1126,6 +1135,8 @@ export class JDRegister extends JDServiceMemberNode {
     get stringValue(): string;
     // (undocumented)
     toString(): string;
+    // (undocumented)
+    get unpackedValue(): any[];
 }
 
 // @public (undocumented)
@@ -1730,8 +1741,6 @@ export interface PacketMessage {
     // (undocumented)
     data: Uint8Array;
     // (undocumented)
-    outer: true;
-    // (undocumented)
     type: "messagepacket";
 }
 
@@ -1867,16 +1876,20 @@ export interface Proto {
 
 // @public (undocumented)
 export enum ProtoTestCmd {
-    CBool = 128,
-    CI32 = 130,
-    CU32 = 129
+    CBool = 129,
+    CBytes = 133,
+    CI32 = 131,
+    CString = 132,
+    CU32 = 130
 }
 
 // @public (undocumented)
 export enum ProtoTestEvent {
-    EBool = 384,
-    EI32 = 402,
-    EU32 = 400
+    EBool = 129,
+    EBytes = 133,
+    EI32 = 131,
+    EString = 132,
+    EU32 = 130
 }
 
 // @public (undocumented)

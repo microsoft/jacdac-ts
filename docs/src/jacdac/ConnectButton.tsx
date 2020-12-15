@@ -7,10 +7,12 @@ import UsbIcon from '@material-ui/icons/Usb';
 import { useMediaQuery, useTheme } from "@material-ui/core";
 import KindIcon from "../components/KindIcon";
 import IconButtonWithProgress from "../components/IconButtonWithProgress"
+import Flags from "../../../src/jdom/flags";
+import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb";
 
 export default function ConnectButton(props: { full?: boolean, className?: string, transparent?: boolean }) {
     const { full, className, transparent } = props
-    const { bus, connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const { connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
     const theme = useTheme()
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
@@ -19,6 +21,9 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const onClick = showDisconnect ? disconnectAsync : connectAsync;
     const icon = showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />
     const title = showDisconnect ? "disconnect" : "connect";
+
+    if (!isWebUSBEnabled() || !isWebUSBSupported())
+        return <></>
 
     if (small)
         return <span><IconButtonWithProgress

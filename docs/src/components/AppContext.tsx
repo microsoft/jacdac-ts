@@ -20,7 +20,8 @@ export interface AppProps {
     setSearchQuery: (s: string) => void,
     toolsMenu: boolean,
     setToolsMenu: (visible: boolean) => void,
-    setError: (error: any) => void
+    setError: (error: any) => void,
+    widgetMode: boolean
 }
 
 const AppContext = createContext<AppProps>({
@@ -30,7 +31,8 @@ const AppContext = createContext<AppProps>({
     setSearchQuery: (s) => { },
     toolsMenu: false,
     setToolsMenu: (v) => { },
-    setError: (error: any) => { }
+    setError: (error: any) => { },
+    widgetMode: false
 });
 AppContext.displayName = "app";
 
@@ -42,6 +44,7 @@ export const AppProvider = ({ children }) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, _setToolsMenu] = useState(false)
     const { enqueueSnackbar } = useSnackbar();
+    const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
 
     const setError = (e: any) => {
         if (isCancelError(e))
@@ -74,9 +77,11 @@ export const AppProvider = ({ children }) => {
     useEffect(() => bus.subscribe(CONNECTION_STATE, cs => {
         switch (cs) {
             case BusState.Connected:
-                enqueueSnackbar("connected...", {
-                    variant: "info"
-                })
+                if (!!bus.transport)
+                    enqueueSnackbar("connected...", {
+                        variant: "info"
+                    })
+                break;
         }
     }), [])
 
@@ -88,7 +93,8 @@ export const AppProvider = ({ children }) => {
             setSearchQuery,
             toolsMenu,
             setToolsMenu,
-            setError
+            setError,
+            widgetMode
         }}>
             {children}
         </AppContext.Provider>

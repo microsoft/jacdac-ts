@@ -1,9 +1,10 @@
 import React from "react"
-import { isWebUSBSupported } from "../../../src/jdom/usb"
+import Flags from "../../../src/jdom/flags";
+import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb"
 
 export default function WebUSBSupported(props: { children: any }) {
     const { children } = props;
-    if (!isWebUSBSupported())
-        return <></>
-    return <>{ children }</>
+    return <>
+        {isWebUSBEnabled() && isWebUSBSupported() && children}
+    </>
 }

@@ -1,13 +1,11 @@
-import React, { useContext, useState, ChangeEvent, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
 import TreeView from '@material-ui/lab/TreeView';
 // tslint:disable-next-line: no-submodule-imports
-import TreeItem, { TreeItemProps } from '@material-ui/lab/TreeItem';
 // tslint:disable-next-line: no-submodule-imports
-import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -18,26 +16,28 @@ import { JDEvent } from '../../../src/jdom/event';
 import { JDService } from '../../../src/jdom/service';
 import { JDRegister } from '../../../src/jdom/register';
 import useChange from "../jacdac/useChange";
-import { isRegister, isEvent, isReading } from '../../../src/jdom/spec';
-import { Switch, useMediaQuery, useTheme } from '@material-ui/core';
+import { isRegister, isEvent } from '../../../src/jdom/spec';
+import { useMediaQuery, useTheme } from '@material-ui/core';
 import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, DEVICE_ANNOUNCE, GET_ATTEMPT } from '../../../src/jdom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, GET_ATTEMPT } from '../../../src/jdom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
 import { ellipseJoin } from '../../../src/jdom/utils';
 import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
-import { isWebUSBSupported } from '../../../src/jdom/usb';
 import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './StyledTreeView';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import LaunchIcon from '@material-ui/icons/Launch';
 
 function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
     const id = device.id
     const name = useDeviceName(device, true)
+    const physical = useChange(device, d => d.physical)
+    const kind = physical ? "device" : "virtualdevice"
     const lost = useEventRaised([LOST, FOUND], device, dev => !!dev?.lost)
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
     const theme = useTheme()
@@ -56,7 +56,7 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
         labelText={name}
         labelInfo={labelInfo}
         alert={lost && "Lost device..."}
-        kind={"device"}
+        kind={kind}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
         actions={showActions && <DeviceActions device={device} reset={true} rename={true} />}
@@ -73,8 +73,9 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
 }
 
 function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps & JDomTreeViewProps) {
-    const { service, checked, setChecked, checkboxes, registerFilter, eventFilter, ...other } = props;
+    const { service, checked, setChecked, checkboxes, dashboard, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
+    const showSpecificationAction = specification && !dashboard;
     const id = service.id
     const name = service.name
     const open = checked?.indexOf(id) > -1;
@@ -97,8 +98,8 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         kind={"service"}
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
-        actions={specification && <Link color="inherit" to={`/services/${specification.shortId}`}>
-            <KindIcon kind="service" />
+        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}`}>
+            <LaunchIcon fontSize={"small"} />
         </Link>}
     >
         {registers?.map(register => <RegisterTreeItem
@@ -173,6 +174,8 @@ function EventTreeItem(props: { event: JDEvent } & StyledTreeViewItemProps & JDo
 export type CheckedMap = { [id: string]: boolean };
 
 export interface JDomTreeViewProps extends StyledTreeViewProps {
+    // don't render links to specification
+    dashboard?: boolean;
     checkboxes?: ("device" | "service" | "register" | "event")[];
     deviceFilter?: (devices: JDDevice) => boolean;
     serviceFilter?: (services: JDService) => boolean;
@@ -219,15 +222,13 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             onChecked(checked)
     };
 
-    if (!devices?.length && isWebUSBSupported())
-        return <ConnectAlert />
-
-    return (
+    return (<>
+        <ConnectAlert />
         <TreeView
             className={classes.root}
             defaultCollapseIcon={<ArrowDropDownIcon />}
             defaultExpandIcon={<ArrowRightIcon />}
-            defaultEndIcon={<div style={{ width: 24 }} />}
+            defaultEndIcon={<div style={{ width: 12 }} />}
             expanded={expanded}
             selected={selected}
             onNodeToggle={handleToggle}
@@ -244,5 +245,5 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
                 {...other}
             />)}
         </TreeView>
-    );
+    </>);
 }

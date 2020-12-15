@@ -8,8 +8,8 @@ export interface PacketMessage {
     channel: "jacdac";
     type: "messagepacket";
     broadcast: true;
-    outer: true;
     data: Uint8Array;
+    sender?: string;
 }
 
 /**
@@ -38,21 +38,38 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         if (!this.isOriginValid(event))
             return;
 
-        const msg = event.data as PacketMessage;
-        if (!msg
-            || !msg.broadcast
-            || msg.channel !== "jacdac"
-            || msg.type !== "messagepacket"
-            || !msg.outer)
-            return; // not our message
+        const { data } = event;
+        const msg = data as PacketMessage;
+        if (msg
+            && msg.channel === "jacdac"
+            && msg.type === "messagepacket") {
+            this.handleMessageJacdac(msg);
+        }
+        else if (data?.source === "pxtdriver") {
+            this.handleDriverMessage(data);
+        }
+        else {
+            // unknown message
+            // console.log({ data })
+        }
+    }
 
+    private handleDriverMessage(msg: { type: string }) {
+        switch (msg.type) {
+            case "stop": // start again
+                this.bus.clear();
+                break;
+        }
+    }
+
+    private handleMessageJacdac(msg: PacketMessage) {
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
         if (!pkt)
             return;
 
         // we're adding a little trace to avoid resending our own packets
-        pkt.sender = this.bridgeId;
-
+        // if not specified
+        pkt.sender = msg.sender || this.bridgeId;
         // send to native bus
         this.bus.sendPacketAsync(pkt);
         // send to javascript bus
@@ -68,8 +85,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             type: "messagepacket",
             channel: "jacdac",
             broadcast: true,
-            outer: true,
-            data: pkt.toBuffer()
+            data: pkt.toBuffer(),
+            sender: this.bridgeId
         }
         // may not be in iframe
         window.parent?.postMessage(msg, this.origin)
