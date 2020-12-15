@@ -74,6 +74,7 @@ export function StyledTreeItem(props: TreeItemProps & {
     bgColor?: string;
     color?: string;
     kind?: string;
+    icon?: JSX.Element;
     alert?: string;
     labelInfo?: string;
     labelText: string;
@@ -82,7 +83,7 @@ export function StyledTreeItem(props: TreeItemProps & {
     actions?: JSX.Element | JSX.Element[]
 }) {
     const classes = useTreeItemStyles();
-    const { labelText, kind, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, alert, ...other } = props;
+    const { labelText, kind, icon, labelInfo, color, bgColor, checked, setChecked, actions, nodeId, alert, ...other } = props;
     const [checkedState, setCheckedState] = useState(checked)
 
     const handleChecked = (ev: ChangeEvent<HTMLInputElement>, c: boolean) => {
@@ -102,6 +103,7 @@ export function StyledTreeItem(props: TreeItemProps & {
                         onChange={handleChecked}
                     />}
                     {kind && <KindIcon kind={kind} className={classes.labelIcon} tooltip={true} />}
+                    {icon}
                     <Typography variant="body2" className={classes.labelText}>
                         {labelText}
                     </Typography>

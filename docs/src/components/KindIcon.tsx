@@ -27,7 +27,7 @@ import {
     SERVICE_NODE_NAME, EVENT_NODE_NAME
 } from "../../../src/jdom/constants";
 import { Tooltip } from "@material-ui/core";
-import JacdacIcon from "./JacdacIcon";
+import JacdacIcon from "./icons/JacdacIcon";
 
 export default function KindIcon(props: { kind: string, className?: string, tooltip?: boolean }) {
     const { kind, className, tooltip } = props
