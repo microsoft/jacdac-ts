@@ -92,7 +92,8 @@ export class SensorAggregatorClient extends JDServiceClient {
         if (totalSampleSize > JD_SERIAL_MAX_PAYLOAD_SIZE)
             error("samples won't fit in packet")
 
-        inputs.unshift(jdpack("u16 u16 i32", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
+        // u32 is x[4]
+        inputs.unshift(jdpack("u16 u16 u32", [cfg.samplingInterval, cfg.samplesInWindow, 0]))
         await this.service.register(SensorAggregatorReg.Inputs)
             .sendSetAsync(bufferConcatMany(inputs))
     }
