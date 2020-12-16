@@ -93,6 +93,11 @@ export function resolveMakecodeService(service: jdspec.ServiceSpec) {
         .find(mk => mk.service === service.shortId);
 }
 
+export function resolveMakecodeServiceFromClassIdentifier(serviceClass: number) {
+    const srv = serviceSpecificationFromClassIdentifier(serviceClass);
+    return srv && resolveMakecodeService(srv);
+}
+
 /**
  * Looks up a service specification by name
  * @param name 

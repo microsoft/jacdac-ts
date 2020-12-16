@@ -1,26 +1,43 @@
-import { Grid, TextField } from "@material-ui/core";
-import React, { ChangeEvent, useMemo, useState } from "react";
-import { clone, uniqueName } from "../../../../src/jdom/utils";
+import { Grid, TextField, useEventCallback } from "@material-ui/core";
+import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { clone, JSONTryParse, uniqueName } from "../../../../src/jdom/utils";
 import useChange from '../../jacdac/useChange';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { resolveMakecodeService, serviceSpecificationFromClassIdentifier } from "../../../../src/jdom/spec";
+import { resolveMakecodeService, resolveMakecodeServiceFromClassIdentifier, serviceSpecificationFromClassIdentifier } from "../../../../src/jdom/spec";
 import AddServiceIconButton from "../AddServiceIconButton";
 import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
 import { escapeName } from "../../../../src/azure-iot/dtdl"
 import IconButtonWithTooltip from "../IconButtonWithTooltip";
-import useMakeCodeEditorExtensionClient from "./MakeCodeEditorExtensionClient";
+import useMakeCodeEditorExtensionClient, { READ, ReadResponse } from "./MakeCodeEditorExtensionClient";
 import CmdButton from "../CmdButton";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SaveIcon from '@material-ui/icons/Save';
+import { camelize } from "../../../../jacdac-spec/spectool/jdspec"
 
 interface ClientRole {
     name: string;
-    service: jdspec.ServiceSpec;
+    service: number;
 }
 
 interface Configuration {
     roles: ClientRole[];
+}
+
+function toTypescript(config: Configuration) {
+    return `// auto-generated, do not edit.
+namespace myModules {
+${config.roles.map(role => `
+    //% fixedInstance whenUsed block="${role.name}"
+    export const ${camelize(role.name)} = new ${resolveMakecodeServiceFromClassIdentifier(role.service)}("${camelize(role.name)}");
+
+`)}
+}
+    `
+}
+
+function toJSON(config: Configuration) {
+    return config && JSON.stringify(config, null, 4);
 }
 
 function ClientRoleRow(props: { config: Configuration, component: ClientRole, onUpdate: () => void }) {
@@ -32,7 +49,7 @@ function ClientRoleRow(props: { config: Configuration, component: ClientRole, on
         onUpdate();
     }
     const handleSetService = (serviceClass: number) => {
-        component.service = serviceSpecificationFromClassIdentifier(serviceClass);
+        component.service = serviceClass;
         onUpdate();
     }
     const handleComponentDelete = () => {
@@ -45,7 +62,7 @@ function ClientRoleRow(props: { config: Configuration, component: ClientRole, on
                 <TextField fullWidth={true} error={!!nameError} variant="outlined" label="name" helperText={nameError} value={name} onChange={handleComponentNameChange} />
             </Grid>
             <Grid item>
-                <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={service.classIdentifier} setServiceClass={handleSetService} error={serviceError} />
+                <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={service} setServiceClass={handleSetService} error={serviceError} />
             </Grid>
             <Grid item>
                 <IconButtonWithTooltip title="Remove service" onClick={handleComponentDelete}>
@@ -68,24 +85,37 @@ export default function MakeCodeEditorExtension() {
     const [configuration, setConfiguration] = useState<Configuration>({
         roles: []
     } as Configuration);
+    // update content when read
+    /*
+    useEffect(client?.subscribe(READ, (resp: ReadResponse) => {
+        console.log(`mkcd: read received`)
+        const cfg = JSONTryParse(resp.json);
+        setConfiguration(cfg || configuration || { roles: [] });
+    }) || (() => () => { }), [client]);
+    */
     const hasMakeCodeService = (srv: jdspec.ServiceSpec) => !!resolveMakecodeService(srv)
     const update = () => {
         setConfiguration(clone(configuration));
     }
     const handleAddService = (service: jdspec.ServiceSpec) => {
+        if (!configuration.roles)
+            configuration.roles = [];
         const names = configuration.roles.map(c => c.name)
         configuration.roles.push({
             name: uniqueName(names, service.shortId),
-            service
+            service: service.classIdentifier
         })
         update();
     }
     const handleSave = async () => {
-        await client.write("// test", "{}")
+        const ts = toTypescript(configuration);
+        const json = toJSON(configuration)
+        console.log(`mkcd: saving...`)
+        await client.write(ts, json);
     }
 
     return <Grid container direction="row" spacing={2}>
-        {configuration.roles.map((c,i) => <ClientRoleRow key={'config' + i} config={configuration} component={c} onUpdate={update} />)}
+        {configuration.roles?.map((c, i) => <ClientRoleRow key={'config' + i} config={configuration} component={c} onUpdate={update} />)}
         <Grid item xs={12}>
             <AddServiceIconButton serviceFilter={hasMakeCodeService} onAdd={handleAddService} />
         </Grid>

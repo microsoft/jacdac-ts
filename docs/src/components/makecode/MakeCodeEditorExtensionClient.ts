@@ -3,6 +3,8 @@ import { JDClient } from "../../../../src/jdom/client";
 import { CHANGE, CONNECT, CONNECTING } from "../../../../src/jdom/constants";
 import { inIFrame } from "../../../../src/jdom/iframeclient";
 
+export const READ = "read"
+
 export interface ReadResponse {
     code?: string;
     json?: string;
@@ -129,7 +131,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
                     break;
                 case "extreadcode":
                     // Loaded, set the target
-                    this.emit('read', msg.resp);
+                    this.emit(READ, msg.resp);
                     break;
                 case "extwritecode":
                     this.emit('written', undefined);
