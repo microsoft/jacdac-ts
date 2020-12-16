@@ -84,14 +84,14 @@ export default function MakeCodeEditorExtension() {
     const [configuration, setConfiguration] = useState<Configuration>({
         roles: []
     } as Configuration);
-    // update content when read
-    /*
-    useEffect(client?.subscribe(READ, (resp: ReadResponse) => {
-        console.log(`mkcd: read received`)
-        const cfg = JSONTryParse(resp.json);
-        setConfiguration(cfg || configuration || { roles: [] });
-    }) || (() => () => { }), [client]);
-    */
+    useEffect(() => client?.subscribe(READ,
+        (resp: ReadResponse) => {
+            console.log(`mkcd: read received`)
+            const cfg = JSONTryParse(resp.json);
+            console.log({ resp, cfg })
+            if (cfg)
+                setConfiguration(cfg);
+        }), [client]);
     const hasMakeCodeService = (srv: jdspec.ServiceSpec) => !!resolveMakecodeService(srv)
     const update = () => {
         setConfiguration(clone(configuration));

@@ -155,7 +155,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     async read(): Promise<ReadResponse> {
         if (!this.extensionId) {
             const r: ReadResponse = {};
-            this.emit('read', r);
+            this.emit(READ, r);
             return r;
         } else {
             const resp: ReadResponse = await this.sendRequest('extreadcode');
@@ -201,6 +201,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
 export default function useMakeCodeEditorExtensionClient() {
     const [client, setClient] = useState<MakeCodeEditorExtensionClient>(undefined);
     useEffect(() => {
+        console.log(`mkcd: new editor client`)
         let c = new MakeCodeEditorExtensionClient();
         setClient(c);
         return () => c?.unmount()
