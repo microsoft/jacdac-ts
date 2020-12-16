@@ -14,10 +14,11 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         [key: string]: {
             action: string;
             resolve: (resp: any) => void;
+            reject: (e: any) => void;
         }
     } = {};
     private readonly extensionId: string = inIFrame() ? window.location.hash.substr(1) : undefined;
-    private _target: any; // full apptarget
+    private _target: string; // full apptarget
     private _connected = false;
     private _visible = false;
 
@@ -30,6 +31,9 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         }
         // notify parent that we're ready
         this.init();
+
+        // always refresh on load
+        this.on('shown', () => this.refresh());
     }
 
     get target() {
@@ -52,9 +56,9 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     }
 
     private nextRequestId = 1;
-    private mkRequest(resolve: (resp: any) => void, action: string, body?: any): any {
+    private mkRequest(resolve: (resp: any) => void, reject: (e: any) => void, action: string, body?: any): any {
         const id = "jd_" + this.nextRequestId++;
-        this.pendingCommands[id] = { action, resolve };
+        this.pendingCommands[id] = { action, resolve, reject };
         return {
             type: "pxtpkgext",
             action,
@@ -70,8 +74,8 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         if (!this.extensionId)
             return Promise.resolve(undefined);
 
-        return new Promise((resolve) => {
-            const msg = this.mkRequest(resolve, action, body);
+        return new Promise((resolve, reject) => {
+            const msg = this.mkRequest(resolve, reject, action, body);
             window.parent.postMessage(msg, "*");
         })
     }
@@ -86,7 +90,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             if (target !== this._target) {
                 this._target = target;
                 if (this._target)
-                    console.log(`mkcd: target ${this._target.id}`)
+                    console.log(`mkcd: target ${this._target}`)
                 this.emit(CHANGE);
             }
             switch (msg.event) {
@@ -116,11 +120,13 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             console.debug("received event: ", msg);
         }
         else {
-            const { action, resolve } = this.pendingCommands[msg.id];
+            const { action, resolve, reject } = this.pendingCommands[msg.id];
             // continue async ops
-            delete this.pendingCommands[msg.id];
-            if (resolve)
+            delete this.pendingCommands[msg.id];            
+            if (msg.success && resolve)
                 resolve(msg.resp);
+            else if (!msg.success && reject)
+                reject(msg.resp);
             // raise event as well
             switch (action) {
                 case "extinit":
@@ -145,7 +151,11 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     private async init() {
         console.log(`mkcd: init sequence`)
         await this.sendRequest<void>('extinit');
-        // read extension code
+        await this.refresh();
+    }
+
+    private async refresh() {
+        console.log(`mkcd: refresh`)
         const r = await this.read();
     }
 
