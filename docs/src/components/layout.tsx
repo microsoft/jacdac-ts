@@ -7,11 +7,10 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden, Box, Tooltip, Zoom, Paper, Button } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box, Paper, Button } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import { Link, IconButton, Fab } from 'gatsby-theme-material-ui';
+import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
-import CssBaseline from '@material-ui/core/CssBaseline';
 // tslint:disable-next-line: no-submodule-imports
 import AppBar from '@material-ui/core/AppBar';
 // tslint:disable-next-line: no-submodule-imports
@@ -22,42 +21,33 @@ import ConnectButton from '../jacdac/ConnectButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useStaticQuery, graphql } from "gatsby"
-import JACDACProvider from "../jacdac/Provider"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import PacketsContext, { PacketsProvider } from "./PacketsContext";
+import PacketsContext from "./PacketsContext";
 import SEO from "./seo";
-import { DbProvider } from "./DbContext";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
-import { createMuiTheme, responsiveFontSizes, ThemeProvider, createStyles, useTheme } from '@material-ui/core/styles';
-import AppContext, { AppProvider, DrawerType } from "./AppContext";
+import { createMuiTheme, responsiveFontSizes, createStyles, useTheme } from '@material-ui/core/styles';
+import AppContext, { DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
-import { ServiceManagerProvider } from "./ServiceManagerContext";
 import DarkModeProvider from "./DarkModeProvider";
 import DarkModeContext from "./DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
-import Helmet from "react-helmet";
 import Alert from "./Alert"
 import GitHubButton from "./GitHubButton"
 import Presentation from "./Presentation";
 import useMdxComponents from "./useMdxComponents";
 import Footer from "./Footer";
-import TraceRecordButton from "./TraceRecordButton"
-import TracePlayButton from "./TracePlayButton";
 import PrintButton from "./PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
-import { SnackbarProvider } from 'notistack';
 import PacketInspector from "./PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
-import { ConfirmProvider } from "material-ui-confirm"
-import { IdProvider } from "react-use-id-hook"
 import ThemedLayout from "./ThemedLayout";
 
 export const TOC_DRAWER_WIDTH = 18;
@@ -173,7 +163,7 @@ const useStyles = makeStyles((theme) => createStyles({
 
 export interface LayoutProps {
   pageContext?: any;
-  children: any;
+  children?: JSX.Element[];
 }
 
 export default function Layout(props: LayoutProps) {
@@ -304,20 +294,10 @@ function LayoutWithContext(props: LayoutProps) {
   return (<>
     <div className={classes.root}>
       <SEO />
-      <CssBaseline />
-      <Helmet>
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://raw.githubusercontent.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="anonymous" />
-        <meta
-          name="viewport"
-          content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
-        />
-      </Helmet>
       <MainAppBar pageContext={pageContext} />
       <AppDrawer pagePath={pagePath} />
       <ToolsDrawer />
-      {pageDeck && <Presentation>
+      {pageDeck && children && <Presentation>
         {children}
       </Presentation>}
       {!pageDeck && <Container disableGutters={true}>
