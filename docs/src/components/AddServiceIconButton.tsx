@@ -11,14 +11,17 @@ import { useId } from "react-use-id-hook"
 
 export default function AddServiceIconButton(props: {
     onAdd: (service: jdspec.ServiceSpec) => void,
+    serviceFilter?: (service: jdspec.ServiceSpec) => boolean,
     error?: string,
     children?: JSX.Element | JSX.Element[]
 }) {
-    const { error, onAdd, children } = props;
+    const { error, onAdd, children, serviceFilter } = props;
     const [servicesAnchorEl, setServicesAnchorEl] = React.useState<null | HTMLElement>(null);
     const servicesMenuId = useId();
     const services = useMemo(() => serviceSpecifications()
-        .filter(srv => srv.classIdentifier !== SRV_CTRL && !/^_/.test(srv.shortId)), [])
+        .filter(srv => srv.classIdentifier !== SRV_CTRL && !/^_/.test(srv.shortId))
+        .filter(srv => !serviceFilter || serviceFilter(srv))
+        , [serviceFilter])
 
     const handleServiceAddClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setServicesAnchorEl(event.currentTarget);
