@@ -15,8 +15,8 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
     const { rdev, client } = props
     const [working, setWorking] = useState(false)
     const label = rdev.name;
-    const handleChange = async (ev: React.ChangeEvent<{ value: string }>) => {
-        const value: string = ev.target.value;
+    const handleChange = async (ev: React.ChangeEvent<{ value: unknown }>) => {
+        const value: string = ev.target.value as string;
         const dev = rdev.candidates.find(c => c.id == value)
         if (dev && client) {
             try {
