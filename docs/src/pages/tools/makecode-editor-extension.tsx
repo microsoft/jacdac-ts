@@ -1,7 +1,7 @@
 import React, {  } from "react"
 import { createMuiTheme, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ThemedLayout";
-import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExtension";
+import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExtension"
 
 export default function Page() {
     const rawTheme = createMuiTheme({
