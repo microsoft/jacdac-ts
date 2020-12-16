@@ -1,14 +1,15 @@
 import { Grid, TextField } from "@material-ui/core";
-import React, { ChangeEvent, useMemo } from "react";
-import { clone, uniqueName } from "../../../src/jdom/utils";
-import useLocalStorage from "./useLocalStorage";
+import React, { ChangeEvent, useMemo, useState } from "react";
+import { clone, uniqueName } from "../../../../src/jdom/utils";
+import useChange from '../../jacdac/useChange';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { resolveMakecodeService, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
-import AddServiceIconButton from "./AddServiceIconButton";
-import ServiceSpecificationSelect from "./ServiceSpecificationSelect"
-import { escapeName } from "../../../src/azure-iot/dtdl"
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import { resolveMakecodeService, serviceSpecificationFromClassIdentifier } from "../../../../src/jdom/spec";
+import AddServiceIconButton from "../AddServiceIconButton";
+import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
+import { escapeName } from "../../../../src/azure-iot/dtdl"
+import IconButtonWithTooltip from "../IconButtonWithTooltip";
+import useMakeCodeEditorExtensionClient from "./EditorExtensionClient";
 
 interface ClientRole {
     name: string;
@@ -59,17 +60,18 @@ function validateClientRole(config: Configuration, role: ClientRole) {
 }
 
 export default function MakeCodeEditorExtension() {
-    const { value: twin, setValue: setTwin } = useLocalStorage<Configuration>('jacdac:mk;1',
-        {
-            roles: []
-        } as Configuration);
+    const client = useMakeCodeEditorExtensionClient();
+    const visible = useChange(client, c => c?.visible);
+    const [configuration, setConfiguration] = useState<Configuration>({
+        roles: []
+    } as Configuration);
     const hasMakeCodeService = (srv: jdspec.ServiceSpec) => !!resolveMakecodeService(srv)
     const update = () => {
-        setTwin(clone(twin));
+        setConfiguration(clone(configuration));
     }
     const handleAddService = (service: jdspec.ServiceSpec) => {
-        const names = twin.roles.map(c => c.name)
-        twin.roles.push({
+        const names = configuration.roles.map(c => c.name)
+        configuration.roles.push({
             name: uniqueName(names, service.shortId),
             service
         })
@@ -77,7 +79,7 @@ export default function MakeCodeEditorExtension() {
     }
 
     return <Grid container direction="row" spacing={2}>
-        {twin.roles.map(c => <ClientRoleRow config={twin} component={c} onUpdate={update} />)}
+        {configuration.roles.map(c => <ClientRoleRow config={configuration} component={c} onUpdate={update} />)}
         <Grid item xs={12}>
             <AddServiceIconButton serviceFilter={hasMakeCodeService} onAdd={handleAddService} />
         </Grid>
