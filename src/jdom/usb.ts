@@ -31,6 +31,10 @@ export function isWebUSBSupported(): boolean {
 }
 
 function usbRequestDevice(options?: USBDeviceRequestOptions): Promise<USBDevice> {
+    // disabled
+    if (!Flags.webUSB)
+        return Promise.resolve(undefined)
+
     try {
         return navigator?.usb?.requestDevice(options)
     } catch (e) {
@@ -40,6 +44,10 @@ function usbRequestDevice(options?: USBDeviceRequestOptions): Promise<USBDevice>
 }
 
 function usbGetDevices(): Promise<USBDevice[]> {
+    // disabled
+    if (!Flags.webUSB)
+        return Promise.resolve([]);
+
     try {
         return navigator?.usb?.getDevices() || Promise.resolve([])
     }

@@ -17,21 +17,19 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         }
     } = {};
     private readonly extensionId: string = inIFrame() ? window.location.hash.substr(1) : undefined;
-    private _target: string;
+    private _target: any; // full apptarget
     private _connected = false;
     private _visible = false;
 
     constructor() {
         super();
         this.handleMessage = this.handleMessage.bind(this);
-        this.mount(() => {
-            //ssr
-            if (typeof window === "undefined")
-                return () => { };
-
+        if (typeof window !== "undefined") {
             window.addEventListener("message", this.handleMessage, false);
-            return () => window.removeEventListener("message", this.handleMessage);
-        })
+            this.mount(() => window.removeEventListener("message", this.handleMessage));
+        }
+        // notify parent that we're ready
+        this.init();
     }
 
     get target() {
@@ -55,7 +53,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
 
     private nextRequestId = 1;
     private mkRequest(resolve: (resp: any) => void, action: string, body?: any): any {
-        const id = this.nextRequestId++;
+        const id = "jd_" + this.nextRequestId++;
         this.pendingCommands[id] = { action, resolve };
         return {
             type: "pxtpkgext",
@@ -68,24 +66,27 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     }
 
     private sendRequest<T>(action: string, body?: any): Promise<T> {
-        console.log(`mkcded: send ${action}`)
+        console.log(`mkcded ${this.extensionId}: send ${action}`)
         if (!this.extensionId)
             return Promise.resolve(undefined);
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const msg = this.mkRequest(resolve, action, body);
             window.parent.postMessage(msg, "*");
         })
     }
 
     private handleMessage(ev: any) {
-        const msg = ev.msg;
+        const msg = ev.data;
+        if (msg?.type !== "pxtpkgext")
+            return;
         console.log({ msg })
-        if (msg.type !== "pxtpkgext") return;
         if (!msg.id) {
             const target = msg.target;
             if (target !== this._target) {
                 this._target = target;
+                if (this._target)
+                    console.log(`mkcd: target ${this._target.id}`)
                 this.emit(CHANGE);
             }
             switch (msg.event) {
@@ -141,15 +142,21 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         }
     }
 
-    async init() {
+    private async init() {
+        console.log(`mkcd: init sequence`)
         await this.sendRequest<void>('extinit');
+        // read extension code
+        const r = await this.read();
     }
 
-    async read() {
+    async read(): Promise<ReadResponse> {
         if (!this.extensionId) {
-            this.emit('read', {});
+            const r: ReadResponse = {};
+            this.emit('read', r);
+            return r;
         } else {
-            await this.sendRequest('extreadcode');
+            const resp: ReadResponse = await this.sendRequest('extreadcode');
+            return resp;
         }
     }
 

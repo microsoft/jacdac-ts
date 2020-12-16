@@ -9,7 +9,7 @@ import AddServiceIconButton from "../AddServiceIconButton";
 import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
 import { escapeName } from "../../../../src/azure-iot/dtdl"
 import IconButtonWithTooltip from "../IconButtonWithTooltip";
-import useMakeCodeEditorExtensionClient from "./EditorExtensionClient";
+import useMakeCodeEditorExtensionClient from "./MakeCodeEditorExtensionClient";
 
 interface ClientRole {
     name: string;
