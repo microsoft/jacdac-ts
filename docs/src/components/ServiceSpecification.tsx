@@ -60,6 +60,7 @@ export default function ServiceSpecification(props: {
                 <h2>{group.name}</h2>
                 {group.note && <Markdown key={`node${group.name}`} source={group.note} />}
                 {group.packets
+                    .sort((l,r) => (l.derived ? 1 : -1) - (r.derived ? 1 : -1))
                     .map((pkt, i) => <PacketSpecification
                         key={`pkt${pkt.name}`}
                         serviceClass={node.classIdentifier}
