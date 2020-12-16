@@ -30,7 +30,7 @@ namespace myModules {
 ${config.roles.map(role => `
     //% fixedInstance whenUsed block="${role.name}"
     export const ${camelize(role.name)} = new ${resolveMakecodeServiceFromClassIdentifier(role.service).client.qName}("${camelize(role.name)}");
-`)}
+`).join("")}
 }
     `
 }
