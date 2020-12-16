@@ -5,6 +5,7 @@ import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap } from "./utils";
 import { SystemReg, SensorReg } from "./constants";
+import makecodeServicesData from "../../jacdac-spec/services/makecode.json";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
@@ -82,6 +83,13 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
         const extendSpec = serviceSpecificationFromName(extend);
         return !!extendSpec && isInstanceOf(extendSpec.classIdentifier, requiredClassIdentifier)
     });
+}
+
+/**
+ * Get the known MakeCode libraries
+ */
+export function makecodeServices(): jdspec.MakeCodeServiceInfo[] {
+    return (makecodeServicesData as jdspec.MakeCodeServiceInfo[]).slice(0);
 }
 
 /**

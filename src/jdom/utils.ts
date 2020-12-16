@@ -1,5 +1,3 @@
-import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer";
-
 export function throwError(msg: string, cancel?: boolean) {
     const e = new Error(msg)
     if (cancel)
