@@ -31,8 +31,7 @@ export default function GithubRepositoryCardHeader(props: {
     return <CardHeader
         title={title}
         subheader={release
-            ? <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>
-            : <Typography variant="caption">Unable to find release</Typography>
+            && <Link color="textSecondary" target="_blank" to={release.html_url}>{release.name}</Link>
         }
         avatar={<GitHubIcon />}
     />
