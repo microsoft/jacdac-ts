@@ -10,6 +10,9 @@ import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
 import { escapeName } from "../../../../src/azure-iot/dtdl"
 import IconButtonWithTooltip from "../IconButtonWithTooltip";
 import useMakeCodeEditorExtensionClient from "./MakeCodeEditorExtensionClient";
+import CmdButton from "../CmdButton";
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import SaveIcon from '@material-ui/icons/Save';
 
 interface ClientRole {
     name: string;
@@ -61,7 +64,7 @@ function validateClientRole(config: Configuration, role: ClientRole) {
 
 export default function MakeCodeEditorExtension() {
     const client = useMakeCodeEditorExtensionClient();
-    const visible = useChange(client, c => c?.visible);
+    const connected = useChange(client, c => c?.connected)
     const [configuration, setConfiguration] = useState<Configuration>({
         roles: []
     } as Configuration);
@@ -77,13 +80,17 @@ export default function MakeCodeEditorExtension() {
         })
         update();
     }
+    const handleSave = async () => {
+        await client.write("// test", "{}")
+    }
 
     return <Grid container direction="row" spacing={2}>
-        {configuration.roles.map(c => <ClientRoleRow config={configuration} component={c} onUpdate={update} />)}
+        {configuration.roles.map((c,i) => <ClientRoleRow key={'config' + i} config={configuration} component={c} onUpdate={update} />)}
         <Grid item xs={12}>
             <AddServiceIconButton serviceFilter={hasMakeCodeService} onAdd={handleAddService} />
         </Grid>
         <Grid item xs={12}>
+            <CmdButton variant="contained" disabled={!connected} icon={<SaveIcon />} onClick={handleSave}>save</CmdButton>
         </Grid>
     </Grid>
 }
