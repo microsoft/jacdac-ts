@@ -1,6 +1,6 @@
 import { Grid, TextField, useEventCallback } from "@material-ui/core";
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { clone, JSONTryParse, uniqueName } from "../../../../src/jdom/utils";
+import { clone, JSONTryParse, SMap, uniqueName } from "../../../../src/jdom/utils";
 import useChange from '../../jacdac/useChange';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -33,6 +33,15 @@ ${config.roles.map(role => `
 `).join("")}
 }
     `
+}
+
+function toDependencies(config: Configuration) {
+    const r: SMap<string> = {};
+    config?.roles.forEach(role => {
+        const mk = resolveMakecodeServiceFromClassIdentifier(role.service);
+        r[mk.client.name] = `github:${mk.client.repo}`;
+    })
+    return r;
 }
 
 function toJSON(config: Configuration) {
@@ -101,7 +110,7 @@ export default function MakeCodeEditorExtension() {
             configuration.roles = [];
         const names = configuration.roles.map(c => c.name)
         configuration.roles.push({
-            name: uniqueName(names, service.shortId),
+            name: uniqueName(names, service.camelName || service.shortId),
             service: service.classIdentifier
         })
         update();
@@ -109,8 +118,9 @@ export default function MakeCodeEditorExtension() {
     const handleSave = async () => {
         const ts = toTypescript(configuration);
         const json = toJSON(configuration)
+        const deps = toDependencies(configuration)
         console.log(`mkcd: saving...`)
-        await client.write(ts, json);
+        await client.write(ts, json, undefined, deps);
     }
 
     return <Grid container direction="row" spacing={2}>

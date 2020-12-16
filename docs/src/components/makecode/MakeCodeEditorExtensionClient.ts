@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { JDClient } from "../../../../src/jdom/client";
 import { CHANGE, CONNECT, CONNECTING } from "../../../../src/jdom/constants";
 import { inIFrame } from "../../../../src/jdom/iframeclient";
+import { SMap } from "../../../../src/jdom/utils";
 
 export const READ = "read"
 
@@ -167,7 +168,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         await this.sendRequest('extusercode')
     }
 
-    async write(code: string, json?: string, jres?: string): Promise<void> {
+    async write(code: string, json?: string, jres?: string, dependencies?: SMap<string>): Promise<void> {
         if (!this.extensionId) {
             // Write to local storage instead
             this.emit('written', undefined);
@@ -176,6 +177,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
                 code: code || undefined,
                 json: json || undefined,
                 jres: jres || undefined,
+                dependencies
             })
         }
     }
