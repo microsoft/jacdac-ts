@@ -71,6 +71,7 @@ export async function fetchLatestRelease(slug: string, options?: GitHubApiOption
 }
 
 export async function fetchReleaseBinary(slug: string, tag: string): Promise<Blob> {
+    // we are not using the release api because of CORS.
     const downloadUrl = `https://raw.githubusercontent.com/${normalizeSlug(slug)}/${tag}/dist/firmware.uf2`
     const req = await fetch(downloadUrl, { headers: { "Accept": "application/octet-stream" } })
     if (req.status == 200) {
