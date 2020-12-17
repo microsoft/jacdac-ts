@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react"
-import { Card, CardContent, CardHeader, Collapse, createMuiTheme, Grid, GridSize, responsiveFontSizes, Typography } from "@material-ui/core";
+import { Box, Card, CardContent, CardHeader, Collapse, createMuiTheme, Grid, GridSize, responsiveFontSizes, Typography } from "@material-ui/core";
 import ThemedLayout from "../../components/ThemedLayout";
 import JDomTreeView from "../../components/JDomTreeView";
 import { JDService } from "../../../../src/jdom/service";
@@ -61,6 +61,11 @@ export default function Page() {
     })
     const theme = responsiveFontSizes(rawTheme);
     return <ThemedLayout theme={theme}>
+        <Box m={0.5}>
+            <Typography variant="subtitle2">
+                Modules
+            </Typography>
+        </Box>
         <JDomTreeView dashboard={true} />
     </ThemedLayout>
 }
