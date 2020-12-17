@@ -249,8 +249,5 @@ export default function useMakeCodeEditorExtensionClient() {
         setClient(c);
         return () => c?.unmount()
     }, []);
-    useEffect(() => bus.subscribe(PACKET_SEND, (pkt: Packet) => {
-        client.sendMessage("jacdac", pkt.toBuffer())
-    }), [client])
     return client;
 }
