@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { JDClient } from "../../../../src/jdom/client";
 import { CHANGE, CONNECT, CONNECTING } from "../../../../src/jdom/constants";
 import { inIFrame } from "../../../../src/jdom/iframeclient";
+import Packet from "../../../../src/jdom/packet";
 import { SMap } from "../../../../src/jdom/utils";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 
 export const READ = "read"
+export const MESSAGE_PACKET = "messagepacket"
 
 export interface ReadResponse {
     code?: string;
@@ -106,6 +109,12 @@ export class MakeCodeEditorExtensionClient extends JDClient {
                 case "extdatastream":
                     this.emit('datastream', true);
                     break;
+                case "extconsole":
+                    this.emit('console', msg.body);
+                    break;
+                case "extmessagepacket":
+                    this.emit(MESSAGE_PACKET, msg.body);
+                    break;
                 default:
                     console.debug("Unhandled event", msg);
             }
@@ -192,19 +201,39 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         })
     }
 
-    async dataStream(console: boolean) {
+    async dataStreamConsole(console: boolean) {
         await this.sendRequest('extdatastream', {
             console
+        })
+    }
+
+    async dataStreamMessages(messages: boolean) {
+        await this.sendRequest('extdatastream', {
+            messages
         })
     }
 }
 
 
 export default function useMakeCodeEditorExtensionClient() {
+    const { bus } = useContext<JDContextProps>(JACDACContext);
     const [client, setClient] = useState<MakeCodeEditorExtensionClient>(undefined);
     useEffect(() => {
         console.log(`mkcd: new editor client`)
-        let c = new MakeCodeEditorExtensionClient();
+        const c = new MakeCodeEditorExtensionClient();
+        c.on(CONNECT, () => {
+            console.log(`mkcd: stream messages`)
+            c.dataStreamMessages(true)
+        });
+        c.on(MESSAGE_PACKET, (msg) => {
+            if (msg.channel === "jacdac") {
+                const pkt = Packet.fromBinary(msg.data, bus.timestamp);
+                if (!pkt)
+                    return;
+                pkt.sender = "makecode";
+                bus.processPacket(pkt);
+            }
+        })
         setClient(c);
         return () => c?.unmount()
     }, []);
