@@ -118,7 +118,6 @@ export class MakeCodeEditorExtensionClient extends JDClient {
                 default:
                     console.debug("Unhandled event", msg);
             }
-            console.debug("received event: ", msg);
         }
         else {
             const { action, resolve, reject } = this.pendingCommands[msg.id];
