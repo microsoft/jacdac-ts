@@ -5,6 +5,7 @@ import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExt
 import { makeStyles, Container, Hidden, Box, Paper, Button } from '@material-ui/core';
 import PaperBox from "../../components/PaperBox";
 import Flags from "../../../../src/jdom/flags";
+import DeviceList from "../../components/DeviceList"
 
 Flags.webUSB = false;
 
@@ -40,6 +41,9 @@ export default function Page() {
         <div className={classes.content}>
             <PaperBox>
                 <MakeCodeEditorExtension />
+            </PaperBox>
+            <PaperBox>
+                <DeviceList />
             </PaperBox>
         </div>
     </ThemedLayout>

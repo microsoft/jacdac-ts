@@ -1,4 +1,3 @@
-
 import React, { useContext } from 'react';
 import { Grid, makeStyles, Theme, createStyles } from '@material-ui/core';
 import DeviceCard from './DeviceCard';

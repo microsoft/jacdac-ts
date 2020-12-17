@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { JDClient } from "../../../../src/jdom/client";
-import { CHANGE, CONNECT, CONNECTING } from "../../../../src/jdom/constants";
+import { CHANGE, CONNECT, CONNECTING, PACKET_SEND } from "../../../../src/jdom/constants";
 import { inIFrame } from "../../../../src/jdom/iframeclient";
 import Packet from "../../../../src/jdom/packet";
 import { SMap } from "../../../../src/jdom/utils";
@@ -212,6 +212,17 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             messages
         })
     }
+
+    async sendMessage(channel: string, data: Uint8Array) {
+        if (!this.extensionId) return;
+        const msg = {
+            type: "messagepacket",
+            channel,
+            data,
+            source: "jacdac-editor-extension"
+        }
+        window.parent.postMessage(msg, "*");
+    }
 }
 
 
@@ -227,15 +238,21 @@ export default function useMakeCodeEditorExtensionClient() {
         });
         c.on(MESSAGE_PACKET, (msg) => {
             if (msg.channel === "jacdac") {
+                if (msg.source === "jacdac-editor-extension")
+                    return;
+
                 const pkt = Packet.fromBinary(msg.data, bus.timestamp);
                 if (!pkt)
                     return;
-                pkt.sender = "makecode";
+                pkt.sender = msg.source || "makecode";
                 bus.processPacket(pkt);
             }
         })
         setClient(c);
         return () => c?.unmount()
     }, []);
+    useEffect(() => bus.subscribe(PACKET_SEND, (pkt: Packet) => {
+        client.sendMessage("jacdac", pkt.toBuffer())
+    }), [client])
     return client;
 }

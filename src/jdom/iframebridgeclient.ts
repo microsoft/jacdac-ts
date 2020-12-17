@@ -68,8 +68,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             return;
 
         // we're adding a little trace to avoid resending our own packets
-        // if not specified
-        pkt.sender = msg.sender || this.bridgeId;
+        pkt.sender = this.bridgeId;
         // send to native bus
         this.bus.sendPacketAsync(pkt);
         // send to javascript bus
