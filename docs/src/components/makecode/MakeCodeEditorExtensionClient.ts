@@ -8,6 +8,7 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 
 export const READ = "read"
 export const MESSAGE_PACKET = "messagepacket"
+const SENDER = "jacdac-editor-extension"
 
 export interface ReadResponse {
     code?: string;
@@ -218,7 +219,8 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             type: "messagepacket",
             channel,
             data,
-            source: "jacdac-editor-extension"
+            broadcast: true,
+            sender: SENDER
         }
         window.parent.postMessage(msg, "*");
     }
@@ -236,10 +238,7 @@ export default function useMakeCodeEditorExtensionClient() {
             c.dataStreamMessages(true)
         });
         c.on(MESSAGE_PACKET, (msg) => {
-            if (msg.channel === "jacdac") {
-                if (msg.source === "jacdac-editor-extension")
-                    return;
-
+            if (msg.channel === "jacdac" && msg.source !== SENDER) {
                 const pkt = Packet.fromBinary(msg.data, bus.timestamp);
                 if (!pkt)
                     return;
