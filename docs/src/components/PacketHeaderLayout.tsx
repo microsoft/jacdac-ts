@@ -8,7 +8,7 @@ import Packet from "../../../src/jdom/packet";
 import { fromHex, toHex } from "../../../src/jdom/utils";
 import PaperBox from "./PaperBox";
 
-export default function PacketLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {
+export default function PacketHeaderLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {
     const { packet, data, showSlots, showFlags } = props;
     const theme = useTheme();
     const pkt = packet || Packet.fromBinary(fromHex(data))

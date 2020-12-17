@@ -5,10 +5,10 @@ import PacketsContext from "./PacketsContext";
 import HistoryIcon from '@material-ui/icons/History';
 import KindChip from "./KindChip"
 import { toHex } from "../../../src/jdom/utils";
-import { Typography } from "@material-ui/core";
+import { Tooltip, Typography } from "@material-ui/core";
 import PacketSpecification from "./PacketSpecification";
 import { printPacket } from "../../../src/jdom/pretty";
-import PacketLayout from "./PacketLayout";
+import PacketHeaderLayout from "./PacketHeaderLayout";
 import { Link } from "gatsby-theme-material-ui";
 import PaperBox from "./PaperBox";
 
@@ -30,13 +30,15 @@ export default function PacketInspector() {
             {printPacket(packet)}
         </Typography>
         <h3><Link to="/reference/jacdac-protocol#frames">Header</Link></h3>
-        <PacketLayout packet={packet} showSlots={true} showFlags={true} />
+        <PacketHeaderLayout packet={packet} showSlots={true} showFlags={true} />
         {!!packet.data.length && <>
             <h3>Data</h3>
             <PaperBox padding={0}>
-                <pre>
-                    {toHex(packet.data)}
-                </pre>
+                <Tooltip title={decoded?.info?.packFormat || "unknown data layout"}>
+                    <pre>
+                        {toHex(packet.data)}
+                    </pre>
+                </Tooltip>
             </PaperBox>
         </>}
         {!!decoded?.decoded.length && <>

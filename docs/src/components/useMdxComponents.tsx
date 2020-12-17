@@ -14,7 +14,7 @@ import UpdateDeviceList from "./UpdateDeviceList";
 import FlashButton from "./FlashButton";
 import Widget from "../jacdac/Widget";
 import ConnectButton from "../jacdac/ConnectButton"
-import PacketLayout from "./PacketLayout";
+import PacketHeaderLayout from "./PacketHeaderLayout";
 import ConnectAlert from "./ConnectAlert";
 import TraceList from "./TraceList";
 import GithubRepositoryCard from "./GithubRepositoryCard";
@@ -49,7 +49,6 @@ export default function useMdxComponents() {
     FlashButton: props => <FlashButton {...props} />,
     Widget: props => <Widget {...props} />,
     ConnectButton: props => <ConnectButton {...props} />,
-    PacketLayout: props => <PacketLayout {...props} />,
     ConnectAlert: props => <ConnectAlert {...props} />,
     TraceList: props => <TraceList {...props} />,
     GithubRepositoryCard: props => <GithubRepositoryCard {...props} />,
