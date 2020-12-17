@@ -247,6 +247,7 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             checkboxes={checkboxes}
             expanded={expanded}
             selected={selected}
+            dashboard={dashboard}
             {...other}
         />)}
     </TreeView>
