@@ -34,6 +34,7 @@ ${config.roles.map(role => `
 `).join("")}
 }
 control.inBackground(function() {
+    pause(500);
 ${config.roles.map(role => `    ${ns}.${camelize(role.name)}.start();
 `).join("")}
 })
