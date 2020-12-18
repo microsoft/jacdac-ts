@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { cryptoRandomUint32, delay, toHex } from "../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { SRV_PROTO_TEST } from "../../../src/jdom/constants";
+import { ProtoTestCmd, SRV_PROTO_TEST } from "../../../src/jdom/constants";
 import useChange from "../jacdac/useChange"
 import { JDService } from "../../../src/jdom/service";
 import { JDRegister } from "../../../src/jdom/register";
@@ -16,7 +16,7 @@ import useEffectAsync from "./useEffectAsync";
 import TestCard from "./TestCard";
 import Packet from "../../../src/jdom/packet";
 import { JDEvent } from "../../../src/jdom/event";
-
+import { InPipeReader } from "../../../src/jdom/pipes";
 
 function pick(...values: number[]) {
     return values.find(x => x !== undefined);
@@ -161,11 +161,11 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
         await testCommand(log);
     }
 
-    return <TestCard title={name} subheader={specification.packFormat || "?"} onTest={test}>
-    </TestCard>
+    return <TestCard title={name} subheader={specification.packFormat || "?"} onTest={test} />
 }
 
 function ServiceProtocolTest(props: { service: JDService }) {
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const { service } = props;
     const { device } = service;
 
@@ -178,6 +178,22 @@ function ServiceProtocolTest(props: { service: JDService }) {
             return { rw, ro, ev }
         });
 
+    const outPipeTest = async (log) => {
+        const inp = new InPipeReader(bus)
+        await service.sendPacketAsync(
+            inp.openCommand(ProtoTestCmd.CReportPipe),
+            true)
+        log(`pipe connected`)
+
+        let bytes: number[] = [];
+        for (const buf of await inp.readData()) {
+            const [byte] = jdunpack<[number]>(buf, "u8");
+            bytes.push(byte);
+            log(`byte ${byte.toString(16)}`)
+        }
+        log(`received ${bytes.length} bytes`)
+   }
+
     return <Grid container spacing={1}>
         <Grid item xs={10}>
             <Typography variant="h4">
@@ -188,6 +204,9 @@ function ServiceProtocolTest(props: { service: JDService }) {
             <DeviceActions device={device} reset={true} />
         </Grid>
         {rws?.map(rw => <Grid key={rw.rw.id} item xs={12} md={6}><RegisterProtocolTest {...rw} /></Grid>)}
+        <Grid key={"cpipe"} item xs={12} md={6}>
+            <TestCard title={"out pipe"} subheader={""} onTest={outPipeTest} />
+        </Grid>
     </Grid>
 }
 

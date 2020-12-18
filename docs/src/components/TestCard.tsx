@@ -11,7 +11,7 @@ export type Test = (log: TestLogger) => Promise<void>;
 export default function TestCard(props: {
     title: string,
     subheader?: string;
-    children: any,
+    children?: JSX.Element | JSX.Element[],
     onTest: Test,
     autoRun?: boolean
 }) {
