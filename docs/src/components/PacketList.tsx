@@ -28,11 +28,10 @@ const VirtualPacketItem = (props: { data: VirtualListData }
     const packet = packets[index];
 
     if (!packet)
-        return <div style={style}></div>
+        return <div key={""} style={style}></div>
 
-    return <div style={style}>
+    return <div key={packet.key} style={style}>
         <PacketListItem
-            key={'pkt' + packet.key}
             packet={packet.packet}
             count={packet.count}
             skipRepeatedAnnounce={skipRepeatedAnnounce}
