@@ -156,6 +156,23 @@ module.exports = {
         } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
       },
     },
+    {
+      resolve: 'gatsby-plugin-favicons',
+      options: {
+        logo: '../assets/icons/jd-logo-pads.svg',
+        appName: 'JACDAC',
+        background: '#fff',
+        icons: {
+          android: true,
+          appleIcon: true,
+          appleStartup: true,
+          coast: false,
+          favicons: true,
+          yandex: false,
+          windows: false
+        }
+      }
+    },    
     /*    
     {
       resolve: 'gatsby-plugin-flexsearch',
