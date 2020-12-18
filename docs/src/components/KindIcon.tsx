@@ -23,10 +23,12 @@ import BubbleChartIcon from '@material-ui/icons/BubbleChart';
 import ComputerIcon from '@material-ui/icons/Computer';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import BlurLinearIcon from '@material-ui/icons/BlurLinear';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import MarkunreadMailboxIcon from '@material-ui/icons/MarkunreadMailbox';
 import {
     PACKET_KIND_RO, PACKET_KIND_RW, CONST_NODE_NAME, COMMAND_NODE_NAME,
     REPORT_NODE_NAME, BUS_NODE_NAME, DEVICE_NODE_NAME, VIRTUAL_DEVICE_NODE_NAME,
-    SERVICE_NODE_NAME, EVENT_NODE_NAME, PIPE_NODE_NAME
+    SERVICE_NODE_NAME, EVENT_NODE_NAME, PIPE_NODE_NAME, CRC_ACK_NODE_NAME
 } from "../../../src/jdom/constants";
 import { Tooltip } from "@material-ui/core";
 import JacdacIcon from "./icons/JacdacIcon";
@@ -47,6 +49,7 @@ export default function KindIcon(props: { kind: string, className?: string, tool
         case VIRTUAL_DEVICE_NODE_NAME: icon = <ComputerIcon className={className} />; break;
         case SERVICE_NODE_NAME: icon = <BubbleChartIcon className={className} />; break;
         case PIPE_NODE_NAME: icon = <BlurLinearIcon className={className} />; break;
+        case CRC_ACK_NODE_NAME: icon = <MarkunreadMailboxIcon className={className} />; break;
         default: icon = <DeviceUnknownIcon className={className} />; break;
     }
 

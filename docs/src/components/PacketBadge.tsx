@@ -11,7 +11,8 @@ export default function PacketBadge(props: { packet: Packet, count?: number }) {
 
     const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
 
-    const icon = logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> : <KindIcon kind={decoded?.info.kind} />;
+    const icon = logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> : 
+        <KindIcon kind={packet.is_crc_ack ? "crc_ack" : packet.is_pipe ? "pipe" : decoded?.info.kind} />;
     return (count || 0) > 1 ? <Badge badgeContent={count}>
         {icon}
     </Badge> : icon;

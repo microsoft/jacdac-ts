@@ -366,7 +366,7 @@ export class Packet {
     }
     get friendlyCommandName(): string {
         const cmd = this.service_command
-        let cmdname = commandName(cmd, this.serviceClass)
+        let cmdname: string;
         if (this.is_crc_ack) {
             cmdname = hexNum(cmd)
         }
@@ -376,6 +376,8 @@ export class Packet {
                 cmdname += " meta"
             if (cmd & PIPE_CLOSE_MASK)
                 cmdname += " close"
+        } else {
+            cmdname = commandName(cmd, this.serviceClass)
         }
         return cmdname;
     }
