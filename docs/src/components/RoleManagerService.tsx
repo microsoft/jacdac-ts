@@ -55,9 +55,10 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
 }
 
 export default function RoleManagerService(props: {
-    service: JDService
+    service: JDService,
+    clearRoles?: boolean
 }) {
-    const { service } = props
+    const { service, clearRoles } = props
     const client = useServiceClient(service, srv => new RoleManagerClient(srv));
     useChange(client)
 
@@ -68,7 +69,7 @@ export default function RoleManagerService(props: {
             {client?.remoteRequestedDevices.map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={client} />)}
         </CardContent>
         <CardActions>
-            {client && <CmdButton size="small"
+            {clearRoles && client && <CmdButton size="small"
                 onClick={handleClearRoles}>
                 Clear roles
             </CmdButton>}
