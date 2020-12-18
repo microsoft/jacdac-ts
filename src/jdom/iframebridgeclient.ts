@@ -18,6 +18,8 @@ export interface PacketMessage {
 export default class IFrameBridgeClient extends JDIFrameClient {
     // this is a unique id used to trace packets sent by this bridge
     readonly bridgeId = "bridge" + Math.random();
+    packetSent = 0;
+    packetProcessed = 0;
     constructor(readonly bus: JDBus) {
         super(bus)
         this.postPacket = this.postPacket.bind(this);
@@ -66,9 +68,11 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
         if (!pkt)
             return;
-
+        if (pkt.sender === this.bridgeId)  // returning packet
+            return;
+        this.packetProcessed++;
         // we're adding a little trace to avoid resending our own packets
-        pkt.sender = this.bridgeId;
+        pkt.sender = msg.sender;
         // send to native bus
         this.bus.sendPacketAsync(pkt);
         // send to javascript bus
@@ -76,10 +80,13 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private postPacket(pkt: Packet) {
-        // check we sent this packet
-        if (pkt.sender === this.bridgeId)
+        // check if this packet was already sent from another spot
+        if (!!pkt.sender)
             return;
 
+        this.packetSent++;
+        pkt.sender = this.bridgeId;
+        console.log(`post packet ${pkt.sender}`)
         const msg: PacketMessage = {
             type: "messagepacket",
             channel: "jacdac",

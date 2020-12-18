@@ -8,6 +8,8 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 
 export const READ = "read"
 export const MESSAGE_PACKET = "messagepacket"
+const HIDDEN = "hidden"
+const SHOWN = "shown"
 const SENDER = "jacdac-editor-extension"
 
 export interface ReadResponse {
@@ -90,7 +92,6 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         const msg = ev.data;
         if (msg?.type !== "pxtpkgext")
             return;
-        console.log({ msg })
         if (!msg.id) {
             switch (msg.event) {
                 case "extinit":
@@ -101,11 +102,13 @@ export class MakeCodeEditorExtensionClient extends JDClient {
                     break;
                 case "extshown":
                     this.setVisible(true)
-                    this.emit('shown');
+                    this.emit(SHOWN);
+                    this.emit(CHANGE);
                     break;
                 case "exthidden":
                     this.setVisible(false)
-                    this.emit('hidden');
+                    this.emit(HIDDEN);
+                    this.emit(CHANGE);
                     break;
                 case "extdatastream":
                     this.emit('datastream', true);
@@ -138,10 +141,12 @@ export class MakeCodeEditorExtensionClient extends JDClient {
                 case "extusercode":
                     // Loaded, set the target
                     this.emit('readuser', msg.resp);
+                    this.emit(CHANGE);
                     break;
                 case "extreadcode":
                     // Loaded, set the target
                     this.emit(READ, msg.resp);
+                    this.emit(CHANGE);
                     break;
                 case "extwritecode":
                     this.emit('written', undefined);
@@ -212,18 +217,6 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             messages
         })
     }
-
-    async sendMessage(channel: string, data: Uint8Array) {
-        if (!this.extensionId) return;
-        const msg = {
-            type: "messagepacket",
-            channel,
-            data,
-            broadcast: true,
-            sender: SENDER
-        }
-        window.parent.postMessage(msg, "*");
-    }
 }
 
 
@@ -237,6 +230,7 @@ export default function useMakeCodeEditorExtensionClient() {
             console.log(`mkcd: stream messages`)
             c.dataStreamMessages(true)
         });
+        c.on([HIDDEN, SHOWN], () => bus.clear());
         c.on(MESSAGE_PACKET, (msg) => {
             if (msg.channel === "jacdac" && msg.source !== SENDER) {
                 const pkt = Packet.fromBinary(msg.data, bus.timestamp);
