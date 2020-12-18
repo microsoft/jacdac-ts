@@ -28,6 +28,7 @@ import { jdpack, jdunpack } from "./pack";
 export class Packet {
     private _header: Uint8Array;
     private _data: Uint8Array;
+    private _meta: any = undefined; // accesory data used by clients
     timestamp: number
     device: JDDevice
     private _decoded: DecodedPacket;
@@ -246,6 +247,12 @@ export class Packet {
         if (!this._decoded)
             this._decoded = decodePacketData(this);
         return this._decoded;
+    }
+
+    get meta() {
+        if (!this._meta)
+            this._meta = {};
+        return this._meta;
     }
 
     clone() {

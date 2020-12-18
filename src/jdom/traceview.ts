@@ -18,6 +18,7 @@ export interface TracePacketProps {
 }
 
 export default class TraceView extends JDClient {
+    private id = "v" + Math.random();
     private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS;
 
     private _trace: Trace;
@@ -102,6 +103,7 @@ export default class TraceView extends JDClient {
     }
 
     private refreshFilter() {
+        this.id = "v" + Math.random();
         this._packetFilter = parsePacketFilter(this.bus, this._filter);
         this._filteredPackets = [];
         const packets = this.trace.packets;
@@ -128,7 +130,11 @@ export default class TraceView extends JDClient {
         }
     }
 
-    private addFilteredPacket(pkt) {
+    private addFilteredPacket(pkt: Packet) {
+        if (pkt.meta[this.id])
+            return;
+        pkt.meta[this.id] = true;
+
         // detect duplicate at the tail of the packets
         let hash = ""
         if (this._packetFilter?.props.grouping) {
