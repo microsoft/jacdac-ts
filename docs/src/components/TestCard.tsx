@@ -12,9 +12,10 @@ export default function TestCard(props: {
     title: string,
     subheader?: string;
     children: any,
-    onTest: Test
+    onTest: Test,
+    autoRun?: boolean
 }) {
-    const { title, subheader, onTest, children } = props;
+    const { title, subheader, onTest, children, autoRun } = props;
     const [output, setOutput] = useState("");
 
     const runTest = async () => {
@@ -60,7 +61,7 @@ export default function TestCard(props: {
             {output && <Snippet value={output} />}
         </CardContent>
         <CardActions>
-            <CmdButton variant="outlined" onClick={handleClick} disableReset={true} autoRun={true}>Test</CmdButton>
+            <CmdButton variant="outlined" onClick={handleClick} disableReset={true} autoRun={autoRun}>Test</CmdButton>
         </CardActions>
     </Card>
 }
