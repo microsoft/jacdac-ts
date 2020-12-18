@@ -86,9 +86,9 @@ export class InPipe extends JDClient {
 
 
     private _handlePacket(pkt: Packet) {
-        if (pkt.service_index !== JD_SERVICE_INDEX_PIPE)
+        if (pkt.is_pipe)
             return
-        if (pkt.service_command >> PIPE_PORT_SHIFT !== this._port)
+        if (pkt.pipe_port !== this._port)
             return
         if ((pkt.service_command & PIPE_COUNTER_MASK) == (this._count & PIPE_COUNTER_MASK)) {
             this._count++

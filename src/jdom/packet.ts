@@ -170,6 +170,14 @@ export class Packet {
         return this.service_command === CMD_EVENT;
     }
 
+    get is_pipe() {
+        return this.service_index === JD_SERVICE_INDEX_PIPE;
+    }
+
+    get pipe_port() {
+        return this.service_command >> PIPE_PORT_SHIFT;
+    }
+
     get data(): Uint8Array {
         return this._data
     }
