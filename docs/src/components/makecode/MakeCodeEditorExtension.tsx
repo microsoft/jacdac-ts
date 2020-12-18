@@ -25,13 +25,18 @@ interface Configuration {
 }
 
 function toTypescript(config: Configuration) {
+    const ns = "myModules"
     return `// auto-generated, do not edit.
-namespace myModules {
+namespace ${ns} {
 ${config.roles.map(role => `
     //% fixedInstance block="${role.name}"
     export const ${camelize(role.name)} = new ${resolveMakecodeServiceFromClassIdentifier(role.service).client.qName}("${camelize(role.name)}");
 `).join("")}
 }
+control.inBackground(function() {
+${config.roles.map(role => `    ${ns}.${camelize(role.name)}.start();
+`).join("")}
+})
     `
 }
 
