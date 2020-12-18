@@ -12,6 +12,7 @@ const DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME = 5000;
 
 export interface TracePacketProps {
     key: string;
+    hash: string;
     packet: Packet;
     count?: number;
 }
@@ -129,20 +130,24 @@ export default class TraceView extends JDClient {
 
     private addFilteredPacket(pkt) {
         // detect duplicate at the tail of the packets
-        const key = pkt.toString();
-        const old = this._packetFilter?.props.grouping && this._filteredPackets
-            .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
-            .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
-                p.key === key)
-        if (old) {
-            old.count++;
+        let hash = ""
+        if (this._packetFilter?.props.grouping) {
+            hash = pkt.toString();
+            const old = this._filteredPackets
+                .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
+                .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
+                    p.hash === hash)
+            if (old) {
+                old.count++;
+                return;
+            }
         }
-        else {
-            this._filteredPackets.unshift({
-                key,
-                packet: pkt,
-                count: 1
-            })
-        }
+
+        this._filteredPackets.unshift({
+            key: "pkt" + Math.random() + "",
+            hash: hash,
+            packet: pkt,
+            count: 1
+        })
     }
 }
