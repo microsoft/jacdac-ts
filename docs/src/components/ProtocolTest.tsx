@@ -88,7 +88,6 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
     const roValue = useChange(ro, rxValue);
 
     // event code and command code are the same as rw register
-
     useEffectAsync(async () => {
         await rw.sendGetAsync();
         await ro.sendGetAsync();
@@ -157,6 +156,10 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
     }
 
     const test = async (log) => {
+        rw.service.registersUseAcks = false;
+        await testRwRo(log);
+        await testCommand(log);
+        rw.service.registersUseAcks = true;
         await testRwRo(log);
         await testCommand(log);
     }
