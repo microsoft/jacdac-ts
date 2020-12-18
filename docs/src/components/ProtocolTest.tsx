@@ -1,9 +1,9 @@
 import { Grid, Typography } from "@material-ui/core";
 import React, { useContext } from "react";
-import { cryptoRandomUint32, delay, toHex } from "../../../src/jdom/utils";
+import { bufferEq, cryptoRandomUint32, delay, toHex } from "../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { ProtoTestCmd, SRV_PROTO_TEST } from "../../../src/jdom/constants";
+import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../src/jdom/constants";
 import useChange from "../jacdac/useChange"
 import { JDService } from "../../../src/jdom/service";
 import { JDRegister } from "../../../src/jdom/register";
@@ -69,13 +69,13 @@ function randomFieldPayload(field: JDField) {
     return r;
 }
 
-function randomPayload(packFormat: string, fields: JDField[]) {
+function randomPayload<T extends any[]>(packFormat: string, fields: JDField[]): T {
     if (!packFormat)
         throw new Error("pack format unknown")
     const rs = fields.map(randomFieldPayload);
     if (rs.some(r => r === undefined))
         throw new Error("unsupported data layout")
-    return rs;
+    return rs as T;
 }
 
 function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEvent }) {
@@ -182,20 +182,35 @@ function ServiceProtocolTest(props: { service: JDService }) {
         });
 
     const outPipeTest = async (log) => {
+        // fill bytes with data
+        const rw = service.register(ProtoTestReg.RwBytes);
+        const [data] = randomPayload<[Uint8Array]>("b", rw.fields);
+        log(`data: ${toHex(data)}`)
+        // send over cmd packet
+        rw.service.registersUseAcks = true;
+        await rw.sendSetAsync(data);
+        await rw.sendGetAsync();
+        // wait for response
+        await delay(100);
+        log(`data recv: ${toHex(rw.data)}`)
+        if (!bufferEq(data, rw.data))
+            throw new Error(`rw write failed, expected ${toHex(data)}, got ${toHex(rw.data)}`);
+        // read packet back
         const inp = new InPipeReader(bus)
         await service.sendPacketAsync(
             inp.openCommand(ProtoTestCmd.CReportPipe),
             true)
         log(`pipe connected`)
-
-        let bytes: number[] = [];
+        let recv: number[] = [];
         for (const buf of await inp.readData()) {
             const [byte] = jdunpack<[number]>(buf, "u8");
-            bytes.push(byte);
-            log(`byte ${byte.toString(16)}`)
+            recv.push(byte);
         }
-        log(`received ${bytes.length} bytes`)
-   }
+        const recvu = new Uint8Array(recv);
+        log(`received ${toHex(recvu)}`)
+        if (!bufferEq(data, recvu))
+            throw new Error(`expected ${toHex(data)}, got ${toHex(recv)}`)
+    }
 
     return <Grid container spacing={1}>
         <Grid item xs={10}>

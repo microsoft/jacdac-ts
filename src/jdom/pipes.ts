@@ -55,11 +55,20 @@ export class InPipe extends JDClient {
     private _port: number
     private _count = 0
 
-    constructor(protected bus: JDBus) {
+    constructor(protected readonly bus: JDBus) {
         super()
 
         this._handlePacket = this._handlePacket.bind(this)
+        this.allocPort()
+        this.bus.enableAnnounce()
+        this.mount(this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket))
+    }
 
+    get isOpen() {
+        return this._port != null
+    }
+
+    private allocPort() {
         while (true) {
             this._port = 1 + randomUInt(511)
             const info = this.bus.selfDevice.port(this._port)
@@ -68,13 +77,6 @@ export class InPipe extends JDClient {
                 break
             }
         }
-
-        this.bus.enableAnnounce()
-        this.mount(this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket))
-    }
-
-    get isOpen() {
-        return this._port != null
     }
 
     openCommand(cmd: number) {
@@ -86,7 +88,7 @@ export class InPipe extends JDClient {
 
 
     private _handlePacket(pkt: Packet) {
-        if (pkt.is_pipe)
+        if (!pkt.is_pipe)
             return
         if (pkt.pipe_port !== this._port)
             return

@@ -2,7 +2,6 @@ import { JDBus } from "./bus";
 import { PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
-import { crc } from "./utils";
 
 export interface PacketMessage {
     channel: "jacdac";
