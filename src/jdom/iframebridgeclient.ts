@@ -86,7 +86,6 @@ export default class IFrameBridgeClient extends JDIFrameClient {
 
         this.packetSent++;
         pkt.sender = this.bridgeId;
-        console.log(`post packet ${pkt.sender}`)
         const msg: PacketMessage = {
             type: "messagepacket",
             channel: "jacdac",
