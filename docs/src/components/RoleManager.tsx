@@ -19,7 +19,7 @@ export default function RoleManager() {
         {<ConnectAlert serviceClass={SRV_ROLE_MANAGER} />}
         {!services.length && connectionState == BusState.Connected && <Alert severity="info">We could not find any device with the role manager service on the bus!</Alert>}
         <Grid container spacing={2}>
-            {services.map(service => <Grid key={service.id} item {...gridBreakpoints}>
+            {services.map(service => <Grid key={service.id} item xs={12}>
                 <RoleManagerService service={service} />
             </Grid>)}
         </Grid>
