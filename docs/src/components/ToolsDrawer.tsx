@@ -95,7 +95,7 @@ export default function ToolsDrawer() {
         },
         {
             text: "MakeCode",
-            url: "https://makecode.com/multi?jacdac=1",
+            url: "/tools/makecode",
             icon: <MakeCodeIcon />
         },
         {
