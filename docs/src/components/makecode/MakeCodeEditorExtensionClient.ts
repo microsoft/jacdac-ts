@@ -31,6 +31,10 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     private _connected = false;
     private _visible = false;
 
+    private log(msg: string) {
+        console.log(`mkcd ${this.extensionId}: ${msg}`)
+    }
+
     constructor() {
         super();
         this.handleMessage = this.handleMessage.bind(this);
@@ -42,8 +46,6 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         this.on(SHOWN, () => this.refresh());
         // notify parent that we're ready
         this.init();
-
-        console.log(`mkcd: ${this.extensionId}`)
     }
 
     get target() {
@@ -80,7 +82,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     }
 
     private sendRequest<T>(action: string, body?: any): Promise<T> {
-        console.log(`mkcded ${this.extensionId}: send ${action}`)
+        this.log(`send ${action}`)
         if (!this.extensionId)
             return Promise.resolve(undefined);
 
@@ -97,14 +99,14 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         if (!msg.id) {
             switch (msg.event) {
                 case "extinit":
-                    console.log(`mkcd: init`)
+                    this.log(`init`)
                     this._target = msg.target;
                     this._connected = true;
                     this.emit(CONNECT);
                     this.emit(CHANGE);
                     break;
                 case "extloaded":
-                    console.log(`mkcd: loaded`)
+                    this.log(`loaded`)
                     break;
                 case "extshown":
                     this.setVisible(true)
@@ -162,14 +164,14 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     }
 
     private async init() {
-        console.log(`mkcd: init sequence`)
+        this.log(`initializing`)
         await this.sendRequest<void>('extinit');
-        console.log(`mkcd: connected`)
+        this.log(`connected`)
         await this.refresh();
     }
 
     private async refresh() {
-        console.log(`mkcd: refresh`)
+        this.log(`refresh`)
         const r = await this.read();
     }
 
