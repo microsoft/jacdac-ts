@@ -170,6 +170,10 @@ export class Packet {
         return this.service_command === CMD_EVENT;
     }
 
+    get is_crc_ack() {
+        return this.service_index === JD_SERVICE_INDEX_CRC_ACK;
+    }
+
     get is_pipe() {
         return this.service_index === JD_SERVICE_INDEX_PIPE;
     }
@@ -343,9 +347,9 @@ export class Packet {
     }
     get friendlyServiceName(): string {
         let service_name: string;
-        if (this.service_index == JD_SERVICE_INDEX_CRC_ACK) {
+        if (this.is_crc_ack) {
             service_name = "CRC-ACK"
-        } else if (this.service_index == JD_SERVICE_INDEX_PIPE) {
+        } else if (this.is_pipe) {
             service_name = "PIPE"
         } else {
             const serv_id = serviceName(this.multicommand_class || this.serviceClass)
@@ -356,10 +360,10 @@ export class Packet {
     get friendlyCommandName(): string {
         const cmd = this.service_command
         let cmdname = commandName(cmd, this.serviceClass)
-        if (this.service_index == JD_SERVICE_INDEX_CRC_ACK) {
+        if (this.is_crc_ack) {
             cmdname = hexNum(cmd)
         }
-        else if (this.service_index == JD_SERVICE_INDEX_PIPE) {
+        else if (this.is_pipe) {
             cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
             if (cmd & PIPE_METADATA_MASK)
                 cmdname += " meta"

@@ -143,7 +143,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 pipes = parseBoolean(value);
                 break;
             case "port":
-                port = parseInt(port);
+                port = parseInt(value);
+                break;
         }
     });
 
