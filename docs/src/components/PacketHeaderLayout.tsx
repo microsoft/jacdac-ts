@@ -2,7 +2,9 @@ import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, Tab
 import React, { useState } from "react"
 import {
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_COMMAND,
-    JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
+    JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
+    JD_SERVICE_INDEX_CRC_ACK,
+    JD_SERVICE_INDEX_PIPE
 } from "../../../src/jdom/constants";
 import Packet from "../../../src/jdom/packet";
 import { fromHex, toHex } from "../../../src/jdom/utils";
@@ -50,7 +52,11 @@ export default function PacketHeaderLayout(props: { packet?: Packet, data?: stri
         {
             offset: 13,
             size: 1,
-            name: 'service_instance',
+            name: 'service_number',
+            know: {
+                [JD_SERVICE_INDEX_PIPE.toString(16)]: "pipe",
+                [JD_SERVICE_INDEX_CRC_ACK.toString(16)]: "crc ack",
+            },
             description: "A number that specifies an operation and code combination."
         },
         {
@@ -101,13 +107,20 @@ export default function PacketHeaderLayout(props: { packet?: Packet, data?: stri
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {slots.map((slot, i) => <TableRow key={slot.name}>
-                            <TableCell><code>{toHex(header.slice(slot.offset, slot.offset + slot.size))}</code></TableCell>
-                            <TableCell>{slot.offset}</TableCell>
-                            <TableCell>{slot.size}</TableCell>
-                            <TableCell>{slot.name}</TableCell>
-                            <TableCell>{slot.description}</TableCell>
-                        </TableRow>)}
+                        {slots.map((slot, i) => {
+                            const buf = header.slice(slot.offset, slot.offset + slot.size);
+                            const known = slot.know?.[toHex(buf)]
+                            return <TableRow key={slot.name}>
+                                <TableCell>
+                                    <code>{toHex(buf)}</code>
+                                    {known && <code>({known})</code>}
+                                </TableCell>
+                                <TableCell>{slot.offset}</TableCell>
+                                <TableCell>{slot.size}</TableCell>
+                                <TableCell>{slot.name}</TableCell>
+                                <TableCell>{slot.description}</TableCell>
+                            </TableRow>
+                        })}
                     </TableBody>
                 </Table>
             </TableContainer>

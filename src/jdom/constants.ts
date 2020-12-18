@@ -125,6 +125,7 @@ export const BUS_NODE_NAME = "bus"
 export const COMMAND_NODE_NAME = "command"
 export const FIELD_NODE_NAME = "field"
 export const PIPE_NODE_NAME = "pipe"
+export const PIPE_REPORT_NODE_NAME = "pipe_report"
 export const CRC_ACK_NODE_NAME = "crc_ack"
 
 export const REGISTER_REFRESH_TIMEOUT = 150
