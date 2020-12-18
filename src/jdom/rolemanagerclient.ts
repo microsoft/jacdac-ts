@@ -114,7 +114,7 @@ export class RoleManagerClient extends JDServiceClient {
         this.remoteRequestedDevices = devs
         recomputeCandidates(this.bus, this.remoteRequestedDevices)
 
-        console.log(`rdp changed`)
+        console.log(`rdp changed`, this.remoteRequestedDevices)
         this.emit(CHANGE, this.remoteRequestedDevices)
     }
 

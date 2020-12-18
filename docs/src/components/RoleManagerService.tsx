@@ -48,8 +48,8 @@ function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: R
             </MenuItem>)}
         </SelectWithLabel>}
         {noCandidates && <Alert severity="warning">
-            <AlertTitle>No compatible device for {label}</AlertTitle>
-            Please connect a device with {serviceNames} services.
+            <AlertTitle>No compatible device for "{label}"</AlertTitle>
+            Please connect a device with <b>{serviceNames}</b> services.
         </Alert>}
     </Box>
 }
@@ -60,8 +60,6 @@ export default function RoleManagerService(props: {
     const { service } = props
     const client = useServiceClient(service, srv => new RoleManagerClient(srv));
     useChange(client)
-    if (!client)
-        return null // wait till loaded
 
     const handleClearRoles = async () => await client?.clearRoles()
     return <Card>
