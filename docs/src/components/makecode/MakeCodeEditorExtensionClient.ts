@@ -39,9 +39,11 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             this.mount(() => window.removeEventListener("message", this.handleMessage));
         }
         // always refresh on load
-        this.on('shown', () => this.refresh());
+        this.on(SHOWN, () => this.refresh());
         // notify parent that we're ready
         this.init();
+
+        console.log(`mkcd: ${this.extensionId}`)
     }
 
     get target() {
