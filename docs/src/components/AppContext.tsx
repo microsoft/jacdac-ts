@@ -49,6 +49,7 @@ export const AppProvider = ({ children }) => {
     const setError = (e: any) => {
         if (isCancelError(e))
             return;
+        console.error(e);
         const msg = e?.message || (e + "");
         enqueueSnackbar(msg, {
             variant: 'error'
