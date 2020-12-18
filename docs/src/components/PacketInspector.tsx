@@ -29,6 +29,9 @@ export default function PacketInspector() {
         <Typography variant="body2">
             {printPacket(packet)}
         </Typography>
+        {packet.sender && <Typography variant="body2">
+            sender: {packet.sender}
+            </Typography>}
         <h3><Link to="/reference/jacdac-protocol#frames">Header</Link></h3>
         <PacketHeaderLayout packet={packet} showSlots={true} showFlags={true} />
         {!!packet.data.length && <>

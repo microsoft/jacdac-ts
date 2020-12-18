@@ -124,6 +124,7 @@ export const VIRTUAL_DEVICE_NODE_NAME = "virtualdevice"
 export const BUS_NODE_NAME = "bus"
 export const COMMAND_NODE_NAME = "command"
 export const FIELD_NODE_NAME = "field"
+export const PIPE_NODE_NAME = "pipe"
 
 export const REGISTER_REFRESH_TIMEOUT = 150
 export const REGISTER_REFRESH_RETRY_0 = 30

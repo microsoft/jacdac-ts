@@ -103,6 +103,20 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography>Hide repeated announce</Typography>&nbsp;
                     <Typography variant="subtitle2">repeated-announce:false</Typography>
                 </MenuItem>
+                <MenuItem key="pipes" onClick={handleAdd("pipes:true")}>
+                    <ListItemIcon>
+                        <KindIcon kind={"pipe"} />
+                    </ListItemIcon>
+                    <Typography>Show pipes</Typography>&nbsp;
+                    <Typography variant="subtitle2">pipes:true</Typography>
+                </MenuItem>
+                <MenuItem key="port" onClick={handleAdd("port:42")}>
+                    <ListItemIcon>
+                        <KindIcon kind={"pipe"} />
+                    </ListItemIcon>
+                    <Typography>Filter by port 42</Typography>&nbsp;
+                    <Typography variant="subtitle2">port:42</Typography>
+                </MenuItem>
                 <MenuItem key="grouping" onClick={handleAdd("grouping:false")}>
                     <ListItemIcon>
                         <GroupWorkIcon />

@@ -20,8 +20,9 @@ export interface PacketFilterProps {
     pkts?: string[],
     before?: number,
     after?: number,
-    // no grouping
     grouping?: boolean,
+    pipes?: boolean,
+    port?: number
 }
 
 export interface PacketFilter {
@@ -55,6 +56,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let after = undefined;
     let devices: SMap<{ from: boolean; to: boolean; }> = {};
     let grouping = true;
+    let pipes = undefined;
+    let port: number = undefined;
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
@@ -136,6 +139,11 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "grouping":
                 grouping = parseBoolean(value);
                 break;
+            case "pipes":
+                pipes = parseBoolean(value);
+                break;
+            case "port":
+                port = parseInt(port);
         }
     });
 
@@ -153,7 +161,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         pkts: !!pkts.size && Array.from(pkts.keys()),
         before,
         after,
-        grouping
+        grouping,
+        pipes,
+        port
     }
     const filter = compileFilter(props)
     return {
@@ -189,7 +199,9 @@ export function compileFilter(props: PacketFilterProps) {
         serviceClasses,
         pkts,
         before,
-        after
+        after,
+        pipes,
+        port
     } = props;
 
     let filters: CompiledPacketFilter[] = [];
@@ -205,6 +217,10 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(pkt => pkt.requires_ack === requiresAck);
     if (flags)
         filters.push(pkt => hasAnyFlag(pkt))
+    if (pipes !== undefined)
+        filters.push(pkt => pkt.is_pipe)
+    if (port !== undefined)
+        filters.push(pkt => pkt.pipe_port === port);
 
     if (regGet !== undefined || regSet !== undefined)
         filters.push(pkt => (pkt.is_reg_get === regGet) || (pkt.is_reg_set === regSet))
