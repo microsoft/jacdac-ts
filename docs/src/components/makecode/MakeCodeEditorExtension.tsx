@@ -28,7 +28,7 @@ function toTypescript(config: Configuration) {
     return `// auto-generated, do not edit.
 namespace myModules {
 ${config.roles.map(role => `
-    //% fixedInstance whenUsed block="${role.name}"
+    //% fixedInstance block="${role.name}"
     export const ${camelize(role.name)} = new ${resolveMakecodeServiceFromClassIdentifier(role.service).client.qName}("${camelize(role.name)}");
 `).join("")}
 }
