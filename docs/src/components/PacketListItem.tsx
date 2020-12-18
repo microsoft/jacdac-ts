@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { ListItem, ListItemIcon, makeStyles, Theme, createStyles, ListItemText, useMediaQuery, useTheme } from '@material-ui/core';
+import { ListItem, ListItemIcon, makeStyles, Theme, createStyles, ListItemText, useMediaQuery, useTheme, Box } from '@material-ui/core';
 import Packet from '../../../src/jdom/packet';
 import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
@@ -49,7 +49,9 @@ export default function PacketListItem(props: {
             <PacketBadge packet={packet} count={count} />
         </ListItemIcon>
         <ListItemText
-            primary={primary}
+            primary={<Box textOverflow="ellipsis">
+                {primary}
+            </Box>}
             secondary={secondary}
         />
     </ListItem>

@@ -12,8 +12,8 @@ import IconButtonWithTooltip from "./IconButtonWithTooltip";
 import ReplayIcon from '@material-ui/icons/Replay';
 
 export default function PacketRecorder() {
-    const { clearPackets, clearBus, replayTrace, recording, tracing,
-    } = useContext(PacketsContext)
+    const { clearPackets, clearBus,
+        replayTrace, recording, tracing, } = useContext(PacketsContext)
 
     return <>
         {!recording && replayTrace && <Typography variant="caption">{replayTrace.packets.length} packets</Typography>}
