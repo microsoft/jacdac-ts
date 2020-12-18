@@ -97,10 +97,14 @@ export class MakeCodeEditorExtensionClient extends JDClient {
         if (!msg.id) {
             switch (msg.event) {
                 case "extinit":
+                    console.log(`mkcd: init`)
                     this._target = msg.target;
                     this._connected = true;
                     this.emit(CONNECT);
                     this.emit(CHANGE);
+                    break;
+                case "extloaded":
+                    console.log(`mkcd: loaded`)
                     break;
                 case "extshown":
                     this.setVisible(true)

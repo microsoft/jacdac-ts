@@ -66,10 +66,10 @@ function ClientRoleRow(props: { config: Configuration, component: ClientRole, on
     }
     return <Grid item xs={12}>
         <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid item xs={4} md={6}>
                 <TextField fullWidth={true} error={!!nameError} variant="outlined" label="name" helperText={nameError} value={name} onChange={handleComponentNameChange} />
             </Grid>
-            <Grid item>
+            <Grid item xs={4} md={4}>
                 <ServiceSpecificationSelect variant="outlined" label="service" serviceClass={service} setServiceClass={handleSetService} error={serviceError} />
             </Grid>
             <Grid item>
