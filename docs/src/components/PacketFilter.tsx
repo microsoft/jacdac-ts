@@ -17,6 +17,8 @@ import { arrayConcatMany, uniqueMap } from '../../../src/jdom/utils';
 import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
 import IconButtonWithTooltip from './IconButtonWithTooltip';
 import { IconButton } from 'gatsby-theme-material-ui';
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import GroupWorkIcon from '@material-ui/icons/GroupWork';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -94,12 +96,19 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography>Hide announce</Typography>&nbsp;
                     <Typography variant="subtitle2">announce:false</Typography>
                 </MenuItem>
-                <MenuItem key="repeated-nnounce" onClick={handleAdd("repeated-announce:false")}>
+                <MenuItem key="repeated-announce" onClick={handleAdd("repeated-announce:false")}>
                     <ListItemIcon>
                         <KindIcon kind={"announce"} />
                     </ListItemIcon>
                     <Typography>Hide repeated announce</Typography>&nbsp;
                     <Typography variant="subtitle2">repeated-announce:false</Typography>
+                </MenuItem>
+                <MenuItem key="grouping" onClick={handleAdd("grouping:false")}>
+                    <ListItemIcon>
+                        <GroupWorkIcon />
+                    </ListItemIcon>
+                    <Typography>Disable grouping</Typography>&nbsp;
+                    <Typography variant="subtitle2">grouping:false</Typography>
                 </MenuItem>
                 {devices?.map(device => <MenuItem key={`dev:` + device.id} onClick={handleAdd(`dev:${device.name || device.shortId}`)}>
                     <ListItemIcon>

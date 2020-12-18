@@ -130,7 +130,7 @@ export default class TraceView extends JDClient {
     private addFilteredPacket(pkt) {
         // detect duplicate at the tail of the packets
         const key = pkt.toString();
-        const old = this._filteredPackets
+        const old = this._packetFilter?.props.grouping && this._filteredPackets
             .slice(0, DUPLICATE_PACKET_MERGE_HORIZON_MAX_DISTANCE)
             .find(p => (pkt.timestamp - p.packet.timestamp) < DUPLICATE_PACKET_MERGE_HORIZON_MAX_TIME &&
                 p.key === key)

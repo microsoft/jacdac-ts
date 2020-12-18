@@ -20,6 +20,8 @@ export interface PacketFilterProps {
     pkts?: string[],
     before?: number,
     after?: number,
+    // no grouping
+    grouping?: boolean,
 }
 
 export interface PacketFilter {
@@ -32,7 +34,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     if (!text) {
         return {
             source: text,
-            props: {},
+            props: {
+                grouping: true
+            },
             filter: (pkt) => true
         }
     }
@@ -50,6 +54,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let before = undefined;
     let after = undefined;
     let devices: SMap<{ from: boolean; to: boolean; }> = {};
+    let grouping = true;
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
@@ -128,6 +133,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "after":
                 after = parseTimestamp(value);
                 break;
+            case "grouping":
+                grouping = parseBoolean(value);
+                break;
         }
     });
 
@@ -144,7 +152,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         serviceClasses: !!serviceClasses.size && Array.from(serviceClasses.keys()),
         pkts: !!pkts.size && Array.from(pkts.keys()),
         before,
-        after
+        after,
+        grouping
     }
     const filter = compileFilter(props)
     return {
