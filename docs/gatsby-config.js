@@ -156,23 +156,6 @@ module.exports = {
         } // filter: (node, getNode) => node.frontmatter.tags !== "exempt",
       },
     },
-    {
-      resolve: 'gatsby-plugin-favicons',
-      options: {
-        logo: '../assets/icons/jd-logo-pads.svg',
-        appName: 'JACDAC',
-        background: '#fff',
-        icons: {
-          android: true,
-          appleIcon: true,
-          appleStartup: true,
-          coast: false,
-          favicons: true,
-          yandex: false,
-          windows: false
-        }
-      }
-    },    
     /*    
     {
       resolve: 'gatsby-plugin-flexsearch',
@@ -242,7 +225,7 @@ module.exports = {
         theme_color: `#663399`,
         display: `minimal-ui`,
         cache_busting_mode: 'none',
-        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+        icon: `src/images/favicon.svg`,
         crossOrigin: `use-credentials`,
       },
     },
