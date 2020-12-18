@@ -6,6 +6,7 @@ import { makeStyles, Container, Hidden, Box, Paper, Button } from '@material-ui/
 import PaperBox from "../../components/PaperBox";
 import Flags from "../../../../src/jdom/flags";
 import DeviceList from "../../components/DeviceList"
+import RoleManager from "../../components/RoleManager";
 
 Flags.webUSB = false;
 
@@ -42,9 +43,7 @@ export default function Page() {
             <PaperBox>
                 <MakeCodeEditorExtension />
             </PaperBox>
-            <PaperBox>
-                <DeviceList />
-            </PaperBox>
+            <RoleManager />
         </div>
     </ThemedLayout>
 }
