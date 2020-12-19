@@ -174,7 +174,6 @@ export function useRenderer(target: string, lang?: string) {
     const handleMessage = (ev: MessageEvent) => {
         let msg = ev.data;
         if (msg.source != "makecode") return;
-        console.log({ msg })
         switch (msg.type) {
             case "renderready":
                 console.log(`mkcd: renderer ready, ${Object.keys(pendingRequests).length} pending`)
