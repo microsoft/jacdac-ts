@@ -101,7 +101,6 @@ export function useRenderer(editorUrl: string, lang?: string) {
         f.style.height = "1px";
         f.src = `${editorUrl}--docs?render=1${lang ? `&lang=${lang}` : ''}`;
         document.body.appendChild(f);
-
         setIFrame(f);
         return () => {
             console.log('mkcd: unload iframe')
