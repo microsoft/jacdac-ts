@@ -11,6 +11,7 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import LaunchIcon from '@material-ui/icons/Launch';
 import { Tooltip } from '@material-ui/core';
+import MakeCodeSnippet from './makecode/MakeCodeSnippet';
 
 export default function CodeBlock(props: { children: any, className?: string, downloadName?: string; downloadText?: string; url?: string; }) {
     const { children, className, downloadName, downloadText, url } = props;
@@ -18,6 +19,9 @@ export default function CodeBlock(props: { children: any, className?: string, do
     const language = className?.replace(/language-/, '') || ""
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme;
     const valueUri = !!downloadText && `data:application/json;charset=UTF-8,${encodeURIComponent(downloadText)}`
+    
+    if (language === "blocks")
+        return <MakeCodeSnippet code={children} />
 
     return (
         <Highlight {...defaultProps}

@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import useEffectAsync from "../useEffectAsync"
 import PaperBox from "../PaperBox"
-import Alert from "../Alert"
-import { Skeleton } from "@material-ui/lab";
+import { NoSsr } from '@material-ui/core';
 
-const RENDER_DEBOUNCE_TIMEOUT = 1000;
 
 interface RenderBlocksRequestMessage {
     type: "renderblocks",
@@ -44,7 +42,7 @@ export function useRenderer(editorUrl: string, lang?: string) {
     }>(() => ({}), [editorUrl, lang]);
 
     const sendRequest = (req: RenderBlocksRequestMessage) => {
-        console.log(`mkcd: send`, req)
+        console.log(`mkcd: send`, { req, iframe })
         iframe?.contentWindow.postMessage(req, editorUrl);
     }
 
@@ -70,13 +68,11 @@ export function useRenderer(editorUrl: string, lang?: string) {
     const handleMessage = (ev: MessageEvent) => {
         let msg = ev.data;
         if (msg.source != "makecode") return;
-
+        console.log({ mkcd: msg })
         switch (msg.type) {
             case "renderready":
                 console.log(`mkcd: renderer ready, ${Object.keys(pendingRequests).length} pending`)
                 setRendererReady(true);
-                Object.keys(pendingRequests)
-                    .forEach(k => sendRequest(pendingRequests[k].req));
                 break;
             case "renderblocks":
                 const id = msg.id; // this is the id you sent
@@ -109,6 +105,12 @@ export function useRenderer(editorUrl: string, lang?: string) {
         }
     }, [editorUrl, lang])
 
+    useEffect(() => {
+        if (iframe && ready)
+            Object.keys(pendingRequests)
+                .forEach(k => sendRequest(pendingRequests[k].req));
+    }, [iframe, ready])
+
     return {
         render,
         ready
@@ -130,11 +132,11 @@ interface SnippetState {
     error?: string;
 }
 
-export default function MakeCodeSnippet(props: SnippetProps) {
+function MakeCodeSnippetNoSSR(props: SnippetProps) {
     const { code, packageId, package: _package, snippetMode } = props;
     const { render, ready } = useRenderer("https://makecode.microbit.org/");
     const [snippet, setSnippet] = useState<SnippetState>({})
-    const { uri, width, height, error } = snippet;
+    const { uri, width, height } = snippet;
 
     useEffectAsync(async (mounted) => {
         const resp = await render(code, packageId, _package, snippetMode)
@@ -142,18 +144,16 @@ export default function MakeCodeSnippet(props: SnippetProps) {
             setSnippet(resp);
     }, [code, packageId, _package, snippetMode])
 
-    // waiting for the iframe to start?
-    const loading = !ready;
-    // display code if blocks rendering failed
-    const precode = (loading
-        || !ready
-        || !uri) && code;
-
     return <PaperBox>
-        {loading && <Skeleton />}
-        {precode && <pre>
-            <code>{precode}</code>
+        {(!ready || !snippet) && <pre>
+            <code>{code}</code>
         </pre>}
         {uri && <img className="ui image" alt={code} src={uri} width={width} height={height} />}
     </PaperBox>
+}
+
+export default function MakeCodeSnippet(props: SnippetProps) {
+    return <NoSsr>
+        <MakeCodeSnippetNoSSR {...props} />
+    </NoSsr>
 }
