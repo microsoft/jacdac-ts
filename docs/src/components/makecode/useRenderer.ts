@@ -111,7 +111,7 @@ export function useRenderer(target: string, lang?: string) {
         [index: string]: RenderBlocksRequentResponse
     }>(() => ({}), [target, lang]);
 
-    const useLocalhost = /localhostmakecode=1/.test(window.location.search);
+    const useLocalhost = typeof window !== "undefined" && /localhostmakecode=1/.test(window.location.search);
     const editorUrl = 
         useLocalhost ? "http://localhost:3232/--docs" 
         : ((editors[target] || editors["microbit"]) + "---docs")
