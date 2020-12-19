@@ -9,6 +9,7 @@ import { DbProvider } from "./DbContext";
 import { PacketsProvider } from "./PacketsContext";
 import { ServiceManagerProvider } from "./ServiceManagerContext";
 import Helmet from "react-helmet";
+import { MakeCodeSnippetProvider } from "./makecode/MakeCodeSnippetContext";
 
 export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, children: any }) {
     const { theme, maxSnack, children } = props;
@@ -22,17 +23,19 @@ export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, c
                                 <ServiceManagerProvider>
                                     <PacketsProvider>
                                         <AppProvider>
-                                            <CssBaseline />
-                                            <Helmet>
-                                                <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-                                                <link rel="preconnect" href="https://raw.githubusercontent.com" crossOrigin="anonymous" />
-                                                <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="anonymous" />
-                                                <meta
-                                                    name="viewport"
-                                                    content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
-                                                />
-                                            </Helmet>
-                                            {children}
+                                            <MakeCodeSnippetProvider>
+                                                <CssBaseline />
+                                                <Helmet>
+                                                    <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+                                                    <link rel="preconnect" href="https://raw.githubusercontent.com" crossOrigin="anonymous" />
+                                                    <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="anonymous" />
+                                                    <meta
+                                                        name="viewport"
+                                                        content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
+                                                    />
+                                                </Helmet>
+                                                {children}
+                                            </MakeCodeSnippetProvider>
                                         </AppProvider>
                                     </PacketsProvider>
                                 </ServiceManagerProvider>
