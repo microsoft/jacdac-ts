@@ -19,6 +19,7 @@ import ConnectAlert from "./ConnectAlert";
 import TraceList from "./TraceList";
 import GithubRepositoryCard from "./GithubRepositoryCard";
 import GithubRepositoryList from "./GithubRespositoryList";
+import MakeCodeSnippet from "./makecode/MakeCodeSnippet"
 
 export default function useMdxComponents() {
   const theme = useTheme();
@@ -52,7 +53,8 @@ export default function useMdxComponents() {
     ConnectAlert: props => <ConnectAlert {...props} />,
     TraceList: props => <TraceList {...props} />,
     GithubRepositoryCard: props => <GithubRepositoryCard {...props} />,
-    GithubRepositoryList: props => <GithubRepositoryList {...props} />
+    GithubRepositoryList: props => <GithubRepositoryList {...props} />,
+    MakeCodeSnippet: props => <MakeCodeSnippet {...props} />
   };
 
   return mdxComponents;
