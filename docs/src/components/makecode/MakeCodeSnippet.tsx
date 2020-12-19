@@ -125,9 +125,11 @@ export function useRenderer(editorUrl: string, lang?: string) {
         const deps = unique(
             ["jacdac=github:microsoft/pxt-jacdac"]
             .concat(dependencies || [])
-            .concat(mkcds.filter(info =>
-                (code && code.indexOf(info.client.qName) > -1) || (ghost && ghost.indexOf(info.client.qName) > -1))
-                .map(info => `${info.client.name.replace(/^pxt-/, '')}=github:${info.client.repo}`)
+            .concat(mkcds.filter(info => {
+                const src = (ghost || "") + "\n" + (code || "");
+                return src.indexOf(info.client.qName) > -1 
+                || (info.client.default && src.indexOf(info.client.default) > -1);
+            }).map(info => `${info.client.name.replace(/^pxt-/, '')}=github:${info.client.repo}`)
             )
         );
 
@@ -180,7 +182,7 @@ export function useRenderer(editorUrl: string, lang?: string) {
             f.style.bottom = "0";
             f.style.width = "1px";
             f.style.height = "1px";
-            f.src = `${editorUrl}--docs?render=1${lang ? `&lang=${lang}` : ''}`;
+            f.src = `${editorUrl}?render=1${lang ? `&lang=${lang}` : ''}`;
             document.body.appendChild(f);
             iframe.current = f;
         }
@@ -210,7 +212,7 @@ function MakeCodeSnippetTab(props: { snippet: MakeCodeSnippetSource }) {
     const { snippet } = props;
     const { code, meta } = snippet;
     const useLocalhost = /localhostmakecode=1/.test(window.location.search);
-    const { render } = useRenderer(useLocalhost ? "http://localhost:3232/" : editors[meta.editor || "microbit"]);
+    const { render } = useRenderer(useLocalhost ? "http://localhost:3232/--docs" : (editors[meta.editor || "microbit"] + "---docs"));
     const [state, setState] = useState<SnippetState>({})
     const { uri, width, height } = state;
     const theme = useTheme();

@@ -56,6 +56,11 @@ If the simulator is stopped, the physical device is unpaused and used as a JACDA
 - [ ] support for rendering makecode snippets
 
 ```blocks
+let x = 0
+```
+
+
+```blocks
 ---
 
 ---
@@ -65,4 +70,10 @@ namespace myModules {
 }
 ---
 myModules.foot.start();
+```
+
+```blocks
+modules.accelerometer.onEvent(jacdac.AccelerometerEvent.TiltUp, function () {
+	
+})
 ```
