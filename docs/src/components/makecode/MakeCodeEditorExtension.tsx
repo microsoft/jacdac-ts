@@ -32,12 +32,13 @@ ${config.roles.map(role => `
     //% fixedInstance block="${role.name}"
     export const ${camelize(role.name)} = new ${resolveMakecodeServiceFromClassIdentifier(role.service).client.qName}("${camelize(role.name)}");
 `).join("")}
+
+    // start after main
+    control.runInParallel(function() {
+        ${config.roles.map(role => `    ${ns}.${camelize(role.name)}.start();
+        `).join("")}
+    })
 }
-control.inBackground(function() {
-    pause(500);
-${config.roles.map(role => `    ${ns}.${camelize(role.name)}.start();
-`).join("")}
-})
     `
 }
 
