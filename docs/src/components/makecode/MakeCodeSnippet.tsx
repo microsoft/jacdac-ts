@@ -7,6 +7,12 @@ import TabPanel from '../TabPanel';
 import { Skeleton } from "@material-ui/lab";
 import { unique } from "../../../../src/jdom/utils";
 
+const editors = {
+    arcade: "https://arcade.makecode.com/beta/",
+    microbit: "https://makecode.microbit.org/beta/",
+    maker: "https://maker.makecode.com/"
+}
+
 interface MakeCodeSnippetSource {
     code: string;
     ghost?: string;
@@ -191,8 +197,9 @@ interface SnippetState {
 
 function MakeCodeSnippetTab(props: { snippet: MakeCodeSnippetSource }) {
     const { snippet } = props;
-    const { code } = snippet;
-    const { render } = useRenderer("http://localhost:3232/");
+    const { code, meta } = snippet;
+    const useLocalhost = /localhostmakecode=1/.test(window.location.search);
+    const { render } = useRenderer(useLocalhost ? "http://localhost:3232/" : editors[meta.editor || "microbit"]);
     const [state, setState] = useState<SnippetState>({})
     const { uri, width, height } = state;
     const theme = useTheme();
