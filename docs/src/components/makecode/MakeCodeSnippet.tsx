@@ -5,6 +5,59 @@ import { createStyles, makeStyles, NoSsr, Tab, Tabs, useTheme } from '@material-
 import CodeBlock from "../CodeBlock";
 import TabPanel from '../TabPanel';
 import { Skeleton } from "@material-ui/lab";
+import { unique } from "../../../../src/jdom/utils";
+
+interface MakeCodeSnippetSource {
+    code: string;
+    ghost?: string;
+    meta: {
+        editor?: string;
+        snippet?: boolean;
+        dependencies: string[];
+    }
+}
+
+function parseMakeCodeSnippet(source: string): MakeCodeSnippetSource {
+    if (!source)
+        return {
+            code: source,
+            meta: {
+                dependencies: []
+            }
+        };
+
+    const parts = source.split(/---\n/gm)
+    let front: string;
+    let ghost: string;
+    let code: string;
+    switch (parts.length) {
+        case 1: front = ghost = undefined; code = source; break;
+        case 2: [front, code] = parts; break;
+        case 3: [front, ghost, code] = parts; break;
+    }
+
+    const meta: {
+        editor?: string;
+        snippet?: boolean;
+        dependencies: string[];
+    } = {
+        dependencies: []
+    }
+    front?.replace(/(.+):\s*(.+)\s*\n/g, (m, name, value) => {
+        switch (name) {
+            case "dep": meta.dependencies.push(value); break;
+            case "snippet": meta.snippet = !!value; break;
+            default: meta[name] = value;
+        }
+        return "";
+    })
+
+    return {
+        code,
+        ghost,
+        meta
+    }
+}
 
 const useStyles = makeStyles(() => createStyles({
     img: {
@@ -56,16 +109,19 @@ export function useRenderer(editorUrl: string, lang?: string) {
             iframe.current?.contentWindow.postMessage(req, editorUrl);
     }
 
-    const render = (code: string, packageId?: string, pkg?: string, snippetMode?: boolean): Promise<RenderBlocksResponseMessage> => {
+    const render = (source: MakeCodeSnippetSource): Promise<RenderBlocksResponseMessage> => {
+        const { code, meta } = source;
+        const { dependencies, snippet } = meta;
+
+        const deps = unique(["jacdac=github:microsoft/pxt-jacdac"]
+            .concat(dependencies))
         const req: RenderBlocksRequestMessage = {
             type: "renderblocks",
             id: "r" + Math.random(),
             code,
             options: {
-                packageId,
-                package: pkg,
-                dependencies: ["jacdac=github:microsoft/pxt-jacdac"],
-                snippetMode
+                dependencies: deps,
+                snippetMode: snippet
             }
         }
         return new Promise<RenderBlocksResponseMessage>((resolve, reject) => {
@@ -126,14 +182,6 @@ export function useRenderer(editorUrl: string, lang?: string) {
     }
 }
 
-export interface SnippetProps {
-    // MakeCode TypeScript code to render
-    code?: string;
-    packageId?: string;
-    package?: string;
-    snippetMode?: boolean;
-}
-
 interface SnippetState {
     uri?: string;
     width?: number;
@@ -141,19 +189,20 @@ interface SnippetState {
     error?: string;
 }
 
-function MakeCodeSnippetTab(props: SnippetProps) {
-    const { code, packageId, package: _package, snippetMode } = props;
+function MakeCodeSnippetTab(props: { snippet: MakeCodeSnippetSource }) {
+    const { snippet } = props;
+    const { code } = snippet;
     const { render } = useRenderer("http://localhost:3232/");
-    const [snippet, setSnippet] = useState<SnippetState>({})
-    const { uri, width, height } = snippet;
+    const [state, setState] = useState<SnippetState>({})
+    const { uri, width, height } = state;
     const theme = useTheme();
     const classes = useStyles();
 
     useEffectAsync(async (mounted) => {
-        const resp = await render(code, packageId, _package, snippetMode)
+        const resp = await render(snippet)
         if (mounted())
-            setSnippet(resp);
-    }, [code, packageId, _package, snippetMode])
+            setState(resp);
+    }, [snippet])
 
     return <>
         {!uri && <Skeleton variant="rect" animation="wave" width={"100%"} height={theme.spacing(5)} />}
@@ -161,12 +210,14 @@ function MakeCodeSnippetTab(props: SnippetProps) {
     </>
 }
 
-function MakeCodeSnippetNoSSR(props: SnippetProps) {
-    const { code } = props;
+function MakeCodeSnippetNoSSR(props: { source: string }) {
+    const { source } = props;
     const [tab, setTab] = useState(0);
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue);
     };
+    const snippet = useMemo(() => parseMakeCodeSnippet(source), [source]);
+    const { code } = snippet;
 
     return <PaperBox>
         <Tabs value={tab} onChange={handleTabChange} aria-label="Select MakeCode editor">
@@ -174,7 +225,7 @@ function MakeCodeSnippetNoSSR(props: SnippetProps) {
             <Tab label={"JavaScript"} />
         </Tabs>
         <TabPanel value={tab} index={0}>
-            <MakeCodeSnippetTab {...props} />
+            <MakeCodeSnippetTab snippet={snippet} />
         </TabPanel>
         <TabPanel value={tab} index={1}>
             <CodeBlock className="typescript">{code}</CodeBlock>
@@ -182,7 +233,7 @@ function MakeCodeSnippetNoSSR(props: SnippetProps) {
     </PaperBox>
 }
 
-export default function MakeCodeSnippet(props: SnippetProps) {
+export default function MakeCodeSnippetBox(props: { source: string }) {
     return <NoSsr>
         <MakeCodeSnippetNoSSR {...props} />
     </NoSsr>

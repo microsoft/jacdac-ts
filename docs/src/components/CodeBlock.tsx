@@ -21,9 +21,7 @@ export default function CodeBlock(props: { children: any, className?: string, do
     const valueUri = !!downloadText && `data:application/json;charset=UTF-8,${encodeURIComponent(downloadText)}`
     
     if (language === "blocks")
-        return <MakeCodeSnippet code={children} />
-    else if (language === "block")
-        return <MakeCodeSnippet code={children} snippetMode={true} />
+        return <MakeCodeSnippet source={children} />
 
     return (
         <Highlight {...defaultProps}
