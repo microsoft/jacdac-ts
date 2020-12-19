@@ -4,7 +4,7 @@ import { clone, JSONTryParse, SMap, uniqueName } from "../../../../src/jdom/util
 import useChange from '../../jacdac/useChange';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { resolveMakecodeService, resolveMakecodeServiceFromClassIdentifier, serviceSpecificationFromClassIdentifier } from "../../../../src/jdom/spec";
+import { resolveMakecodeService, resolveMakecodeServiceFromClassIdentifier, serviceSpecificationFromClassIdentifier, serviceSpecifications } from "../../../../src/jdom/spec";
 import AddServiceIconButton from "../AddServiceIconButton";
 import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
 import { escapeName } from "../../../../src/azure-iot/dtdl"
@@ -116,6 +116,8 @@ export default function MakeCodeEditorExtension() {
         if (!configuration.roles)
             configuration.roles = [];
         const names = configuration.roles.map(c => c.name)
+            .concat(serviceSpecifications().map(spec => spec.camelName))
+            .filter(n => !!n);
         configuration.roles.push({
             name: uniqueName(names, service.camelName || service.shortId),
             service: service.classIdentifier
