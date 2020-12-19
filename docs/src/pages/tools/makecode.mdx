@@ -61,6 +61,12 @@ let x = 0
 
 
 ```blocks
+modules.accelerometer.onEvent(jacdac.AccelerometerEvent.TiltUp, function () {
+	
+})
+```
+
+```blocks
 ---
 
 ---
@@ -69,11 +75,7 @@ namespace myModules {
     export const foot = new modules.AccelerometerClient("foot");
 }
 ---
-myModules.foot.start();
-```
-
-```blocks
-modules.accelerometer.onEvent(jacdac.AccelerometerEvent.TiltUp, function () {
-	
+myModules.foot.onEvent(jacdac.AccelerometerEvent.TiltUp, function() {
+    
 })
 ```

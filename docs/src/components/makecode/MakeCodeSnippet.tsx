@@ -154,7 +154,6 @@ export function useRenderer(editorUrl: string, lang?: string) {
     const handleMessage = (ev: MessageEvent) => {
         let msg = ev.data;
         if (msg.source != "makecode") return;
-        console.log({ mkcd: msg })
         switch (msg.type) {
             case "renderready":
                 console.log(`mkcd: renderer ready, ${Object.keys(pendingRequests).length} pending`)
@@ -237,7 +236,6 @@ function MakeCodeSnippetNoSSR(props: { source: string }) {
         setTab(newValue);
     };
     const snippet = useMemo(() => parseMakeCodeSnippet(source), [source]);
-    console.log({snippet})
     const { code } = snippet;
 
     return <PaperBox>
