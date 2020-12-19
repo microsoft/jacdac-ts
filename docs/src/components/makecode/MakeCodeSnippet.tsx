@@ -20,6 +20,7 @@ interface RenderBlocksRequestMessage {
         packageId?: string;
         package?: string;
         snippetMode?: boolean;
+        dependencies?: string[];
     }
 }
 
@@ -62,7 +63,8 @@ export function useRenderer(editorUrl: string, lang?: string) {
             code,
             options: {
                 packageId,
-                package: "jacdac=microsoft/pxt-jacdac\n" + (pkg || ""),
+                package: pkg,
+                dependencies: ["jacdac=github:microsoft/pxt-jacdac"],
                 snippetMode
             }
         }
@@ -141,7 +143,7 @@ interface SnippetState {
 
 function MakeCodeSnippetTab(props: SnippetProps) {
     const { code, packageId, package: _package, snippetMode } = props;
-    const { render } = useRenderer("https://makecode.microbit.org/beta/");
+    const { render } = useRenderer("http://localhost:3232/");
     const [snippet, setSnippet] = useState<SnippetState>({})
     const { uri, width, height } = snippet;
     const theme = useTheme();

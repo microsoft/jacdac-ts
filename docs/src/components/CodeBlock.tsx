@@ -22,6 +22,8 @@ export default function CodeBlock(props: { children: any, className?: string, do
     
     if (language === "blocks")
         return <MakeCodeSnippet code={children} />
+    else if (language === "block")
+        return <MakeCodeSnippet code={children} snippetMode={true} />
 
     return (
         <Highlight {...defaultProps}
