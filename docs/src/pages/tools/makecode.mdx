@@ -21,9 +21,14 @@ You can also code side-by-side using the multi editor https://makecode.com/multi
 
 ```blocks
 ---
-editor:arcade
+
 ---
-modules.identify()
+namespace myModules {
+    //% fixedInstance block="foot"
+    export const foot = new modules.AccelerometerClient("foot");
+}
+---
+myModules.foot.start();
 ```
 
 ## Configuring modules

@@ -85,9 +85,10 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
     });
 }
 
-/**
- * Get the known MakeCode libraries
- */
+export function makeCodeServices(): jdspec.MakeCodeServiceInfo[] {
+    return (makecodeServicesData as jdspec.MakeCodeServiceInfo[]).slice(0);
+}
+
 export function resolveMakecodeService(service: jdspec.ServiceSpec) {
     return service && (makecodeServicesData as jdspec.MakeCodeServiceInfo[])
         .find(mk => mk.service === service.shortId);

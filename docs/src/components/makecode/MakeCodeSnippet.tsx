@@ -6,6 +6,7 @@ import CodeBlock from "../CodeBlock";
 import TabPanel from '../TabPanel';
 import { Skeleton } from "@material-ui/lab";
 import { unique } from "../../../../src/jdom/utils";
+import { makeCodeServices } from "../../../../src/jdom/spec"
 
 const editors = {
     arcade: "https://arcade.makecode.com/beta/",
@@ -24,7 +25,7 @@ interface MakeCodeSnippetSource {
 }
 
 function parseMakeCodeSnippet(source: string): MakeCodeSnippetSource {
-    if (!source)
+    if (!/^---\n/.test(source))
         return {
             code: source,
             meta: {
@@ -32,14 +33,14 @@ function parseMakeCodeSnippet(source: string): MakeCodeSnippetSource {
             }
         };
 
-    const parts = source.split(/---\n/gm)
+    const parts = source.replace(/^---\n/, '').split(/---\n/gm)
     let front: string;
     let ghost: string;
     let code: string;
     switch (parts.length) {
         case 1: front = ghost = undefined; code = source; break;
         case 2: [front, code] = parts; break;
-        case 3: [front, ghost, code] = parts; break;
+        default: [front, ghost, code] = parts; break;
     }
 
     const meta: {
@@ -75,6 +76,7 @@ interface RenderBlocksRequestMessage {
     type: "renderblocks",
     id: string;
     code: string;
+    ghost?: string;
     options?: {
         packageId?: string;
         package?: string;
@@ -116,15 +118,24 @@ export function useRenderer(editorUrl: string, lang?: string) {
     }
 
     const render = (source: MakeCodeSnippetSource): Promise<RenderBlocksResponseMessage> => {
-        const { code, meta } = source;
+        const { code, ghost, meta } = source;
         const { dependencies, snippet } = meta;
 
-        const deps = unique(["jacdac=github:microsoft/pxt-jacdac"]
-            .concat(dependencies))
+        const mkcds = makeCodeServices()
+        const deps = unique(
+            ["jacdac=github:microsoft/pxt-jacdac"]
+            .concat(dependencies || [])
+            .concat(mkcds.filter(info =>
+                (code && code.indexOf(info.client.qName) > -1) || (ghost && ghost.indexOf(info.client.qName) > -1))
+                .map(info => `${info.client.name.replace(/^pxt-/, '')}=github:${info.client.repo}`)
+            )
+        );
+
         const req: RenderBlocksRequestMessage = {
             type: "renderblocks",
             id: "r" + Math.random(),
             code,
+            ghost,
             options: {
                 dependencies: deps,
                 snippetMode: snippet
@@ -224,6 +235,7 @@ function MakeCodeSnippetNoSSR(props: { source: string }) {
         setTab(newValue);
     };
     const snippet = useMemo(() => parseMakeCodeSnippet(source), [source]);
+    console.log({snippet})
     const { code } = snippet;
 
     return <PaperBox>
