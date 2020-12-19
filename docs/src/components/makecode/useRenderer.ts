@@ -115,11 +115,9 @@ export function useRenderer(target: string, lang?: string) {
     const editorUrl = 
         useLocalhost ? "http://localhost:3232/--docs" 
         : ((editors[target] || editors["microbit"]) + "---docs")
-    console.log({ target, editorUrl })
 
     const sendRequest = (req: RenderBlocksRequestMessage) => {
-        console.log(`send`)
-        const iframe = document.getElementById(iframeId) as HTMLIFrameElement;
+        const iframe = typeof document !== "undefined" && document.getElementById(iframeId) as HTMLIFrameElement;
         if (iframe?.dataset.ready)
             iframe?.contentWindow.postMessage(req, editorUrl);
     }
@@ -129,7 +127,7 @@ export function useRenderer(target: string, lang?: string) {
         const { dependencies, snippet } = meta;
 
         // spin up iframe on demans
-        if (!document.getElementById(iframeId)) {
+        if (typeof document !== "undefined" && !document.getElementById(iframeId)) {
             console.log(`mkcd: loading iframe`)
             const f = document.createElement("iframe");
             f.id = iframeId;
@@ -177,7 +175,7 @@ export function useRenderer(target: string, lang?: string) {
         switch (msg.type) {
             case "renderready":
                 console.log(`mkcd: renderer ready, ${Object.keys(pendingRequests).length} pending`)
-                const iframe = document.getElementById(iframeId)
+                const iframe = typeof document !== "undefined" &&  document.getElementById(iframeId)
                 if (iframe) {
                     console.log(`flushing messages`)
                     iframe.dataset.ready = "1"
@@ -196,8 +194,9 @@ export function useRenderer(target: string, lang?: string) {
     }
 
     useEffect(() => {
-        window.addEventListener("message", handleMessage, false);
-        return () => window.removeEventListener("message", handleMessage)
+        if (typeof window !== "undefined")
+            window.addEventListener("message", handleMessage, false);
+        return () => typeof window !== "undefined" && window.removeEventListener("message", handleMessage)
     }, [])
 
     return {
