@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import useEffectAsync from "../useEffectAsync"
 import PaperBox from "../PaperBox"
-import { NoSsr } from '@material-ui/core';
+import { createStyles, makeStyles, NoSsr, Tab, Tabs, useTheme } from '@material-ui/core';
+import CodeBlock from "../CodeBlock";
+import TabPanel from '../TabPanel';
+import { Skeleton } from "@material-ui/lab";
 
+const useStyles = makeStyles(() => createStyles({
+    img: {
+        marginBottom: 0
+    }
+}));
 
 interface RenderBlocksRequestMessage {
     type: "renderblocks",
@@ -34,26 +42,27 @@ interface RenderBlocksRequentResponse {
 }
 
 export function useRenderer(editorUrl: string, lang?: string) {
-    const [iframe, setIFrame] = useState<HTMLIFrameElement>(undefined)
-    const [ready, setRendererReady] = useState(false);
-    const nextRequest = useRef(1)
+    const iframeId = "makecoderenderer" + editorUrl;
+    const iframe = useRef<HTMLIFrameElement>(document.getElementById(iframeId) as HTMLIFrameElement)
+    const [ready, setRendererReady] = useState(!!iframe.current?.dataset.ready);
     const pendingRequests = useMemo<{
         [index: string]: RenderBlocksRequentResponse
     }>(() => ({}), [editorUrl, lang]);
 
     const sendRequest = (req: RenderBlocksRequestMessage) => {
         console.log(`mkcd: send`, { req, iframe })
-        iframe?.contentWindow.postMessage(req, editorUrl);
+        if (ready)
+            iframe.current?.contentWindow.postMessage(req, editorUrl);
     }
 
     const render = (code: string, packageId?: string, pkg?: string, snippetMode?: boolean): Promise<RenderBlocksResponseMessage> => {
         const req: RenderBlocksRequestMessage = {
             type: "renderblocks",
-            id: (nextRequest.current++) + "",
+            id: "r" + Math.random(),
             code,
             options: {
                 packageId,
-                package: pkg,
+                package: "jacdac=microsoft/pxt-jacdac\n" + (pkg || ""),
                 snippetMode
             }
         }
@@ -72,11 +81,11 @@ export function useRenderer(editorUrl: string, lang?: string) {
         switch (msg.type) {
             case "renderready":
                 console.log(`mkcd: renderer ready, ${Object.keys(pendingRequests).length} pending`)
+                iframe.current.dataset.ready = "1";
                 setRendererReady(true);
                 break;
             case "renderblocks":
                 const id = msg.id; // this is the id you sent
-                console.log(`mkcd: rendered ${id}`)
                 const r = pendingRequests[id];
                 if (!r) return;
                 delete pendingRequests[id];
@@ -86,27 +95,25 @@ export function useRenderer(editorUrl: string, lang?: string) {
     }
 
     useEffect(() => {
-        console.log(`mkcd: loading iframe`)
         window.addEventListener("message", handleMessage, false);
-        const f = document.createElement("iframe");
-        f.id = "makecoderenderer";
-        f.style.position = "absolute";
-        f.style.left = "0";
-        f.style.bottom = "0";
-        f.style.width = "1px";
-        f.style.height = "1px";
-        f.src = `${editorUrl}--docs?render=1${lang ? `&lang=${lang}` : ''}`;
-        document.body.appendChild(f);
-        setIFrame(f);
-        return () => {
-            console.log('mkcd: unload iframe')
-            window.removeEventListener("message", handleMessage);
-            f?.remove();
+        if (!iframe.current) {
+            console.log(`mkcd: loading iframe`)
+            const f = document.createElement("iframe");
+            f.id = "makecoderenderer" + editorUrl;
+            f.style.position = "absolute";
+            f.style.left = "0";
+            f.style.bottom = "0";
+            f.style.width = "1px";
+            f.style.height = "1px";
+            f.src = `${editorUrl}--docs?render=1${lang ? `&lang=${lang}` : ''}`;
+            document.body.appendChild(f);
+            iframe.current = f;
         }
+        return () => window.removeEventListener("message", handleMessage)
     }, [editorUrl, lang])
 
     useEffect(() => {
-        if (iframe && ready)
+        if (iframe.current && ready)
             Object.keys(pendingRequests)
                 .forEach(k => sendRequest(pendingRequests[k].req));
     }, [iframe, ready])
@@ -132,11 +139,13 @@ interface SnippetState {
     error?: string;
 }
 
-function MakeCodeSnippetNoSSR(props: SnippetProps) {
+function MakeCodeSnippetTab(props: SnippetProps) {
     const { code, packageId, package: _package, snippetMode } = props;
-    const { render, ready } = useRenderer("https://makecode.microbit.org/");
+    const { render } = useRenderer("https://makecode.microbit.org/beta/");
     const [snippet, setSnippet] = useState<SnippetState>({})
     const { uri, width, height } = snippet;
+    const theme = useTheme();
+    const classes = useStyles();
 
     useEffectAsync(async (mounted) => {
         const resp = await render(code, packageId, _package, snippetMode)
@@ -144,11 +153,30 @@ function MakeCodeSnippetNoSSR(props: SnippetProps) {
             setSnippet(resp);
     }, [code, packageId, _package, snippetMode])
 
+    return <>
+        {!uri && <Skeleton variant="rect" animation="wave" width={"100%"} height={theme.spacing(5)} />}
+        {uri && <img className={classes.img} alt={code} src={uri} width={width} height={height} />}
+    </>
+}
+
+function MakeCodeSnippetNoSSR(props: SnippetProps) {
+    const { code } = props;
+    const [tab, setTab] = useState(0);
+    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+        setTab(newValue);
+    };
+
     return <PaperBox>
-        {(!ready || !snippet) && <pre>
-            <code>{code}</code>
-        </pre>}
-        {uri && <img className="ui image" alt={code} src={uri} width={width} height={height} />}
+        <Tabs value={tab} onChange={handleTabChange} aria-label="Select MakeCode editor">
+            <Tab label={"Blocks"} />
+            <Tab label={"JavaScript"} />
+        </Tabs>
+        <TabPanel value={tab} index={0}>
+            <MakeCodeSnippetTab {...props} />
+        </TabPanel>
+        <TabPanel value={tab} index={1}>
+            <CodeBlock className="typescript">{code}</CodeBlock>
+        </TabPanel>
     </PaperBox>
 }
 
