@@ -1,11 +1,16 @@
 import React, { createContext, useState } from "react";
-import { MakeCodeSnippetRendered, MakeCodeSnippetSource, useRenderer } from "./useRenderer";
 import useLocalStorage from "../useLocalStorage"
 
+const editors = {
+    arcade: "https://arcade.makecode.com/beta/",
+    microbit: "https://makecode.microbit.org/beta/",
+    maker: "https://maker.makecode.com/"
+}
 export interface MakeCodeSnippetContextProps {
     target: string, setTarget: (t: string) => void,
     editor: string, setEditor: (t: string) => void,
-    render: (source: MakeCodeSnippetSource) => Promise<MakeCodeSnippetRendered>,
+    rendererUrl: string,
+    simUrl: string,
 }
 
 const MakeCodeSnippetContext = createContext<MakeCodeSnippetContextProps>({
@@ -13,7 +18,8 @@ const MakeCodeSnippetContext = createContext<MakeCodeSnippetContextProps>({
     setTarget: (t) => { },
     editor: undefined,
     setEditor: (t) => { },
-    render: r => undefined
+    rendererUrl: undefined,
+    simUrl: undefined,
 });
 MakeCodeSnippetContext.displayName = "MakeCode";
 
@@ -22,13 +28,19 @@ export default MakeCodeSnippetContext;
 export function MakeCodeSnippetProvider(props: { children }) {
     const { value: target, setValue: setTarget } = useLocalStorage("mkcd:editor", "microbit");
     const { value: editor, setValue: setEditor } = useLocalStorage("mdcd:editor", "blocks");
-    const [lang, setLang] = useState("")
     const { children } = props;
-    const { render } = useRenderer(target, lang)
+
+    const useLocalhost = typeof window !== "undefined" && /localhostmakecode=1/.test(window.location.search);
+    const rendererUrl =
+        useLocalhost ? "http://localhost:3232/--docs"
+            : ((editors[target] || editors["microbit"]) + "---docs")
+    const simUrl =
+        useLocalhost ? "http://localhost:3232/--run"
+            : ((editors[target] || editors["microbit"]) + "---run")
 
     return <MakeCodeSnippetContext.Provider value={{
         target, setTarget, editor, setEditor,
-        render
+        rendererUrl, simUrl
     }}>
         {children}
     </MakeCodeSnippetContext.Provider>;

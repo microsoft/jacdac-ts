@@ -1,16 +1,19 @@
-import { useEffect } from "react"
+import { DependencyList, useEffect } from "react"
 
-export default (event: string, handler: EventListenerOrEventListenerObject, passive = false) => {
+export default function useWindowEvent<K extends keyof WindowEventMap>(type: K, 
+    listener: (this: Window, ev: WindowEventMap[K]) => any,
+    passive = false,
+    deps: DependencyList) {
     useEffect(() => {
         if (typeof window === "undefined")
             return undefined; // SSR
 
         // initiate the event handler
-        window.addEventListener(event, handler, passive)
+        window.addEventListener<K>(type, listener, passive)
 
         // this will clean up the event every time the component is re-rendered
         return () => {
-            window.removeEventListener(event, handler)
+            window.removeEventListener<K>(type, listener)
         }
-    }, [event, handler, passive])
+    }, [type, listener, passive].concat(deps || []))
 }

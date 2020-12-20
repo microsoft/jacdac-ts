@@ -30,10 +30,9 @@ const bus = Flags.webUSB ? createUSBBus(undefined, { parentOrigin: args.parentOr
     : new JDBus(undefined);
 bus.setBackgroundFirmwareScans(true);
 // tslint:disable-next-line: no-unused-expression
-if (inIFrame()) {
+// always start bridge
+if (typeof window !== "undefined")
     new IFrameBridgeClient(bus); // start bridge
-}
-
 
 const JACDACProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
