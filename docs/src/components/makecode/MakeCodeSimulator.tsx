@@ -37,7 +37,7 @@ export default function MakeCodeSimulator(props: { snippet: MakeCodeSnippetSourc
     const classes = useStyles();
 
     const src = `${ghost || ""}\n${code || ""}`;
-    const url = `${simUrl}#deps=${encodeURIComponent(dependencies.join(','))}&code=${encodeURIComponent(src)}`
+    const url = `${simUrl}#single=1&fullscren=1&nofooter=1&deps=${encodeURIComponent(dependencies.join(','))}&code=${encodeURIComponent(src)}`
     const origin = new URL(url).origin;
 
     useEffect(() => bus.subscribe([PACKET_SEND, PACKET_PROCESS], (pkt: Packet) => {
