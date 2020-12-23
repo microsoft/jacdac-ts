@@ -121,8 +121,9 @@ export function lightEncode(format: string, args: (number | number[])[]) {
                     for (let vv of v) colors.push(vv)
             } else {
                 if (token.length == 7) {
-                    const b = fromHex("00" + token.slice(1))
-                    colors.push(getNumber(b, NumberFormat.UInt32BE, 0))
+                    const b = fromHex(token.slice(1))
+                    const c = (b[0] << 16) | (b[1] << 8) | b[2];
+                    colors.push(c)
                 } else {
                     throw new Error("invalid color: " + token)
                 }
