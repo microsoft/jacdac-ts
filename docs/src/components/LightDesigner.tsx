@@ -35,14 +35,13 @@ export default function LightDesigner(props: { showHelp?: boolean }) {
     )
     const [debouncedSource] = useDebounce(source, 700)
     const { encoded, error } = useLightEncode(debouncedSource);
-    const drawerOpen = drawerType != DrawerType.None
     const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSource(ev.target.value)
     }
     const spec = serviceSpecificationFromClassIdentifier(SRV_LIGHT);
     return (<>
         <Grid spacing={2} container>
-            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
+            <Grid key="editor" item xs={12} md={6}>
                 <PaperBox>
                     {source !== undefined &&
                         <TextField
@@ -57,7 +56,7 @@ export default function LightDesigner(props: { showHelp?: boolean }) {
                         />}
                 </PaperBox>
             </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
+            <Grid key="output" item xs={12} md={6}>
                 {encoded && <CodeBlock>{toHex(encoded)}</CodeBlock>}
             </Grid>
         </Grid>
