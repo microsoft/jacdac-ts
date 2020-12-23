@@ -131,19 +131,16 @@
     ]
   },
   "devDependencies": {
-    "@microsoft/api-documenter": "^7.11.3",
-    "@microsoft/api-extractor": "^7.12.0",
+    "@microsoft/api-documenter": "^7.12.1",
+    "@microsoft/api-extractor": "^7.12.1",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "cli": "^1.0.1",
     "colors": "^1.3.2",
-    "coveralls": "^3.0.2",
     "cross-env": "^5.2.0",
-    "jest": "^23.6.0",
-    "jest-config": "^23.6.0",
     "lint-staged": "^8.0.0",
     "lodash.camelcase": "^4.3.0",
-    "prompt": "^1.0.0",
+    "prompt": "^1.1.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-helmet": "^6.1.0",
@@ -156,16 +153,13 @@
     "rollup-plugin-typescript2": "^0.18.0",
     "semantic-release": "^17.3.0",
     "shelljs": "^0.8.3",
-    "travis-deploy-once": "^5.0.9",
-    "ts-jest": "^23.10.2",
-    "ts-node": "^9.1.1",
     "tslint": "^6",
     "tslint-microsoft-contrib": "^6",
-    "typescript": "^4.1.2",
+    "typescript": "^4.1.3",
     "webusb": "^2.2.0"
   },
   "dependencies": {
-    "@types/node": "^14.14.10",
+    "@types/node": "^14.14.14",
     "@types/w3c-web-usb": "^1.0.4",
     "fs-extra": "^9.0.1"
   }
