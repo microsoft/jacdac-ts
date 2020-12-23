@@ -458,39 +458,6 @@ export function debounceAsync(handler: () => Promise<void>, delay: number): () =
     }
 }
 
-export interface DebouncedPoll {
-    execute: () => void;
-    stop: () => void;
-}
-
-/**
- * Creates a debounced polls the handler, use stop to any polling interval
- * @param handler 
- * @param debouncedDelay 
- * @param pollDelay 
- */
-export function debouncedPollAsync(handler: () => Promise<void>, pollDelay: number = 500, debouncedDelay: number = 100): () => void {
-    const debounced = debounceAsync(handler, debouncedDelay);
-    let interval: any;
-
-    const poll = () => {
-        if (!interval) {
-            interval = setInterval(() => debounced(), pollDelay)
-            debounced()
-        }
-    }
-
-    const stop = () => {
-        if (interval) {
-            clearInterval(interval);
-            interval = undefined;
-        }
-    }
-
-    poll()
-    return stop
-}
-
 export function cryptoRandomUint32(length: number): Uint32Array {
     if (typeof window === "undefined")
         return undefined; // not supported
