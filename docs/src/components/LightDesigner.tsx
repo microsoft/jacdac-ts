@@ -10,6 +10,8 @@ import { lightEncode } from '../../../src/jdom/light'
 import DeviceList from './DeviceList';
 import { LightCmd, SRV_LIGHT } from '../../../src/jdom/constants';
 import ConnectAlert from './ConnectAlert';
+import { serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
+import Markdown from "./Markdown"
 
 function useLightEncode(source: string) {
     return useMemo(() => {
@@ -24,7 +26,8 @@ function useLightEncode(source: string) {
     }, [source])
 }
 
-export default function LightDesigner() {
+export default function LightDesigner(props: { showHelp?: boolean }) {
+    const { showHelp } = props;
     const { drawerType } = useContext(AppContext)
     const { value: source, setValue: setSource } = useLocalStorage('jacdac:lightdesigner',
         `fadehsv 0 12 #00ffff #ffffff
@@ -36,6 +39,7 @@ export default function LightDesigner() {
     const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSource(ev.target.value)
     }
+    const spec = serviceSpecificationFromClassIdentifier(SRV_LIGHT);
     return (<>
         <Grid spacing={2} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
@@ -48,6 +52,8 @@ export default function LightDesigner() {
                             defaultValue={source}
                             helperText={error}
                             error={!!error}
+                            multiline={true}
+                            rows={10}
                         />}
                 </PaperBox>
             </Grid>
@@ -61,5 +67,6 @@ export default function LightDesigner() {
             commandIdentifier={LightCmd.Run}
             commandArgs={encoded && [encoded]}
         />
+        {showHelp && <Markdown source={spec.notes["long"]} />}
     </>);
 }
