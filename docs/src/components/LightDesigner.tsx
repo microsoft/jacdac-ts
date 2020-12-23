@@ -9,16 +9,6 @@ import { toHex } from '../../../src/jdom/utils';
 import { lightEncode } from '../../../src/jdom/light'
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
-    root: {
-        flexGrow: 1,
-        backgroundColor: theme.palette.background.paper,
-        marginBottom: theme.spacing(1)
-    },
-    segment: {
-        marginBottom: theme.spacing(2)
-    },
-    editor: {
-    },
     pre: {
         margin: "0",
         padding: "0",
@@ -27,6 +17,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         flexGrow: 1
     }
 }));
+
+function useLightEncode(source: string) {
+    return useMemo(() => {
+        let encoded: string;
+        let error: string;
+        try {
+            encoded = toHex(lightEncode(source, []))
+        } catch (e: unknown) {
+            error = (e as any)?.message || (e + "");
+        }
+        return { encoded, error }
+    }, [source])
+}
 
 export default function LightDesigner() {
     const classes = useStyles();
@@ -37,27 +40,23 @@ export default function LightDesigner() {
     )
 
     const [debouncedSource] = useDebounce(source, 700)
-    const encoded = useMemo(() => {
-        try {
-            return toHex(lightEncode(debouncedSource, []))
-        } catch (e: unknown) {
-            return (e as any)?.message || (e + "");
-        }
-    }, [debouncedSource]);
+    const { encoded, error } = useLightEncode(debouncedSource);
     const drawerOpen = drawerType != DrawerType.None
     const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSource(ev.target.value)
     }
     return (
-        <Grid spacing={2} className={classes.root} container>
+        <Grid spacing={2} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
                 <PaperBox>
                     {source !== undefined &&
                         <TextField
+                            spellCheck={false}
                             fullWidth={true}
-                            className={classes.editor}
                             onChange={handleSourceChange}
                             defaultValue={source}
+                            helperText={error}
+                            error={!!error}
                         />}
                 </PaperBox>
             </Grid>
