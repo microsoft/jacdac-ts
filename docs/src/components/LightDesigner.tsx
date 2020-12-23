@@ -40,8 +40,8 @@ export default function LightDesigner() {
     const encoded = useMemo(() => {
         try {
             return toHex(lightEncode(debouncedSource, []))
-        } catch (e) {
-
+        } catch (e: unknown) {
+            return (e as any)?.message || (e + "");
         }
     }, [debouncedSource]);
     const drawerOpen = drawerType != DrawerType.None

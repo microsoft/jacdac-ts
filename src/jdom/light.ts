@@ -39,7 +39,7 @@ export function lightEncode(format: string, args: (number | number[])[]) {
 
     function pushNumber(n: number) {
         if (n == null || (n | 0) != n || n < 0 || n >= 16383)
-            throw "light: number out of range: " + n
+            throw new Error("number out of range: " + n)
         if (n < 128)
             outarr.push(n)
         else {
@@ -51,7 +51,7 @@ export function lightEncode(format: string, args: (number | number[])[]) {
     function flush() {
         if (currcmd == 0xCF) {
             if (colors.length != 1)
-                throw "setone requires 1 color"
+                throw new Error("setone requires 1 color")
         } else {
             if (colors.length == 0)
                 return
@@ -87,11 +87,11 @@ export function lightEncode(format: string, args: (number | number[])[]) {
             flush()
             currcmd = cmdCode(token)
             if (currcmd == undefined)
-                throw "Unknown light command: " + token
+                throw new Error("unknown light command: " + token)
             if (currcmd == 0x100) {
                 const f = parseFloat(nextToken())
                 if (isNaN(f) || f < 0 || f > 2)
-                    throw "expecting scale"
+                    throw new Error("expecting scale")
                 outarr.push(0xD8) // tmpmode
                 outarr.push(3) // mult
                 outarr.push(0xD0) // setall
@@ -106,14 +106,14 @@ export function lightEncode(format: string, args: (number | number[])[]) {
         } else if (48 <= t0 && t0 <= 57) { // 0-9
             pushNumber(parseInt(token))
         } else if (t0 == 37) { // %
-            if (args.length == 0) throw "Out of args, %"
+            if (args.length == 0) throw new Error("out of args, %")
             const v = args.shift()
             if (typeof v != "number")
-                throw "Expecting number"
+                throw new Error("expecting number")
             pushNumber(v)
         } else if (t0 == 35) { // #
             if (token.length == 1) {
-                if (args.length == 0) throw "Out of args, #"
+                if (args.length == 0) throw new Error("out of args, #")
                 const v = args.shift()
                 if (typeof v == "number")
                     colors.push(v)
@@ -124,7 +124,7 @@ export function lightEncode(format: string, args: (number | number[])[]) {
                     const b = fromHex("00" + token.slice(1))
                     colors.push(getNumber(b, NumberFormat.UInt32BE, 0))
                 } else {
-                    throw "Invalid color: " + token
+                    throw new Error("invalid color: " + token)
                 }
             }
         }
