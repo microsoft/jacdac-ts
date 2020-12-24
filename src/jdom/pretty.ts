@@ -447,7 +447,7 @@ export function commandName(n: number, serviceClass?: number): string {
         let regName = SystemReg[reg]?.toLowerCase() // try reserved registers first, fast path
         if (regName === undefined) {
             const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
-            regName = serviceSpec?.packets.find(pkt => pkt.identifier === reg)?.name
+            regName = serviceSpec?.packets.find(pkt => isRegister(pkt) && pkt.identifier === reg)?.name
         }
         return pref + (regName !== undefined ? regName : `x${reg.toString(16)}` ) + "]"
     }
