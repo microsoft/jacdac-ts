@@ -455,7 +455,7 @@ export function commandName(n: number, serviceClass?: number): string {
     let r = SystemCmd[n]?.toLowerCase()
     if (r === undefined) {
         const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
-        r = serviceSpec?.packets.find(pkt => pkt.identifier === n)?.name
+        r = serviceSpec?.packets.find(pkt => pkt.kind === "command" && pkt.identifier === n)?.name
     }
     return r;
 }
