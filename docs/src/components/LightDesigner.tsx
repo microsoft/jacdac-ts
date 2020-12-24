@@ -8,7 +8,7 @@ import CodeBlock from './CodeBlock';
 import { toHex } from '../../../src/jdom/utils';
 import { lightEncode } from '../../../src/jdom/light'
 import DeviceList from './DeviceList';
-import { LightCmd, SRV_LIGHT } from '../../../src/jdom/constants';
+import { LightCmd, LightReg, SRV_LIGHT } from '../../../src/jdom/constants';
 import ConnectAlert from './ConnectAlert';
 import { serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
 import Markdown from "./Markdown"
@@ -63,8 +63,24 @@ export default function LightDesigner(props: { showHelp?: boolean }) {
         <ConnectAlert />
         <DeviceList
             serviceClass={SRV_LIGHT}
+            showMemberName={true}
             commandIdentifier={LightCmd.Run}
             commandArgs={encoded && [encoded]}
+        />
+        <DeviceList
+            serviceClass={SRV_LIGHT}
+            showMemberName={true}
+            registerIdentifier={LightReg.NumPixels}
+        />
+        <DeviceList
+            serviceClass={SRV_LIGHT}
+            showMemberName={true}
+            registerIdentifier={LightReg.Brightness}
+        />
+        <DeviceList
+            serviceClass={SRV_LIGHT}
+            showMemberName={true}
+            registerIdentifier={LightReg.MaxPower}
         />
         {showHelp && <Markdown source={spec.notes["long"]} />}
     </>);

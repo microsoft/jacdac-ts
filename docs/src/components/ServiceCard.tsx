@@ -75,7 +75,7 @@ export default function ServiceCard(props: {
                         {reports?.map((report, ri) => <ListItem key={`report${ri}`} ><DecodedPacketItem pkt={report} /></ListItem>)}
                     </List>}
                 </Typography>
-                <ServiceSpecificationStatusAlert specification={specification} />
+                {!hasCommandIdentifier && !hasRegisterIdentifier && !hasEventIdentifier && <ServiceSpecificationStatusAlert specification={specification} />}
                 <DeviceLostAlert device={service?.device} />
             </CardContent>
             <CardActions>

@@ -25,7 +25,6 @@ function sniffQueryArguments() {
 const args = sniffQueryArguments();
 Flags.diagnostics = args.diagnostics;
 Flags.webUSB = args.webUSB;
-
 const bus = Flags.webUSB ? createUSBBus(undefined, { parentOrigin: args.parentOrigin })
     : new JDBus(undefined);
 bus.setBackgroundFirmwareScans(true);

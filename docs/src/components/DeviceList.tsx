@@ -21,12 +21,12 @@ export default function DeviceList(props: {
     commandArgs?: any[],
     showDeviceName?: boolean,
     showServiceName?: boolean,
-    showRegisterName?: boolean,
+    showMemberName?: boolean,
     showTemperature?: boolean,
     showFirmware?: boolean
 }) {
     const { serviceClass, linkToService, registerIdentifier,
-        showDeviceName, showServiceName, showRegisterName, showFirmware, showTemperature,
+        showDeviceName, showServiceName, showMemberName, showFirmware, showTemperature,
         eventIdentifier, commandIdentifier, commandArgs } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, n => n.devices({ serviceClass }))
@@ -55,7 +55,7 @@ export default function DeviceList(props: {
                         linkToService={linkToService}
                         showDeviceName={showDeviceName}
                         showServiceName={showServiceName}
-                        showMemberName={showRegisterName}
+                        showMemberName={showMemberName}
                         registerIdentifier={registerIdentifier}
                         eventIdentifier={eventIdentifier}
                         commandIdentifier={commandIdentifier}

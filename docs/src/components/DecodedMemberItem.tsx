@@ -5,6 +5,7 @@ import { DecodedMember, valueToFlags, flagsToValue } from "../../../src/jdom/pre
 import IDChip from "./IDChip"
 import AppContext from "./AppContext"
 import { useId } from "react-use-id-hook"
+import { scaleFloatToInt } from "../../../src/jdom/spec";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -39,16 +40,20 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     const handleNumChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
         const v = parseInt(event.target.value.replace(/[^\d]+$/, ''));
         if (!isNaN(v))
-            await register.sendSetIntAsync(parseInt(event.target.value), true);
+            await register.sendSetPackedAsync(specification.packFormat, [v], true)
     })
     const handleEnumChange = handeler(async (event: ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
-        await register.sendSetIntAsync(v, true);
+        await register.sendSetPackedAsync(specification.packFormat, [v], true)
     })
     const handleStringChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
         const s = event.target.value as string;
         await register.sendSetStringAsync(s, true);
     })
+    const handleSliderChange = async (event: any, newValue: number | number[]) => {
+        const v = scaleFloatToInt((newValue as number) / 100, member.info)
+        await register.sendSetPackedAsync(specification.packFormat, [v], true)
+    }
 
     if (info.type === "bool")
         return <Switch checked={member.value} onClick={mod ? handleSwitchChange : undefined} readOnly={readOnly} />
@@ -67,9 +72,10 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     else if (member.scaledValue !== undefined && info.unit == "/") {
         return <Slider
             disabled={readOnly}
-            value={member.scaledValue}
+            value={member.scaledValue * 100}
+            onChange={handleSliderChange}
             aria-labelledby={labelledby}
-            min={0} max={1}
+            min={0} max={100}
         />
     }
 

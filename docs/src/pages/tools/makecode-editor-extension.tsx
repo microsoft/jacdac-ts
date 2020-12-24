@@ -1,4 +1,4 @@
-import React, { } from "react"
+import React, { useEffect } from "react"
 import { createMuiTheme, createStyles, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ThemedLayout";
 import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExtension"
@@ -7,8 +7,6 @@ import PaperBox from "../../components/PaperBox";
 import Flags from "../../../../src/jdom/flags";
 import DeviceList from "../../components/DeviceList"
 import RoleManager from "../../components/RoleManager";
-
-Flags.webUSB = false;
 
 const useStyles = makeStyles((theme) => createStyles({
     content: {
@@ -38,6 +36,9 @@ export default function Page() {
     })
     const classes = useStyles();
     const theme = responsiveFontSizes(rawTheme);
+    useEffect(() => {
+        Flags.webUSB = false;
+    }, [])
     return <ThemedLayout theme={theme}>
         <div className={classes.content}>
             <PaperBox>
