@@ -289,7 +289,10 @@ export class JDBus extends JDNode {
 
     private async pingLoggers() {
         if (this._minLoggerPriority < LoggerPriority.Silent) {
-            const pkt = Packet.jdpacked<[LoggerPriority]>(0x2000 | LoggerReg.MinPriority, "i32", [this._minLoggerPriority]);
+            const pkt = Packet.jdpacked<[LoggerPriority]>(
+                0x2000 | LoggerReg.MinPriority,
+                "i32",
+                [this._minLoggerPriority]);
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
@@ -458,6 +461,8 @@ export class JDBus extends JDNode {
             d = new JDDevice(this, id)
             if (this.host.deviceNameSettings)
                 d.name = this.host.deviceNameSettings.resolve(d)
+            if (!d.name && id === this.selfDeviceId)
+                d.name = "self";
             this._devices.push(d);
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
