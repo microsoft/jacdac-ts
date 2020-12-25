@@ -1,12 +1,12 @@
-import React, { useContext } from "react"
-import { graphql, Link, useStaticQuery } from "gatsby";
+import React from "react"
+import { graphql, useStaticQuery } from "gatsby";
 import { parseTrace } from "../../../src/jdom/logparser"
 import Trace from "../../../src/jdom/trace";
-import { createStyles, Grid, List, ListItem, ListItemText, makeStyles, Theme } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import TraceCard from "./TraceCard";
 import useGridBreakpoints from "./useGridBreakpoints"
-export default function TraceList() {
 
+export default function TraceList() {
   const gridBreakpoints = useGridBreakpoints();
   const data = useStaticQuery(graphql`
     query {
