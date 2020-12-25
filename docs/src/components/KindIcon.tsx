@@ -25,10 +25,12 @@ import ComputerIcon from '@material-ui/icons/Computer';
 import BlurLinearIcon from '@material-ui/icons/BlurLinear';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MarkunreadMailboxIcon from '@material-ui/icons/MarkunreadMailbox';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import NotificationsNoneIcon from '@material-ui/icons/NotificationsNone';
 import {
     PACKET_KIND_RO, PACKET_KIND_RW, CONST_NODE_NAME, COMMAND_NODE_NAME,
     REPORT_NODE_NAME, BUS_NODE_NAME, DEVICE_NODE_NAME, VIRTUAL_DEVICE_NODE_NAME,
-    SERVICE_NODE_NAME, EVENT_NODE_NAME, PIPE_NODE_NAME, CRC_ACK_NODE_NAME, PIPE_REPORT_NODE_NAME
+    SERVICE_NODE_NAME, EVENT_NODE_NAME, PIPE_NODE_NAME, CRC_ACK_NODE_NAME, PIPE_REPORT_NODE_NAME, PACKET_KIND_ANNOUNCE
 } from "../../../src/jdom/constants";
 import { Tooltip } from "@material-ui/core";
 import JacdacIcon from "./icons/JacdacIcon";
@@ -40,6 +42,7 @@ export default function KindIcon(props: { kind: string, className?: string, tool
     switch (kind) {
         case PACKET_KIND_RO: icon = <DataUsageIcon className={className} />; break;
         case PACKET_KIND_RW: icon = <CreateIcon className={className} />; break;
+        case PACKET_KIND_ANNOUNCE: icon = <NotificationsNoneIcon className={className} />; break;
         case CONST_NODE_NAME: icon = <LockIcon className={className} />; break;
         case COMMAND_NODE_NAME: icon = <CallToActionIcon className={className} />; break;
         case EVENT_NODE_NAME: icon = <FlashOnIcon className={className} />; break;

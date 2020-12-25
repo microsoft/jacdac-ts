@@ -89,27 +89,34 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography>{kindName(kind)}</Typography>&nbsp;
                     <Typography variant="subtitle2">kind:{kind}</Typography>
                 </MenuItem>)}
-                <MenuItem key="announce" onClick={handleAdd("announce:false")}>
+                {[{
+                    cmd: "announce",
+                    value: false
+                }, {
+                    cmd: "repeated-announce",
+                    kind: "announce",
+                    value: false
+                }, {
+                    cmd: "get",
+                    kind: "ro",
+                    value: true
+                }, {
+                    cmd: "set",
+                    kind: "rw",
+                    value: true
+                }, {
+                    cmd: "command",
+                    value: true
+                }, {
+                    cmd: "pipe",
+                    value: true
+                }].map(({ cmd, kind, value }) => <MenuItem key={cmd} onClick={handleAdd(`${cmd}:${value}`)}>
                     <ListItemIcon>
-                        <KindIcon kind={"announce"} />
+                        <KindIcon kind={kind || cmd} />
                     </ListItemIcon>
-                    <Typography>Hide announce</Typography>&nbsp;
-                    <Typography variant="subtitle2">announce:false</Typography>
-                </MenuItem>
-                <MenuItem key="repeated-announce" onClick={handleAdd("repeated-announce:false")}>
-                    <ListItemIcon>
-                        <KindIcon kind={"announce"} />
-                    </ListItemIcon>
-                    <Typography>Hide repeated announce</Typography>&nbsp;
-                    <Typography variant="subtitle2">repeated-announce:false</Typography>
-                </MenuItem>
-                <MenuItem key="pipes" onClick={handleAdd("pipes:true")}>
-                    <ListItemIcon>
-                        <KindIcon kind={"pipe"} />
-                    </ListItemIcon>
-                    <Typography>Show pipes</Typography>&nbsp;
-                    <Typography variant="subtitle2">pipes:true</Typography>
-                </MenuItem>
+                    <Typography>{value ? `Show ${cmd}` : `Hide ${cmd}`}</Typography>&nbsp;
+                <Typography variant="subtitle2">{`${cmd}:${value}`}</Typography>
+                </MenuItem>)}
                 <MenuItem key="port" onClick={handleAdd("port:42")}>
                     <ListItemIcon>
                         <KindIcon kind={"pipe"} />

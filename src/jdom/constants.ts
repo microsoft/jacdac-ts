@@ -113,6 +113,7 @@ export const PROGRESS = 'progress'
 export const PACKET_KIND_RW = "rw"
 export const PACKET_KIND_RO = "ro"
 export const PACKET_KIND_EVENT = "event"
+export const PACKET_KIND_ANNOUNCE = "announce"
 
 export const REGISTER_NODE_NAME = "register"
 export const REPORT_NODE_NAME = "report"
