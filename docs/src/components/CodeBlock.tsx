@@ -12,6 +12,7 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { Tooltip } from '@material-ui/core';
 import MakeCodeSnippet from './makecode/MakeCodeSnippet';
+import TraceSnippet from './TraceSnippet';
 
 export default function CodeBlock(props: { children: any, className?: string, downloadName?: string; downloadText?: string; url?: string; }) {
     const { children, className, downloadName, downloadText, url } = props;
@@ -22,6 +23,8 @@ export default function CodeBlock(props: { children: any, className?: string, do
     
     if (language === "blocks")
         return <MakeCodeSnippet source={children} />
+    else if (language === "trace")
+        return <TraceSnippet source={children} />
 
     return (
         <Highlight {...defaultProps}

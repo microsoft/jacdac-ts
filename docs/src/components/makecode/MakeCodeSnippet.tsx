@@ -67,7 +67,7 @@ function MakeCodeSnippetNoSSR(props: { source: string }) {
     </PaperBox>
 }
 
-export default function MakeCodeSnippetBox(props: { source: string }) {
+export default function MakeCodeSnippet(props: { source: string }) {
     return <NoSsr>
         <MakeCodeSnippetNoSSR {...props} />
     </NoSsr>
