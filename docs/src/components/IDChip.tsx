@@ -19,14 +19,17 @@ export default function IDChip(props: { id: number | string, className?: string,
             setPacketFilter(packetFilter?.trim() + ' ' + filter)
         setDrawerType(DrawerType.Packets)
     }
-
-    return <Tooltip title={!!filter && (filtered ? `remove filter ${filter}` : `add filter ${filter}`)}>
-        <span>
-            <Chip className={className} size="small" icon={
-                <IconButton onClick={!!filter && handleFilterClick}>
-                    <FingerprintIcon />
-                </IconButton>
-            } title={`identifier ${ids}`} label={ids} />
-        </span>
-    </Tooltip>
+    const icon = <FingerprintIcon />;
+    if (filter)
+        return <Tooltip title={filtered ? `remove filter ${filter}` : `add filter ${filter}`}>
+            <span>
+                <Chip className={className} size="small" icon={
+                    <IconButton onClick={handleFilterClick}>
+                        {icon}
+                    </IconButton>
+                } title={`identifier ${ids}`} label={ids} />
+            </span>
+        </Tooltip>
+    else
+        return <Chip className={className} size="small" icon={icon} title={`identifier ${ids}`} label={ids} />;
 }
