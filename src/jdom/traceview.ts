@@ -154,16 +154,18 @@ export default class TraceView extends JDClient {
         }
 
         // collapse acks
-        if (pkt.isCRCAck && this._packetFilter?.props.collapseAck) {
+        if (pkt.isCRCAck) {
             const pkts = this.trace.packets;
-            const crc = pkt.serviceCommand
-            for (let i = pkts.length - 1; i >= 0; i--) {
+            const crc = pkt.serviceCommand;
+            const m = Math.max(0, pkts.length - 100); // max scan 100 packets back
+            for (let i = pkts.length - 1; i >= m; i--) {
                 const old = pkts[i];
                 if (old.requiresAck
                     && old.deviceIdentifier === pkt.deviceIdentifier
                     && old.crc === crc) {
                     old.meta[META_ACK] = pkt;
-                    return;
+                    if (this._packetFilter?.props.collapseAck)
+                        return;
                 }
             }
         }

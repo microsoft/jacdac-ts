@@ -11,6 +11,9 @@ import { printPacket } from "../../../src/jdom/pretty";
 import PacketHeaderLayout from "./PacketHeaderLayout";
 import { Link } from "gatsby-theme-material-ui";
 import PaperBox from "./PaperBox";
+import { META_ACK } from "../../../src/jdom/constants";
+import Packet from "../../../src/jdom/packet";
+import PacketBadge from "./PacketBadge";
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);
@@ -18,11 +21,14 @@ export default function PacketInspector() {
     if (!packet)
         return <Alert severity="info">Click on a packet in the <HistoryIcon /> packet list.</Alert>
 
-    const { decoded } = packet;
+    const { decoded, data } = packet;
     const info = decoded?.info;
+    const ack = packet.meta[META_ACK] as Packet;
 
     return <>
-        <h2>{`${packet.friendlyCommandName} ${packet.isCommand ? "to" : "from"} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`}</h2>
+        <h2>
+            <PacketBadge packet={packet} />
+            {`${packet.friendlyCommandName} ${packet.isCommand ? "to" : "from"} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`}</h2>
         <div>
             {packet.timestamp}ms, <KindChip kind={info?.kind} />, size {packet.size}
         </div>
@@ -31,15 +37,15 @@ export default function PacketInspector() {
         </Typography>
         {packet.sender && <Typography variant="body2">
             sender: {packet.sender}
-            </Typography>}
-        <h3><Link to="/reference/jacdac-protocol#frames">Header</Link></h3>
+        </Typography>}
+        <h3>Header</h3>
         <PacketHeaderLayout packet={packet} showSlots={true} showFlags={true} />
-        {!!packet.data.length && <>
+        {!!data.length && <>
             <h3>Data</h3>
             <PaperBox padding={0}>
                 <Tooltip title={decoded?.info?.packFormat || "unknown data layout"}>
                     <pre>
-                        {toHex(packet.data)}
+                        {toHex(data)}
                     </pre>
                 </Tooltip>
             </PaperBox>
@@ -50,6 +56,12 @@ export default function PacketInspector() {
                     {member.info.name == '_' ? info.name : member.info.name}: <code>{member.humanValue}</code>
                 </li>)}
             </ul>
+        </>}
+        {ack && <>
+            <h3>
+                
+                Ack received</h3>
+            <PacketHeaderLayout packet={ack} />
         </>}
         {info && <><h3>Specification</h3>
             <PacketSpecification
