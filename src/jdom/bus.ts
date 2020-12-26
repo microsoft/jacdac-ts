@@ -536,7 +536,7 @@ export class JDBus extends JDNode {
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
-        if (!pkt.multicommandClass)
+        if (!pkt.isMultiCommand)
             pkt.device = this.device(pkt.deviceIdentifier)
         this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
