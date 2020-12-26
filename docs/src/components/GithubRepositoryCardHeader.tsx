@@ -15,7 +15,7 @@ export default function GithubRepositoryCardHeader(props: {
 
     const title = repo
         ? <>
-            <Link href={repo.organization.html_url}>
+            <Link href={repo.html_url}>
                 <Typography component="span" variant="h6">{repo.organization.login}</Typography>
             </Link>
             <Box component="span" ml={0.5} mr={0.5}>/</Box>
