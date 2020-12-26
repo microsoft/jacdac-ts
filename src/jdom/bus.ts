@@ -536,26 +536,26 @@ export class JDBus extends JDNode {
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
-        if (!pkt.multicommand_class)
-            pkt.device = this.device(pkt.device_identifier)
+        if (!pkt.multicommandClass)
+            pkt.device = this.device(pkt.deviceIdentifier)
         this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
         if (!pkt.device) {
             // skip
-        } else if (pkt.is_command) {
-            if (pkt.device_identifier == this.selfDeviceId) {
-                if (pkt.requires_ack) {
+        } else if (pkt.isCommand) {
+            if (pkt.deviceIdentifier == this.selfDeviceId) {
+                if (pkt.requiresAck) {
                     const ack = Packet.onlyHeader(pkt.crc)
-                    ack.service_index = JD_SERVICE_INDEX_CRC_ACK
-                    ack.device_identifier = this.selfDeviceId
+                    ack.serviceIndex = JD_SERVICE_INDEX_CRC_ACK
+                    ack.deviceIdentifier = this.selfDeviceId
                     ack.sendReportAsync(this.selfDevice)
                 }
             }
             pkt.device.processPacket(pkt);
         } else {
             pkt.device.lastSeen = pkt.timestamp
-            if (pkt.service_index == JD_SERVICE_INDEX_CTRL) {
-                if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+            if (pkt.serviceIndex == JD_SERVICE_INDEX_CTRL) {
+                if (pkt.serviceCommand == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     pkt.device.processAnnouncement(pkt)
                 }
@@ -568,9 +568,9 @@ export class JDBus extends JDNode {
             this.emit(PACKET_RECEIVE_ANNOUNCE, pkt)
         } else {
             this.emit(PACKET_RECEIVE, pkt)
-            if (pkt.is_report)
+            if (pkt.isReport)
                 this.emit(PACKET_REPORT, pkt)
-            if (pkt.is_command && pkt.service_command === CMD_EVENT)
+            if (pkt.isCommand && pkt.serviceCommand === CMD_EVENT)
                 this.emit(PACKET_EVENT, pkt);
         }
     }
@@ -592,8 +592,8 @@ export class JDBus extends JDNode {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
             const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [restartCounter | 0x100])
-            pkt.service_index = JD_SERVICE_INDEX_CTRL
-            pkt.device_identifier = this.selfDeviceId
+            pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
+            pkt.deviceIdentifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)
         })
     }

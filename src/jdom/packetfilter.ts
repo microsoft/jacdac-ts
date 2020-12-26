@@ -215,7 +215,7 @@ export function compileFilter(props: PacketFilterProps) {
     if (repeatedAnnounce !== undefined)
         filters.push(pkt => !pkt.isAnnounce || (pkt.isRepeatedAnnounce === repeatedAnnounce))
     if (requiresAck !== undefined)
-        filters.push(pkt => pkt.requires_ack === requiresAck);
+        filters.push(pkt => pkt.requiresAck === requiresAck);
     if (flags)
         filters.push(pkt => hasAnyFlag(pkt))
     if (pipes !== undefined)
@@ -231,12 +231,12 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(pkt => pkt.isRegisterSet === regSet)
 
     if (log !== undefined)
-        filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.is_report);
+        filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.isReport);
     if (Object.keys(devices).length)
         filters.push(pkt => {
             if (!pkt.device) return false;
             const f = devices[pkt.device.deviceId];
-            return !!f && (!f.from || !pkt.is_command) && (!f.to || pkt.is_command);
+            return !!f && (!f.from || !pkt.isCommand) && (!f.to || pkt.isCommand);
         })
     if (serviceClasses) {
         filters.push(pkt => serviceClasses.some(serviceClass => isInstanceOf(pkt.service_class, serviceClass)));

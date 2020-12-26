@@ -31,7 +31,7 @@ export class OutPipe {
         }
         const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this.count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
-        pkt.service_index = JD_SERVICE_INDEX_PIPE
+        pkt.serviceIndex = JD_SERVICE_INDEX_PIPE
         await this.device.sendPktWithAck(pkt)
             .then(() => { }, err => {
                 this.free()
@@ -92,10 +92,10 @@ export class InPipe extends JDClient {
             return
         if (pkt.pipePort !== this._port)
             return
-        if ((pkt.service_command & PIPE_COUNTER_MASK) == (this._count & PIPE_COUNTER_MASK)) {
+        if ((pkt.serviceCommand & PIPE_COUNTER_MASK) == (this._count & PIPE_COUNTER_MASK)) {
             this._count++
             this.emit(DATA, pkt)
-            if (pkt.service_command & PIPE_CLOSE_MASK) {
+            if (pkt.serviceCommand & PIPE_CLOSE_MASK) {
                 this.close()
             }
         }
@@ -119,7 +119,7 @@ export class InPipeReader extends InPipe {
     constructor(bus: JDBus) {
         super(bus)
         this.mount(this.subscribe(DATA, (pkt: Packet) => {
-            if (pkt.service_command & PIPE_METADATA_MASK)
+            if (pkt.serviceCommand & PIPE_METADATA_MASK)
                 this.meta.push(pkt)
             else
                 this.output.push(pkt)

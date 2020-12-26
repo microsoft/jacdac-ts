@@ -54,6 +54,6 @@ export function packArguments(info: jdspec.PacketInfo, args: ArgType[]) {
     const cmd = isRegister(info) ? info.identifier | CMD_SET_REG : info.identifier
     const pkt = Packet.from(cmd, buf.slice(0, dst))
     if (info.kind != "report")
-        pkt.is_command = true
+        pkt.isCommand = true
     return pkt
 }

@@ -239,7 +239,7 @@ export class JDDevice extends JDNode {
 
     sendCtrlCommand(cmd: number, payload: Buffer = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
-        pkt.service_index = JD_SERVICE_INDEX_CTRL
+        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         return pkt.sendCmdAsync(this)
     }
 
@@ -273,12 +273,12 @@ export class JDDevice extends JDNode {
     processPacket(pkt: Packet) {
         this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
-        if (pkt.is_report)
+        if (pkt.isReport)
             this.emit(PACKET_REPORT, pkt)
-        else if (pkt.service_command == CMD_EVENT)
+        else if (pkt.serviceCommand == CMD_EVENT)
             this.emit(PACKET_EVENT, pkt)
 
-        const service = this.service(pkt.service_index)
+        const service = this.service(pkt.serviceIndex)
         if (service)
             service.processPacket(pkt);
     }
@@ -318,11 +318,11 @@ export class JDDevice extends JDNode {
 
         this._ackAwaiting = []
         this.on(PACKET_REPORT, (rep: Packet) => {
-            if (rep.service_index != JD_SERVICE_INDEX_CRC_ACK)
+            if (rep.serviceIndex != JD_SERVICE_INDEX_CRC_ACK)
                 return
             let numdone = 0
             for (const aa of this._ackAwaiting) {
-                if (aa.pkt && aa.pkt.crc == rep.service_command) {
+                if (aa.pkt && aa.pkt.crc == rep.serviceCommand) {
                     //console.log(`ack`, aa.pkt)
                     aa.pkt = null
                     numdone++
@@ -357,7 +357,7 @@ export class JDDevice extends JDNode {
     }
 
     sendPktWithAck(pkt: Packet) {
-        pkt.requires_ack = true
+        pkt.requiresAck = true
         this.initAcks()
         return new Promise<void>((resolve, reject) => {
             const ack = {

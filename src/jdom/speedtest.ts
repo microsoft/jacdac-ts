@@ -48,7 +48,7 @@ export async function packetSpeedTest(dev: JDDevice) {
     }
 
     async function onPacket(p: Packet) {
-        if (p.service_index == JD_SERVICE_INDEX_CTRL && p.service_command == pingCmd) {
+        if (p.serviceIndex == JD_SERVICE_INDEX_CTRL && p.serviceCommand == pingCmd) {
             numrecv++
             if (!done)
                 await ask()
