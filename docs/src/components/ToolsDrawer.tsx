@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Typography, ListItem, Divider, SvgIcon, Box, useTheme } from "@material-ui/core";
+import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, ListItem, Divider } from "@material-ui/core";
 import { IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
@@ -11,7 +11,6 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import EditIcon from '@material-ui/icons/Edit';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name

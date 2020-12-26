@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import Packet from "../../../src/jdom/packet";
-import Frame from "../../../src/jdom/frame";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { CHANGE, PROGRESS } from "../../../src/jdom/constants";
 import Trace from "../../../src/jdom/trace";

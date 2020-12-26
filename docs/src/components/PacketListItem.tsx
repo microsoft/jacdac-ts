@@ -37,13 +37,13 @@ export default function PacketListItem(props: {
         setSelectedPacket(packet)
     }
     const selected = packet === selectedPacket
-    const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
-    const primary = (packet.is_crc_ack && `crc ack ${packet.friendlyCommandName}`)
+    const logMessage = packet.service_class === SRV_LOGGER && packet.isReport;
+    const primary = (packet.isCRCAck && `crc ack ${packet.friendlyCommandName}`)
         || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
         || (!decoded && "???")
         || (logMessage && decoded.decoded[0].value)
         || `${packet.friendlyCommandName} ${decoded.decoded.map(f => f.humanValue).join(', ')}`;
-    const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.is_command ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
+    const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.isCommand ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
         <ListItemIcon>

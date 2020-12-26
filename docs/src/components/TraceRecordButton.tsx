@@ -1,10 +1,4 @@
-import { useTheme } from "@material-ui/core";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import { FiberManualRecord } from '@material-ui/icons';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
@@ -13,7 +7,7 @@ import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButto
 
 export default function TraceRecordButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
-    const { recording, tracing, paused, toggleRecording } = useContext(PacketsContext)
+    const { recording, tracing, toggleRecording } = useContext(PacketsContext)
     const { connectionState } = useContext<JDContextProps>(JACDACContext)
     const connected = connectionState === BusState.Connected;
 
@@ -21,7 +15,7 @@ export default function TraceRecordButton(props: { component?: string } & IconBu
         {...others}
         title={recording ? "Stop recording" : "Record trace"}
         indeterminate={recording}
-        disabled={disabled || tracing || paused || !connected}
+        disabled={disabled || tracing || !connected}
         onClick={toggleRecording}
         progressStyle={{ color: "#f66" }}>
         {!recording && <FiberManualRecord />}

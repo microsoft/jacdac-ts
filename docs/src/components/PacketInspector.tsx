@@ -22,7 +22,7 @@ export default function PacketInspector() {
     const info = decoded?.info;
 
     return <>
-        <h2>{`${packet.friendlyCommandName} ${packet.is_command ? "to" : "from"} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`}</h2>
+        <h2>{`${packet.friendlyCommandName} ${packet.isCommand ? "to" : "from"} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`}</h2>
         <div>
             {packet.timestamp}ms, <KindChip kind={info?.kind} />, size {packet.size}
         </div>
