@@ -112,8 +112,12 @@ export class Packet {
 
     get frameFlags() { return this._header[3] }
 
+    get isMultiCommand() {
+        return !!(this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS);
+    }
+
     get multicommandClass() {
-        if (this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+        if (this.isMultiCommand)
             return read32(this._header, 4)
         return undefined
     }
