@@ -281,13 +281,13 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
 }
 
 function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    const isSet = !!(pkt.service_command & CMD_SET_REG)
-    const isGet = !!(pkt.service_command & CMD_GET_REG)
+    const isSet = !!(pkt.serviceCommand & CMD_SET_REG)
+    const isGet = !!(pkt.serviceCommand & CMD_GET_REG)
 
     if (isSet == isGet)
         return null
 
-    const addr = pkt.service_command & CMD_REG_MASK
+    const addr = pkt.serviceCommand & CMD_REG_MASK
     const regInfo =
         service.packets.find(p => isRegister(p) && p.identifier == addr)
         || syntheticPktInfo("rw", addr)
@@ -316,7 +316,7 @@ function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket
 }
 
 function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    if (pkt.is_command || pkt.service_command != CMD_EVENT)
+    if (pkt.isCommand || pkt.serviceCommand != CMD_EVENT)
         return null
 
     const addr = pkt.getNumber(NumberFormat.UInt32LE, 0)
@@ -335,12 +335,12 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 }
 
 function decodeCommand(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    const kind = pkt.is_command ? "command" : "report"
-    const cmdInfo = service.packets.find(p => p.kind == kind && p.identifier == pkt.service_command)
-        || syntheticPktInfo(kind, pkt.service_command)
+    const kind = pkt.isCommand ? "command" : "report"
+    const cmdInfo = service.packets.find(p => p.kind == kind && p.identifier == pkt.serviceCommand)
+        || syntheticPktInfo(kind, pkt.serviceCommand)
 
     const decoded = decodeMembers(service, cmdInfo, pkt)
-    const description = (pkt.is_command ? "CMD " : "REPORT ") + cmdInfo.name + wrapDecodedMembers(decoded)
+    const description = (pkt.isCommand ? "CMD " : "REPORT ") + cmdInfo.name + wrapDecodedMembers(decoded)
 
     return {
         service,
@@ -357,7 +357,7 @@ function decodePacket(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 }
 
 function decodePipe(pkt: Packet): DecodedPacket {
-    const cmd = pkt.service_command
+    const cmd = pkt.serviceCommand
     const pinfo = pkt.device.port(cmd >> PIPE_PORT_SHIFT)
     if (!pinfo.pipeType)
         return null
@@ -391,13 +391,13 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.device && pkt.service_index == JD_SERVICE_INDEX_PIPE) {
+    if (pkt.device && pkt.serviceIndex == JD_SERVICE_INDEX_PIPE) {
         const info = decodePipe(pkt)
         if (info)
             return info
     }
 
-    const srv_class = pkt?.multicommand_class || pkt?.device?.serviceClassAt(pkt.service_index);
+    const srv_class = pkt?.multicommandClass || pkt?.device?.serviceClassAt(pkt.serviceIndex);
     const service = serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null
@@ -433,9 +433,9 @@ export function serviceShortIdOrClass(serviceClass: number) {
 }
 
 export function deviceServiceName(pkt: Packet): string {
-    const srv_class = pkt?.device?.serviceClassAt(pkt.service_index);
+    const srv_class = pkt?.device?.serviceClassAt(pkt.serviceIndex);
     const serv_id = serviceName(srv_class);
-    return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.service_index}`
+    return `${pkt?.device?.shortId || "?"}/${serv_id}:${pkt.serviceIndex}`
 }
 
 export function commandName(n: number, serviceClass?: number): string {
@@ -502,7 +502,7 @@ export function hexDump(d: ArrayLike<number>): string {
 }
 
 export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string {
-    const frame_flags = pkt.frame_flags
+    const frame_flags = pkt.frameFlags
     const devname = pkt.friendlyDeviceName
     const service_name = pkt.friendlyServiceName
     const cmdname = pkt.friendlyCommandName
@@ -517,7 +517,7 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         pdesc = `[ack:${hexNum(pkt.crc)}] ` + pdesc
 
     const d = pkt.data
-    if (pkt.device && pkt.service_index == JD_SERVICE_INDEX_CTRL && pkt.service_command == CMD_ADVERTISEMENT_DATA) {
+    if (pkt.device && pkt.serviceIndex == JD_SERVICE_INDEX_CTRL && pkt.serviceCommand == CMD_ADVERTISEMENT_DATA) {
         if (pkt.device.lastServiceUpdate < pkt.timestamp) {
             if (opts.skipRepeatedAnnounce)
                 return ""
@@ -533,7 +533,7 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         const decoded = pkt.decoded
         if (decoded) {
             pdesc += "; " + decoded.description
-        } else if (pkt.service_command == CMD_EVENT) {
+        } else if (pkt.serviceCommand == CMD_EVENT) {
             pdesc += "; ev=" + num2str(pkt.intData) + " arg=" + (read32(pkt.data, 4) | 0)
         } else if (0 < d.length && d.length <= 4) {
             let v0 = pkt.uintData, v1 = pkt.intData

@@ -65,7 +65,7 @@ class FlashClient {
     }
 
     private handlePacket(pkt: Packet) {
-        if (pkt.service_command == BL_CMD_PAGE_DATA)
+        if (pkt.serviceCommand == BL_CMD_PAGE_DATA)
             this.lastStatus = pkt
     }
 
@@ -78,7 +78,7 @@ class FlashClient {
     }
 
     private async sendCommandAsync(p: Packet) {
-        p.service_index = 1
+        p.serviceIndex = 1
         await p.sendCmdAsync(this.device)
     }
 
@@ -391,10 +391,10 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
     }
 
     function handlePkt(p: Packet) {
-        let dev = devices[p.device_identifier]
+        let dev = devices[p.deviceIdentifier]
         if (!dev) {
-            dev = devices[p.device_identifier] = {
-                deviceId: p.device_identifier,
+            dev = devices[p.deviceIdentifier] = {
+                deviceId: p.deviceIdentifier,
                 firmwareIdentifier: null,
                 version: null,
                 name: null,
@@ -402,21 +402,21 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             }
         }
 
-        if (p.service_index == 1 &&
-            p.service_command == CMD_ADVERTISEMENT_DATA &&
+        if (p.serviceIndex == 1 &&
+            p.serviceCommand == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
             dev.blFirmwareIdentifier = p.getNumber(NumberFormat.UInt32LE, 12)
             if (makeFlashers) {
-                if (!flashers.find(f => f.device.deviceId == p.device_identifier)) {
+                if (!flashers.find(f => f.device.deviceId == p.deviceIdentifier)) {
                     log(`new flasher`)
                     flashers.push(new FlashClient(bus, p))
                 }
             }
         }
 
-        if (!makeFlashers && p.service_index == 0 && p.service_command & CMD_GET_REG) {
-            const reg = p.service_command & CMD_REG_MASK
+        if (!makeFlashers && p.serviceIndex == 0 && p.serviceCommand & CMD_GET_REG) {
+            const reg = p.serviceCommand & CMD_REG_MASK
             if (reg == ControlReg.BootloaderFirmwareIdentifier)
                 dev.blFirmwareIdentifier = p.uintData
             else if (reg == ControlReg.FirmwareIdentifier)

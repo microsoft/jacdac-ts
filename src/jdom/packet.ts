@@ -83,7 +83,7 @@ export class Packet {
         const p = new Packet()
         p._header = new Uint8Array(JD_SERIAL_HEADER_SIZE)
         p.data = data
-        p.service_command = service_command
+        p.serviceCommand = service_command
         return p
     }
 
@@ -99,10 +99,10 @@ export class Packet {
         return this._header.slice(0)
     }
 
-    get device_identifier() {
+    get deviceIdentifier() {
         return toHex(this._header.slice(4, 4 + 8))
     }
-    set device_identifier(id: string) {
+    set deviceIdentifier(id: string) {
         const idb = fromHex(id)
         if (idb.length != 8)
             throwError("Invalid id")
@@ -110,10 +110,10 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    get frame_flags() { return this._header[3] }
+    get frameFlags() { return this._header[3] }
 
-    get multicommand_class() {
-        if (this.frame_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+    get multicommandClass() {
+        if (this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
             return read32(this._header, 4)
         return undefined
     }
@@ -122,19 +122,19 @@ export class Packet {
         return this._header[12];
     }
 
-    get requires_ack(): boolean {
-        return (this.frame_flags & JD_FRAME_FLAG_ACK_REQUESTED) ? true : false;
+    get requiresAck(): boolean {
+        return (this.frameFlags & JD_FRAME_FLAG_ACK_REQUESTED) ? true : false;
     }
-    set requires_ack(ack: boolean) {
-        if (ack != this.requires_ack)
+    set requiresAck(ack: boolean) {
+        if (ack != this.requiresAck)
             this._header[3] ^= JD_FRAME_FLAG_ACK_REQUESTED
         this._decoded = undefined;
     }
 
-    get service_index(): number {
+    get serviceIndex(): number {
         return this._header[13] & JD_SERVICE_INDEX_MASK;
     }
-    set service_index(value: number) {
+    set serviceIndex(value: number) {
         if (value == null)
             throw new Error("service_number not set")
         this._header[13] = (this._header[13] & JD_SERVICE_INDEX_INV_MASK) | value;
@@ -143,7 +143,7 @@ export class Packet {
 
     get service_class(): number {
         if (this.device)
-            return this.device.serviceClassAt(this.service_index)
+            return this.device.serviceClassAt(this.serviceIndex)
         return undefined
     }
 
@@ -151,36 +151,36 @@ export class Packet {
         return read16(this._header, 0)
     }
 
-    get service_command(): number {
+    get serviceCommand(): number {
         return read16(this._header, 14)
     }
-    set service_command(cmd: number) {
+    set serviceCommand(cmd: number) {
         write16(this._header, 14, cmd)
         this._decoded = undefined;
     }
 
-    get is_reg_set() {
-        return (this.service_command >> 12) == (CMD_SET_REG >> 12)
+    get isRegisterSet() {
+        return (this.serviceCommand >> 12) == (CMD_SET_REG >> 12)
     }
 
-    get is_reg_get() {
-        return (this.service_command >> 12) == (CMD_GET_REG >> 12)
+    get isRegisterGet() {
+        return (this.serviceCommand >> 12) == (CMD_GET_REG >> 12)
     }
 
-    get is_event() {
-        return this.service_command === CMD_EVENT;
+    get isEvent() {
+        return this.serviceCommand === CMD_EVENT;
     }
 
-    get is_crc_ack() {
-        return this.service_index === JD_SERVICE_INDEX_CRC_ACK;
+    get isCRCAck() {
+        return this.serviceIndex === JD_SERVICE_INDEX_CRC_ACK;
     }
 
-    get is_pipe() {
-        return this.service_index === JD_SERVICE_INDEX_PIPE;
+    get isPipe() {
+        return this.serviceIndex === JD_SERVICE_INDEX_PIPE;
     }
 
-    get pipe_port() {
-        return this.service_command >> PIPE_PORT_SHIFT;
+    get pipePort() {
+        return this.serviceCommand >> PIPE_PORT_SHIFT;
     }
 
     get data(): Uint8Array {
@@ -234,9 +234,9 @@ export class Packet {
     }
 
     get isAnnounce() {
-        return this.service_index == JD_SERVICE_INDEX_CTRL
-            && this.is_report
-            && this.service_command == SystemCmd.Announce;
+        return this.serviceIndex == JD_SERVICE_INDEX_CTRL
+            && this.isReport
+            && this.serviceCommand == SystemCmd.Announce;
     }
 
     get isRepeatedAnnounce() {
@@ -287,11 +287,11 @@ export class Packet {
         return getNumber(this._data, fmt, offset)
     }
 
-    get is_command() {
-        return !!(this.frame_flags & JD_FRAME_FLAG_COMMAND)
+    get isCommand() {
+        return !!(this.frameFlags & JD_FRAME_FLAG_COMMAND)
     }
 
-    set is_command(value: boolean) {
+    set isCommand(value: boolean) {
         if (value)
             this._header[3] |= JD_FRAME_FLAG_COMMAND
         else
@@ -299,12 +299,12 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    get is_report() {
-        return !this.is_command
+    get isReport() {
+        return !this.isCommand
     }
 
     toString(): string {
-        let msg = `${this.device_identifier}/${this.service_index}[${this.frame_flags}]: ${this.service_command} sz=${this.size}`
+        let msg = `${this.deviceIdentifier}/${this.serviceIndex}[${this.frameFlags}]: ${this.serviceCommand} sz=${this.size}`
         if (this.size < 20) msg += ": " + toHex(this.data)
         else msg += ": " + toHex(this.data.slice(0, 20)) + "..."
         return msg
@@ -319,15 +319,15 @@ export class Packet {
     sendReportAsync(dev: JDDevice) {
         if (!dev)
             return Promise.resolve()
-        this.device_identifier = dev.deviceId
+        this.deviceIdentifier = dev.deviceId
         return this.sendCoreAsync(dev.bus)
     }
 
     sendCmdAsync(dev: JDDevice) {
         if (!dev)
             return Promise.resolve()
-        this.device_identifier = dev.deviceId
-        this.is_command = true
+        this.deviceIdentifier = dev.deviceId
+        this.isCommand = true
         return this.sendCoreAsync(dev.bus)
     }
 
@@ -348,29 +348,29 @@ export class Packet {
 
     // helpers
     get friendlyDeviceName(): string {
-        if (this.frame_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+        if (this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
             return "[multicmd]";
-        return this.device?.friendlyName || this.device_identifier
+        return this.device?.friendlyName || this.deviceIdentifier
     }
     get friendlyServiceName(): string {
         let service_name: string;
-        if (this.is_crc_ack) {
+        if (this.isCRCAck) {
             service_name = "CRC-ACK"
-        } else if (this.is_pipe) {
+        } else if (this.isPipe) {
             service_name = "PIPE"
         } else {
-            const serv_id = serviceName(this.multicommand_class || this.serviceClass)
-            service_name = `${serv_id} (${this.service_index})`
+            const serv_id = serviceName(this.multicommandClass || this.serviceClass)
+            service_name = `${serv_id} (${this.serviceIndex})`
         }
         return service_name;
     }
     get friendlyCommandName(): string {
-        const cmd = this.service_command
+        const cmd = this.serviceCommand
         let cmdname: string;
-        if (this.is_crc_ack) {
+        if (this.isCRCAck) {
             cmdname = hexNum(cmd)
         }
-        else if (this.is_pipe) {
+        else if (this.isPipe) {
             cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
             if (cmd & PIPE_METADATA_MASK)
                 cmdname += " meta"
@@ -382,7 +382,7 @@ export class Packet {
         return cmdname;
     }
     get serviceClass() {
-        return this.device?.serviceClassAt(this.service_index);
+        return this.device?.serviceClassAt(this.serviceIndex);
     }
 }
 
@@ -413,7 +413,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
             res.push(p)
             // only set req_ack flag on first packet - otherwise we would sent multiple acks
             if (res.length > 1)
-                p.requires_ack = false
+                p.requiresAck = false
             ptr += sz
         }
 

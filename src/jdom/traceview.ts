@@ -135,8 +135,8 @@ export default class TraceView extends JDClient {
         pkt.meta[this.id] = true;
 
         // resolve packet device for pretty name
-        if (!pkt.multicommand_class && !pkt.device)
-            pkt.device = this.bus.device(pkt.device_identifier);
+        if (!pkt.multicommandClass && !pkt.device)
+            pkt.device = this.bus.device(pkt.deviceIdentifier);
 
         // detect duplicate at the tail of the packets
         let key = ""

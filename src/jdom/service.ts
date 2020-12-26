@@ -139,11 +139,11 @@ export class JDService extends JDNode {
 
     sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device;
-        pkt.service_index = this.service_index;
+        pkt.serviceIndex = this.service_index;
         if (ack !== undefined)
-            pkt.requires_ack = !!ack
+            pkt.requiresAck = !!ack
         this.emit(PACKET_SEND, pkt)
-        if (pkt.requires_ack)
+        if (pkt.requiresAck)
             return this.device.sendPktWithAck(pkt)
         else
             return pkt.sendCmdAsync(this.device);
@@ -157,7 +157,7 @@ export class JDService extends JDNode {
     sendCmdAwaitResponseAsync(pkt: Packet, timeout = 500) {
         return new Promise<Packet>((resolve, reject) => {
             const handleRes = (resp: Packet) => {
-                if (resp.service_command == pkt.service_command) {
+                if (resp.serviceCommand == pkt.serviceCommand) {
                     this.off(REPORT_RECEIVE, handleRes)
                     if (resolve)
                         resolve(resp)
@@ -181,14 +181,14 @@ export class JDService extends JDNode {
 
     processPacket(pkt: Packet) {
         this.emit(PACKET_RECEIVE, pkt)
-        if (pkt.is_report) {
+        if (pkt.isReport) {
             this.emit(REPORT_RECEIVE, pkt)
-            if (pkt.service_command & CMD_GET_REG) {
-                const address = pkt.service_command & CMD_REG_MASK
+            if (pkt.serviceCommand & CMD_GET_REG) {
+                const address = pkt.serviceCommand & CMD_REG_MASK
                 const reg = this.register({ address })
                 if (reg)
                     reg.processReport(pkt);
-            } else if (pkt.is_event) {
+            } else if (pkt.isEvent) {
                 const address = pkt.intData
                 const ev = this.event(address)
                 if (ev)

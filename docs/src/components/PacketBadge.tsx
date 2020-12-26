@@ -9,10 +9,13 @@ export default function PacketBadge(props: { packet: Packet, count?: number }) {
     const { packet, count } = props;
     const { decoded } = packet;
 
-    const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
+    const logMessage = packet.service_class === SRV_LOGGER && packet.isReport;
 
-    const icon = logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> : 
-        <KindIcon kind={packet.is_crc_ack ? "crc_ack" : packet.is_pipe ? "pipe" : decoded?.info.kind} />;
+    const icon = logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> :
+        <KindIcon kind={packet.isCRCAck ? "crc_ack"
+            : packet.isPipe ? "pipe"
+                : packet.isAnnounce ? "announce"
+                    : decoded?.info.kind} />;
     return (count || 0) > 1 ? <Badge badgeContent={count}>
         {icon}
     </Badge> : icon;

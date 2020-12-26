@@ -5,10 +5,7 @@ import { Observable } from "./observable";
 import { EventTargetObservable } from "./eventtargetobservable";
 import { delay } from "./utils";
 import Flags from "./flags";
-
-export const USB_TRANSPORT = "usb"
-export const PACKETIO_TRANSPORT = "packetio"
-
+import { USB_TRANSPORT } from "./constants";
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>;
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>,

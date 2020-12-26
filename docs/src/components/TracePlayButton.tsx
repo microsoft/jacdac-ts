@@ -5,8 +5,6 @@ import StopIcon from '@material-ui/icons/Stop';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
 import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButtonWithProgress";
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
-import { BusState } from '../../../src/jdom/bus';
 
 export default function TracePlayButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
