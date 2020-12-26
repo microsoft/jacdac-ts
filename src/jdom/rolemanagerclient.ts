@@ -118,7 +118,7 @@ export class RoleManagerClient extends JDServiceClient {
             console.log(`rdp changed`, this.remoteRequestedDevices)
             this.emit(CHANGE, this.remoteRequestedDevices)
         }
-        catch(e) {
+        catch (e) {
             this.emit(ERROR, e);
         }
     }
