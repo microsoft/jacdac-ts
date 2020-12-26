@@ -4,6 +4,7 @@ import { Box, Card, CardActions, CardContent, CardHeader, CircularProgress, Typo
 import { useLatestRelease, useRepository } from './github';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import { Link } from 'gatsby-theme-material-ui';
+import { inIFrame } from '../../../src/jdom/iframeclient';
 
 export default function GithubRepositoryCardHeader(props: {
     slug: string,
@@ -12,17 +13,19 @@ export default function GithubRepositoryCardHeader(props: {
     const { slug, showRelease } = props;
     const { response: repo, loading: repoLoading } = useRepository(slug);
     const { response: release, loading: releaseLoading } = useLatestRelease(showRelease && slug);
+    const iframe = inIFrame();
+    const target = iframe ? "_blank" : ""
 
     const title = repo
         ? <>
-            <Link href={repo.html_url}>
+            <Link href={repo.html_url} target={target}>
                 <Typography component="span" variant="h6">{repo.organization.login}</Typography>
             </Link>
             <Box component="span" ml={0.5} mr={0.5}>/</Box>
-            <Link href={repo.html_url}>
+            <Link href={repo.html_url} target={target}>
                 <Typography component="span" variant="h5">{repo.name}</Typography>
             </Link>
-        </> : <><Link href={`https://github.com/${slug}`}>
+        </> : <><Link href={`https://github.com/${slug}`} target={target}>
             <Typography component="span" variant="h6">{slug}</Typography>
         </Link>
             <Typography variant="caption">Unable to find repository</Typography>
