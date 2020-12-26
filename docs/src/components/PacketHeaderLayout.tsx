@@ -81,7 +81,7 @@ export default function PacketHeaderLayout(props: { packet?: Packet, data?: stri
         position: 4,
         flag: JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
         name: "IDENTIFIER_IS_SERVICE_CLASS",
-        description: ""
+        description: "The packet is a multi command. The service class is the first 4 bytes of the device id."
     }].filter(f => frameFlags & f.flag);
 
     return <>
