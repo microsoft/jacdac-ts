@@ -39,6 +39,7 @@ export default function PacketListItem(props: {
     const selected = packet === selectedPacket
     const logMessage = packet.service_class === SRV_LOGGER && packet.is_report;
     const primary = (packet.is_crc_ack && `crc ack ${packet.friendlyCommandName}`)
+        || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
         || (!decoded && "???")
         || (logMessage && decoded.decoded[0].value)
         || `${packet.friendlyCommandName} ${decoded.decoded.map(f => f.humanValue).join(', ')}`;
