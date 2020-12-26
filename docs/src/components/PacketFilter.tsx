@@ -90,6 +90,10 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography variant="subtitle2">kind:{kind}</Typography>
                 </MenuItem>)}
                 {[{
+                    cmd: "collapse-ack",
+                    label: "Disable collapse acks",
+                    value: false
+                }, {
                     cmd: "announce",
                     value: false
                 }, {
@@ -110,11 +114,11 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                 }, {
                     cmd: "pipe",
                     value: true
-                }].map(({ cmd, kind, value }) => <MenuItem key={cmd} onClick={handleAdd(`${cmd}:${value}`)}>
+                }].map(({ cmd, kind, value, label }) => <MenuItem key={cmd} onClick={handleAdd(`${cmd}:${value}`)}>
                     <ListItemIcon>
                         <KindIcon kind={kind || cmd} />
                     </ListItemIcon>
-                    <Typography>{value ? `Show ${cmd}` : `Hide ${cmd}`}</Typography>&nbsp;
+                    <Typography>{label || (value ? `Show ${cmd}` : `Hide ${cmd}`)}</Typography>&nbsp;
                 <Typography variant="subtitle2">{`${cmd}:${value}`}</Typography>
                 </MenuItem>)}
                 <MenuItem key="port" onClick={handleAdd("port:42")}>

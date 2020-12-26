@@ -136,12 +136,7 @@ export default function ToolsDrawer() {
             text: "Device designer",
             url: "/tools/device-designer",
             icon: <KindIcon kind={"device"} />
-        },
-        {
-            text: "Azure Device Twin Designer",
-            url: "/tools/azure-device-twin-designer",
-            icon: <CloudIcon />
-        },
+        }
     ]
 
     if (!toolsMenu)

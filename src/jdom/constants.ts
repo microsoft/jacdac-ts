@@ -140,4 +140,6 @@ export const STREAMING_DEFAULT_INTERVAL = 50
 export const USB_TRANSPORT = "usb"
 export const PACKETIO_TRANSPORT = "packetio"
 
+export const META_ACK = "ACK"
+
 export * from "../../jacdac-spec/dist/specconstants";

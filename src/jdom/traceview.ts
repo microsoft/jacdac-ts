@@ -1,6 +1,7 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
-import { CHANGE, DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { CHANGE, DEVICE_ANNOUNCE, META_ACK, PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { jdunpack } from "./pack";
 import Packet from "./packet";
 import { PacketFilter, parsePacketFilter } from "./packetfilter";
 import Trace from "./trace";
@@ -102,7 +103,7 @@ export default class TraceView extends JDClient {
     }
 
     private refreshFilter() {
-        this.id = "v" + Math.random();
+        this.id = "view" + Math.random();
         this._packetFilter = parsePacketFilter(this.bus, this._filter);
         this._filteredPackets = [];
         const packets = this.trace.packets;
@@ -149,6 +150,21 @@ export default class TraceView extends JDClient {
             if (old) {
                 old.count++;
                 return;
+            }
+        }
+
+        // collapse acks
+        if (pkt.isCRCAck && this._packetFilter?.props.collapseAck) {
+            const pkts = this.trace.packets;
+            const crc = pkt.serviceCommand
+            for (let i = pkts.length - 1; i >= 0; i--) {
+                const old = pkts[i];
+                if (old.requiresAck
+                    && old.deviceIdentifier === pkt.deviceIdentifier
+                    && old.crc === crc) {
+                    old.meta[META_ACK] = pkt;
+                    return;
+                }
             }
         }
 
