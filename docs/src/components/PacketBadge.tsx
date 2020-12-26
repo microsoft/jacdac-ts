@@ -7,7 +7,8 @@ import LogMessageIcon from "./LogMessageIcon";
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import DoneIcon from '@material-ui/icons/Done';
-import { META_ACK } from "../../../src/jdom/constants";
+import ClearIcon from '@material-ui/icons/Clear';
+import { META_ACK, META_ACK_FAILED } from "../../../src/jdom/constants";
 
 export default function PacketBadge(props: {
     packet: Packet, count?: number,
@@ -15,7 +16,8 @@ export default function PacketBadge(props: {
     const { packet, count } = props;
     const { decoded } = packet;
     const requiredAck = !!packet.requiresAck;
-    const receivedAck = !!packet.meta[META_ACK];
+    const failedAck = !!packet.meta[META_ACK_FAILED];
+    const receivedAck = !failedAck && !!packet.meta[META_ACK];
     const direction = packet.isCommand ? "to" : "from";
 
     const logMessage = packet.service_class === SRV_LOGGER && packet.isReport
@@ -27,8 +29,9 @@ export default function PacketBadge(props: {
                     : decoded?.info.kind} />;
 
     const badgeIcon = <>
-        {direction === "from" && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
-        {direction === "to" && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
+        {direction === "from" && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
+        {direction === "to" && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
+        {requiredAck === true && failedAck && <Tooltip title="no ack"><ClearIcon /></Tooltip>}
         {requiredAck === true && receivedAck && <Tooltip title="ack received"><DoneIcon /></Tooltip>}
         {icon}
     </>

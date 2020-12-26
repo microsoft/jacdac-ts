@@ -141,5 +141,6 @@ export const USB_TRANSPORT = "usb"
 export const PACKETIO_TRANSPORT = "packetio"
 
 export const META_ACK = "ACK"
+export const META_ACK_FAILED = "ACK_FAILED"
 
 export * from "../../jacdac-spec/dist/specconstants";

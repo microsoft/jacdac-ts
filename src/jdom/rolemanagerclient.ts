@@ -3,7 +3,7 @@ import { JDBus } from "./bus";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { SRV_ROLE_MANAGER, DEVICE_CONNECT, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE } from "./constants";
+import { SRV_ROLE_MANAGER, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE, ERROR } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
 import Packet from "./packet";
 import { jdunpack } from "./pack";
@@ -91,31 +91,36 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private async scanCore() {
-        const inp = new InPipeReader(this.bus)
-        await this.service.sendPacketAsync(
-            inp.openCommand(RoleManagerCmd.ListRequiredRoles),
-            true)
+        try {
+            const inp = new InPipeReader(this.bus)
+            await this.service.sendPacketAsync(
+                inp.openCommand(RoleManagerCmd.ListRequiredRoles),
+                true)
 
-        const localDevs = this.bus.devices()
-        const devs: RemoteRequestedDevice[] = []
+            const localDevs = this.bus.devices()
+            const devs: RemoteRequestedDevice[] = []
 
-        for (const buf of await inp.readData()) {
-            const [devidbuf, service_class] = jdunpack<[Uint8Array, number]>(buf, "b[8] u32")
-            const devid = toHex(devidbuf);
-            const name = fromUTF8(uint8ArrayToString(buf.slice(12)))
-            const r = addRequested(devs, name, service_class, this)
-            const dev = localDevs.find(d => d.deviceId == devid)
-            if (dev)
-                r.boundTo = dev
+            for (const buf of await inp.readData()) {
+                const [devidbuf, service_class] = jdunpack<[Uint8Array, number]>(buf, "b[8] u32")
+                const devid = toHex(devidbuf);
+                const name = fromUTF8(uint8ArrayToString(buf.slice(12)))
+                const r = addRequested(devs, name, service_class, this)
+                const dev = localDevs.find(d => d.deviceId == devid)
+                if (dev)
+                    r.boundTo = dev
+            }
+
+            devs.sort((a, b) => strcmp(a.name, b.name))
+
+            this.remoteRequestedDevices = devs
+            recomputeCandidates(this.bus, this.remoteRequestedDevices)
+
+            console.log(`rdp changed`, this.remoteRequestedDevices)
+            this.emit(CHANGE, this.remoteRequestedDevices)
         }
-
-        devs.sort((a, b) => strcmp(a.name, b.name))
-
-        this.remoteRequestedDevices = devs
-        recomputeCandidates(this.bus, this.remoteRequestedDevices)
-
-        console.log(`rdp changed`, this.remoteRequestedDevices)
-        this.emit(CHANGE, this.remoteRequestedDevices)
+        catch(e) {
+            this.emit(ERROR, e);
+        }
     }
 
     clearRoles() {

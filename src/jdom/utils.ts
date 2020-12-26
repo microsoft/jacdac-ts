@@ -9,6 +9,15 @@ export function isCancelError(e: Error) {
     return !!(e as any)?.__cancel;
 }
 
+export function setAckError(e: Error) {
+    if (e)
+        (e as any).__ack = true;
+}
+
+export function isAckError(e: Error) {
+    return !!(e as any)?.__ack;
+}
+
 export function log(msg: string, v?: any) {
     if (v === undefined)
         console.log("JD: " + msg)

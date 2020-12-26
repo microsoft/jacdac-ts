@@ -2,9 +2,9 @@ import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED
 } from "./constants"
-import { fromHex, read32, SMap, bufferEq, assert } from "./utils"
+import { fromHex, read32, SMap, bufferEq, assert, setAckError } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";
@@ -338,11 +338,11 @@ export class JDDevice extends JDNode {
             for (const aa of this._ackAwaiting) {
                 if (aa.pkt) {
                     if (--aa.retriesLeft < 0) {
+                        aa.pkt.meta[META_ACK_FAILED] = true;
                         aa.pkt = null
                         aa.errCb()
                         numdrop++
                     } else {
-                        //console.log(`resend`, this)
                         aa.pkt.sendCmdAsync(this)
                     }
                 }
@@ -364,7 +364,11 @@ export class JDDevice extends JDNode {
                 pkt,
                 retriesLeft: 4,
                 okCb: resolve,
-                errCb: () => reject(new Error("No ACK for " + pkt.toString()))
+                errCb: () => {
+                    const e = new Error("No ACK for " + pkt.toString());
+                    setAckError(e)
+                    reject(e);
+                }
             }
             this._ackAwaiting.push(ack)
             pkt.sendCmdAsync(this)
