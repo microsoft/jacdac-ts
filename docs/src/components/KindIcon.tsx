@@ -16,8 +16,6 @@ import DeviceUnknownIcon from '@material-ui/icons/DeviceUnknown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeviceHubIcon from '@material-ui/icons/DeviceHub';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import DockIcon from '@material-ui/icons/Dock';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import BubbleChartIcon from '@material-ui/icons/BubbleChart';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ComputerIcon from '@material-ui/icons/Computer';
@@ -32,12 +30,10 @@ import {
     REPORT_NODE_NAME, BUS_NODE_NAME, DEVICE_NODE_NAME, VIRTUAL_DEVICE_NODE_NAME,
     SERVICE_NODE_NAME, EVENT_NODE_NAME, PIPE_NODE_NAME, CRC_ACK_NODE_NAME, PIPE_REPORT_NODE_NAME, PACKET_KIND_ANNOUNCE
 } from "../../../src/jdom/constants";
-import { Tooltip } from "@material-ui/core";
 import JacdacIcon from "./icons/JacdacIcon";
 
-export default function KindIcon(props: { kind: string, className?: string, tooltip?: boolean }) {
-    const { kind, className, tooltip } = props
-
+export default function KindIcon(props: { kind: string, className?: string }) {
+    const { kind, className } = props
     let icon: JSX.Element;
     switch (kind) {
         case PACKET_KIND_RO: icon = <DataUsageIcon className={className} />; break;
@@ -56,10 +52,7 @@ export default function KindIcon(props: { kind: string, className?: string, tool
         case CRC_ACK_NODE_NAME: icon = <MarkunreadMailboxIcon className={className} />; break;
         default: icon = <DeviceUnknownIcon className={className} />; break;
     }
-
-    return tooltip ? <Tooltip title={kindName(kind)}>
-        {icon}
-    </Tooltip> : icon;
+    return icon;
 }
 
 export function kindName(kind: string) {

@@ -102,7 +102,7 @@ export function StyledTreeItem(props: TreeItemProps & {
                         inputProps={{ 'aria-label': 'secondary checkbox' }}
                         onChange={handleChecked}
                     />}
-                    {kind && <KindIcon kind={kind} className={classes.labelIcon} tooltip={true} />}
+                    {kind && <KindIcon kind={kind} className={classes.labelIcon} />}
                     {icon}
                     <Typography variant="body2" className={classes.labelText}>
                         {labelText}
