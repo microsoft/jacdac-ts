@@ -44,10 +44,11 @@ export default function PacketListItem(props: {
         || (logMessage && decoded.decoded[0].value)
         || `${packet.friendlyCommandName} ${decoded.decoded.map(f => f.humanValue).join(', ')}`;
     const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.isCommand ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
+    const direction = packet.isCommand ? "to" : "from";
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
         <ListItemIcon>
-            <PacketBadge packet={packet} count={count} />
+            <PacketBadge packet={packet} count={count} direction={direction} />
         </ListItemIcon>
         <ListItemText
             primary={<Box textOverflow="ellipsis">

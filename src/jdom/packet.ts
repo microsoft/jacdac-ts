@@ -349,7 +349,7 @@ export class Packet {
     // helpers
     get friendlyDeviceName(): string {
         if (this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
-            return "[multicmd]";
+            return "*";
         return this.device?.friendlyName || this.deviceIdentifier
     }
     get friendlyServiceName(): string {
