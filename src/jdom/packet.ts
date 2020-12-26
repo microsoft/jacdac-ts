@@ -159,27 +159,27 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    get is_reg_set() {
+    get isRegisterSet() {
         return (this.service_command >> 12) == (CMD_SET_REG >> 12)
     }
 
-    get is_reg_get() {
+    get isRegisterGet() {
         return (this.service_command >> 12) == (CMD_GET_REG >> 12)
     }
 
-    get is_event() {
+    get isEvent() {
         return this.service_command === CMD_EVENT;
     }
 
-    get is_crc_ack() {
+    get isCRCAck() {
         return this.service_index === JD_SERVICE_INDEX_CRC_ACK;
     }
 
-    get is_pipe() {
+    get isPipe() {
         return this.service_index === JD_SERVICE_INDEX_PIPE;
     }
 
-    get pipe_port() {
+    get pipePort() {
         return this.service_command >> PIPE_PORT_SHIFT;
     }
 
@@ -354,9 +354,9 @@ export class Packet {
     }
     get friendlyServiceName(): string {
         let service_name: string;
-        if (this.is_crc_ack) {
+        if (this.isCRCAck) {
             service_name = "CRC-ACK"
-        } else if (this.is_pipe) {
+        } else if (this.isPipe) {
             service_name = "PIPE"
         } else {
             const serv_id = serviceName(this.multicommand_class || this.serviceClass)
@@ -367,10 +367,10 @@ export class Packet {
     get friendlyCommandName(): string {
         const cmd = this.service_command
         let cmdname: string;
-        if (this.is_crc_ack) {
+        if (this.isCRCAck) {
             cmdname = hexNum(cmd)
         }
-        else if (this.is_pipe) {
+        else if (this.isPipe) {
             cmdname = `port:${cmd >> PIPE_PORT_SHIFT} cnt:${cmd & PIPE_COUNTER_MASK}`
             if (cmd & PIPE_METADATA_MASK)
                 cmdname += " meta"

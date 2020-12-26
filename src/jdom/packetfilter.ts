@@ -219,16 +219,16 @@ export function compileFilter(props: PacketFilterProps) {
     if (flags)
         filters.push(pkt => hasAnyFlag(pkt))
     if (pipes !== undefined)
-        filters.push(pkt => pkt.is_pipe)
+        filters.push(pkt => pkt.isPipe)
     if (port !== undefined)
-        filters.push(pkt => pkt.pipe_port === port);
+        filters.push(pkt => pkt.pipePort === port);
 
     if (regGet !== undefined || regSet !== undefined)
-        filters.push(pkt => (pkt.is_reg_get === regGet) || (pkt.is_reg_set === regSet))
+        filters.push(pkt => (pkt.isRegisterGet === regGet) || (pkt.isRegisterSet === regSet))
     else if (regGet !== undefined)
-        filters.push(pkt => pkt.is_reg_get === regGet)
+        filters.push(pkt => pkt.isRegisterGet === regGet)
     else if (regSet !== undefined)
-        filters.push(pkt => pkt.is_reg_set === regSet)
+        filters.push(pkt => pkt.isRegisterSet === regSet)
 
     if (log !== undefined)
         filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.is_report);

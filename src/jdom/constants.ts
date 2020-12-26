@@ -137,4 +137,7 @@ export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
 export const STREAMING_DEFAULT_INTERVAL = 50
 
+export const USB_TRANSPORT = "usb"
+export const PACKETIO_TRANSPORT = "packetio"
+
 export * from "../../jacdac-spec/dist/specconstants";

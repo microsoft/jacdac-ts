@@ -188,7 +188,7 @@ export class JDService extends JDNode {
                 const reg = this.register({ address })
                 if (reg)
                     reg.processReport(pkt);
-            } else if (pkt.is_event) {
+            } else if (pkt.isEvent) {
                 const address = pkt.intData
                 const ev = this.event(address)
                 if (ev)
