@@ -46,7 +46,7 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
 
     const serviceNames = ellipseJoin(services
         .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
-        .map(service => service.name), 2)
+        .map(service => service.name), 18)
     const readingRegister = services.find(srv => srv.readingRegister)?.readingRegister;
     const reading = useRegisterHumanValue(readingRegister);
     const labelInfo = [reading, serviceNames].filter(r => !!r).join(', ');

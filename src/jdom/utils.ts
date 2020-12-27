@@ -531,11 +531,17 @@ export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted
     return Object.values(r).map(converted)
 }
 
-export function ellipseJoin(values: string[], maxItems: number, elipse = "...") {
-    let v = values.slice(0, maxItems - 1)
-    if (v.length < values.length)
-        v.push(elipse)
-    return v.join(', ')
+export function ellipseJoin(values: string[], maxChars: number, ellipse = "...") {
+    let r = "";
+    for(let i = 0; i < values.length && r.length < maxChars; ++i) {
+        if (r)
+            r += ", ";
+        r += values[i];
+    }
+    if (r.length > maxChars)
+        return r.slice(0, maxChars) + ellipse;
+    else
+        return r;
 }
 
 export function arrayShuffle<T>(a: T[]): T[] {

@@ -1,12 +1,14 @@
 import React, { useContext } from 'react';
-import { ListItem, ListItemIcon, makeStyles, Theme, createStyles, ListItemText, useMediaQuery, useTheme, Box } from '@material-ui/core';
+import { ListItem, ListItemIcon, makeStyles, createStyles, ListItemText, useMediaQuery, useTheme, Box } from '@material-ui/core';
 import Packet from '../../../src/jdom/packet';
 import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
 import AppContext, { DrawerType } from './AppContext'
 import { MOBILE_BREAKPOINT } from './layout';
-import { META_ACK, SRV_LOGGER } from '../../../src/jdom/constants';
+import { SRV_LOGGER } from '../../../src/jdom/constants';
 import { prettyDuration } from '../../../src/jdom/pretty';
+import { ellipseJoin } from '../../../src/jdom/utils';
+import { jdunpack } from '../../../src/jdom/pack';
 
 const useStyles = makeStyles(() =>
     createStyles({
@@ -37,12 +39,13 @@ export default function PacketListItem(props: {
         setSelectedPacket(packet)
     }
     const selected = packet === selectedPacket
-    const logMessage = packet.service_class === SRV_LOGGER && packet.isReport && !packet.isRegisterGet;
+    const logMessage = packet.service_class === SRV_LOGGER
+        && packet.isReport && packet.isEvent;
     const primary = (packet.isCRCAck && `crc ack ${packet.friendlyCommandName}`)
         || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
         || (!decoded && "???")
-        || (logMessage && decoded.decoded[0].value)
-        || `${packet.friendlyCommandName} ${decoded.decoded.map(f => f.humanValue).join(', ')}`;
+        || (logMessage && jdunpack<[string]>(packet.data, "s")[0])
+        || `${packet.friendlyCommandName} ${ellipseJoin(decoded.decoded.map(f => f.humanValue), 18)}`;
     const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.isCommand ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
