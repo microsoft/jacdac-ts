@@ -533,7 +533,7 @@ export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted
 
 export function ellipseJoin(values: string[], maxChars: number, ellipse = "...") {
     let r = "";
-    for(let i = 0; i < values.length && r.length < maxChars; ++i) {
+    for (let i = 0; i < values.length && r.length < maxChars; ++i) {
         if (r)
             r += ", ";
         r += values[i];
