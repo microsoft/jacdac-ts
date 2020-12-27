@@ -220,6 +220,7 @@ class FlashClient {
             idx++
         }
         try {
+            this.bus.freezeDevices();
             prog()
             await this.startFlashAsync()
             prog()
@@ -240,6 +241,7 @@ class FlashClient {
                     prog()
                 }
             } finally {
+                this.bus.unfreezeDevices();
                 // even if resetting failed, unregister event listeners
                 for (let d of this.classClients) {
                     d.stop()

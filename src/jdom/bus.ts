@@ -115,6 +115,7 @@ export class JDBus extends JDNode {
     private _minLoggerPriority = LoggerPriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
     private _announcing = false;
+    private _gcDevicesEnabled = 0;
 
     public readonly host: BusHost = {
         log
@@ -499,7 +500,20 @@ export class JDBus extends JDNode {
         }
     }
 
+    freezeDevices() {
+        this._gcDevicesEnabled++;
+    }
+
+    unfreezeDevices() {
+        this._gcDevicesEnabled--;
+    }
+
     private gcDevices() {
+        if (this._gcDevicesEnabled > 0) {
+            this.log("debug", "devices frozen")
+            return;
+        }
+
         const LOST_DELAY = this.options?.deviceLostDelay || JD_DEVICE_LOST_DELAY;
         const DISCONNECTED_DELAY = this.options?.deviceDisconnectedDelay || JD_DEVICE_DISCONNECTED_DELAY
         const lostCutoff = this.timestamp - LOST_DELAY
