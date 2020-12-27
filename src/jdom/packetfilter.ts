@@ -23,7 +23,8 @@ export interface PacketFilterProps {
     grouping?: boolean,
     pipes?: boolean,
     port?: number,
-    collapseAck?: boolean
+    collapseAck?: boolean,
+    collapsePipes?: boolean,
 }
 
 export interface PacketFilter {
@@ -60,6 +61,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let pipes = undefined;
     let port: number = undefined;
     let collapseAck: boolean = true;
+    let collapsePipes: boolean = true;
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
@@ -144,8 +146,13 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "grouping":
                 grouping = parseBoolean(value);
                 break;
+            case "pipe":
             case "pipes":
                 pipes = parseBoolean(value);
+                break;
+            case "collapse-pipe":
+            case "collapse-pipes":
+                collapsePipes = parseBoolean(value);
                 break;
             case "port":
                 port = parseInt(value);
@@ -170,6 +177,7 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         after,
         grouping,
         pipes,
+        collapsePipes,
         port
     }
     const filter = compileFilter(props)
@@ -197,7 +205,6 @@ export function compileFilter(props: PacketFilterProps) {
         announce,
         repeatedAnnounce,
         requiresAck,
-        collapseAck,
         log,
         firmwareIdentifiers,
         flags,

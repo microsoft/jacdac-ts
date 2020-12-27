@@ -5,7 +5,7 @@ import PacketsContext from './PacketsContext';
 import PacketBadge from './PacketBadge';
 import AppContext, { DrawerType } from './AppContext'
 import { MOBILE_BREAKPOINT } from './layout';
-import { SRV_LOGGER } from '../../../src/jdom/constants';
+import { META_PIPE, SRV_LOGGER } from '../../../src/jdom/constants';
 import { prettyDuration } from '../../../src/jdom/pretty';
 import { ellipseJoin } from '../../../src/jdom/utils';
 import { jdunpack } from '../../../src/jdom/pack';
@@ -40,9 +40,12 @@ export default function PacketListItem(props: {
     }
     const selected = packet === selectedPacket
     const logMessage = packet.service_class === SRV_LOGGER
-        && packet.isReport && packet.isEvent;
+        && packet.isReport && packet.isEvent
+    const pipePackets = packet.meta[META_PIPE] as Packet[];
+    
     const primary = (packet.isCRCAck && `crc ack ${packet.friendlyCommandName}`)
         || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
+        || (pipePackets && `pipe port:${packet.pipePort} ${pipePackets.length} packets`)
         || (!decoded && "???")
         || (logMessage && jdunpack<[string]>(packet.data, "s")[0])
         || `${packet.friendlyCommandName} ${ellipseJoin(decoded.decoded.map(f => f.humanValue), 18)}`;

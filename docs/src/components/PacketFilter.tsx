@@ -112,8 +112,14 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     cmd: "command",
                     value: true
                 }, {
-                    cmd: "pipe",
+                    cmd: "pipes",
+                    kind: "pipe",
                     value: true
+                }, {
+                    cmd: "collapse-pipes",
+                    kind: "pipe",
+                    label: "Disable collapse pipes",
+                    value: false
                 }].map(({ cmd, kind, value, label }) => <MenuItem key={cmd} onClick={handleAdd(`${cmd}:${value}`)}>
                     <ListItemIcon>
                         <KindIcon kind={kind || cmd} />

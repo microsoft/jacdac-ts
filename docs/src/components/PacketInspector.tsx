@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { Fragment, useContext } from "react"
 import Alert from "./Alert"
 import PacketsContext from "./PacketsContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -11,9 +11,10 @@ import { printPacket } from "../../../src/jdom/pretty";
 import PacketHeaderLayout from "./PacketHeaderLayout";
 import { Link } from "gatsby-theme-material-ui";
 import PaperBox from "./PaperBox";
-import { META_ACK } from "../../../src/jdom/constants";
+import { META_ACK, META_PIPE } from "../../../src/jdom/constants";
 import Packet from "../../../src/jdom/packet";
 import PacketBadge from "./PacketBadge";
+import PacketDataLayout from "./PacketDataLayout";
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);
@@ -24,6 +25,8 @@ export default function PacketInspector() {
     const { decoded, data } = packet;
     const info = decoded?.info;
     const ack = packet.meta[META_ACK] as Packet;
+    const pipePackets = packet.meta[META_PIPE] as Packet[];
+    console.log({ pipePackets })
 
     return <>
         <h2>
@@ -40,28 +43,20 @@ export default function PacketInspector() {
         </Typography>}
         <h3>Header</h3>
         <PacketHeaderLayout packet={packet} showSlots={true} showFlags={true} />
-        {!!data.length && <>
-            <h3>Data</h3>
-            <PaperBox padding={0}>
-                <Tooltip title={decoded?.info?.packFormat || "unknown data layout"}>
-                    <pre>
-                        {toHex(data)}
-                    </pre>
-                </Tooltip>
-            </PaperBox>
-        </>}
-        {!!decoded?.decoded.length && <>
-            <h3>Arguments</h3><ul>
-                {decoded.decoded.map((member, i) => <li key={i}>
-                    {member.info.name == '_' ? info.name : member.info.name}: <code>{member.humanValue}</code>
-                </li>)}
-            </ul>
-        </>}
+        <PacketDataLayout packet={packet} showHex={true} showDecoded={true} />
         {ack && <>
-            <h3>
-                
-                Ack received</h3>
+            <h3>Ack received</h3>
             <PacketHeaderLayout packet={ack} />
+            <PacketDataLayout packet={packet} showHex={true} />
+        </>}
+        {pipePackets && <>
+            <h3>Pipe packets</h3>
+            {pipePackets.filter(pp => !!pp)
+                .map(pp => <Fragment key={pp.pipeCount}>
+                    <h4>count {pp.pipeCount}</h4>
+                    <PacketHeaderLayout packet={pp} showSlots={true} />
+                    <PacketDataLayout packet={pp} showDecoded={true} />
+                </Fragment>)}
         </>}
         {info && <><h3>Specification</h3>
             <PacketSpecification

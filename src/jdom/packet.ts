@@ -184,7 +184,11 @@ export class Packet {
     }
 
     get pipePort() {
-        return this.serviceCommand >> PIPE_PORT_SHIFT;
+        return this.isPipe && this.serviceCommand >> PIPE_PORT_SHIFT;
+    }
+
+    get pipeCount() {
+        return this.isPipe && this.serviceCommand & PIPE_COUNTER_MASK;
     }
 
     get data(): Uint8Array {

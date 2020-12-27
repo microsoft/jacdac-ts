@@ -1,6 +1,6 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
-import { CHANGE, DEVICE_ANNOUNCE, META_ACK, PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { CHANGE, DEVICE_ANNOUNCE, META_ACK, META_PIPE, PACKET_PROCESS, PACKET_SEND, TRACE_FILTER_HORIZON } from "./constants";
 import { jdunpack } from "./pack";
 import Packet from "./packet";
 import { PacketFilter, parsePacketFilter } from "./packetfilter";
@@ -139,6 +139,9 @@ export default class TraceView extends JDClient {
         if (!pkt.isMultiCommand && !pkt.device)
             pkt.device = this.bus.device(pkt.deviceIdentifier);
 
+        // keep in filtered view
+        let filtered = true;
+
         // detect duplicate at the tail of the packets
         let key = ""
         if (this._packetFilter?.props.grouping) {
@@ -149,7 +152,7 @@ export default class TraceView extends JDClient {
                     p.key === key)
             if (old) {
                 old.count++;
-                return;
+                filtered = false;
             }
         }
 
@@ -157,23 +160,44 @@ export default class TraceView extends JDClient {
         if (pkt.isCRCAck) {
             const pkts = this.trace.packets;
             const crc = pkt.serviceCommand;
-            const m = Math.max(0, pkts.length - 100); // max scan 100 packets back
+            const did = pkt.deviceIdentifier;
+            const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON); // max scan 100 packets back
             for (let i = pkts.length - 1; i >= m; i--) {
                 const old = pkts[i];
                 if (old.requiresAck
-                    && old.deviceIdentifier === pkt.deviceIdentifier
+                    && old.deviceIdentifier === did
                     && old.crc === crc) {
                     old.meta[META_ACK] = pkt;
                     if (this._packetFilter?.props.collapseAck)
-                        return;
+                        filtered = false;
+                    break;
+                }
+            }
+        }
+        else if (this._packetFilter?.props.collapsePipes && pkt.isPipe && pkt.isCommand) {
+            const pkts = this._filteredPackets
+            const m = Math.min(pkts.length, TRACE_FILTER_HORIZON); // max scan 100 packets back
+            const port = pkt.pipePort;
+            const did = pkt.deviceIdentifier;
+            for (let i = 0; i < m; ++i) {
+                const old = pkts[i].packet;
+                if (old.deviceIdentifier === did
+                    && old.pipePort === port) {
+                    let pipePackets = old.meta[META_PIPE] as Packet[];
+                    if (!pipePackets)
+                        pipePackets = old.meta[META_PIPE] = [];
+                    pipePackets[pkt.pipeCount] = pkt;
+                    filtered = false;
+                    break;
                 }
             }
         }
 
-        this._filteredPackets.unshift({
-            key,
-            packet: pkt,
-            count: 1
-        })
+        if (filtered)
+            this._filteredPackets.unshift({
+                key,
+                packet: pkt,
+                count: 1
+            })
     }
 }
