@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { makeStyles, createStyles } from '@material-ui/core';
-import PacketListItem from './PacketListItem';
+import PacketListItem from '../PacketListItem';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import PacketsContext from './PacketsContext';
+import PacketsContext from '../PacketsContext';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer'
-import PacketFilter from './PacketFilter';
-import { TracePacketProps } from '../../../src/jdom/traceview';
+import PacketFilter from '../PacketFilter';
+import { TracePacketProps } from '../../../../src/jdom/traceview';
 
 const useStyles = makeStyles(() =>
     createStyles({

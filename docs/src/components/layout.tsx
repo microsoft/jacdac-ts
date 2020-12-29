@@ -43,7 +43,7 @@ import useMdxComponents from "./useMdxComponents";
 import Footer from "./ui/Footer";
 import PrintButton from "./ui/PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
-import PacketInspector from "./PacketInspector"
+import PacketInspector from "./tools/PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";

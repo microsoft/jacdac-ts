@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Drawer, Typography, Divider, makeStyles, createStyles, useMediaQuery, useTheme } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
-import PacketView from "./PacketView";
+import PacketView from "./tools/PacketView";
 import Toc from "./Toc";
 import JDomTreeView from "./JDomTreeView";
 import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH } from "./layout";

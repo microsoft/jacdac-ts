@@ -1,18 +1,18 @@
 import React, { useContext } from "react"
-import Alert from "./ui/Alert"
-import PacketsContext from "./PacketsContext";
+import Alert from "../ui/Alert"
+import PacketsContext from "../PacketsContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
-import KindChip from "./KindChip"
+import KindChip from "../KindChip"
 import { Typography } from "@material-ui/core";
-import PacketSpecification from "./PacketSpecification";
-import { printPacket } from "../../../src/jdom/pretty";
-import PacketHeaderLayout from "./PacketHeaderLayout";
-import { META_ACK, META_PIPE } from "../../../src/jdom/constants";
-import Packet from "../../../src/jdom/packet";
-import PacketBadge from "./PacketBadge";
-import PacketDataLayout from "./PacketDataLayout";
-import PacketList from "./PacketList"
+import PacketSpecification from "../PacketSpecification";
+import { printPacket } from "../../../../src/jdom/pretty";
+import PacketHeaderLayout from "../PacketHeaderLayout";
+import { META_ACK, META_PIPE } from "../../../../src/jdom/constants";
+import Packet from "../../../../src/jdom/packet";
+import PacketBadge from "../PacketBadge";
+import PacketDataLayout from "../PacketDataLayout";
+import PacketList from "../PacketList"
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);

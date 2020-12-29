@@ -1,20 +1,20 @@
 import { createStyles, Grid, makeStyles, Tab, Tabs, Theme } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
-import { BusState } from "../../../src/jdom/bus";
-import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants";
-import { isBootloaderFlashing, JDDevice } from "../../../src/jdom/device";
-import { scanFirmwares, updateApplicable } from "../../../src/jdom/flashing";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import useEventRaised from "../jacdac/useEventRaised";
-import TabPanel, { a11yProps } from './ui/TabPanel';
-import useGridBreakpoints from "./useGridBreakpoints";
-import ConnectAlert from "./ConnectAlert";
-import FirmwareCard from "./FirmwareCard";
-import useSelectedNodes from "../jacdac/useSelectedNodes"
+import { BusState } from "../../../../src/jdom/bus";
+import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../../src/jdom/constants";
+import { isBootloaderFlashing, JDDevice } from "../../../../src/jdom/device";
+import { scanFirmwares, updateApplicable } from "../../../../src/jdom/flashing";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import useEventRaised from "../../jacdac/useEventRaised";
+import TabPanel, { a11yProps } from '../ui/TabPanel';
+import useGridBreakpoints from "../useGridBreakpoints";
+import ConnectAlert from "../ConnectAlert";
+import FirmwareCard from "../FirmwareCard";
+import useSelectedNodes from "../../jacdac/useSelectedNodes"
 // tslint:disable-next-line: no-submodule-imports
-import useFirmwareRepos from "./useFirmwareRepos";
-import UpdateDeviceList from "./UpdateDeviceList";
-import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
+import useFirmwareRepos from "../useFirmwareRepos";
+import UpdateDeviceList from "../UpdateDeviceList";
+import LocalFileFirmwareCard from "../LocalFileFirmwareCard";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

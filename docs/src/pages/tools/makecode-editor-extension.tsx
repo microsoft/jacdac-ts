@@ -5,7 +5,7 @@ import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExt
 import { makeStyles } from '@material-ui/core';
 import PaperBox from "../../components/ui/PaperBox";
 import Flags from "../../../../src/jdom/flags";
-import RoleManager from "../../components/RoleManager";
+import RoleManager from "../../components/tools/RoleManager";
 
 const useStyles = makeStyles((theme) => createStyles({
     content: {

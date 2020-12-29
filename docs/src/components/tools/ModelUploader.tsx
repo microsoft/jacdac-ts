@@ -1,26 +1,26 @@
 import { makeStyles, Theme, createStyles, CircularProgress, List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import React, { useContext, useState } from 'react';
-import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../../src/jdom/constants';
-import { JDService } from '../../../src/jdom/service';
-import ServiceList from './ServiceList';
-import ConnectAlert from './ConnectAlert'
-import { useDbJSON, useDbUint8Array } from './useDb'
-import ImportButton from './ImportButton';
+import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../../../src/jdom/constants';
+import { JDService } from '../../../../src/jdom/service';
+import ServiceList from '../ServiceList';
+import ConnectAlert from '../ConnectAlert'
+import { useDbJSON, useDbUint8Array } from '../useDb'
+import ImportButton from '../ImportButton';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./ui/Alert";
+import Alert from "../ui/Alert";
 import { Button } from 'gatsby-theme-material-ui';
-import { ModelRunnerClient } from '../../../src/jdom/modelrunner'
-import RegisterInput from './RegisterInput';
-import CircularProgressWithLabel from './ui/CircularProgressWithLabel'
-import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/jdom/sensoraggregatorclient';
-import SensorAggregatorConfigView from './SensorAggregatorConfigView';
-import ServiceManagerContext from './ServiceManagerContext'
-import useChange from '../jacdac/useChange';
-import { IFile } from '../../../src/embed/protocol';
-import { prettySize } from '../../../src/jdom/pretty';
-import RegisterTrend from './RegisterTrend';
-import { useRegisterIntValue, useRegisterStringValue } from '../jacdac/useRegisterValue';
-import useCall from './useCall';
+import { ModelRunnerClient } from '../../../../src/jdom/modelrunner'
+import RegisterInput from '../RegisterInput';
+import CircularProgressWithLabel from '../ui/CircularProgressWithLabel'
+import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../../src/jdom/sensoraggregatorclient';
+import SensorAggregatorConfigView from '../SensorAggregatorConfigView';
+import ServiceManagerContext from '../ServiceManagerContext'
+import useChange from '../../jacdac/useChange';
+import { IFile } from '../../../../src/embed/protocol';
+import { prettySize } from '../../../../src/jdom/pretty';
+import RegisterTrend from '../RegisterTrend';
+import { useRegisterIntValue, useRegisterStringValue } from '../../jacdac/useRegisterValue';
+import useCall from '../useCall';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

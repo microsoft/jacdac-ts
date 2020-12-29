@@ -1,34 +1,34 @@
 import React, { useContext, useEffect, useState } from "react"
 import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Collapse, Grid, Switch, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
-import useDbValue from "./useDbValue";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import useChange from "../jacdac/useChange";
-import useGridBreakpoints from "./useGridBreakpoints";
-import { JDRegister } from "../../../src/jdom/register";
-import { JDClient } from "../../../src/jdom/client";
-import DeviceCardHeader from "./DeviceCardHeader";
-import Alert from "./ui/Alert";
-import useEffectAsync from "./useEffectAsync";
-import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../src/jdom/constants";
-import FieldDataSet from "./FieldDataSet";
-import { deviceSpecificationFromFirmwareIdentifier, isSensor } from "../../../src/jdom/spec";
-import CircularProgressWithLabel from "./ui/CircularProgressWithLabel";
-import Trend from "./Trend"
+import useDbValue from "../useDbValue";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import useChange from "../../jacdac/useChange";
+import useGridBreakpoints from "../useGridBreakpoints";
+import { JDRegister } from "../../../../src/jdom/register";
+import { JDClient } from "../../../../src/jdom/client";
+import DeviceCardHeader from "../DeviceCardHeader";
+import Alert from "../ui/Alert";
+import useEffectAsync from "../useEffectAsync";
+import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../../src/jdom/constants";
+import FieldDataSet from "../FieldDataSet";
+import { deviceSpecificationFromFirmwareIdentifier, isSensor } from "../../../../src/jdom/spec";
+import CircularProgressWithLabel from "../ui/CircularProgressWithLabel";
+import Trend from "../Trend"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import GetAppIcon from '@material-ui/icons/GetApp';
-import ServiceList from "./ServiceList";
+import ServiceList from "../ServiceList";
 import { ModelActions, ModelContent } from "./ModelUploader";
-import { readBlobToUint8Array } from "../../../src/jdom/utils";
-import useDeviceName from "./useDeviceName";
-import { JDService } from "../../../src/jdom/service";
-import ReadingFieldGrid from "./ReadingFieldGrid";
-import useChartPalette from './useChartPalette';
-import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../src/jdom/sensoraggregatorclient";
+import { readBlobToUint8Array } from "../../../../src/jdom/utils";
+import useDeviceName from "../useDeviceName";
+import { JDService } from "../../../../src/jdom/service";
+import ReadingFieldGrid from "../ReadingFieldGrid";
+import useChartPalette from '../useChartPalette';
+import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../../src/jdom/sensoraggregatorclient";
 import { AlertTitle } from "@material-ui/lab";
-import { serviceName } from "../../../src/jdom/pretty";
-import ConnectAlert from "./ConnectAlert";
-import ApiKeyAccordion from "./ApiKeyAccordion";
+import { serviceName } from "../../../../src/jdom/pretty";
+import ConnectAlert from "../ConnectAlert";
+import ApiKeyAccordion from "../ApiKeyAccordion";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"
 

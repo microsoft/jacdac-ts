@@ -1,22 +1,22 @@
 import { Grid, Typography } from "@material-ui/core";
 import React, { useContext } from "react";
-import { bufferEq, cryptoRandomUint32, delay, toHex } from "../../../src/jdom/utils";
+import { bufferEq, cryptoRandomUint32, delay, toHex } from "../../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../src/jdom/constants";
-import useChange from "../jacdac/useChange"
-import { JDService } from "../../../src/jdom/service";
-import { JDRegister } from "../../../src/jdom/register";
-import ConnectAlert from "./ConnectAlert";
-import { JDField } from "../../../src/jdom/field";
-import { jdpack, jdpackEqual, jdunpack } from "../../../src/jdom/pack";
-import DeviceName from "./DeviceName";
-import DeviceActions from "./DeviceActions";
-import useEffectAsync from "./useEffectAsync";
-import TestCard from "./TestCard";
-import Packet from "../../../src/jdom/packet";
-import { JDEvent } from "../../../src/jdom/event";
-import { InPipeReader } from "../../../src/jdom/pipes";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../../src/jdom/constants";
+import useChange from "../../jacdac/useChange"
+import { JDService } from "../../../../src/jdom/service";
+import { JDRegister } from "../../../../src/jdom/register";
+import ConnectAlert from "../ConnectAlert";
+import { JDField } from "../../../../src/jdom/field";
+import { jdpack, jdpackEqual, jdunpack } from "../../../../src/jdom/pack";
+import DeviceName from "../DeviceName";
+import DeviceActions from "../DeviceActions";
+import useEffectAsync from "../useEffectAsync";
+import TestCard from "../TestCard";
+import Packet from "../../../../src/jdom/packet";
+import { JDEvent } from "../../../../src/jdom/event";
+import { InPipeReader } from "../../../../src/jdom/pipes";
 
 function pick(...values: number[]) {
     return values.find(x => x !== undefined);

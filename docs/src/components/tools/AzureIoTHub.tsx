@@ -1,7 +1,7 @@
 import { Link } from "gatsby-theme-material-ui";
 import React from "react";
-import ApiKeyAccordion from "./ApiKeyAccordion";
-import ConnectAlert from "./ConnectAlert";
+import ApiKeyAccordion from "../ApiKeyAccordion";
+import ConnectAlert from "../ConnectAlert";
 
 const AZURE_IOT_HUB_API_KEY = "azureiothubapikey"
 const AZURE_IOT_API_VERSION = "2020-05-31-preview"

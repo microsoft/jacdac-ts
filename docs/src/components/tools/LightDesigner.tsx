@@ -1,17 +1,17 @@
 import React, { useContext, useEffect, useMemo } from 'react';
 import { createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
-import AppContext, { DrawerType } from './AppContext';
+import AppContext, { DrawerType } from '../AppContext';
 import { useDebounce } from 'use-debounce/lib';
-import PaperBox from './ui/PaperBox';
-import useLocalStorage from './useLocalStorage';
-import CodeBlock from './CodeBlock';
-import { toHex } from '../../../src/jdom/utils';
-import { lightEncode } from '../../../src/jdom/light'
-import DeviceList from './DeviceList';
-import { LightCmd, LightReg, SRV_LIGHT } from '../../../src/jdom/constants';
-import ConnectAlert from './ConnectAlert';
-import { serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
-import Markdown from "./ui/Markdown"
+import PaperBox from '../ui/PaperBox';
+import useLocalStorage from '../useLocalStorage';
+import CodeBlock from '../CodeBlock';
+import { toHex } from '../../../../src/jdom/utils';
+import { lightEncode } from '../../../../src/jdom/light'
+import DeviceList from '../DeviceList';
+import { LightCmd, LightReg, SRV_LIGHT } from '../../../../src/jdom/constants';
+import ConnectAlert from '../ConnectAlert';
+import { serviceSpecificationFromClassIdentifier } from '../../../../src/jdom/spec';
+import Markdown from "../ui/Markdown"
 
 function useLightEncode(source: string) {
     return useMemo(() => {

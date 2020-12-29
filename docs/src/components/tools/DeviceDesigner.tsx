@@ -1,28 +1,28 @@
 import React, { useMemo, useState } from 'react';
 import { Grid } from '@material-ui/core';
-import useLocalStorage from './useLocalStorage';
-import { clone, unique } from '../../../src/jdom/utils';
+import useLocalStorage from '../useLocalStorage';
+import { clone, unique } from '../../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
 import { ChangeEvent } from 'react';
-import { deviceSpecifications, serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
-import PaperBox from "./ui/PaperBox"
-import { uniqueFirmwareId } from './RandomGenerator';
+import { deviceSpecifications, serviceSpecificationFromClassIdentifier } from '../../../../src/jdom/spec';
+import PaperBox from "../ui/PaperBox"
+import { uniqueFirmwareId } from '../RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CreateIcon from '@material-ui/icons/Create';
-import IconButtonWithTooltip from "./ui/IconButtonWithTooltip"
-import { parseRepoUrl } from './github'
-import GithubPullRequestButton from './GithubPullRequestButton'
-import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"
-import ImportImageCanvas from './ImageImportCanvas';
-import FirmwareCard from "./FirmwareCard"
+import IconButtonWithTooltip from "../ui/IconButtonWithTooltip"
+import { parseRepoUrl } from '../github'
+import GithubPullRequestButton from '../GithubPullRequestButton'
+import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../../jacdac-spec/spectool/jdspec"
+import ImportImageCanvas from '../ImageImportCanvas';
+import FirmwareCard from "../FirmwareCard"
 // tslint:disable-next-line: no-submodule-imports
 import { Autocomplete } from '@material-ui/lab/';
-import { useFirmwareBlob } from './useFirmwareBlobs';
-import { FirmwareBlob } from '../../../src/jdom/flashing';
+import { useFirmwareBlob } from '../useFirmwareBlobs';
+import { FirmwareBlob } from '../../../../src/jdom/flashing';
 import { useId } from "react-use-id-hook"
-import AddServiceIconButton from "./AddServiceIconButton";
+import AddServiceIconButton from "../AddServiceIconButton";
 
 function CompanySelect(props: { error?: string, value?: string, onValueChange?: (name: string) => void }) {
     const { onValueChange, value, error } = props;

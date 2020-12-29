@@ -2,33 +2,33 @@ import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions } from '@material-ui/core';
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import JACDACContext, { JDContextProps } from '../../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import StopIcon from '@material-ui/icons/Stop';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SaveIcon from '@material-ui/icons/Save';
-import useChange from '../jacdac/useChange';
-import { JDBus } from '../../../src/jdom/bus'
-import FieldDataSet from './FieldDataSet';
-import Trend from './Trend';
+import useChange from '../../jacdac/useChange';
+import { JDBus } from '../../../../src/jdom/bus'
+import FieldDataSet from '../FieldDataSet';
+import Trend from '../Trend';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./ui/Alert";
-import EventSelect from './EventSelect';
-import { JDEvent } from '../../../src/jdom/event';
-import { EVENT, REPORT_UPDATE, SRV_SENSOR_AGGREGATOR } from '../../../src/jdom/constants';
-import { arrayConcatMany, throttle } from '../../../src/jdom/utils';
-import DataSetGrid from './DataSetGrid';
-import { JDRegister } from '../../../src/jdom/register';
-import ReadingFieldGrid from './ReadingFieldGrid';
-import DeviceCardHeader from './DeviceCardHeader';
-import { SensorAggregatorClient } from '../../../src/jdom/sensoraggregatorclient';
+import Alert from "../ui/Alert";
+import EventSelect from '../EventSelect';
+import { JDEvent } from '../../../../src/jdom/event';
+import { EVENT, REPORT_UPDATE, SRV_SENSOR_AGGREGATOR } from '../../../../src/jdom/constants';
+import { arrayConcatMany, throttle } from '../../../../src/jdom/utils';
+import DataSetGrid from '../DataSetGrid';
+import { JDRegister } from '../../../../src/jdom/register';
+import ReadingFieldGrid from '../ReadingFieldGrid';
+import DeviceCardHeader from '../DeviceCardHeader';
+import { SensorAggregatorClient } from '../../../../src/jdom/sensoraggregatorclient';
 import { Link } from 'gatsby-theme-material-ui';
-import { JDService } from '../../../src/jdom/service';
-import ServiceManagerContext from './ServiceManagerContext';
-import useChartPalette from './useChartPalette';
-import { isSensor } from '../../../src/jdom/spec';
+import { JDService } from '../../../../src/jdom/service';
+import ServiceManagerContext from '../ServiceManagerContext';
+import useChartPalette from '../useChartPalette';
+import { isSensor } from '../../../../src/jdom/spec';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

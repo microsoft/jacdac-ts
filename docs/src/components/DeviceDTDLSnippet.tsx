@@ -1,4 +1,3 @@
-import { Typography } from "@material-ui/core";
 import { Link } from "gatsby-theme-material-ui";
 import React, { useMemo } from "react";
 import { deviceSpecificationToDTDL } from "../../../src/azure-iot/dtdl";
