@@ -14,7 +14,7 @@ import { JDBus } from '../../../src/jdom/bus'
 import FieldDataSet from './FieldDataSet';
 import Trend from './Trend';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import EventSelect from './EventSelect';
 import { JDEvent } from '../../../src/jdom/event';
 import { EVENT, REPORT_UPDATE, SRV_SENSOR_AGGREGATOR } from '../../../src/jdom/constants';

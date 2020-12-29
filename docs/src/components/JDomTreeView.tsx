@@ -29,7 +29,7 @@ import { ellipseJoin } from '../../../src/jdom/utils';
 import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
 import ConnectAlert from "./ConnectAlert"
-import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './StyledTreeView';
+import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './ui/StyledTreeView';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import LaunchIcon from '@material-ui/icons/Launch';
 

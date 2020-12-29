@@ -1,4 +1,4 @@
-import { Badge, IconButton, Tooltip } from "@material-ui/core";
+import { Badge } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import AppContext, { DrawerType } from "./AppContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -7,7 +7,7 @@ import HistoryIcon from '@material-ui/icons/History';
 import MenuIcon from '@material-ui/icons/Menu';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import ConnectButton from "../jacdac/ConnectButton";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { DEVICE_CHANGE } from "../../../src/jdom/constants";

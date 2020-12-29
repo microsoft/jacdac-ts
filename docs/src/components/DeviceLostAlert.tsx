@@ -5,7 +5,7 @@ import { CircularProgress } from "@material-ui/core";
 import { JDDevice } from "../../../src/jdom/device";
 import useEventRaised from "../jacdac/useEventRaised";
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 
 export function DeviceLostAlert(props: { device: JDDevice }) {
     const { device } = props;

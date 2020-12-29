@@ -5,7 +5,7 @@ import { SRV_ROLE_MANAGER } from "../../../src/jdom/constants"
 import useChange from "../jacdac/useChange"
 import { BusState } from "../../../src/jdom/bus"
 import ConnectAlert from "./ConnectAlert"
-import Alert from "./Alert"
+import Alert from "./ui/Alert"
 import RoleManagerService from "./RoleManagerService"
 
 export default function RoleManager(props: { clearRoles?: boolean }) {

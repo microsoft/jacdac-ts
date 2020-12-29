@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import useDbValue from "./useDbValue";
 import useEffectAsync from "./useEffectAsync";
-import Alert from "./Alert"
+import Alert from "./ui/Alert"
 import { AccordionActions, AccordionSummary, AccordionDetails, Accordion, Typography, TextField, Box } from '@material-ui/core';
 import { Button, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: match-default-export-name no-submodule-imports

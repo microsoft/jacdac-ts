@@ -7,14 +7,14 @@ import StepContent from '@material-ui/core/StepContent';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Markdown from "./Markdown"
+import Markdown from "./ui/Markdown"
 import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import { Grid, Card, CardHeader, CardActions } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 
 
 const useStyles = makeStyles((theme: Theme) =>

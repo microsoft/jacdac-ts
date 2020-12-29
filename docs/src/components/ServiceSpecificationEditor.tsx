@@ -7,8 +7,8 @@ import AppContext, { DrawerType } from './AppContext';
 import ServiceSpecificationSource from './ServiceSpecificationSource';
 import useLocalStorage from './useLocalStorage';
 import { useDebounce } from 'use-debounce';
-import PaperBox from './PaperBox'
-import Alert from './Alert';
+import PaperBox from './ui/PaperBox'
+import Alert from './ui/Alert';
 import GithubPullRequestButton from './GithubPullRequestButton';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({

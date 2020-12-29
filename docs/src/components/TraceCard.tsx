@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { prettyDuration } from "../../../src/jdom/pretty";
 import Trace from "../../../src/jdom/trace";
 import AppContext, { DrawerType } from "./AppContext";
-import Markdown from "./Markdown"
+import Markdown from "./ui/Markdown"
 import PacketsContext from "./PacketsContext";
 
 export default function TraceCard(props: { name: string, trace: Trace }) {

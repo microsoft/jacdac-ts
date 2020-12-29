@@ -3,13 +3,13 @@ import { ConfirmProvider } from "material-ui-confirm";
 import { SnackbarProvider } from "notistack";
 import React from "react";
 import { IdProvider } from "react-use-id-hook";
-import JACDACProvider from "../jacdac/Provider";
-import { AppProvider } from "./AppContext";
-import { DbProvider } from "./DbContext";
-import { PacketsProvider } from "./PacketsContext";
-import { ServiceManagerProvider } from "./ServiceManagerContext";
+import JACDACProvider from "../../jacdac/Provider";
+import { AppProvider } from "../AppContext";
+import { DbProvider } from "../DbContext";
+import { PacketsProvider } from "../PacketsContext";
+import { ServiceManagerProvider } from "../ServiceManagerContext";
 import Helmet from "react-helmet";
-import { MakeCodeSnippetProvider } from "./makecode/MakeCodeSnippetContext";
+import { MakeCodeSnippetProvider } from "../makecode/MakeCodeSnippetContext";
 
 export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, children: any }) {
     const { theme, maxSnack, children } = props;

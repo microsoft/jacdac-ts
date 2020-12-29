@@ -3,7 +3,7 @@ import { DropzoneDialog } from 'material-ui-dropzone'
 import { Box, Button } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
-import IconButtonWithTooltip from './IconButtonWithTooltip';
+import IconButtonWithTooltip from './ui/IconButtonWithTooltip';
 
 export default function ImportButton(props: {
     icon?: boolean,

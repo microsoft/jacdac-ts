@@ -1,7 +1,7 @@
 import { IconButton, Typography } from "@material-ui/core"
 import { Link } from "gatsby-theme-material-ui"
 import React, { useContext } from "react"
-import CodeBlock from "./CodeBlock"
+import CodeBlock from "../CodeBlock"
 
 export default function Snippet(props: {
     value: string,

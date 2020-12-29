@@ -2,7 +2,7 @@ import { Tooltip } from "@material-ui/core";
 import React from "react";
 import Packet from "../../../src/jdom/packet";
 import { toHex } from "../../../src/jdom/utils";
-import PaperBox from "./PaperBox";
+import PaperBox from "./ui/PaperBox";
 
 export default function PacketDataLayout(props: { packet: Packet, showHex?: boolean, showDecoded?: boolean }) {
     const { packet, showHex, showDecoded } = props;

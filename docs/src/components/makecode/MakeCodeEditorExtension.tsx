@@ -8,7 +8,7 @@ import { resolveMakecodeService, resolveMakecodeServiceFromClassIdentifier, serv
 import AddServiceIconButton from "../AddServiceIconButton";
 import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
 import { escapeName } from "../../../../src/azure-iot/dtdl"
-import IconButtonWithTooltip from "../IconButtonWithTooltip";
+import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useMakeCodeEditorExtensionClient, { READ, ReadResponse } from "./MakeCodeEditorExtensionClient";
 import CmdButton from "../CmdButton";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name

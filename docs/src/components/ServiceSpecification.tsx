@@ -4,7 +4,7 @@ import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeRep
 import PacketSpecification from "../components/PacketSpecification"
 import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
-import Markdown from "./Markdown";
+import Markdown from "./ui/Markdown";
 import EnumSpecification from "./EnumSpecification";
 import { Box } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"

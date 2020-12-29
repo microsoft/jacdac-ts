@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb"
 import { Collapse, NoSsr } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import { Link } from "gatsby-theme-material-ui";
 import Flags from "../../../src/jdom/flags";
 

@@ -6,7 +6,7 @@ import { isBootloaderFlashing, JDDevice } from "../../../src/jdom/device";
 import { scanFirmwares, updateApplicable } from "../../../src/jdom/flashing";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import useEventRaised from "../jacdac/useEventRaised";
-import TabPanel, { a11yProps } from './TabPanel';
+import TabPanel, { a11yProps } from './ui/TabPanel';
 import useGridBreakpoints from "./useGridBreakpoints";
 import ConnectAlert from "./ConnectAlert";
 import FirmwareCard from "./FirmwareCard";

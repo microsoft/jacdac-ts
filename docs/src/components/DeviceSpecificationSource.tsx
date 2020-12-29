@@ -4,11 +4,10 @@ import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
 import Tab from '@material-ui/core/Tab';
 import { Paper, createStyles, makeStyles, Theme } from '@material-ui/core';
-import TabPanel, { a11yProps } from './TabPanel';
-import Snippet from './Snippet';
+import TabPanel, { a11yProps } from './ui/TabPanel';
+import Snippet from './ui/Snippet';
 import DeviceSpecification from './DeviceSpecification';
 import { DeviceDTDLSnippet } from './DeviceDTDLSnippet';
-import { deviceSpecificationToMarkdown } from '../../../src/jdom/spec';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

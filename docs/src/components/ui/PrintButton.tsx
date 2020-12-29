@@ -3,8 +3,8 @@ import React, { useContext } from "react";
 import PrintIcon from '@material-ui/icons/Print';
 import { IconButtonProps, NoSsr } from "@material-ui/core";
 import IconButtonWithTooltip from "./IconButtonWithTooltip";
-import useCall from "./useCall";
-import { inIFrame } from "../../../src/jdom/iframeclient"
+import useCall from "../useCall";
+import { inIFrame } from "../../../../src/jdom/iframeclient"
 
 export default function PrintButton(props: { component?: string } & IconButtonProps) {
     const { disabled, className, ...others } = props;

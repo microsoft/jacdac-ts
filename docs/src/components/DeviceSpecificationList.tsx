@@ -3,7 +3,7 @@ import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Them
 import { deviceSpecifications, identifierToUrlPath, imageDeviceOf } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import InfoIcon from '@material-ui/icons/Info';
-import Markdown from "./Markdown"
+import Markdown from "./ui/Markdown"
 import { IconButton } from "gatsby-theme-material-ui";
 import { arrayShuffle } from '../../../src/jdom/utils';
 

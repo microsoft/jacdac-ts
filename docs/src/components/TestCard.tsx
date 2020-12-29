@@ -2,7 +2,7 @@ import { Card, CardActions, CardContent, CardHeader } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { delay, toHex } from "../../../src/jdom/utils";
 import CmdButton from "./CmdButton";
-import Snippet from "./Snippet"
+import Snippet from "./ui/Snippet"
 import useEffectAsync from "./useEffectAsync";
 
 export type TestLogger = (name: string, ...msg: any) => void;

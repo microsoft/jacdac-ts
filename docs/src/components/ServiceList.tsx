@@ -9,7 +9,7 @@ import DeviceCardHeader from './DeviceCardHeader';
 import { JDService } from '../../../src/jdom/service';
 import { DeviceLostAlert } from './DeviceLostAlert';
 import { JDDevice } from '../../../src/jdom/device';
-import Alert from './Alert';
+import Alert from './ui/Alert';
 
 
 function ServiceListItem(props: {

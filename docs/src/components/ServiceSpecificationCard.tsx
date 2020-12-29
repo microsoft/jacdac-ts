@@ -3,7 +3,7 @@ import { Card, CardActions, CardContent, CardHeader, CardMedia, createStyles, Gr
 import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import IDChip from "./IDChip";
 import { Button } from "gatsby-theme-material-ui";
-import Markdown from "./Markdown";
+import Markdown from "./ui/Markdown"
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 
 export default function ServiceSpecificationCard(props: { serviceClass?: number, specification?: jdspec.ServiceSpec }) {

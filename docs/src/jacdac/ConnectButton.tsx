@@ -6,7 +6,7 @@ import { BusState } from "../../../src/jdom/bus";
 import UsbIcon from '@material-ui/icons/Usb';
 import { useMediaQuery, useTheme } from "@material-ui/core";
 import KindIcon from "../components/KindIcon";
-import IconButtonWithProgress from "../components/IconButtonWithProgress"
+import IconButtonWithProgress from "../components/ui/IconButtonWithProgress"
 import Flags from "../../../src/jdom/flags";
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb";
 

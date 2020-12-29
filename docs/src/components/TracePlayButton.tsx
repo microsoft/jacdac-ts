@@ -4,7 +4,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
-import IconButtonWithProgress, { IconButtonWithProgressProps } from "./IconButtonWithProgress";
+import IconButtonWithProgress, { IconButtonWithProgressProps } from "./ui/IconButtonWithProgress";
 
 export default function TracePlayButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;

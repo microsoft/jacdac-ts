@@ -5,7 +5,7 @@ import { identifierToUrlPath, imageDeviceOf, serviceSpecificationFromClassIdenti
 import ServiceSpecificationCard from "./ServiceSpecificationCard";
 import { Grid, Typography } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
-import Markdown from "./Markdown";
+import Markdown from "./ui/Markdown";
 import DeviceSpecificationSource from "./DeviceSpecificationSource";
 import FirmwareCard from "./FirmwareCard"
 import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec"

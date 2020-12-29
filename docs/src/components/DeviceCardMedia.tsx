@@ -1,7 +1,7 @@
 import React from "react";
 import { JDDevice } from "../../../src/jdom/device";
 import useDeviceSpecification from "../jacdac/useDeviceSpecification";
-import CardMediaWithSkeleton from "./CardMediaWithSkeleton";
+import CardMediaWithSkeleton from "./ui/CardMediaWithSkeleton";
 
 export default function DeviceCardMedia(props: { device: JDDevice }) {
     const { device } = props;

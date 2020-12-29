@@ -5,13 +5,13 @@ import { clone, unique } from '../../../src/jdom/utils';
 import { Box, Chip, Menu, MenuItem, TextField, Typography } from '@material-ui/core';
 import { ChangeEvent } from 'react';
 import { deviceSpecifications, serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
-import PaperBox from "./PaperBox"
+import PaperBox from "./ui/PaperBox"
 import { uniqueFirmwareId } from './RandomGenerator';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CreateIcon from '@material-ui/icons/Create';
-import IconButtonWithTooltip from "./IconButtonWithTooltip"
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip"
 import { parseRepoUrl } from './github'
 import GithubPullRequestButton from './GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../jacdac-spec/spectool/jdspec"

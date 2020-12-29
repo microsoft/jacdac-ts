@@ -8,7 +8,7 @@ import {
 } from "../../../src/jdom/constants";
 import Packet from "../../../src/jdom/packet";
 import { fromHex, toHex } from "../../../src/jdom/utils";
-import PaperBox from "./PaperBox";
+import PaperBox from "./ui/PaperBox";
 
 export default function PacketHeaderLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {
     const { packet, data, showSlots, showFlags } = props;

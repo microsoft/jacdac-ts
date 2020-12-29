@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import DarkModeContext from "./DarkModeContext";
+import DarkModeContext from "./ui/DarkModeContext";
 
 export default function useChartPalette(): string[] {
     const { darkMode } = useContext(DarkModeContext);

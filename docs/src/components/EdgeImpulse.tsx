@@ -8,12 +8,12 @@ import useGridBreakpoints from "./useGridBreakpoints";
 import { JDRegister } from "../../../src/jdom/register";
 import { JDClient } from "../../../src/jdom/client";
 import DeviceCardHeader from "./DeviceCardHeader";
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import useEffectAsync from "./useEffectAsync";
 import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../src/jdom/constants";
 import FieldDataSet from "./FieldDataSet";
 import { deviceSpecificationFromFirmwareIdentifier, isSensor } from "../../../src/jdom/spec";
-import CircularProgressWithLabel from "./CircularProgressWithLabel";
+import CircularProgressWithLabel from "./ui/CircularProgressWithLabel";
 import Trend from "./Trend"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import GetAppIcon from '@material-ui/icons/GetApp';

@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import SaveIcon from '@material-ui/icons/Save';
 import ServiceManagerContext from "./ServiceManagerContext";
 import PacketsContext from "./PacketsContext";
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 
 export default function SaveTraceButton(props: { disabled?: boolean }) {
     const { disabled } = props;

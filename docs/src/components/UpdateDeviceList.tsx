@@ -7,7 +7,7 @@ import { FirmwareBlob, FirmwareInfo, flashFirmwareBlob, updateApplicable } from 
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 import useEventRaised from "../jacdac/useEventRaised"
 import useSelectedNodes from "../jacdac/useSelectedNodes"
-import CircularProgressWithLabel from "./CircularProgressWithLabel"
+import CircularProgressWithLabel from "./ui/CircularProgressWithLabel"
 import DeviceCard from "./DeviceCard"
 import useGridBreakpoints from "./useGridBreakpoints"
 

@@ -5,8 +5,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 // tslint:disable-next-line: no-submodule-imports
 import CardContent from '@material-ui/core/CardContent';
-// tslint:disable-next-line: no-submodule-imports
-import Typography from '@material-ui/core/Typography';
 import { JDDevice } from '../../../src/jdom/device';
 import { SRV_CTRL, SRV_LOGGER, ControlReg } from '../../../src/jdom/constants';
 import ServiceButton from './ServiceButton';

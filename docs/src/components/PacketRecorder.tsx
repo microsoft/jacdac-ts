@@ -7,7 +7,7 @@ import TraceImportButton from "./TraceImportButton";
 import SaveTraceButton from "./SaveTraceButton";
 import TraceRecordButton from "./TraceRecordButton";
 import TracePlayButton from "./TracePlayButton";
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ReplayIcon from '@material-ui/icons/Replay';
 

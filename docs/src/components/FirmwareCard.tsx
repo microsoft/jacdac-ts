@@ -3,7 +3,7 @@ import { Button, Card, CardActions, CardContent, CircularProgress, List, ListIte
 import { fetchReleaseBinary, useLatestRelease } from "./github";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
 import GithubRepositoryCardHeader from "./GithubRepositoryCardHeader";
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import { Link } from "gatsby-theme-material-ui";
 
 export default function FirmwareCard(props: { slug: string, showFirmwares?: boolean }) {

@@ -3,10 +3,9 @@ import React, { useContext, useState } from "react"
 import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/jdom/constants";
 import { JDNode, visitNodes } from "../../../src/jdom/node";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import useChange from "../jacdac/useChange"
-import PaperBox from "./PaperBox";
+import PaperBox from "./ui/PaperBox";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Alert from "./Alert"
+import Alert from "./ui/Alert"
 import { AlertTitle } from "@material-ui/lab";
 
 function NodeCallRow(props: { node: JDNode }) {

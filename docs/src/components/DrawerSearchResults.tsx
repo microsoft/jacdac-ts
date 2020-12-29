@@ -8,7 +8,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports
 import TreeItem from '@material-ui/lab/TreeItem';
-import Alert from "./Alert"
+import Alert from "./ui/Alert"
 
 import { useDrawerSearchResults } from "./useDrawerSearchResults";
 import { ListItemText } from "@material-ui/core";

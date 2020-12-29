@@ -8,10 +8,9 @@ import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 import AddServiceIconButton from "./AddServiceIconButton";
 import ServiceSpecificationSelect from "./ServiceSpecificationSelect"
 import { DTDL_CONTEXT, escapeName, serviceSpecificationToComponent } from "../../../src/azure-iot/dtdl"
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
-import Snippet from "./Snippet";
-import PaperBox from "./PaperBox";
-import Alert from "./Alert"
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
+import Snippet from "./ui/Snippet";
+import PaperBox from "./ui/PaperBox";
 
 interface DigitalTwinComponent {
     name: string;

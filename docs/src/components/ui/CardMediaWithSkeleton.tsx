@@ -1,5 +1,4 @@
 import { CardMedia, CardMediaProps, createStyles, makeStyles, Theme } from "@material-ui/core";
-import { Skeleton } from "@material-ui/lab";
 import React from "react";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({

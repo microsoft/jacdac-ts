@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => createStyles({
     }
 }));
 
-function PresentationNoSsr(props: { children: JSX.Element[] }) {
+function PresentationNoSsr(props: { children: JSX.Element | JSX.Element[] }) {
     const { children } = props
     const theme = useTheme();
     const { darkMode } = useContext(DarkModeContext)
@@ -74,7 +74,8 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
         content: JSX.Element[];
         note?: JSX.Element[];
     }[] = [];
-    children?.forEach(child => {
+    const arrayChildren: JSX.Element[] = !children ? [] : Array.isArray(children) ? children : [children];
+    arrayChildren.forEach(child => {
         if (child.props?.originalType === "h1" || !slides.length)
             slides.push({ content: [] });
 
@@ -116,7 +117,7 @@ function PresentationNoSsr(props: { children: JSX.Element[] }) {
     </Box>
 }
 
-export default function Presentation(props: { children: JSX.Element[] }) {
+export default function Presentation(props: { children: JSX.Element | JSX.Element[] }) {
     return <NoSsr>
         <PresentationNoSsr {...props} />
     </NoSsr>

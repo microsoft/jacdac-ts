@@ -8,7 +8,7 @@ import { serviceName } from "../../../src/jdom/pretty"
 import CmdButton from "./CmdButton"
 import { Alert, AlertTitle } from "@material-ui/lab"
 import DeviceCardHeader from "./DeviceCardHeader"
-import { SelectWithLabel } from "./SelectWithLabel"
+import { SelectWithLabel } from "./ui/SelectWithLabel"
 import useServiceClient from "./useServiceClient"
 
 function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: RoleManagerClient }) {

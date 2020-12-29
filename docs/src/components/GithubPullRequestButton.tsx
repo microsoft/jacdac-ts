@@ -8,7 +8,7 @@ import { GITHUB_API_KEY } from "./github";
 import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
 import { useConfirm } from 'material-ui-confirm';
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import GitHubIcon from '@material-ui/icons/GitHub';
 import ApiKeyAccordion from "./ApiKeyAccordion";
 

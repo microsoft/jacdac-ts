@@ -15,7 +15,7 @@ import DeviceName from './DeviceName';
 import { useDebounce } from 'use-debounce';
 import { arrayConcatMany, uniqueMap } from '../../../src/jdom/utils';
 import TraceTimeFilterRangeSlider from './TraceTimeFilterRangeSlider';
-import IconButtonWithTooltip from './IconButtonWithTooltip';
+import IconButtonWithTooltip from './ui/IconButtonWithTooltip';
 import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import GroupWorkIcon from '@material-ui/icons/GroupWork';

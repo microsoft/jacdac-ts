@@ -10,7 +10,7 @@ import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH 
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import AppContext, { DrawerType } from "./AppContext";
 import { useStaticQuery, graphql } from "gatsby";
-import Mdx from "./Mdx";
+import Mdx from "./ui/Mdx";
 import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
 import DrawerSearchResults from "./DrawerSearchResults";

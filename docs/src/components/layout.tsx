@@ -33,22 +33,22 @@ import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
 import useFirmwareBlobs from "./useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
-import DarkModeProvider from "./DarkModeProvider";
-import DarkModeContext from "./DarkModeContext";
+import DarkModeProvider from "./ui/DarkModeProvider";
+import DarkModeContext from "./ui/DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
-import Alert from "./Alert"
+import Alert from "./ui/Alert"
 import GitHubButton from "./GitHubButton"
-import Presentation from "./Presentation";
+import Presentation from "./ui/Presentation";
 import useMdxComponents from "./useMdxComponents";
-import Footer from "./Footer";
-import PrintButton from "./PrintButton";
+import Footer from "./ui/Footer";
+import PrintButton from "./ui/PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
 import PacketInspector from "./PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
-import ThemedLayout from "./ThemedLayout";
+import ThemedLayout from "./ui/ThemedLayout";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -163,7 +163,7 @@ const useStyles = makeStyles((theme) => createStyles({
 
 export interface LayoutProps {
   pageContext?: any;
-  children?: JSX.Element[];
+  children?: JSX.Element | JSX.Element[];
 }
 
 export default function Layout(props: LayoutProps) {

@@ -26,7 +26,7 @@ import CloudIcon from '@material-ui/icons/Cloud';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import ServiceManagerContext from "./ServiceManagerContext";
-import DarkModeContext from "./DarkModeContext";
+import DarkModeContext from "./ui/DarkModeContext";
 import KindIcon from "./KindIcon";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
 import EdgeImpulseIcon from "./icons/EdgeImpulseIcon";

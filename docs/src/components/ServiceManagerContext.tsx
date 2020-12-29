@@ -4,7 +4,7 @@ import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../sr
 import { IThemeMessage } from "../../../src/embed/protocol";
 import { ModelStore, HostedModelStore } from "../../../src/embed/modelstore";
 import { IFrameTransport } from "../../../src/embed/transport";
-import DarkModeContext from "./DarkModeContext";
+import DarkModeContext from "./ui/DarkModeContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import { JDDevice } from "../../../src/jdom/device";
 import { IDeviceNameSettings } from "../../../src/jdom/bus"

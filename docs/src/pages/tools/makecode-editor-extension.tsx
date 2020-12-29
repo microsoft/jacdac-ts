@@ -1,11 +1,10 @@
 import React, { useEffect } from "react"
 import { createMuiTheme, createStyles, responsiveFontSizes } from "@material-ui/core";
-import ThemedLayout from "../../components/ThemedLayout";
+import ThemedLayout from "../../components/ui/ThemedLayout";
 import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExtension"
-import { makeStyles, Container, Hidden, Box, Paper, Button } from '@material-ui/core';
-import PaperBox from "../../components/PaperBox";
+import { makeStyles } from '@material-ui/core';
+import PaperBox from "../../components/ui/PaperBox";
 import Flags from "../../../../src/jdom/flags";
-import DeviceList from "../../components/DeviceList"
 import RoleManager from "../../components/RoleManager";
 
 const useStyles = makeStyles((theme) => createStyles({

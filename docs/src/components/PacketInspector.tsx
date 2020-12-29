@@ -1,16 +1,13 @@
-import React, { Fragment, useContext } from "react"
-import Alert from "./Alert"
+import React, { useContext } from "react"
+import Alert from "./ui/Alert"
 import PacketsContext from "./PacketsContext";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import HistoryIcon from '@material-ui/icons/History';
 import KindChip from "./KindChip"
-import { toHex } from "../../../src/jdom/utils";
-import { Tooltip, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import PacketSpecification from "./PacketSpecification";
 import { printPacket } from "../../../src/jdom/pretty";
 import PacketHeaderLayout from "./PacketHeaderLayout";
-import { Link } from "gatsby-theme-material-ui";
-import PaperBox from "./PaperBox";
 import { META_ACK, META_PIPE } from "../../../src/jdom/constants";
 import Packet from "../../../src/jdom/packet";
 import PacketBadge from "./PacketBadge";
@@ -23,7 +20,7 @@ export default function PacketInspector() {
     if (!packet)
         return <Alert severity="info">Click on a packet in the <HistoryIcon /> packet list.</Alert>
 
-    const { decoded, data } = packet;
+    const { decoded } = packet;
     const info = decoded?.info;
     const ack = packet.meta[META_ACK] as Packet;
     const pipePackets = packet.meta[META_PIPE] as Packet[];

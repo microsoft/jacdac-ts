@@ -5,7 +5,7 @@ import { PacketMessage } from "../../../../src/jdom/iframebridgeclient";
 import Packet from "../../../../src/jdom/packet";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import useWindowEvent from "../hooks/useWindowEvent";
-import PaperBox from "../PaperBox";
+import PaperBox from "../ui/PaperBox";
 import MakeCodeSnippetContext from "./MakeCodeSnippetContext";
 import { MakeCodeSnippetSource } from "./useMakeCodeRenderer";
 

@@ -7,7 +7,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/jdom/utils";
-import IconButtonWithTooltip from "./IconButtonWithTooltip";
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 
 const ACK_RESET_DELAY = 1000
 const ERROR_RESET_DELAY = 2000

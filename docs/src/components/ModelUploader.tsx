@@ -7,11 +7,11 @@ import ConnectAlert from './ConnectAlert'
 import { useDbJSON, useDbUint8Array } from './useDb'
 import ImportButton from './ImportButton';
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import { Button } from 'gatsby-theme-material-ui';
 import { ModelRunnerClient } from '../../../src/jdom/modelrunner'
 import RegisterInput from './RegisterInput';
-import CircularProgressWithLabel from './CircularProgressWithLabel'
+import CircularProgressWithLabel from './ui/CircularProgressWithLabel'
 import { SensorAggregatorClient, SensorAggregatorConfig } from '../../../src/jdom/sensoraggregatorclient';
 import SensorAggregatorConfigView from './SensorAggregatorConfigView';
 import ServiceManagerContext from './ServiceManagerContext'

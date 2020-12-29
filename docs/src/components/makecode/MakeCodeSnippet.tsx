@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useContext } from "react";
 import useEffectAsync from "../useEffectAsync"
-import PaperBox from "../PaperBox"
+import PaperBox from "../ui/PaperBox"
 import { createStyles, makeStyles, NoSsr, Tab, Tabs, useTheme } from '@material-ui/core';
 import CodeBlock from "../CodeBlock";
-import TabPanel from '../TabPanel';
+import TabPanel from '../ui/TabPanel';
 import { Skeleton } from "@material-ui/lab";
 import MakeCodeSnippetContext from "./MakeCodeSnippetContext";
 import { MakeCodeSnippetRendered, MakeCodeSnippetSource, parseMakeCodeSnippet, useMakeCodeRenderer } from "./useMakeCodeRenderer";

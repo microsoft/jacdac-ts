@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Button, Card, CardHeader, CardActions, CardContent, ListItem, List, ListItemText, Typography } from "@material-ui/core";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import ImportButton from "./ImportButton";
 
 const LOCAL_FILE_SLUG = "local file";

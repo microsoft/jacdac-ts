@@ -8,7 +8,7 @@ import TreeItem, { TreeItemProps } from '@material-ui/lab/TreeItem';
 import Typography from '@material-ui/core/Typography';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import KindIcon from "./KindIcon"
+import KindIcon from "../KindIcon"
 import { Switch } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';

@@ -1,6 +1,6 @@
 import { isRegister, isEvent, isCommand, tryParseMemberValue, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import React, { useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import Chip from '@material-ui/core/Chip';
@@ -9,7 +9,7 @@ import { makeStyles, createStyles, TextField } from "@material-ui/core";
 import IDChip from "./IDChip";
 import KindChip from "./KindChip";
 import PacketMembersChip from "./PacketMembersChip";
-import Markdown from "./Markdown";
+import Markdown from "./ui/Markdown";
 import FieldInput from "./FieldInput";
 
 const useStyles = makeStyles((theme) => createStyles({

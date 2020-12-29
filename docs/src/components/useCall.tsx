@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import Alert from "./Alert";
+import Alert from "./ui/Alert";
 import AppContext from "./AppContext";
 
 export type ProgressHandler = (p: number) => void
