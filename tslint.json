@@ -59,14 +59,12 @@
       "no-document-write": true,
       "no-eval": true,
       "no-exec-script": true,
-      "no-function-constructor-with-string-args": true,
       "no-http-string": [
           true,
           "http://www.w3.org/?.*"
       ],
       "no-inner-html": true,
       "no-octal-literal": true,
-      // pxt:override "no-reserved-keywords": true,
       "no-string-based-set-immediate": true,
       "no-string-based-set-interval": true,
       "no-string-based-set-timeout": true,
@@ -118,7 +116,6 @@
       // pxt:override "no-string-literal": true,
       "no-string-throw": true,
       "no-submodule-imports": true,
-      "no-unnecessary-bind": true,
       // pxt:override "no-unnecessary-callback-wrapper": true,
       // pxt:override "no-unnecessary-initializer": true,
       "no-unnecessary-override": true,

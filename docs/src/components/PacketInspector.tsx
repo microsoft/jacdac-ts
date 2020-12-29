@@ -15,6 +15,7 @@ import { META_ACK, META_PIPE } from "../../../src/jdom/constants";
 import Packet from "../../../src/jdom/packet";
 import PacketBadge from "./PacketBadge";
 import PacketDataLayout from "./PacketDataLayout";
+import PacketList from "./PacketList"
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);
@@ -46,17 +47,11 @@ export default function PacketInspector() {
         <PacketDataLayout packet={packet} showHex={true} showDecoded={true} />
         {ack && <>
             <h3>Ack received</h3>
-            <PacketHeaderLayout packet={ack} />
-            <PacketDataLayout packet={packet} showHex={true} />
+            <PacketList packets={[ack]} />
         </>}
         {pipePackets && <>
             <h3>Pipe packets</h3>
-            {pipePackets.filter(pp => !!pp)
-                .map(pp => <Fragment key={pp.pipeCount}>
-                    <h4>count {pp.pipeCount}</h4>
-                    <PacketHeaderLayout packet={pp} showSlots={true} />
-                    <PacketDataLayout packet={pp} showDecoded={true} />
-                </Fragment>)}
+            <PacketList packets={pipePackets.filter(pp => !!pp)} />
         </>}
         {info && <><h3>Specification</h3>
             <PacketSpecification

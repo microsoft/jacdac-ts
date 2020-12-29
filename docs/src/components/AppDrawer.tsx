@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Drawer, Typography, Divider, makeStyles, createStyles, useMediaQuery, useTheme } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
-import PacketList from "./PacketList";
+import PacketView from "./PacketView";
 import Toc from "./Toc";
 import JDomTreeView from "./JDomTreeView";
 import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH } from "./layout";
@@ -112,7 +112,7 @@ export default function AppDrawer(props: {
         {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
         {!showSearchResults && drawerType === DrawerType.Packets
-            ? <PacketList showTime={true} />
+            ? <PacketView showTime={true} />
             : drawerType === DrawerType.Dom ? <JDomTreeView /> : undefined}
     </Drawer>
 }
