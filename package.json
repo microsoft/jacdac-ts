@@ -39,6 +39,7 @@
     "installdev": "npm run pullsubmodules && npm install && npm run installdocs",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "docs": "npm run dist && cd docs && node node_modules/gatsby/cli.js develop",
+    "docsbuild": "cd docs && node node_modules/gatsby/cli.js build",
     "docsserve": "cd docs && node node_modules/gatsby/cli.js serve",
     "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0",
     "buildspecs": "cd jacdac-spec/spectool && sh build.sh",
