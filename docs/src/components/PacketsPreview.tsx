@@ -17,7 +17,6 @@ export default function PacketsPreview() {
             <PacketListItem
                 key={packet.key}
                 packet={packet.packet}
-                count={packet.count}
-                skipRepeatedAnnounce={false} />)}
+                count={packet.count} />)}
     </List>
 }

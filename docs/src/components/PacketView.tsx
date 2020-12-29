@@ -25,7 +25,7 @@ interface VirtualListData {
 const VirtualPacketItem = (props: { data: VirtualListData }
     & ListChildComponentProps) => {
     const { style, index, data } = props;
-    const { packets, showTime, skipRepeatedAnnounce } = data
+    const { packets, showTime } = data
     const packet = packets[index];
 
     if (!packet)
@@ -35,7 +35,6 @@ const VirtualPacketItem = (props: { data: VirtualListData }
         <PacketListItem
             packet={packet.packet}
             count={packet.count}
-            skipRepeatedAnnounce={skipRepeatedAnnounce}
             showTime={showTime} />
     </div>
 }

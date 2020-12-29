@@ -21,7 +21,6 @@ const useStyles = makeStyles(() =>
 
 export default function PacketListItem(props: {
     packet: Packet,
-    skipRepeatedAnnounce?: boolean,
     showTime?: boolean,
     count?: number
 }) {

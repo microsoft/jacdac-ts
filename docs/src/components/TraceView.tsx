@@ -11,7 +11,6 @@ export default function TraceView(props: { trace: Trace }) {
             key={'pkt' + packet.key}
             packet={packet}
             count={1}
-            skipRepeatedAnnounce={true}
             showTime={true} />
         )}
     </List>
