@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "gatsby-theme-material-ui";
-import CodeDemo from "./CodeDemo";
 import CodeBlock from './CodeBlock';
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from "@material-ui/core";
 import RandomGenerator from "./RandomGenerator"
@@ -23,7 +22,6 @@ import GithubRepositoryList from "./GithubRespositoryList";
 export default function useMdxComponents() {
   const theme = useTheme();
   const mdxComponents: any = {
-    CodeDemo: (props: any) => <CodeDemo {...props} />,
     Link: (props: any) => <Link color="textPrimary" {...props} />,
     a: (props: any) => <Link color="textPrimary" {...props} />,
     pre: props => <Box mb={theme.spacing(0.5)}><Paper>
