@@ -29,10 +29,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationSource(props: {
     classIdentifier?: number,
     serviceSpecification?: jdspec.ServiceSpec,
-    showMarkdown?: boolean,
     showSpecification?: boolean
 }) {
-    const { classIdentifier, serviceSpecification, showMarkdown, showSpecification } = props;
+    const { classIdentifier, serviceSpecification, showSpecification } = props;
     const classes = useStyles();
     const [tab, setTab] = useState(0);
     const spec = serviceSpecification || serviceSpecificationFromClassIdentifier(classIdentifier)
@@ -49,7 +48,6 @@ export default function ServiceSpecificationSource(props: {
             <Paper square>
                 <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
                     {[
-                        showMarkdown && "Markdown",
                         showSpecification && "Specification",
                         "MakeCode",
                         "TypeScript",
@@ -60,9 +58,6 @@ export default function ServiceSpecificationSource(props: {
                         .filter(n => !!n)
                         .map((n, i) => <Tab key={n} label={n} {...a11yProps(i)} />)}
                 </Tabs>
-                {showMarkdown && <TabPanel value={tab} index={index++}>
-                    <Snippet value={spec.source} mode="markdown" />
-                </TabPanel>}
                 {showSpecification && <TabPanel key="spec" value={tab} index={index++}>
                     <ServiceSpecification service={spec} />
                 </TabPanel>}

@@ -79,7 +79,6 @@ export default function ServiceSpecification(props: {
             <h2 key="spech2">Specification</h2>
             <ServiceSpecificationSource key="source"
                 classIdentifier={node.classIdentifier}
-                showMarkdown={true}
                 showSpecification={false}
             />
         </Fragment>}
