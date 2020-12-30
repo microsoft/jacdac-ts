@@ -96,7 +96,6 @@ TODO describe this register
                 </Paper>
                 <ServiceSpecificationSource
                     serviceSpecification={json}
-                    showMarkdown={false}
                     showSpecification={true} />
             </Grid>
             <Grid key="submit" item xs={12}>
