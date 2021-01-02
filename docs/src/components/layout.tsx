@@ -161,11 +161,16 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 export interface LayoutProps {
-  pageContext?: any;
   element?: JSX.Element;
+  props: {
+    pageContext?: any;
+    path?: string;
+    uri?: string;
+  }
 }
 
 export default function Layout(props: LayoutProps) {
+  console.log({ props })
   return <DarkModeProvider>
     <LayoutWithDarkMode {...props} />
   </DarkModeProvider>
@@ -198,7 +203,8 @@ function LayoutWithDarkMode(props: LayoutProps) {
 }
 
 function MainAppBar(props: LayoutProps) {
-  const { pageContext } = props;
+  const { props: pageProps } = props;
+  const { pageContext } = pageProps;
   const classes = useStyles();
   const { drawerType, widgetMode, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { darkMode } = useContext(DarkModeContext)
@@ -275,7 +281,8 @@ function FabBar() {
 */
 
 function LayoutWithContext(props: LayoutProps) {
-  const { pageContext, element } = props;
+  const { element, props: pageProps } = props;
+  const { path } = pageProps;
   const classes = useStyles();
   const theme = useTheme();
   const { darkMode } = useContext(DarkModeContext)
@@ -283,15 +290,14 @@ function LayoutWithContext(props: LayoutProps) {
   const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-  const pagePath = pageContext?.frontmatter?.path;
 
   const handleClearSelectedPacket = () => setSelectedPacket(undefined)
 
   return (<>
     <div className={clsx(darkMode, classes.root)}>
       <SEO />
-      <MainAppBar pageContext={pageContext} />
-      <AppDrawer pagePath={pagePath} />
+      <MainAppBar {...props} />
+      <AppDrawer pagePath={path} />
       <ToolsDrawer />
       <Container disableGutters={true}>
         <main

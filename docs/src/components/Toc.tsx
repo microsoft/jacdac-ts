@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { useContext, useMemo } from "react"
 import { makeStyles, createStyles, Theme, Collapse, List, ListItem, Typography, useTheme, Box } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -66,7 +66,8 @@ function treeifyToc(toc: TocNode[]) {
   return r;
 }
 
-export default function Toc() {
+export default function Toc(props: { pagePath: string }) {
+  const { pagePath } = props;
   const classes = useStyles();
   const theme = useTheme();
   const data = useStaticQuery(graphql`
@@ -117,84 +118,90 @@ export default function Toc() {
   }
 `)
 
-  // convert pages into tree
-  let toc: TocNode[] = [{
-    name: "Home",
-    path: "/",
-    order: 0
-  }, {
-    name: "Reference",
-    path: "/reference/",
-    order: 1
-  }, {
-    name: "Services",
-    path: "/services/",
-    order: 2
-  }, {
-    name: "Devices",
-    path: "/devices/",
-    order: 3
-  }, {
-    name: "Clients",
-    path: "/clients/",
-    order: 4
-  }, {
-    name: "Tools",
-    path: "/tools/",
-    order: 5
-  }, {
-    name: "Traces",
-    path: "/traces/",
-    order: 6
-  }]
-  data.allMdx.edges.map(node => node.node)
-    .filter(node => !!node.frontmatter?.title || (!!node.headings.length && !/404/.test(node.headings[0].value)))
-    .filter(node => !node.frontmatter?.hideToc)
-    .map(node => {
-      const r = {
-        name: node.frontmatter?.title || node.headings[0].value,
-        path: node.fields.slug,
-        order: node.frontmatter?.order !== undefined ? node.frontmatter?.order : 50
+  const tree = useMemo(() => {
+    // convert pages into tree
+    let toc: TocNode[] = [{
+      name: "Home",
+      path: "/",
+      order: 0
+    }, {
+      name: "Reference",
+      path: "/reference/",
+      order: 1
+    }, {
+      name: "Services",
+      path: "/services/",
+      order: 2
+    }, {
+      name: "Devices",
+      path: "/devices/",
+      order: 3
+    }, {
+      name: "Clients",
+      path: "/clients/",
+      order: 4
+    }, {
+      name: "Tools",
+      path: "/tools/",
+      order: 5
+    }, {
+      name: "Traces",
+      path: "/traces/",
+      order: 6
+    }]
+    data.allMdx.edges.map(node => node.node)
+      .filter(node => !!node.frontmatter?.title || (!!node.headings.length && !/404/.test(node.headings[0].value)))
+      .filter(node => !node.frontmatter?.hideToc)
+      .map(node => {
+        const r = {
+          name: node.frontmatter?.title || node.headings[0].value,
+          path: node.fields.slug,
+          order: node.frontmatter?.order !== undefined ? node.frontmatter?.order : 50
+        }
+        return r;
+      })
+      .forEach(node => toc.push(node))
+
+    data.allServicesJson.nodes.map(node => {
+      return {
+        name: node.name,
+        path: `/services/${node.shortId}/`
       }
-      return r;
-    })
-    .forEach(node => toc.push(node))
+    }).forEach(node => toc.push(node))
 
-  data.allServicesJson.nodes.map(node => {
-    return {
-      name: node.name,
-      path: `/services/${node.shortId}/`
-    }
-  }).forEach(node => toc.push(node))
+    data.allDevicesJson.nodes.map(node => {
+      return {
+        name: node.name,
+        path: `/devices/${identifierToUrlPath(node.id)}/`
+      }
+    }).forEach(node => toc.push(node));
+    
+    const { tree } = treeifyToc(toc)
+    return tree;
+  }, []);
 
-  data.allDevicesJson.nodes.map(node => {
-    return {
-      name: node.name,
-      path: `/devices/${identifierToUrlPath(node.id)}`
-    }
-  }).forEach(node => toc.push(node));
-
-  const { tree } = treeifyToc(toc)
-
-  return <List dense className={classes.root}>
-    {tree.map(entry => <TocListItem key={'toc' + entry.path} entry={entry} level={0} />)}
-  </List>
-
-  function TocListItem(props: { entry: TocNode, level: number }) {
+  const TocListItem = (props: { entry: TocNode, level: number }) => {
     const { entry, level } = props;
-    const sub = level === 1 || (!!entry.children && !!entry.children.length);
-
+    const { path, children, name } = entry;
+    const selected = pagePath === path;
+    const sub = level === 1 || (!!children && !!children.length);
+  
     return <>
       <ListItem button
-        key={'tocitem' + entry.path}>
-        <Link style={({ color: theme.palette.text.primary })} to={entry.path}>
+        selected={selected}
+        key={'tocitem' + path}>
+        <Link style={({ color: theme.palette.text.primary })} to={path}>
           <ListItemText
-            primary={<Typography variant={sub ? "button" : "caption"}>{entry.name}</Typography>} />
+            primary={<Typography variant={sub ? "button" : "caption"}>{name}</Typography>} />
         </Link>
       </ListItem>
-      { sub && !!entry.children?.length && <Box ml={level > 0 ? 1 : 0}>
-        {entry.children?.map(child => <TocListItem key={'toc' + child.path} entry={child} level={level + 1} />)}
+      { sub && !!children?.length && <Box ml={level > 0 ? 1 : 0}>
+        {children?.map(child => <TocListItem key={'tocitem' + child.path} entry={child} level={level + 1} />)}
       </Box>}
     </>
   }
+  
+  return <List dense className={classes.root}>
+    {tree.map(entry => <TocListItem key={'tocitem' + entry.path} entry={entry} level={0} />)}
+  </List>
 }

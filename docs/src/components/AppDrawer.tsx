@@ -59,6 +59,7 @@ const useStyles = makeStyles((theme) => createStyles({
 export default function AppDrawer(props: {
     pagePath: string
 }) {
+    const { pagePath } = props;
     const theme = useTheme()
     const classes = useStyles()
     const { drawerType, setDrawerType, searchQuery } = useContext(AppContext)
@@ -109,7 +110,7 @@ export default function AppDrawer(props: {
         </div>
         <Divider />
         {showSearchResults && <DrawerSearchResults />}
-        {!showSearchResults && drawerType === DrawerType.Toc && <Toc />}
+        {!showSearchResults && drawerType === DrawerType.Toc && <Toc pagePath={pagePath} />}
         {!showSearchResults && drawerType == DrawerType.ServiceSpecification && <div className={classes.mdx}><Mdx mdx={specMarkdown} /></div>}
         {!showSearchResults && drawerType === DrawerType.Packets
             ? <PacketView showTime={true} />
