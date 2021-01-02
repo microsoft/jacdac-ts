@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.12.0",
+    "toolVersion": "7.12.1",
     "schemaVersion": 1003,
     "oldestForwardsCompatibleVersion": 1001
   },
@@ -2785,6 +2785,23 @@
           ]
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!CRC_ACK_NODE_NAME:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "CRC_ACK_NODE_NAME = \"crc_ack\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "CRC_ACK_NODE_NAME",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!crc:function(1)",
           "docComment": "",
@@ -3074,156 +3091,6 @@
             }
           ],
           "name": "debounceAsync"
-        },
-        {
-          "kind": "Interface",
-          "canonicalReference": "jacdac-ts!DebouncedPoll:interface",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export interface DebouncedPoll "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "DebouncedPoll",
-          "members": [
-            {
-              "kind": "PropertySignature",
-              "canonicalReference": "jacdac-ts!DebouncedPoll#execute:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "execute: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "() => void"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "execute",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "PropertySignature",
-              "canonicalReference": "jacdac-ts!DebouncedPoll#stop:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "stop: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "() => void"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "stop",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ],
-          "extendsTokenRanges": []
-        },
-        {
-          "kind": "Function",
-          "canonicalReference": "jacdac-ts!debouncedPollAsync:function(1)",
-          "docComment": "/**\n * Creates a debounced polls the handler, use stop to any polling interval\n *\n * @param handler - \n *\n * @param debouncedDelay - \n *\n * @param pollDelay - \n */\n",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function debouncedPollAsync(handler: "
-            },
-            {
-              "kind": "Content",
-              "text": "() => "
-            },
-            {
-              "kind": "Reference",
-              "text": "Promise",
-              "canonicalReference": "!Promise:interface"
-            },
-            {
-              "kind": "Content",
-              "text": "<void>"
-            },
-            {
-              "kind": "Content",
-              "text": ", pollDelay?: "
-            },
-            {
-              "kind": "Content",
-              "text": "number"
-            },
-            {
-              "kind": "Content",
-              "text": ", debouncedDelay?: "
-            },
-            {
-              "kind": "Content",
-              "text": "number"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Content",
-              "text": "() => void"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 9,
-            "endIndex": 10
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "handler",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 4
-              }
-            },
-            {
-              "parameterName": "pollDelay",
-              "parameterTypeTokenRange": {
-                "startIndex": 5,
-                "endIndex": 6
-              }
-            },
-            {
-              "parameterName": "debouncedDelay",
-              "parameterTypeTokenRange": {
-                "startIndex": 7,
-                "endIndex": 8
-              }
-            }
-          ],
-          "name": "debouncedPollAsync"
         },
         {
           "kind": "Interface",
@@ -4351,7 +4218,7 @@
             },
             {
               "kind": "Content",
-              "text": ", maxItems: "
+              "text": ", maxChars: "
             },
             {
               "kind": "Content",
@@ -4359,7 +4226,7 @@
             },
             {
               "kind": "Content",
-              "text": ", elipse?: "
+              "text": ", ellipse?: "
             },
             {
               "kind": "Content",
@@ -4393,14 +4260,14 @@
               }
             },
             {
-              "parameterName": "maxItems",
+              "parameterName": "maxChars",
               "parameterTypeTokenRange": {
                 "startIndex": 3,
                 "endIndex": 4
               }
             },
             {
-              "parameterName": "elipse",
+              "parameterName": "ellipse",
               "parameterTypeTokenRange": {
                 "startIndex": 5,
                 "endIndex": 6
@@ -7735,6 +7602,50 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!isAckError:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function isAckError(e: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "e",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "isAckError"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!isBootloaderFlashing:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -9162,6 +9073,33 @@
               "name": "devices"
             },
             {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDBus#devicesFrozen:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get devicesFrozen(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "devicesFrozen",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
               "kind": "Method",
               "canonicalReference": "jacdac-ts!JDBus#disconnectAsync:member(1)",
               "docComment": "",
@@ -9382,6 +9320,35 @@
                 "endIndex": 3
               },
               "isStatic": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDBus#freezeDevices:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "freezeDevices(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "freezeDevices"
             },
             {
               "kind": "Property",
@@ -10047,6 +10014,35 @@
                 "endIndex": 2
               },
               "isStatic": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDBus#unfreezeDevices:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "unfreezeDevices(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "unfreezeDevices"
             },
             {
               "kind": "Method",
@@ -16697,6 +16693,65 @@
           ]
         },
         {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!lightEncode:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function lightEncode(format: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", args: "
+            },
+            {
+              "kind": "Content",
+              "text": "(number | number[])[]"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Uint8Array",
+              "canonicalReference": "!Uint8Array:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "format",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "parameterName": "args",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            }
+          ],
+          "name": "lightEncode"
+        },
+        {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!LightLightType:enum",
           "docComment": "",
@@ -17285,6 +17340,38 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!makeCodeServices:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function makeCodeServices(): "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.MakeCodeServiceInfo",
+              "canonicalReference": "!jdspec.MakeCodeServiceInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "[]"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 3
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [],
+          "name": "makeCodeServices"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!memcpy:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -17391,6 +17478,57 @@
             }
           ],
           "name": "memcpy"
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!META_ACK_FAILED:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "META_ACK_FAILED = \"ACK_FAILED\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "META_ACK_FAILED",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!META_ACK:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "META_ACK = \"ACK\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "META_ACK",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!META_PIPE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "META_PIPE = \"PIPE\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "META_PIPE",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
         },
         {
           "kind": "Enum",
@@ -19742,6 +19880,23 @@
         },
         {
           "kind": "Variable",
+          "canonicalReference": "jacdac-ts!PACKET_KIND_ANNOUNCE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "PACKET_KIND_ANNOUNCE = \"announce\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PACKET_KIND_ANNOUNCE",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
           "canonicalReference": "jacdac-ts!PACKET_KIND_EVENT:var",
           "docComment": "",
           "excerptTokens": [
@@ -20101,37 +20256,6 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#device_identifier:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get device_identifier(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "string"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                },
-                {
-                  "kind": "Content",
-                  "text": "\n\nset device_identifier(id: string);"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "device_identifier",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
               "canonicalReference": "jacdac-ts!Packet#device:member",
               "docComment": "",
               "excerptTokens": [
@@ -20160,12 +20284,43 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#frame_flags:member",
+              "canonicalReference": "jacdac-ts!Packet#deviceIdentifier:member",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "get frame_flags(): "
+                  "text": "get deviceIdentifier(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                },
+                {
+                  "kind": "Content",
+                  "text": "\n\nset deviceIdentifier(id: string);"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "deviceIdentifier",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#frameFlags:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get frameFlags(): "
                 },
                 {
                   "kind": "Content",
@@ -20178,7 +20333,7 @@
               ],
               "isOptional": false,
               "releaseTag": "Public",
-              "name": "frame_flags",
+              "name": "frameFlags",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -20574,145 +20729,6 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#is_command:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get is_command(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "boolean"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                },
-                {
-                  "kind": "Content",
-                  "text": "\n\nset is_command(value: boolean);"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "is_command",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#is_event:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get is_event(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "boolean"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "is_event",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#is_reg_get:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get is_reg_get(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "boolean"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "is_reg_get",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#is_reg_set:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get is_reg_set(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "boolean"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "is_reg_set",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#is_report:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get is_report(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "boolean"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "is_report",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
               "canonicalReference": "jacdac-ts!Packet#isAnnounce:member",
               "docComment": "",
               "excerptTokens": [
@@ -20740,6 +20756,199 @@
             },
             {
               "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isCommand:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isCommand(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                },
+                {
+                  "kind": "Content",
+                  "text": "\n\nset isCommand(value: boolean);"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isCommand",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isCRCAck:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isCRCAck(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isCRCAck",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isEvent:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isEvent(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isEvent",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isMultiCommand:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isMultiCommand(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isMultiCommand",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isPipe:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isPipe(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isPipe",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isRegisterGet:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isRegisterGet(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isRegisterGet",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isRegisterSet:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isRegisterSet(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isRegisterSet",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
               "canonicalReference": "jacdac-ts!Packet#isRepeatedAnnounce:member",
               "docComment": "",
               "excerptTokens": [
@@ -20759,6 +20968,33 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "isRepeatedAnnounce",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#isReport:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get isReport(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "isReport",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -20957,12 +21193,39 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#multicommand_class:member",
+              "canonicalReference": "jacdac-ts!Packet#meta:member",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "get multicommand_class(): "
+                  "text": "get meta(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "meta",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#multicommandClass:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get multicommandClass(): "
                 },
                 {
                   "kind": "Content",
@@ -20975,7 +21238,7 @@
               ],
               "isOptional": false,
               "releaseTag": "Public",
-              "name": "multicommand_class",
+              "name": "multicommandClass",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -21077,6 +21340,60 @@
             },
             {
               "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#pipeCount:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get pipeCount(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "pipeCount",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#pipePort:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get pipePort(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "pipePort",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
               "canonicalReference": "jacdac-ts!Packet#replay:member",
               "docComment": "",
               "excerptTokens": [
@@ -21104,12 +21421,12 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#requires_ack:member",
+              "canonicalReference": "jacdac-ts!Packet#requiresAck:member",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "get requires_ack(): "
+                  "text": "get requiresAck(): "
                 },
                 {
                   "kind": "Content",
@@ -21121,12 +21438,12 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "\n\nset requires_ack(ack: boolean);"
+                  "text": "\n\nset requiresAck(ack: boolean);"
                 }
               ],
               "isOptional": false,
               "releaseTag": "Public",
-              "name": "requires_ack",
+              "name": "requiresAck",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -21408,68 +21725,6 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#service_command:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get service_command(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "number"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                },
-                {
-                  "kind": "Content",
-                  "text": "\n\nset service_command(cmd: number);"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "service_command",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!Packet#service_index:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "get service_index(): "
-                },
-                {
-                  "kind": "Content",
-                  "text": "number"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                },
-                {
-                  "kind": "Content",
-                  "text": "\n\nset service_index(value: number);"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "service_index",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
-            },
-            {
-              "kind": "Property",
               "canonicalReference": "jacdac-ts!Packet#serviceClass:member",
               "docComment": "",
               "excerptTokens": [
@@ -21489,6 +21744,68 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "serviceClass",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#serviceCommand:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get serviceCommand(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                },
+                {
+                  "kind": "Content",
+                  "text": "\n\nset serviceCommand(cmd: number);"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "serviceCommand",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!Packet#serviceIndex:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get serviceIndex(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                },
+                {
+                  "kind": "Content",
+                  "text": "\n\nset serviceIndex(value: number);"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "serviceIndex",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -21884,6 +22201,58 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!PacketFilterProps#collapseAck:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "collapseAck?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "collapseAck",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!PacketFilterProps#collapsePipes:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "collapsePipes?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "collapsePipes",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "jacdac-ts!PacketFilterProps#devices:member",
               "docComment": "",
               "excerptTokens": [
@@ -21967,6 +22336,32 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!PacketFilterProps#grouping:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "grouping?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "grouping",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "jacdac-ts!PacketFilterProps#log:member",
               "docComment": "",
               "excerptTokens": [
@@ -21993,6 +22388,32 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!PacketFilterProps#pipes:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "pipes?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "pipes",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "jacdac-ts!PacketFilterProps#pkts:member",
               "docComment": "",
               "excerptTokens": [
@@ -22012,6 +22433,32 @@
               "isOptional": true,
               "releaseTag": "Public",
               "name": "pkts",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!PacketFilterProps#port:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "port?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "port",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -22923,6 +23370,23 @@
         },
         {
           "kind": "Variable",
+          "canonicalReference": "jacdac-ts!PIPE_NODE_NAME:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "PIPE_NODE_NAME = \"pipe\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PIPE_NODE_NAME",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
           "canonicalReference": "jacdac-ts!PIPE_PORT_SHIFT:var",
           "docComment": "",
           "excerptTokens": [
@@ -22933,6 +23397,23 @@
           ],
           "releaseTag": "Public",
           "name": "PIPE_PORT_SHIFT",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!PIPE_REPORT_NODE_NAME:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "PIPE_REPORT_NODE_NAME = \"pipe_report\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PIPE_REPORT_NODE_NAME",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -24050,7 +24531,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CBytes:member",
-              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_bytes. Returns the value.\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_string. Returns the value.\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -24084,6 +24565,48 @@
               ],
               "releaseTag": "Public",
               "name": "CI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CI8U8U16I32:member",
+              "docComment": "/**\n * A command to set rw_bytes. Returns the value.\n * ```\n * const [i8, u8, u16, i32] = jdunpack<[number, number, number, number]>(buf, \"i8 u8 u16 i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CI8U8U16I32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "134"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CI8U8U16I32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestCmd.CReportPipe:member",
+              "docComment": "/**\n * Argument: p_bytes pipe (bytes). A command to read the rw_bytes, byte per byte, as a pipe.\n * ```\n * const [pBytes] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "CReportPipe = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "135"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "CReportPipe",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -24211,6 +24734,27 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestEvent.EI8U8U16I32:member",
+              "docComment": "/**\n * An event raised when rw_i8_u8_u16_i32 is modified\n * ```\n * const [i8, u8, u16, i32] = jdunpack<[number, number, number, number]>(buf, \"i8 u8 u16 i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "EI8U8U16I32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "134"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "EI8U8U16I32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EString:member",
               "docComment": "/**\n * Argument: string string (bytes). An event raised when rw_string is modified\n * ```\n * const [string] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
@@ -24331,6 +24875,27 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RoI8U8U16I32:member",
+              "docComment": "/**\n * A read only i8, u8, u16, i32 register.. Mirrors rw_i8_u8_u16_i32.\n * ```\n * const [i8, u8, u16, i32] = jdunpack<[number, number, number, number]>(buf, \"i8 u8 u16 i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RoI8U8U16I32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "390"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RoI8U8U16I32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoString:member",
               "docComment": "/**\n * Read-only string (bytes). A read only string register. Mirrors rw_string.\n * ```\n * const [roString] = jdunpack<[string]>(buf, \"s\")\n * ```\n *\n */\n",
               "excerptTokens": [
@@ -24429,6 +24994,27 @@
               ],
               "releaseTag": "Public",
               "name": "RwI32",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ProtoTestReg.RwI8U8U16I32:member",
+              "docComment": "/**\n * A read write i8, u8, u16, i32 register.\n * ```\n * const [i8, u8, u16, i32] = jdunpack<[number, number, number, number]>(buf, \"i8 u8 u16 i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "RwI8U8U16I32 = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "134"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "RwI8U8U16I32",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -24795,7 +25381,7 @@
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "REGISTER_POLL_REPORT_INTERVAL = 799"
+              "text": "REGISTER_POLL_REPORT_INTERVAL = 5001"
             }
           ],
           "releaseTag": "Public",
@@ -25435,6 +26021,95 @@
             "startIndex": 0,
             "endIndex": 0
           }
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!resolveMakecodeService:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function resolveMakecodeService(service: "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.ServiceSpec",
+              "canonicalReference": "!jdspec.ServiceSpec:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.MakeCodeServiceInfo",
+              "canonicalReference": "!jdspec.MakeCodeServiceInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "service",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "resolveMakecodeService"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!resolveMakecodeServiceFromClassIdentifier:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function resolveMakecodeServiceFromClassIdentifier(serviceClass: "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.MakeCodeServiceInfo",
+              "canonicalReference": "!jdspec.MakeCodeServiceInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "serviceClass",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "resolveMakecodeServiceFromClassIdentifier"
         },
         {
           "kind": "Variable",
@@ -27437,6 +28112,50 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!setAckError:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function setAckError(e: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "void"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "e",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "setAckError"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!setNumber:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -28434,7 +29153,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_ROLE_MANAGER:var",
-          "docComment": "",
+          "docComment": "/**\n * pipe_report PBytes\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -28562,6 +29281,23 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_THERMOMETER",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_VIBRATION_MOTOR:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_VIBRATION_MOTOR = 406832290"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_VIBRATION_MOTOR",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -30010,6 +30746,23 @@
           "name": "toUTF8"
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!TRACE_FILTER_HORIZON:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "TRACE_FILTER_HORIZON = 100"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "TRACE_FILTER_HORIZON",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Interface",
           "canonicalReference": "jacdac-ts!TracePacketProps:interface",
           "docComment": "",
@@ -31455,6 +32208,42 @@
             }
           ],
           "name": "valueToFlags"
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!VibrationMotorReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum VibrationMotorReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "VibrationMotorReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!VibrationMotorReg.Speed:member",
+              "docComment": "/**\n * Read-write ratio uint8_t. Rotation speed of the motor. If only one rotation speed is supported, then `0` shell be off, and any other number on.\n * ```\n * const [speed] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Speed = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Speed",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
         },
         {
           "kind": "Variable",
