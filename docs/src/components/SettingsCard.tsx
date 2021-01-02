@@ -30,7 +30,7 @@ function SettingRow(props: { client: SettingsClient, name: string, mutable?: boo
                 <TextField fullWidth={true} error={!!valueError} variant="outlined" helperText={valueError} value={isSecret ? "..." : value} disabled={true} />
             </Grid>
             {mutable && <Grid item>
-                <CmdButton title="Delete settings" onClick={handleComponentDelete} icon={<DeleteIcon />} />
+                <CmdButton trackName="settings.delete" title="Delete settings" onClick={handleComponentDelete} icon={<DeleteIcon />} />
             </Grid>}
         </Grid>
     </Grid>
@@ -76,7 +76,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
                 Secret
             </Grid>
             <Grid item>
-                <CmdButton disabled={!!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
+                <CmdButton trackName="settings.add" disabled={!!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
             </Grid>
         </Grid>
     </Grid>
@@ -100,7 +100,7 @@ export default function SettingsCard(props: { service: JDService, mutable?: bool
             </Grid>
         </CardContent>
         {mutable && <CardActions>
-            <CmdButton title="Clear all settings" icon={<DeleteIcon />} onClick={handleClear}>
+            <CmdButton trackName="settings.clearall" title="Clear all settings" icon={<DeleteIcon />} onClick={handleClear}>
                 Clear
             </CmdButton>
         </CardActions>}

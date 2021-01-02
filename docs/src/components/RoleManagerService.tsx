@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { Box, Card, CardActions, CardContent, CardHeader, createStyles, FormControl, FormHelperText, Grid, InputLabel, List, ListItem, makeStyles, MenuItem, Select, Theme, Typography } from "@material-ui/core"
 import useChange from "../jacdac/useChange"
 import DeviceName from "./DeviceName"
@@ -69,7 +69,7 @@ export default function RoleManagerService(props: {
             {client?.remoteRequestedDevices.map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={client} />)}
         </CardContent>
         <CardActions>
-            {clearRoles && client && <CmdButton size="small"
+            {clearRoles && client && <CmdButton trackName="rolemgr.clearroles" size="small"
                 onClick={handleClearRoles}>
                 Clear roles
             </CmdButton>}
