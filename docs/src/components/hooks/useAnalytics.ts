@@ -1,8 +1,9 @@
-import { ApplicationInsights, IPageViewTelemetry, IEventTelemetry } from '@microsoft/applicationinsights-web-basic'
-import { useCallback } from 'react';
+import { ApplicationInsights } from '@microsoft/applicationinsights-web-basic'
 
 const appInsights = new ApplicationInsights({
   instrumentationKey: 'YOUR_INSTRUMENTATION_KEY_GOES_HERE',
+  isStorageUseDisabled: true,
+  isCookieUseDisabled: true,
 });
 const page = typeof window !== "undefined"
   ? () => appInsights.track({
