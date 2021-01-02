@@ -1,27 +1,31 @@
-import { ApplicationInsights } from '@microsoft/applicationinsights-web'
+import { ApplicationInsights, IPageViewTelemetry, IEventTelemetry } from '@microsoft/applicationinsights-web-basic'
+import { useCallback } from 'react';
 
 const appInsights = new ApplicationInsights({
-  config: {
-    instrumentationKey: 'YOUR_INSTRUMENTATION_KEY_GOES_HERE',
-    disableAjaxTracking: true,
-    disableFetchTracking: true,
-    disableCorrelationHeaders: true,
-    enableSessionStorageBuffer: false,
-    isStorageUseDisabled: true,
-    isCookieUseDisabled: true,
-  }
+  instrumentationKey: 'YOUR_INSTRUMENTATION_KEY_GOES_HERE',
 });
-
+const page = typeof window !== "undefined"
+  ? () => appInsights.track({
+    name: window.location.href,
+    time: new Date().toUTCString(),
+    baseType: "PageData"
+  })
+  : () => { };
+const track = (name: string, properties?: { [key: string]: any }) => appInsights.track({
+  name,
+  time: new Date().toUTCString(),
+  data: properties,
+  baseType: "EventData"
+});
 if (typeof window !== undefined) {
-  appInsights.loadAppInsights();
-  (window as any).appInsights = appInsights;
+  (window as any).analytics = {
+    page, track
+  }
 }
 
 export default function useAnalytics() {
   return {
-    page: () => appInsights.trackPageView(),
-    track: (name: string, properties?: { [key: string]: any }) => appInsights.trackEvent({
-      name, properties
-    })
+    page,
+    track
   }
 }
