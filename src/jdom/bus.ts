@@ -459,6 +459,10 @@ export class JDBus extends JDNode {
         let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
             this.log('info', `new device ${id}`)
+            if (this.devicesFrozen) {
+                this.log(`info`, `devices frozen, dropping ${id}`)
+                return undefined;
+            }
             d = new JDDevice(this, id)
             if (this.host.deviceNameSettings)
                 d.name = this.host.deviceNameSettings.resolve(d)
@@ -505,11 +509,15 @@ export class JDBus extends JDNode {
     }
 
     unfreezeDevices() {
-        this._gcDevicesEnabled--;
+        this._gcDevicesEnabled = Math.max(0, this._gcDevicesEnabled - 1);
+    }
+
+    get devicesFrozen() {
+        return this._gcDevicesEnabled > 0;
     }
 
     private gcDevices() {
-        if (this._gcDevicesEnabled > 0) {
+        if (this.devicesFrozen) {
             this.log("debug", "devices frozen")
             return;
         }
@@ -550,8 +558,12 @@ export class JDBus extends JDNode {
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
-        if (!pkt.isMultiCommand)
+        if (!pkt.isMultiCommand && !pkt.device) {
             pkt.device = this.device(pkt.deviceIdentifier)
+            // check if devices are frozen
+            if (!pkt.device)
+                return;
+        }
         this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
         if (!pkt.device) {
