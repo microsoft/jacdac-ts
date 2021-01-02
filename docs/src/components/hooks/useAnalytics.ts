@@ -17,7 +17,7 @@ const track = typeof window !== "undefined"
     time: new Date().toUTCString(),
     data: properties,
     baseType: "EventData"
-  }) : (name, properties) => }{ };
+  }) : (name, properties) => { };
 if (typeof window !== "undefined") {
   (window as any).analytics = {
     page, track
