@@ -282,6 +282,7 @@ function LayoutWithContext(props: LayoutProps) {
   const { pageContext, children, } = props;
   const classes = useStyles();
   const theme = useTheme();
+  const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
   const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
   useFirmwareBlobs();
@@ -292,7 +293,7 @@ function LayoutWithContext(props: LayoutProps) {
   const handleClearSelectedPacket = () => setSelectedPacket(undefined)
 
   return (<>
-    <div className={classes.root}>
+    <div className={clsx(darkMode, classes.root)}>
       <SEO />
       <MainAppBar pageContext={pageContext} />
       <AppDrawer pagePath={pagePath} />

@@ -618,6 +618,11 @@ pre tt:before,
 pre tt:after {
   content: "";
 }
+
+.dark a.anchor {
+  fill: #fff;
+}
+
 @media only screen and (max-width: 480px) {
   html {
     font-size: 100%;
