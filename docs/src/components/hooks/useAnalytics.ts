@@ -11,13 +11,14 @@ const page = typeof window !== "undefined"
     baseType: "PageData"
   })
   : () => { };
-const track = (name: string, properties?: { [key: string]: any }) => appInsights.track({
-  name,
-  time: new Date().toUTCString(),
-  data: properties,
-  baseType: "EventData"
-});
-if (typeof window !== undefined) {
+const track = typeof window !== "undefined"
+  ? (name: string, properties?: { [key: string]: any }) => appInsights.track({
+    name,
+    time: new Date().toUTCString(),
+    data: properties,
+    baseType: "EventData"
+  }) : (name, properties) => }{ };
+if (typeof window !== "undefined") {
   (window as any).analytics = {
     page, track
   }
