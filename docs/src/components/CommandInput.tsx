@@ -1,11 +1,11 @@
-import React, { useContext, useState } from "react";
-import { Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Select, Switch, TextField, Typography } from "@material-ui/core";
+import React, { useContext } from "react";
+import { Typography } from "@material-ui/core";
 import { InPipeReader } from "../../../src/jdom/pipes";
 import { JDService } from "../../../src/jdom/service";
 import DeviceName from "./DeviceName";
 import { hasPipeReport, isReportOf } from "../../../src/jdom/spec"
 import { packArguments } from "../../../src/jdom/command"
-import { DecodedPacket, decodePacketData, printPacket } from "../../../src/jdom/pretty"
+import { DecodedPacket, printPacket, serviceName } from "../../../src/jdom/pretty"
 import Packet from "../../../src/jdom/packet";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 import CmdButton from "./CmdButton";
@@ -51,13 +51,18 @@ export default function CommandInput(props: {
             await service.sendPacketAsync(pkt, true)
     }
 
-    return <>
-        <CmdButton key="button" variant="contained" disabled={disabled}
-            onClick={handleClick}>
-            {showDeviceName && <Typography>
-                <DeviceName device={service.device} />/
+    return <CmdButton
+        trackName={`command.input`}
+        trackProperties={({
+            service: serviceName(service.serviceClass),
+            serviceClass: service.serviceClass
+        })}
+        variant="contained"
+        disabled={disabled}
+        onClick={handleClick}>
+        {showDeviceName && <Typography>
+            <DeviceName device={service.device} />/
         </Typography>}
-            {command.name}
-        </CmdButton>
-    </>
+        {command.name}
+    </CmdButton>
 }

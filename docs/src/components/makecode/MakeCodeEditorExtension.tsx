@@ -138,7 +138,7 @@ export default function MakeCodeEditorExtension() {
             <AddServiceIconButton serviceFilter={hasMakeCodeService} onAdd={handleAddService} />
         </Grid>
         <Grid item xs={12}>
-            <CmdButton variant="contained" disabled={!connected} icon={<SaveIcon />} onClick={handleSave}>save</CmdButton>
+            <CmdButton trackName="makecode.save" variant="contained" disabled={!connected} icon={<SaveIcon />} onClick={handleSave}>save</CmdButton>
         </Grid>
     </Grid>
 }

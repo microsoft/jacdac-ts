@@ -19,8 +19,8 @@ export default function DeviceActions(props: { device: JDDevice, reset?: boolean
         await device.reset()
     }
     return <>
-        <CmdButton size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />
-        {reset && <CmdButton size="small" title="reset" onClick={handleReset} icon={<RefreshIcon />} />}
+        <CmdButton trackName="device.identify" size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />
+        {reset && <CmdButton trackName="device.reset" size="small" title="reset" onClick={handleReset} icon={<RefreshIcon />} />}
         {rename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
     </>;
 }

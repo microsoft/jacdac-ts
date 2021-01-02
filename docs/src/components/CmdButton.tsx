@@ -8,6 +8,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/jdom/utils";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
+import useAnalytics from "./hooks/useAnalytics";
 
 const ACK_RESET_DELAY = 1000
 const ERROR_RESET_DELAY = 2000
@@ -38,20 +39,26 @@ export default function CmdButton(props: {
     variant?: "outlined" | "contained" | undefined,
     disabled?: boolean,
     disableReset?: boolean,
-    autoRun?: boolean
+    autoRun?: boolean,
+    trackName?: string,
+    trackProperties?: { [key: string]: any },
 }) {
-    const { onClick, children, icon, title, disabled, disableReset, autoRun, ...others } = props
+    const { onClick, children, icon, title, disabled, disableReset, autoRun, 
+        trackName, trackProperties, ...others } = props
     const { setError: setAppError } = useContext(AppContext)
     const classes = useStyles()
     const [working, setWorking] = useState(false)
     const [ack, setAck] = useState(false)
     const [error, setError] = useState(undefined)
+    const { track } = useAnalytics()
 
     const _disabled = disabled || working;
 
     const run = async () => {
         if (working) return; // already working
 
+        if (trackName)
+            track('cmd.' + trackName, trackProperties)
         try {
             setError(undefined)
             setAck(false)
