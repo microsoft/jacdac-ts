@@ -38,7 +38,6 @@ import DarkModeContext from "./ui/DarkModeContext";
 import ToolsDrawer from "./ToolsDrawer";
 import Alert from "./ui/Alert"
 import GitHubButton from "./GitHubButton"
-import Presentation from "./ui/Presentation";
 import useMdxComponents from "./useMdxComponents";
 import Footer from "./ui/Footer";
 import PrintButton from "./ui/PrintButton";
@@ -163,7 +162,7 @@ const useStyles = makeStyles((theme) => createStyles({
 
 export interface LayoutProps {
   pageContext?: any;
-  children?: JSX.Element | JSX.Element[];
+  element?: JSX.Element;
 }
 
 export default function Layout(props: LayoutProps) {
@@ -205,10 +204,8 @@ function MainAppBar(props: LayoutProps) {
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
   const pageTitle = pageContext?.frontmatter?.title;
-  const pageDeck = !!pageContext?.frontmatter?.deck;
-  const appBarColor = pageDeck ? "transparent"
-    : darkMode === "dark" ? "inherit"
-      : widgetMode ? "default" : undefined;
+  const appBarColor = darkMode === "dark" ? "inherit"
+    : widgetMode ? "default" : undefined;
 
   const data = useStaticQuery(graphql`
     query {
@@ -225,7 +222,6 @@ function MainAppBar(props: LayoutProps) {
 
   return <Box displayPrint="none"><AppBar
     position="fixed"
-    elevation={pageDeck ? 0 : 2}
     color={appBarColor}
     className={clsx(classes.appBar, {
       [classes.tocBarShift]: drawerType === DrawerType.Toc,
@@ -279,7 +275,7 @@ function FabBar() {
 */
 
 function LayoutWithContext(props: LayoutProps) {
-  const { pageContext, children, } = props;
+  const { pageContext, element } = props;
   const classes = useStyles();
   const theme = useTheme();
   const { darkMode } = useContext(DarkModeContext)
@@ -288,7 +284,6 @@ function LayoutWithContext(props: LayoutProps) {
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
   const pagePath = pageContext?.frontmatter?.path;
-  const pageDeck = !!pageContext?.frontmatter?.deck;
 
   const handleClearSelectedPacket = () => setSelectedPacket(undefined)
 
@@ -298,10 +293,7 @@ function LayoutWithContext(props: LayoutProps) {
       <MainAppBar pageContext={pageContext} />
       <AppDrawer pagePath={pagePath} />
       <ToolsDrawer />
-      {pageDeck && children && <Presentation>
-        {children}
-      </Presentation>}
-      {!pageDeck && <Container disableGutters={true}>
+      <Container disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
@@ -324,12 +316,12 @@ function LayoutWithContext(props: LayoutProps) {
               </Paper>
             }
             <Typography className={'markdown'} component="span">
-              {children}
+              {element}
             </Typography>
           </div>
           <Footer />
         </main>
-      </Container>}
+      </Container>
     </div>
   </>
   )

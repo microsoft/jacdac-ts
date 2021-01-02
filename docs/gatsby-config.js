@@ -86,7 +86,7 @@ module.exports = {
       options: {
         defaultLayouts: {
           extensions: [`.mdx`, `.md`],
-          default: require.resolve("./src/components/layout.tsx"),
+          default: require.resolve("./src/components/Page.tsx"),
         },
         gatsbyRemarkPlugins: [
           `gatsby-remark-autolink-headers`,

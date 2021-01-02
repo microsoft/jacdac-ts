@@ -61,6 +61,9 @@ export default function ToolsDrawer() {
     const { toolsMenu, setToolsMenu } = useContext(AppContext)
     const { isHosted } = useContext(ServiceManagerContext)
     const { toggleDarkMode, darkMode } = useContext(DarkModeContext)
+    const handleClick = () => {
+        setToolsMenu(false)
+    }
     const handleDrawerClose = () => {
         setToolsMenu(false)
     }
@@ -157,7 +160,7 @@ export default function ToolsDrawer() {
             </IconButton>
         </div>
         <List>
-            {links.map((link, i) => link.url ? <Link to={link.url} key={link.url}>
+            {links.map((link, i) => link.url ? <Link to={link.url} key={link.url} onClick={handleClick}>
                 <ListItem button>
                     <ListItemIcon>{link.icon}</ListItemIcon>
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={<>

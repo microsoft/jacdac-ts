@@ -4,9 +4,7 @@ import { MDXRenderer } from "gatsby-plugin-mdx"
 import Layout from "./layout"
 
 export default function PageTemplate({ data: { mdx } }) {
-  return <Layout>
-    <MDXRenderer>{mdx.body}</MDXRenderer>
-  </Layout>
+  return <MDXRenderer>{mdx.body}</MDXRenderer>
 }
 
 export const pageQuery = graphql`

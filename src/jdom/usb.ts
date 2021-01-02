@@ -55,7 +55,6 @@ function usbGetDevices(): Promise<USBDevice[]> {
 }
 
 export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDBus {
-    console.log(`creating new JACDAC bus`)
     if (!options) {
         if (isWebUSBSupported()) {
             options = {
