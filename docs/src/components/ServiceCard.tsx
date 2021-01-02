@@ -66,7 +66,7 @@ export default function ServiceCard(props: {
             <DeviceCardHeader device={service.device} />
             <CardContent>
                 {showServiceName && <Typography className={classes.title} color="textSecondary" gutterBottom>
-                    <Link to={linkToService && service.specification ? `/services/${service.specification?.shortId}` : "/clients/web/jdom/service"}>{service.name}</Link>
+                    <Link to={linkToService && service.specification ? `/services/${service.specification.shortId}/` : "/clients/web/jdom/service"}>{service.name}</Link>
                 </Typography>}
                 <Typography variant="body2" component="div">
                     {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters key={'reg' + service.id} service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}

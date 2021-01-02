@@ -32,7 +32,7 @@ export default function DeviceSpecificationCard(props: {
         />
         {spec && <CardContent>
             {spec.services.map(service => serviceSpecificationFromClassIdentifier(service)).filter(sp => !!sp)
-                .map(sspec => <Button aria-label={`open service ${sspec.shortId} page`} key={sspec.shortId} to={`/services/${sspec.shortId}`}>{sspec.name}</Button>)}
+                .map(sspec => <Button aria-label={`open service ${sspec.shortId} page`} key={sspec.shortId} to={`/services/${sspec.shortId}/`}>{sspec.name}</Button>)}
         </CardContent>}
         {spec && <CardActions>
             <Button aria-label={`open device ${spec.name} page`} to={`/devices/${identifierToUrlPath(spec.id)}`}>More...</Button>

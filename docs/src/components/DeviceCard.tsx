@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 function navigateToService(service: JDService) {
     const spec = service.specification;
     if (spec)
-        navigate(`/services/${spec.shortId}`) // todo spec
+        navigate(`/services/${spec.shortId}/`) // todo spec
 }
 
 function DeviceDescription(props: { device: JDDevice }) {

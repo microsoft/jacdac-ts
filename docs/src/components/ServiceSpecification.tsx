@@ -44,7 +44,7 @@ export default function ServiceSpecification(props: {
                 <span>Extends </span>
                 {node.extends.map((extend, i) => <Fragment key={`extend${extend}`}>
                     {i > 0 && <span>, </span>}
-                    <Link key={`extend${extend}`} to={`/services/${extend}`}>{serviceSpecificationFromName(extend).name}</Link>
+                    <Link key={`extend${extend}`} to={`/services/${extend}/`}>{serviceSpecificationFromName(extend).name}</Link>
                 </Fragment>)}
     .
     </p>}
