@@ -58,7 +58,7 @@ export function deviceSpecifications(): jdspec.DeviceSpec[] {
 }
 
 export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
-    return spec && `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${spec.id.replace(/-/g, '/')}.jpg`
+    return spec && `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${identifierToUrlPath(spec.id)}.jpg`
 }
 
 export function identifierToUrlPath(id: string) {
