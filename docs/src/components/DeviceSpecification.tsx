@@ -7,7 +7,7 @@ import { Grid, Typography } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
 import Markdown from "./ui/Markdown";
 import DeviceSpecificationSource from "./DeviceSpecificationSource";
-import FirmwareCard from "./FirmwareCard"
+import FirmwareCard from "./firmware/FirmwareCard"
 import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec"
 
 export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, showSource?: string }) {

@@ -16,10 +16,10 @@ import { parseRepoUrl } from '../github'
 import GithubPullRequestButton from '../GithubPullRequestButton'
 import { DEVICE_IMAGE_HEIGHT, DEVICE_IMAGE_WIDTH, escapeDeviceIdentifier, escapeDeviceNameIdentifier, normalizeDeviceSpecification } from "../../../../jacdac-spec/spectool/jdspec"
 import ImportImageCanvas from '../ImageImportCanvas';
-import FirmwareCard from "../FirmwareCard"
+import FirmwareCard from "../firmware/FirmwareCard"
 // tslint:disable-next-line: no-submodule-imports
 import { Autocomplete } from '@material-ui/lab/';
-import { useFirmwareBlob } from '../useFirmwareBlobs';
+import { useFirmwareBlob } from '../firmware/useFirmwareBlobs';
 import { FirmwareBlob } from '../../../../src/jdom/flashing';
 import { useId } from "react-use-id-hook"
 import AddServiceIconButton from "../AddServiceIconButton";

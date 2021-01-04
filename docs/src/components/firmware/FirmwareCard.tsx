@@ -1,11 +1,11 @@
 import React, { ChangeEvent, useEffect, useState } from "react"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardActions, CardContent, CircularProgress, Collapse, List, ListItem, ListItemText, MenuItem, Select, Typography } from "@material-ui/core";
-import { fetchReleaseBinary, useLatestReleases } from "./github";
+import { fetchReleaseBinary, useLatestReleases } from "../github";
 import { useFirmwareBlob } from "./useFirmwareBlobs";
-import GithubRepositoryCardHeader from "./GithubRepositoryCardHeader";
-import Alert from "./ui/Alert";
+import GithubRepositoryCardHeader from "../GithubRepositoryCardHeader";
+import Alert from "../ui/Alert";
 import { Link } from "gatsby-theme-material-ui";
-import { SelectWithLabel } from "./ui/SelectWithLabel";
+import SelectWithLabel from "../ui/SelectWithLabel";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 export default function FirmwareCard(props: { slug: string }) {

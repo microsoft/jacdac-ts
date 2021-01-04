@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import { FirmwareBlob, parseFirmwareFile, parseUF2 } from "../../../src/jdom/flashing";
-import useEffectAsync from "./useEffectAsync";
-import DbContext, { DbContextProps } from "./DbContext";
-import { useChangeAsync } from "../jacdac/useChange";
-import { deviceSpecifications } from "../../../src/jdom/spec";
-import { delay, unique } from "../../../src/jdom/utils";
-import { fetchLatestRelease, fetchReleaseBinary } from "./github";
+import { useContext } from "react";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import { FirmwareBlob, parseFirmwareFile } from "../../../../src/jdom/flashing";
+import useEffectAsync from "../useEffectAsync";
+import DbContext, { DbContextProps } from "../DbContext";
+import { useChangeAsync } from "../../jacdac/useChange";
+import { deviceSpecifications } from "../../../../src/jdom/spec";
+import { delay, unique } from "../../../../src/jdom/utils";
+import { fetchLatestRelease, fetchReleaseBinary } from "../github";
 
 export default function useFirmwareBlobs() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
@@ -71,7 +71,7 @@ export function useFirmwareBlob(repoSlug: string) {
     const { db } = useContext<DbContextProps>(DbContext)
     const firmwares = db?.firmwares;
 
-    const blobs = useChangeAsync(firmwares, async (fw) => {
+    const blobs = useChangeAsync(firmwares, async () => {
         if (!repoSlug)
             return undefined;
 

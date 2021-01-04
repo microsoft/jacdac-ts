@@ -7,7 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden, Box, Paper, Button } from '@material-ui/core';
+import { makeStyles, Container, Hidden, Box } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
@@ -23,7 +23,6 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 import { useStaticQuery, graphql } from "gatsby"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
-import PacketsContext from "./PacketsContext";
 import SEO from "./seo";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
@@ -31,7 +30,7 @@ import { createMuiTheme, responsiveFontSizes, createStyles, useTheme } from '@ma
 import AppContext, { DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./WebUSBAlert";
-import useFirmwareBlobs from "./useFirmwareBlobs";
+import useFirmwareBlobs from "./firmware/useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import DarkModeProvider from "./ui/DarkModeProvider";
 import DarkModeContext from "./ui/DarkModeContext";
@@ -42,7 +41,6 @@ import useMdxComponents from "./useMdxComponents";
 import Footer from "./ui/Footer";
 import PrintButton from "./ui/PrintButton";
 import WebUSBSupported from "./WebUSBSupported";
-import PacketInspector from "./tools/PacketInspector"
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
@@ -284,7 +282,6 @@ function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { path } = pageProps;
   const classes = useStyles();
-  const theme = useTheme();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();

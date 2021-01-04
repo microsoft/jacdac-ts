@@ -1,10 +1,10 @@
 import { Grid, Switch } from "@material-ui/core";
 import React, { useState } from "react";
 import useGridBreakpoints from "../useGridBreakpoints";
-import FirmwareCard from "../FirmwareCard";
+import FirmwareCard from "./FirmwareCard";
 // tslint:disable-next-line: no-submodule-imports
-import useFirmwareRepos from "../useFirmwareRepos";
-import LocalFileFirmwareCard from "../LocalFileFirmwareCard";
+import useFirmwareRepos from "./useFirmwareRepos";
+import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
 
 export default function FirmwareCardGrid() {
     const [showAllRepos, setShowAllRepos] = useState(false)

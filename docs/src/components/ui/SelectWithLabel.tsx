@@ -1,7 +1,7 @@
 import { FormControl, FormHelperText, InputLabel, Select } from "@material-ui/core"
 import React, { ChangeEvent } from "react"
 
-export function SelectWithLabel(props: {
+export default function SelectWithLabel(props: {
     required?: boolean,
     label?: string,
     disabled?: boolean,
