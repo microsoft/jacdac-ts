@@ -19,9 +19,9 @@ export default function ServiceRegisters(props: {
         : registers.filter(reg => reg.kind == "ro" || (showConst && reg.kind == "const") || (showRw && reg.kind == "rw"));
     useChange(service)
 
-    return <React.Fragment>
-        {reports.map(report => <RegisterInput key={`register${report.identifier}`}
+    return <>
+        {reports.map(report => <RegisterInput key={`${report.kind}${report.identifier}`}
             register={service.register(report.identifier)}
             showRegisterName={showRegisterName} />)}
-    </React.Fragment>
+    </>
 }

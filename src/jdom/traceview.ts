@@ -1,6 +1,6 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
-import { CHANGE, DEVICE_ANNOUNCE, META_ACK, META_PIPE, PACKET_PROCESS, PACKET_SEND, TRACE_FILTER_HORIZON } from "./constants";
+import { CHANGE, DEVICE_ANNOUNCE, META_ACK, META_GET, META_PIPE, PACKET_PROCESS, PACKET_SEND, TRACE_FILTER_HORIZON } from "./constants";
 import { jdunpack } from "./pack";
 import Packet from "./packet";
 import { PacketFilter, parsePacketFilter } from "./packetfilter";
@@ -190,8 +190,31 @@ export default class TraceView extends JDClient {
                 }
             }
         }
+        // report coming back
+        if (pkt.isRegisterGet && pkt.isReport) {
+            const pkts = this.trace.packets;
+            const did = pkt.deviceIdentifier;
+            const si = pkt.serviceIndex;
+            const rid = pkt.registerIdentifier;
+            const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON); // max scan 100 packets back
+            console.log(`finding get cmd for ${pkt.key}`)
+            for (let i = pkts.length - 1; i >= m; i--) {
+                const old = pkts[i];
+                if (old.isRegisterGet 
+                    && old.isCommand
+                    && old.deviceIdentifier === did
+                    && old.serviceIndex === si
+                    && old.registerIdentifier === rid) {
+                        // response from a get command
+                        old.meta[META_GET] = pkt;
+                        if (this._packetFilter?.props.collapseGets)
+                            filtered = false;
+                        break;
+                    }
+            }
+        }
         // collapse pipes
-        else if (this._packetFilter?.props.collapsePipes && pkt.isPipe && pkt.isCommand) {
+        if (this._packetFilter?.props.collapsePipes && pkt.isPipe && pkt.isCommand) {
             const pkts = this._filteredPackets
             const m = Math.min(pkts.length, TRACE_FILTER_HORIZON); // max scan 100 packets back
             const port = pkt.pipePort;

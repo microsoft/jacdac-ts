@@ -16,7 +16,8 @@ import {
     PIPE_METADATA_MASK,
     PIPE_CLOSE_MASK,
     CMD_GET_REG,
-    JD_SERVICE_INDEX_CTRL
+    JD_SERVICE_INDEX_CTRL,
+    CMD_REG_MASK
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -169,6 +170,12 @@ export class Packet {
 
     get isRegisterGet() {
         return (this.serviceCommand >> 12) == (CMD_GET_REG >> 12)
+    }
+
+    get registerIdentifier() {
+        if (!this.isRegisterGet || !this.isRegisterSet)
+            return undefined;
+        return this.serviceCommand & CMD_REG_MASK;
     }
 
     get isEvent() {

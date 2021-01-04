@@ -115,6 +115,11 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     kind: "rw",
                     value: true
                 }, {
+                    cmd: "collapse-gets",
+                    kind: "ro",
+                    label: "Disable collapse gets",
+                    value: false
+                }, {
                     cmd: "pipes",
                     kind: "pipe",
                     value: true

@@ -143,6 +143,7 @@ export const PACKETIO_TRANSPORT = "packetio"
 export const META_ACK = "ACK"
 export const META_ACK_FAILED = "ACK_FAILED"
 export const META_PIPE = "PIPE"
+export const META_GET = "GET"
 
 export const TRACE_FILTER_HORIZON = 100
 

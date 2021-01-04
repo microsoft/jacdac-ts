@@ -21,6 +21,6 @@ export default function RegisterInput(props: {
         {showRegisterName && specification && <Typography variant="caption" key="registername">
             {specification.name}
         </Typography>}
-        <PacketInput register={register} showMemberName={showMemberName} />
+        <PacketInput register={register} />
     </>
 }
