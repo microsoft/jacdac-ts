@@ -63,10 +63,10 @@ export default function ServiceSpecificationSource(props: {
                 </TabPanel>}
                 {["sts", "ts", "c", "json"].map((lang, i) =>
                     <TabPanel key={`conv${lang}`} value={tab} index={index++}>
-                        <Snippet value={convs[lang](spec)} mode={lang} />
+                        <Snippet value={() => convs[lang](spec)} mode={lang} />
                     </TabPanel>)}
                 {showDTDL && <TabPanel key="dtdl" value={tab} index={index++}>
-                    <Snippet value={JSON.stringify(serviceSpecificationToDTDL(spec), null, 2)} mode={"json"}
+                    <Snippet value={() => JSON.stringify(serviceSpecificationToDTDL(spec), null, 2)} mode={"json"}
                         download={`dtmi-${spec.shortId}.json`}
                         url={"/" + DTMIToRoute(serviceSpecificationDTMI(spec))}
                         caption={<><Link to="/dtmi">DTDL</Link> is an open source modelling language developed by Microsoft Azure.</>} />

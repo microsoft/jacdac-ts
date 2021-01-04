@@ -6,6 +6,7 @@ import IDChip from "./IDChip"
 import AppContext from "./AppContext"
 import { useId } from "react-use-id-hook"
 import { scaleFloatToInt } from "../../../src/jdom/spec";
+import { fromHex } from "../../../src/jdom/utils";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -13,13 +14,19 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }))
 
-function MemberInput(props: { register?: JDRegister, member: DecodedMember, serviceSpecification: jdspec.ServiceSpec, specification: jdspec.PacketInfo, labelledby: string }) {
-    const { register, member, labelledby, serviceSpecification, specification } = props;
-    const { info } = member;
+function MemberInput(props: {
+    register?: JDRegister,
+    member: DecodedMember,
+    serviceSpecification: jdspec.ServiceSpec,
+    registerSpecification: jdspec.PacketInfo,
+    specification: jdspec.PacketMember,
+    labelledby: string
+}) {
+    const { register, member, labelledby, serviceSpecification, registerSpecification, specification } = props;
     const { setError: setAppError } = useContext(AppContext)
     const [working, setWorking] = useState(false)
-    const mod = specification.kind === "rw";
-    const enumInfo = serviceSpecification?.enums[info.type]
+    const mod = registerSpecification.kind === "rw";
+    const enumInfo = serviceSpecification?.enums[specification.type]
 
     const readOnly = !register || !mod;
     const workingIndicator = working ? "*" : ""
@@ -40,11 +47,11 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     const handleNumChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
         const v = parseInt(event.target.value.replace(/[^\d]+$/, ''));
         if (!isNaN(v))
-            await register.sendSetPackedAsync(specification.packFormat, [v], true)
+            await register.sendSetPackedAsync(registerSpecification.packFormat, [v], true)
     })
     const handleEnumChange = handeler(async (event: ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
-        await register.sendSetPackedAsync(specification.packFormat, [v], true)
+        await register.sendSetPackedAsync(registerSpecification.packFormat, [v], true)
     })
     const handleStringChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
         const s = event.target.value as string;
@@ -52,13 +59,18 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
     })
     const handleSliderChange = async (event: any, newValue: number | number[]) => {
         const v = scaleFloatToInt((newValue as number) / 100, member.info)
-        await register.sendSetPackedAsync(specification.packFormat, [v], true)
+        await register.sendSetPackedAsync(registerSpecification.packFormat, [v], true)
     }
+    const handleBufferChange = handeler(async (event: ChangeEvent<HTMLInputElement>) => {
+        const s = event.target.value as string;
+        const buf = fromHex(s);
+        await register.sendSetPackedAsync("b", [buf], true);
+    })
 
-    if (info.type === "bool")
+    if (specification.type === "bool")
         return <Switch checked={member.value} onClick={mod ? handleSwitchChange : undefined} readOnly={readOnly} />
-    else if (info.type === "string")
-        return <TextField disabled={readOnly} value={member.value} onChange={mod ? handleStringChange : undefined} />
+    else if (specification.type === "string")
+        return <TextField disabled={readOnly} value={member?.value || ""} onChange={mod ? handleStringChange : undefined} />
     else if (enumInfo !== undefined && member.numValue !== undefined) {
         return <Select
             readOnly={readOnly}
@@ -69,7 +81,7 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
                 <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
     }
-    else if (member.scaledValue !== undefined && info.unit == "/") {
+    else if (member?.scaledValue !== undefined && specification.unit === "/") {
         return <Slider
             disabled={readOnly}
             value={member.scaledValue * 100}
@@ -78,25 +90,35 @@ function MemberInput(props: { register?: JDRegister, member: DecodedMember, serv
             min={0} max={100}
         />
     }
-
-    if (member.numValue !== undefined && mod)
+    else if (member?.numValue !== undefined)
         return <TextField type="number" label={member.numValue + workingIndicator} onChange={handleNumChange} disabled={readOnly} />
+    else if (specification.type === "bytes")
+        return <TextField disabled={readOnly} value={member?.value || ""} onChange={mod ? handleBufferChange : undefined} />
 
-    if (info.type === "bytes")
-        return <pre>{member.value}</pre>
-
+    console.log("memberinput unhandled", { member })
     return <Typography component="div" variant="body2">{member.humanValue + workingIndicator}</Typography>
 }
 
-export function DecodedMemberItem(props: { member: DecodedMember, serviceSpecification: jdspec.ServiceSpec, specification: jdspec.PacketInfo, register?: JDRegister }) {
-    const { member, register, serviceSpecification, specification } = props;
-    const { info } = member;
+export function DecodedMemberItem(props: {
+    member: DecodedMember,
+    serviceSpecification: jdspec.ServiceSpec,
+    registerSpecification: jdspec.PacketInfo,
+    specification: jdspec.PacketMember,
+    register?: JDRegister
+}) {
+    const { member, register, serviceSpecification, registerSpecification, specification } = props;
     const classes = useStyles()
     const id = useId();
+
     return <div className={classes.root}>
-        {info.name !== "_" && <Typography id={id} component="span" gutterBottom>
-            {info.name}
+        {specification.name !== "_" && <Typography id={id} component="div" variant="caption">
+            {specification.name}
         </Typography>}
-        <MemberInput member={member} serviceSpecification={serviceSpecification} specification={specification} labelledby={id} register={register} />
+        <MemberInput member={member}
+            serviceSpecification={serviceSpecification}
+            registerSpecification={registerSpecification}
+            specification={specification}
+            labelledby={id}
+            register={register} />
     </div>
 }

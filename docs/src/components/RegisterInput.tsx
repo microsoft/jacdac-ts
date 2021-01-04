@@ -10,18 +10,23 @@ export default function RegisterInput(props: { register: JDRegister, showDeviceN
     const [decoded, setDecoded] = useState(register.decoded)
 
     // decode, refresh happens automatically
-    useEffect(() => register.subscribe(REPORT_UPDATE, () => {
-        setDecoded(register.decoded)
+    useEffect(() => register?.subscribe(REPORT_UPDATE, () => {
+        setDecoded(register?.decoded)
     }), [register])
 
     return <>
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={register.service.device} />/
         </Typography>}
-        {showName && !!decoded && <Typography component="span" key="registername" gutterBottom>
+        {showName && !!decoded && <Typography variant="caption" key="registername">
             {decoded.info.name}
         </Typography>}
-        {decoded && decoded.decoded.map(member =>
-            <DecodedMemberItem key={`member` + member.info.name} register={register} member={member} serviceSpecification={decoded.service} specification={decoded.info} />)}
+        {decoded?.info.fields.map((field, i) =>
+            <DecodedMemberItem key={`member` + field.name}
+                register={register}
+                member={decoded.decoded[i]}
+                serviceSpecification={decoded.service}
+                registerSpecification={register.specification}
+                specification={field} />)}
     </>
 }
