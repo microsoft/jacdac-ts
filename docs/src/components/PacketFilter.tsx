@@ -19,6 +19,7 @@ import IconButtonWithTooltip from './ui/IconButtonWithTooltip';
 import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import GroupWorkIcon from '@material-ui/icons/GroupWork';
+import { isCommand, isEvent, isPipeReport, isRegister } from '../../../src/jdom/spec';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -53,6 +54,11 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
         pkt => pkt.identifier.toString(16),
         pkt => pkt
     )
+    const packetFilter = pkt => isRegister(pkt) ? "register" 
+        : isCommand(pkt) ? "command" 
+        : isEvent(pkt) ? "event"
+        : isPipeReport(pkt) ? "pipe"
+        : "pkt";
 
     const handleAdd = (filter: string) => () => {
         handleAddFilter(filter)
@@ -109,7 +115,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     kind: "rw",
                     value: true
                 }, {
-                    cmd: "command",
+                    cmd: "commands",
                     value: true
                 }, {
                     cmd: "pipes",
@@ -155,12 +161,12 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography>{srv}</Typography>&nbsp;
                     <Typography variant="subtitle2">srv:{srv}</Typography>
                 </MenuItem>)}
-                {packets?.map(pkt => <MenuItem key={`pkt:` + pkt.identifier} onClick={handleAdd(`pkt:0x${pkt.identifier.toString(16)}`)}>
+                {packets?.map(pkt => <MenuItem key={`${packetFilter(pkt)}:${pkt.identifier}`} onClick={handleAdd(`${packetFilter(pkt)}:${pkt.name}`)}>
                     <ListItemIcon>
                         <KindIcon kind={pkt.kind} />
                     </ListItemIcon>
                     <Typography>{pkt.name}</Typography>&nbsp;
-                    <Typography variant="subtitle2">pkt:0x{pkt.identifier.toString(16)}</Typography>
+                    <Typography variant="subtitle2">{packetFilter(pkt)}:{pkt.name}</Typography>
                 </MenuItem>)}
             </Menu>
         </Box>
