@@ -9,7 +9,8 @@ export function SelectWithLabel(props: {
     value?: string,
     placeholder?: string,
     type?: string,
-    onChange?: (ev: ChangeEvent<{ name?: string; value: unknown; }>) => void, helperText?: string,
+    onChange?: (ev: ChangeEvent<{ name?: string; value: unknown; }>) => void,
+    helperText?: string,
     children?: JSX.Element | JSX.Element[]
 }) {
     const { label, required, disabled, value, error,

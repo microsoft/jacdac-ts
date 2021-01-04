@@ -1,15 +1,16 @@
 import { Button, Grid } from "@material-ui/core"
 import { Alert } from "@material-ui/lab"
-import React, { useContext, useState } from "react"
-import { DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants"
+import React, { useContext, useEffect, useState } from "react"
+import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants"
 import { isBootloaderFlashing, JDDevice } from "../../../src/jdom/device"
-import { FirmwareBlob, FirmwareInfo, flashFirmwareBlob, updateApplicable } from "../../../src/jdom/flashing"
+import { scanFirmwares, FirmwareBlob, FirmwareInfo, flashFirmwareBlob, updateApplicable } from "../../../src/jdom/flashing"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 import useEventRaised from "../jacdac/useEventRaised"
 import useSelectedNodes from "../jacdac/useSelectedNodes"
 import CircularProgressWithLabel from "./ui/CircularProgressWithLabel"
 import DeviceCard from "./DeviceCard"
 import useGridBreakpoints from "./useGridBreakpoints"
+import { BusState } from "../../../src/jdom/bus"
 
 function UpdateDeviceCard(props: {
     device: JDDevice,
@@ -50,14 +51,31 @@ function UpdateDeviceCard(props: {
 }
 
 export default function UpdateDeviceList() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
+    const [scanning, setScanning] = useState(false)
     const gridBreakpoints = useGridBreakpoints()
-    const { hasSelection: isFlashing, selected: isDeviceFlashing, allSelected: allFlashing, setSelected: setFlashing } = 
-        useSelectedNodes<JDDevice>()
+    const { hasSelection: isFlashing, selected: isDeviceFlashing, allSelected: allFlashing, setSelected: setFlashing } =
+        useSelectedNodes<JDDevice>();
+
     let devices = useEventRaised(DEVICE_CHANGE, bus, b => b.devices().filter(dev => dev.announced))
     // filter out bootloader while flashing
     devices = devices.filter(dev => !isBootloaderFlashing(devices, isDeviceFlashing, dev))
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
+    async function scan() {
+        if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
+            return;
+        console.log(`start scanning bus`)
+        try {
+            setScanning(true)
+            await scanFirmwares(bus)
+        }
+        finally {
+            setScanning(false)
+        }
+    }
+    // load indexed db file once
+    useEffect(() => { scan() }, [isFlashing, connectionState])
+    useEffect(() => bus.subscribe(DEVICE_ANNOUNCE, () => scan()), [bus])
     const updates = devices.map(device => {
         return {
             firmware: device.firmwareInfo,

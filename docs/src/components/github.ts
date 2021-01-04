@@ -124,3 +124,11 @@ export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
     const res = useFetchApi<GithubRelease>(uri, { ignoreThrottled: true });
     return res;
 }
+
+export function useLatestReleases(slug: string, options?: GitHubApiOptions) {
+    if (!slug)
+        return { response: undefined, loading: false, error: undefined, status: undefined }
+    const uri = `repos/${normalizeSlug(slug)}/releases`;
+    const res = useFetchApi<GithubRelease[]>(uri, { ignoreThrottled: true });
+    return res;
+}

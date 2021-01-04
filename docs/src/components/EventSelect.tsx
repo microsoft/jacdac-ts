@@ -46,8 +46,8 @@ export default function EventSelect(props: {
     )))
     const selectedEvent = bus.node(eventId) as JDEvent
 
-    const handleChange = (ev: React.ChangeEvent<{ value: string }>) => {
-        onChange(ev.target.value);
+    const handleChange = (ev: React.ChangeEvent<{ value: unknown }>) => {
+        onChange(ev.target.value as string);
     };
 
     return (
