@@ -49,7 +49,7 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
     const serviceIds = services.map(service => service.specification?.shortId || `0x${service.serviceClass.toString()}`);
     const serviceSpecs = services.map(service => service.specification).filter(spec => !!spec);
     const packets = uniqueMap(
-        arrayConcatMany(serviceSpecs.map(spec => spec.packets.filter(pkt => pkt.identifierName))),
+        arrayConcatMany(serviceSpecs.map(spec => spec.packets.filter(pkt => pkt.name))),
         pkt => pkt.identifier.toString(16),
         pkt => pkt
     )
@@ -156,7 +156,10 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     <Typography variant="subtitle2">srv:{srv}</Typography>
                 </MenuItem>)}
                 {packets?.map(pkt => <MenuItem key={`pkt:` + pkt.identifier} onClick={handleAdd(`pkt:0x${pkt.identifier.toString(16)}`)}>
-                    <Typography>{pkt.identifierName}</Typography>&nbsp;
+                    <ListItemIcon>
+                        <KindIcon kind={pkt.kind} />
+                    </ListItemIcon>
+                    <Typography>{pkt.name}</Typography>&nbsp;
                     <Typography variant="subtitle2">pkt:0x{pkt.identifier.toString(16)}</Typography>
                 </MenuItem>)}
             </Menu>
