@@ -238,7 +238,7 @@ export function tryParseMemberValue(text: string, info: jdspec.PacketMember): { 
         try {
             return { value: fromHex(text) }
         }
-        catch(e) {
+        catch (e) {
             return {
                 error: 'invalid hexadecimal format'
             }
