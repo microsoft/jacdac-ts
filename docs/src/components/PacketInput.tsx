@@ -18,16 +18,15 @@ function isSet(field: any) {
 
 function FieldInput(props: {
     field: JDField,
-    showMemberName?: boolean,
     value: any,
     setArg: (v: any) => void
 }) {
-    const { field, showMemberName, value, setArg } = props;
+    const { field, value, setArg } = props;
     const { specification, register } = field;
     const disabled = !setArg;
     const enumInfo = field.register.service.specification?.enums?.[specification.type]
     const [error, setError] = useState(false);
-    const name = showMemberName ? (specification.name === "_" ? register.name : specification.name) : ""
+    const name = specification.name === "_" ? "" : specification.name
     const parts: string[] = [
         prettyUnit(specification.unit),
         isSet(specification.typicalMin) && `[${specification.typicalMin}, ${specification.typicalMax}]`,
@@ -73,7 +72,7 @@ function FieldInput(props: {
         return <TextField
             disabled={disabled}
             label={label}
-            value={value || ""}
+            value={value !== undefined ? value : ""}
             helperText={helperText}
             onChange={handleChange}
             required={value === undefined}
@@ -82,10 +81,9 @@ function FieldInput(props: {
 }
 
 export default function PacketInput(props: {
-    register: JDRegister,
-    showMemberName?: boolean
+    register: JDRegister
 }) {
-    const { register, showMemberName } = props;
+    const { register } = props;
     const { specification } = register;
     const { fields } = register;
     const { setError: setAppError } = useContext(AppContext)
@@ -125,10 +123,10 @@ export default function PacketInput(props: {
         return null; // nothing to see here
 
     return fields.length < 1 ?
-        <FieldInput field={fields[0]} value={args[0]} showMemberName={showMemberName} setArg={hasSet && setArg(0)} />
+        <FieldInput field={fields[0]} value={args[0]} setArg={hasSet && setArg(0)} />
         : <List dense={true}>
             {fields.map((field, fieldi) => <ListItem>
-                <FieldInput field={field} value={args[fieldi]} showMemberName={showMemberName} setArg={hasSet && setArg(fieldi)} />
+                <FieldInput field={field} value={args[fieldi]} setArg={hasSet && setArg(fieldi)} />
             </ListItem>)}
         </List>
 }

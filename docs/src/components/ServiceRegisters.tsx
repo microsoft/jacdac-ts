@@ -22,7 +22,6 @@ export default function ServiceRegisters(props: {
     return <React.Fragment>
         {reports.map(report => <RegisterInput key={`register${report.identifier}`}
             register={service.register(report.identifier)}
-            showRegisterName={showRegisterName}
-            showMemberName={true} />)}
+            showRegisterName={showRegisterName} />)}
     </React.Fragment>
 }
