@@ -6,7 +6,7 @@ import { List, ListItem } from "@material-ui/core";
 import { JDRegister } from "../../../src/jdom/register";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyUnit, valueToFlags } from "../../../src/jdom/pretty";
-import { tryParseMemberValue } from "../../../src/jdom/spec";
+import { memberValueToString, tryParseMemberValue } from "../../../src/jdom/spec";
 import IDChip from "./IDChip";
 import { JDField } from "../../../src/jdom/field";
 import { REPORT_UPDATE } from "../../../src/jdom/constants";
@@ -22,10 +22,12 @@ function FieldInput(props: {
     setArg: (v: any) => void
 }) {
     const { field, value, setArg } = props;
-    const { specification, register } = field;
+    const { specification } = field;
     const disabled = !setArg;
     const enumInfo = field.register.service.specification?.enums?.[specification.type]
-    const [error, setError] = useState(false);
+    const [error, setError] = useState("")
+    const [textValue, setTextValue] = useState("")
+    const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? "" : specification.name
     const parts: string[] = [
         prettyUnit(specification.unit),
@@ -33,17 +35,24 @@ function FieldInput(props: {
         isSet(specification.absoluteMin) && `absolute [${specification.absoluteMin}, ${specification.absoluteMax}]`,
     ].filter(f => isSet(f) && f)
     const label = name
-    const helperText = [specification.type, ...parts].join(', ');
+    const helperText = error || [specification.type, ...parts].join(', ')
+
+    // update coming from device
+    useEffect(() => {
+        setTextValue(valueString)
+    }, [valueString]);
 
     const handleChecked = (ev, checked: boolean) => {
         setArg(checked)
     }
     const handleChange = (ev) => {
         const newValue = ev.target.value
-        //    setValue(newValue)
+        setTextValue(newValue)
         const r = tryParseMemberValue(newValue, specification)
-        setArg(r.error ? undefined : r.value)
-        setError(!!r.error)
+        console.log({ r })
+        if (r.value !== undefined)
+            setArg(r.value)
+        setError(r.error)
     }
     const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
@@ -72,11 +81,11 @@ function FieldInput(props: {
         return <TextField
             disabled={disabled}
             label={label}
-            value={value !== undefined ? value : ""}
+            value={textValue}
             helperText={helperText}
             onChange={handleChange}
             required={value === undefined}
-            error={error}
+            error={!!error}
         />
 }
 

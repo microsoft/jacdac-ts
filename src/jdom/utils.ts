@@ -253,7 +253,7 @@ export function toHex(bytes: ArrayLike<number>) {
 }
 
 export function fromHex(hex: string) {
-    let r = new Uint8Array(hex.length >> 1)
+    const r = new Uint8Array(hex.length >> 1)
     for (let i = 0; i < hex.length; i += 2)
         r[i >> 1] = parseInt(hex.slice(i, i + 2), 16)
     return r

@@ -3,7 +3,7 @@
 import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
-import { fromHex, SMap } from "./utils";
+import { fromHex, SMap, toHex } from "./utils";
 import { SystemReg, SensorReg } from "./constants";
 import makecodeServicesData from "../../jacdac-spec/services/makecode.json";
 
@@ -216,14 +216,34 @@ export function clampToStorage(v: number, tp: jdspec.StorageType) {
     return v
 }
 
+export function memberValueToString(value: any, info: jdspec.PacketMember): string {
+    if (value === undefined)
+        return "";
+    switch (info.type) {
+        case "bytes": return toHex(value);
+        case "string": return value;
+        default: return "" + value;
+    }
+}
+
 export function tryParseMemberValue(text: string, info: jdspec.PacketMember): { value?: any, error?: string } {
     if (!text)
         return {}
 
-    if (info.type == "string")
+    if (info.type === "string")
         return { value: text }
-    else if (info.type == "pipe")
+    else if (info.type === "pipe")
         return {} // not supported
+    else if (info.type === "bytes") {
+        try {
+            return { value: fromHex(text) }
+        }
+        catch(e) {
+            return {
+                error: 'invalid hexadecimal format'
+            }
+        }
+    }
     else {
         const n = isIntegerType(info.type) ? parseInt(text) : parseFloat(text)
         if (isNaN(n))

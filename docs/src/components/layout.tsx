@@ -287,11 +287,8 @@ function LayoutWithContext(props: LayoutProps) {
   const theme = useTheme();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
-  const { selectedPacket, setSelectedPacket } = useContext(PacketsContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-
-  const handleClearSelectedPacket = () => setSelectedPacket(undefined)
 
   return (<>
     <div className={clsx(darkMode, classes.root)}>
@@ -311,16 +308,6 @@ function LayoutWithContext(props: LayoutProps) {
             <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
             <WebUSBAlert />
             {Flags.diagnostics && <WebDiagnostics />}
-            {selectedPacket &&
-              <Paper square>
-                <Box p={theme.spacing(0.25)} mb={theme.spacing(0.5)}>
-                  <PacketInspector />
-                  <Box>
-                    <Button aria-label="close packet details" variant="outlined" onClick={handleClearSelectedPacket}>close</Button>
-                  </Box>
-                </Box>
-              </Paper>
-            }
             <Typography className={'markdown'} component="span">
               {element}
             </Typography>
