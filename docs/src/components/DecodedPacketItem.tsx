@@ -7,6 +7,6 @@ export default function DecodedPacketItem(props: { pkt: DecodedPacket }) {
     const { decoded, info, service } = pkt;
     
     return <>
-        {decoded.map(member => <DecodedMemberItem serviceSpecification={service} specification={info} member={member} />)}
+        {decoded.map(member => <DecodedMemberItem serviceSpecification={service} registerSpecification={info} member={member} specification={member.info} />)}
     </>
 }
