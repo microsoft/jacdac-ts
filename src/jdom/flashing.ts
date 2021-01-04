@@ -2,12 +2,10 @@ import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import { ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
+import { BootloaderCmd, ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
 import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array } from "./utils"
 import { jdpack, jdunpack } from "./pack"
 
-const BL_CMD_PAGE_DATA = 0x80
-const BL_CMD_SET_SESSION = 0x81
 const BL_SUBPAGE_SIZE = 208
 const numRetries = 15
 
@@ -65,7 +63,7 @@ class FlashClient {
     }
 
     private handlePacket(pkt: Packet) {
-        if (pkt.serviceCommand == BL_CMD_PAGE_DATA)
+        if (pkt.serviceCommand == BootloaderCmd.PageData)
             this.lastStatus = pkt
     }
 
@@ -89,7 +87,7 @@ class FlashClient {
             log(`flashing ${d.device.shortId}; available flash=${d.flashSize / 1024}kb; page=${d.pageSize}b`)
         }
 
-        const setsession = Packet.jdpacked<[number]>(BL_CMD_SET_SESSION, "u32", [this.sessionId])
+        const setsession = Packet.jdpacked<[number]>(BootloaderCmd.SetSession, "u32", [this.sessionId])
 
         this.allPending()
 
@@ -163,7 +161,7 @@ class FlashClient {
                     sz = pageSize - suboff
                 const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
                 assert(hd.length == 4 * 7)
-                const p = Packet.from(BL_CMD_PAGE_DATA, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
+                const p = Packet.from(BootloaderCmd.PageData, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
 
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
