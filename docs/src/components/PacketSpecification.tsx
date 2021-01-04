@@ -34,7 +34,7 @@ function MemberType(props: { service: jdspec.ServiceSpec, member: jdspec.PacketM
     const classes = useStyles();
 
     return <li className={classes.field}>
-        <FieldInput service={service} field={member} setArg={setArg} />
+        <FieldInput serviceSpecification={service} field={member} setArg={setArg} />
     </li>
 }
 
