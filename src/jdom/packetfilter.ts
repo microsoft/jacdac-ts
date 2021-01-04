@@ -21,7 +21,6 @@ export interface PacketFilterProps {
     before?: number,
     after?: number,
     grouping?: boolean,
-    commands?: boolean,
     pipes?: boolean,
     port?: number,
     collapseAck?: boolean,
@@ -59,7 +58,6 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let after = undefined;
     let devices: SMap<{ from: boolean; to: boolean; }> = {};
     let grouping = true;
-    let commands: boolean = undefined;
     let pipes = undefined;
     let port: number = undefined;
     let collapseAck: boolean = true;
@@ -156,9 +154,6 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "grouping":
                 grouping = parseBoolean(value);
                 break;
-            case "commands":
-                commands = parseBoolean(value);
-                break;
             case "pipes":
                 pipes = parseBoolean(value);
                 break;
@@ -187,7 +182,6 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         before,
         after,
         grouping,
-        commands,
         pipes,
         collapsePipes,
         port
@@ -227,7 +221,6 @@ export function compileFilter(props: PacketFilterProps) {
         pkts,
         before,
         after,
-        commands,
         pipes,
         port
     } = props;
@@ -237,8 +230,6 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(pkt => pkt.timestamp <= before)
     if (after !== undefined)
         filters.push(pkt => pkt.timestamp >= after)
-    if (commands !== undefined)
-        filters.push(pkt => pkt.isCommand === commands);
     if (announce !== undefined)
         filters.push(pkt => pkt.isAnnounce === announce)
     if (repeatedAnnounce !== undefined)

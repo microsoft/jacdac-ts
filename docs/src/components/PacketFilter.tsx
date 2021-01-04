@@ -115,9 +115,6 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
                     kind: "rw",
                     value: true
                 }, {
-                    cmd: "commands",
-                    value: true
-                }, {
                     cmd: "pipes",
                     kind: "pipe",
                     value: true
