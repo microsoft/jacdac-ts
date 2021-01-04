@@ -1,7 +1,7 @@
 import { SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 import { JDBus } from "./bus";
 import Packet from "./packet";
-import { isInstanceOf, serviceSpecificationFromName } from "./spec";
+import { isCommand, isInstanceOf, serviceSpecificationFromName } from "./spec";
 import { SMap } from "./utils";
 
 export type CompiledPacketFilter = (pkt: Packet) => boolean;
@@ -120,11 +120,19 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                     firmwares.add(fwid);
                 break;
             case "pkt":
+            case "reg":
+            case "register":
+            case "cmd":
+            case "command":
+            case "ev":
+            case "event":
                 if (!value) return;
                 // find register
                 const id = parseInt(value.replace(/^0?x/, ''), 16);
                 if (!isNaN(id))
                     pkts.add(id.toString(16));
+                // support name
+                pkts.add(value);
                 break;
             case "reg-get":
             case "get":
@@ -146,11 +154,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
             case "grouping":
                 grouping = parseBoolean(value);
                 break;
-            case "pipe":
             case "pipes":
                 pipes = parseBoolean(value);
                 break;
-            case "collapse-pipe":
             case "collapse-pipes":
                 collapsePipes = parseBoolean(value);
                 break;
@@ -223,7 +229,7 @@ export function compileFilter(props: PacketFilterProps) {
     if (before !== undefined)
         filters.push(pkt => pkt.timestamp <= before)
     if (after !== undefined)
-        filters.push(pkt => pkt.timestamp >= after);
+        filters.push(pkt => pkt.timestamp >= after)
     if (announce !== undefined)
         filters.push(pkt => pkt.isAnnounce === announce)
     if (repeatedAnnounce !== undefined)
@@ -256,7 +262,8 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(pkt => serviceClasses.some(serviceClass => isInstanceOf(pkt.service_class, serviceClass)));
     }
     if (pkts) {
-        filters.push(pkt => pkts.indexOf(pkt.decoded?.info.identifier.toString(16)) > -1);
+        filters.push(pkt => pkts.indexOf(pkt.decoded?.info.identifier.toString(16)) > -1
+            || pkts.indexOf(pkt.decoded?.info.name) > -1);
     }
     if (firmwareIdentifiers)
         filters.push(pkt => {

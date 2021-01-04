@@ -73,7 +73,7 @@ export class Packet {
 
         const p = new Packet()
         p._header = data.slice(0, JD_SERIAL_HEADER_SIZE)
-        p._data = data.slice(JD_SERIAL_HEADER_SIZE)
+        p._data = data.slice(JD_SERIAL_HEADER_SIZE, JD_SERIAL_HEADER_SIZE + p.size);
         if (timestamp !== undefined)
             p.timestamp = timestamp;
         return p

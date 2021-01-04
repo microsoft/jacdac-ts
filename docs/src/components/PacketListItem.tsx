@@ -9,6 +9,7 @@ import { META_PIPE, SRV_LOGGER } from '../../../src/jdom/constants';
 import { prettyDuration } from '../../../src/jdom/pretty';
 import { ellipseJoin } from '../../../src/jdom/utils';
 import { jdunpack } from '../../../src/jdom/pack';
+import { navigate } from 'gatsby';
 
 const useStyles = makeStyles(() =>
     createStyles({
@@ -36,6 +37,7 @@ export default function PacketListItem(props: {
         if (mobile)
             setDrawerType(DrawerType.None)
         setSelectedPacket(packet)
+        navigate('/tools/packet-inspector/')
     }
     const selected = packet === selectedPacket
     const logMessage = packet.service_class === SRV_LOGGER
