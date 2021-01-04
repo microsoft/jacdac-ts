@@ -21,6 +21,7 @@ export default class TraceView extends JDClient {
     private id = "v" + Math.random();
     private _maxFilteredLength = FILTERED_TRACE_MAX_ITEMS;
 
+    private _paused = false;
     private _trace: Trace;
     private _filter: string;
     private _packetFilter: PacketFilter = undefined;
@@ -42,6 +43,21 @@ export default class TraceView extends JDClient {
         this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, this.handleFilterUpdate));
 
         this.filter = filter;
+    }
+
+    /**
+     * No new packet is added to the filtered view
+     */
+    get paused() {
+        return this._paused;
+    }
+
+    set paused(v: boolean) {
+        if (v !== this._paused) {
+            this._paused = v;
+            this.refreshFilter();
+            this.emit(CHANGE);
+        }
     }
 
     get trace() {
@@ -123,7 +139,7 @@ export default class TraceView extends JDClient {
         this.trace.addPacket(pkt);
 
         // add packet to live list
-        if (this._packetFilter?.filter(pkt)) {
+        if (!this.paused && this._packetFilter?.filter(pkt)) {
             this.addFilteredPacket(pkt);
             // debounced notification of changes
             this.notifyPacketsChanged();
@@ -174,6 +190,7 @@ export default class TraceView extends JDClient {
                 }
             }
         }
+        // collapse pipes
         else if (this._packetFilter?.props.collapsePipes && pkt.isPipe && pkt.isCommand) {
             const pkts = this._filteredPackets
             const m = Math.min(pkts.length, TRACE_FILTER_HORIZON); // max scan 100 packets back

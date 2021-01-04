@@ -23,6 +23,8 @@ export interface PacketsProps {
     toggleRecording: () => void,
     tracing: boolean,
     toggleTracing: () => void,
+    paused: boolean,
+    setPaused: (p: boolean) => void,
     progress: number,
     timeRange: number[], // [start, end]
     toggleTimeRange: () => void,
@@ -44,6 +46,8 @@ const PacketsContext = createContext<PacketsProps>({
     toggleRecording: () => { },
     tracing: false,
     toggleTracing: () => { },
+    paused: false,
+    setPaused: (p) => { },
     progress: undefined,
     timeRange: undefined,
     toggleTimeRange: () => { },
@@ -69,6 +73,7 @@ export const PacketsProvider = ({ children }) => {
     const [trace, setTrace] = useState<Trace>(undefined);
     const [replayTrace, _setReplayTrace] = useState<Trace>(undefined);
     const [tracing, setTracing] = useState(false);
+    const [paused, _setPaused] = useState(false);
 
     const clearPackets = () => {
         setSelectedPacket(undefined)
@@ -116,6 +121,11 @@ export const PacketsProvider = ({ children }) => {
     }
     const setFilter = (f: string) => {
         _setFilter(f);
+    }
+    const setPaused = (p: boolean) => {
+        _setPaused(p);
+        if (view.current)
+            view.current.paused = p;
     }
     // views
     useEffect(() => {
@@ -165,6 +175,7 @@ export const PacketsProvider = ({ children }) => {
             replayTrace, setReplayTrace,
             recording, toggleRecording,
             tracing, toggleTracing,
+            paused, setPaused,
             progress,
             timeRange, setTimeRange, toggleTimeRange
         }}>
