@@ -22,7 +22,7 @@ import ComputerIcon from '@material-ui/icons/Computer';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import BlurLinearIcon from '@material-ui/icons/BlurLinear';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import MarkunreadMailboxIcon from '@material-ui/icons/MarkunreadMailbox';
+import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import NotificationsNoneIcon from '@material-ui/icons/NotificationsNone';
 import {
@@ -49,7 +49,7 @@ export default function KindIcon(props: { kind: string, className?: string }) {
         case SERVICE_NODE_NAME: icon = <BubbleChartIcon className={className} />; break;
         case PIPE_NODE_NAME: icon = <BlurLinearIcon className={className} />; break;
         case PIPE_REPORT_NODE_NAME: icon = <BlurLinearIcon className={className} />; break;
-        case CRC_ACK_NODE_NAME: icon = <MarkunreadMailboxIcon className={className} />; break;
+        case CRC_ACK_NODE_NAME: icon = <ConfirmationNumberIcon className={className} />; break;
         default: icon = <DeviceUnknownIcon className={className} />; break;
     }
     return icon;

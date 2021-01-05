@@ -7,9 +7,8 @@ import LogMessageIcon from "./LogMessageIcon";
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ClearIcon from '@material-ui/icons/Clear';
-import { META_ACK, META_ACK_FAILED, META_GET } from "../../../src/jdom/constants";
+import { CRC_ACK_NODE_NAME, META_ACK, META_ACK_FAILED, META_GET } from "../../../src/jdom/constants";
 import CodeIcon from '@material-ui/icons/Code';
-import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
 
 export default function PacketBadge(props: {
     packet: Packet, count?: number,
@@ -35,7 +34,7 @@ export default function PacketBadge(props: {
         {direction === "to" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
         {direction === "from" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
         {requiredAck === true && failedAck && <Tooltip title="no ack"><ClearIcon /></Tooltip>}
-        {requiredAck === true && receivedAck && <Tooltip title="ack received"><ConfirmationNumberIcon /></Tooltip>}
+        {requiredAck === true && receivedAck && <Tooltip title="ack received"><KindIcon kind={CRC_ACK_NODE_NAME} /></Tooltip>}
         {icon}
     </>
 
