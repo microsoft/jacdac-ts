@@ -30,8 +30,8 @@ export default function PacketBadge(props: {
                     : decoded?.info.kind} />;
 
     const badgeIcon = <>
-        {direction === "to" && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
-        {(direction === "from" || getPacket) && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
+        {(direction === "to" || getPacket) && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
+        {direction === "from" && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
         {requiredAck === true && failedAck && <Tooltip title="no ack"><ClearIcon /></Tooltip>}
         {requiredAck === true && receivedAck && <Tooltip title="ack received"><DoneIcon /></Tooltip>}
         {icon}

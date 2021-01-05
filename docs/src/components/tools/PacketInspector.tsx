@@ -47,7 +47,7 @@ export default function PacketInspector() {
             <PacketList packets={[ack]} />
         </>}
         {get && <>
-            <h3>GET received</h3>
+            <h3>GET request</h3>
             <PacketList packets={[get]} />
         </>}
         {pipePackets && <>

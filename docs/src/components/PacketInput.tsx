@@ -134,7 +134,7 @@ export default function PacketInput(props: {
     return fields.length < 1 ?
         <FieldInput field={fields[0]} value={args[0]} setArg={hasSet && setArg(0)} />
         : <List dense={true}>
-            {fields.map((field, fieldi) => <ListItem>
+            {fields.map((field, fieldi) => <ListItem key={fieldi}>
                 <FieldInput field={field} value={args[fieldi]} setArg={hasSet && setArg(fieldi)} />
             </ListItem>)}
         </List>

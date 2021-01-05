@@ -191,13 +191,12 @@ export default class TraceView extends JDClient {
             }
         }
         // report coming back
-        if (pkt.isRegisterGet && pkt.isReport) {
+        if (pkt.isRegisterGet && pkt.isReport && !pkt.meta[META_GET]) {
             const pkts = this.trace.packets;
             const did = pkt.deviceIdentifier;
             const si = pkt.serviceIndex;
             const rid = pkt.registerIdentifier;
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON); // max scan 100 packets back
-            console.log(`finding get cmd for ${pkt.key}`)
             for (let i = pkts.length - 1; i >= m; i--) {
                 const old = pkts[i];
                 if (old.isRegisterGet 
@@ -206,9 +205,12 @@ export default class TraceView extends JDClient {
                     && old.serviceIndex === si
                     && old.registerIdentifier === rid) {
                         // response from a get command
-                        old.meta[META_GET] = pkt;
-                        if (this._packetFilter?.props.collapseGets)
-                            filtered = false;
+                        pkt.meta[META_GET] = old;
+                        if (this._packetFilter?.props.collapseGets) {
+                            // remove old
+                            this._filteredPackets.splice(i, 1);
+                            // keep new
+                        }
                         break;
                     }
             }
