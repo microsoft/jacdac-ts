@@ -7,7 +7,7 @@ import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import useGridBreakpoints from './useGridBreakpoints';
 import DeviceCardHeader from './DeviceCardHeader';
 import { JDService } from '../../../src/jdom/service';
-import { DeviceLostAlert } from './DeviceLostAlert';
+import { DeviceLostAlert } from './alert/DeviceLostAlert';
 import { JDDevice } from '../../../src/jdom/device';
 import Alert from './ui/Alert';
 

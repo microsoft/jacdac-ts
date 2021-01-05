@@ -28,10 +28,12 @@ import useEventRaised from '../jacdac/useEventRaised';
 import { ellipseJoin } from '../../../src/jdom/utils';
 import { Link } from 'gatsby-theme-material-ui';
 import useDeviceName from './useDeviceName';
-import ConnectAlert from "./ConnectAlert"
+import ConnectAlert from "./alert/ConnectAlert"
 import { StyledTreeItem, StyledTreeViewItemProps, StyledTreeViewProps } from './ui/StyledTreeView';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import LaunchIcon from '@material-ui/icons/Launch';
+import AppContext, { DrawerType } from './AppContext'
+import { MOBILE_BREAKPOINT } from './layout';
 
 function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { device, checked, setChecked, checkboxes, serviceFilter, ...other } = props
@@ -90,7 +92,15 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         .filter(ev => !eventFilter || eventFilter(ev))
     const readingRegister = service.readingRegister;
     const reading = useRegisterHumanValue(readingRegister)
+    const theme = useTheme()
+    const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
+    const { setDrawerType } = useContext(AppContext);
 
+    const handleSpecClick = () => {
+        console.log(`spec click`, { mobile })
+        if (mobile)
+            setDrawerType(DrawerType.None)
+    }
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
         nodeId={id}
@@ -99,7 +109,7 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         kind={"service"}
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
-        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`}>
+        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`} onClick={handleSpecClick}>
             <LaunchIcon fontSize={"small"} />
         </Link>}
     >

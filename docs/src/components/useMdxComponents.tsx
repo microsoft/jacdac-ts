@@ -13,8 +13,7 @@ import UpdateDeviceList from "./UpdateDeviceList";
 import FlashButton from "./FlashButton";
 import Widget from "../jacdac/Widget";
 import ConnectButton from "../jacdac/ConnectButton"
-import PacketHeaderLayout from "./PacketHeaderLayout";
-import ConnectAlert from "./ConnectAlert";
+import ConnectAlert from "./alert/ConnectAlert";
 import TraceList from "./TraceList";
 import GithubRepositoryCard from "./GithubRepositoryCard";
 import GithubRepositoryList from "./GithubRespositoryList";

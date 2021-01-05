@@ -14,7 +14,7 @@ import ServiceEvents from './ServiceEvents';
 import { isCommand } from '../../../src/jdom/spec';
 import { CardActions, List, ListItem } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
-import { DeviceLostAlert } from './DeviceLostAlert';
+import { DeviceLostAlert } from './alert/DeviceLostAlert';
 import CommandInput from './CommandInput';
 import { DecodedPacket } from '../../../src/jdom/pretty';
 import DecodedPacketItem from './DecodedPacketItem';

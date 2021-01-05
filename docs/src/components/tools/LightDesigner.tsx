@@ -9,7 +9,7 @@ import { toHex } from '../../../../src/jdom/utils';
 import { lightEncode } from '../../../../src/jdom/light'
 import DeviceList from '../DeviceList';
 import { LightCmd, LightReg, SRV_LIGHT } from '../../../../src/jdom/constants';
-import ConnectAlert from '../ConnectAlert';
+import ConnectAlert from '../alert/ConnectAlert';
 import { serviceSpecificationFromClassIdentifier } from '../../../../src/jdom/spec';
 import Markdown from "../ui/Markdown"
 

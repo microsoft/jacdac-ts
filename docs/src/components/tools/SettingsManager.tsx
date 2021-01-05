@@ -4,7 +4,7 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context"
 import { SRV_SETTINGS } from "../../../../src/jdom/constants"
 import useChange from "../../jacdac/useChange"
 import { BusState } from "../../../../src/jdom/bus"
-import ConnectAlert from "../ConnectAlert"
+import ConnectAlert from "../alert/ConnectAlert"
 import Alert from "../ui/Alert"
 import SettingsCard from "../SettingsCard"
 

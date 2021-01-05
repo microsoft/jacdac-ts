@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import { SRV_SENSOR_AGGREGATOR, SRV_MODEL_RUNNER, ModelRunnerReg } from '../../../../src/jdom/constants';
 import { JDService } from '../../../../src/jdom/service';
 import ServiceList from '../ServiceList';
-import ConnectAlert from '../ConnectAlert'
+import ConnectAlert from '../alert/ConnectAlert'
 import { useDbJSON, useDbUint8Array } from '../useDb'
 import ImportButton from '../ImportButton';
 // tslint:disable-next-line: no-submodule-imports

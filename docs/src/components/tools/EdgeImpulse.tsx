@@ -27,7 +27,7 @@ import useChartPalette from '../useChartPalette';
 import { SensorAggregatorClient, SensorAggregatorConfig } from "../../../../src/jdom/sensoraggregatorclient";
 import { AlertTitle } from "@material-ui/lab";
 import { serviceName } from "../../../../src/jdom/pretty";
-import ConnectAlert from "../ConnectAlert";
+import ConnectAlert from "../alert/ConnectAlert";
 import ApiKeyAccordion from "../ApiKeyAccordion";
 
 const EDGE_IMPULSE_API_KEY = "edgeimpulseapikey"

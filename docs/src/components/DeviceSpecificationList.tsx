@@ -6,6 +6,7 @@ import InfoIcon from '@material-ui/icons/Info';
 import Markdown from "./ui/Markdown"
 import { IconButton } from "gatsby-theme-material-ui";
 import { arrayShuffle } from '../../../src/jdom/utils';
+import { MEDIUM_BREAKPOINT, MOBILE_BREAKPOINT } from './layout';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -33,8 +34,8 @@ export default function DeviceSpecificationList(props: {
     const { count, shuffle, requiredServiceClasses, company } = props;
     const theme = useTheme();
     const classes = useStyles();
-    const mobile = useMediaQuery(theme.breakpoints.down('xs'));
-    const medium = useMediaQuery(theme.breakpoints.down('md'));
+    const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
+    const medium = useMediaQuery(theme.breakpoints.down(MEDIUM_BREAKPOINT));
     const cols = mobile ? 1 : medium ? 3 : 4;
     const specs = useMemo(() => {
         let r = deviceSpecifications();

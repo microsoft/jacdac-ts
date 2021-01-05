@@ -7,7 +7,7 @@ import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../../src/jdom
 import useChange from "../../jacdac/useChange"
 import { JDService } from "../../../../src/jdom/service";
 import { JDRegister } from "../../../../src/jdom/register";
-import ConnectAlert from "../ConnectAlert";
+import ConnectAlert from "../alert/ConnectAlert";
 import { JDField } from "../../../../src/jdom/field";
 import { jdpack, jdpackEqual, jdunpack } from "../../../../src/jdom/pack";
 import DeviceName from "../DeviceName";

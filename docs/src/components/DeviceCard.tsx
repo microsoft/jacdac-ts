@@ -14,7 +14,7 @@ import { JDService } from '../../../src/jdom/service';
 import { CardActions, createStyles, Theme } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import { useRegisterStringValue } from '../jacdac/useRegisterValue';
-import { DeviceLostAlert } from './DeviceLostAlert';
+import { DeviceLostAlert } from './alert/DeviceLostAlert';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {

@@ -29,7 +29,7 @@ import FlashButton from "./FlashButton";
 import { createMuiTheme, responsiveFontSizes, createStyles, useTheme } from '@material-ui/core/styles';
 import AppContext, { DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
-import WebUSBAlert from "./WebUSBAlert";
+import WebUSBAlert from "./alert/WebUSBAlert";
 import useFirmwareBlobs from "./firmware/useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import DarkModeProvider from "./ui/DarkModeProvider";
@@ -52,7 +52,8 @@ export const DRAWER_WIDTH = 40;
 export const TOOLS_DRAWER_WIDTH = 22;
 export const MOBILE_DRAWER_WIDTH = 20;
 export const MOBILE_TOOLS_DRAWER_WIDTH = 18;
-export const MOBILE_BREAKPOINT = "md"
+export const MOBILE_BREAKPOINT = "sm"
+export const MEDIUM_BREAKPOINT = "md"
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {

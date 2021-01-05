@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from "@material-ui/core";
 import React, { useState } from "react";
 import TabPanel, { a11yProps } from '../ui/TabPanel';
-import ConnectAlert from "../ConnectAlert";
+import ConnectAlert from "../alert/ConnectAlert";
 import FirmwareCardGrid from "../firmware/FirmwareCardGrid";
 // tslint:disable-next-line: no-submodule-imports
 import UpdateDeviceList from "../UpdateDeviceList";
