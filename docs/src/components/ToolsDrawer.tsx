@@ -126,11 +126,6 @@ export default function ToolsDrawer() {
             icon: <SystemUpdateAltIcon />
         },
         {
-            text: "Packet inspector",
-            url: "/tools/packet-inspector",
-            icon: <HistoryIcon />
-        },
-        {
             text: "Service editor",
             url: "/tools/service-editor",
             icon: <KindIcon kind={"service"} />
