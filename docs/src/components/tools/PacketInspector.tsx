@@ -13,6 +13,8 @@ import Packet from "../../../../src/jdom/packet";
 import PacketBadge from "../PacketBadge";
 import PacketDataLayout from "../PacketDataLayout";
 import PacketList from "../PacketList"
+import { serviceSpecificationFromClassIdentifier } from "../../../../src/jdom/spec";
+import ServiceSpecificationCard from "../ServiceSpecificationCard";
 
 export default function PacketInspector() {
     const { selectedPacket: packet } = useContext(PacketsContext);
@@ -55,6 +57,7 @@ export default function PacketInspector() {
             <PacketList packets={pipePackets.filter(pp => !!pp)} />
         </>}
         {info && <><h3>Specification</h3>
+            <ServiceSpecificationCard serviceClass={packet.service_class} />
             <PacketSpecification
                 serviceClass={packet.service_class}
                 packetInfo={info}
