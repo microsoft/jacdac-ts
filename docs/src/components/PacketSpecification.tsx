@@ -68,7 +68,7 @@ export default function PacketSpecification(props: {
     const [args, setArgs] = useState<any[]>([])
     const classes = useStyles();
     if (!packetInfo)
-        return <Alert severity="error">{`Unknown register ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
+        return <Alert severity="error">{`Unknown member ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
     const { fields } = packetInfo;
     const isCmd = isCommand(packetInfo)
     const service = serviceSpecificationFromClassIdentifier(serviceClass)
