@@ -11,6 +11,7 @@ import CircularProgressWithLabel from "./ui/CircularProgressWithLabel"
 import DeviceCard from "./DeviceCard"
 import useGridBreakpoints from "./useGridBreakpoints"
 import { BusState } from "../../../src/jdom/bus"
+import AppContext from "./AppContext"
 
 function UpdateDeviceCard(props: {
     device: JDDevice,
@@ -21,20 +22,19 @@ function UpdateDeviceCard(props: {
 }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { device, firmware, blob, flashing, setFlashing } = props
+    const { setError } = useContext(AppContext)
     const [progress, setProgress] = useState(0)
 
     const handleFlashing = async () => {
         if (flashing) return;
-        console.log(`flash ${device}`)
         try {
             setProgress(0)
             setFlashing(true)
             const updateCandidates = [firmware]
             await flashFirmwareBlob(bus, blob, updateCandidates, prog => setProgress(prog))
         } catch (e) {
-            console.error(e)
+            setError(e);
         } finally {
-            console.log(`flashing ${device} done`)
             setFlashing(false)
         }
     }

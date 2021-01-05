@@ -210,7 +210,8 @@ class FlashClient {
     }
 
     public async flashFirmwareBlob(fw: FirmwareBlob, progress?: (perc: number) => void) {
-        const total = fw.pages.length + 12
+        const waitCycles = 15;
+        const total = fw.pages.length + waitCycles + 3
         let idx = 0
         const prog = () => {
             if (progress)
@@ -218,8 +219,8 @@ class FlashClient {
             idx++
         }
         try {
-            this.bus.freezeDevices();
             prog()
+            this.bus.freezeDevices();
             await this.startFlashAsync()
             prog()
             for (const page of fw.pages) {
@@ -234,16 +235,17 @@ class FlashClient {
                 await this.endFlashAsync()
                 prog()
                 // wait until we're out of bootloader mode; otherwise the subsequent scan will keep devices in BL mode
-                for (let i = 0; i < 10; ++i) {
+                for (let i = 0; i < waitCycles; ++i) {
                     await delay(150)
                     prog()
                 }
             } finally {
-                this.bus.unfreezeDevices();
                 // even if resetting failed, unregister event listeners
                 for (let d of this.classClients) {
                     d.stop()
                 }
+                // and unfreeze UI
+                this.bus.unfreezeDevices();
             }
         }
     }
