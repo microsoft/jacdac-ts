@@ -6,10 +6,10 @@ import KindIcon from "./KindIcon";
 import LogMessageIcon from "./LogMessageIcon";
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import DoneIcon from '@material-ui/icons/Done';
 import ClearIcon from '@material-ui/icons/Clear';
 import { META_ACK, META_ACK_FAILED, META_GET } from "../../../src/jdom/constants";
 import CodeIcon from '@material-ui/icons/Code';
+import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
 
 export default function PacketBadge(props: {
     packet: Packet, count?: number,
@@ -35,7 +35,7 @@ export default function PacketBadge(props: {
         {direction === "to" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
         {direction === "from" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
         {requiredAck === true && failedAck && <Tooltip title="no ack"><ClearIcon /></Tooltip>}
-        {requiredAck === true && receivedAck && <Tooltip title="ack received"><DoneIcon /></Tooltip>}
+        {requiredAck === true && receivedAck && <Tooltip title="ack received"><ConfirmationNumberIcon /></Tooltip>}
         {icon}
     </>
 
