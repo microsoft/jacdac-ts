@@ -12,6 +12,7 @@ import { SystemReg } from "../../jacdac-spec/dist/specconstants";
 export class JDService extends JDNode {
     private _registers: JDRegister[];
     private _events: JDEvent[];
+    private _reports: Packet[] = [];
     private _specification: jdspec.ServiceSpec = null;
     public registersUseAcks = false;
 
@@ -51,6 +52,14 @@ export class JDService extends JDNode {
 
     get parent(): JDNode {
         return this.device
+    }
+
+    report(identifier: number) {
+        return this._reports.find(r => r.registerIdentifier === identifier);
+    }
+
+    get reports() {
+        return this._reports.slice(0);
     }
 
     private _readingRegister: JDRegister;
@@ -96,43 +105,33 @@ export class JDService extends JDNode {
         return [...this.registers(), ... this.events];
     }
 
-    register(address: number | { address: number }): JDRegister {
-        let a = (typeof address == "number" ? address : address?.address);
-        if (a === undefined)
-            return undefined;
-        a |= 0
-
+    register(identifier: number): JDRegister {
         // cache known registers
         this.registers()
-        let register = this._registers.find(reg => reg.address === a);
-        // we may not have a spec
+        let register = this._registers.find(reg => reg.address === identifier);
+        // we may not have a spec.
         if (!register) {
             const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === a)) {
-                this.log(`debug`, `attempting to access register 0x${a.toString(16)}`)
+            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === identifier)) {
+                this.log(`debug`, `attempting to access register 0x${identifier.toString(16)}`)
                 return undefined;
             }
-            this._registers.push(register = new JDRegister(this, a));
+            this._registers.push(register = new JDRegister(this, identifier));
         }
         return register;
     }
 
-    event(address: number | { address: number }): JDEvent {
-        let a = (typeof address == "number" ? address : address?.address);
-        if (a === undefined)
-            return undefined;
-        a |= 0
-
+    event(identifier: number): JDEvent {
         if (!this._events)
             this._events = [];
-        let event = this._events.find(ev => ev.address === a);
+        let event = this._events.find(ev => ev.address === identifier);
         if (!event) {
             const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === a)) {
-                this.log(`warn`, `attempting to access event 0x${a.toString(16)}`)
+            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === identifier)) {
+                this.log(`warn`, `attempting to access event 0x${identifier.toString(16)}`)
                 return undefined;
             }
-            this._events.push(event = new JDEvent(this, a));
+            this._events.push(event = new JDEvent(this, identifier));
         }
         return event;
     }
@@ -183,16 +182,18 @@ export class JDService extends JDNode {
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport) {
             this.emit(REPORT_RECEIVE, pkt)
-            if (pkt.serviceCommand & CMD_GET_REG) {
-                const address = pkt.serviceCommand & CMD_REG_MASK
-                const reg = this.register({ address })
+            if (pkt.isRegisterGet) {
+                const id = pkt.registerIdentifier;
+                const reg = this.register(id)
                 if (reg)
                     reg.processReport(pkt);
             } else if (pkt.isEvent) {
-                const address = pkt.intData
-                const ev = this.event(address)
+                const id = pkt.intData
+                const ev = this.event(id)
                 if (ev)
                     ev.processEvent(pkt);
+            } else if (pkt.isCommand) {
+                // this is a report...
             }
         }
     }
