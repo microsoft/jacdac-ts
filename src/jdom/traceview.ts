@@ -199,20 +199,20 @@ export default class TraceView extends JDClient {
             const m = Math.max(0, pkts.length - TRACE_FILTER_HORIZON); // max scan 100 packets back
             for (let i = pkts.length - 1; i >= m; i--) {
                 const old = pkts[i];
-                if (old.isRegisterGet 
+                if (old.isRegisterGet
                     && old.isCommand
                     && old.deviceIdentifier === did
                     && old.serviceIndex === si
                     && old.registerIdentifier === rid) {
-                        // response from a get command
-                        pkt.meta[META_GET] = old;
-                        if (this._packetFilter?.props.collapseGets) {
-                            // remove old
-                            this._filteredPackets.splice(i, 1);
-                            // keep new
-                        }
-                        break;
+                    // response from a get command
+                    pkt.meta[META_GET] = old;
+                    if (this._packetFilter?.props.collapseGets) {
+                        // remove old
+                        this._filteredPackets.splice(i, 1);
+                        // keep new
                     }
+                    break;
+                }
             }
         }
         // collapse pipes
