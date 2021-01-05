@@ -168,7 +168,6 @@ export interface LayoutProps {
 }
 
 export default function Layout(props: LayoutProps) {
-  console.log({ props })
   return <DarkModeProvider>
     <LayoutWithDarkMode {...props} />
   </DarkModeProvider>
