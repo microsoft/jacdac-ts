@@ -12,11 +12,12 @@ export default function ServiceSpecificationCard(props: { serviceClass?: number,
     if (!spec && serviceClass !== undefined)
         spec = serviceSpecificationFromClassIdentifier(serviceClass)
     const sc = spec?.classIdentifier || serviceClass;
+    const srv = spec?.shortId || sc?.toString(16);
 
     return <Card>
         <CardHeader
             title={spec?.name || "???"}
-            subheader={<IDChip id={sc} filter={`srv:${spec?.shortId || sc.toString(16)}`} />}
+            subheader={srv && <IDChip id={sc} filter={`srv:${srv}`} />}
         />
         <CardContent>
             {spec?.notes["short"] &&
