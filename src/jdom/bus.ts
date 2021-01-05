@@ -45,7 +45,7 @@ import {
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
-import { FirmwareBlob, scanFirmwares } from "./flashing";
+import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flashing";
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
 import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
@@ -111,6 +111,7 @@ export class JDBus extends JDNode {
     private _startTime: number;
     private _gcInterval: any;
     private _announceInterval: any;
+    private _safeBootInterval: any;
     private _refreshRegistersInterval: any;
     private _minLoggerPriority = LoggerPriority.Log;
     private _firmwareBlobs: FirmwareBlob[];
@@ -160,6 +161,7 @@ export class JDBus extends JDNode {
             clearInterval(this._announceInterval);
             this._announceInterval = undefined;
         }
+        this.safeBoot = false;
         if (this._refreshRegistersInterval) {
             clearInterval(this._refreshRegistersInterval)
             this._refreshRegistersInterval = undefined;
@@ -167,6 +169,22 @@ export class JDBus extends JDNode {
         if (this._gcInterval) {
             clearInterval(this._gcInterval)
             this._gcInterval = undefined;
+        }
+    }
+
+    get safeBoot() {
+        return !!this._safeBootInterval;
+    }
+
+    set safeBoot(enabled: boolean) {
+        if (enabled && !this._safeBootInterval) {
+            this._safeBootInterval = setInterval(() => sendStayInBootloaderCommand(this), 50);
+            this.emit(CHANGE);
+        }
+        else if (!enabled && this._safeBootInterval) {
+            clearInterval(this._safeBootInterval);
+            this._safeBootInterval = undefined;
+            this.emit(CHANGE);
         }
     }
 

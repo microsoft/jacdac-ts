@@ -472,3 +472,12 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
     log(`flashing ${blob.name}`)
     await flashers[0].flashFirmwareBlob(blob, progress)
 }
+
+/**
+ * This command can be sent every 50ms to keep devices in bootloader mode
+ * @param bus 
+ */
+export async function sendStayInBootloaderCommand(bus: JDBus) {
+    const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
+    await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+}
