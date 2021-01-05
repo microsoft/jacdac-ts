@@ -695,7 +695,7 @@ export class JDBus extends JDNode {
                 const age = this.timestamp - register.lastGetTimestamp;
                 const backoff = register.lastGetAttempts;
                 const expiration = Math.min(REGISTER_POLL_REPORT_MAX_INTERVAL, REGISTER_POLL_REPORT_INTERVAL * (1 << backoff))
-                if (!register.data || age > expiration) {
+                if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
                     await register.sendGetAsync();
                 }
