@@ -480,6 +480,6 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
  * @param bus 
  */
 export async function sendStayInBootloaderCommand(bus: JDBus) {
-    const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
+    const bl_announce = Packet.onlyHeader(BootloaderCmd.Info)
     await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
 }

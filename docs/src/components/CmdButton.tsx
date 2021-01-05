@@ -9,6 +9,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/jdom/utils";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import useAnalytics from "./hooks/useAnalytics";
+import useMounted from "./hooks/useMounted";
 
 const ACK_RESET_DELAY = 1000
 const ERROR_RESET_DELAY = 2000
@@ -43,7 +44,7 @@ export default function CmdButton(props: {
     trackName?: string,
     trackProperties?: { [key: string]: any },
 }) {
-    const { onClick, children, icon, title, disabled, disableReset, autoRun, 
+    const { onClick, children, icon, title, disabled, disableReset, autoRun,
         trackName, trackProperties, ...others } = props
     const { setError: setAppError } = useContext(AppContext)
     const classes = useStyles()
@@ -51,6 +52,7 @@ export default function CmdButton(props: {
     const [ack, setAck] = useState(false)
     const [error, setError] = useState(undefined)
     const { track } = useAnalytics()
+    const mounted = useMounted();
 
     const _disabled = disabled || working;
 
@@ -64,21 +66,30 @@ export default function CmdButton(props: {
             setAck(false)
             setWorking(true)
             await onClick()
+            if (!mounted())
+                return;
             setAck(true)
             if (!disableReset) {
                 await delay(ACK_RESET_DELAY)
+                if (!mounted) return;
                 setAck(false)
             }
         }
         catch (e) {
+            if (!mounted())
+                return;
             setAppError(e)
             setError(e)
             if (!disableReset) {
                 await delay(ERROR_RESET_DELAY)
+                if (!mounted())
+                    return;
                 setError(undefined)
             }
         }
         finally {
+            if (!mounted())
+                return;
             setWorking(false)
         }
     }

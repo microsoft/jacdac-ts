@@ -290,12 +290,12 @@ export class JDDevice extends JDNode {
     }
 
     identify() {
-        return this.service(SRV_CTRL)
+        return this.service(0)
             ?.sendCmdAsync(ControlCmd.Identify, true)
     }
 
     reset() {
-        return this.service(SRV_CTRL)
+        return this.service(0)
             ?.sendCmdAsync(ControlCmd.Reset)
     }
 
