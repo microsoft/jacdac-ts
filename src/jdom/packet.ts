@@ -173,7 +173,7 @@ export class Packet {
     }
 
     get registerIdentifier() {
-        if (!this.isRegisterGet || !this.isRegisterSet)
+        if (!this.isRegisterGet && !this.isRegisterSet)
             return undefined;
         return this.serviceCommand & CMD_REG_MASK;
     }
