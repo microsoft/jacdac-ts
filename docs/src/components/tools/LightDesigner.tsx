@@ -66,21 +66,12 @@ export default function LightDesigner(props: { showHelp?: boolean }) {
             showMemberName={true}
             commandIdentifier={LightCmd.Run}
             commandArgs={encoded && [encoded]}
-        />
-        <DeviceList
-            serviceClass={SRV_LIGHT}
-            showMemberName={true}
-            registerIdentifier={LightReg.NumPixels}
-        />
-        <DeviceList
-            serviceClass={SRV_LIGHT}
-            showMemberName={true}
-            registerIdentifier={LightReg.Brightness}
-        />
-        <DeviceList
-            serviceClass={SRV_LIGHT}
-            showMemberName={true}
-            registerIdentifier={LightReg.MaxPower}
+            registerIdentifiers={[
+                LightReg.NumPixels,
+                LightReg.LightType,
+                LightReg.Brightness,
+                LightReg.ActualBrightness,
+                LightReg.MaxPower]}
         />
         {showHelp && <Markdown source={spec.notes["long"]} />}
     </>);

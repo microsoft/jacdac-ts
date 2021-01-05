@@ -40,23 +40,23 @@ const useStyles = makeStyles({
 export default function ServiceCard(props: {
     service: JDService,
     linkToService?: boolean,
-    registerIdentifier?: number,
-    showDeviceName?: boolean,
     showServiceName?: boolean,
     showMemberName?: boolean,
-    eventIdentifier?: number,
+    registerIdentifiers?: number[],
+    eventIdentifiers?: number[],
     commandIdentifier?: number,
     commandArgs?: any[]
 }) {
-    const { service, linkToService, registerIdentifier, showDeviceName,
-        showServiceName, showMemberName, eventIdentifier, commandIdentifier, commandArgs } = props;
+    const { service, linkToService, registerIdentifiers,
+        showServiceName, showMemberName, eventIdentifiers,
+        commandIdentifier, commandArgs } = props;
     const { specification } = service;
     const [reports, setReports] = useState<DecodedPacket[]>(undefined);
     const classes = useStyles();
 
     const hasCommandIdentifier = commandIdentifier !== undefined;
-    const hasRegisterIdentifier = registerIdentifier !== undefined;
-    const hasEventIdentifier = eventIdentifier !== undefined;
+    const hasRegisterIdentifiers = !!registerIdentifiers?.length;
+    const hasEventIdentifiers = !!eventIdentifiers?.length;
 
     const command = commandIdentifier !== undefined
         && specification?.packets.find(pkt => isCommand(pkt) && pkt.identifier === commandIdentifier)
@@ -69,13 +69,13 @@ export default function ServiceCard(props: {
                     <Link to={linkToService && service.specification ? `/services/${service.specification.shortId}/` : "/clients/web/jdom/service"}>{service.name}</Link>
                 </Typography>}
                 <Typography variant="body2" component="div">
-                    {(hasRegisterIdentifier || (!hasEventIdentifier && !hasCommandIdentifier)) && <ServiceRegisters key={'reg' + service.id} service={service} showRegisterName={showMemberName} registerIdentifier={registerIdentifier} />}
-                    {((!hasRegisterIdentifier && !hasCommandIdentifier) || hasEventIdentifier) && <ServiceEvents key={'ev' + service.id} service={service} showEventName={showMemberName} eventIdentifier={eventIdentifier} />}
+                    {hasRegisterIdentifiers && <ServiceRegisters key={'reg' + service.id} service={service} showRegisterName={showMemberName} registerIdentifiers={registerIdentifiers} />}
+                    {hasEventIdentifiers && <ServiceEvents key={'ev' + service.id} service={service} showEventName={showMemberName} eventIdentifiers={eventIdentifiers} />}
                     {!!reports?.length && <List key={"reports"} dense>
                         {reports?.map((report, ri) => <ListItem key={`report${ri}`} ><DecodedPacketItem pkt={report} /></ListItem>)}
                     </List>}
                 </Typography>
-                {!hasCommandIdentifier && !hasRegisterIdentifier && !hasEventIdentifier && <ServiceSpecificationStatusAlert specification={specification} />}
+                {!hasCommandIdentifier && !hasRegisterIdentifiers && !hasEventIdentifiers && <ServiceSpecificationStatusAlert specification={specification} />}
                 <DeviceLostAlert device={service?.device} />
             </CardContent>
             <CardActions>

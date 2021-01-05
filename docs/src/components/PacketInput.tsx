@@ -2,15 +2,16 @@
 import Alert from "./ui/Alert";
 import React, { useContext, useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { List, ListItem } from "@material-ui/core";
+import { CircularProgress, Grid, List, ListItem, Slider } from "@material-ui/core";
 import { JDRegister } from "../../../src/jdom/register";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyUnit, valueToFlags } from "../../../src/jdom/pretty";
-import { memberValueToString, tryParseMemberValue } from "../../../src/jdom/spec";
+import { memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../src/jdom/spec";
 import IDChip from "./IDChip";
 import { JDField } from "../../../src/jdom/field";
 import { REPORT_UPDATE } from "../../../src/jdom/constants";
 import AppContext from "./AppContext";
+import { roundWithPrecision } from "../../../src/jdom/utils";
 
 function isSet(field: any) {
     return field !== null && field !== undefined
@@ -49,7 +50,6 @@ function FieldInput(props: {
         const newValue = ev.target.value
         setTextValue(newValue)
         const r = tryParseMemberValue(newValue, specification)
-        console.log({ r })
         if (r.value !== undefined)
             setArg(r.value)
         setError(r.error)
@@ -58,7 +58,21 @@ function FieldInput(props: {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
         setArg(!!v)
     }
+    const handleSliderChange = async (event: any, newValue: number | number[]) => {
+        const scaled = scaleFloatToInt((newValue as number), specification);
+        setArg(scaled);
+    }
 
+    const valueLabelFormat = (value: number) => {
+        // avoid super long floats
+        return roundWithPrecision(value, 2);
+    }
+
+    // value hasn't been loaded yet
+    if (value === undefined)
+        return <CircularProgress disableShrink variant="indeterminate" size="1rem" />
+
+    //
     if (specification.type === 'pipe') {
         return <>pipe <code>{specification.name}</code></>
     }
@@ -76,6 +90,16 @@ function FieldInput(props: {
             {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n}
                 <IDChip id={enumInfo.members[n]} /></MenuItem>)}
         </Select>
+    }
+    else if (specification.unit === "/") {
+        return <Slider
+            disabled={disabled}
+            value={scaleIntToFloat(value, specification)}
+            valueLabelFormat={valueLabelFormat}
+            onChange={handleSliderChange}
+            min={0} max={1} step={0.01}
+            valueLabelDisplay="auto"
+        />
     }
     else // numbers or string
         return <TextField
@@ -100,7 +124,6 @@ export default function PacketInput(props: {
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
-        console.log(`report updated`)
         const vs = register.unpackedValue
         if (vs !== undefined)
             setArgs(vs);
@@ -120,7 +143,7 @@ export default function PacketInput(props: {
     }
 
     if (!specification)
-        return <Alert severity="error">{`Unknown register ${register.service}:${register.address}`}</Alert>
+        return <Alert severity="error">{`Unknown member ${register.service}:${register.address}`}</Alert>
     const hasSet = specification.kind === "rw";
     const setArg = (index: number) => (arg: any) => {
         const c = args.slice(0)
@@ -131,11 +154,9 @@ export default function PacketInput(props: {
     if (!fields.length)
         return null; // nothing to see here
 
-    return fields.length < 1 ?
-        <FieldInput field={fields[0]} value={args[0]} setArg={hasSet && setArg(0)} />
-        : <List dense={true}>
-            {fields.map((field, fieldi) => <ListItem key={fieldi}>
-                <FieldInput field={field} value={args[fieldi]} setArg={hasSet && setArg(fieldi)} />
-            </ListItem>)}
-        </List>
+    return <Grid container spacing={1}>
+        {fields.map((field, fieldi) => <Grid item key={fieldi} xs={12}>
+            <FieldInput field={field} value={args[fieldi]} setArg={hasSet && setArg(fieldi)} />
+        </Grid>)}
+    </Grid>
 }

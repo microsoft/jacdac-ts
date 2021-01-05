@@ -1,21 +1,22 @@
-import React, { useEffect, useContext } from "react";
+import React, {  } from "react";
 import { JDService } from "../../../src/jdom/service";
 import { isEvent } from "../../../src/jdom/spec";
 import EventInput from "./EventInput";
+import AutoGrid from "./ui/AutoGrid";
 
 export default function ServiceEvents(props: {
     service: JDService,
-    eventIdentifier?: number,
+    eventIdentifiers?: number[],
     showEventName?: boolean
 }) {
-    const { service, eventIdentifier, showEventName } = props;
+    const { service, eventIdentifiers, showEventName } = props;
     const spec = service.specification;
     const packets = spec.packets;
     let events = packets.filter(isEvent);
-    if (eventIdentifier !== undefined)
-        events = events.filter(event => event.identifier === eventIdentifier)
+    if (eventIdentifiers !== undefined)
+        events = events.filter(event => eventIdentifiers.indexOf(event.identifier) > -1)
 
-    return <React.Fragment>
+    return <AutoGrid spacing={1}>
         {events.map(event => <EventInput key={`event${event.identifier}`} event={service.event(event.identifier)} showName={showEventName} />)}
-    </React.Fragment>
+    </AutoGrid>
 }

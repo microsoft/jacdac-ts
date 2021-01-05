@@ -217,7 +217,7 @@ export function clampToStorage(v: number, tp: jdspec.StorageType) {
 }
 
 export function memberValueToString(value: any, info: jdspec.PacketMember): string {
-    if (value === undefined)
+    if (value === undefined || value === null)
         return "";
     switch (info.type) {
         case "bytes": return toHex(value);

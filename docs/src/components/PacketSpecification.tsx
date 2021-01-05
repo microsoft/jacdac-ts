@@ -92,8 +92,8 @@ export default function PacketSpecification(props: {
         {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={hasArgs && setArg} />}
         {!!reportInfo && <MembersType service={service} members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType service={service} members={pipeReportInfo.fields} title="Pipe report" />}
-        {showDevices && isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
-        {showDevices && isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} registerIdentifier={packetInfo.identifier} />}
-        {showDevices && isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} showDeviceName={true} eventIdentifier={packetInfo.identifier} />}
+        {showDevices && isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
+        {showDevices && isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} registerIdentifiers={[packetInfo.identifier]} />}
+        {showDevices && isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} eventIdentifiers={[packetInfo.identifier]} />}
     </div>
 }

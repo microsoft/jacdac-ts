@@ -15,19 +15,18 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function DeviceList(props: {
     serviceClass?: number,
     linkToService?: boolean,
-    registerIdentifier?: number,
-    eventIdentifier?: number,
+    registerIdentifiers?: number[],
+    eventIdentifiers?: number[],
     commandIdentifier?: number,
     commandArgs?: any[],
-    showDeviceName?: boolean,
     showServiceName?: boolean,
     showMemberName?: boolean,
     showTemperature?: boolean,
     showFirmware?: boolean
 }) {
-    const { serviceClass, linkToService, registerIdentifier,
-        showDeviceName, showServiceName, showMemberName, showFirmware, showTemperature,
-        eventIdentifier, commandIdentifier, commandArgs } = props
+    const { serviceClass, linkToService, registerIdentifiers,
+        showServiceName, showMemberName, showFirmware, showTemperature,
+        eventIdentifiers, commandIdentifier, commandArgs } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const services = useChange(bus, n => n.services({ serviceClass }))
@@ -53,11 +52,10 @@ export default function DeviceList(props: {
                 return <Grid key={service.id} item {...gridBreakpoints}>
                     <ServiceCard service={service}
                         linkToService={linkToService}
-                        showDeviceName={showDeviceName}
                         showServiceName={showServiceName}
                         showMemberName={showMemberName}
-                        registerIdentifier={registerIdentifier}
-                        eventIdentifier={eventIdentifier}
+                        registerIdentifiers={registerIdentifiers}
+                        eventIdentifiers={eventIdentifiers}
                         commandIdentifier={commandIdentifier}
                         commandArgs={commandArgs}
                     />
