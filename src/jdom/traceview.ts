@@ -55,8 +55,10 @@ export default class TraceView extends JDClient {
     set paused(v: boolean) {
         if (v !== this._paused) {
             this._paused = v;
-            this.refreshFilter();
-            this.emit(CHANGE);
+            if (!this._paused) {
+                this.refreshFilter();
+                this.emit(CHANGE);
+            }
         }
     }
 
