@@ -27,14 +27,17 @@ function UpdateDeviceCard(props: {
 
     const handleFlashing = async () => {
         if (flashing) return;
+        const safeBoot = bus.safeBoot;
         try {
             setProgress(0)
             setFlashing(true)
+            bus.safeBoot = false; // don't poud messages while flashing
             const updateCandidates = [firmware]
             await flashFirmwareBlob(bus, blob, updateCandidates, prog => setProgress(prog))
         } catch (e) {
             setError(e);
         } finally {
+            bus.safeBoot = safeBoot;
             setFlashing(false)
         }
     }
