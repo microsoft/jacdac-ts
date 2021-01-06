@@ -137,12 +137,12 @@ export default function Toc(props: { pagePath: string }) {
       path: "/devices/",
       order: 3
     }, {
-      name: "Clients",
-      path: "/clients/",
-      order: 4
-    }, {
       name: "Tools",
       path: "/tools/",
+      order: 4
+    }, {
+      name: "Clients",
+      path: "/clients/",
       order: 5
     }, {
       name: "Traces",
@@ -175,7 +175,7 @@ export default function Toc(props: { pagePath: string }) {
         path: `/devices/${identifierToUrlPath(node.id)}/`
       }
     }).forEach(node => toc.push(node));
-    
+
     const { tree } = treeifyToc(toc)
     return tree;
   }, []);
@@ -185,7 +185,7 @@ export default function Toc(props: { pagePath: string }) {
     const { path, children, name } = entry;
     const selected = pagePath === path;
     const sub = level === 1 || (!!children && !!children.length);
-  
+
     return <>
       <ListItem button
         selected={selected}
@@ -200,7 +200,7 @@ export default function Toc(props: { pagePath: string }) {
       </Box>}
     </>
   }
-  
+
   return <List dense className={classes.root}>
     {tree.map(entry => <TocListItem key={'tocitem' + entry.path} entry={entry} level={0} />)}
   </List>
