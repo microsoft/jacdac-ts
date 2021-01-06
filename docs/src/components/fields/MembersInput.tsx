@@ -14,9 +14,13 @@ export default function MembersInput(props: {
         c[index] = value;
         setValues(c)
     }
+
     return <Grid container spacing={1}>
-        {specifications.map((field, fieldi) => <Grid item key={fieldi} xs={12}>
-            <MemberInput serviceSpecification={serviceSpecification} specification={field} value={values?.[fieldi]} setValue={values && setValues && setValue(fieldi)} />
-        </Grid>)}
+        {specifications.map((field, fieldi) => {
+            const value = values?.[fieldi];
+            return <Grid item key={fieldi} xs={12}>
+                <MemberInput serviceSpecification={serviceSpecification} specification={field} value={value} setValue={values && setValues && setValue(fieldi)} />
+            </Grid>;
+        })}
     </Grid>
 }

@@ -9,20 +9,24 @@ export default function ServiceRegisters(props: {
     service: JDService,
     registerIdentifiers?: number[],
     filter?: (spec: jdspec.PacketInfo) => boolean,
-    showRegisterName?: boolean
+    showRegisterName?: boolean,
+    hideMissingValues?: boolean
 }) {
-    const { service, registerIdentifiers, filter, showRegisterName } = props;
+    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues } = props;
     const specification = useChange(service, spec => spec.specification);
     const packets = specification?.packets;
     const ids = registerIdentifiers
         || packets
             ?.filter(pkt => isRegister(pkt) && (!filter || filter(pkt)))
             ?.map(pkt => pkt.identifier);
-    const registers = ids?.map(id => service.register(id));
+    const registers = ids?.map(id => service.register(id))
+        ?.filter(reg => !!reg)
 
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
-            showRegisterName={showRegisterName} />)}
+            showRegisterName={showRegisterName}
+            hideMissingValues={hideMissingValues}
+        />)}
     </AutoGrid>
 }

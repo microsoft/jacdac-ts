@@ -1,6 +1,6 @@
 import { Card, CardContent, Grid } from "@material-ui/core";
 import React, { useContext } from "react";
-import { BaseReg, SRV_CTRL, SRV_LOGGER } from "../../../src/jdom/constants";
+import { BaseReg, SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../src/jdom/constants";
 import { JDDevice } from "../../../src/jdom/device";
 import { JDService } from "../../../src/jdom/service";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
@@ -12,10 +12,14 @@ import ServiceRegisters from "./ServiceRegisters"
 function DashboardService(props: { service: JDService }) {
     const { service } = props;
 
+    const filter = pkt => pkt.identifier !== SystemReg.StatusCode
+        && pkt.identifier !== SystemReg.StreamingPreferredInterval
+        && pkt.identifier !== SystemReg.StreamingInterval;
     return <ServiceRegisters
         service={service}
         showRegisterName={true}
-        filter={pkt => pkt.identifier !== BaseReg.StatusCode}
+        filter={filter}
+        hideMissingValues={true}
     />
 }
 

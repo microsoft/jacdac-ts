@@ -8,11 +8,15 @@ import { REPORT_UPDATE } from "../../../src/jdom/constants";
 import AppContext from "./AppContext";
 import MembersInput from "./fields/MembersInput";
 
-function FieldsInput(props: {
-    register: JDRegister
+export default function RegisterInput(props: {
+    register: JDRegister,
+    showDeviceName?: boolean,
+    showRegisterName?: boolean,
+    hideMissingValues?: boolean
 }) {
-    const { register } = props;
-    const { specification, service } = register;
+    const { register, showRegisterName, showDeviceName, hideMissingValues } = props;
+    const { service, specification } = register;
+    const { device } = service;
     const { fields } = register;
     const { setError: setAppError } = useContext(AppContext)
     const [working, setWorking] = useState(false);
@@ -44,29 +48,20 @@ function FieldsInput(props: {
     if (!fields.length)
         return null; // nothing to see here
 
-    return <MembersInput
-        serviceSpecification={service.specification}
-        specifications={fields.map(f => f.specification)}
-        values={args}
-        setValues={hasSet && sendArgs} />
-}
-
-export default function RegisterInput(props: {
-    register: JDRegister,
-    showDeviceName?: boolean,
-    showRegisterName?: boolean
-}) {
-    const { register, showRegisterName, showDeviceName } = props;
-    const { service, specification } = register;
-    const { device } = service;
+    if (hideMissingValues && !register.data)
+        return null;
 
     return <>
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={device} />/
-        </Typography>}
+    </Typography>}
         {showRegisterName && specification && <Typography variant="caption" key="registername">
             {specification.name}
         </Typography>}
-        <FieldsInput register={register} />
+        <MembersInput
+            serviceSpecification={service.specification}
+            specifications={fields.map(f => f.specification)}
+            values={args}
+            setValues={hasSet && sendArgs} />
     </>
 }

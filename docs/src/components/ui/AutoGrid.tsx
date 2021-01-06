@@ -1,7 +1,7 @@
 import { Grid, GridSpacing } from "@material-ui/core";
 import React from "react";
 
-export default function AutoList(props: { children: JSX.Element | JSX.Element[], spacing?: GridSpacing }) {
+export default function AutoGrid(props: { children: JSX.Element | JSX.Element[], spacing?: GridSpacing }) {
     const { children, spacing } = props;
     if (children && Array.isArray(children))
         return <Grid container spacing={spacing}>
