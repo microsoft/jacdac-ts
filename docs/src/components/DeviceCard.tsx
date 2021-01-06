@@ -50,13 +50,13 @@ export default function DeviceCard(props: {
     children?: any,
     action?: JSX.Element | JSX.Element[],
     content?: JSX.Element | JSX.Element[],
-    onServiceClick?: (service: JDService) => void,
+    showServices?: boolean,
     showTemperature?: boolean,
     showFirmware?: boolean,
     showDescription?: boolean
 }) {
-    const { device, children, action, content, onServiceClick,
-        showDescription, showTemperature, showFirmware } = props;
+    const { device, children, action, content,
+        showDescription, showTemperature, showFirmware, showServices } = props;
     const classes = useStyles();
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL && service.serviceClass != SRV_LOGGER));
@@ -71,7 +71,8 @@ export default function DeviceCard(props: {
                     {content}
                 </CardContent>}
             <CardActions>
-                {action || services.map(service => <ServiceButton key={service.id} service={service} onClick={() => (onServiceClick || navigateToService)(service)} />)}
+                {action}
+                {showServices && services.map(service => <ServiceButton key={service.id} service={service} onClick={() => navigateToService(service)} />)}
             </CardActions>
             {children}
         </Card>
