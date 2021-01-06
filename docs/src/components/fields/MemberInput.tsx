@@ -12,9 +12,10 @@ export default function MemberInput(props: {
     specification: jdspec.PacketMember,
     serviceSpecification: jdspec.ServiceSpec,
     value: any,
-    setValue?: (v: any) => void
+    setValue?: (v: any) => void,
+    showDataType?: boolean
 }) {
-    const { specification, serviceSpecification, value, setValue } = props;
+    const { specification, serviceSpecification, value, setValue, showDataType } = props;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const [error, setError] = useState("")
@@ -22,7 +23,7 @@ export default function MemberInput(props: {
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? "" : specification.name
     const label = name
-    const helperText = error || prettyMemberUnit(specification)
+    const helperText = error || prettyMemberUnit(specification, showDataType)
 
     // update coming from device
     useEffect(() => {

@@ -6,9 +6,10 @@ export default function MembersInput(props: {
     serviceSpecification: jdspec.ServiceSpec,
     specifications: jdspec.PacketMember[],
     values?: any[],
-    setValues?: (values: any[]) => void
+    setValues?: (values: any[]) => void,
+    showDataType?: boolean
 }) {
-    const { serviceSpecification, specifications, values, setValues } = props;
+    const { serviceSpecification, specifications, values, setValues, showDataType } = props;
     const setValue = (index: number) => (value: any) => {
         const c = values.slice(0)
         c[index] = value;
@@ -19,7 +20,9 @@ export default function MembersInput(props: {
         {specifications.map((field, fieldi) => {
             const value = values?.[fieldi];
             return <Grid item key={fieldi} xs={12}>
-                <MemberInput serviceSpecification={serviceSpecification} specification={field} value={value} setValue={values && setValues && setValue(fieldi)} />
+                <MemberInput serviceSpecification={serviceSpecification} specification={field}
+                    showDataType={showDataType}
+                    value={value} setValue={values && setValues && setValue(fieldi)} />
             </Grid>;
         })}
     </Grid>

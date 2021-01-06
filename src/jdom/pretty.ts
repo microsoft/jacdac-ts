@@ -44,13 +44,15 @@ export function prettyUnit(u: jdspec.Unit): string {
     }
 }
 
-export function prettyMemberUnit(specification: jdspec.PacketMember) {
+export function prettyMemberUnit(specification: jdspec.PacketMember, showDataType?: boolean) {
     const parts: string[] = [
         prettyUnit(specification.unit),
         isSet(specification.typicalMin) && `[${specification.typicalMin}, ${specification.typicalMax}]`,
         isSet(specification.absoluteMin) && `absolute [${specification.absoluteMin}, ${specification.absoluteMax}]`,
     ].filter(f => isSet(f) && f)
-    const helperText = [specification.type, ...parts].join(', ')
+    if (showDataType)
+        parts.unshift(specification.type);
+    const helperText = parts.join(', ')
     return helperText;
 }
 

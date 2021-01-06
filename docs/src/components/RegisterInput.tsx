@@ -14,9 +14,10 @@ export default function RegisterInput(props: {
     showDeviceName?: boolean,
     showRegisterName?: boolean,
     hideMissingValues?: boolean,
-    showTrend?: boolean
+    showTrend?: boolean,
+    showDataType?: boolean
 }) {
-    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend } = props;
+    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend, showDataType } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -24,7 +25,7 @@ export default function RegisterInput(props: {
     const [working, setWorking] = useState(false);
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
     const hasSet = specification.kind === "rw";
- 
+
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
         if (vs !== undefined)
@@ -65,6 +66,7 @@ export default function RegisterInput(props: {
             serviceSpecification={service.specification}
             specifications={fields.map(f => f.specification)}
             values={args}
-            setValues={hasSet && sendArgs} />
+            setValues={hasSet && sendArgs}
+            showDataType={showDataType} />
     </>
 }
