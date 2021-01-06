@@ -31,7 +31,7 @@ function UpdateDeviceCard(props: {
         try {
             setProgress(0)
             setFlashing(true)
-            device.flashing = true; // don't refresh registers and so on
+            device.flashing = true; // don't refresh registers while flashing
             bus.safeBoot = false; // don't poud messages while flashing
             const updateCandidates = [firmware]
             await flashFirmwareBlob(bus, blob, updateCandidates, prog => setProgress(prog))
