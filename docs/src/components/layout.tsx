@@ -287,7 +287,6 @@ function LayoutWithContext(props: LayoutProps) {
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
   const fullScreen = !!pageContext?.frontmatter?.fullScreen;
-  console.log({ pageContext })
 
   return (<>
     <div className={clsx(darkMode, classes.root)}>
