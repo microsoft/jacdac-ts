@@ -48,7 +48,7 @@
     <script src="/dist/jacdac-jdom.umd.js"></script>
     <script>
         // webusb
-        jacdac = jacdacDom;
+        jacdac = jacdacJdom;
         let jd = jacdac.createUSBBus()
         jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
@@ -64,7 +64,7 @@
         async function importLog(file) {
             await jd.disconnectAsync();
             const opts = {
-                skipRepeatedAnnounce: true,
+                skipRepeatedAnnounce: false,
                 showTime: true
             }
             jd = new jacdac.JDBus()
