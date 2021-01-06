@@ -374,7 +374,7 @@ export class Packet {
         } else if (this.isPipe) {
             service_name = "PIPE"
         } else {
-            const serv_id = serviceName(this.multicommandClass || this.serviceClass)
+            const serv_id = serviceName(this.isMultiCommand ? this.multicommandClass : this.serviceClass)
             service_name = `${serv_id} (${this.serviceIndex})`
         }
         return service_name;

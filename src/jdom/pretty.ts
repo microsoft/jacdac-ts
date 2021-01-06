@@ -407,7 +407,7 @@ export function decodePacketData(pkt: Packet): DecodedPacket {
             return info
     }
 
-    const srv_class = pkt?.multicommandClass || pkt?.device?.serviceClassAt(pkt.serviceIndex);
+    const srv_class = pkt?.isMultiCommand ? pkt.multicommandClass : pkt?.device?.serviceClassAt(pkt.serviceIndex);
     const service = serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null
@@ -428,15 +428,15 @@ export function serviceClass(name: string): number {
     return serv ? serv.classIdentifier : -1;
 }
 
-export function serviceName(n: number): string {
-    if (n == null)
+export function serviceName(serviceClass: number): string {
+    if (!isSet(serviceClass))
         return "?"
-    const serv = serviceSpecificationFromClassIdentifier(n);
-    return serv ? serv.name.toUpperCase() : "???"
+    const serv = serviceSpecificationFromClassIdentifier(serviceClass);
+    return serv ? serv.name.toUpperCase() : "?"
 }
 
 export function serviceShortIdOrClass(serviceClass: number) {
-    if (serviceClass == null)
+    if (!isSet(serviceClass))
         return "?"
     const serv = serviceSpecificationFromClassIdentifier(serviceClass);
     return serv?.shortId || `0x${serviceClass.toString(16)}`
