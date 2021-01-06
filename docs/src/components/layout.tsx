@@ -295,7 +295,7 @@ function LayoutWithContext(props: LayoutProps) {
       <MainAppBar {...props} />
       <AppDrawer pagePath={path} />
       <ToolsDrawer />
-      <Container maxWidth={fullScreen ? "xs" : "lg"} disableGutters={true}>
+      <Container maxWidth={fullScreen ? "xl" : "lg"} disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
