@@ -30,7 +30,8 @@ export default function LightDesigner(props: { showHelp?: boolean }) {
     const { showHelp } = props;
     const { drawerType } = useContext(AppContext)
     const { value: source, setValue: setSource } = useLocalStorage('jacdac:lightdesigner',
-        `fadehsv 0 12 #00ffff #ffffff
+        `setall #00ff00
+        show        
 `
     )
     const [debouncedSource] = useDebounce(source, 700)
