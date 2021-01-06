@@ -8,13 +8,20 @@ import useChange from "../../jacdac/useChange";
 import DeviceCardHeader from "../DeviceCardHeader";
 import useGridBreakpoints from "../useGridBreakpoints";
 import ServiceRegisters from "../ServiceRegisters"
+import { JDRegister } from "../../../../src/jdom/register";
 
 function DashboardService(props: { service: JDService }) {
     const { service } = props;
 
-    const filter = pkt => pkt.identifier !== SystemReg.StatusCode
-        && pkt.identifier !== SystemReg.StreamingPreferredInterval
-        && pkt.identifier !== SystemReg.StreamingInterval;
+    // filter out common registers
+    const filter = (reg: JDRegister) => {
+        const r = reg.address !== SystemReg.StatusCode
+            && reg.address !== SystemReg.StreamingPreferredInterval
+            && reg.address !== SystemReg.StreamingSamples
+            && reg.address !== SystemReg.StreamingInterval;
+        return r;
+    }
+
     return <ServiceRegisters
         service={service}
         showRegisterName={true}
