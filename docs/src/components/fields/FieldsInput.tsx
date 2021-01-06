@@ -1,17 +1,18 @@
-// tslint:disable-next-line: no-submodule-imports
-import Alert from "./ui/Alert";
+import { Typography } from "@material-ui/core";
+import DeviceName from "../DeviceName";
+import Alert from "../ui/Alert";
 import React, { useContext, useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import { CircularProgress, Grid, List, ListItem, Slider } from "@material-ui/core";
-import { JDRegister } from "../../../src/jdom/register";
+import { JDRegister } from "../../../../src/jdom/register";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
-import { flagsToValue, prettyUnit, valueToFlags } from "../../../src/jdom/pretty";
-import { memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../src/jdom/spec";
-import IDChip from "./IDChip";
-import { JDField } from "../../../src/jdom/field";
-import { REPORT_UPDATE } from "../../../src/jdom/constants";
-import AppContext from "./AppContext";
-import { roundWithPrecision } from "../../../src/jdom/utils";
+import { flagsToValue, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
+import { memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
+import IDChip from "../IDChip";
+import { JDField } from "../../../../src/jdom/field";
+import { REPORT_UPDATE } from "../../../../src/jdom/constants";
+import AppContext from "../AppContext";
+import { roundWithPrecision } from "../../../../src/jdom/utils";
 
 function isSet(field: any) {
     return field !== null && field !== undefined
@@ -113,50 +114,20 @@ function FieldInput(props: {
         />
 }
 
-export default function PacketInput(props: {
-    register: JDRegister
+export default function FieldsInput(props: {
+    fields: JDField[],
+    args: any[],
+    setArgs?: (values: any[]) => void
 }) {
-    const { register } = props;
-    const { specification } = register;
-    const { fields } = register;
-    const { setError: setAppError } = useContext(AppContext)
-    const [working, setWorking] = useState(false);
-    const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
-
-    useEffect(() => register.subscribe(REPORT_UPDATE, () => {
-        const vs = register.unpackedValue
-        if (vs !== undefined)
-            setArgs(vs);
-    }), [register]);
-
-    const sendArgs = async (values: any[]) => {
-        if (working) return;
-        try {
-            setWorking(true)
-            await register.sendSetPackedAsync(specification.packFormat, values, true);
-        }
-        catch (e) {
-            setAppError(e)
-        } finally {
-            setWorking(false)
-        }
-    }
-
-    if (!specification)
-        return <Alert severity="error">{`Unknown member ${register.service}:${register.address}`}</Alert>
-    const hasSet = specification.kind === "rw";
+    const { fields, args, setArgs } = props;
     const setArg = (index: number) => (arg: any) => {
         const c = args.slice(0)
         c[index] = arg;
-        sendArgs(c);
+        setArgs(c)
     }
-
-    if (!fields.length)
-        return null; // nothing to see here
-
     return <Grid container spacing={1}>
         {fields.map((field, fieldi) => <Grid item key={fieldi} xs={12}>
-            <FieldInput field={field} value={args[fieldi]} setArg={hasSet && setArg(fieldi)} />
+            <FieldInput field={field} value={args[fieldi]} setArg={setArgs && setArg(fieldi)} />
         </Grid>)}
     </Grid>
 }
