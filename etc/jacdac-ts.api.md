@@ -747,6 +747,9 @@ export function isReportOf(cmd: jdspec.PacketInfo, report: jdspec.PacketInfo): b
 export function isSensor(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
+export function isSet(v: any): boolean;
+
+// @public (undocumented)
 export function isWebUSBEnabled(): boolean;
 
 // @public (undocumented)
@@ -854,6 +857,9 @@ export class JDBus extends JDNode {
     // (undocumented)
     get qualifiedName(): string;
     // (undocumented)
+    get safeBoot(): boolean;
+    set safeBoot(enabled: boolean);
+    // (undocumented)
     get selfDevice(): JDDevice;
     // (undocumented)
     get selfDeviceId(): string;
@@ -905,6 +911,8 @@ export class JDDevice extends JDNode {
     // (undocumented)
     get firmwareInfo(): FirmwareInfo;
     set firmwareInfo(info: FirmwareInfo);
+    get flashing(): boolean;
+    set flashing(value: boolean);
     // (undocumented)
     get friendlyName(): string;
     // (undocumented)
@@ -1131,9 +1139,7 @@ export class JDService extends JDNode {
     // (undocumented)
     readonly device: JDDevice;
     // (undocumented)
-    event(address: number | {
-        address: number;
-    }): JDEvent;
+    event(identifier: number): JDEvent;
     // (undocumented)
     get events(): JDEvent[];
     // (undocumented)
@@ -1153,13 +1159,15 @@ export class JDService extends JDNode {
     // (undocumented)
     get readingRegister(): JDRegister;
     // (undocumented)
-    register(address: number | {
-        address: number;
-    }): JDRegister;
+    register(identifier: number): JDRegister;
     // (undocumented)
     registers(): JDRegister[];
     // (undocumented)
     registersUseAcks: boolean;
+    // (undocumented)
+    report(identifier: number): Packet;
+    // (undocumented)
+    get reports(): Packet[];
     // (undocumented)
     sendCmdAsync(cmd: number, ack?: boolean): Promise<void>;
     // (undocumented)
@@ -1346,6 +1354,9 @@ export const LOST = "lost";
 export function makeCodeServices(): jdspec.MakeCodeServiceInfo[];
 
 // @public (undocumented)
+export function memberValueToString(value: any, info: jdspec.PacketMember): string;
+
+// @public (undocumented)
 export function memcpy(trg: Uint8Array, trgOff: number, src: ArrayLike<number>, srcOff?: number, len?: number): void;
 
 // @public (undocumented)
@@ -1353,6 +1364,9 @@ export const META_ACK = "ACK";
 
 // @public (undocumented)
 export const META_ACK_FAILED = "ACK_FAILED";
+
+// @public (undocumented)
+export const META_GET = "GET";
 
 // @public (undocumented)
 export const META_PIPE = "PIPE";
@@ -1623,8 +1637,6 @@ export class Packet {
     // (undocumented)
     get meta(): any;
     // (undocumented)
-    get multicommandClass(): number;
-    // (undocumented)
     static onlyHeader(service_command: number): Packet;
     // (undocumented)
     static patchBinary(buf: Uint8Array): Uint8Array;
@@ -1632,6 +1644,8 @@ export class Packet {
     get pipeCount(): number;
     // (undocumented)
     get pipePort(): number;
+    // (undocumented)
+    get registerIdentifier(): number;
     // (undocumented)
     replay?: boolean;
     // (undocumented)
@@ -1647,8 +1661,6 @@ export class Packet {
     sender: string;
     // (undocumented)
     sendReportAsync(dev: JDDevice): Promise<void>;
-    // (undocumented)
-    get service_class(): number;
     // (undocumented)
     get serviceClass(): number;
     // (undocumented)
@@ -1729,6 +1741,8 @@ export interface PacketFilterProps {
     before?: number;
     // (undocumented)
     collapseAck?: boolean;
+    // (undocumented)
+    collapseGets?: boolean;
     // (undocumented)
     collapsePipes?: boolean;
     // (undocumented)
@@ -1862,6 +1876,9 @@ export enum PowerReg {
 
 // @public (undocumented)
 export function prettyDuration(ms: number): string;
+
+// @public (undocumented)
+export function prettyMemberUnit(specification: jdspec.PacketMember): string;
 
 // @public (undocumented)
 export function prettySize(b: number): string;
@@ -2098,6 +2115,9 @@ export function scanFirmwares(bus: JDBus, timeout?: number): Promise<FirmwareInf
 // @public (undocumented)
 export const SELF_ANNOUNCE = "selfAnnounce";
 
+// @public
+export function sendStayInBootloaderCommand(bus: JDBus): Promise<void>;
+
 // @public (undocumented)
 export class SensorAggregatorClient extends JDServiceClient {
     constructor(service: JDService);
@@ -2181,7 +2201,7 @@ export function serviceClass(name: string): number;
 export function serviceMap(): SMap<jdspec.ServiceSpec>;
 
 // @public (undocumented)
-export function serviceName(n: number): string;
+export function serviceName(serviceClass: number): string;
 
 // @public (undocumented)
 export function serviceShortIdOrClass(serviceClass: number): string;
