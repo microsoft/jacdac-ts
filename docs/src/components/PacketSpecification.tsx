@@ -10,7 +10,8 @@ import IDChip from "./IDChip";
 import KindChip from "./KindChip";
 import PacketMembersChip from "./PacketMembersChip";
 import Markdown from "./ui/Markdown";
-import FieldInput from "./FieldInput";
+import { prettyMemberUnit, prettyUnit } from "../../../src/jdom/pretty";
+import { isSet } from "../../../src/jdom/utils";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -25,21 +26,18 @@ const useStyles = makeStyles((theme) => createStyles({
 }),
 );
 
-function isSet(field: any) {
-    return field !== null && field !== undefined
-}
-
-function MemberType(props: { service: jdspec.ServiceSpec, member: jdspec.PacketMember, setArg?: (arg: any) => void }) {
-    const { service, member, setArg } = props;
+function MemberType(props: { member: jdspec.PacketMember }) {
+    const { member } = props;
     const classes = useStyles();
+    const helperText = prettyMemberUnit(member);
 
     return <li className={classes.field}>
-        <FieldInput serviceSpecification={service} field={member} setArg={setArg} />
+        {member.name}: <code>{helperText}</code>
     </li>
 }
 
-function MembersType(props: { service: jdspec.ServiceSpec, members: jdspec.PacketMember[], title?: string, setArg?: (index: number) => (args: any[]) => void }) {
-    const { service, members, title, setArg } = props;
+function MembersType(props: { members: jdspec.PacketMember[], title?: string, setArg?: (index: number) => (args: any[]) => void }) {
+    const { members, title, setArg } = props;
 
     const member = members[0]
     if (!members?.length || (members.length == 1
@@ -52,7 +50,7 @@ function MembersType(props: { service: jdspec.ServiceSpec, members: jdspec.Packe
     return <>
         {!!title && <h4>{title}</h4>}
         <ul>
-            {members.map((member, i) => <MemberType key={`member${member.name}`} service={service} member={member} setArg={setArg && setArg(i)} />)}
+            {members.map((member, i) => <MemberType key={`member${member.name}`} member={member} setArg={setArg && setArg(i)} />)}
         </ul>
     </>
 }
@@ -89,9 +87,9 @@ export default function PacketSpecification(props: {
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <Markdown source={packetInfo.description} />
-        {!!fields.length && <MembersType service={service} members={fields} title={isCmd && "Arguments"} setArg={hasArgs && setArg} />}
-        {!!reportInfo && <MembersType service={service} members={reportInfo.fields} title="Report" />}
-        {!!pipeReportInfo && <MembersType service={service} members={pipeReportInfo.fields} title="Pipe report" />}
+        {!!fields.length && <MembersType members={fields} title={isCmd && "Arguments"} setArg={hasArgs && setArg} />}
+        {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
+        {!!pipeReportInfo && <MembersType members={pipeReportInfo.fields} title="Pipe report" />}
         {showDevices && isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
         {showDevices && isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} registerIdentifiers={[packetInfo.identifier]} />}
         {showDevices && isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} eventIdentifiers={[packetInfo.identifier]} />}

@@ -6,17 +6,18 @@ import React, { useContext, useEffect, useState } from "react";
 import { JDRegister } from "../../../src/jdom/register";
 import { REPORT_UPDATE } from "../../../src/jdom/constants";
 import AppContext from "./AppContext";
-import FieldsInput from "./fields/FieldsInput"
+import MembersInput from "./fields/MembersInput";
 
-function PacketInput(props: {
+function FieldsInput(props: {
     register: JDRegister
 }) {
     const { register } = props;
-    const { specification } = register;
+    const { specification, service } = register;
     const { fields } = register;
     const { setError: setAppError } = useContext(AppContext)
     const [working, setWorking] = useState(false);
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
+    const hasSet = specification.kind === "rw";
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -43,11 +44,15 @@ function PacketInput(props: {
     if (!fields.length)
         return null; // nothing to see here
 
-    return <FieldsInput fields={fields} args={args} setArgs={sendArgs} />
+    return <MembersInput
+        serviceSpecification={service.specification}
+        specifications={fields.map(f => f.specification)}
+        values={args}
+        setValues={hasSet && sendArgs} />
 }
 
 export default function RegisterInput(props: {
-    register: JDRegister, 
+    register: JDRegister,
     showDeviceName?: boolean,
     showRegisterName?: boolean
 }) {
@@ -62,6 +67,6 @@ export default function RegisterInput(props: {
         {showRegisterName && specification && <Typography variant="caption" key="registername">
             {specification.name}
         </Typography>}
-        <PacketInput register={register} />
+        <FieldsInput register={register} />
     </>
 }

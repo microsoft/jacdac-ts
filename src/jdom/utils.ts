@@ -259,6 +259,10 @@ export function fromHex(hex: string) {
     return r
 }
 
+export function isSet(v: any) {
+    return v !== null && v !== undefined
+}
+
 export function toArray<T>(a: ArrayLike<T>): T[] {
     const r: T[] = new Array(a.length)
     for (let i = 0; i < a.length; ++i)

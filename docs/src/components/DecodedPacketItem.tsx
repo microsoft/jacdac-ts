@@ -1,12 +1,15 @@
-import React, { useState } from "react"
+import React, { useMemo } from "react"
 import { DecodedPacket } from "../../../src/jdom/pretty";
-import { DecodedMemberItem } from "./DecodedMemberItem";
+import MembersInput from "./fields/MembersInput";
 
 export default function DecodedPacketItem(props: { pkt: DecodedPacket }) {
     const { pkt } = props;
-    const { decoded, info, service } = pkt;
-    
-    return <>
-        {decoded.map(member => <DecodedMemberItem serviceSpecification={service} registerSpecification={info} member={member} specification={member.info} />)}
-    </>
+    const { decoded, service } = pkt;
+    const specifications = useMemo(() => decoded.map(d => d.info), [decoded]);
+    const values = useMemo(() => decoded.map(d => d.value), [decoded]);
+    return <MembersInput
+        serviceSpecification={service}
+        specifications={specifications}
+        values={values}
+    />;
 }

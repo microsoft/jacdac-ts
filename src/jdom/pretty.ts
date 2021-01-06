@@ -1,6 +1,6 @@
 import Packet from "./packet"
 import { NumberFormat } from "./buffer"
-import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum } from "./utils"
+import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum, isSet } from "./utils"
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
     JD_SERVICE_INDEX_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_PORT_SHIFT, JD_FRAME_FLAG_COMMAND,
@@ -42,6 +42,16 @@ export function prettyUnit(u: jdspec.Unit): string {
         case "/": return "";
         default: return u
     }
+}
+
+export function prettyMemberUnit(specification: jdspec.PacketMember) {
+    const parts: string[] = [
+        prettyUnit(specification.unit),
+        isSet(specification.typicalMin) && `[${specification.typicalMin}, ${specification.typicalMax}]`,
+        isSet(specification.absoluteMin) && `absolute [${specification.absoluteMin}, ${specification.absoluteMax}]`,
+    ].filter(f => isSet(f) && f)
+    const helperText = [specification.type, ...parts].join(', ')
+    return helperText;
 }
 
 export function prettySize(b: number) {

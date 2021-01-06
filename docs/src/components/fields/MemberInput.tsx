@@ -1,43 +1,27 @@
-import { Typography } from "@material-ui/core";
-import DeviceName from "../DeviceName";
-import Alert from "../ui/Alert";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Grid, List, ListItem, Slider } from "@material-ui/core";
-import { JDRegister } from "../../../../src/jdom/register";
+import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
-import { flagsToValue, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
+import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
 import IDChip from "../IDChip";
-import { JDField } from "../../../../src/jdom/field";
-import { REPORT_UPDATE } from "../../../../src/jdom/constants";
-import AppContext from "../AppContext";
 import { roundWithPrecision } from "../../../../src/jdom/utils";
 
-function isSet(field: any) {
-    return field !== null && field !== undefined
-}
-
-function FieldInput(props: {
-    field: JDField,
+export default function MemberInput(props: {
+    specification: jdspec.PacketMember,
+    serviceSpecification: jdspec.ServiceSpec,
     value: any,
-    setArg: (v: any) => void
+    setValue?: (v: any) => void
 }) {
-    const { field, value, setArg } = props;
-    const { specification } = field;
-    const disabled = !setArg;
-    const enumInfo = field.register.service.specification?.enums?.[specification.type]
+    const { specification, serviceSpecification, value, setValue } = props;
+    const enumInfo = serviceSpecification.enums?.[specification.type]
+    const disabled = !setValue;
     const [error, setError] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? "" : specification.name
-    const parts: string[] = [
-        prettyUnit(specification.unit),
-        isSet(specification.typicalMin) && `[${specification.typicalMin}, ${specification.typicalMax}]`,
-        isSet(specification.absoluteMin) && `absolute [${specification.absoluteMin}, ${specification.absoluteMax}]`,
-    ].filter(f => isSet(f) && f)
     const label = name
-    const helperText = error || [specification.type, ...parts].join(', ')
+    const helperText = error || prettyMemberUnit(specification)
 
     // update coming from device
     useEffect(() => {
@@ -45,23 +29,23 @@ function FieldInput(props: {
     }, [valueString]);
 
     const handleChecked = (ev, checked: boolean) => {
-        setArg(checked)
+        setValue(checked)
     }
     const handleChange = (ev) => {
         const newValue = ev.target.value
         setTextValue(newValue)
         const r = tryParseMemberValue(newValue, specification)
         if (r.value !== undefined)
-            setArg(r.value)
+            setValue(r.value)
         setError(r.error)
     }
     const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
-        setArg(!!v)
+        setValue(!!v)
     }
     const handleSliderChange = async (event: any, newValue: number | number[]) => {
         const scaled = scaleFloatToInt((newValue as number), specification);
-        setArg(scaled);
+        setValue(scaled);
     }
 
     const valueLabelFormat = (value: number) => {
@@ -112,22 +96,4 @@ function FieldInput(props: {
             required={value === undefined}
             error={!!error}
         />
-}
-
-export default function FieldsInput(props: {
-    fields: JDField[],
-    args: any[],
-    setArgs?: (values: any[]) => void
-}) {
-    const { fields, args, setArgs } = props;
-    const setArg = (index: number) => (arg: any) => {
-        const c = args.slice(0)
-        c[index] = arg;
-        setArgs(c)
-    }
-    return <Grid container spacing={1}>
-        {fields.map((field, fieldi) => <Grid item key={fieldi} xs={12}>
-            <FieldInput field={field} value={args[fieldi]} setArg={setArgs && setArg(fieldi)} />
-        </Grid>)}
-    </Grid>
 }
