@@ -22,8 +22,6 @@ import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import CloudIcon from '@material-ui/icons/Cloud';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./ui/DarkModeContext";
@@ -31,6 +29,7 @@ import KindIcon from "./KindIcon";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
 import EdgeImpulseIcon from "./icons/EdgeImpulseIcon";
 import JupyterIcon from "./icons/JupyterIcon";
+import JacdacIcon from "./icons/JacdacIcon";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -73,9 +72,30 @@ export default function ToolsDrawer() {
     }
     const links = [
         {
+            text: "Dashboard",
+            url: "/tools/dashboard",
+            icon: <JacdacIcon />
+        },
+        {
+            // separator
+        },
+        {
             text: "Role Manager",
             url: "/tools/role-manager",
             icon: <EmojiObjectsIcon />
+        },
+        {
+            text: "Settings Manager",
+            url: "/tools/settings-manager",
+            icon: <PhonelinkSetupIcon />
+        },
+        {
+            text: "Firmware Update",
+            url: "/tools/updater",
+            icon: <SystemUpdateAltIcon />
+        },
+        {
+            // separator
         },
         {
             text: "Data collection",
@@ -86,11 +106,6 @@ export default function ToolsDrawer() {
             text: "Model Uploader",
             url: "/tools/model-uploader",
             icon: <EmojiNatureIcon />
-        },
-        {
-            text: "Settings Manager",
-            url: "/tools/settings-manager",
-            icon: <PhonelinkSetupIcon />
         },
         {
             // separator
@@ -119,11 +134,6 @@ export default function ToolsDrawer() {
         */
         {
             // separator
-        },
-        {
-            text: "Firmware Update",
-            url: "/tools/updater",
-            icon: <SystemUpdateAltIcon />
         },
         {
             text: "Service editor",

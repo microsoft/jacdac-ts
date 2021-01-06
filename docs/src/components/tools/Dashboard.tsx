@@ -1,13 +1,13 @@
 import { Card, CardContent, Grid } from "@material-ui/core";
 import React, { useContext } from "react";
-import { BaseReg, SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../src/jdom/constants";
-import { JDDevice } from "../../../src/jdom/device";
-import { JDService } from "../../../src/jdom/service";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import useChange from "../jacdac/useChange";
-import DeviceCardHeader from "./DeviceCardHeader";
-import useGridBreakpoints from "./useGridBreakpoints";
-import ServiceRegisters from "./ServiceRegisters"
+import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
+import { JDDevice } from "../../../../src/jdom/device";
+import { JDService } from "../../../../src/jdom/service";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import useChange from "../../jacdac/useChange";
+import DeviceCardHeader from "../DeviceCardHeader";
+import useGridBreakpoints from "../useGridBreakpoints";
+import ServiceRegisters from "../ServiceRegisters"
 
 function DashboardService(props: { service: JDService }) {
     const { service } = props;
