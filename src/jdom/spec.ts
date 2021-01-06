@@ -200,7 +200,7 @@ export function storageTypeRange(tp: jdspec.StorageType): [number, number] {
         const v = Math.pow(2, -tp * 8 - 1)
         return [-v, v - 1]
     } else {
-        const v = Math.pow(2, -tp * 8)
+        const v = Math.pow(2, tp * 8)
         return [0, v - 1]
     }
 }

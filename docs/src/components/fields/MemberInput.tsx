@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { clampToStorage, memberValueToString, scaleFloatToInt, scaleIntToFloat, storageTypeRange, tryParseMemberValue } from "../../../../src/jdom/spec";
 import IDChip from "../IDChip";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
@@ -46,7 +46,8 @@ export default function MemberInput(props: {
     }
     const handleScaledSliderChange = (event: any, newValue: number | number[]) => {
         const scaled = scaleFloatToInt((newValue as number), specification);
-        setValue(scaled);
+        const clamped = clampToStorage(scaled, specification.storage)
+        setValue(clamped);
     }
     const handleSliderChange = (newValue: number) => {
         const v = (newValue as number);
@@ -126,11 +127,10 @@ export default function MemberInput(props: {
     }
     else // numbers or string
         return <TextField
-            disabled={disabled}
             label={label}
             value={textValue}
             helperText={helperText}
-            onChange={handleChange}
+            onChange={disabled ? undefined : handleChange}
             required={value === undefined}
             error={!!error}
         />

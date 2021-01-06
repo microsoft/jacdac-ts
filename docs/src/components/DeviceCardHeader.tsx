@@ -25,8 +25,8 @@ function DeviceTemperatureChip(props: { device: JDDevice }) {
     return (temperature !== undefined && <Chip size="small" label={`${temperature}°`} />) || <></>
 }
 
-export default function DeviceCardHeader(props: { device: JDDevice, showFirmware?: boolean, showTemperature?: boolean, showMedia?: boolean }) {
-    const { device, showFirmware, showTemperature, showMedia } = props;
+export default function DeviceCardHeader(props: { device: JDDevice, hideDeviceId?: boolean, showFirmware?: boolean, showTemperature?: boolean, showMedia?: boolean }) {
+    const { device, showFirmware, showTemperature, showMedia, hideDeviceId } = props;
     const { specification } = useDeviceSpecification(device);
 
     return <>
@@ -37,7 +37,7 @@ export default function DeviceCardHeader(props: { device: JDDevice, showFirmware
                 <DeviceName device={device} />
             </Link>}
             subheader={<>
-                <Typography variant="caption" gutterBottom>{device.deviceId}</Typography>
+                {!hideDeviceId && <Typography variant="caption" gutterBottom>{device.deviceId}</Typography>}
                 {showFirmware && <DeviceFirmwareChip device={device} />}
                 {showTemperature && <DeviceTemperatureChip device={device} />}
             </>}

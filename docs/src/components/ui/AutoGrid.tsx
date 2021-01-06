@@ -6,7 +6,7 @@ export default function AutoList(props: { children: JSX.Element | JSX.Element[],
     if (children && Array.isArray(children))
         return <Grid container spacing={spacing}>
             {(children as JSX.Element[]).map((child, i) => <Grid item key={child.key || i}
-                xs={12} lg={6}>
+                xs={12}>
                 {child}
             </Grid>)}
         </Grid>

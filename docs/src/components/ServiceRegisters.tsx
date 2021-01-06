@@ -7,22 +7,22 @@ import AutoGrid from "./ui/AutoGrid";
 
 export default function ServiceRegisters(props: {
     service: JDService,
-    showConst?: boolean,
-    showRw?: boolean,
     registerIdentifiers?: number[],
+    filter?: (spec: jdspec.PacketInfo) => boolean,
     showRegisterName?: boolean
 }) {
-    const { service, showConst, showRw, registerIdentifiers, showRegisterName } = props;
-    const spec = service.specification;
-    const packets = spec.packets;
-    const registers = packets.filter(isRegister);
-    const reports = registerIdentifiers !== undefined ? registers.filter(reg => registerIdentifiers.indexOf(reg.identifier) > -1)
-        : registers.filter(reg => reg.kind == "ro" || (showConst && reg.kind == "const") || (showRw && reg.kind == "rw"));
-    useChange(service)
+    const { service, registerIdentifiers, filter, showRegisterName } = props;
+    const specification = useChange(service, spec => spec.specification);
+    const packets = specification?.packets;
+    const ids = registerIdentifiers
+        || packets
+            ?.filter(pkt => isRegister(pkt) && (!filter || filter(pkt)))
+            ?.map(pkt => pkt.identifier);
+    const registers = ids?.map(id => service.register(id));
 
     return <AutoGrid spacing={1}>
-        {reports.map(report => <RegisterInput key={`${report.kind}${report.identifier}`}
-            register={service.register(report.identifier)}
+        {registers.map(register => <RegisterInput key={register.id}
+            register={register}
             showRegisterName={showRegisterName} />)}
     </AutoGrid>
 }

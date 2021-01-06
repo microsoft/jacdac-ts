@@ -72,7 +72,7 @@ export default function DeviceCard(props: {
                 </CardContent>}
             <CardActions>
                 {action}
-                {showServices && services.map(service => <ServiceButton key={service.id} service={service} onClick={() => navigateToService(service)} />)}
+                {showServices && services?.map(service => <ServiceButton key={service.id} service={service} onClick={() => navigateToService(service)} />)}
             </CardActions>
             {children}
         </Card>
