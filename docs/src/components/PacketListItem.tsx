@@ -40,16 +40,15 @@ export default function PacketListItem(props: {
         navigate('/tools/packet-inspector/')
     }
     const selected = packet === selectedPacket
-    const logMessage = packet.service_class === SRV_LOGGER
+    const logMessage = packet.serviceClass === SRV_LOGGER
         && packet.isReport && packet.isEvent
     const pipePackets = packet.meta[META_PIPE] as Packet[];
     
     const primary = (packet.isCRCAck && `crc ack ${packet.friendlyCommandName}`)
         || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
         || (pipePackets && `pipe port:${packet.pipePort} ${pipePackets.length} packets`)
-        || (!decoded && "???")
         || (logMessage && jdunpack<[string]>(packet.data, "s")[0])
-        || `${packet.friendlyCommandName} ${ellipseJoin(decoded.decoded.map(f => f.humanValue), 18)}`;
+        || `${packet.friendlyCommandName} ${decoded ? ellipseJoin(decoded.decoded.map(f => f.humanValue), 18) : ""}`;
     const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.isCommand ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>

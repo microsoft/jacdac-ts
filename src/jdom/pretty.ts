@@ -401,13 +401,13 @@ function decodePipe(pkt: Packet): DecodedPacket {
 }
 
 export function decodePacketData(pkt: Packet): DecodedPacket {
-    if (pkt.device && pkt.serviceIndex == JD_SERVICE_INDEX_PIPE) {
+    if (pkt.device && pkt.isPipe) {
         const info = decodePipe(pkt)
         if (info)
             return info
     }
 
-    const srv_class = pkt?.isMultiCommand ? pkt.multicommandClass : pkt?.device?.serviceClassAt(pkt.serviceIndex);
+    const srv_class = pkt?.serviceClass;
     const service = serviceSpecificationFromClassIdentifier(srv_class)
     if (!service)
         return null

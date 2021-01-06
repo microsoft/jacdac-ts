@@ -58,9 +58,9 @@ export default function PacketInspector() {
         </>}
         {info && <><h3>Specification</h3>
             <ServiceSpecificationCard
-                serviceClass={packet.isMultiCommand ? packet.multicommandClass : packet.service_class} />
+                serviceClass={packet.serviceClass} />
             <PacketSpecification
-                serviceClass={packet.isMultiCommand ? packet.multicommandClass : packet.service_class}
+                serviceClass={packet.serviceClass}
                 packetInfo={info}
             /></>}
     </>;

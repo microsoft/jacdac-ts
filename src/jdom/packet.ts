@@ -117,12 +117,6 @@ export class Packet {
         return !!(this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS);
     }
 
-    get multicommandClass() {
-        if (this.isMultiCommand)
-            return read32(this._header, 4)
-        return undefined
-    }
-
     get size(): number {
         return this._header[12];
     }
@@ -146,10 +140,10 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    get service_class(): number {
-        if (this.device)
-            return this.device.serviceClassAt(this.serviceIndex)
-        return undefined
+    get serviceClass(): number {
+        if (this.isMultiCommand)
+            return read32(this._header, 4)
+        return this.device?.serviceClassAt(this.serviceIndex)
     }
 
     get crc(): number {
@@ -374,7 +368,7 @@ export class Packet {
         } else if (this.isPipe) {
             service_name = "PIPE"
         } else {
-            const serv_id = serviceName(this.isMultiCommand ? this.multicommandClass : this.serviceClass)
+            const serv_id = serviceName(this.serviceClass)
             service_name = `${serv_id} (${this.serviceIndex})`
         }
         return service_name;
@@ -392,12 +386,9 @@ export class Packet {
             if (cmd & PIPE_CLOSE_MASK)
                 cmdname += " close"
         } else {
-            cmdname = commandName(cmd, this.isMultiCommand ? this.multicommandClass : this.serviceClass)
+            cmdname = commandName(cmd, this.serviceClass)
         }
         return cmdname;
-    }
-    get serviceClass() {
-        return this.device?.serviceClassAt(this.serviceIndex);
     }
 }
 

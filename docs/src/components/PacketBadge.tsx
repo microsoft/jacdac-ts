@@ -21,7 +21,7 @@ export default function PacketBadge(props: {
     const getPacket = !!packet.meta[META_GET];
     const direction = packet.isCommand ? "to" : "from";
 
-    const logMessage = packet.service_class === SRV_LOGGER && packet.isReport
+    const logMessage = packet.serviceClass === SRV_LOGGER && packet.isReport
         && !packet.isRegisterGet;
     const icon = logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> :
         <KindIcon kind={packet.isCRCAck ? "crc_ack"

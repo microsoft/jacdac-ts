@@ -259,7 +259,7 @@ export function compileFilter(props: PacketFilterProps) {
         filters.push(pkt => pkt.isRegisterSet === regSet)
 
     if (log !== undefined)
-        filters.push(pkt => pkt.service_class === SRV_LOGGER && pkt.isReport);
+        filters.push(pkt => pkt.serviceClass === SRV_LOGGER && pkt.isReport);
     if (Object.keys(devices).length)
         filters.push(pkt => {
             if (!pkt.device) return false;
@@ -267,7 +267,7 @@ export function compileFilter(props: PacketFilterProps) {
             return !!f && (!f.from || !pkt.isCommand) && (!f.to || pkt.isCommand);
         })
     if (serviceClasses) {
-        filters.push(pkt => serviceClasses.some(serviceClass => isInstanceOf(pkt.service_class, serviceClass)));
+        filters.push(pkt => serviceClasses.some(serviceClass => isInstanceOf(pkt.serviceClass, serviceClass)));
     }
     if (pkts) {
         filters.push(pkt => pkts.indexOf(pkt.decoded?.info.identifier.toString(16)) > -1
