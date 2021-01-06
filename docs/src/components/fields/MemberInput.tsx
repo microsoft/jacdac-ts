@@ -83,10 +83,9 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         return <Slider
-            disabled={disabled}
             value={scaleIntToFloat(value, specification)}
             valueLabelFormat={valueLabelFormat}
-            onChange={handleScaledSliderChange}
+            onChange={disabled ? undefined : handleScaledSliderChange}
             min={0} max={1} step={0.01}
             valueLabelDisplay="auto"
         />
@@ -94,10 +93,9 @@ export default function MemberInput(props: {
         const step = (specification.typicalMax - specification.typicalMin) / 100;
         // TODO: make step nicer
         return <InputSlider
-            disabled={disabled}
             value={value}
             valueLabelFormat={valueLabelFormat}
-            onChange={handleSliderChange}
+            onChange={disabled ? undefined : handleSliderChange}
             min={specification.typicalMin}
             max={specification.typicalMax}
             step={step}

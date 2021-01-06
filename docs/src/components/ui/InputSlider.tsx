@@ -13,6 +13,7 @@ export default function InputSlider(props: {
     marks?: boolean | Mark[]
 }) {
     const { min, max, step, label, disabled, marks, onChange, value, valueLabelFormat } = props;
+    const readOnly = !onChange;
 
     const handleSliderChange = (event: any, newValue: number | number[]) => {
         onChange(newValue as number);
@@ -54,6 +55,7 @@ export default function InputSlider(props: {
                 <Input
                     disabled={disabled}
                     value={value}
+                    readOnly={readOnly}
                     margin="dense"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
