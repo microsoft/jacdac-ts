@@ -392,7 +392,7 @@ export class Packet {
             if (cmd & PIPE_CLOSE_MASK)
                 cmdname += " close"
         } else {
-            cmdname = commandName(cmd, this.serviceClass)
+            cmdname = commandName(cmd, this.isMultiCommand ? this.multicommandClass : this.serviceClass)
         }
         return cmdname;
     }
