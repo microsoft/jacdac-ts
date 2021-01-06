@@ -39,7 +39,7 @@
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
-        jacdac = jacdacDom;
+        jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
         const speedTest = /speed/.test(document.location.search)
         jd.on(jacdac.DEVICE_CONNECT, dev => {
