@@ -51,8 +51,8 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let firmwares = new Set<number>();
     let repeatedAnnounce = undefined;
     let announce = undefined;
-    let regGet = undefined;
-    let regSet = undefined;
+    let regGet: boolean = undefined;
+    let regSet: boolean = undefined;
     let requiresAck = undefined;
     let log = undefined;
     let before = undefined;
@@ -138,14 +138,14 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 break;
             case "reg-get":
             case "get":
-                regGet = true;
+                regGet = parseBoolean(value);
                 break;
             case "reg-set":
             case "set":
-                regSet = true;
+                regSet = parseBoolean(value);
                 break;
             case "log":
-                log = true;
+                log = parseBoolean(value);
                 break;
             case "before":
                 before = parseTimestamp(value);
@@ -251,15 +251,15 @@ export function compileFilter(props: PacketFilterProps) {
     if (port !== undefined)
         filters.push(pkt => pkt.pipePort === port);
 
-    if (regGet !== undefined || regSet !== undefined)
-        filters.push(pkt => (pkt.isRegisterGet === regGet) || (pkt.isRegisterSet === regSet))
+    if (regGet !== undefined && regSet !== undefined)
+        filters.push(pkt => (pkt.isRegisterGet === regGet) && (pkt.isRegisterSet === regSet))
     else if (regGet !== undefined)
         filters.push(pkt => pkt.isRegisterGet === regGet)
     else if (regSet !== undefined)
         filters.push(pkt => pkt.isRegisterSet === regSet)
 
     if (log !== undefined)
-        filters.push(pkt => pkt.serviceClass === SRV_LOGGER && pkt.isReport);
+        filters.push(pkt => (pkt.serviceClass === SRV_LOGGER && pkt.isReport) === log);
     if (Object.keys(devices).length)
         filters.push(pkt => {
             if (!pkt.device) return false;
