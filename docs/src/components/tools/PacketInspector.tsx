@@ -57,9 +57,10 @@ export default function PacketInspector() {
             <PacketList packets={pipePackets.filter(pp => !!pp)} />
         </>}
         {info && <><h3>Specification</h3>
-            <ServiceSpecificationCard serviceClass={packet.service_class} />
+            <ServiceSpecificationCard
+                serviceClass={packet.isMultiCommand ? packet.multicommandClass : packet.service_class} />
             <PacketSpecification
-                serviceClass={packet.service_class}
+                serviceClass={packet.isMultiCommand ? packet.multicommandClass : packet.service_class}
                 packetInfo={info}
             /></>}
     </>;

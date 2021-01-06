@@ -1,4 +1,4 @@
-import { Tooltip } from "@material-ui/core";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from "@material-ui/core";
 import React from "react";
 import Packet from "../../../src/jdom/packet";
 import { toHex } from "../../../src/jdom/utils";
@@ -16,10 +16,27 @@ export default function PacketDataLayout(props: { packet: Packet, showHex?: bool
                 </pre>
             </Tooltip>
         </PaperBox>}
-        {showDecoded && !!decoded?.decoded.length && <ul>
-            {decoded.decoded.map((member, i) => <li key={i}>
-                {member.info.name == '_' ? info.name : member.info.name}: <code>{member.humanValue}</code>
-            </li>)}
-        </ul>}
+        {showDecoded && !!decoded?.decoded.length && <PaperBox>
+            <TableContainer>
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                name
+                        </TableCell>
+                            <TableCell>
+                                value
+                        </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {decoded.decoded.map((member, i) => <TableRow key={i}>
+                            <TableCell>{member.info.name == '_' ? info.name : member.info.name}</TableCell>
+                            <TableCell><code>{member.humanValue}</code></TableCell>
+                        </TableRow>)}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </PaperBox>}
     </>
 }

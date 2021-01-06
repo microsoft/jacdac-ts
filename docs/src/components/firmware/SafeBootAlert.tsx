@@ -30,8 +30,8 @@ export default function SafeBootAlert() {
                 <Box mr={1}>
                     <Typography component="span" variant="caption">
                         If your module is malfunctioning from the start, you can flash it in bootloader mode.
-                        Turn on recovery mode and reset any malfunctioning device to switch it to bootloader mode (glowing status LED).
-                        Once your module is flashed, turn off recovery mode and reset your module again.
+                        Turn on recovery mode and unplug/replug any malfunctioning device to switch it to bootloader mode (glowing status LED).
+                        Once your module is flashed, turn off recovery mode and unplug/replug your module again.
                     </Typography>
                 </Box>
             </Alert>
