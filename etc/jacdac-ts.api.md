@@ -252,6 +252,7 @@ export enum ControlReg {
     FirmwareUrl = 392,
     FirmwareVersion = 389,
     McuTemperature = 386,
+    ResetIn = 128,
     Uptime = 390
 }
 

@@ -2763,6 +2763,27 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.ResetIn:member",
+              "docComment": "/**\n * Read-write μs uint32_t. When set to value other than `0`, it asks the device to reset after specified number of microseconds. This is typically used to implement watchdog functionality, where a brain device sets `reset_in` to say 1.6s every 0.5s.\n * ```\n * const [resetIn] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "ResetIn = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "128"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "ResetIn",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.Uptime:member",
               "docComment": "/**\n * Read-only μs uint64_t. Number of microseconds since boot.\n * ```\n * const [uptime] = jdunpack<[number]>(buf, \"u64\")\n * ```\n *\n */\n",
               "excerptTokens": [
