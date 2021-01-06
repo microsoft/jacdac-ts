@@ -37,7 +37,7 @@ function DashboardDevice(props: {
             <DeviceCardHeader hideDeviceId={true} device={device} />
             <CardContent>
                 <Grid container>
-                    {services?.map(service => <Grid item xs={12}>
+                    {services?.map(service => <Grid item xs={12} key={service.serviceClass}>
                         <DashboardService service={service} />
                     </Grid>)}
                 </Grid>

@@ -280,12 +280,14 @@ function FabBar() {
 
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
-  const { path } = pageProps;
+  const { path, pageContext } = pageProps;
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
+  const fullScreen = !!pageContext?.frontmatter?.fullScreen;
+  console.log({ pageContext })
 
   return (<>
     <div className={clsx(darkMode, classes.root)}>
@@ -293,7 +295,7 @@ function LayoutWithContext(props: LayoutProps) {
       <MainAppBar {...props} />
       <AppDrawer pagePath={path} />
       <ToolsDrawer />
-      <Container disableGutters={true}>
+      <Container maxWidth={fullScreen ? "xs" : "lg"} disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
