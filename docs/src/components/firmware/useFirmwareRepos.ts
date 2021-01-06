@@ -22,7 +22,7 @@ export default function useFirmwareRepos(showAllRepos?: boolean) {
     useEffectAsync(async (mounted) => {
         let repos: string[] = [];
         if (showAllRepos)
-            repos = unique(deviceSpecifications().map(spec => spec.repo));
+            repos = deviceSpecifications().map(spec => spec.repo);
         else {
             let firmwares: number[] = [];
             // ask firmware registers
@@ -50,7 +50,7 @@ export default function useFirmwareRepos(showAllRepos?: boolean) {
                 .filter(repo => !!repo);
         }
         if (mounted)
-            setRepos(repos)
+            setRepos(unique(repos))
     }, [devices.map(dev => dev.id).join(), registers.map(reg => reg.id).join(), showAllRepos])
     return repos;
 }
