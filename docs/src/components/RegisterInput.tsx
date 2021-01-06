@@ -7,14 +7,16 @@ import { JDRegister } from "../../../src/jdom/register";
 import { REPORT_UPDATE } from "../../../src/jdom/constants";
 import AppContext from "./AppContext";
 import MembersInput from "./fields/MembersInput";
+import RegisterTrend from "./RegisterTrend";
 
 export default function RegisterInput(props: {
     register: JDRegister,
     showDeviceName?: boolean,
     showRegisterName?: boolean,
-    hideMissingValues?: boolean
+    hideMissingValues?: boolean,
+    showTrend?: boolean
 }) {
-    const { register, showRegisterName, showDeviceName, hideMissingValues } = props;
+    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -22,7 +24,7 @@ export default function RegisterInput(props: {
     const [working, setWorking] = useState(false);
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
     const hasSet = specification.kind === "rw";
-
+ 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
         if (vs !== undefined)
@@ -58,6 +60,7 @@ export default function RegisterInput(props: {
         {showRegisterName && specification && <Typography variant="caption" key="registername">
             {specification.name}
         </Typography>}
+        {showTrend && <RegisterTrend register={register} mini={false} horizon={32} />}
         <MembersInput
             serviceSpecification={service.specification}
             specifications={fields.map(f => f.specification)}

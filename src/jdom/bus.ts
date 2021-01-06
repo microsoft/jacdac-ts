@@ -148,10 +148,9 @@ export class JDBus extends JDNode {
             this._announceInterval = setInterval(() => {
                 if (this.connected)
                     this.emit(SELF_ANNOUNCE);
-                this.refreshRegisters();
             }, 499);
         if (!this._refreshRegistersInterval)
-            this._refreshRegistersInterval = setInterval(() => this.refreshRegisters(), 50);
+            this._refreshRegistersInterval = setInterval(this.refreshRegisters.bind(this), 50);
         if (!this._gcInterval)
             this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
     }

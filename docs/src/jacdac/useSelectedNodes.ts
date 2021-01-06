@@ -1,20 +1,20 @@
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import { JDNode } from "../../../src/jdom/node"
 
 export default function useSelectedNodes<TNode extends JDNode>() {
-    const [nodes] = useState<Set<string>>(new Set<string>())
+    const nodes = useRef<Set<string>>(new Set<string>())
     const [size, setSize] = useState(0)
 
-    const selected = (node: TNode) => nodes.has(node?.id)
+    const selected = (node: TNode) => nodes.current.has(node?.id)
     const setSelected = (node: TNode, value: boolean) => {
         if (!node) return;
         const s = selected(node)
         if (!!value !== s) {
             if (!value)
-                nodes.delete(node.id)
+                nodes.current.delete(node.id)
             else
-                nodes.add(node.id)
-            setSize(nodes.size)
+                nodes.current.add(node.id)
+            setSize(nodes.current.size)
         }
     }
     return {
@@ -26,7 +26,7 @@ export default function useSelectedNodes<TNode extends JDNode>() {
             setSelected(node, !selected(node))
         },
         clear: () => {
-            nodes.clear()
+            nodes.current.clear()
             setSize(0)
         }
     }

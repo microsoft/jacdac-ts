@@ -5,15 +5,17 @@ import RegisterInput from "./RegisterInput";
 import useChange from '../jacdac/useChange';
 import AutoGrid from "./ui/AutoGrid";
 import { JDRegister } from "../../../src/jdom/register";
+import { SystemReg } from "../../../src/jdom/constants";
 
 export default function ServiceRegisters(props: {
     service: JDService,
     registerIdentifiers?: number[],
     filter?: (register: JDRegister) => boolean,
     showRegisterName?: boolean,
-    hideMissingValues?: boolean
+    hideMissingValues?: boolean,
+    showTrends?: boolean
 }) {
-    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues } = props;
+    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues, showTrends } = props;
     const specification = useChange(service, spec => spec.specification);
     const packets = specification?.packets;
     const ids = registerIdentifiers
@@ -29,6 +31,7 @@ export default function ServiceRegisters(props: {
             register={register}
             showRegisterName={showRegisterName}
             hideMissingValues={hideMissingValues}
+            showTrend={showTrends && register.address === SystemReg.Reading}
         />)}
     </AutoGrid>
 }

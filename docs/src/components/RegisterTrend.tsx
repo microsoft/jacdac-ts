@@ -7,18 +7,30 @@ import Trend, { TrendProps } from "./Trend"
 import useChartPalette from "./useChartPalette";
 import useChange from "../jacdac/useChange"
 
-export default function RegisterTrend(props: { register: JDRegister, showName?: boolean, mini?: boolean }) {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
-    const { register, mini } = props;
-    const palette = useChartPalette()
-    const [dataSet] = useState(FieldDataSet.create(bus, [register], "output", palette, 100));
+const DEFAULT_HORIZON = 50
+const DEFAULT_HEIGHT = 12
 
-    useChange(dataSet);
+export default function RegisterTrend(props: {
+    register: JDRegister,
+    showName?: boolean,
+    horizon?: number,
+    height?: number,
+    mini?: boolean
+}) {
+    const { register, mini, horizon, height } = props;
+    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const palette = useChartPalette()
+    const dataSet = useRef(FieldDataSet.create(bus, [register], "output", palette, 100));
+
+    useChange(dataSet.current);
 
     // register on change...
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
-        dataSet.addRow();
+        dataSet.current.addRow();
     }), [register])
 
-    return <Trend dataSet={dataSet} horizon={50} gradient={true} height={12} mini={mini} />
+    return <Trend dataSet={dataSet.current}
+        horizon={horizon || DEFAULT_HORIZON}
+        gradient={true}
+        height={height || DEFAULT_HEIGHT} mini={mini} />
 }
