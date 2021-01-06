@@ -3,8 +3,10 @@ import { JDBus } from "./bus"
 import Packet from "./packet"
 import { JDDevice } from "./device"
 import { BootloaderCmd, ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
-import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array } from "./utils"
+import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array, toHex } from "./utils"
 import { jdpack, jdunpack } from "./pack"
+import { BootloaderError } from "../../jacdac-spec/dist/specconstants"
+import { prettySize } from "./pretty"
 
 const BL_SUBPAGE_SIZE = 208
 const numRetries = 15
@@ -98,7 +100,7 @@ class FlashClient {
                         d.pending = false
                     } else {
                         d.lastStatus = null
-                        log(`set session on ${d.device}`)
+                        log(`set session ${this.sessionId} on ${d.device}`)
                         await d.sendCommandAsync(setsession)
                     }
                     await delay(5)
@@ -147,7 +149,10 @@ class FlashClient {
         const pageSize = this.pageSize
         const numSubpage = ((pageSize + BL_SUBPAGE_SIZE - 1) / BL_SUBPAGE_SIZE) | 0
 
-        log(`flash at ${pageAddr & 0xffffff}`)
+        log(`flash ${prettySize(this.pageSize)} at ${(pageAddr & 0xffffff).toString(16)}`)
+
+        if (page.data.length != this.pageSize)
+            throw new Error("invalid page size")
 
         for (let f of this.classClients)
             f.lastStatus = null
@@ -159,10 +164,10 @@ class FlashClient {
                 let sz = BL_SUBPAGE_SIZE
                 if (suboff + sz > pageSize)
                     sz = pageSize - suboff
+                log(`send sub page ${currSubpage}/${numSubpage - 1} at ${suboff.toString(16)}[${sz}]`)
                 const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
                 assert(hd.length == 4 * 7)
                 const p = Packet.from(BootloaderCmd.PageData, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
-
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
                 if (i == 0 || currSubpage < numSubpage)
@@ -183,13 +188,13 @@ class FlashClient {
                 if (f.pending) {
                     let err = ""
                     if (f.lastStatus) {
-                        const [sess, berr, pageAddrR] = jdunpack<[number, number, number]>(f.lastStatus.data, "u32 u32 u32")
-                        if (sess != this.sessionId)
+                        const [session_id, page_error, pageAddrR] = jdunpack<[number, BootloaderError, number]>(f.lastStatus.data, "u32 u32 u32")
+                        if (session_id != this.sessionId)
                             err = "invalid session_id"
                         else if (pageAddrR != pageAddr)
                             err = "invalid page address"
-                        else if (berr)
-                            err = "err:" + berr
+                        else if (page_error)
+                            err = "err: " + (BootloaderError[page_error] || page_error)
                     } else {
                         err = "timeout"
                     }
@@ -202,8 +207,10 @@ class FlashClient {
                 }
             }
 
-            if (this.numPending() == 0)
+            if (this.numPending() == 0) {
+                log(`page ${pageAddr & 0xffffff} done, ${numRetries} retries`)
                 return
+            }
         }
 
         throw new Error("too many retries")
@@ -224,8 +231,6 @@ class FlashClient {
             await this.startFlashAsync()
             prog()
             for (const page of fw.pages) {
-                if (page.data.length != this.pageSize)
-                    throw new Error("invalid page size")
                 await this.flashPage(page)
                 prog()
             }

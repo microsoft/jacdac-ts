@@ -62,9 +62,7 @@ export default function UpdateDeviceList() {
     const { hasSelection: isFlashing, selected: isDeviceFlashing, allSelected: allFlashing, setSelected: setFlashing } =
         useSelectedNodes<JDDevice>();
 
-    let devices = useEventRaised(DEVICE_CHANGE, bus, b => b.devices().filter(dev => dev.announced))
-    // filter out bootloader while flashing
-    devices = devices.filter(dev => !isBootloaderFlashing(devices, isDeviceFlashing, dev))
+    const devices = useEventRaised(DEVICE_CHANGE, bus, b => b.devices().filter(dev => dev.announced))
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
