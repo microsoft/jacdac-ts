@@ -39,6 +39,7 @@ export class JDDevice extends JDNode {
     private _ports: SMap<PipeInfo>;
     private _firmwareInfo: FirmwareInfo;
     private _ackAwaiting: AckAwaiter[];
+    private _flashing = false;
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
@@ -150,6 +151,23 @@ export class JDDevice extends JDNode {
         this.emit(CHANGE)
         this.bus.emit(DEVICE_CHANGE, this)
         this.bus.emit(CHANGE)
+    }
+
+    /**
+     * A flashing sequence is in progress
+     */
+    get flashing() {
+        return this._flashing;
+    }
+
+    /**
+     * Sets the flashing sequence state
+     */
+    set flashing(value: boolean) {
+        if (value !== this._flashing) {
+            this._flashing = value;
+            this.emit(CHANGE);
+        }
     }
 
     hasService(service_class: number): boolean {

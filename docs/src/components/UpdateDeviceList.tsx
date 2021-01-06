@@ -31,12 +31,14 @@ function UpdateDeviceCard(props: {
         try {
             setProgress(0)
             setFlashing(true)
+            device.flashing = true; // don't refresh registers and so on
             bus.safeBoot = false; // don't poud messages while flashing
             const updateCandidates = [firmware]
             await flashFirmwareBlob(bus, blob, updateCandidates, prog => setProgress(prog))
         } catch (e) {
             setError(e);
         } finally {
+            device.flashing = false;
             bus.safeBoot = safeBoot;
             setFlashing(false)
         }
@@ -44,7 +46,7 @@ function UpdateDeviceCard(props: {
 
     return <DeviceCard device={device}
         showFirmware={true}
-        content={blob && <span>Update: {blob.version}</span>}
+        content={blob && <span>Update to {blob.version}</span>}
         // tslint:disable-next-line: react-this-binding-issue
         action={flashing ? <CircularProgressWithLabel value={progress} />
             : updateApplicable(firmware, blob)
