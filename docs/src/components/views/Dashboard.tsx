@@ -104,8 +104,10 @@ function DashboardDevice(props: {
             />
             <CardContent>
                 <Grid container>
-                    {roleManagerClient?.remoteRequestedDevices
-                        .map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={roleManagerClient} />)}
+                    {roleManagerClient && <AutoGrid>
+                        {roleManagerClient?.remoteRequestedDevices
+                            .map(rdev => <RemoteRequestDeviceView rdev={rdev} client={roleManagerClient} />)}
+                    </AutoGrid>}
                     {services?.map(service => <Grid item xs={12} key={service.serviceClass}>
                         <DashboardService service={service} expanded={expanded} />
                     </Grid>)}
