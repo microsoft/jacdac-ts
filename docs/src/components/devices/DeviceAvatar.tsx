@@ -1,7 +1,8 @@
-import { Avatar, createStyles, makeStyles, Theme } from "@material-ui/core";
+import { Avatar, createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
 import React from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
+import CmdButton from "../CmdButton";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,13 +28,19 @@ export default function DeviceAvatar(props: { device: JDDevice, showMissing?: bo
 
   if (!showMissing && (!specification || !imageUrl))
     return null;
+  const handleIdentify = async () => {
+    await device.identify()
+  }
+  return <CmdButton trackName="device.identify" size="small" title={`identify ${specification?.name || "device"}`}
+    onClick={handleIdentify}
+    icon={<Avatar
+      className={sizeClassName}
+      alt={specification?.name || "Image of the device"}
+      src={imageUrl}
+      classes={{
+        img: classes.img
+      }}
+    />}
+  />
 
-  return <Avatar
-    className={sizeClassName}
-    alt={specification?.name || "Image of the device"}
-    src={imageUrl}
-    classes={{
-      img: classes.img
-    }}
-    />
 }

@@ -58,7 +58,7 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
             showServiceName={expanded}
-            showRegisterName={true}
+            showRegisterName={expanded}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}
@@ -132,9 +132,9 @@ export default function Dashboard() {
         xl?: GridSize
     } => {
         if (selected(device))
-            return { xs: 12, sm: 6, md: 6, lg: 3, xl: 2 };
+            return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
         else
-            return { xs: 6, sm: 6, md: 6, lg: 3, xl: 2 };
+            return { xs: 6, sm: 6, md: 6, lg: 4, xl: 3 };
     }
 
     if (!devices.length)
