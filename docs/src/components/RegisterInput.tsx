@@ -4,7 +4,7 @@ import Alert from "./ui/Alert";
 import React, { useContext, useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import { JDRegister } from "../../../src/jdom/register";
-import { REPORT_UPDATE } from "../../../src/jdom/constants";
+import { REPORT_UPDATE, SystemReg } from "../../../src/jdom/constants";
 import AppContext from "./AppContext";
 import MembersInput from "./fields/MembersInput";
 import RegisterTrend from "./RegisterTrend";
@@ -16,10 +16,9 @@ export default function RegisterInput(props: {
     showRegisterName?: boolean,
     hideMissingValues?: boolean,
     showTrend?: boolean,
-    showDataType?: boolean,
-    color?: "primary" | "secondary"
+    showDataType?: boolean
 }) {
-    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend, showDataType, color } = props;
+    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend, showDataType } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -28,6 +27,7 @@ export default function RegisterInput(props: {
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
     const hasSet = specification.kind === "rw";
     const hasData = !!register.data;
+    const color = register.address === SystemReg.Reading ? "primary" : "secondary"
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
