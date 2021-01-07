@@ -9,7 +9,7 @@ import useGridBreakpoints from "../useGridBreakpoints";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import AutoGrid from "../ui/AutoGrid";
 import RegisterInput from "../RegisterInput";
-import { isRegister } from "../../../../src/jdom/spec";
+import { isActuator, isReading, isRegister, isSensor, isValueOrIntensity } from "../../../../src/jdom/spec";
 import DeviceActions from "../DeviceActions";
 import DeviceName from "../DeviceName";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
@@ -18,6 +18,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
+import { strcmp } from "../../../../src/jdom/utils";
+import ConnectAlert from "../alert/ConnectAlert"
 
 // filter out common registers
 const ignoreRegisters = [
@@ -73,6 +75,8 @@ function DashboardDevice(props: {
             && !!service.specification));
     const { specification } = useDeviceSpecification(device);
 
+    // move sensors, then actuators first
+
     return (
         <Card>
             <CardHeader
@@ -99,15 +103,31 @@ function DashboardDevice(props: {
     );
 }
 
+function deviceSort(l: JDDevice, r: JDDevice): number {
+    const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
+        .reduce((prev, pkt) => prev + (isReading(pkt) ? 10 : isValueOrIntensity(pkt) ? 1 : 0), 0)
+    const score = (srvs: jdspec.ServiceSpec[]) => srvs.reduce((prev, srv) => srvScore(srv), 0)
+
+    const ls = score(l.services().slice(1).map(srv => srv.specification))
+    const rs = score(r.services().slice(1).map(srv => srv.specification))
+    if (ls !== rs)
+        return -ls + rs;
+    return strcmp(l.deviceId, r.deviceId);
+}
+
 export default function Dashboard() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, b => b.devices()
-        .filter(dev => bus.selfDeviceId !== dev.deviceId)
+        .filter(dev => dev.announced && bus.selfDeviceId !== dev.deviceId)
+        .sort(deviceSort)
     );
     const gridBreakpoints = useGridBreakpoints(devices?.length)
     const { selected, toggleSelected } = useSelectedNodes()
 
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
+
+    if (!devices.length)
+        return <ConnectAlert />
 
     return <Grid container spacing={2}>
         {devices?.map(device => <Grid key={device.id} item {...gridBreakpoints}>

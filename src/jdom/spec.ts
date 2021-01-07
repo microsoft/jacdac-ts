@@ -140,6 +140,10 @@ export function isReading(pkt: jdspec.PacketInfo) {
     return pkt && (pkt.kind == "ro" && pkt.identifier == SystemReg.Reading)
 }
 
+export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
+    return pkt && (pkt.kind == "rw" && (pkt.identifier == SystemReg.Value || pkt.identifier == SystemReg.Intensity))
+}
+
 export function isConstRegister(pkt: jdspec.PacketInfo) {
     return pkt?.kind == "const"
 }
