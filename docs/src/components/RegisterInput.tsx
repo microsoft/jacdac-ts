@@ -13,12 +13,13 @@ import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 export default function RegisterInput(props: {
     register: JDRegister,
     showDeviceName?: boolean,
+    showServiceName?: boolean,
     showRegisterName?: boolean,
     hideMissingValues?: boolean,
     showTrend?: boolean,
     showDataType?: boolean
 }) {
-    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend, showDataType } = props;
+    const { register, showRegisterName, showDeviceName, showServiceName, hideMissingValues, showTrend, showDataType } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -63,6 +64,9 @@ export default function RegisterInput(props: {
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={device} />/
     </Typography>}
+        {showServiceName && specification && <Typography variant="caption" key="servicename">
+            {register.service.name.toLocaleLowerCase() + " "}
+        </Typography>}
         {showRegisterName && specification && <Typography variant="caption" key="registername">
             {specification.name}
         </Typography>}

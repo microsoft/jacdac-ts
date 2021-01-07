@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Grid, Typography } from "@material-ui/core";
+import { Avatar, Card, CardContent, CardHeader, Grid, Typography } from "@material-ui/core";
 import React, { useContext, useMemo } from "react";
 import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -56,6 +56,7 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
+            showServiceName={true}
             showRegisterName={true}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
@@ -73,13 +74,14 @@ function DashboardDevice(props: {
         .filter(service => service.serviceClass != SRV_CTRL
             && service.serviceClass != SRV_LOGGER
             && !!service.specification));
-    const { specification } = useDeviceSpecification(device);
+    const { specification, imageUrl } = useDeviceSpecification(device);
 
     // move sensors, then actuators first
 
     return (
         <Card>
             <CardHeader
+                avatar={imageUrl && <Avatar alt={specification.description} src={imageUrl} />}
                 action={<DeviceActions device={device} reset={false}>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}

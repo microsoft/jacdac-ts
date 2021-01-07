@@ -56,6 +56,11 @@ export default function MemberInput(props: {
         setValue(v);
     }
 
+    const percentValueFormat = (value: number) => {
+        // avoid super long floats
+        return ((value * 100) >> 0) + "%"
+    }
+
     const valueLabelFormat = (value: number) => {
         // avoid super long floats
         return roundWithPrecision(value, 2);
@@ -88,7 +93,7 @@ export default function MemberInput(props: {
         return <Slider
             color={color}
             value={scaleIntToFloat(value, specification)}
-            valueLabelFormat={valueLabelFormat}
+            valueLabelFormat={percentValueFormat}
             onChange={disabled ? undefined : handleScaledSliderChange}
             min={0} max={1} step={0.01}
             valueLabelDisplay="auto"
