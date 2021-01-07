@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Slider, Typography, useTheme } from "@material-ui/core";
+import { CircularProgress, Grid, Slider, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
-import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { clampToStorage, isReading, memberValueToString, scaleFloatToInt, scaleIntToFloat, storageTypeRange, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { flagsToValue, prettyMemberUnit, valueToFlags } from "../../../../src/jdom/pretty";
+import { clampToStorage, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
 import IDChip from "../IDChip";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
@@ -12,21 +12,23 @@ import CircularProgressBox from "../ui/CircularProgressBox";
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
     serviceSpecification: jdspec.ServiceSpec,
+    serviceMemberSpecification: jdspec.PacketInfo,
     value: any,
     setValue?: (v: any) => void,
     showDataType?: boolean,
     color?: "primary" | "secondary"
 }) {
-    const { specification, serviceSpecification, value, setValue, showDataType, color } = props;
+    const { specification, serviceSpecification, serviceMemberSpecification, value, setValue, showDataType, color } = props;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const [error, setError] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
-    const name = specification.name === "_" ? "" : specification.name
+    const name = (specification.name === "_" && serviceMemberSpecification?.name) || specification.name
     const label = name
     const helperText = error || prettyMemberUnit(specification, showDataType)
     const theme = useTheme();
+    const mobile = useMediaQuery(theme.breakpoints.down("xs"));
 
     // update coming from device
     useEffect(() => {
@@ -97,8 +99,11 @@ export default function MemberInput(props: {
             return <CircularProgressBox
                 progressColor={color}
                 progress={fv * 100}
-                progressSize={"10rem"}>
-                <Typography variant="h3">{percentValueFormat(fv)}</Typography>
+                progressSize={mobile ? "10vh" : "14vh"}>
+                <Grid container>
+                    <Grid item xs={12}><Typography variant={mobile ? "h4" : "h3"} align="center">{percentValueFormat(fv)}</Typography></Grid>
+                    <Grid item xs={12}><Typography variant={"body2"} align="center">{name}</Typography></Grid>
+                </Grid>
             </CircularProgressBox>
         else
             return <Slider

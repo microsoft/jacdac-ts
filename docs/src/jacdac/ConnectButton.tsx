@@ -5,7 +5,6 @@ import { BusState } from "../../../src/jdom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
 import { Badge, useMediaQuery, useTheme } from "@material-ui/core";
-import KindIcon from "../components/KindIcon";
 import IconButtonWithProgress from "../components/ui/IconButtonWithProgress"
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb";
 

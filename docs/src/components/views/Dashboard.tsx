@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Grid, GridSize, Typography } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Grid, GridSize, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useContext, useMemo } from "react";
 import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -9,7 +9,6 @@ import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import AutoGrid from "../ui/AutoGrid";
 import RegisterInput from "../RegisterInput";
 import { isReading, isRegister, isValueOrIntensity } from "../../../../src/jdom/spec";
-import DeviceActions from "../DeviceActions";
 import DeviceName from "../DeviceName";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -21,6 +20,7 @@ import { strcmp } from "../../../../src/jdom/utils";
 import ConnectAlert from "../alert/ConnectAlert"
 import DeviceAvatar from "../devices/DeviceAvatar"
 import Alert from "../ui/Alert";
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 
 // filter out common registers
 const ignoreRegisters = [
@@ -76,19 +76,21 @@ function DashboardDevice(props: {
             && service.serviceClass != SRV_LOGGER
             && !!service.specification));
     const { specification } = useDeviceSpecification(device);
+    const theme = useTheme();
+    const mobile = useMediaQuery(theme.breakpoints.down("xs"));
 
     return (
         <Card>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
-                action={<DeviceActions device={device} hideIdentity={!expanded} reset={false}>
+                action={<>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButtonWithTooltip>
-                </DeviceActions>}
+                </>}
                 title={<DeviceName showShortId={false} device={device} />}
                 subheader={<>
-                    {specification && <Typography variant="caption" gutterBottom>
+                    {!mobile && specification && <Typography variant="caption" gutterBottom>
                         {specification.name}
                     </Typography>}
                 </>}
@@ -132,9 +134,9 @@ export default function Dashboard() {
         xl?: GridSize
     } => {
         if (selected(device))
-            return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
+            return { xs: 12, sm: 12, md: 6, lg: 4, xl: 3 };
         else
-            return { xs: 6, sm: 6, md: 6, lg: 4, xl: 3 };
+            return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
     }
 
     if (!devices.length)

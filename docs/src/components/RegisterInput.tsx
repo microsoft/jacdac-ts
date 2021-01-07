@@ -29,6 +29,7 @@ export default function RegisterInput(props: {
     const hasSet = specification.kind === "rw";
     const hasData = !!register.data;
     const color = hasSet ? "secondary" : "primary"
+    const name = specification?.name?.replace(/_/g, ' ')
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -77,6 +78,7 @@ export default function RegisterInput(props: {
         {hasData && <MembersInput
             color={color}
             serviceSpecification={service.specification}
+            serviceMemberSpecification={specification}
             specifications={fields.map(f => f.specification)}
             values={args}
             setValues={hasSet && sendArgs}
