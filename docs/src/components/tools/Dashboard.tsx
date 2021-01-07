@@ -26,7 +26,7 @@ function DashboardService(props: { service: JDService }) {
         service={service}
         showRegisterName={true}
         filter={filter}
-        hideMissingValues={true}
+        hideMissingValues={false}
         showTrends={true}
     />
 }

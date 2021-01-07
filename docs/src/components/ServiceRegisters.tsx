@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { JDService } from "../../../src/jdom/service";
 import { isRegister } from "../../../src/jdom/spec";
 import RegisterInput from "./RegisterInput";
@@ -17,14 +17,17 @@ export default function ServiceRegisters(props: {
 }) {
     const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues, showTrends } = props;
     const specification = useChange(service, spec => spec.specification);
-    const packets = specification?.packets;
-    const ids = registerIdentifiers
-        || packets
-            ?.filter(pkt => isRegister(pkt))
-            ?.map(pkt => pkt.identifier);
-    const registers = ids?.map(id => service.register(id))
-        ?.filter(reg => !!reg)
-        ?.filter(reg => !filter || filter(reg))
+    const registers = useMemo(() => {
+        const packets = specification?.packets;
+        const ids = registerIdentifiers
+            || packets
+                ?.filter(pkt => isRegister(pkt))
+                ?.map(pkt => pkt.identifier);
+        return ids?.map(id => service.register(id))
+            ?.filter(reg => !!reg)
+            ?.filter(reg => !filter || filter(reg))
+    
+    }, [specification, registerIdentifiers, filter])
 
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}

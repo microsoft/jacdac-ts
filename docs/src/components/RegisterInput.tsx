@@ -1,4 +1,4 @@
-import { Typography } from "@material-ui/core";
+import { Box, Typography } from "@material-ui/core";
 import DeviceName from "./DeviceName";
 import Alert from "./ui/Alert";
 import React, { useContext, useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { REPORT_UPDATE } from "../../../src/jdom/constants";
 import AppContext from "./AppContext";
 import MembersInput from "./fields/MembersInput";
 import RegisterTrend from "./RegisterTrend";
+import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 
 export default function RegisterInput(props: {
     register: JDRegister,
@@ -25,13 +26,16 @@ export default function RegisterInput(props: {
     const [working, setWorking] = useState(false);
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
     const hasSet = specification.kind === "rw";
+    const hasData = !!register.data;
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
         if (vs !== undefined)
             setArgs(vs);
     }), [register]);
-
+    const handleRefresh = () => {
+        register.refresh(true);
+    }
     const sendArgs = async (values: any[]) => {
         if (working) return;
         try {
@@ -51,7 +55,7 @@ export default function RegisterInput(props: {
     if (!fields.length)
         return null; // nothing to see here
 
-    if (hideMissingValues && !register.data)
+    if (hideMissingValues && !hasData)
         return null;
 
     return <>
@@ -61,12 +65,15 @@ export default function RegisterInput(props: {
         {showRegisterName && specification && <Typography variant="caption" key="registername">
             {specification.name}
         </Typography>}
-        {showTrend && <RegisterTrend register={register} mini={false} horizon={32} />}
-        <MembersInput
+        {!hasData && <Box>
+            <IconButtonWithProgress title="refresh" indeterminate={true} onClick={handleRefresh} />
+        </Box>}
+        {showTrend && hasData && <RegisterTrend register={register} mini={false} horizon={24} />}
+        {hasData && <MembersInput
             serviceSpecification={service.specification}
             specifications={fields.map(f => f.specification)}
             values={args}
             setValues={hasSet && sendArgs}
-            showDataType={showDataType} />
+            showDataType={showDataType} />}
     </>
 }
