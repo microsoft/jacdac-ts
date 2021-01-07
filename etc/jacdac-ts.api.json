@@ -7667,6 +7667,50 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!isActuator:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function isActuator(spec: "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.ServiceSpec",
+              "canonicalReference": "!jdspec.ServiceSpec:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "spec",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "isActuator"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!isBootloaderFlashing:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -8485,6 +8529,50 @@
             }
           ],
           "name": "isSet"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!isValueOrIntensity:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function isValueOrIntensity(pkt: "
+            },
+            {
+              "kind": "Reference",
+              "text": "jdspec.PacketInfo",
+              "canonicalReference": "!jdspec.PacketInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "pkt",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "isValueOrIntensity"
         },
         {
           "kind": "Function",
@@ -23768,6 +23856,42 @@
         },
         {
           "kind": "Enum",
+          "canonicalReference": "jacdac-ts!PowerCmd:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum PowerCmd "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PowerCmd",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!PowerCmd.Active:member",
+              "docComment": "/**\n * Argument: priority uint32_t. Emitted with announce packets when the service is running. The `priority` should be computed as `(((max_power >> 5) << 24) | remaining_capacity) + priority_offset` where the `remaining_capacity` is `(battery_charge * battery_capacity) >> 16`, or one of the special constants `0xe00000` when the remaining capacity is unknown, or `0xf00000` when the capacity is considered infinite (eg., wall charger). The `priority` is clamped to `u32` range after computation. In cases where battery capacity is unknown but the charge percentage can be estimated, it's recommended to assume a fixed (typical) battery capacity for priority purposes, rather than using `0xe00000`, as this will have a better load-sharing characteristic, especially if several power providers of the same type are used.\n * ```\n * const [priority] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Active = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "128"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Active",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
           "canonicalReference": "jacdac-ts!PowerReg:enum",
           "docComment": "",
           "excerptTokens": [
@@ -23967,6 +24091,27 @@
                 "startIndex": 1,
                 "endIndex": 2
               }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!PowerReg.PriorityOffset:member",
+              "docComment": "/**\n * Read-write int32_t. This value is added to `priority` of `active` reports, thus modifying amount of load-sharing between different supplies. The `priority` is clamped to `u32` range when included in `active` reports.\n * ```\n * const [priorityOffset] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "PriorityOffset = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "130"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "PriorityOffset",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
             }
           ]
         },
@@ -24029,6 +24174,14 @@
             },
             {
               "kind": "Content",
+              "text": ", showDataType?: "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
               "text": "): "
             },
             {
@@ -24041,8 +24194,8 @@
             }
           ],
           "returnTypeTokenRange": {
-            "startIndex": 3,
-            "endIndex": 4
+            "startIndex": 5,
+            "endIndex": 6
           },
           "releaseTag": "Public",
           "overloadIndex": 1,
@@ -24052,6 +24205,13 @@
               "parameterTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
+              }
+            },
+            {
+              "parameterName": "showDataType",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
               }
             }
           ],
@@ -25692,6 +25852,23 @@
           ],
           "releaseTag": "Public",
           "name": "REGISTER_OPTIONAL_POLL_COUNT",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!REGISTER_POLL_FIRST_REPORT_INTERVAL:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "REGISTER_POLL_FIRST_REPORT_INTERVAL = 400"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "REGISTER_POLL_FIRST_REPORT_INTERVAL",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0

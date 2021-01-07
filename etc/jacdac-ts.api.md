@@ -703,6 +703,9 @@ export enum IotHubReg {
 export function isAckError(e: Error): boolean;
 
 // @public (undocumented)
+export function isActuator(spec: jdspec.ServiceSpec): boolean;
+
+// @public (undocumented)
 export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice): boolean;
 
 // @public (undocumented)
@@ -749,6 +752,9 @@ export function isSensor(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
 export function isSet(v: any): boolean;
+
+// @public (undocumented)
+export function isValueOrIntensity(pkt: jdspec.PacketInfo): boolean;
 
 // @public (undocumented)
 export function isWebUSBEnabled(): boolean;
@@ -1863,6 +1869,11 @@ export interface PipeInfo {
 }
 
 // @public (undocumented)
+export enum PowerCmd {
+    Active = 128
+}
+
+// @public (undocumented)
 export enum PowerReg {
     BatteryCapacity = 387,
     BatteryCharge = 386,
@@ -1872,14 +1883,15 @@ export enum PowerReg {
     KeepOnPulseDuration = 128,
     KeepOnPulsePeriod = 129,
     MaxPower = 7,
-    Overload = 385
+    Overload = 385,
+    PriorityOffset = 130
 }
 
 // @public (undocumented)
 export function prettyDuration(ms: number): string;
 
 // @public (undocumented)
-export function prettyMemberUnit(specification: jdspec.PacketMember): string;
+export function prettyMemberUnit(specification: jdspec.PacketMember, showDataType?: boolean): string;
 
 // @public (undocumented)
 export function prettySize(b: number): string;
@@ -1990,6 +2002,9 @@ export const REGISTER_NODE_NAME = "register";
 
 // @public (undocumented)
 export const REGISTER_OPTIONAL_POLL_COUNT = 3;
+
+// @public (undocumented)
+export const REGISTER_POLL_FIRST_REPORT_INTERVAL = 400;
 
 // @public (undocumented)
 export const REGISTER_POLL_REPORT_INTERVAL = 5001;
