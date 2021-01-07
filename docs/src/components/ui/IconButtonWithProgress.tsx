@@ -10,7 +10,9 @@ export type IconButtonWithProgressProps = {
 } & IconButtonProps & CircularProgressBoxProps;
 
 export default function IconButtonWithProgress(props: IconButtonWithProgressProps) {
-    const { indeterminate, progress, title, children, badgeCount, badgeColor, ...others } = props;
+    const { indeterminate, title, children, badgeCount, badgeColor,
+        progress, progressColor, progressStyle, progressSize,
+        ...others } = props;
 
     const badge = <Badge color={badgeColor}
         badgeContent={badgeCount}
@@ -21,7 +23,12 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
     return <Tooltip title={title}>
         <span><IconButton {...others}>
             {!indeterminate && badge}
-            {indeterminate && <CircularProgressBox {...others} children={badge} />}
+            {indeterminate && <CircularProgressBox
+                progress={progress}
+                progressColor={progressColor} 
+                progressStyle={progressStyle}
+                progressSize={progressSize}
+                children={badge} />}
         </IconButton></span>
     </Tooltip>
 }
