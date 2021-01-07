@@ -16,9 +16,10 @@ export default function RegisterInput(props: {
     showRegisterName?: boolean,
     hideMissingValues?: boolean,
     showTrend?: boolean,
-    showDataType?: boolean
+    showDataType?: boolean,
+    color?: "primary" | "secondary"
 }) {
-    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend, showDataType } = props;
+    const { register, showRegisterName, showDeviceName, hideMissingValues, showTrend, showDataType, color } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -70,6 +71,7 @@ export default function RegisterInput(props: {
         </Box>}
         {showTrend && hasData && <RegisterTrend register={register} mini={false} horizon={24} />}
         {hasData && <MembersInput
+            color={color}
             serviceSpecification={service.specification}
             specifications={fields.map(f => f.specification)}
             values={args}

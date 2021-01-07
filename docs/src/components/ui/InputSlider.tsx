@@ -3,6 +3,7 @@ import React from 'react';
 
 export default function InputSlider(props: {
     value: number,
+    color?: "primary" | "secondary",
     valueLabelFormat?: string | ((value: number, index: number) => React.ReactNode),
     onChange?: (newValue: number) => void,
     min?: number,
@@ -12,7 +13,7 @@ export default function InputSlider(props: {
     disabled?: boolean,
     marks?: boolean | Mark[]
 }) {
-    const { min, max, step, label, disabled, marks, onChange, value, valueLabelFormat } = props;
+    const { min, max, step, label, disabled, marks, color, onChange, value, valueLabelFormat } = props;
     const readOnly = !onChange;
 
     const handleSliderChange = (event: any, newValue: number | number[]) => {
@@ -40,6 +41,7 @@ export default function InputSlider(props: {
             </Grid>}
             <Grid item xs>
                 <Slider
+                    color={color}
                     disabled={disabled}
                     valueLabelFormat={valueLabelFormat}
                     value={value}

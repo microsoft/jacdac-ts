@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { clampToStorage, memberValueToString, scaleFloatToInt, scaleIntToFloat, storageTypeRange, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { clampToStorage, isReading, memberValueToString, scaleFloatToInt, scaleIntToFloat, storageTypeRange, tryParseMemberValue } from "../../../../src/jdom/spec";
 import IDChip from "../IDChip";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
@@ -13,9 +13,10 @@ export default function MemberInput(props: {
     serviceSpecification: jdspec.ServiceSpec,
     value: any,
     setValue?: (v: any) => void,
-    showDataType?: boolean
+    showDataType?: boolean,
+    color?: "primary" | "secondary"
 }) {
-    const { specification, serviceSpecification, value, setValue, showDataType } = props;
+    const { specification, serviceSpecification, value, setValue, showDataType, color } = props;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const [error, setError] = useState("")
@@ -85,6 +86,7 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         return <Slider
+            color={color}
             value={scaleIntToFloat(value, specification)}
             valueLabelFormat={valueLabelFormat}
             onChange={disabled ? undefined : handleScaledSliderChange}
@@ -96,6 +98,7 @@ export default function MemberInput(props: {
         // TODO: make step nicer
         return <InputSlider
             value={value}
+            color={color}
             valueLabelFormat={valueLabelFormat}
             onChange={disabled ? undefined : handleSliderChange}
             min={specification.typicalMin}

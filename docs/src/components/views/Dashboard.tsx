@@ -58,6 +58,7 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
             register={register}
             showRegisterName={true}
             hideMissingValues={!expanded}
+            color={register.address === SystemReg.Reading ? "primary" : "secondary"}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}
     </AutoGrid>
