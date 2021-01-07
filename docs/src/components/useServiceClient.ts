@@ -6,10 +6,10 @@ export default function useServiceClient<T extends JDServiceClient>(service: JDS
     const [client, setClient] = useState<T>(undefined)
 
     useEffect(() => {
-        const c = factory(service)
+        const c = service && factory(service)
         setClient(c)
-        return () => c.unmount()
-    }, [service])
+        return () => c?.unmount()
+    }, [service, factory])
 
     return client;
 }

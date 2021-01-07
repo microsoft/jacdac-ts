@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, Grid, GridSize, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useContext, useMemo } from "react";
-import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
+import { SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 import { JDService } from "../../../../src/jdom/service";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
@@ -20,7 +20,10 @@ import { strcmp } from "../../../../src/jdom/utils";
 import ConnectAlert from "../alert/ConnectAlert"
 import DeviceAvatar from "../devices/DeviceAvatar"
 import Alert from "../ui/Alert";
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import useDevices from "../hooks/useDevices";
+import useServices from "../hooks/useServices";
+import { RoleManagerClient } from "../../../../src/jdom/rolemanagerclient";
+import useServiceClient from "../useServiceClient"
 
 // filter out common registers
 const ignoreRegisters = [
@@ -119,11 +122,9 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 }
 
 export default function Dashboard() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
-    const devices = useChange(bus, b => b.devices()
-        .filter(dev => dev.announced && bus.selfDeviceId !== dev.deviceId)
-        .sort(deviceSort)
-    );
+    const devices = useDevices({ announced: true, ignoreSelf: true })
+        .sort(deviceSort);
+
     const { selected, toggleSelected } = useSelectedNodes()
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
     const breakpoints = (device: JDDevice): {

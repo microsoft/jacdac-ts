@@ -8,11 +8,12 @@ export default function useDevices(options: {
     ignoreSelf?: boolean;
     announced?: boolean;
 }) {
+    const { serviceName, serviceClass, ignoreSelf, announced } = (options || {});
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, b =>
         b.devices(options)
-            .filter(dev => !options?.ignoreSelf || dev.deviceId !== bus.selfDeviceId)
-            .filter(dev => !options?.announced || dev.announced)
-        , [JSON.stringify(options)])
+            .filter(dev => !ignoreSelf || dev.deviceId !== bus.selfDeviceId)
+            .filter(dev => !announced || dev.announced)
+        , [serviceName, serviceClass, ignoreSelf, announced])
     return devices;
 }
