@@ -58,7 +58,7 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
             showServiceName={expanded}
-            showRegisterName={expanded}
+            showRegisterName={expanded || !isReading(register.specification)}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}
