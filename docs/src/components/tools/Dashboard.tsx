@@ -28,7 +28,8 @@ const ignoreRegisters = [
 ]
 const collapsedRegisters = [
     SystemReg.Reading,
-    SystemReg.Value
+    SystemReg.Value,
+    SystemReg.Intensity
 ]
 
 function DashboardService(props: { service: JDService, expanded: boolean }) {
@@ -40,8 +41,9 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
             ?.filter(pkt => isRegister(pkt))
             ?.map(pkt => pkt.identifier) || []
         ids = ids.filter(id => ignoreRegisters.indexOf(id) < 0)
-        if (!expanded)
-            ids = ids.filter(id => collapsedRegisters.indexOf(id) > -1);
+        if (!expanded) // grab the first interresting register
+            ids = ids.filter(id => collapsedRegisters.indexOf(id) > -1)
+                .slice(0, 1);
         return ids.map(id => service.register(id))
             .filter(reg => !!reg);
     }, [specification, expanded])
@@ -52,7 +54,7 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
-            showRegisterName={expanded}
+            showRegisterName={true}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}
