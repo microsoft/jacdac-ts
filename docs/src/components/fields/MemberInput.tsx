@@ -96,15 +96,15 @@ export default function MemberInput(props: {
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
         if (disabled)
-            return <CircularProgressBox
+            return <Grid container justify="center"><Grid item><CircularProgressBox
                 progressColor={color}
                 progress={fv * 100}
-                progressSize={mobile ? "10vh" : "14vh"}>
+                progressSize={mobile ? "11vh" : "15vh"}>
                 <Grid container>
-                    <Grid item xs={12}><Typography variant={mobile ? "h4" : "h3"} align="center">{percentValueFormat(fv)}</Typography></Grid>
+                    <Grid item xs={12}><Typography variant={mobile ? "h5" : "h4"} align="center">{percentValueFormat(fv)}</Typography></Grid>
                     <Grid item xs={12}><Typography variant={"body2"} align="center">{name}</Typography></Grid>
                 </Grid>
-            </CircularProgressBox>
+            </CircularProgressBox></Grid></Grid>
         else
             return <Slider
                 color={color}
