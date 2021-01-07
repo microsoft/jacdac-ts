@@ -15,7 +15,7 @@ export default function ServiceRegisters(props: {
     hideMissingValues?: boolean,
     showTrends?: boolean
 }) {
-    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues, showTrends } = props;
+    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues, showTrends, expanded } = props;
     const specification = useChange(service, spec => spec.specification);
     const registers = useMemo(() => {
         const packets = specification?.packets;
@@ -23,10 +23,11 @@ export default function ServiceRegisters(props: {
             || packets
                 ?.filter(pkt => isRegister(pkt))
                 ?.map(pkt => pkt.identifier);
-        return ids?.map(id => service.register(id))
-            ?.filter(reg => !!reg)
-            ?.filter(reg => !filter || filter(reg))
-    
+        let r = ids?.map(id => service.register(id))
+            ?.filter(reg => !!reg) || [];
+        if (filter)
+            r = r.filter(filter);
+        return r;   
     }, [specification, registerIdentifiers, filter])
 
     return <AutoGrid spacing={1}>

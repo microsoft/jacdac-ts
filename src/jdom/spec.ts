@@ -126,6 +126,12 @@ export function isSensor(spec: jdspec.ServiceSpec): boolean {
         && spec.packets.some(pkt => pkt.identifier == SensorReg.StreamingInterval)
 }
 
+export function isActuator(spec: jdspec.ServiceSpec): boolean {
+    return spec
+        && spec.packets.some(pkt => pkt.identifier === SystemReg.Value)
+        && spec.packets.some(pkt => pkt.identifier === SystemReg.Intensity);
+}
+
 export function isRegister(pkt: jdspec.PacketInfo) {
     return pkt && (pkt.kind == "const" || pkt.kind == "ro" || pkt.kind == "rw")
 }

@@ -1,52 +1,95 @@
-import { Card, CardContent, Grid } from "@material-ui/core";
-import React, { useContext } from "react";
+import { Card, CardContent, CardHeader, Grid, Typography } from "@material-ui/core";
+import React, { useContext, useMemo } from "react";
 import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 import { JDService } from "../../../../src/jdom/service";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import useChange from "../../jacdac/useChange";
-import DeviceCardHeader from "../DeviceCardHeader";
 import useGridBreakpoints from "../useGridBreakpoints";
-import ServiceRegisters from "../ServiceRegisters"
-import { JDRegister } from "../../../../src/jdom/register";
+import useSelectedNodes from "../../jacdac/useSelectedNodes";
+import AutoGrid from "../ui/AutoGrid";
+import RegisterInput from "../RegisterInput";
+import { isRegister } from "../../../../src/jdom/spec";
+import DeviceActions from "../DeviceActions";
+import DeviceName from "../DeviceName";
+import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 
-function DashboardService(props: { service: JDService }) {
-    const { service } = props;
+// filter out common registers
+const ignoreRegisters = [
+    SystemReg.StatusCode,
+    SystemReg.StreamingPreferredInterval,
+    SystemReg.StreamingSamples,
+    SystemReg.StreamingInterval
+]
+const collapsedRegisters = [
+    SystemReg.Reading,
+    SystemReg.Value
+]
 
-    // filter out common registers
-    const filter = (reg: JDRegister) => {
-        const r = reg.address !== SystemReg.StatusCode
-            && reg.address !== SystemReg.StreamingPreferredInterval
-            && reg.address !== SystemReg.StreamingSamples
-            && reg.address !== SystemReg.StreamingInterval;
-        return r;
-    }
+function DashboardService(props: { service: JDService, expanded: boolean }) {
+    const { service, expanded } = props;
+    const specification = useChange(service, spec => spec.specification);
+    const registers = useMemo(() => {
+        const packets = specification?.packets;
+        let ids = packets
+            ?.filter(pkt => isRegister(pkt))
+            ?.map(pkt => pkt.identifier) || []
+        ids = ids.filter(id => ignoreRegisters.indexOf(id) < 0)
+        if (!expanded)
+            ids = ids.filter(id => collapsedRegisters.indexOf(id) > -1);
+        return ids.map(id => service.register(id))
+            .filter(reg => !!reg);
+    }, [specification, expanded])
 
-    return <ServiceRegisters
-        service={service}
-        showRegisterName={true}
-        filter={filter}
-        hideMissingValues={false}
-        showTrends={true}
-    />
+    if (!registers?.length)  // nothing to see here
+        return null;
+
+    return <AutoGrid spacing={1}>
+        {registers.map(register => <RegisterInput key={register.id}
+            register={register}
+            showRegisterName={expanded}
+            hideMissingValues={!expanded}
+            showTrend={expanded && register.address === SystemReg.Reading}
+        />)}
+    </AutoGrid>
 }
 
 function DashboardDevice(props: {
     device: JDDevice,
+    expanded: boolean,
+    toggleExpanded: () => void
 }) {
-    const { device } = props;
+    const { device, expanded, toggleExpanded } = props;
     const services = useChange(device, () => device.services()
         .filter(service => service.serviceClass != SRV_CTRL
             && service.serviceClass != SRV_LOGGER
-            && !!service.specification))
+            && !!service.specification));
+    const { specification } = useDeviceSpecification(device);
 
     return (
         <Card>
-            <DeviceCardHeader hideDeviceId={true} device={device} />
+            <CardHeader
+                action={<DeviceActions device={device} reset={false}>
+                    <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
+                        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButtonWithTooltip>
+                </DeviceActions>}
+                title={<DeviceName device={device} />}
+                subheader={<>
+                    {specification && <Typography variant="caption" gutterBottom>
+                        {specification.name}
+                    </Typography>}
+                </>}
+            />
             <CardContent>
                 <Grid container>
                     {services?.map(service => <Grid item xs={12} key={service.serviceClass}>
-                        <DashboardService service={service} />
+                        <DashboardService service={service} expanded={expanded} />
                     </Grid>)}
                 </Grid>
             </CardContent>
@@ -58,12 +101,15 @@ export default function Dashboard() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useChange(bus, b => b.devices()
         .filter(dev => bus.selfDeviceId !== dev.deviceId)
-        );
+    );
     const gridBreakpoints = useGridBreakpoints(devices?.length)
+    const { selected, toggleSelected } = useSelectedNodes()
+
+    const handleExpand = (device: JDDevice) => () => toggleSelected(device)
 
     return <Grid container spacing={2}>
         {devices?.map(device => <Grid key={device.id} item {...gridBreakpoints}>
-            <DashboardDevice device={device} />
+            <DashboardDevice device={device} expanded={selected(device)} toggleExpanded={handleExpand(device)} />
         </Grid>)}
     </Grid>
 }
