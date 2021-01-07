@@ -203,12 +203,14 @@ function LayoutWithDarkMode(props: LayoutProps) {
 
 function MainAppBar(props: LayoutProps) {
   const { props: pageProps } = props;
-  const { pageContext } = pageProps;
+  const { pageContext, path } = pageProps;
   const classes = useStyles();
   const { drawerType, widgetMode, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
-  const pageTitle = pageContext?.frontmatter?.title;
+  const frontmatter = pageContext?.frontmatter;
+  const pageTitle = frontmatter?.title;
+  const hidePrint = /\/tools\//.test(path) || frontmatter?.print === false;
   const appBarColor = darkMode === "dark" ? "inherit"
     : widgetMode ? "default" : undefined;
 
@@ -248,7 +250,7 @@ function MainAppBar(props: LayoutProps) {
       <div className={classes.grow} />
       <DashboardButton className={clsx(classes.menuButton)} />
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"/github"} />
-      <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />
+      {!hidePrint && <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />}
       <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
       <IconButtonWithTooltip className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} aria-label="More tools" title="More"
         edge="start" color="inherit" onClick={toggleToolsMenu} >
