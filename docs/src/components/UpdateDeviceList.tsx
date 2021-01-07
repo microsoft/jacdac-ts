@@ -12,25 +12,24 @@ import DeviceCard from "./DeviceCard"
 import useGridBreakpoints from "./useGridBreakpoints"
 import { BusState } from "../../../src/jdom/bus"
 import AppContext from "./AppContext"
+import useChange from "../jacdac/useChange"
 
 function UpdateDeviceCard(props: {
     device: JDDevice,
     firmware: FirmwareInfo,
     blob: FirmwareBlob,
-    flashing: boolean,
-    setFlashing: (b: boolean) => void
 }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const { device, firmware, blob, flashing, setFlashing } = props
+    const { device, firmware, blob } = props
     const { setError } = useContext(AppContext)
     const [progress, setProgress] = useState(0)
+    const flashing = useChange(device, d => d.flashing);
 
     const handleFlashing = async () => {
-        if (flashing) return;
+        if (device.flashing) return;
         const safeBoot = bus.safeBoot;
         try {
             setProgress(0)
-            setFlashing(true)
             device.flashing = true; // don't refresh registers while flashing
             bus.safeBoot = false; // don't poud messages while flashing
             const updateCandidates = [firmware]
@@ -40,7 +39,6 @@ function UpdateDeviceCard(props: {
         } finally {
             device.flashing = false;
             bus.safeBoot = safeBoot;
-            setFlashing(false)
         }
     }
 
@@ -59,13 +57,13 @@ export default function UpdateDeviceList() {
     const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
     const [scanning, setScanning] = useState(false)
     const gridBreakpoints = useGridBreakpoints()
-    const { hasSelection: isFlashing, selected: isDeviceFlashing, allSelected: allFlashing, setSelected: setFlashing } =
-        useSelectedNodes<JDDevice>();
 
     const devices = useEventRaised(DEVICE_CHANGE, bus, b => b.devices().filter(dev => dev.announced))
+    const isFlashing = useChange(bus, b => b.devices().some(dev => dev.flashing));
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
-        if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
+        if (!blobs?.length || isFlashing
+            || scanning || connectionState != BusState.Connected)
             return;
         console.log(`start scanning bus`)
         try {
@@ -83,9 +81,7 @@ export default function UpdateDeviceList() {
         return {
             firmware: device.firmwareInfo,
             device,
-            blob: device.firmwareInfo && blobs?.find(b => device.firmwareInfo.firmwareIdentifier == b.firmwareIdentifier),
-            flashing: isDeviceFlashing(device),
-            setFlashing: (b: boolean) => setFlashing(device, b)
+            blob: device.firmwareInfo && blobs?.find(b => device.firmwareInfo.firmwareIdentifier == b.firmwareIdentifier)
         }
     }).filter(update => !!update.firmware)
 

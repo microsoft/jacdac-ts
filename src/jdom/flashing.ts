@@ -9,7 +9,9 @@ import { BootloaderError } from "../../jacdac-spec/dist/specconstants"
 import { prettySize } from "./pretty"
 
 const BL_SUBPAGE_SIZE = 208
-const numRetries = 15
+const BL_RETRIES = 15
+const BL_SESSION_DELAY = 5
+const BL_PAGE_DELAY = 5
 
 let _startTime = 0
 
@@ -93,7 +95,7 @@ class FlashClient {
 
         this.allPending()
 
-        for (let i = 0; i < numRetries; ++i) {
+        for (let i = 0; i < BL_RETRIES; ++i) {
             for (let d of this.classClients) {
                 if (d.pending) {
                     if (d.lastStatus && d.lastStatus.getNumber(NumberFormat.UInt32LE, 0) == this.sessionId) {
@@ -103,7 +105,7 @@ class FlashClient {
                         log(`set session ${this.sessionId} on ${d.device}`)
                         await d.sendCommandAsync(setsession)
                     }
-                    await delay(5)
+                    await delay(BL_SESSION_DELAY)
                 }
             }
             if (this.numPending() == 0)
@@ -158,7 +160,8 @@ class FlashClient {
             f.lastStatus = null
 
         this.allPending()
-        for (let i = 0; i < numRetries; ++i) {
+        for (let i = 0; i < BL_RETRIES; ++i) {
+            log(`  attempt ${i}`)
             let currSubpage = 0
             for (let suboff = 0; suboff < pageSize; suboff += BL_SUBPAGE_SIZE) {
                 let sz = BL_SUBPAGE_SIZE
@@ -179,7 +182,7 @@ class FlashClient {
                             await f.sendCommandAsync(p)
                         }
                 }
-                await delay(5)
+                await delay(BL_PAGE_DELAY)
             }
 
             await this.waitForStatusAsync()
@@ -208,7 +211,7 @@ class FlashClient {
             }
 
             if (this.numPending() == 0) {
-                log(`page ${pageAddr & 0xffffff} done, ${numRetries} retries`)
+                log(`page ${pageAddr & 0xffffff} done, ${BL_RETRIES} retries`)
                 return
             }
         }

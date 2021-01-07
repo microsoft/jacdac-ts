@@ -134,7 +134,7 @@ export default function Dashboard() {
         if (selected(device))
             return { xs: 12, sm: 6, md: 6, lg: 3, xl: 2 };
         else
-            return { xs: 6, sm: 3, md: 3, lg: 3, xl: 2 };
+            return { xs: 6, sm: 6, md: 6, lg: 3, xl: 2 };
     }
 
     if (!devices.length)
