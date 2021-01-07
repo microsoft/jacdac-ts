@@ -10,7 +10,7 @@ export default function DashboardButton(props: { className?: string }) {
 
     return <IconButtonWithTooltip className={className} aria-label="Dashboard" title="Dashboard"
         edge="start" color="inherit" to="/dashboard/" >
-        <Badge badgeContent={count}>
+        <Badge color="secondary" badgeContent={count}>
             <JacdacIcon />
         </Badge>
     </IconButtonWithTooltip>
