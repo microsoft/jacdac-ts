@@ -56,7 +56,9 @@ function DashboardDevice(props: {
 
 export default function Dashboard() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
-    const devices = useChange(bus, b => b.devices());
+    const devices = useChange(bus, b => b.devices()
+        .filter(dev => bus.selfDeviceId !== dev.deviceId)
+        );
     const gridBreakpoints = useGridBreakpoints(devices?.length)
 
     return <Grid container spacing={2}>
