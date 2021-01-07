@@ -39,7 +39,6 @@ function UnitTrendChart(props: {
     const indexes = dataSet.units
         .map((u, index) => (u || "/") === unit ? index : undefined)
         .filter(index => index !== undefined)
-    const headers = indexes.map(i => dataSet.headers[i])
     const colors = indexes.map(i => dataSet.colors[i])
     const times = data.map(ex => ex.timestamp)
     const maxt = Math.max.apply(null, times);
@@ -104,7 +103,6 @@ function UnitTrendChart(props: {
                     const path = shape == "step"
                         ? data.map((row, ri) => ri == 0 ? `M ${x(row.timestamp)} ${y(row.data[index])}` : `H ${x(row.timestamp)} V ${y(row.data[index])}`).join(' ')
                         : data.map((row, ri) => `${ri == 0 ? `M` : `L`} ${x(row.timestamp)} ${y(row.data[index])}`).join(' ');
-                    const header = headers[i]
                     return <g key={`line${index}`}>
                         <path d={path} fill="none" stroke={useGradient ? `url(#gradient${index})` : color} strokeWidth={strokeWidth} strokeLinejoin="round" />
                         {dot && <circle cx={x(lastRow.timestamp)} cy={y(lastRow.data[index])} r={pointRadius} fill={color} />}

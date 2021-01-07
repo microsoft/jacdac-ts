@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { REPORT_UPDATE } from "../../../src/jdom/constants";
+import React, { useContext, useEffect, useRef } from "react";
+import { REPORT_RECEIVE } from "../../../src/jdom/constants";
 import { JDRegister } from "../../../src/jdom/register";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import FieldDataSet from "./FieldDataSet"
-import Trend, { TrendProps } from "./Trend"
+import Trend from "./Trend"
 import useChartPalette from "./useChartPalette";
 import useChange from "../jacdac/useChange"
 
@@ -25,7 +25,7 @@ export default function RegisterTrend(props: {
     useChange(dataSet.current);
 
     // register on change...
-    useEffect(() => register.subscribe(REPORT_UPDATE, () => {
+    useEffect(() => register.subscribe(REPORT_RECEIVE, () => {
         dataSet.current.addRow();
     }), [register])
 
