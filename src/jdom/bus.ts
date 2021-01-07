@@ -41,7 +41,8 @@ import {
     REGISTER_POLL_REPORT_MAX_INTERVAL,
     REGISTER_OPTIONAL_POLL_COUNT,
     PACKET_PRE_PROCESS,
-    STREAMING_DEFAULT_INTERVAL
+    STREAMING_DEFAULT_INTERVAL,
+    REGISTER_POLL_FIRST_REPORT_INTERVAL
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -645,7 +646,7 @@ export class JDBus extends JDNode {
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
     private async refreshRegisters() {
-        const devices = this.devices()
+        const devices = this._devices
             .filter(device => !device.lost && !device.flashing); // don't try lost devices or devices flashing
         if (!devices.length)
             return; // no devices, we're done
@@ -673,7 +674,6 @@ export class JDBus extends JDNode {
                 const intervalRegister = register.service.register(SensorReg.StreamingInterval);
                 let interval = intervalRegister.intValue;
                 if (!interval) {
-                    // console.log(`auto-refresh - update interval`, register)
                     // no interval data
                     // use preferred interval data or default to 50
                     const preferredInterval = register.service.register(SensorReg.StreamingPreferredInterval);
@@ -693,9 +693,11 @@ export class JDBus extends JDNode {
             else {
                 const age = this.timestamp - register.lastGetTimestamp;
                 const backoff = register.lastGetAttempts;
-                const expiration = Math.min(REGISTER_POLL_REPORT_MAX_INTERVAL, REGISTER_POLL_REPORT_INTERVAL * (1 << backoff))
-                const neverTriedYet = !register.data && register.lastGetAttempts === 0;
-                if (neverTriedYet || age > expiration) {
+                const noDataYet = !register.data;
+                const expiration = Math.min(REGISTER_POLL_REPORT_MAX_INTERVAL,
+                    (noDataYet ? REGISTER_POLL_FIRST_REPORT_INTERVAL : REGISTER_POLL_REPORT_INTERVAL)
+                    * (1 << backoff))
+                if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
                     await register.sendGetAsync();
                 }
