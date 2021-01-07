@@ -20,6 +20,7 @@ import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import { strcmp } from "../../../../src/jdom/utils";
 import ConnectAlert from "../alert/ConnectAlert"
+import DeviceAvatar from "../devices/DeviceAvatar"
 
 // filter out common registers
 const ignoreRegisters = [
@@ -74,14 +75,12 @@ function DashboardDevice(props: {
         .filter(service => service.serviceClass != SRV_CTRL
             && service.serviceClass != SRV_LOGGER
             && !!service.specification));
-    const { specification, imageUrl } = useDeviceSpecification(device);
-
-    // move sensors, then actuators first
+    const { specification } = useDeviceSpecification(device);
 
     return (
         <Card>
             <CardHeader
-                avatar={imageUrl && <Avatar alt={specification.description} src={imageUrl} />}
+                avatar={<DeviceAvatar device={device} />}
                 action={<DeviceActions device={device} reset={false}>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
