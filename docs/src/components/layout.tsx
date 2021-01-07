@@ -176,6 +176,10 @@ export default function Layout(props: LayoutProps) {
 }
 
 function LayoutWithDarkMode(props: LayoutProps) {
+  console.log({ props })
+  const { element, props: pageProps } = props;
+  const { pageContext } = pageProps;
+  const fullScreen = !!pageContext?.frontmatter?.fullScreen;
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   const rawTheme = createMuiTheme({
     palette: {
@@ -196,7 +200,7 @@ function LayoutWithDarkMode(props: LayoutProps) {
 
   return <ThemedLayout theme={theme}>
     <MDXProvider components={mdxComponents}>
-      <LayoutWithContext {...props} />
+      {fullScreen ? element : <LayoutWithContext {...props} />}
     </MDXProvider>
   </ThemedLayout>
 }
@@ -284,20 +288,20 @@ function FabBar() {
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { path, pageContext } = pageProps;
+  console.log({ pageProps })
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-  const fullScreen = !!pageContext?.frontmatter?.fullScreen;
 
-  return (<>
+  return (
     <div className={clsx(darkMode, classes.root)}>
       <SEO />
       <MainAppBar {...props} />
       <AppDrawer pagePath={path} />
       <ToolsDrawer />
-      <Container maxWidth={fullScreen ? "xl" : "lg"} disableGutters={true}>
+      <Container maxWidth={"xl"} disableGutters={true}>
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
@@ -317,6 +321,5 @@ function LayoutWithContext(props: LayoutProps) {
         </main>
       </Container>
     </div>
-  </>
   )
 }

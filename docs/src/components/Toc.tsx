@@ -125,6 +125,10 @@ export default function Toc(props: { pagePath: string }) {
       path: "/",
       order: 0
     }, {
+      name: "Dashboard",
+      path: "/dashboard/",
+      order: 0.5
+    }, {
       name: "Reference",
       path: "/reference/",
       order: 1

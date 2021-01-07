@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => createStyles({
     },
 }));
 
-export default function Page() {
+export default function MakeCodeEditorExtensionPage() {
     const rawTheme = createMuiTheme({
         palette: {
             primary: {
