@@ -24,6 +24,8 @@ import useDevices from "../hooks/useDevices";
 import useServices from "../hooks/useServices";
 import { RoleManagerClient } from "../../../../src/jdom/rolemanagerclient";
 import useServiceClient from "../useServiceClient"
+import RoleManagerService from "../RoleManagerService"
+import RemoteRequestDeviceView from "../RemoteRequestDeviceView";
 
 // filter out common registers
 const ignoreRegisters = [
@@ -81,6 +83,8 @@ function DashboardDevice(props: {
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down("xs"));
+    const roleManagerService = services.find(srv => srv.serviceClass === SRV_ROLE_MANAGER)
+    const roleManagerClient = useServiceClient(roleManagerService, srv => new RoleManagerClient(srv));
 
     return (
         <Card>
@@ -100,6 +104,8 @@ function DashboardDevice(props: {
             />
             <CardContent>
                 <Grid container>
+                    {roleManagerClient?.remoteRequestedDevices
+                        .map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={roleManagerClient} />)}
                     {services?.map(service => <Grid item xs={12} key={service.serviceClass}>
                         <DashboardService service={service} expanded={expanded} />
                     </Grid>)}
@@ -124,7 +130,6 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 export default function Dashboard() {
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);
-
     const { selected, toggleSelected } = useSelectedNodes()
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
     const breakpoints = (device: JDDevice): {

@@ -3,10 +3,11 @@ import { JDBus } from "./bus";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { SRV_ROLE_MANAGER, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE, ERROR } from "./constants";
+import { SRV_ROLE_MANAGER, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE, ERROR, EVENT } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array } from "./utils";
 import Packet from "./packet";
 import { jdunpack } from "./pack";
+import { SystemEvent } from "../../jacdac-spec/dist/specconstants";
 
 export class RemoteRequestedDevice {
     services: number[] = [];
@@ -52,6 +53,7 @@ function addRequested(devs: RemoteRequestedDevice[], name: string, service_class
 
 
 export class RoleManagerClient extends JDServiceClient {
+    private scanning = false;
     public remoteRequestedDevices: RemoteRequestedDevice[] = []
 
     static create(bus: JDBus, print: (s: string) => void = console.log) {
@@ -77,21 +79,23 @@ export class RoleManagerClient extends JDServiceClient {
 
     constructor(service: JDService) {
         super(service)
-
+        console.log(`rdp: new`)
         this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, () => {
             recomputeCandidates(this.bus, this.remoteRequestedDevices)
         }))
-
-        this.mount(this.bus.subscribe(SELF_ANNOUNCE, () => {
-            if (this.service.device.connected)
-                this.scanCore()
+        const changeEvent = this.service.event(SystemEvent.Change);
+        this.mount(changeEvent.subscribe(EVENT, () => {
+            this.scanCore();
         }))
-
         this.scanCore()
     }
 
     private async scanCore() {
+        if (this.scanning || !this.service.device.connected)
+            return;
         try {
+            console.log(`rdp start`)
+            this.scanning = true;
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
                 inp.openCommand(RoleManagerCmd.ListRequiredRoles),
@@ -120,6 +124,9 @@ export class RoleManagerClient extends JDServiceClient {
         }
         catch (e) {
             this.emit(ERROR, e);
+        }
+        finally {
+            this.scanning = false;
         }
     }
 

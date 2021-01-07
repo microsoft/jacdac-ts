@@ -1,58 +1,12 @@
-import React, { useState } from "react"
-import { Box, Card, CardActions, CardContent, CardHeader, createStyles, FormControl, FormHelperText, Grid, InputLabel, List, ListItem, makeStyles, MenuItem, Select, Theme, Typography } from "@material-ui/core"
+import React from "react"
+import { Card, CardActions, CardContent } from "@material-ui/core"
 import useChange from "../jacdac/useChange"
-import DeviceName from "./DeviceName"
 import { JDService } from "../../../src/jdom/service"
-import { RoleManagerClient, RemoteRequestedDevice } from "../../../src/jdom/rolemanagerclient"
-import { serviceName } from "../../../src/jdom/pretty"
+import { RoleManagerClient } from "../../../src/jdom/rolemanagerclient"
 import CmdButton from "./CmdButton"
-import { Alert, AlertTitle } from "@material-ui/lab"
 import DeviceCardHeader from "./DeviceCardHeader"
-import SelectWithLabel from "./ui/SelectWithLabel"
 import useServiceClient from "./useServiceClient"
-
-function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDevice, client: RoleManagerClient }) {
-    const { rdev, client } = props
-    const [working, setWorking] = useState(false)
-    const label = rdev.name;
-    const handleChange = async (ev: React.ChangeEvent<{ value: unknown }>) => {
-        const value: string = ev.target.value as string;
-        const dev = rdev.candidates.find(c => c.id == value)
-        if (dev && client) {
-            try {
-                setWorking(true)
-                await client.setRole(dev, rdev.name)
-                await dev.identify()
-            }
-            finally {
-                setWorking(false)
-            }
-        }
-    }
-
-    const noCandidates = !rdev.candidates?.length;
-    const disabled = working;
-    const value = rdev.boundTo?.id || ""
-    const error = !value && "select a device"
-
-    const serviceNames = rdev.services.map(serviceClass => serviceName(serviceClass)).join(', ')
-    return <Box mb={2}>
-        {!noCandidates && <SelectWithLabel
-            disabled={disabled}
-            label={label}
-            value={value}
-            onChange={handleChange}
-            error={error}>
-            {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
-                <DeviceName device={candidate} />
-            </MenuItem>)}
-        </SelectWithLabel>}
-        {noCandidates && <Alert severity="warning">
-            <AlertTitle>No compatible device for "{label}"</AlertTitle>
-            Please connect a device with <b>{serviceNames}</b> services.
-        </Alert>}
-    </Box>
-}
+import RemoteRequestDeviceView from "./RemoteRequestDeviceView"
 
 export default function RoleManagerService(props: {
     service: JDService,

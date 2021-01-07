@@ -9,7 +9,7 @@ export default function useServiceClient<T extends JDServiceClient>(service: JDS
         const c = service && factory(service)
         setClient(c)
         return () => c?.unmount()
-    }, [service, factory])
+    }, [service]) // don't use factory in cache!
 
     return client;
 }
