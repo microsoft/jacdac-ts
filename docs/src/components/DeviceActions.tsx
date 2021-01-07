@@ -12,9 +12,10 @@ export default function DeviceActions(props: {
     device: JDDevice,
     reset?: boolean,
     rename?: boolean,
+    hideIdentity?: boolean,
     children?: JSX.Element | JSX.Element[]
 }) {
-    const { device, reset, rename, children } = props
+    const { device, reset, rename, children, hideIdentity } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
 
     const handleIdentify = async () => {
@@ -24,7 +25,7 @@ export default function DeviceActions(props: {
         await device.reset()
     }
     return <>
-        <CmdButton trackName="device.identify" size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />
+        {!hideIdentity && <CmdButton trackName="device.identify" size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />}
         {reset && <CmdButton trackName="device.reset" size="small" title="reset" onClick={handleReset} icon={<RefreshIcon />} />}
         {rename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
         {children}

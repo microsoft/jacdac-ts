@@ -1,15 +1,14 @@
-import { Avatar, Card, CardContent, CardHeader, Grid, GridSize, Typography } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Grid, GridSize, Typography } from "@material-ui/core";
 import React, { useContext, useMemo } from "react";
 import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 import { JDService } from "../../../../src/jdom/service";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import useChange from "../../jacdac/useChange";
-import useGridBreakpoints from "../useGridBreakpoints";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import AutoGrid from "../ui/AutoGrid";
 import RegisterInput from "../RegisterInput";
-import { isActuator, isReading, isRegister, isSensor, isValueOrIntensity } from "../../../../src/jdom/spec";
+import { isReading, isRegister, isValueOrIntensity } from "../../../../src/jdom/spec";
 import DeviceActions from "../DeviceActions";
 import DeviceName from "../DeviceName";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
@@ -82,7 +81,7 @@ function DashboardDevice(props: {
         <Card>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
-                action={<DeviceActions device={device} reset={false}>
+                action={<DeviceActions device={device} hideIdentity={!expanded} reset={false}>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButtonWithTooltip>
@@ -133,7 +132,7 @@ export default function Dashboard() {
         xl?: GridSize
     } => {
         if (selected(device))
-            return { xs: 12, sm: 6, md: 6, lg: 6, xl: 4 };
+            return { xs: 12, sm: 6, md: 6, lg: 3, xl: 2 };
         else
             return { xs: 6, sm: 3, md: 3, lg: 3, xl: 2 };
     }
