@@ -8,7 +8,7 @@ export default function DashboardButton(props: { className?: string }) {
     const { className } = props;
     const count = useDeviceCount()
 
-    return <IconButtonWithTooltip className={className} aria-label="Dashboard" title="Dashboard"
+    return <IconButtonWithTooltip className={className} title="Device Dashboard"
         edge="start" color="inherit" to="/dashboard/" >
         <Badge color="secondary" badgeContent={count}>
             <JacdacIcon />

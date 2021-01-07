@@ -58,7 +58,7 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
             showServiceName={expanded}
-            showRegisterName={expanded}
+            showRegisterName={true}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}
@@ -86,7 +86,7 @@ function DashboardDevice(props: {
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButtonWithTooltip>
                 </DeviceActions>}
-                title={<DeviceName device={device} />}
+                title={<DeviceName showShortId={false} device={device} />}
                 subheader={<>
                     {specification && <Typography variant="caption" gutterBottom>
                         {specification.name}
