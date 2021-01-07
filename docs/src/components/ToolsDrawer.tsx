@@ -72,14 +72,6 @@ export default function ToolsDrawer() {
     }
     const links = [
         {
-            text: "Dashboard",
-            url: "/tools/dashboard",
-            icon: <JacdacIcon />
-        },
-        {
-            // separator
-        },
-        {
             text: "Role Manager",
             url: "/tools/role-manager",
             icon: <EmojiObjectsIcon />

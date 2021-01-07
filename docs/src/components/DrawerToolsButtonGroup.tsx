@@ -17,10 +17,6 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { className, showToc, showCurrent, showConnect } = props;
     const { drawerType, setDrawerType } = useContext(AppContext)
-    const [count, setCount] = useState(bus.devices().length)
-    useEffect(() => bus.subscribe(DEVICE_CHANGE,
-        () => setCount(bus.devices().length))
-        , [bus])
 
     const handleDrawer = (drawer: DrawerType) => () => setDrawerType(drawer);
     const drawers = [
@@ -32,9 +28,7 @@ export default function DrawerToolsButtonGroup(props: { className?: string, show
         {
             drawer: DrawerType.Dom,
             label: "open device tree",
-            icon: <Badge badgeContent={count}>
-                <AccountTreeIcon />
-            </Badge>
+            icon: <AccountTreeIcon />
         },
         {
             drawer: DrawerType.Packets,

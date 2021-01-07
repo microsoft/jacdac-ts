@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext } from "react";
 import { Button } from "gatsby-theme-material-ui";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/jdom/bus";
@@ -7,7 +7,6 @@ import UsbIcon from '@material-ui/icons/Usb';
 import { useMediaQuery, useTheme } from "@material-ui/core";
 import KindIcon from "../components/KindIcon";
 import IconButtonWithProgress from "../components/ui/IconButtonWithProgress"
-import Flags from "../../../src/jdom/flags";
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb";
 
 export default function ConnectButton(props: { full?: boolean, className?: string, transparent?: boolean }) {
@@ -19,7 +18,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const small = !full || useMediaQuery(theme.breakpoints.down("md"))
     const disabled = connectionState != BusState.Connected && connectionState != BusState.Disconnected
     const onClick = showDisconnect ? disconnectAsync : connectAsync;
-    const icon = showDisconnect ? <KindIcon kind="device" /> : <UsbIcon />
+    const icon = showDisconnect ? <UsbIcon /> : <KindIcon kind="device" />
     const title = showDisconnect ? "disconnect" : "connect";
 
     if (!isWebUSBEnabled() || !isWebUSBSupported())

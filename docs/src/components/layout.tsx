@@ -46,6 +46,7 @@ import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
 import ThemedLayout from "./ui/ThemedLayout";
+import DashboardButton from "./buttons/DashboardButton";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -245,7 +246,7 @@ function MainAppBar(props: LayoutProps) {
           </Typography>}
       </Hidden>}
       <div className={classes.grow} />
-      <WebUSBSupported><div className={clsx(classes.menuButton)}><ConnectButton transparent={true} /></div></WebUSBSupported>
+      <DashboardButton className={clsx(classes.menuButton)} />
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"/github"} />
       <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />
       <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
