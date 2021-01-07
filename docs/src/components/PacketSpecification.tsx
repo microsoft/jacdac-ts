@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => createStyles({
 function MemberType(props: { member: jdspec.PacketMember }) {
     const { member } = props;
     const classes = useStyles();
-    const helperText = prettyMemberUnit(member);
+    const helperText = prettyMemberUnit(member, true);
 
     return <li className={classes.field}>
         {member.name}: <code>{helperText}</code>

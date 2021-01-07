@@ -1,4 +1,4 @@
-import { Avatar, Card, CardContent, CardHeader, Grid, Typography } from "@material-ui/core";
+import { Avatar, Card, CardContent, CardHeader, Grid, GridSize, Typography } from "@material-ui/core";
 import React, { useContext, useMemo } from "react";
 import { SRV_CTRL, SRV_LOGGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -21,6 +21,7 @@ import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import { strcmp } from "../../../../src/jdom/utils";
 import ConnectAlert from "../alert/ConnectAlert"
 import DeviceAvatar from "../devices/DeviceAvatar"
+import Alert from "../ui/Alert";
 
 // filter out common registers
 const ignoreRegisters = [
@@ -57,8 +58,8 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
-            showServiceName={true}
-            showRegisterName={true}
+            showServiceName={expanded}
+            showRegisterName={expanded}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}
@@ -122,16 +123,29 @@ export default function Dashboard() {
         .filter(dev => dev.announced && bus.selfDeviceId !== dev.deviceId)
         .sort(deviceSort)
     );
-    const gridBreakpoints = useGridBreakpoints(devices?.length)
     const { selected, toggleSelected } = useSelectedNodes()
-
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
+    const breakpoints = (device: JDDevice): {
+        xs?: GridSize,
+        md?: GridSize,
+        sm?: GridSize,
+        lg?: GridSize,
+        xl?: GridSize
+    } => {
+        if (selected(device))
+            return { xs: 12, sm: 8, xl: 6 };
+        else
+            return { xs: 6, sm: 4, xl: 3 };
+    }
 
     if (!devices.length)
-        return <ConnectAlert />
+        return <>
+            <ConnectAlert />
+            <Alert severity="info">Please connect a JACDAC device to use the dashboard.</Alert>
+        </>
 
     return <Grid container spacing={2}>
-        {devices?.map(device => <Grid key={device.id} item {...gridBreakpoints}>
+        {devices?.map(device => <Grid key={device.id} item {...breakpoints(device)}>
             <DashboardDevice device={device} expanded={selected(device)} toggleExpanded={handleExpand(device)} />
         </Grid>)}
     </Grid>

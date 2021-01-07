@@ -28,7 +28,7 @@ export default function RegisterInput(props: {
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
     const hasSet = specification.kind === "rw";
     const hasData = !!register.data;
-    const color = register.address === SystemReg.Reading ? "primary" : "secondary"
+    const color = hasSet ? "secondary" : "primary"
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -65,10 +65,10 @@ export default function RegisterInput(props: {
             <DeviceName device={device} />/
     </Typography>}
         {showServiceName && specification && <Typography variant="caption" key="servicename">
-            {register.service.name.toLocaleLowerCase() + " "}
+            {register.service.name.toLocaleLowerCase().replace(/_/g, ' ') + " "}
         </Typography>}
         {showRegisterName && specification && <Typography variant="caption" key="registername">
-            {specification.name}
+            {specification.name.replace(/_/g, ' ')}
         </Typography>}
         {!hasData && <Box>
             <IconButtonWithProgress title="refresh" indeterminate={true} onClick={handleRefresh} />

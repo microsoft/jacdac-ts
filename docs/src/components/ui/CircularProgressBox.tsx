@@ -5,7 +5,7 @@ export interface CircularProgressBoxProps {
     progress?: number;
     progressSize?: React.ReactText,
     progressColor?: "inherit" | "primary" | "secondary",
-    progressStyle?: React.CSSProperties
+    progressStyle?: React.CSSProperties;
 }
 
 export default function CircularProgressBox(props: { children: JSX.Element | JSX.Element[] } & CircularProgressBoxProps) {

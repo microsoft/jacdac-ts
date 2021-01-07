@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Slider } from "@material-ui/core";
+import { CircularProgress, Slider, Typography, useTheme } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { clampToStorage, isReading, memberValueToString, scaleFloatToInt, scaleIntToFloat, storageTypeRange, tryParseMemberValue } from "../../../../src/jdom/spec";
 import IDChip from "../IDChip";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
+import CircularProgressBox from "../ui/CircularProgressBox";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -25,6 +26,7 @@ export default function MemberInput(props: {
     const name = specification.name === "_" ? "" : specification.name
     const label = name
     const helperText = error || prettyMemberUnit(specification, showDataType)
+    const theme = useTheme();
 
     // update coming from device
     useEffect(() => {
@@ -90,14 +92,23 @@ export default function MemberInput(props: {
         </Select>
     }
     else if (specification.unit === "/") {
-        return <Slider
-            color={color}
-            value={scaleIntToFloat(value, specification)}
-            valueLabelFormat={percentValueFormat}
-            onChange={disabled ? undefined : handleScaledSliderChange}
-            min={0} max={1} step={0.01}
-            valueLabelDisplay="auto"
-        />
+        const fv = scaleIntToFloat(value, specification);
+        if (disabled)
+            return <CircularProgressBox
+                progressColor={color}
+                progress={fv * 100}
+                progressSize={"10rem"}>
+                <Typography variant="h3">{percentValueFormat(fv)}</Typography>
+            </CircularProgressBox>
+        else
+            return <Slider
+                color={color}
+                value={fv}
+                valueLabelFormat={percentValueFormat}
+                onChange={handleScaledSliderChange}
+                min={0} max={1} step={0.01}
+                valueLabelDisplay="auto"
+            />
     } else if (isSet(specification.typicalMin) && isSet(specification.typicalMax)) {
         const step = (specification.typicalMax - specification.typicalMin) / 100;
         // TODO: make step nicer
