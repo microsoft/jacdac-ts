@@ -4,7 +4,7 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/jdom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
-import { useMediaQuery, useTheme } from "@material-ui/core";
+import { Badge, useMediaQuery, useTheme } from "@material-ui/core";
 import KindIcon from "../components/KindIcon";
 import IconButtonWithProgress from "../components/ui/IconButtonWithProgress"
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb";
@@ -18,7 +18,9 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const small = !full || useMediaQuery(theme.breakpoints.down("md"))
     const disabled = connectionState != BusState.Connected && connectionState != BusState.Disconnected
     const onClick = showDisconnect ? disconnectAsync : connectAsync;
-    const icon = showDisconnect ? <UsbIcon /> : <KindIcon kind="device" />
+    const icon = <Badge color="primary" variant="dot" invisible={!showDisconnect}>
+        <UsbIcon />
+    </Badge>
     const title = showDisconnect ? "disconnect" : "connect";
 
     if (!isWebUSBEnabled() || !isWebUSBSupported())
