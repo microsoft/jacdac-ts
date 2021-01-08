@@ -214,7 +214,6 @@ function MainAppBar(props: LayoutProps) {
   const drawerOpen = drawerType !== DrawerType.None
   const frontmatter = pageContext?.frontmatter;
   const pageTitle = frontmatter?.title;
-  const hidePrint = /\/tools\//.test(path) || frontmatter?.print === false;
   const appBarColor = darkMode === "dark" ? "inherit"
     : widgetMode ? "default" : undefined;
 
@@ -254,7 +253,6 @@ function MainAppBar(props: LayoutProps) {
       <div className={classes.grow} />
       <DashboardButton className={clsx(classes.menuButton)} />
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"/github"} />
-      {!hidePrint && <PrintButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} color="inherit" />}
       <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
       <IconButtonWithTooltip className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} aria-label="More tools" title="More"
         edge="start" color="inherit" onClick={toggleToolsMenu} >
