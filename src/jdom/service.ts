@@ -2,7 +2,7 @@ import { JDDevice } from "./device";
 import Packet from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVE, SERVICE_CLIENT_REMOVED } from "./constants";
+import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator } from "./spec";
 import { JDEvent } from "./event";
