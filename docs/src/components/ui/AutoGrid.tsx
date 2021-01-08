@@ -5,8 +5,7 @@ export default function AutoGrid(props: { children: JSX.Element | JSX.Element[],
     const { children, spacing } = props;
     if (children && Array.isArray(children))
         return <Grid container spacing={spacing}>
-            {(children as JSX.Element[]).map((child, i) => <Grid item key={child.key || i}
-                xs={12}>
+            {(children as JSX.Element[]).map((child, i) => <Grid item xs={12} key={child.key || i}>
                 {child}
             </Grid>)}
         </Grid>

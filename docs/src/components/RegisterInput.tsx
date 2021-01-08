@@ -32,7 +32,6 @@ export default function RegisterInput(props: {
     const hasSet = specification.kind === "rw";
     const hasData = !!register.data;
     const color = hasSet ? "secondary" : "primary"
-    const name = specification?.name?.replace(/_/g, ' ')
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
