@@ -91,8 +91,7 @@ export default function MemberInput(props: {
             multiple={enumInfo.isFlags}
             value={enumInfo.isFlags ? valueToFlags(enumInfo, value) : value}
             onChange={handleEnumChange}>
-            {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n}
-                <IDChip id={enumInfo.members[n]} /></MenuItem>)}
+            {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n}</MenuItem>)}
         </Select>
     }
     else if (specification.unit === "/") {
