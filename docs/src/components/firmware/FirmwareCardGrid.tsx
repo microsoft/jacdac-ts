@@ -1,21 +1,20 @@
 import { Grid, Switch } from "@material-ui/core";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import useGridBreakpoints from "../useGridBreakpoints";
 import FirmwareCard from "./FirmwareCard";
 // tslint:disable-next-line: no-submodule-imports
 import useFirmwareRepos from "./useFirmwareRepos";
 import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
+import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import useChange from "../../jacdac/useChange";
 
 export default function FirmwareCardGrid() {
-    const [showAllRepos, setShowAllRepos] = useState(false)
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
-    const firmwareRepos = useFirmwareRepos(showAllRepos)
+    const safeMode = useChange(bus, b => b.safeBoot);
+    const firmwareRepos = useFirmwareRepos(safeMode)
 
     return <Grid container spacing={2}>
-        <Grid xs={12} item key="showall">
-            <Switch checked={showAllRepos} onChange={() => setShowAllRepos(!showAllRepos)} />
-            show all firmware repositories
-        </Grid>
         <Grid {...gridBreakpoints} item key="localfile">
             <LocalFileFirmwareCard />
         </Grid>

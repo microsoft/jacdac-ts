@@ -23,6 +23,10 @@ export class DbStore<T> extends JDEventSource {
     list(): Promise<string[]> {
         return this.db.list(this.name)
     }
+    async clear() {
+        this.db.clear(this.name);
+        this.emit(CHANGE)
+    }
 }
 
 export class Db extends JDEventSource {
@@ -152,6 +156,27 @@ export class Db extends JDEventSource {
             }));
     }
 
+    clear(table: string) {
+        return this.checkUpgrading()
+            .then(() => new Promise<void>((resolve, reject) => {
+                try {
+                    const transaction = this.db.transaction([table], "readwrite");
+                    const blobs = transaction.objectStore(table)
+                    const request = blobs.clear();
+                    request.onsuccess = (event) => {
+                        this.emit(CHANGE)
+                        resolve()
+                    }
+                    request.onerror = (event) => {
+                        this.emit(ERROR, event)
+                        resolve()
+                    }
+                } catch (e) {
+                    this.emit(ERROR, e)
+                    reject(e)
+                }
+            }));
+    }
 }
 
 export interface DbContextProps {

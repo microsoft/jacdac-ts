@@ -13,7 +13,9 @@ export default function FlashButton(props: { className?: string }) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const updates = useEventRaised([FIRMWARE_BLOBS_CHANGE, DEVICE_FIRMWARE_INFO, DEVICE_CHANGE],
         bus,
-        b => computeUpdates(b.devices({ ignoreSelf: true, announced: true }).map(d => d.firmwareInfo), bus.firmwareBlobs))
+        b => computeUpdates(b.devices({ ignoreSelf: true, announced: true })
+            .map(d => d.firmwareInfo), bus.firmwareBlobs)
+    )
 
     if (!updates?.length)
         return <></>
