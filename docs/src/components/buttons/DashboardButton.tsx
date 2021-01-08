@@ -6,7 +6,7 @@ import useDeviceCount from "../hooks/useDeviceCount"
 
 export default function DashboardButton(props: { className?: string }) {
     const { className } = props;
-    const count = useDeviceCount()
+    const count = useDeviceCount({ ignoreSelf: true })
 
     return <IconButtonWithTooltip className={className} title="Device Dashboard"
         edge="start" color="inherit" to="/dashboard/" >
