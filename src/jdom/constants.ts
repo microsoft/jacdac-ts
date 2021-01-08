@@ -76,6 +76,8 @@ export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 export const NAME_CHANGE = 'nameChange'
 export const LATE = 'late'
 export const GET_ATTEMPT = 'getAttempt'
+export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
+export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
 
 export const DATA = 'data'
 export const CLOSE = 'close'

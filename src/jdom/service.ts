@@ -2,12 +2,13 @@ import { JDDevice } from "./device";
 import Packet from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE } from "./constants";
+import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVE, SERVICE_CLIENT_REMOVED } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
+import { JDServiceClient } from "./serviceclient";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -15,6 +16,7 @@ export class JDService extends JDNode {
     private _reports: Packet[] = [];
     private _specification: jdspec.ServiceSpec = null;
     public registersUseAcks = false;
+    private readonly _clients: JDServiceClient[] = [];
 
     constructor(
         public readonly device: JDDevice,
@@ -203,6 +205,25 @@ export class JDService extends JDNode {
         return a.serviceClass - b.serviceClass ||
             strcmp(a.device.deviceId, b.device.deviceId) ||
             a.service_index - b.service_index;
+    }
+
+    get clients(): JDServiceClient[] {
+        return this._clients?.slice(0) || [];
+    }
+
+    addClient(client: JDServiceClient) {
+        if (client && this._clients.indexOf(client) < 0) {
+            this._clients.push(client);
+            this.emit(SERVICE_CLIENT_ADDED, client);
+        }
+    }
+
+    removeClient(client: JDServiceClient) {
+        const i = this._clients.indexOf(client);
+        if (i > -1) {
+            this._clients.splice(i, 1);
+            this.emit(SERVICE_CLIENT_REMOVED, client);
+        }
     }
 }
 

@@ -1,9 +1,14 @@
+import { LogLevel } from "../embed/protocol";
 import { JDEventSource } from "./eventsource";
 
 export class JDClient extends JDEventSource {
     private unsubscribers: (() => void)[] = []
     constructor() {
         super()
+    }
+
+    protected log(msg: any) {
+        console.log(msg);
     }
 
     mount(unsubscribe: () => void): () => void {

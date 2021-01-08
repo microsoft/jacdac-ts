@@ -2,9 +2,9 @@ import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags
 } from "./constants"
-import { fromHex, read32, SMap, bufferEq, assert, setAckError } from "./utils"
+import { fromHex, read32, SMap, bufferEq, assert, setAckError, toHex } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";
@@ -31,7 +31,7 @@ export class JDDevice extends JDNode {
     private _replay: boolean;
     private _name: string;
     private _lost: boolean;
-    servicesData: Uint8Array
+    private _servicesData: Uint8Array
     lastSeen: number
     lastServiceUpdate: number
     private _shortId: string
@@ -103,7 +103,19 @@ export class JDDevice extends JDNode {
     }
 
     get announced(): boolean {
-        return !!this.servicesData && !!this.servicesData.length;
+        return !!this._servicesData?.length;
+    }
+
+    get restartCounter(): number {
+        return this._servicesData?.[0] || 0;
+    }
+
+    get packetCount(): number {
+        return this._servicesData?.[2] || 0;
+    }
+
+    get announceFlags(): ControlAnnounceFlags {
+        return this._servicesData?.[1] || 0;
     }
 
     get shortId() {
@@ -174,8 +186,9 @@ export class JDDevice extends JDNode {
         if (!this.announced) return false;
         if (service_class === 0) return true;
 
-        for (let i = 0; i < this.servicesData.length; i += 4) {
-            const sc = getNumber(this.servicesData, NumberFormat.UInt32LE, i);
+        // skip first 4 bytes
+        for (let i = 4; i < this._servicesData.length; i += 4) {
+            const sc = getNumber(this._servicesData, NumberFormat.UInt32LE, i);
             if (isInstanceOf(sc, service_class))
                 return true
         }
@@ -194,16 +207,17 @@ export class JDDevice extends JDNode {
 
     get serviceLength() {
         if (!this.announced) return 0;
-        return this.servicesData.length >> 2;
+        return this._servicesData.length >> 2;
     }
 
     serviceClassAt(idx: number): number {
-        idx <<= 2
-        if (!this.announced || idx + 4 > this.servicesData.length)
-            return undefined
         if (idx == 0)
-            return 0
-        return read32(this.servicesData, idx)
+            return 0;
+
+        idx <<= 2
+        if (!this.announced || idx + 4 > this._servicesData.length)
+            return undefined
+        return read32(this._servicesData, idx)
     }
 
     get serviceClasses(): number[] {
@@ -263,7 +277,7 @@ export class JDDevice extends JDNode {
 
     processAnnouncement(pkt: Packet) {
         let changed = false;
-        const w0 = this.servicesData ? getNumber(this.servicesData, NumberFormat.UInt32LE, 0) : 0
+        const w0 = this._servicesData ? getNumber(this._servicesData, NumberFormat.UInt32LE, 0) : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
 
         if (w1 && (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) < (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)) {
@@ -272,10 +286,10 @@ export class JDDevice extends JDNode {
             changed = true;
         }
 
-        if (!bufferEq(pkt.data, this.servicesData)) {
+        if (!bufferEq(pkt.data, this._servicesData, 4)) {
             this._source = pkt.sender || this._source; // remember who's sending those packets
             this._replay = !!pkt.replay;
-            this.servicesData = pkt.data
+            this._servicesData = pkt.data
             this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
