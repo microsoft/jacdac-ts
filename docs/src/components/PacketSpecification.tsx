@@ -33,11 +33,12 @@ function MemberType(props: { member: jdspec.PacketMember }) {
 
     return <li className={classes.field}>
         {member.name}: <code>{helperText}</code>
+        {member.startRepeats ? ", starts repeating" : ""}
     </li>
 }
 
-function MembersType(props: { members: jdspec.PacketMember[], title?: string, setArg?: (index: number) => (args: any[]) => void }) {
-    const { members, title, setArg } = props;
+function MembersType(props: { members: jdspec.PacketMember[], title?: string }) {
+    const { members, title } = props;
 
     const member = members[0]
     if (!members?.length || (members.length == 1
@@ -50,7 +51,7 @@ function MembersType(props: { members: jdspec.PacketMember[], title?: string, se
     return <>
         {!!title && <h4>{title}</h4>}
         <ul>
-            {members.map((member, i) => <MemberType key={`member${member.name}`} member={member} setArg={setArg && setArg(i)} />)}
+            {members.map((member, i) => <MemberType key={`member${member.name}`} member={member} />)}
         </ul>
     </>
 }
