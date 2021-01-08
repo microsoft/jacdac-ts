@@ -237,11 +237,12 @@ export default class TraceView extends JDClient {
             }
         }
 
-        if (filtered)
+        if (filtered) {
             this._filteredPackets.unshift({
                 key,
                 packet: pkt,
                 count: 1
             })
+        }
     }
 }

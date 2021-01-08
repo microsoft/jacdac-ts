@@ -6,7 +6,7 @@ import { JDServiceClient } from "./serviceclient";
 import { SRV_ROLE_MANAGER, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE, ERROR, EVENT, DEVICE_CHANGE } from "./constants";
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array, debounceAsync } from "./utils";
 import Packet from "./packet";
-import { jdunpack } from "./pack";
+import { jdpack, jdunpack } from "./pack";
 import { SystemEvent } from "../../jacdac-spec/dist/specconstants";
 
 const SCAN_DEBOUNCE = 2000
@@ -31,7 +31,6 @@ export class RemoteRequestedDevice {
         if (this.parent == null) {
             // setDevName(dev.deviceId, this.name)
         } else {
-
             if (this.boundTo)
                 await this.parent.setRole(this.boundTo, "")
             await this.parent.setRole(dev, this.name)
@@ -82,30 +81,33 @@ export class RoleManagerClient extends JDServiceClient {
                 inp.openCommand(RoleManagerCmd.ListRequiredRoles),
                 true)
 
-            const localDevs = this.bus.devices()
-            const devs: RemoteRequestedDevice[] = []
+            const localDevs = this.bus.devices();
+            const ordevs = this.remoteRequestedDevices.slice(0);
+            const rdevs: RemoteRequestedDevice[] = []
 
             for (const buf of await inp.readData()) {
                 const [devidbuf, service_class] = jdunpack<[Uint8Array, number]>(buf, "b[8] u32")
                 const devid = toHex(devidbuf);
                 const name = fromUTF8(uint8ArrayToString(buf.slice(12)))
-                const r = this.addRequested(devs, name, service_class)
+                const r = this.addRequested(rdevs, name, service_class)
                 const dev = localDevs.find(d => d.deviceId == devid)
                 if (dev)
                     r.boundTo = dev
             }
 
-            devs.sort((a, b) => strcmp(a.name, b.name))
+            rdevs.sort((a, b) => strcmp(a.name, b.name))
 
-            if (devs.length !== this.remoteRequestedDevices.length
-                || devs.some((dev, i) => dev.toString() !== this.remoteRequestedDevices[i].toString())) {
-                this.remoteRequestedDevices = devs;
+            if (rdevs.length !== ordevs.length
+                || rdevs.some((dev, i) => (dev.name !== ordevs[i].name) || (dev.boundTo !== ordevs[i].boundTo))) {
+                this.remoteRequestedDevices = rdevs;
                 this.recomputeCandidates();
                 if (this.options?.autoBind)
                     await this.bindDevices();
                 console.log(`rdp changed`, this.remoteRequestedDevices)
                 this.emit(CHANGE, this.remoteRequestedDevices)
             }
+
+            console.log(`rdp done`)
         }
         catch (e) {
             this.emit(ERROR, e);
@@ -153,13 +155,14 @@ export class RoleManagerClient extends JDServiceClient {
         })
     }
 
-    clearRoles() {
-        return this.service.sendCmdAsync(RoleManagerCmd.ClearAllRoles, true)
+    async clearRoles() {
+        await this.service.sendCmdAsync(RoleManagerCmd.ClearAllRoles, true)
     }
 
-    setRole(dev: JDDevice, name: string) {
-        const data = bufferConcat(fromHex(dev.deviceId), stringToUint8Array(fromUTF8(name || "")))
-        return this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
+    async setRole(dev: JDDevice, name: string) {
+        this.log(`set role ${dev} to ${name}`)
+        const data = jdpack<[Uint8Array, string]>("b[8] s", [fromHex(dev.deviceId), name || ""]);
+        await this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
     }
 
     toString() {

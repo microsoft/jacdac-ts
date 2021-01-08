@@ -20,25 +20,19 @@ export default function PacketBadge(props: {
     const receivedAck = !failedAck && !!packet.meta[META_ACK];
     const getPacket = !!packet.meta[META_GET];
     const direction = packet.isCommand ? "to" : "from";
-
     const logMessage = packet.serviceClass === SRV_LOGGER && packet.isReport
         && !packet.isRegisterGet;
-    const icon = logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> :
-        <KindIcon kind={packet.isCRCAck ? "crc_ack"
-            : packet.isPipe ? "pipe"
-                : packet.isAnnounce ? "announce"
-                    : decoded?.info.kind} />;
 
-    const badgeIcon = <>
-        {getPacket && !failedAck && !receivedAck && <Tooltip title={`to/from ${packet.friendlyDeviceName}`}><CodeIcon /></Tooltip>}
-        {direction === "to" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><ArrowLeftIcon /></Tooltip>}
-        {direction === "from" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><ArrowRightIcon /></Tooltip>}
-        {requiredAck === true && failedAck && <Tooltip title="no ack"><ClearIcon /></Tooltip>}
-        {requiredAck === true && receivedAck && <Tooltip title="ack received"><KindIcon kind={CRC_ACK_NODE_NAME} /></Tooltip>}
-        {icon}
-    </>
-
-    return (count || 0) > 1 ? <Badge badgeContent={count}>
-        {badgeIcon}
-    </Badge> : badgeIcon;
+    return <Badge badgeContent={count}>
+        {getPacket && !failedAck && !receivedAck && <Tooltip title={`to/from ${packet.friendlyDeviceName}`}><span><CodeIcon /></span></Tooltip>}
+        {direction === "to" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`to ${packet.friendlyDeviceName}`}><span><ArrowLeftIcon /></span></Tooltip>}
+        {direction === "from" && !getPacket && !failedAck && !receivedAck && <Tooltip title={`from ${packet.friendlyDeviceName}`}><span><ArrowRightIcon /></span></Tooltip>}
+        {requiredAck === true && failedAck && <Tooltip title="no ack"><span><ClearIcon /></span></Tooltip>}
+        {requiredAck === true && receivedAck && <Tooltip title="ack received"><span><KindIcon kind={CRC_ACK_NODE_NAME} /></span></Tooltip>}
+        {logMessage ? <LogMessageIcon identifier={decoded?.info.identifier} /> :
+            <KindIcon kind={packet.isCRCAck ? "crc_ack"
+                : packet.isPipe ? "pipe"
+                    : packet.isAnnounce ? "announce"
+                        : decoded?.info.kind} />}
+    </Badge>
 }

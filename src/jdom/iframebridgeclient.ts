@@ -80,7 +80,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
 
     private postPacket(pkt: Packet) {
         // check if this packet was already sent from another spot
-        if (!!pkt.sender)
+        if (!!pkt.sender || !window.parent || window.parent === window)
             return;
 
         this.packetSent++;
@@ -92,7 +92,6 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             data: pkt.toBuffer(),
             sender: this.bridgeId
         }
-        // may not be in iframe
-        window.parent?.postMessage(msg, this.origin)
+        window.parent.postMessage(msg, this.origin)
     }
 }

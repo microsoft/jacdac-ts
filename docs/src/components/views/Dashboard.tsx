@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, Grid, GridSize, Typography, useMediaQuery, useTheme } from "@material-ui/core";
-import React, { useContext, useMemo } from "react";
+import { Card, CardContent, CardHeader, Grid, GridSize, Switch, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import React, { useContext, useMemo, useState } from "react";
 import { SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SystemReg } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 import { JDService } from "../../../../src/jdom/service";
@@ -70,6 +70,37 @@ function DashboardService(props: { service: JDService, expanded: boolean }) {
     </AutoGrid>
 }
 
+function DashboardRoleManager(props: {
+    device: JDDevice,
+    expanded?: boolean
+}) {
+    const { device, expanded } = props;
+    const [autoBind, setAutoBind] = useState(false);
+    const roleManagerService = useChange(device, d => d.services({ serviceClass: SRV_ROLE_MANAGER })[0]);
+    const roleManagerClient = useServiceClient(roleManagerService, srv => new RoleManagerClient(srv, { autoBind }), [autoBind]);
+    const handleAutoBind = () => setAutoBind(!autoBind);
+
+    if (!roleManagerService)
+        return null;
+
+    return <>
+        <Grid item xs={12}>
+            <Switch value={autoBind} onChange={handleAutoBind} />
+            <Typography component="span" variant="caption">assign roles automatically</Typography>
+        </Grid>
+        {expanded && <AutoGrid>
+            {roleManagerClient?.remoteRequestedDevices
+                .map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={roleManagerClient} />)}
+        </AutoGrid>}
+    </>
+}
+
+const ignoredServices = [
+    SRV_CTRL,
+    SRV_LOGGER,
+    SRV_ROLE_MANAGER
+]
+
 function DashboardDevice(props: {
     device: JDDevice,
     expanded: boolean,
@@ -77,14 +108,11 @@ function DashboardDevice(props: {
 }) {
     const { device, expanded, toggleExpanded } = props;
     const services = useChange(device, () => device.services()
-        .filter(service => service.serviceClass != SRV_CTRL
-            && service.serviceClass != SRV_LOGGER
+        .filter(service => ignoredServices.indexOf(service.serviceClass) < 0
             && !!service.specification));
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down("xs"));
-    const roleManagerService = services.find(srv => srv.serviceClass === SRV_ROLE_MANAGER)
-    const roleManagerClient = useServiceClient(roleManagerService, srv => new RoleManagerClient(srv));
 
     return (
         <Card>
@@ -104,10 +132,7 @@ function DashboardDevice(props: {
             />
             <CardContent>
                 <Grid container>
-                    {roleManagerClient && <AutoGrid>
-                        {roleManagerClient?.remoteRequestedDevices
-                            .map(rdev => <RemoteRequestDeviceView key={rdev.name} rdev={rdev} client={roleManagerClient} />)}
-                    </AutoGrid>}
+                    <DashboardRoleManager device={device} expanded={expanded} />
                     {services?.map(service => <Grid item xs={12} key={service.serviceClass}>
                         <DashboardService service={service} expanded={expanded} />
                     </Grid>)}
