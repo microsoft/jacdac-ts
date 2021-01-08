@@ -80,7 +80,7 @@ export default function MemberInput(props: {
     }
     else if (specification.type === 'bool')
         return <>
-            <Switch checked={!!value} onChange={handleChecked} disabled={disabled} />
+            <Switch checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
             {label}
         </>
     else if (enumInfo !== undefined) {
