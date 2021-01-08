@@ -63,6 +63,6 @@ export default function CommandInput(props: {
         {showDeviceName && <Typography>
             <DeviceName device={service.device} />/
         </Typography>}
-        {command.name}
+        {command.name.replace(/_/g, ' ')}
     </CmdButton>
 }

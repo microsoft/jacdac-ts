@@ -19,6 +19,7 @@ import CommandInput from './CommandInput';
 import { DecodedPacket } from '../../../src/jdom/pretty';
 import DecodedPacketItem from './DecodedPacketItem';
 import ServiceSpecificationStatusAlert from './ServiceSpecificationStatusAlert'
+import MembersInput from './fields/MembersInput';
 
 const useStyles = makeStyles({
     root: {
@@ -44,20 +45,18 @@ export default function ServiceCard(props: {
     showMemberName?: boolean,
     registerIdentifiers?: number[],
     eventIdentifiers?: number[],
-    commandIdentifier?: number,
-    commandArgs?: any[]
+    commandIdentifier?: number
 }) {
     const { service, linkToService, registerIdentifiers,
         showServiceName, showMemberName, eventIdentifiers,
-        commandIdentifier, commandArgs } = props;
+        commandIdentifier } = props;
     const { specification } = service;
     const [reports, setReports] = useState<DecodedPacket[]>(undefined);
+    const [commandArgs, setCommandArgs] = useState<any[]>([]);
     const classes = useStyles();
-
     const hasCommandIdentifier = commandIdentifier !== undefined;
     const hasRegisterIdentifiers = !!registerIdentifiers?.length;
     const hasEventIdentifiers = !!eventIdentifiers?.length;
-
     const command = commandIdentifier !== undefined
         && specification?.packets.find(pkt => isCommand(pkt) && pkt.identifier === commandIdentifier)
 
@@ -71,6 +70,13 @@ export default function ServiceCard(props: {
                 <Typography variant="body2" component="div">
                     {hasRegisterIdentifiers && <ServiceRegisters key={'reg' + service.id} service={service} showRegisterName={showMemberName} registerIdentifiers={registerIdentifiers} />}
                     {hasEventIdentifiers && <ServiceEvents key={'ev' + service.id} service={service} showEventName={showMemberName} eventIdentifiers={eventIdentifiers} />}
+                    {command && <MembersInput
+                        serviceSpecification={specification}
+                        serviceMemberSpecification={command}
+                        specifications={command.fields}
+                        values={commandArgs}
+                        setValues={setCommandArgs}
+                        showDataType={true} />}
                     {!!reports?.length && <List key={"reports"} dense>
                         {reports?.map((report, ri) => <ListItem key={`report${ri}`} ><DecodedPacketItem pkt={report} /></ListItem>)}
                     </List>}

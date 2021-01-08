@@ -70,14 +70,6 @@ export default function PacketSpecification(props: {
         return <Alert severity="error">{`Unknown member ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
     const { fields } = packetInfo;
     const isCmd = isCommand(packetInfo)
-    const service = serviceSpecificationFromClassIdentifier(serviceClass)
-
-    const hasArgs = isCmd && !!packetInfo.fields.length
-    const setArg = (index: number) => (arg: any) => {
-        const c = args.slice(0)
-        c[index] = arg;
-        setArgs(c)
-    }
 
     return <div className={classes.root}>
         <h3 id={`${packetInfo.kind}:${packetInfo.identifier}`}>{packetInfo.name}
@@ -88,10 +80,10 @@ export default function PacketSpecification(props: {
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
         <Markdown source={packetInfo.description} />
-        {!!fields.length && <MembersType members={fields} title={isCmd && "Arguments"} setArg={hasArgs && setArg} />}
+        {!!fields.length && <MembersType members={fields} title={isCmd && "Arguments"} />}
         {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType members={pipeReportInfo.fields} title="Pipe report" />}
-        {showDevices && isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} commandIdentifier={packetInfo.identifier} commandArgs={hasArgs && args} />}
+        {showDevices && isCommand(packetInfo) && <DeviceList serviceClass={serviceClass} commandIdentifier={packetInfo.identifier} />}
         {showDevices && isRegister(packetInfo) && <DeviceList serviceClass={serviceClass} registerIdentifiers={[packetInfo.identifier]} />}
         {showDevices && isEvent(packetInfo) && <DeviceList serviceClass={serviceClass} eventIdentifiers={[packetInfo.identifier]} />}
     </div>

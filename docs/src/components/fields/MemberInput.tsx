@@ -71,7 +71,7 @@ export default function MemberInput(props: {
     }
 
     // value hasn't been loaded yet
-    if (value === undefined)
+    if (serviceMemberSpecification.kind !== "command" && value === undefined)
         return <CircularProgress disableShrink variant="indeterminate" size="1rem" />
 
     //
