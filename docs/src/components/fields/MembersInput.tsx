@@ -1,5 +1,6 @@
 import { Grid } from "@material-ui/core";
 import React from "react";
+import { RegisterInputVariant } from "../RegisterInput";
 import MemberInput from "./MemberInput";
 
 export default function MembersInput(props: {
@@ -9,9 +10,10 @@ export default function MembersInput(props: {
     values?: any[],
     setValues?: (values: any[]) => void,
     showDataType?: boolean,
-    color?: "primary" | "secondary"
+    color?: "primary" | "secondary",
+    variant?: RegisterInputVariant
 }) {
-    const { serviceSpecification, serviceMemberSpecification, specifications, values, setValues, showDataType, color } = props;
+    const { serviceSpecification, serviceMemberSpecification, specifications, values, setValues, showDataType, color, variant } = props;
     const setValue = (index: number) => (value: any) => {
         const c = values.slice(0)
         c[index] = value;
@@ -29,7 +31,8 @@ export default function MembersInput(props: {
                     showDataType={showDataType}
                     value={value}
                     color={color}
-                    setValue={values && setValues && setValue(fieldi)} />
+                    setValue={values && setValues && setValue(fieldi)}
+                    variant={variant} />
             </Grid>;
         })}
     </Grid>

@@ -56,12 +56,14 @@ show`, [parseInt(color.slice(1), 16)])
         await service.sendCmdAsync(LightCmd.Run, encoded);
     }
 
+/*    <Grid item>
+    <Input id={colorId} type="color" value={color} onChange={handleColorChange} />
+</Grid>
+*/
+
     return (<>
         <Grid item>
             <RegisterInput register={brightness} showRegisterName={true} />
-        </Grid>
-        <Grid item>
-            <Input id={colorId} type="color" value={color} onChange={handleColorChange} />
         </Grid>
         {!expanded && <Grid item>
             {shows.map(show => <CmdButton size="small" variant="outlined" key={show.code} onClick={handleShow(show.code)}>{show.name}</CmdButton>)}
@@ -76,12 +78,12 @@ show`, [parseInt(color.slice(1), 16)])
                 error={!!error}
                 multiline={true}
                 rows={3} />
-            </Grid>}
+        </Grid>}
         {expanded && <Grid item>
             <Box mt={theme.spacing(1)}>
                 <Grid container spacing={1}>
-                    {[LightReg.ActualBrightness, LightReg.NumPixels, LightReg.LightType, LightReg.MaxPower].map(id => <Grid item key={id}>
-                        <RegisterInput register={service.register(id)} showRegisterName={false} />
+                    {[LightReg.ActualBrightness, LightReg.NumPixels, LightReg.LightType, LightReg.MaxPower].map(id => <Grid item xs={12} md={6} key={id}>
+                        <RegisterInput register={service.register(id)} showRegisterName={true} />
                     </Grid>)}
                 </Grid>
             </Box>

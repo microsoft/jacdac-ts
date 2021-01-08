@@ -8,6 +8,7 @@ import IDChip from "../IDChip";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
 import CircularProgressBox from "../ui/CircularProgressBox";
+import { RegisterInputVariant } from "../RegisterInput";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -16,9 +17,10 @@ export default function MemberInput(props: {
     value: any,
     setValue?: (v: any) => void,
     showDataType?: boolean,
-    color?: "primary" | "secondary"
+    color?: "primary" | "secondary",
+    variant?: RegisterInputVariant
 }) {
-    const { specification, serviceSpecification, serviceMemberSpecification, value, setValue, showDataType, color } = props;
+    const { specification, serviceSpecification, serviceMemberSpecification, value, setValue, showDataType, color, variant } = props;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const [error, setError] = useState("")
@@ -48,7 +50,7 @@ export default function MemberInput(props: {
     }
     const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
-        setValue(!!v)
+        setValue(v)
     }
     const handleScaledSliderChange = (event: any, newValue: number | number[]) => {
         const scaled = scaleFloatToInt((newValue as number), specification);
@@ -95,7 +97,7 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
-        if (disabled)
+        if (disabled && variant === "widget")
             return <Grid container justify="center"><Grid item><CircularProgressBox
                 progressColor={color}
                 progress={fv * 100}
@@ -110,7 +112,7 @@ export default function MemberInput(props: {
                 color={color}
                 value={fv}
                 valueLabelFormat={percentValueFormat}
-                onChange={handleScaledSliderChange}
+                onChange={disabled ? undefined : handleScaledSliderChange}
                 min={0} max={1} step={0.01}
                 valueLabelDisplay="auto"
             />
@@ -150,13 +152,18 @@ export default function MemberInput(props: {
             marks={marks}
         />
     }
-    else // numbers or string
+    else {// numbers or string
+        const type = specification.type === 'string' || specification.type === 'string0' ? "string"
+            : specification.isSimpleType ? "number"
+                : "";
         return <TextField
-            label={label}
+            spellCheck={false}
             value={textValue}
             helperText={helperText}
             onChange={disabled ? undefined : handleChange}
             required={value === undefined}
             error={!!error}
+            type={type}
         />
+    }
 }

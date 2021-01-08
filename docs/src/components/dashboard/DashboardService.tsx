@@ -42,8 +42,9 @@ export default function DashboardService(props: DashboardServiceProps) {
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
+            variant={isReading(register.specification) && "widget"}
             showServiceName={expanded}
-            showRegisterName={expanded || !isReading(register.specification)}
+            showRegisterName={expanded}
             hideMissingValues={!expanded}
             showTrend={expanded && register.address === SystemReg.Reading}
         />)}

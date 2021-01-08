@@ -10,6 +10,8 @@ import MembersInput from "./fields/MembersInput";
 import RegisterTrend from "./RegisterTrend";
 import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 
+export type RegisterInputVariant = "widget" | ""
+
 export default function RegisterInput(props: {
     register: JDRegister,
     showDeviceName?: boolean,
@@ -17,9 +19,10 @@ export default function RegisterInput(props: {
     showRegisterName?: boolean,
     hideMissingValues?: boolean,
     showTrend?: boolean,
-    showDataType?: boolean
+    showDataType?: boolean,
+    variant?: RegisterInputVariant
 }) {
-    const { register, showRegisterName, showDeviceName, showServiceName, hideMissingValues, showTrend, showDataType } = props;
+    const { register, showRegisterName, showDeviceName, showServiceName, hideMissingValues, showTrend, showDataType, variant } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -82,6 +85,8 @@ export default function RegisterInput(props: {
             specifications={fields.map(f => f.specification)}
             values={args}
             setValues={hasSet && sendArgs}
-            showDataType={showDataType} />}
+            showDataType={showDataType}
+            variant={variant}
+        />}
     </>
 }
