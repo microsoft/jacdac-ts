@@ -56,9 +56,6 @@ export class RoleManagerClient extends JDServiceClient {
         console.log(`rdp: new`)
 
         const dscan = debounceAsync(this.scan.bind(this), SCAN_DEBOUNCE);
-        this.mount(this.bus.subscribe(DEVICE_CHANGE, () => {
-            console.log("device change")
-        }));
         this.mount(this.bus.subscribe(DEVICE_CHANGE, debounceAsync(async () => {
             this.recomputeCandidates();
             if (!!this.options?.autoBind)
