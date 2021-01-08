@@ -448,14 +448,18 @@ export class JDBus extends JDNode {
     /**
      * Gets the current list of known devices on the bus
      */
-    devices(options?: { serviceName?: string, serviceClass?: number }) {
+    devices(options?: { serviceName?: string, serviceClass?: number, ignoreSelf?: boolean, announced?: boolean }) {
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
         let sc = options?.serviceClass > -1 ? options?.serviceClass : serviceClass(options?.serviceName);
+        let r = this._devices.slice(0)
         if (sc > -1)
-            return this._devices.filter(s => s.hasService(sc));
-        else
-            return this._devices.slice();
+            r = this._devices.filter(s => s.hasService(sc));
+        if (options?.ignoreSelf)
+            r = this._devices.filter(s => s.deviceId !== this.selfDeviceId);
+        if (options?.announced)
+            r = this._devices.filter(s => s.announced);
+        return r;
     }
 
     get children(): JDNode[] {
