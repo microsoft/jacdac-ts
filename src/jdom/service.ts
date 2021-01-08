@@ -150,8 +150,8 @@ export class JDService extends JDNode {
             return pkt.sendCmdAsync(this.device);
     }
 
-    sendCmdAsync(cmd: number, ack?: boolean) {
-        const pkt = Packet.onlyHeader(cmd);
+    sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
+        const pkt = data ? Packet.from(cmd, data) : Packet.onlyHeader(cmd);
         return this.sendPacketAsync(pkt, ack)
     }
 

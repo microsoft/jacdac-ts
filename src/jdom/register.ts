@@ -73,7 +73,7 @@ export class JDRegister extends JDServiceMemberNode {
         this._lastGetTimestamp = this.service.device.bus.timestamp;
         this._lastGetAttempts++;
         const cmd = CMD_GET_REG | this.address;
-        return this.service.sendCmdAsync(cmd, this.service.registersUseAcks)
+        return this.service.sendCmdAsync(cmd, undefined, this.service.registersUseAcks)
             .then(() => { this.emit(GET_ATTEMPT) });
     }
 

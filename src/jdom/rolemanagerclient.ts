@@ -156,7 +156,7 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     async clearRoles() {
-        await this.service.sendCmdAsync(RoleManagerCmd.ClearAllRoles, true)
+        await this.service.sendCmdAsync(RoleManagerCmd.ClearAllRoles, undefined, true)
     }
 
     async setRole(dev: JDDevice, name: string) {

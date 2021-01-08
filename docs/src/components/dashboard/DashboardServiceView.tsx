@@ -1,6 +1,7 @@
 import { createElement, FunctionComponent } from "react";
-import { SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
+import { SRV_BUZZER, SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
+import DashboardBuzzer from "./DashboardBuzzer";
 import DashboardRoleManager from "./DashboardRoleManager";
 import DashboardService from "./DashboardService";
 
@@ -11,7 +12,8 @@ export interface DashboardServiceProps {
 export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>;
 
 const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
-    [SRV_ROLE_MANAGER]: DashboardRoleManager
+    [SRV_ROLE_MANAGER]: DashboardRoleManager,
+    [SRV_BUZZER]: DashboardBuzzer
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {

@@ -9,6 +9,7 @@ import { bufferToString, stringToBuffer } from "./utils";
 export default class SettingsClient extends JDServiceClient {
     constructor(service: JDService) {
         super(service)
+        service.registersUseAcks = true;
     }
 
     async clear() {

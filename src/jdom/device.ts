@@ -323,7 +323,7 @@ export class JDDevice extends JDNode {
 
     identify() {
         return this.service(0)
-            ?.sendCmdAsync(ControlCmd.Identify, true)
+            ?.sendCmdAsync(ControlCmd.Identify, undefined, true)
     }
 
     reset() {
