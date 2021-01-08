@@ -100,6 +100,13 @@ function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
     }
 }
 
+export interface DeviceFilter {
+    serviceName?: string;
+    serviceClass?: number;
+    ignoreSelf?: boolean;
+    announced?: boolean;
+}
+
 /**
  * A JACDAC bus manager. This instance maintains the list of devices on the bus.
  */
@@ -448,7 +455,7 @@ export class JDBus extends JDNode {
     /**
      * Gets the current list of known devices on the bus
      */
-    devices(options?: { serviceName?: string, serviceClass?: number, ignoreSelf?: boolean, announced?: boolean }) {
+    devices(options?: DeviceFilter) {
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
         let sc = options?.serviceClass > -1 ? options?.serviceClass : serviceClass(options?.serviceName);

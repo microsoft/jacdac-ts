@@ -1,8 +1,7 @@
 import React, {  } from "react"
-import { Box, createMuiTheme, responsiveFontSizes, Typography } from "@material-ui/core";
+import { createMuiTheme, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
-import JDomTreeView from "../../components/JDomTreeView";
-import Dashboard from "../../components/views/Dashboard"
+import Dashboard from "../../components/dashboard/Dashboard"
 
 export default function Page() {
     const rawTheme = createMuiTheme({
