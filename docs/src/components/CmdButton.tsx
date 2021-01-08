@@ -11,7 +11,7 @@ import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import useAnalytics from "./hooks/useAnalytics";
 import useMounted from "./hooks/useMounted";
 
-const ACK_RESET_DELAY = 1000
+const ACK_RESET_DELAY = 500
 const ERROR_RESET_DELAY = 2000
 
 const useStyles = makeStyles((theme: Theme) => {

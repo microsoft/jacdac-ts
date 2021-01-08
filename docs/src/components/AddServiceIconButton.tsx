@@ -6,7 +6,6 @@ import { serviceSpecificationFromClassIdentifier, serviceSpecifications } from '
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip"
-// tslint:disable-next-line: no-submodule-imports
 import { useId } from "react-use-id-hook"
 
 export default function AddServiceIconButton(props: {

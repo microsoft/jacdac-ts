@@ -6,25 +6,12 @@ import PaperBox from '../ui/PaperBox';
 import useLocalStorage from '../useLocalStorage';
 import CodeBlock from '../CodeBlock';
 import { toHex } from '../../../../src/jdom/utils';
-import { lightEncode } from '../../../../src/jdom/light'
 import DeviceList from '../DeviceList';
 import { LightCmd, LightReg, SRV_LIGHT } from '../../../../src/jdom/constants';
 import ConnectAlert from '../alert/ConnectAlert';
 import { serviceSpecificationFromClassIdentifier } from '../../../../src/jdom/spec';
 import Markdown from "../ui/Markdown"
-
-function useLightEncode(source: string) {
-    return useMemo(() => {
-        let encoded: Uint8Array;
-        let error: string;
-        try {
-            encoded = lightEncode(source, [])
-        } catch (e: unknown) {
-            error = (e as any)?.message || (e + "");
-        }
-        return { encoded, error }
-    }, [source])
-}
+import useLightEncode from '../hooks/useLightEncode';
 
 export default function LightDesigner(props: { showHelp?: boolean }) {
     const { showHelp } = props;
