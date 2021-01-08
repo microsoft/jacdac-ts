@@ -17,14 +17,14 @@ export default function Flash() {
         <Box mb={2}>
             <ConnectAlert />
             <Tabs value={tab} onChange={handleTabChange} aria-label="View specification formats">
-                <Tab label={`Firmwares`} {...a11yProps(0)} />
                 <Tab label={`Updates`} {...a11yProps(1)} />
+                <Tab label={`Firmwares`} {...a11yProps(0)} />
             </Tabs>
             <TabPanel value={tab} index={0}>
-                <FirmwareCardGrid />
+                <UpdateDeviceList />
             </TabPanel>
             <TabPanel value={tab} index={1}>
-                <UpdateDeviceList />
+                <FirmwareCardGrid />
             </TabPanel>
             <SafeBootAlert />
         </Box>
