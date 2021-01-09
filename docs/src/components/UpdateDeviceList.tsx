@@ -1,18 +1,18 @@
 import { Button, Grid } from "@material-ui/core"
 import { Alert } from "@material-ui/lab"
 import React, { useContext, useEffect, useState } from "react"
-import { DEVICE_ANNOUNCE, DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants"
-import { isBootloaderFlashing, JDDevice } from "../../../src/jdom/device"
+import { DEVICE_ANNOUNCE, FIRMWARE_BLOBS_CHANGE } from "../../../src/jdom/constants"
+import { JDDevice } from "../../../src/jdom/device"
 import { scanFirmwares, FirmwareBlob, FirmwareInfo, flashFirmwareBlob, updateApplicable } from "../../../src/jdom/flashing"
 import JACDACContext, { JDContextProps } from "../../../src/react/Context"
 import useEventRaised from "../jacdac/useEventRaised"
-import useSelectedNodes from "../jacdac/useSelectedNodes"
 import CircularProgressWithLabel from "./ui/CircularProgressWithLabel"
 import DeviceCard from "./DeviceCard"
 import useGridBreakpoints from "./useGridBreakpoints"
 import { BusState } from "../../../src/jdom/bus"
 import AppContext from "./AppContext"
 import useChange from "../jacdac/useChange"
+import useDevices from "./hooks/useDevices"
 
 function UpdateDeviceCard(props: {
     device: JDDevice,
@@ -23,6 +23,7 @@ function UpdateDeviceCard(props: {
     const { device, firmware, blob } = props
     const { setError } = useContext(AppContext)
     const [progress, setProgress] = useState(0)
+    const update = blob && firmware && updateApplicable(firmware, blob);
     const flashing = useChange(device, d => d.flashing);
 
     const handleFlashing = async () => {
@@ -44,10 +45,10 @@ function UpdateDeviceCard(props: {
 
     return <DeviceCard device={device}
         showFirmware={true}
-        content={blob && <span>Update to {blob.version}</span>}
+        content={update && <span>Update to {blob.version}</span>}
         // tslint:disable-next-line: react-this-binding-issue
         action={flashing ? <CircularProgressWithLabel value={progress} />
-            : updateApplicable(firmware, blob)
+            : update
                 ? <Button aria-label="deploy new firmware to device" disabled={flashing} variant="contained"
                     color="primary" onClick={handleFlashing}>Flash</Button>
                 : <Alert severity="success">Up to date!</Alert>} />
@@ -58,8 +59,8 @@ export default function UpdateDeviceList() {
     const [scanning, setScanning] = useState(false)
     const gridBreakpoints = useGridBreakpoints()
 
-    const devices = useEventRaised(DEVICE_CHANGE, bus, b => b.devices().filter(dev => dev.announced))
-    const isFlashing = useChange(bus, b => b.devices().some(dev => dev.flashing));
+    const devices = useDevices({ announced: true, ignoreSelf: true })
+    const isFlashing = devices.some(dev => dev.flashing);
     const blobs = useEventRaised(FIRMWARE_BLOBS_CHANGE, bus, () => bus.firmwareBlobs)
     async function scan() {
         if (!blobs?.length || isFlashing
@@ -83,7 +84,7 @@ export default function UpdateDeviceList() {
             device,
             blob: device.firmwareInfo && blobs?.find(b => device.firmwareInfo.firmwareIdentifier == b.firmwareIdentifier)
         }
-    }).filter(update => !!update.firmware)
+    });
 
     return <Grid container spacing={2}>
         {updates

@@ -11,11 +11,12 @@ import DeviceCardMedia from "./DeviceCardMedia"
 import useDeviceSpecification from "../jacdac/useDeviceSpecification";
 import { identifierToUrlPath } from "../../../src/jdom/spec";
 
-function DeviceFirmwareChip(props: { device: JDDevice }) {
+function DeviceFirmwareVersionChip(props: { device: JDDevice }) {
     const { device } = props;
-    const firmwareRegister = device?.service(0)?.register(ControlReg.FirmwareVersion)
-    const firmware = useRegisterStringValue(firmwareRegister);
-    return (firmware && <Chip size="small" label={firmware} />) || <></>
+    const firmwareVersionRegister = device?.service(0)?.register(ControlReg.FirmwareVersion)
+    const firmwareVersion = useRegisterStringValue(firmwareVersionRegister);
+
+    return (firmwareVersion && <Chip size="small" label={firmwareVersion} />) || <></>
 }
 
 function DeviceTemperatureChip(props: { device: JDDevice }) {
@@ -27,12 +28,12 @@ function DeviceTemperatureChip(props: { device: JDDevice }) {
 
 export default function DeviceCardHeader(props: {
     device: JDDevice,
-    hideDeviceId?: boolean,
+    showDeviceId?: boolean,
     showFirmware?: boolean,
     showTemperature?: boolean,
     showMedia?: boolean
 }) {
-    const { device, showFirmware, showTemperature, showMedia, hideDeviceId } = props;
+    const { device, showFirmware, showTemperature, showMedia, showDeviceId } = props;
     const { specification } = useDeviceSpecification(device);
 
     return <>
@@ -44,9 +45,9 @@ export default function DeviceCardHeader(props: {
             </Link>}
             subheader={<>
                 <Typography variant="caption" gutterBottom>
-                    {[specification?.name, !hideDeviceId && device.deviceId].filter(s => !!s).join(', ')}
+                    {[specification?.name, showDeviceId && device.deviceId].filter(s => !!s).join(', ')}
                 </Typography>
-                {showFirmware && <DeviceFirmwareChip device={device} />}
+                {showFirmware && <DeviceFirmwareVersionChip device={device} />}
                 {showTemperature && <DeviceTemperatureChip device={device} />}
             </>}
         />

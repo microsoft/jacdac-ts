@@ -230,7 +230,6 @@ class FlashClient {
         }
         try {
             prog()
-            this.bus.freezeDevices();
             await this.startFlashAsync()
             prog()
             for (const page of fw.pages) {
@@ -252,8 +251,6 @@ class FlashClient {
                 for (let d of this.classClients) {
                     d.stop()
                 }
-                // and unfreeze UI
-                this.bus.unfreezeDevices();
             }
         }
     }
@@ -471,7 +468,8 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
         log(`resetting ${device}`)
         await device.sendCtrlCommand(ControlCmd.Reset)
     }
-    const flashers = (await scanCore(bus, 5, true)).flashers.filter(f => f.dev_class == blob.firmwareIdentifier)
+    const flashers = (await scanCore(bus, 10, true)).flashers
+        .filter(f => f.dev_class == blob.firmwareIdentifier)
     if (!flashers.length)
         throw new Error("no devices to flash")
     if (flashers.length != updateCandidates.length) {

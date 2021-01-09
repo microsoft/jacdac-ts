@@ -50,12 +50,14 @@ export default function DeviceCard(props: {
     children?: any,
     action?: JSX.Element | JSX.Element[],
     content?: JSX.Element | JSX.Element[],
+    showDeviceId?: string,
     showServices?: boolean,
     showTemperature?: boolean,
     showFirmware?: boolean,
     showDescription?: boolean
 }) {
     const { device, children, action, content,
+        showDeviceId,
         showDescription, showTemperature, showFirmware, showServices } = props;
     const classes = useStyles();
     const services = useChange(device, () => device.services()
@@ -63,7 +65,7 @@ export default function DeviceCard(props: {
 
     return (
         <Card className={classes.root}>
-            <DeviceCardHeader device={device} showTemperature={showTemperature} showFirmware={showFirmware} showMedia={true} />
+            <DeviceCardHeader device={device} showDeviceId={showDeviceId} showTemperature={showTemperature} showFirmware={showFirmware} showMedia={true} />
             {(showDescription || content) &&
                 <CardContent>
                     {<DeviceLostAlert device={device} />}
