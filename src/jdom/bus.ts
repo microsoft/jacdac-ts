@@ -185,7 +185,12 @@ export class JDBus extends JDNode {
 
     set safeBoot(enabled: boolean) {
         if (enabled && !this._safeBootInterval) {
-            this._safeBootInterval = setInterval(() => sendStayInBootloaderCommand(this), 50);
+            this._safeBootInterval = setInterval(() => {
+                // don't send message if any device is flashing
+                if (this._devices.some(d => d.flashing))
+                    return;
+                sendStayInBootloaderCommand(this)
+            }, 50);
             this.emit(CHANGE);
         }
         else if (!enabled && this._safeBootInterval) {
