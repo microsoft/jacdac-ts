@@ -44,8 +44,8 @@ show`, cs.map(c => parseInt(c.slice(1), 16)))
             <RegisterInput register={brightness} showRegisterName={true} />
         </Grid>
         <Grid item>
-            set lights to
-            {colors.map((c, i) => <ColorInput value={c} onChange={handleColorChange(i)} />)}
+            fade lights to
+            {colors.map((c, i) => <Box component="span" key={i} ml={theme.spacing(0.1)} mr={theme.spacing(0.1)}><ColorInput value={c} onChange={handleColorChange(i)} /></Box>)}
         </Grid>
         {expanded && <Grid item>
             <TextField
