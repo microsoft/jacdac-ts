@@ -155,6 +155,13 @@ export default function MemberInput(props: {
         const type = specification.type === 'string' || specification.type === 'string0' ? "string"
             : specification.isSimpleType ? "number"
                 : "";
+
+        if (disabled && specification.isSimpleType && variant == "widget")
+            return <>
+                <Typography component="span" variant={mobile ? "h5" : "h4"}>{textValue}</Typography>
+                <Typography component="span" variant="caption">{helperText}</Typography>
+            </>;
+
         return <TextField
             spellCheck={false}
             value={textValue}
