@@ -18,7 +18,7 @@ const useStyles = makeStyles(() => createStyles({
         width: "112px",
         height: "112px",
         top: "50px",
-        transformStyle: "preserve-3d";
+        transformStyle: "preserve-3d",
         transform: "rotateX(-22deg) rotateY(-38deg) rotateZ(0deg)",
         margin: "auto",
         position: "relative",
@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => createStyles({
     },
     face: {
         position: "absolute",
-        transition: "all 0.5s ease-in-out";
+        transition: "all 0.5s ease-in-out",
         width: "112px",
         height: "112px",
         float: "left",
