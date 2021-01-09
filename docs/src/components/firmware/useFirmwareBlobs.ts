@@ -65,6 +65,8 @@ export default function useFirmwareBlobs() {
         }
         bus.firmwareBlobs = uf2s;
     })
+
+    return bus.firmwareBlobs;
 }
 
 export function useFirmwareBlob(repoSlug: string) {

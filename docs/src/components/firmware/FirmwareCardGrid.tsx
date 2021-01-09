@@ -11,8 +11,8 @@ import useChange from "../../jacdac/useChange";
 export default function FirmwareCardGrid() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const gridBreakpoints = useGridBreakpoints()
-    const safeMode = useChange(bus, b => b.safeBoot);
-    const firmwareRepos = useFirmwareRepos(safeMode)
+    const safeBoot = useChange(bus, b => b.safeBoot);
+    const firmwareRepos = useFirmwareRepos(safeBoot)
 
     return <Grid container spacing={2}>
         <Grid {...gridBreakpoints} item key="localfile">
