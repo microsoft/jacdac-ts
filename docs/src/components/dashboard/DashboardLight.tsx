@@ -15,7 +15,7 @@ export default function DashboardLight(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const brightness = service.register(LightReg.Brightness);
     const theme = useTheme();
-    const [color, setColor] = useState("#f000f0")
+    const [colors, setColors] = useState(["#ff0000", "#0000ff"])
     const [source, setSource] = useState(`setall #00ff00
 show
 `)
@@ -31,10 +31,12 @@ show
         setSource(ev.target.value)
     }
 
-    const handleColorChange = async (color: string) => {
-        setColor(color);
-        const encoded = lightEncode(`setall #
-show`, [parseInt(color.slice(1), 16)])
+    const handleColorChange = (index: number) => async (color: string) => {
+        const cs = colors.slice(0);
+        cs[index] = color;
+        setColors(cs);
+        const encoded = lightEncode(`${colors.length === 1 ? "setall" : "fade"} ${Array(colors.length).fill("#").join(" ")}
+show`, cs.map(c => parseInt(c.slice(1), 16)))
         await service.sendCmdAsync(LightCmd.Run, encoded);
     }
     return (<>
@@ -42,7 +44,8 @@ show`, [parseInt(color.slice(1), 16)])
             <RegisterInput register={brightness} showRegisterName={true} />
         </Grid>
         <Grid item>
-            set lights to <ColorInput value={color} onChange={handleColorChange} />
+            set lights to
+            {colors.map((c, i) => <ColorInput value={c} onChange={handleColorChange(i)} />)}
         </Grid>
         {expanded && <Grid item>
             <TextField

@@ -158,7 +158,7 @@ export default function MemberInput(props: {
 
         if (disabled && specification.isSimpleType && variant == "widget")
             return <>
-                <Typography component="span" variant={mobile ? "h5" : "h4"}>{textValue}</Typography>
+                <Typography component="span" variant={mobile ? "h5" : "h4"}>{roundWithPrecision(value, 2)}</Typography>
                 <Typography component="span" variant="caption">{helperText}</Typography>
             </>;
 

@@ -1,5 +1,5 @@
 
-import { Box, Button, Grid, useTheme } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import React from "react";
 import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceView";
@@ -10,7 +10,6 @@ import CmdButton from "../CmdButton"
 export default function DashboardBuzzer(props: DashboardServiceProps) {
     const { service } = props;
     const volume = service.register(BuzzerReg.Volume)
-    const theme = useTheme()
 
     const notes = [
         { name: "C", frequency: 261.64 },

@@ -56,7 +56,7 @@ export default function ConsoleListItem(props: {
         {severity >= 0x82 && <ListItemIcon>
             {severity == 0x82 ? <WarningIcon /> : <ErrorIcon />}
         </ListItemIcon>}
-        <Chip className={classes.device} size="small" label={packet?.dev?.shortId || "?"} />
+        <Chip className={classes.device} size="small" label={packet?.device?.shortId || "?"} />
         <Typography variant="body2">{text}</Typography>
     </ListItem>
 }
