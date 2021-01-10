@@ -565,3 +565,15 @@ export function uniqueName(names: string[], name: string): string {
         count++;
     return `${name}${count}`;
 }
+
+export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]> {
+    if (!list) return {};
+
+    const r: SMap<T[]> = {}
+    list.forEach((item) => {
+         const k = key(item);
+         const a = r[k] || (r[k] = []);
+         a.push(item);
+    });
+    return r;
+}
