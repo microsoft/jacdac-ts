@@ -10,12 +10,12 @@ import CmdButton from "./CmdButton";
 
 export default function DeviceActions(props: {
     device: JDDevice,
-    reset?: boolean,
-    rename?: boolean,
+    showReset?: boolean,
+    showRename?: boolean,
     hideIdentity?: boolean,
     children?: JSX.Element | JSX.Element[]
 }) {
-    const { device, reset, rename, children, hideIdentity } = props
+    const { device, showReset, showRename, children, hideIdentity } = props
     const { bus } = useContext<JDContextProps>(JACDACContext)
 
     const handleIdentify = async () => {
@@ -26,8 +26,8 @@ export default function DeviceActions(props: {
     }
     return <>
         {!hideIdentity && <CmdButton trackName="device.identify" size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />}
-        {reset && <CmdButton trackName="device.reset" size="small" title="reset" onClick={handleReset} icon={<RefreshIcon />} />}
-        {rename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
+        {showReset && <CmdButton trackName="device.reset" size="small" title="reset" onClick={handleReset} icon={<RefreshIcon />} />}
+        {showRename && bus.host.deviceNameSettings && <DeviceRenameButton device={device} />}
         {children}
     </>;
 }

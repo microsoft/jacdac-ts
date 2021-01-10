@@ -62,7 +62,7 @@ export default function ServiceCard(props: {
 
     return (
         <Card className={classes.root}>
-            <DeviceCardHeader device={service.device} />
+            <DeviceCardHeader device={service.device} showAvatar={true} />
             <CardContent>
                 {showServiceName && <Typography className={classes.title} color="textSecondary" gutterBottom>
                     <Link to={linkToService && service.specification ? `/services/${service.specification.shortId}/` : "/clients/web/jdom/service"}>{service.name}</Link>

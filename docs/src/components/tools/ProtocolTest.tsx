@@ -219,7 +219,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
             </Typography>
         </Grid>
         <Grid item xs={2}>
-            <DeviceActions device={device} reset={true} />
+            <DeviceActions device={device} showReset={true} />
         </Grid>
         {rws?.map(rw => <Grid key={rw.rw.id} item xs={12} md={6}><RegisterProtocolTest {...rw} /></Grid>)}
         <Grid key={"cpipe"} item xs={12} md={6}>

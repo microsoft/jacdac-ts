@@ -31,7 +31,7 @@ function ReadingFieldGridItem(props: {
         <Card>
             <CardHeader subheader={register.service.name}
                 title={`${deviceName}/${register.name}`}
-                action={<DeviceActions device={register.service.device} reset={true} />} />
+                action={<DeviceActions device={register.service.device} showReset={true} />} />
             <CardContent>
                 {register.fields.map((field) => <span key={field.id}>
                     <FiberManualRecordIcon className={classes.vmiddle} fontSize="large" style={({

@@ -62,7 +62,7 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
         kind={kind}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
-        actions={showActions && <DeviceActions device={device} reset={true} rename={true} />}
+        actions={showActions && <DeviceActions device={device} showReset={true} showRename={true} />}
     >
         {services?.map(service => <ServiceTreeItem
             key={service.id}

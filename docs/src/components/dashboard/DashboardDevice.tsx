@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
-import React, { createElement } from "react";
-import { SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
+import React from "react";
+import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 import useChange from "../../jacdac/useChange";
 import DeviceName from "../DeviceName";
@@ -11,10 +11,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import DeviceAvatar from "../devices/DeviceAvatar"
-import DashboardService from "./DashboardService";
-import DashboardRoleManager from "./DashboardRoleManager";
-import { JDService } from "../../../../src/jdom/service";
 import DashboardServiceView from "./DashboardServiceView";
+import DeviceActions from "../DeviceActions";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -38,11 +36,11 @@ export default function DashboardDevice(props: {
         <Card>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
-                action={<>
+                action={<DeviceActions device={device} hideIdentity={!expanded} showReset={expanded}>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButtonWithTooltip>
-                </>}
+                </DeviceActions>}
                 title={<DeviceName showShortId={false} device={device} />}
                 subheader={<>
                     {!mobile && specification && <Typography variant="caption" gutterBottom>

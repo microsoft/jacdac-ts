@@ -8,6 +8,7 @@ import { jdpack } from "../../../../src/jdom/pack";
 import CmdButton from "../CmdButton"
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { groupBy } from "../../../../src/jdom/utils";
+import Alert from "../ui/Alert";
 
 type GamepadButtonData = [GamepadButton, number, number];
 
@@ -26,6 +27,10 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     const values = useRegisterUnpackedValue<GamepadButtonData[]>(buttonsRegister)
         ?.filter(v => v.length === 3);
     console.log({ values })
+
+    if (!values?.length)
+        return <Alert severity="info">waiting for buttons...</Alert>
+
     // group by player
     const players = groupBy(values, v => "" + v[1]);
     // read each gamepad

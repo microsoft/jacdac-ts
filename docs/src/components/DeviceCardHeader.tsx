@@ -10,6 +10,7 @@ import DeviceName from "./DeviceName";
 import DeviceCardMedia from "./DeviceCardMedia"
 import useDeviceSpecification from "../jacdac/useDeviceSpecification";
 import { identifierToUrlPath } from "../../../src/jdom/spec";
+import DeviceAvatar from "./devices/DeviceAvatar";
 
 function DeviceFirmwareVersionChip(props: { device: JDDevice }) {
     const { device } = props;
@@ -28,18 +29,20 @@ function DeviceTemperatureChip(props: { device: JDDevice }) {
 
 export default function DeviceCardHeader(props: {
     device: JDDevice,
+    showAvatar?: boolean,
     showDeviceId?: boolean,
     showFirmware?: boolean,
     showTemperature?: boolean,
     showMedia?: boolean
 }) {
-    const { device, showFirmware, showTemperature, showMedia, showDeviceId } = props;
+    const { device, showFirmware, showTemperature, showMedia, showDeviceId, showAvatar } = props;
     const { specification } = useDeviceSpecification(device);
 
     return <>
         {showMedia && <DeviceCardMedia device={device} />}
         <CardHeader
-            action={<DeviceActions device={device} reset={true} />}
+            avatar={showAvatar && <DeviceAvatar device={device} />}
+            action={<DeviceActions device={device} showReset={true} />}
             title={<Link color="textPrimary" to={`/devices/${identifierToUrlPath(specification?.id) || ""}`}>
                 <DeviceName device={device} />
             </Link>}

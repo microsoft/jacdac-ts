@@ -50,7 +50,7 @@ export default function DeviceCard(props: {
     children?: any,
     action?: JSX.Element | JSX.Element[],
     content?: JSX.Element | JSX.Element[],
-    showDeviceId?: string,
+    showDeviceId?: boolean,
     showServices?: boolean,
     showTemperature?: boolean,
     showFirmware?: boolean,
@@ -65,7 +65,11 @@ export default function DeviceCard(props: {
 
     return (
         <Card className={classes.root}>
-            <DeviceCardHeader device={device} showDeviceId={showDeviceId} showTemperature={showTemperature} showFirmware={showFirmware} showMedia={true} />
+            <DeviceCardHeader device={device} 
+                showDeviceId={showDeviceId} 
+                showTemperature={showTemperature} 
+                showFirmware={showFirmware} 
+                showMedia={true} />
             {(showDescription || content) &&
                 <CardContent>
                     {<DeviceLostAlert device={device} />}
