@@ -80,7 +80,7 @@ export default function FirmwareCard(props: { slug: string }) {
                 </AccordionDetails>
             </Accordion></Box>}
             {releases?.length === 0 && <Alert severity="warning">No releases found.</Alert>}
-            {!!releases?.length && <SelectWithLabel helperText="choose a version" value={tag} onChange={handleReleaseChange}>
+            {!!releases?.length && <SelectWithLabel fullWidth={true} helperText="choose a version" value={tag} onChange={handleReleaseChange}>
                 {releases?.map(rel => <MenuItem key={rel.tag_name} value={rel.tag_name}>{rel.tag_name}</MenuItem>)}
             </SelectWithLabel>}
         </CardContent>

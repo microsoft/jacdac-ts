@@ -1,29 +1,30 @@
-import { Button, createStyles, Input, makeStyles, Paper } from "@material-ui/core";
-import React, { ChangeEvent } from "react";
-import { useId } from "react-use-id-hook"
+import { Button, createStyles, Dialog, DialogContent, DialogTitle, IconButton, makeStyles } from '@material-ui/core';
+import React, { useState } from 'react'
+import { CirclePicker } from "react-color"
+import { useId } from 'react-use-id-hook';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 
-const useStyles = makeStyles((theme) => createStyles({
-    root: {
-        width: theme.spacing(3),
-    }
-}));
-
-export default function ColorInput(props: { value?: string; onChange: (newValue: string) => void }) {
+export default function ColorPicker(props: { value: string, onChange: (color: string) => void }) {
     const { value, onChange } = props;
-    const classes = useStyles();
-    const colorId = useId();
-    const handleColorChange = async (ev: ChangeEvent<HTMLInputElement>) => {
-        const color = ev.target.value;
-        onChange(color);
+    const [picker, setPicker] = useState(false);
+    const handleClick = () => setPicker(!picker);
+    const handleClose = () => setPicker(false);
+    const handleChange = color => {
+        setPicker(false);
+        onChange(color.hex);
     }
+    const colorStyle = { background: value }
 
-    return <Button variant="outlined">
-        <Input
-            id={colorId}
-            type="color"
-            value={value}
-            disableUnderline={true}
-            fullWidth={true}
-            onChange={handleColorChange} />
-    </Button>
+    return (
+        <>
+            <IconButton style={colorStyle} onClick={handleClick}>
+                <FiberManualRecordIcon />
+            </IconButton>
+            <Dialog open={picker} onClose={handleClose}>
+                <DialogContent>
+                    <CirclePicker color={value} onChange={handleChange} />
+                </DialogContent>
+            </Dialog>
+        </>
+    )
 }

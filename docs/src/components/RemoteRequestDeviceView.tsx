@@ -33,6 +33,7 @@ export default function RemoteRequestDeviceView(props: { rdev: RemoteRequestedDe
     const serviceNames = rdev.services.map(serviceClass => serviceName(serviceClass)).join(', ')
     return <Box mb={2}>
         {!noCandidates && <SelectWithLabel
+            fullWidth={true}
             disabled={disabled}
             label={label}
             value={value}
