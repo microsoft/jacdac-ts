@@ -11,6 +11,7 @@ import { JDService } from "../../../../src/jdom/service";
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
+import { toHex } from "../../../../src/jdom/utils";
 /*
 ? 0xD2: fadehsv C+- similar to fade(), but colors are specified and faded in HSV
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
@@ -98,8 +99,8 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
 ${name} ${sargs}
 show %`
         const largs = [parseInt(mode), ...vargs, ms];
-        console.log({ src, largs })
         const encoded = lightEncode(src, largs);
+        console.log({ src, largs, data: toHex(encoded) })
         await service.sendCmdAsync(LightCmd.Run, encoded);
     }
     const handleCommandChange = (ev: ChangeEvent<{ name?: string; value: unknown; }>) => {
