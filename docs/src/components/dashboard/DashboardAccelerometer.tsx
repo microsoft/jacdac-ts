@@ -1,12 +1,12 @@
 
-import { createStyles, makeStyles } from "@material-ui/core";
+import { createStyles, Grid, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
 import { AccelerometerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceView";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import clsx from 'clsx';
 import RegisterInput from "../RegisterInput";
-import { scaleFloatToInt, scaleIntToFloat } from "../../../../src/jdom/spec";
+import { roundWithPrecision } from "../../../../src/jdom/utils";
 
 const WRAP = 2
 const MARGIN = 0.25
@@ -18,14 +18,13 @@ const useStyles = makeStyles((theme) => {
         wrap: {
             width: theme.spacing(WRAP) + UNIT,
             height: theme.spacing(WRAP) + UNIT,
-            margin: `${theme.spacing(MARGIN)}${UNIT} auto`
         },
         cube: {
             width: theme.spacing(CUBE) + UNIT,
             height: theme.spacing(CUBE) + UNIT,
             top: theme.spacing(MARGIN) + UNIT,
             transformStyle: "preserve-3d",
-            transform: "rotateX(-22deg) rotateY(-38deg) rotateZ(0deg)",
+            transform: "rotateX(0deg) rotateY(0deg) rotateZ(0deg)",
             margin: "auto",
             position: "relative",
             transition: "all 0.05s ease-in-out"
@@ -71,15 +70,15 @@ function Cube(props: { forces: number[] }) {
     const { forces } = props;
     const [x, y, z] = forces;
     const classes = useStyles();
-    const roll = Math.atan2(y, z);
-    const pitch = Math.atan(-x / (y * Math.sin(roll) + z * Math.cos(roll)));
-    const rot = -Math.acos(z);
-
-    //console.log({ x, y, z, roll, pitch, rot })
+    let roll = Math.atan2(-y, z);
+    if (roll < 0)
+        roll += 2 * Math.PI;
+    let pitch = Math.atan(x / (y * y + z * z));
+    const yaw = 0;
     return <div className={classes.wrap}>
         <div className={classes.cube}
             style={{
-                transform: `rotateX(${roll}rad) rotateY(${pitch}rad) rotateZ(${rot}rad) translateX(0) translateY(0) translateZ(0)`
+                transform: `rotateX(${roll}rad) rotateY(${yaw}rad) rotateZ(${pitch}rad) translateX(0) translateY(0) translateZ(0)`
             }}>
             <div className={clsx(classes.face, classes.side1)}></div>
             <div className={clsx(classes.face, classes.side2)}></div>
@@ -94,11 +93,17 @@ function Cube(props: { forces: number[] }) {
 export default function DashboardAccelerometer(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const register = service.register(AccelerometerReg.Forces);
-    const { specification } = register;
     const forces = useRegisterUnpackedValue<[number, number, number]>(register);
 
     return (<>
-        { forces && <Cube forces={forces.map((v, i) => scaleIntToFloat(v, specification.fields[i]))} />}
+        { forces && <Grid container justify="center" spacing={1}>
+            <Grid item>
+                <Cube forces={forces} />
+            </Grid>
+            <Grid item>
+                <Typography variant="caption">{forces.map(v => roundWithPrecision(v, 2)).join(", ")}</Typography>
+            </Grid>
+        </Grid>}
         {expanded && <RegisterInput key={register.id}
             register={register}
             variant={"widget"}
