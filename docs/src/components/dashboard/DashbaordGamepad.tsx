@@ -1,11 +1,8 @@
 
 import { Badge, Grid, Typography } from "@material-ui/core";
 import React from "react";
-import { BuzzerCmd, BuzzerReg, GamepadButton, GamepadReg } from "../../../../src/jdom/constants";
+import { GamepadButton, GamepadReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceView";
-import RegisterInput from "../RegisterInput";
-import { jdpack } from "../../../../src/jdom/pack";
-import CmdButton from "../CmdButton"
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { groupBy } from "../../../../src/jdom/utils";
 import Alert from "../ui/Alert";
