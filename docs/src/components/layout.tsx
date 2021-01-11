@@ -39,14 +39,12 @@ import Alert from "./ui/Alert"
 import GitHubButton from "./GitHubButton"
 import useMdxComponents from "./useMdxComponents";
 import Footer from "./ui/Footer";
-import PrintButton from "./ui/PrintButton";
-import WebUSBSupported from "./WebUSBSupported";
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
 import ThemedLayout from "./ui/ThemedLayout";
-import DashboardButton from "./buttons/DashboardButton";
+import OpenDashboardButton from "./buttons/OpenDashboardButton";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -251,7 +249,7 @@ function MainAppBar(props: LayoutProps) {
           </Typography>}
       </Hidden>}
       <div className={classes.grow} />
-      <DashboardButton className={clsx(classes.menuButton)} />
+      <OpenDashboardButton className={clsx(classes.menuButton)} />
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"/github"} />
       <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
       <IconButtonWithTooltip className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} aria-label="More tools" title="More"

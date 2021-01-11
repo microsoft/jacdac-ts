@@ -4,7 +4,7 @@ import JacdacIcon from "../icons/JacdacIcon";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useDeviceCount from "../hooks/useDeviceCount"
 
-export default function DashboardButton(props: { className?: string }) {
+export default function OpenDashboardButton(props: { className?: string }) {
     const { className } = props;
     const count = useDeviceCount({ ignoreSelf: true })
 

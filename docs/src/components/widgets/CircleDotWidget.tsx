@@ -20,18 +20,9 @@ export default function CircleDotWidget(props: {
     const cx = r;
     const cy = r;
     const ro = r - rd / 2;
-    return <Grid container direction="row" justify="center">
-        <Grid container justify="center">
-            <Grid item>
-                <SvgWidget width={w} size={size}>
-                    <circle cx={cx} cy={cy} r={ro} fill={background} />
-                    {angle < 360 && angle > -360 &&<circle cx={rd} cy={cy} r={rd / 2} fill={theme.palette.secondary.main} transform={`rotate(${0} ${cx} ${cy})`} />}
-                    <circle cx={rd} cy={cy} r={rd} fill={active} transform={`rotate(${angle} ${cx} ${cy})`} />
-                </SvgWidget>
-            </Grid>
-            {label && <Grid item>
-                <Typography variant="body1">{label}</Typography>
-            </Grid>}
-        </Grid>
-    </Grid>
+    return <SvgWidget width={w} size={size}>
+        <circle cx={cx} cy={cy} r={ro} fill={background} />
+        <circle cx={rd} cy={cy} r={rd} fill={active} transform={`rotate(${angle} ${cx} ${cy})`} />
+        <text x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
+    </SvgWidget>
 }

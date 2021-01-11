@@ -8,14 +8,12 @@ import CircleDotWidget from "../widgets/CircleDotWidget";
 
 export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const { service } = props;
-    const position = useRegisterIntValue(service.register(RotaryEncoderReg.Position))
+    const position = useRegisterIntValue(service.register(RotaryEncoderReg.Position)) || 0;
     const clicksPerTurn = 12;
     const angle = position / clicksPerTurn * 360;
     const color = "primary";
 
-    return <Grid container>
-        {position !== undefined && <Grid container justify="center">
-            <CircleDotWidget angle={angle} size={"5em"} label={"" + position} color={color} />
-        </Grid>}
+    return <Grid item>
+        <CircleDotWidget angle={angle} size={"5em"} label={"" + position} color={color} />
     </Grid>
 }
