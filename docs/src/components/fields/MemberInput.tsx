@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Grid, Slider, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { CircularProgress, Slider, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { clampToStorage, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
-import IDChip from "../IDChip";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
-import CircularProgressBox from "../ui/CircularProgressBox";
 import { RegisterInputVariant } from "../RegisterInput";
 import { useId } from "react-use-id-hook"
-import ArcadeButton from "../ui/ArcadeButton";
+import ButtonWidget from "../widgets/ButtonWidget";
+import GaugeWidget from "../widgets/GaugeWidget";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -86,7 +85,7 @@ export default function MemberInput(props: {
     }
     else if (specification.type === 'bool') {
         if (disabled && variant === "widget")
-            return <ArcadeButton label={label} checked={!!value} color={color} size={widgetSize} />
+            return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
         else
             return <>
                 <Switch aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
@@ -104,19 +103,13 @@ export default function MemberInput(props: {
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
         if (disabled && variant === "widget")
-            return <Grid container justify="center">
-                Î<Grid item>
-                    <CircularProgressBox
-                        progressColor={color}
-                        progress={fv * 100}
-                        progressSize={widgetSize}>
-                        <Grid container>
-                            <Grid item xs={12}><Typography variant={mobile ? "h5" : "h4"} align="center">{percentValueFormat(fv)}</Typography></Grid>
-                            <Grid item xs={12}><Typography variant={"body2"} align="center">{name}</Typography></Grid>
-                        </Grid>
-                    </CircularProgressBox>
-                </Grid>
-            </Grid>
+            return <GaugeWidget
+                label={label}
+                value={scaleIntToFloat(value, specification)}
+                color={color}
+                min={0} max={1}
+                valueLabel={v => `${Math.round(v * 100)}%`}
+                size={widgetSize} />
         else
             return <Slider
                 color={color}
@@ -140,27 +133,36 @@ export default function MemberInput(props: {
         />
     } else if (isSet(specification.typicalMin) && isSet(specification.typicalMax)
         && isSet(specification.absoluteMin) && isSet(specification.absoluteMax)) {
-        const step = (specification.absoluteMax - specification.absoluteMin) / 100;
-        // TODO: make step nicer
-        const marks = [
-            {
-                value: specification.typicalMin,
-                label: 'min',
-            },
-            {
-                value: specification.typicalMax,
-                label: 'max',
-            }
-        ];
-        return <InputSlider
-            value={value}
-            valueLabelFormat={valueLabelFormat}
-            onChange={disabled ? undefined : handleSliderChange}
-            min={specification.absoluteMin}
-            max={specification.absoluteMax}
-            step={step}
-            marks={marks}
-        />
+        if (disabled && variant === "widget")
+            return <GaugeWidget
+                label={label}
+                value={value}
+                min={specification.typicalMin}
+                max={specification.typicalMax}
+                color={color}
+                size={widgetSize} />
+        else {
+            const step = (specification.absoluteMax - specification.absoluteMin) / 100;
+            const marks = [
+                {
+                    value: specification.typicalMin,
+                    label: 'min',
+                },
+                {
+                    value: specification.typicalMax,
+                    label: 'max',
+                }
+            ];
+            return <InputSlider
+                value={value}
+                valueLabelFormat={valueLabelFormat}
+                onChange={disabled ? undefined : handleSliderChange}
+                min={specification.absoluteMin}
+                max={specification.absoluteMax}
+                step={step}
+                marks={marks}
+            />
+        }
     }
     else {// numbers or string
         const type = specification.type === 'string' || specification.type === 'string0' ? "string"
