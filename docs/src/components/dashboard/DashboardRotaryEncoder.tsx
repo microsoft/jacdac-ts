@@ -1,4 +1,3 @@
-
 import { Grid } from "@material-ui/core";
 import React from "react";
 import { RotaryEncoderReg } from "../../../../src/jdom/constants";
@@ -12,10 +11,11 @@ export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const position = useRegisterIntValue(service.register(RotaryEncoderReg.Position))
     const clicksPerTurn = 12;
     const angle = position / clicksPerTurn * 360;
+    const color = "primary";
 
     return <Grid container>
-        <Grid container justify="center">
-            <CircleDotWidget angle={angle} size={"5em"} />
-        </Grid>
+        {position !== undefined && <Grid container justify="center">
+            <CircleDotWidget angle={angle} size={"5em"} label={"" + position} color={color} />
+        </Grid>}
     </Grid>
 }
