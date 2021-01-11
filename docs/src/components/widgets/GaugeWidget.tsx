@@ -18,10 +18,11 @@ export default function GaugeWidget(props: {
     return <Grid container direction="row" justify="center">
         <Grid container justify="center">
             <Gauge
+                size={size}
                 min={min}
-                max={max} 
-                value={value} 
-                showValue={true} 
+                max={max}
+                value={value}
+                showValue={true}
                 color={color}
                 label={valueLabel} />
         </Grid>

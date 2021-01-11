@@ -3,20 +3,20 @@ import React, { useEffect, useRef } from "react";
 import SvgGauge from "svg-gauge";
 
 const useStyles = makeStyles((theme) => {
-    const { palette, typography } = theme;
+    const { palette } = theme;
     const { primary, secondary, info, text } = palette;
     return createStyles({
-        gauge: { //The CSS class of the gauge (gauge)
-            width: "100%",
-            height: "100%",
+        gauge: (props: { size?: string, color?: "primary" | "secondary" }) => ({ //The CSS class of the gauge (gauge)
+            width: props.size || "100%",
+            height: props.size || "100%",
             display: "block"
-        },
+        }),
         dial: { // The CSS class of the gauge's dial (dial)
             stroke: theme.palette.background.default,
             strokeWidth: 10,
         },
         // // The CSS class of the gauge's fill (value dial) (value)
-        valueDial: (props: { color?: "primary" | "secondary" }) => {
+        valueDial: (props: { size?: string, color?: "primary" | "secondary" }) => {
             const { color } = props;
             return {
                 strokeWidth: 10,
@@ -44,9 +44,10 @@ export default function Gauge(props: {
     dialStartAngle?: number,
     dialEndAngle?: number,
     radius?: number,
+    size?: string,
 }) {
-    const { value, initialValue, color, ...options } = props;
-    const classes = useStyles({ color });
+    const { value, initialValue, color, size, ...options } = props;
+    const classes = useStyles({ color, size });
     const gaugeEl = useRef(null);
     const gaugeRef = useRef(null);
     useEffect(() => {
