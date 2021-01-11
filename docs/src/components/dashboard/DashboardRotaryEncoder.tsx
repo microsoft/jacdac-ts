@@ -5,6 +5,7 @@ import { DashboardServiceProps } from "./DashboardServiceView";
 import { useRegisterIntValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import CircleDotWidget from "../widgets/CircleDotWidget";
+import useWidgetSize from "../widgets/useWidgetSize";
 
 export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const { service } = props;
@@ -12,8 +13,9 @@ export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const clicksPerTurn = 12;
     const angle = position / clicksPerTurn * 360;
     const color = "primary";
+    const widgetSize = useWidgetSize();
 
     return <Grid item>
-        <CircleDotWidget angle={angle} size={"5em"} label={"" + position} color={color} />
+        <CircleDotWidget angle={angle} size={widgetSize} label={"" + position} color={color} />
     </Grid>
 }

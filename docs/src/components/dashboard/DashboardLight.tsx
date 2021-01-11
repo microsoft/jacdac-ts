@@ -12,6 +12,7 @@ import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import { toHex } from "../../../../src/jdom/utils";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */
@@ -185,7 +186,6 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
 export default function DashboardLight(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const brightness = service.register(LightReg.Brightness);
-    const theme = useTheme();
     return (<Grid container spacing={1}>
         <Grid item xs={12}>
             <RegisterInput register={brightness} showRegisterName={true} />

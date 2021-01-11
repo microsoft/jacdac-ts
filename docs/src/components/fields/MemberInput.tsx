@@ -10,6 +10,7 @@ import { RegisterInputVariant } from "../RegisterInput";
 import { useId } from "react-use-id-hook"
 import ButtonWidget from "../widgets/ButtonWidget";
 import GaugeWidget from "../widgets/GaugeWidget";
+import useWidgetSize from "../widgets/useWidgetSize";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -28,12 +29,10 @@ export default function MemberInput(props: {
     const [error, setError] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
-    const name = (specification.name === "_" && serviceMemberSpecification?.name) || specification.name
+    const name = specification.name === "_" ? "" : specification.name
     const label = name
     const helperText = error || prettyMemberUnit(specification, showDataType)
-    const theme = useTheme();
-    const mobile = useMediaQuery(theme.breakpoints.down("xs"));
-    const widgetSize = mobile ? "11vh" : "15vh";
+    const widgetSize = useWidgetSize();
 
     // update coming from device
     useEffect(() => {
