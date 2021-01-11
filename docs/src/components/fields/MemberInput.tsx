@@ -9,6 +9,8 @@ import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
 import CircularProgressBox from "../ui/CircularProgressBox";
 import { RegisterInputVariant } from "../RegisterInput";
+import { useId } from "react-use-id-hook"
+import ArcadeButton from "../ui/ArcadeButton";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -23,6 +25,7 @@ export default function MemberInput(props: {
     const { specification, serviceSpecification, serviceMemberSpecification, value, setValue, showDataType, color, variant } = props;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
+    const labelid = useId();
     const [error, setError] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
@@ -31,6 +34,7 @@ export default function MemberInput(props: {
     const helperText = error || prettyMemberUnit(specification, showDataType)
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down("xs"));
+    const widgetSize = mobile ? "11vh" : "15vh";
 
     // update coming from device
     useEffect(() => {
@@ -80,12 +84,15 @@ export default function MemberInput(props: {
     if (specification.type === 'pipe') {
         return <>pipe <code>{specification.name}</code></>
     }
-    else if (specification.type === 'bool')
-        return <>
-            <Switch checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
-            {label}
-        </>
-    else if (enumInfo !== undefined) {
+    else if (specification.type === 'bool') {
+        if (disabled && variant === "widget")
+            return <ArcadeButton label={label} checked={!!value} color={color} size={widgetSize} />
+        else
+            return <>
+                <Switch aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
+                <label id={labelid}>{label}</label>
+            </>
+    } else if (enumInfo !== undefined) {
         return <Select
             disabled={disabled}
             multiple={enumInfo.isFlags}
@@ -97,15 +104,19 @@ export default function MemberInput(props: {
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
         if (disabled && variant === "widget")
-            return <Grid container justify="center"><Grid item><CircularProgressBox
-                progressColor={color}
-                progress={fv * 100}
-                progressSize={mobile ? "11vh" : "15vh"}>
-                <Grid container>
-                    <Grid item xs={12}><Typography variant={mobile ? "h5" : "h4"} align="center">{percentValueFormat(fv)}</Typography></Grid>
-                    <Grid item xs={12}><Typography variant={"body2"} align="center">{name}</Typography></Grid>
+            return <Grid container justify="center">
+                Î<Grid item>
+                    <CircularProgressBox
+                        progressColor={color}
+                        progress={fv * 100}
+                        progressSize={widgetSize}>
+                        <Grid container>
+                            <Grid item xs={12}><Typography variant={mobile ? "h5" : "h4"} align="center">{percentValueFormat(fv)}</Typography></Grid>
+                            <Grid item xs={12}><Typography variant={"body2"} align="center">{name}</Typography></Grid>
+                        </Grid>
+                    </CircularProgressBox>
                 </Grid>
-            </CircularProgressBox></Grid></Grid>
+            </Grid>
         else
             return <Slider
                 color={color}
