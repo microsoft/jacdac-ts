@@ -34,9 +34,9 @@ export default function Dashboard() {
         xl?: GridSize
     } => {
         if (selected(device))
-            return { xs: 12, sm: 12, md: 6, lg: 4, xl: 3 };
+            return { xs: 12, sm: 12, md: 12, lg: 8, xl: 6 };
         else
-            return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
+            return { xs: 6, sm: 6, md: 6, lg: 4, xl: 3 };
     }
 
     if (!devices.length)

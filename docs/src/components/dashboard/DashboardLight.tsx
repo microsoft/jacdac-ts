@@ -1,6 +1,6 @@
 
 import { Box, Grid, MenuItem, TextField, Typography, useTheme } from "@material-ui/core";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { LightReg, LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceView";
 import RegisterInput from "../RegisterInput";
@@ -10,6 +10,8 @@ import SelectWithLabel from "../ui/SelectWithLabel";
 import { JDService } from "../../../../src/jdom/service";
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import { toHex } from "../../../../src/jdom/utils";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
@@ -46,30 +48,22 @@ const lightCommands = [
         description: "rotate (shift) pixels towards the connector",
         valueDescription: "pixel positions to rotate"
     },
-    {
-        name: "setone",
-        args: "PC",
-        description: "set one pixel at P(in current range) to given color",
-        valueDescription: "pixel index within the current range"
-    },
 ]
 
 function LightCommand(props: { service: JDService, expanded: boolean }) {
     const { service, expanded } = props;
-    const [command, setCommand] = useState(lightCommands[0]);
-
     const [sending, setSending] = useState(false);
+
+    const [command, setCommand] = useState(lightCommands[0]);
     const [offset, setOffset] = useState("1");
     const [duration, setDuration] = useState("100");
-    const [colors, setColors] = useState(["#ff0000", "#0000ff"]);
+    const [colors, setColors] = useState(["#0000ff"]);
     const [mode, setMode] = useState(0);
 
     const { name, args, description, valueDescription } = command;
     const dcolors = args == "PC" ? colors.slice(0, 1) : colors;
 
-    const sendCommand = async () => {
-        if (sending) return;
-
+    const encoded = useMemo(() => {
         let sargs = "";
         let vargs = [];
         switch (args) {
@@ -93,17 +87,23 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
             vargs.unshift(mode);
 
         if (vargs.some(v => v === undefined))
-            return;
+            return undefined;
 
         let ms = parseInt(duration);
-        if (isNaN(ms)) ms = 100;
+        if (isNaN(ms))
+            ms = 100;
         const src = [
             mode && `tmpmode %`,
             `${name} ${sargs}`,
             `show %`
         ].filter(l => !!l).join('\n');
         const largs = [...vargs, ms];
-        const encoded = lightEncode(src, largs);
+        const r = lightEncode(src, largs);
+        return r;
+    }, [command, colors, duration, offset, mode]);
+
+    const sendCommand = async () => {
+        if (!encoded) return;
         try {
             setSending(true);
             await service.sendCmdAsync(LightCmd.Run, encoded);
@@ -141,11 +141,6 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
         setColors(cs);
     }
 
-    // send on change
-    useEffect(() => {
-        sendCommand();
-    }, [name, colors])
-
     return <Grid container spacing={1}>
         <Grid item key="descr" xs={12}>
             <Typography variant="caption">{description}</Typography>
@@ -180,6 +175,11 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
                 <AddIcon />
             </IconButtonWithTooltip>
         </Grid>}
+        <Grid item key="run">
+            <IconButtonWithTooltip disabled={!encoded} title={"Run command"} onClick={sendCommand}>
+                <PlayArrowIcon />
+            </IconButtonWithTooltip>
+        </Grid>
     </Grid>
 }
 
