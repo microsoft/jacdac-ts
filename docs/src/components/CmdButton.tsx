@@ -43,9 +43,10 @@ export default function CmdButton(props: {
     autoRun?: boolean,
     trackName?: string,
     trackProperties?: { [key: string]: any },
+    ackResetDelay?: number
 }) {
     const { onClick, children, icon, title, disabled, disableReset, autoRun,
-        trackName, trackProperties, ...others } = props
+        trackName, trackProperties, ackResetDelay, ...others } = props
     const { setError: setAppError } = useContext(AppContext)
     const classes = useStyles()
     const [working, setWorking] = useState(false)
@@ -70,7 +71,7 @@ export default function CmdButton(props: {
                 return;
             setAck(true)
             if (!disableReset) {
-                await delay(ACK_RESET_DELAY)
+                await delay(ackResetDelay || ACK_RESET_DELAY)
                 if (!mounted) return;
                 setAck(false)
             }
@@ -99,7 +100,7 @@ export default function CmdButton(props: {
         run();
     }
 
-    const statusIcon = error ? <ErrorIcon /> : ack ? <CheckIcon /> : undefined;
+    const statusIcon = error ? <ErrorIcon /> : undefined;
     const className = error ? classes.error : ack ? classes.ack : undefined;
 
     // run once
