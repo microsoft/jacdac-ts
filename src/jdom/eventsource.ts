@@ -27,6 +27,10 @@ export class JDEventSource {
     constructor() {
     }
 
+    protected log(msg: any) {
+        console.log(msg);
+    }
+
     on(eventName: string | string[], handler: EventHandler) {
         normalizeEventNames(eventName)
             .forEach(eventName => this.addListenerInternal(eventName, handler, false));

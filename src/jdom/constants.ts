@@ -79,6 +79,9 @@ export const GET_ATTEMPT = 'getAttempt'
 export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
 export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
 
+export const IDENTIFY = "identify"
+export const RESET = "reset"
+
 export const DATA = 'data'
 export const CLOSE = 'close'
 

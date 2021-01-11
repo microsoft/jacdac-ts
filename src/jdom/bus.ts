@@ -153,10 +153,7 @@ export class JDBus extends JDNode {
 
     private startTimers() {
         if (!this._announceInterval)
-            this._announceInterval = setInterval(() => {
-                if (this.connected)
-                    this.emit(SELF_ANNOUNCE);
-            }, 499);
+            this._announceInterval = setInterval(() => this.emit(SELF_ANNOUNCE), 499);
         if (!this._refreshRegistersInterval)
             this._refreshRegistersInterval = setInterval(this.refreshRegisters.bind(this), 50);
         if (!this._gcInterval)
