@@ -13,11 +13,7 @@ import AddIcon from '@material-ui/icons/Add';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import { toHex } from "../../../../src/jdom/utils";
 /*
-? 0xD2: fadehsv C+- similar to fade(), but colors are specified and faded in HSV
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
-0xD7: mode K=0- set update mode
-0xD8: tmpmode K=0- set update mode for next command only
-mult V- macro to multiply current range by given value (float)
 */
 
 interface LightCommand {
@@ -61,15 +57,18 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
     const { service, expanded } = props;
     const [command, setCommand] = useState(lightCommands[0]);
 
+    const [sending, setSending] = useState(false);
     const [offset, setOffset] = useState("1");
     const [duration, setDuration] = useState("100");
     const [colors, setColors] = useState(["#ff0000", "#0000ff"]);
-    const [mode, setMode] = useState("0");
+    const [mode, setMode] = useState(0);
 
     const { name, args, description, valueDescription } = command;
     const dcolors = args == "PC" ? colors.slice(0, 1) : colors;
 
     const sendCommand = async () => {
+        if (sending) return;
+
         let sargs = "";
         let vargs = [];
         switch (args) {
@@ -89,19 +88,28 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
             }
         }
 
+        if (mode)
+            vargs.unshift(mode);
+
         if (vargs.some(v => v === undefined))
             return;
 
         let ms = parseInt(duration);
         if (isNaN(ms)) ms = 100;
-        const src = 
-`tmpmode %
-${name} ${sargs}
-show %`
-        const largs = [parseInt(mode), ...vargs, ms];
+        const src = [
+            mode && `tmpmode %`,
+            `${name} ${sargs}`,
+            `show %`
+        ].filter(l => !!l).join('\n');
+        const largs = [...vargs, ms];
         const encoded = lightEncode(src, largs);
-        console.log({ src, largs, data: toHex(encoded) })
-        await service.sendCmdAsync(LightCmd.Run, encoded);
+        try {
+            setSending(true);
+            await service.sendCmdAsync(LightCmd.Run, encoded);
+        }
+        finally {
+            setSending(false)
+        }
     }
     const handleCommandChange = (ev: ChangeEvent<{ name?: string; value: unknown; }>) => {
         const newName = ev.target.value as string;
@@ -142,7 +150,7 @@ show %`
             <Typography variant="caption">{description}</Typography>
         </Grid>
         <Grid item key="select" xs={expanded ? 3 : 5}>
-            <SelectWithLabel fullWidth={true} label="command" value={name} onChange={handleCommandChange}>
+            <SelectWithLabel disabled={sending} fullWidth={true} label="command" value={name} onChange={handleCommandChange}>
                 {lightCommands.map(cmd => <MenuItem key={cmd.name} value={cmd.name}>{cmd.name}</MenuItem>)}
             </SelectWithLabel>
         </Grid>
@@ -150,7 +158,7 @@ show %`
             <TextField variant="outlined" label={"duration"} helperText="milliseconds" type="number" value={duration} onChange={handleDurationChange} />
         </Grid>}
         {expanded && <Grid item xs={2} key="mode">
-            <SelectWithLabel fullWidth={true} label="update mode" value={mode}>
+            <SelectWithLabel fullWidth={true} label="update mode" value={mode + ""} onChange={handleModeChange}>
                 <MenuItem value={0}>replace</MenuItem>
                 <MenuItem value={1}>add</MenuItem>
                 <MenuItem value={2}>substract</MenuItem>
@@ -178,21 +186,17 @@ export default function DashboardLight(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const brightness = service.register(LightReg.Brightness);
     const theme = useTheme();
-    return (<>
-        <Grid item>
+    return (<Grid container spacing={1}>
+        <Grid item xs={12}>
             <RegisterInput register={brightness} showRegisterName={true} />
         </Grid>
-        <Grid item>
+        <Grid item xs={12}>
             <LightCommand service={service} expanded={expanded} />
         </Grid>
-        {expanded && <Grid item>
-            <Box mt={theme.spacing(1)}>
-                <Grid container spacing={1}>
-                    {[LightReg.ActualBrightness, LightReg.NumPixels, LightReg.LightType, LightReg.MaxPower].map(id => <Grid item xs={12} md={6} key={id}>
-                        <RegisterInput register={service.register(id)} showRegisterName={true} />
-                    </Grid>)}
-                </Grid>
-            </Box>
-        </Grid>}
-    </>)
+        {expanded && <>
+            {[LightReg.ActualBrightness, LightReg.NumPixels, LightReg.LightType, LightReg.MaxPower].map(id => <Grid item xs={12} sm={6} key={id}>
+                <RegisterInput register={service.register(id)} showRegisterName={true} />
+            </Grid>)}
+        </>}
+    </Grid>)
 }
