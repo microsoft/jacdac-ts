@@ -1,7 +1,7 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
-import { SensorReg } from "./constants";
-import JDRegisterHost from "./registerhost";
-import JDServiceHost from "./servicehost";
+import { SensorReg } from "../jdom/constants";
+import JDRegisterHost from "../jdom/registerhost";
+import JDServiceHost from "../jdom/servicehost";
 
 export default class JDSensorServiceHost extends JDServiceHost {
     readonly reading: JDRegisterHost;
