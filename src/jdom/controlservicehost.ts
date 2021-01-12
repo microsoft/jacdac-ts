@@ -42,6 +42,7 @@ export default class ControlServiceHost extends JDServiceHost {
 
     async identify() {
         this.emit(IDENTIFY);
+        this.device.identify();
     }
 
     async reset() {

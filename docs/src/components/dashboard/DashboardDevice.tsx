@@ -13,6 +13,7 @@ import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import DeviceAvatar from "../devices/DeviceAvatar"
 import DashboardServiceView from "./DashboardServiceView";
 import DeviceActions from "../DeviceActions";
+import useDeviceHost from "../hooks/useDeviceHost";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -31,9 +32,11 @@ export default function DashboardDevice(props: {
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down("xs"));
+    const host = useDeviceHost(device);
+    const identifying = useChange(host, h => h.identifying);
 
     return (
-        <Card>
+        <Card variant={identifying ? "outlined" : undefined}>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
                 action={<DeviceActions device={device} hideIdentity={!expanded} showReset={expanded}>

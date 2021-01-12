@@ -2,16 +2,17 @@ import { JDBus } from "./bus";
 import JDServiceHost from "./servicehost";
 import Packet from "./packet";
 import { shortDeviceId } from "./pretty";
-import { anyRandomUint32, toHex } from "./utils";
+import { anyRandomUint32, delay, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
-import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "./constants";
+import { CHANGE, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "./constants";
 
 export default class JDDeviceHost extends JDEventSource {
     private _bus: JDBus;
     private readonly _services: JDServiceHost[];
     public readonly deviceId: string;
     public readonly shortId: string;
+    identifying: boolean;
 
     constructor(services: JDServiceHost[], options?: {
         deviceId?: string;
@@ -82,6 +83,16 @@ export default class JDDeviceHost extends JDEventSource {
 
     toString() {
         return `host ${this.shortId}`;
+    }
+
+    async identify() {
+        if (this.identifying) return;
+        this.identifying = true;
+        this.emit(IDENTIFY);
+        this.emit(CHANGE);
+        await delay(500);
+        this.identifying = false;
+        this.emit(CHANGE);
     }
 
     async sendPacketAsync(pkt: Packet) {
