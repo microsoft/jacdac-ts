@@ -1,6 +1,6 @@
 import Packet from "./packet";
 import { JDDevice } from "./device";
-import { SMap, debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
+import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -52,7 +52,7 @@ import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flas
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
 import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
-import { JDDeviceHost, JDDeviceHostOptions } from "./host";
+import JDDeviceHost from "./devicehost";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -770,23 +770,6 @@ export class JDBus extends JDNode {
     withTimeout<T>(timeout: number, p: Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             let done = false
-            let tid = setTimeout(() => {
-                if (!done) {
-                    done = true
-                    if (!this.connected) {
-                        // the bus got disconnected so all operation will
-                        // time out going further
-                        this.emit(TIMEOUT_DISCONNECT)
-                        resolve(undefined);
-                    }
-                    else {
-                        // the command timed out
-                        this.emit(TIMEOUT)
-                        this.emit(ERROR, "Timeout (" + timeout + "ms)");
-                        resolve(undefined);
-                    }
-                }
-            }, timeout)
             p.then(v => {
                 if (!done) {
                     done = true

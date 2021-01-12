@@ -17,10 +17,11 @@ import TestCard from "../TestCard";
 import Packet from "../../../../src/jdom/packet";
 import { JDEvent } from "../../../../src/jdom/event";
 import { InPipeReader } from "../../../../src/jdom/pipes";
-import { JDDeviceHost, ProtocolTestServiceHost } from "../../../../src/jdom/host";
 import { AlertTitle } from "@material-ui/lab";
 import Alert from "../ui/Alert";
 import Flags from "../../../../src/jdom/flags"
+import JDDeviceHost from "../../../../src/jdom/devicehost";
+import ProtocolTestServiceHost from "../../../../src/jdom/protocoltestservicehost"
 
 function pick(...values: number[]) {
     return values.find(x => x !== undefined);
