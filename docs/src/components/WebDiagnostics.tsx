@@ -6,15 +6,8 @@ import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import PaperBox from "./ui/PaperBox";
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import AddIcon from '@material-ui/icons/Add';
-import { MenuItem } from '@material-ui/core';
 import Alert from "./ui/Alert"
 import { AlertTitle } from "@material-ui/lab";
-import SelectWithLabel from "./ui/SelectWithLabel";
-import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
-import ButtonServiceHost from "../../../src/hosts/buttonservicehost";
-import JDDeviceHost from "../../../src/jdom/devicehost";
 
 function NodeCallRow(props: { node: JDNode }) {
     const { node } = props;
@@ -126,34 +119,6 @@ function NodeListeners() {
     </PaperBox>
 }
 
-function AddDeviceHostForm() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
-    const [selected, setSelected] = useState("button");
-    const hosts = [
-        {
-            name: "button",
-            services: () => [new ButtonServiceHost()]
-        }
-    ];
-    const handleChange = (ev: React.ChangeEvent<{ value: unknown }>) => {
-        setSelected(ev.target.value as string);
-    };
-    const handleClick = () => {
-        const host = hosts.find(h => h.name === selected);
-        const d = new JDDeviceHost(host.services());
-        bus.addDeviceHost(d);
-    }
-
-    return <>
-        <SelectWithLabel helperText={"Select the service that will run on the virtual device"} label={"Virtual device"} value={selected} onChange={handleChange}>
-            {hosts.map((host, i) => <MenuItem key={host.name} value={host.name}>{host.name}</MenuItem>)}
-        </SelectWithLabel>
-        <IconButtonWithTooltip title="Start new device. Reload page to clear out." onClick={handleClick}>
-            <AddIcon />
-        </IconButtonWithTooltip>
-    </>
-}
-
 export default function WebDiagnostics() {
     const [expanded, setExpanded] = React.useState<string | false>(false);
     const [v, setV] = useState(0)
@@ -167,27 +132,18 @@ export default function WebDiagnostics() {
 
     return <Alert severity="info">
         <AlertTitle>Diagnostics <Button variant="outlined" onClick={handleRefresh}>refresh</Button></AlertTitle>
-        <Grid container spacing={1}>
-            <Grid item xs={12}>
-                <AddDeviceHostForm />
-            </Grid>
-            <Grid item xs={12}>
-                <p>This diagnostics view does not register events to refresh automatically. Click the button above to refresh data.</p>
-                <Accordion expanded={expanded === 'listeners'} onChange={handleChange('listeners')}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>Event Listeners</AccordionSummary>
-                    <AccordionDetails>
-                        <NodeListeners />
-                    </AccordionDetails>
-                </Accordion>
-            </Grid>
-            <Grid item xs={12}>
-                <Accordion expanded={expanded === 'calls'} onChange={handleChange('calls')}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>Event Calls</AccordionSummary>
-                    <AccordionDetails>
-                        <NodeCalls />
-                    </AccordionDetails>
-                </Accordion>
-            </Grid>
-        </Grid>
+        <p>This diagnostics view does not register events to refresh automatically. Click the button above to refresh data.</p>
+        <Accordion expanded={expanded === 'listeners'} onChange={handleChange('listeners')}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>Event Listeners</AccordionSummary>
+            <AccordionDetails>
+                <NodeListeners />
+            </AccordionDetails>
+        </Accordion>
+        <Accordion expanded={expanded === 'calls'} onChange={handleChange('calls')}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>Event Calls</AccordionSummary>
+            <AccordionDetails>
+                <NodeCalls />
+            </AccordionDetails>
+        </Accordion>
     </Alert>
 }

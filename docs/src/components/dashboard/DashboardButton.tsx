@@ -14,9 +14,15 @@ export default function DashboardButton(props: DashboardServiceProps) {
     const [pressed] = useRegisterUnpackedValue<[boolean]>(pressedRegister);
     const widgetSize = useWidgetSize();
     const host = useServiceHost<ButtonServiceHost>(service);
+
+    const handleDown = () => host?.down();
+    const handleUp = () => host?.up();
     const handleClick = () => host?.click();
 
     return <Grid item>
-        <ButtonWidget checked={!!pressed} color={"primary"} size={widgetSize} onClick={host && handleClick} />
+        <ButtonWidget checked={!!pressed} color={"primary"} size={widgetSize}
+            onDown={host && handleDown}
+            onUp={host && handleUp}
+            onClick={host && handleClick} />
     </Grid>
 }

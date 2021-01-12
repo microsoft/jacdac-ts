@@ -8,9 +8,11 @@ export default function ButtonWidget(props: {
     label?: string
     color?: "primary" | "secondary",
     size?: string,
+    onDown?: () => void,
+    onUp?: () => void,
     onClick?: () => void
 }) {
-    const { checked, label, color, size, onClick } = props;
+    const { checked, label, color, size, onDown, onUp, onClick } = props;
     const { background, controlBackground, active } = useWidgetTheme(color);
     const theme = useTheme();
 
@@ -23,7 +25,10 @@ export default function ButtonWidget(props: {
     const ri = r - mo;
     return <SvgWidget width={w} size={size}>
         <circle cx={cx} cy={cy} r={ro} fill={background} />
-        <circle cx={cx} cy={cy} r={ri} fill={checked ? active : controlBackground} onClick={onClick} />
+        <circle cx={cx} cy={cy} r={ri} fill={checked ? active : controlBackground}
+            onPointerDown={onDown}
+            onPointerUp={onUp}
+            onClick={onClick} />
         <text x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
     </SvgWidget>
 }
