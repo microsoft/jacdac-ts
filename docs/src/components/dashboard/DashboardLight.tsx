@@ -1,6 +1,6 @@
 
-import { Box, Grid, MenuItem, TextField, Typography, useTheme } from "@material-ui/core";
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
+import React, { ChangeEvent, useMemo, useState } from "react";
 import { LightReg, LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceView";
 import RegisterInput from "../RegisterInput";
@@ -8,13 +8,13 @@ import { lightEncode } from "../../../../src/jdom/light";
 import ColorInput from "../ui/ColorInput";
 import SelectWithLabel from "../ui/SelectWithLabel";
 import { JDService } from "../../../../src/jdom/service";
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import RemoveIcon from '@material-ui/icons/Remove';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
-import { toHex } from "../../../../src/jdom/utils";
-import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */

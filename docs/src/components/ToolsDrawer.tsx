@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
-import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, ListItem, Divider } from "@material-ui/core";
-import { IconButton, Link } from "gatsby-theme-material-ui";
+import React, { useContext, useState } from "react";
+import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, ListItem, Divider, Dialog, DialogContent, Grid } from "@material-ui/core";
+import { Button, IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -16,7 +16,6 @@ import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EmojiNatureIcon from '@material-ui/icons/EmojiNature';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import HistoryIcon from '@material-ui/icons/History';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -29,7 +28,15 @@ import KindIcon from "./KindIcon";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
 import EdgeImpulseIcon from "./icons/EdgeImpulseIcon";
 import JupyterIcon from "./icons/JupyterIcon";
-import JacdacIcon from "./icons/JacdacIcon";
+import SelectWithLabel from "./ui/SelectWithLabel";
+import ButtonServiceHost from "../../../src/hosts/buttonservicehost";
+import JDDeviceHost from "../../../src/jdom/devicehost";
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import { MenuItem } from '@material-ui/core';
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
+import Alert from "./ui/Alert";
+import DeviceHostDialog from "./hosts/DeviceHostDialog";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -60,8 +67,12 @@ export default function ToolsDrawer() {
     const { toolsMenu, setToolsMenu } = useContext(AppContext)
     const { isHosted } = useContext(ServiceManagerContext)
     const { toggleDarkMode, darkMode } = useContext(DarkModeContext)
-    const handleClick = () => {
-        setToolsMenu(false)
+    const [deviceHosts, setDeviceHosts] = useState(false)
+    const handleClick = (link) => () => {
+        if (link.action)
+            link.action();
+        else
+            setToolsMenu(false)
     }
     const handleDrawerClose = () => {
         setToolsMenu(false)
@@ -69,6 +80,9 @@ export default function ToolsDrawer() {
     const handleDarkMode = () => {
         toggleDarkMode()
         setToolsMenu(false)
+    }
+    const toggleDeviceHosts = () => {
+        setDeviceHosts(!deviceHosts);
     }
     const links = [
         {
@@ -85,6 +99,11 @@ export default function ToolsDrawer() {
             text: "Firmware Update",
             url: "/tools/updater",
             icon: <SystemUpdateAltIcon />
+        },
+        {
+            text: "Start virtual device",
+            action: toggleDeviceHosts,
+            icon: <KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />
         },
         {
             // separator
@@ -157,7 +176,7 @@ export default function ToolsDrawer() {
             </IconButton>
         </div>
         <List>
-            {links.map((link, i) => link.url ? <Link to={link.url} key={link.url} onClick={handleClick}>
+            {links.map((link, i) => link.text ? <Link to={link.url} key={link.text} onClick={handleClick(link)}>
                 <ListItem button>
                     <ListItemIcon>{link.icon}</ListItemIcon>
                     <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={<>
@@ -174,5 +193,10 @@ export default function ToolsDrawer() {
                     <ListItemText>{darkMode === 'light' ? "Dark Mode" : "Light mode"}</ListItemText>
                 </ListItem>}
         </List>
+        <Dialog open={deviceHosts} onClose={toggleDeviceHosts}>
+            <DialogContent>
+                <DeviceHostDialog onAdded={toggleDeviceHosts} />
+            </DialogContent>
+        </Dialog>
     </Drawer>
 }

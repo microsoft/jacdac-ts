@@ -484,6 +484,14 @@ export class JDBus extends JDNode {
     }
 
     /**
+     * Get a device host for a given device
+     * @param deviceId 
+     */
+    deviceHost(deviceId: string) {
+        return this._deviceHosts.find(d => d.deviceId === deviceId);
+    }
+
+    /**
      * Adds the device host to the bus
      * @param deviceHost
      */
@@ -707,6 +715,7 @@ export class JDBus extends JDNode {
         // skip if no devices or any device is currently flashing
         if (!devices.length || devices.some(dev => dev.flashing))
             return; // no devices, we're done
+
         // collect registers
         const registers = arrayConcatMany(devices
             .map(device => arrayConcatMany(
@@ -723,7 +732,7 @@ export class JDBus extends JDNode {
             )
         )
 
-        //console.log(`auto-refresh`, registers)
+        // refresh values
         for (const register of registers) {
             // streaming register? use streaming sample
             if (isReading(register.specification) && isSensor(register.service.specification)) {
@@ -760,6 +769,9 @@ export class JDBus extends JDNode {
                 }
             }
         }
+
+        // apply streaming samples to device hosts
+        this._deviceHosts.map(host => host.refreshRegisters());
     }
 
     /**

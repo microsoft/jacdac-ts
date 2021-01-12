@@ -1,8 +1,11 @@
 import { Avatar, createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
 import React from "react";
+import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import CmdButton from "../CmdButton";
+import useDeviceHost from "../hooks/useDeviceHost";
+import KindIcon from "../KindIcon"
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,15 +28,16 @@ export default function DeviceAvatar(props: { device: JDDevice, showMissing?: bo
   const { specification, imageUrl } = useDeviceSpecification(device);
   const classes = useStyles();
   const sizeClassName = size === "small" ? classes.small : size === "large" ? classes.large : undefined;
+  const host = useDeviceHost(device);
 
-  if (!showMissing && (!specification || !imageUrl))
+  if (!showMissing && (!host && !imageUrl))
     return null;
   const handleIdentify = async () => {
     await device.identify()
   }
   return <CmdButton trackName="device.identify" size="small" title={`identify ${specification?.name || "device"}`}
     onClick={handleIdentify}
-    icon={<Avatar
+    icon={host ? <KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} /> : <Avatar
       className={sizeClassName}
       alt={specification?.name || "Image of the device"}
       src={imageUrl}

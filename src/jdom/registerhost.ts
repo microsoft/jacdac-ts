@@ -29,8 +29,8 @@ export default class JDRegisterHost extends JDEventSource {
         }
     }
 
-    sendReport() {
-        this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, this.data));
+    async sendGetAsync() {
+        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, this.data));
     }
 
     handlePacket(pkt: Packet): boolean {

@@ -77,6 +77,10 @@ export default class JDDeviceHost extends JDEventSource {
         return this._services.slice(0);
     }
 
+    service(serviceIndex: number) {
+        return serviceIndex !== undefined && this._services[serviceIndex];
+    }
+
     toString() {
         return `host ${this.shortId}`;
     }
@@ -128,5 +132,9 @@ export default class JDDeviceHost extends JDEventSource {
                 //_gotAck(pkt)
             }
         }
+    }
+
+    refreshRegisters() {
+        this._services.forEach(srv => srv.refreshRegisters());
     }
 }
