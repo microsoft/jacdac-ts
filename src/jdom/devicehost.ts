@@ -54,8 +54,7 @@ export default class JDDeviceHost extends JDEventSource {
         if (!this._bus) return;
 
         this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce);
-        if (this._services.length)
-            this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
+        this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
         this.log(`start host`)
     }
 

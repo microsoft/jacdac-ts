@@ -68,7 +68,7 @@ export function identifierToUrlPath(id: string) {
 /**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
 */
-export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): boolean {
+export function isInstanceOf(classIdentifier: number, requiredClassIdentifier: number): boolean {
     // garbage data
     if (classIdentifier === undefined)
         return false;

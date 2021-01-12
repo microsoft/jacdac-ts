@@ -10,7 +10,7 @@ export default class JDServiceHost extends JDEventSource {
     public serviceIndex: number = -1; // set by device
     public device: JDDeviceHost;
     private readonly _registers: JDRegisterHost[] = [];
-    private readonly commands: { [identifier: number]: (pkt) => void } = {};
+    private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
 
     constructor(public readonly serviceClass: number) {
         super();
@@ -36,7 +36,7 @@ export default class JDServiceHost extends JDEventSource {
         return reg;
     }
 
-    protected addCommand(identifier: number, handler: (pkt) => void) {
+    protected addCommand(identifier: number, handler: (pkt: Packet) => void) {
         this.commands[identifier] = handler;
     }
 
