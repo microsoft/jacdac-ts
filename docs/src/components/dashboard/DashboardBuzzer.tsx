@@ -1,6 +1,6 @@
 
-import { createStyles, Grid, makeStyles } from "@material-ui/core";
-import React from "react";
+import { Button, createStyles, Grid, makeStyles } from "@material-ui/core";
+import React, { PointerEventHandler } from "react";
 import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceView";
 import RegisterInput from "../RegisterInput";
@@ -13,7 +13,6 @@ const useStyles = makeStyles((theme) => createStyles({
         padding: "3em 0.75em 3em 0.75em"
     }
 }));
-
 
 export default function DashboardBuzzer(props: DashboardServiceProps) {
     const { service } = props;
@@ -29,7 +28,7 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
         { name: "A", frequency: 440 },
         { name: "B", frequency: 493.92 },
     ];
-    const handlePlayTone = (f: number) => async () => {
+    const sendPlayTone = async (f: number) => {
         const vol = 1;
         const period = 1000000 / f;
         const duty = period * vol / 2;
@@ -37,19 +36,24 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
         const data = jdpack<[number, number, number]>("u16 u16 u16", [period, duty, duration])
         await service.sendCmdAsync(BuzzerCmd.PlayTone, data)
     }
+    const handlePointerEnter = (f: number) => (ev: any) => {
+        if (ev.buttons)
+            sendPlayTone(f)
+    }
+    const handlePlayTone = (f: number) => () => sendPlayTone(f)
 
     return <Grid container spacing={1}>
         <Grid item xs={12}>
             <RegisterInput register={volume} showRegisterName={true} />
         </Grid>
         <Grid item>
-            {notes.map(note => <CmdButton
+            {notes.map(note => <Button
                 key={note.frequency}
                 className={classes.btn}
                 size="small"
                 variant="outlined"
-                ackResetDelay={100}
-                onClick={handlePlayTone(note.frequency)}>{note.name}</CmdButton>
+                onPointerEnter={handlePointerEnter(note.frequency)}
+                onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
             )}
         </Grid>
     </Grid>

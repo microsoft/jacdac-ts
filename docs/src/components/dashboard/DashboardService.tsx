@@ -6,6 +6,7 @@ import AutoGrid from "../ui/AutoGrid";
 import RegisterInput from "../RegisterInput";
 import { isReading, isRegister } from "../../../../src/jdom/spec";
 import { DashboardServiceProps } from "./DashboardServiceView";
+import useServiceHost from "../hooks/useServiceHost";
 
 // filter out common registers
 const ignoreRegisters = [
