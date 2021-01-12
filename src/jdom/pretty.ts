@@ -293,8 +293,8 @@ function syntheticPktInfo(kind: jdspec.PacketKind, addr: number): jdspec.PacketI
 }
 
 function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    const isSet = !!(pkt.serviceCommand & CMD_SET_REG)
-    const isGet = !!(pkt.serviceCommand & CMD_GET_REG)
+    const isSet = pkt.isRegisterSet
+    const isGet = pkt.isRegisterGet
 
     if (isSet == isGet)
         return null
