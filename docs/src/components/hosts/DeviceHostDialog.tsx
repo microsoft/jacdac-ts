@@ -5,6 +5,8 @@ import KindIcon from "../KindIcon";
 import SelectWithLabel from "../ui/SelectWithLabel";
 import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
 import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost"
+import ServoServiceHost from "../../../../src/hosts/servoservicehost"
+import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
@@ -19,7 +21,19 @@ const hostDefinitions = [
     {
         name: "buzzer",
         services: () => [new BuzzerServiceHost()]
-    }
+    },
+    {
+        name: "servo",
+        services: () => [new ServoServiceHost()]
+    },
+    {
+        name: "rotary encoder",
+        services: () => [new RotaryEncoderServiceHost()]
+    },
+    {
+        name: "rotary encoder + button",
+        services: () => [new RotaryEncoderServiceHost(), new ButtonServiceHost()]
+    },
 ];
 
 export default function DeviceHostDialog(props: { onAdded: () => void }) {
