@@ -798,7 +798,7 @@ export class JDBus extends JDNode {
                         resolve(undefined);
                     }
                 }
-            }, timeout)            
+            }, timeout);
             p.then(v => {
                 if (!done) {
                     done = true
@@ -811,6 +811,7 @@ export class JDBus extends JDNode {
             }, e => {
                 if (!done) {
                     done = true
+                    clearTimeout(tid);
                     reject(e)
                 }
             })
