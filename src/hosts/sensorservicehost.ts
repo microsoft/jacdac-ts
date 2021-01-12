@@ -2,6 +2,7 @@ import { SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { SensorReg } from "../jdom/constants";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost from "../jdom/servicehost";
+import { isRegister } from "../jdom/spec";
 
 export default class JDSensorServiceHost extends JDServiceHost {
     readonly reading: JDRegisterHost;
@@ -10,17 +11,17 @@ export default class JDSensorServiceHost extends JDServiceHost {
     private lastStream = 0;
 
     constructor(public readonly serviceClass: number,
-        readingFormat: string,
         readingValue: any[],
         streamingInterval?: number
         ) {
         super(serviceClass);
 
-        this.reading = this.addRegister(SystemReg.Reading, readingFormat, readingValue);
-        this.streamingSamples = this.addRegister(SensorReg.StreamingSamples, "u8", [0]);
-        this.streamingInterval = this.addRegister(SensorReg.StreamingInterval, "u32", [streamingInterval || 50]);
+        const readingRegister = this.specification.packets.find(pkt => isRegister(pkt) && pkt.identifier === SystemReg.Reading);
+        this.reading = this.addRegister(SystemReg.Reading, readingRegister.packFormat, readingValue);
+        this.streamingSamples = this.addRegister(SensorReg.StreamingSamples, 0);
+        this.streamingInterval = this.addRegister(SensorReg.StreamingInterval, streamingInterval || 50);
         if (streamingInterval !== undefined)
-            this.addRegister(SensorReg.StreamingPreferredInterval, "u32", [streamingInterval]);
+            this.addRegister(SensorReg.StreamingPreferredInterval, streamingInterval);
     }
 
     refreshRegisters() {

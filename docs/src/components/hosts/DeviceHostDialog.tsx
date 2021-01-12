@@ -8,6 +8,7 @@ import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost"
 import ServoServiceHost from "../../../../src/hosts/servoservicehost"
 import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost"
 import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
+import VibrationMotorServiceHost from "../../../../src/hosts/motorservicehost"
 
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
@@ -43,11 +44,16 @@ const hostDefinitions = [
     },
     {
         name: "slider",
-        services: () => [new JDSensorServiceHost(SRV_SLIDER, "u16", [0])]
+        services: () => [new JDSensorServiceHost(SRV_SLIDER, [0])]
     },
     {
         name: "thermometer",
-        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, "u22.10", [20], 1000)]
+        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, [20], 1000)]
+    },
+    {
+        name: "thermometer",
+        services: () => [new VibrationMotorServiceHost()]
+        
     }
 
 ];

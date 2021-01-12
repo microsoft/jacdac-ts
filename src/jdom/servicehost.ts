@@ -4,18 +4,21 @@ import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
 import JDRegisterHost from "./registerhost";
+import { serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
 export default class JDServiceHost extends JDEventSource {
     public serviceIndex: number = -1; // set by device
     public device: JDDeviceHost;
+    public readonly specification: jdspec.ServiceSpec;
     private readonly _registers: JDRegisterHost[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
 
     constructor(public readonly serviceClass: number) {
         super();
 
-        this.addRegister(BaseReg.StatusCode, "u16 u16", [0, 0])
+        this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
+        this.addRegister(BaseReg.StatusCode, 0, 0)
     }
 
     get registers() {
@@ -30,8 +33,8 @@ export default class JDServiceHost extends JDEventSource {
         return this._registers.find(reg => reg.identifier === BaseReg.StatusCode);
     }
 
-    protected addRegister(identifier: number, packFormat: string, defaultValue: any[]) {
-        const reg = new JDRegisterHost(this, identifier, packFormat, defaultValue);
+    protected addRegister(identifier: number, ...defaultValue: any[]) {
+        const reg = new JDRegisterHost(this, identifier, defaultValue);
         this._registers.push(reg);
         return reg;
     }

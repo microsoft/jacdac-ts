@@ -4,7 +4,7 @@ import { delay } from "../jdom/utils";
 
 export default class ButtonServiceHost extends JDSensorServiceHost {
     constructor() {
-        super(SRV_BUTTON, "u8", [false], 50);
+        super(SRV_BUTTON, [false], 50);
     }
 
     async down() {

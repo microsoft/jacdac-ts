@@ -6,13 +6,13 @@ export default class RotaryEncoderServiceHost extends JDSensorServiceHost {
     readonly clicksPerTurn: JDRegisterHost;
 
     constructor() {
-        super(SRV_ROTARY_ENCODER, "i32", [0], 50);
+        super(SRV_ROTARY_ENCODER, [0], 50);
 
-        this.clicksPerTurn = this.addRegister(RotaryEncoderReg.ClicksPerTurn, "u16", [12]);
+        this.clicksPerTurn = this.addRegister(RotaryEncoderReg.ClicksPerTurn, 12);
     }
 
-    async rotate(offset: number) {
+    async rotate(clicks: number) {
         const [position] = this.reading.values<[number]>();
-        this.reading.setValues<[number]>([position + (offset >> 0)]);
+        this.reading.setValues<[number]>([position + (clicks >> 0)]);
     }
 }
