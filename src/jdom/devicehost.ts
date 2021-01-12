@@ -85,13 +85,16 @@ export default class JDDeviceHost extends JDEventSource {
     }
 
     async sendPacketAsync(pkt: Packet) {
-        if (!this._bus) return;
+        if (!this._bus)
+            return Promise.resolve();
 
         pkt.deviceIdentifier = this.deviceId;
         // compute crc and send
-        pkt.sendCoreAsync(this.bus);
+        const p = pkt.sendCoreAsync(this.bus);
         // send to current bus
         this.bus.processPacket(pkt);
+        // return priomise
+        return p;
     }
 
     private handlePacket(pkt: Packet) {
