@@ -16,6 +16,7 @@ export default function ButtonWidget(props: {
     const { background, controlBackground, active } = useWidgetTheme(color);
     const theme = useTheme();
 
+    const clickeable = !!onClick || !!onDown || !!onUp;
     const w = 64;
     const mo = checked ? 3 : 5;
     const r = w / 2;
@@ -28,7 +29,9 @@ export default function ButtonWidget(props: {
         <circle cx={cx} cy={cy} r={ri} fill={checked ? active : controlBackground}
             onPointerDown={onDown}
             onPointerUp={onUp}
-            onClick={onClick} />
-        <text x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
+            onClick={onClick}
+            className={clickeable && "clickeable"}
+            />
+        <text className={"no-pointer-events"} x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
     </SvgWidget>
 }

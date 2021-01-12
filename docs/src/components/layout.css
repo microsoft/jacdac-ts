@@ -652,3 +652,11 @@ footer {
     background-color: white !important;
   }
 }
+
+.clickeable {
+  cursor: pointer;
+}
+.no-pointer-events {
+  pointer-events: none;
+  user-select: none;
+}

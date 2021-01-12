@@ -6,16 +6,25 @@ import { useRegisterIntValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import CircleDotWidget from "../widgets/CircleDotWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
+import useServiceHost from "../hooks/useServiceHost";
+import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost";
 
 export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const { service } = props;
     const position = useRegisterIntValue(service.register(RotaryEncoderReg.Position)) || 0;
     const clicksPerTurn = 12;
     const angle = position / clicksPerTurn * 360;
-    const color = "primary";
     const widgetSize = useWidgetSize();
+    const host = useServiceHost<RotaryEncoderServiceHost>(service);
+    const color = host ? "secondary" : "primary";
+    const handleRotate = (steps: number) => host?.rotate(steps);
 
     return <Grid item>
-        <CircleDotWidget angle={angle} size={widgetSize} label={"" + position} color={color} />
+        <CircleDotWidget 
+            angle={angle} 
+            size={widgetSize} 
+            label={"" + position} 
+            color={color} 
+            onRotate={host && handleRotate} />
     </Grid>
 }
