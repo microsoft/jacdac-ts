@@ -4,10 +4,11 @@ import { Grid, Typography } from "@material-ui/core";
 export default function PercentWidget(props: {
     value?: number;
     label: string,
+    secondaryLabel?: string,
     color?: "primary" | "secondary",
     size?: string
 }) {
-    const { value, color, label } = props;
+    const { value, secondaryLabel, color, label } = props;
     const valueVariant = "h1"
     const labelVariant = "h6"
 
@@ -17,9 +18,9 @@ export default function PercentWidget(props: {
             <Grid item xs>
                 <Typography variant={valueVariant}>{percent}</Typography>
             </Grid>
-            <Grid xs container direction="column" justify="space-between">
-                {label && <Grid item><Typography variant={labelVariant}>{label}</Typography></Grid>}
-                <Grid item><Typography variant={labelVariant}>%</Typography></Grid>
+            <Grid container direction="column" justify="space-between">
+                <Grid item><Typography variant={labelVariant}>{label}</Typography></Grid>
+                {secondaryLabel && <Grid item><Typography variant={labelVariant}>{secondaryLabel}</Typography></Grid>}
             </Grid>
         </Grid>
 }
