@@ -7,6 +7,8 @@ import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
 import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost"
 import ServoServiceHost from "../../../../src/hosts/servoservicehost"
 import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost"
+import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
+
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
@@ -21,6 +23,10 @@ const hostDefinitions = [
     {
         name: "buzzer",
         services: () => [new BuzzerServiceHost()]
+    },
+    {
+        name: "motor",
+        services: () => [new MotorEncoderServiceHost()]
     },
     {
         name: "servo",
