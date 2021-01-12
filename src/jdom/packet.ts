@@ -8,7 +8,6 @@ import {
     JD_SERVICE_INDEX_MASK,
     JD_SERVICE_INDEX_INV_MASK,
     JD_SERIAL_MAX_PAYLOAD_SIZE,
-    CMD_EVENT,
     JD_SERVICE_INDEX_CRC_ACK,
     JD_SERVICE_INDEX_PIPE,
     PIPE_PORT_SHIFT,
@@ -17,7 +16,11 @@ import {
     PIPE_CLOSE_MASK,
     CMD_GET_REG,
     JD_SERVICE_INDEX_CTRL,
-    CMD_REG_MASK
+    CMD_REG_MASK,
+    CMD_EVENT_FLAG,
+    CMD_EVENT_CODE_MASK,
+    CMD_EVENT_COUNTER_SHIFT,
+    CMD_EVENT_COUNTER_MASK
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -166,6 +169,7 @@ export class Packet {
         return (this.serviceCommand >> 12) == (CMD_GET_REG >> 12)
     }
 
+    // TODO rename to registerCode
     get registerIdentifier() {
         if (!this.isRegisterGet && !this.isRegisterSet)
             return undefined;
@@ -173,7 +177,15 @@ export class Packet {
     }
 
     get isEvent() {
-        return this.serviceCommand === CMD_EVENT;
+        return (this.serviceCommand & CMD_EVENT_FLAG) !== 0;
+    }
+
+    get eventCode() {
+        return this.isEvent ? this.serviceCommand & CMD_EVENT_CODE_MASK : undefined;
+    }
+
+    get eventCounter() {
+        return this.isEvent ? (this.serviceCommand >> CMD_EVENT_COUNTER_SHIFT) & CMD_EVENT_COUNTER_MASK : undefined;
     }
 
     get isCRCAck() {

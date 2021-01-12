@@ -3,8 +3,8 @@ import { NumberFormat } from "./buffer"
 import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToString, read16, toHex, read32, toArray, hexNum, isSet } from "./utils"
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
-    JD_SERVICE_INDEX_PIPE, CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, CMD_EVENT, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_PORT_SHIFT, JD_FRAME_FLAG_COMMAND,
-    JD_FRAME_FLAG_ACK_REQUESTED, CMD_ADVERTISEMENT_DATA, JD_SERVICE_INDEX_CTRL
+    CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_PORT_SHIFT, JD_FRAME_FLAG_COMMAND,
+    JD_FRAME_FLAG_ACK_REQUESTED, CMD_ADVERTISEMENT_DATA, JD_SERVICE_INDEX_CTRL, 
 } from "./constants"
 import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
 
@@ -328,15 +328,15 @@ function decodeRegister(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket
 }
 
 function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
-    if (pkt.isCommand || pkt.serviceCommand != CMD_EVENT)
+    if (pkt.isCommand || !pkt.isEvent)
         return null
 
-    const addr = pkt.getNumber(NumberFormat.UInt32LE, 0)
-    const evInfo = service.packets.find(p => p.kind == "event" && p.identifier == addr)
-        || syntheticPktInfo("event", addr)
+    const evCode = pkt.eventCode
+    const evInfo = service.packets.find(p => p.kind == "event" && p.identifier == evCode)
+        || syntheticPktInfo("event", evCode)
 
-    const decoded = decodeMembers(service, evInfo, pkt, 4)
-    let description = "EVENT " + evInfo.name + wrapDecodedMembers(decoded)
+    const decoded = decodeMembers(service, evInfo, pkt)
+    let description = `EVENT[${pkt.eventCounter}] ${evInfo.name}` + wrapDecodedMembers(decoded)
 
     return {
         service,
@@ -461,7 +461,7 @@ export function commandName(n: number, serviceClass?: number): string {
             const serviceSpec = serviceSpecificationFromClassIdentifier(serviceClass)
             regName = serviceSpec?.packets.find(pkt => isRegister(pkt) && pkt.identifier === reg)?.name
         }
-        return pref + (regName !== undefined ? regName : `x${reg.toString(16)}` ) + "]"
+        return pref + (regName !== undefined ? regName : `x${reg.toString(16)}`) + "]"
     }
 
     let r = SystemCmd[n]?.toLowerCase()
@@ -545,8 +545,6 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         const decoded = pkt.decoded
         if (decoded) {
             pdesc += "; " + decoded.description
-        } else if (pkt.serviceCommand == CMD_EVENT) {
-            pdesc += "; ev=" + num2str(pkt.intData) + " arg=" + (read32(pkt.data, 4) | 0)
         } else if (0 < d.length && d.length <= 4) {
             let v0 = pkt.uintData, v1 = pkt.intData
             pdesc += "; " + num2str(v0)
