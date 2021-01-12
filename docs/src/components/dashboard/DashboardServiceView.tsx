@@ -1,5 +1,5 @@
 import { createElement, FunctionComponent } from "react";
-import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER } from "../../../../src/jdom/constants";
+import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_HUMIDITY, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
@@ -9,6 +9,7 @@ import DashboardService from "./DashboardService";
 import DashboardGamepad from "./DashbaordGamepad";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
+import DashboardHumidity from "./DashboardHumidity";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -24,6 +25,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_GAMEPAD]: DashboardGamepad,
     [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
     [SRV_BUTTON]: DashboardButton,
+    [SRV_HUMIDITY]: DashboardHumidity,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {

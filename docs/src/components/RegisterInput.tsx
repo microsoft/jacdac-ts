@@ -9,6 +9,7 @@ import AppContext from "./AppContext";
 import MembersInput from "./fields/MembersInput";
 import RegisterTrend from "./RegisterTrend";
 import IconButtonWithProgress from "./ui/IconButtonWithProgress"
+import useRegisterHost from "./hooks/useRegisterHost"
 
 export type RegisterInputVariant = "widget" | ""
 
@@ -29,7 +30,8 @@ export default function RegisterInput(props: {
     const { setError: setAppError } = useContext(AppContext)
     const [working, setWorking] = useState(false);
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
-    const hasSet = specification.kind === "rw";
+    const host = useRegisterHost(register);
+    const hasSet = specification.kind === "rw" || host;
     const hasData = !!register.data;
     const color = hasSet ? "secondary" : "primary"
 
@@ -45,7 +47,12 @@ export default function RegisterInput(props: {
         if (working) return;
         try {
             setWorking(true)
-            await register.sendSetPackedAsync(specification.packFormat, values, true);
+            if (host) {
+                host.setValues(values);
+                await register.refresh();
+            }
+            else
+                await register.sendSetPackedAsync(specification.packFormat, values, true);
         }
         catch (e) {
             setAppError(e)

@@ -45,7 +45,7 @@ export default function InputSlider(props: {
                     disabled={disabled}
                     valueLabelFormat={valueLabelFormat}
                     value={value}
-                    onChange={handleSliderChange}
+                    onChange={readOnly ? undefined : handleSliderChange}
                     valueLabelDisplay="auto"
                     marks={marks}
                     min={min}

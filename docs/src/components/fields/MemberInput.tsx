@@ -22,7 +22,8 @@ export default function MemberInput(props: {
     color?: "primary" | "secondary",
     variant?: RegisterInputVariant
 }) {
-    const { specification, serviceSpecification, serviceMemberSpecification, value, setValue, showDataType, color, variant } = props;
+    const { specification, serviceSpecification, serviceMemberSpecification, value,
+        setValue, showDataType, color, variant } = props;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const labelid = useId();
@@ -170,7 +171,7 @@ export default function MemberInput(props: {
 
         if (disabled && specification.isSimpleType && variant == "widget")
             return <>
-                <Typography component="span" variant={mobile ? "h5" : "h4"}>{roundWithPrecision(value, 2)}</Typography>
+                <Typography component="span" variant={"h4"}>{roundWithPrecision(value, 2)}</Typography>
                 <Typography component="span" variant="caption">{helperText}</Typography>
             </>;
 

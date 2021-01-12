@@ -5,6 +5,7 @@ import KindIcon from "../KindIcon";
 import SelectWithLabel from "../ui/SelectWithLabel";
 import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
 import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost"
+import HumidityServiceHost from "../../../../src/hosts/humidityservicehost"
 import ServoServiceHost from "../../../../src/hosts/servoservicehost"
 import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost"
 import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
@@ -13,7 +14,7 @@ import VibrationMotorServiceHost from "../../../../src/hosts/motorservicehost"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { SRV_HUMIDITY, SRV_SLIDER, SRV_THERMOMETER, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { SRV_SLIDER, SRV_THERMOMETER, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
@@ -28,7 +29,7 @@ const hostDefinitions = [
     },
     {
         name: "humidity",
-        services: () => [new JDSensorServiceHost(SRV_HUMIDITY)]
+        services: () => [new HumidityServiceHost()]
     },
     {
         name: "motor",
