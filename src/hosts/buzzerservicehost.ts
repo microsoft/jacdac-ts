@@ -7,6 +7,7 @@ import JDServiceHost from "../jdom/servicehost";
 let ctx: AudioContext;
 let volumeNode: GainNode;
 let volume: number = 20;
+const VOLUME_SCALE = 0xff << 3;
 
 function init() {
     if (ctx === undefined) {
@@ -24,7 +25,7 @@ async function setVolume(vol: number) {
     volume = vol;
     if (ctx && volumeNode) {
         try {
-            volumeNode.gain.value = volume / (0xff * 3);
+            volumeNode.gain.value = volume / VOLUME_SCALE;
         }
         catch (e) {
             console.log(e)
@@ -38,7 +39,7 @@ async function playTone(frequency: number, duration: number) {
         try {
             volumeNode = ctx.createGain();
             volumeNode.connect(ctx.destination);
-            volumeNode.gain.value = volume / (0xff * 3);
+            volumeNode.gain.value = volume / VOLUME_SCALE;
             const tone = ctx.createOscillator();
             tone.type = "sawtooth";
             tone.connect(volumeNode);
