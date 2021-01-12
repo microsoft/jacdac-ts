@@ -18,7 +18,7 @@ export default class JDServiceHost extends JDEventSource {
         super();
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
-        this.addRegister(BaseReg.StatusCode, 0, 0)
+        this.addRegister(BaseReg.StatusCode)
     }
 
     get registers() {
@@ -33,7 +33,7 @@ export default class JDServiceHost extends JDEventSource {
         return this._registers.find(reg => reg.identifier === BaseReg.StatusCode);
     }
 
-    protected addRegister(identifier: number, ...defaultValue: any[]) {
+    protected addRegister(identifier: number, defaultValue?: any[]) {
         const reg = new JDRegisterHost(this, identifier, defaultValue);
         this._registers.push(reg);
         return reg;

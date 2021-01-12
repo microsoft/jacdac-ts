@@ -13,7 +13,7 @@ import VibrationMotorServiceHost from "../../../../src/hosts/motorservicehost"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { SRV_SLIDER, SRV_THERMOMETER, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { SRV_HUMIDITY, SRV_SLIDER, SRV_THERMOMETER, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
@@ -25,6 +25,10 @@ const hostDefinitions = [
     {
         name: "buzzer",
         services: () => [new BuzzerServiceHost()]
+    },
+    {
+        name: "humidity",
+        services: () => [new JDSensorServiceHost(SRV_HUMIDITY)]
     },
     {
         name: "motor",
@@ -44,14 +48,14 @@ const hostDefinitions = [
     },
     {
         name: "slider",
-        services: () => [new JDSensorServiceHost(SRV_SLIDER, [0])]
+        services: () => [new JDSensorServiceHost(SRV_SLIDER)]
     },
     {
         name: "thermometer",
         services: () => [new JDSensorServiceHost(SRV_THERMOMETER, [20], 1000)]
     },
     {
-        name: "thermometer",
+        name: "vibration motor",
         services: () => [new VibrationMotorServiceHost()]
         
     }

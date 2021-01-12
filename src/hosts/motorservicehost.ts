@@ -9,7 +9,7 @@ export default class MotorServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_MOTOR);
 
-        this.duty = this.addRegister(MotorReg.Duty, 0);
-        this.enabled = this.addRegister(MotorReg.Enabled, false);
+        this.duty = this.addRegister(MotorReg.Duty);
+        this.enabled = this.addRegister(MotorReg.Enabled);
     }
 }

@@ -6,6 +6,49 @@ import { JDEventSource } from "./eventsource";
 import { CHANGE, CMD_GET_REG } from "./constants";
 import { isRegister } from "./spec";
 
+function pick(...values: number[]) {
+    return values.find(x => x !== undefined);
+}
+
+function defaultFieldPayload(specification: jdspec.PacketMember) {
+    let r: any = undefined;
+    switch (specification.type) {
+        case "bool":
+            r = 0;
+            break;
+        case "i8":
+        case "i16":
+        case "i32":
+        case "u8":
+        case "u16":
+        case "u32": {
+            const unsigned = specification.type[0] === "u";
+            const n = Math.min(30, parseInt(specification.type.slice(1)));
+            const min = pick(specification.typicalMin, specification.absoluteMin, unsigned ? 0 : -((1 << (n - 1)) - 1));
+            const max = pick(specification.typicalMax, specification.absoluteMax, unsigned ? (1 << n) - 1 : (1 << (n - 1)) - 1);
+            r = (max + min) / 2;
+            break;
+        }
+        case "bytes": {
+            r = new Uint8Array(0);
+            break;
+        }
+        case "string":
+        case "string0": {
+            r = "";
+            break;
+        }
+    }
+
+    return r;
+}
+
+function defaultPayload<T extends any[]>(specification: jdspec.PacketInfo): T {
+    const { fields } = specification;
+    const rs = fields.map(defaultFieldPayload);
+    return rs as T;
+}
+
 export default class JDRegisterHost extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
@@ -13,11 +56,11 @@ export default class JDRegisterHost extends JDEventSource {
     constructor(
         public readonly service: JDServiceHost,
         public readonly identifier: number,
-        defaultValue: any[]) {
+        defaultValue?: any[]) {
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
-        this.data = jdpack(this.packFormat, defaultValue);
+        this.data = jdpack(this.packFormat, defaultValue || defaultPayload(this.specification));
     }
 
     get packFormat() {

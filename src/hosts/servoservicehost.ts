@@ -9,7 +9,7 @@ export default class ServoServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_SERVO);
 
-        this.pulse = this.addRegister(ServoReg.Pulse, 1500);
-        this.enabled = this.addRegister(ServoReg.Enabled, false);
+        this.pulse = this.addRegister(ServoReg.Pulse);
+        this.enabled = this.addRegister(ServoReg.Enabled);
     }
 }

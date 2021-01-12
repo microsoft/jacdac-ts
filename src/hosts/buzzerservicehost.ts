@@ -58,7 +58,7 @@ export default class BuzzerServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_BUZZER);
 
-        this.volume = this.addRegister(BuzzerReg.Volume, 20);
+        this.volume = this.addRegister(BuzzerReg.Volume);
         this.volume.on(CHANGE, this.handleVolumeChange.bind(this))
         this.addCommand(BuzzerCmd.PlayTone, this.handlePlayTone.bind(this));
     }

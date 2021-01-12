@@ -9,6 +9,6 @@ export default class VibrationMotorServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_VIBRATION_MOTOR);
 
-        this.speed = this.addRegister(VibrationMotorReg.Speed, 0);
+        this.speed = this.addRegister(VibrationMotorReg.Speed);
     }
 }
