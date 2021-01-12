@@ -1,125 +1,289 @@
-import { ControlAnnounceFlags, ControlCmd } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, ControlAnnounceFlags, ControlCmd, SystemCmd, SystemEvent } from "../../jacdac-spec/dist/specconstants";
+import { NumberFormat, setNumber } from "./buffer";
 import { JDBus } from "./bus";
-import { CMD_ADVERTISEMENT_DATA, IDENTIFY, JD_SERVICE_INDEX_CTRL, RESET, SELF_ANNOUNCE, SystemCmd } from "./constants";
+import { CHANGE, CMD_GET_REG, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, JD_SERVICE_INDEX_CTRL, PACKET_PROCESS, PACKET_SEND, RESET, SELF_ANNOUNCE, SRV_CTRL } from "./constants";
 import { JDEventSource } from "./eventsource";
+import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
 import { shortDeviceId } from "./pretty";
-import { anyRandomUint32, toHex } from "./utils";
+import { anyRandomUint32, bufferEq, memcpy, toHex } from "./utils";
 
-export class JDServiceHost extends JDEventSource {
-    public serviceNumber: number = -1; // set by device
+
+export class JDRegisterHost extends JDEventSource {
+    data: Uint8Array;
 
     constructor(
-        public readonly serviceClass: number) {
+        public readonly service: JDServiceHost;
+        public readonly identifier: number,
+        public readonly packFormat: string,
+        defaultValue: any[]) {
         super();
+        this.data = jdpack(this.packFormat, defaultValue);
     }
+
+    values<T extends any[]>(): T {
+        return jdunpack(this.data, this.packFormat) as T;
+    }
+
+    setValues<T extends any[]>(values: T) {
+        const d = jdpack(this.packFormat, values);
+        if (!bufferEq(this.data, d)) {
+            this.data = d;
+            this.emit(CHANGE);
+        }
+    }
+
+    sendReport() {
+        this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, this.data));
+    }
+
+    handlePacket(pkt: Packet): boolean {
+        if (this.identifier !== pkt.registerIdentifier)
+            return false;
+
+        if (pkt.isRegisterGet) { // get
+            this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
+        } else if (this.identifier >> 8 !== 0x1) { // set, non-const
+            const d = pkt.data;
+            if (!bufferEq(this.data, d)) {
+                this.data = d;
+                this.emit(CHANGE);
+            }
+        }
+        return true;
+    }
+}
+
+export class JDServiceHost extends JDEventSource {
+    public serviceIndex: number = -1; // set by device
+    public device: JDDeviceHost;
+    private readonly _registers: JDRegisterHost[] = [];
+    private readonly commands: { [identifier: number]: (pkt) => void } = {};
+
+    constructor(public readonly serviceClass: number) {
+        super();
+
+        this.addRegister(BaseReg.StatusCode, "u16 u16", [0, 0])
+    }
+
+    get registers() {
+        return this._registers.slice(0);
+    }
+
+    get statusCode() {
+        return this._registers.find(reg => reg.identifier === BaseReg.StatusCode);
+    }
+
+    protected addRegister(identifier: number, packFormat: string, defaultValue) {
+        const reg = new JDRegisterHost(this, identifier, packFormat, defaultValue);
+        this._registers.push(reg);
+        return reg;
+    }
+
+    protected addCommand(identifier: number, handler: (pkt) => void) {
+        this.commands[identifier] = handler;
+    }
+
+    async handlePacket(pkt: Packet) {
+        if (pkt.isRegisterGet || pkt.isRegisterSet) {
+            // find register to handle
+            for (const reg of this._registers)
+                if (reg.handlePacket(pkt))
+                    break;
+        } else if (pkt.isCommand) {
+            const cmd = this.commands[pkt.serviceCommand];
+            if (cmd)
+                cmd(pkt);
+            else if (cmd === undefined)
+                console.log(`ignored command`, { pkt })
+        }
+        // ignored?
+    }
+
+    async sendPacketAsync(pkt: Packet) {
+        pkt.serviceIndex = this.serviceIndex;
+        await this.device.sendPacketAsync(pkt);
+    }
+
+    protected sendEvent(event: number, data?: Buffer) {
+        const payload = new Uint8Array(4 + (data ? data.length : 0))
+        setNumber(payload, NumberFormat.UInt32LE, 0, event);
+        if (data)
+            memcpy(payload, 0, data);
+        this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
+    }
+    
+    protected sendChangeEvent() {
+        this.sendEvent(SystemEvent.Change)
+    }
+
+}
+
+export class ControlServiceHost extends JDServiceHost {
+    private restartCounter = 0;
+    private packetCount = 0;
+
+    constructor() {
+        super(SRV_CTRL)
+
+        this.addCommand(ControlCmd.Services, this.announce.bind(this));
+        this.addCommand(ControlCmd.Identify, this.identify.bind(this));
+        this.addCommand(ControlCmd.Reset, this.reset.bind(this));
+        this.addCommand(ControlCmd.Noop, null);
+    }
+
+    async announce() {
+        if (this.restartCounter < 0xf)
+            this.restartCounter++
+        this.packetCount++;
+        // restartCounter, flags, packetCount, serviceClass
+        const pkt = Packet.jdpacked<[number, ControlAnnounceFlags, number, number[]]>(ControlCmd.Services, "u8 u8 u8 x[1] u32[]",
+            [this.restartCounter,
+            ControlAnnounceFlags.SupportsACK,
+            this.packetCount,
+            this.device.services().slice(1).map(srv => srv.serviceClass)])
+        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL;
+        pkt.deviceIdentifier = this.device.deviceId;
+        await pkt.sendCoreAsync(this.device.bus);
+
+        // reset counter
+        this.packetCount = 0;
+    }
+
+    async identify() {
+        this.emit(IDENTIFY);
+    }
+
+    async reset() {
+        this.emit(RESET);
+        this.restartCounter = 0;
+        this.packetCount = 0;
+    }
+
 }
 
 export interface JDDeviceHostOptions {
     deviceId?: string;
-    services?: JDServiceHost[];
 }
 
-const SERVICE_OFFSET = 1;
 export class JDDeviceHost extends JDEventSource {
+    private _bus: JDBus;
     private readonly _services: JDServiceHost[];
     public readonly deviceId: string;
     public readonly shortId: string;
-    private _statusCode: number = 0; // u16, u16
-    private restartCounter = 0;
-    private packetCount = 0;
 
-    constructor(public readonly bus: JDBus, private readonly options?: JDDeviceHostOptions) {
+    constructor(services: JDServiceHost[], options?: JDDeviceHostOptions) {
         super();
-        this._services = options.services?.slice(0) || [];
-        if (!this.options.deviceId) {
+        this._services = [new ControlServiceHost(), ...services];
+        this.deviceId = options?.deviceId;
+        if (!this.deviceId) {
             const devId = anyRandomUint32(8);
             for (let i = 0; i < 8; ++i) devId[i] &= 0xff;
-            this.options.deviceId = toHex(devId);
+            this.deviceId = toHex(devId);
         }
-        this.deviceId = options.deviceId;
         this.shortId = shortDeviceId(this.deviceId);
-        this.handleAnnounce = this.handleAnnounce.bind(this);
+        this._services.forEach((srv, i) => {
+            srv.device = this;
+            srv.serviceIndex = i;
+        });
+
+        this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this);
+        this.handlePacket = this.handlePacket.bind(this);
     }
 
     protected log(msg: any) {
         console.log(`${this.deviceId}: ${msg}`);
     }
 
-    start() {
-        this._services.forEach((srv, i) => srv.serviceNumber = i + SERVICE_OFFSET);
-        this.on(SELF_ANNOUNCE, this.handleAnnounce);
+    get bus() {
+        return this._bus;
+    }
+
+    set bus(value: JDBus) {
+        if (value !== this._bus) {
+            this.stop();
+            this._bus = value;
+            this.start();
+        }
+    }
+
+    private start() {
+        if (!this._bus) return;
+
+        this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce);
+        if (this._services.length)
+            this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
         this.log(`start host`)
     }
 
-    stop() {
-        this.off(SELF_ANNOUNCE, this.handleAnnounce);
+    private stop() {
+        if (!this._bus) return;
+
+        this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce);
+        this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
         this.log(`stop host`)
+        this._bus = undefined;
     }
 
-    private handleAnnounce() {
-        this.announce();
-    }
-
-    announce() {
-        if (this.restartCounter < 0xf)
-            this.restartCounter++
-        this.packetCount++;
-        // restartCounter, flags, packetCount, serviceClass
-        const pkt = Packet.jdpacked<[number, ControlAnnounceFlags, number, number[]]>(ControlCmd.Services, "u8 u8 u8 x[1] u32[]",
-            [this.restartCounter, ControlAnnounceFlags.SupportsACK, this.packetCount, this._services.map(srv => srv.serviceClass)])
-        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL;
-        pkt.deviceIdentifier = this.deviceId;
-        pkt.sendCoreAsync(this.bus);
-        // reset counter
-        this.packetCount = 0;
-    }
-
-    identify() {
-        this.emit(IDENTIFY);
-    }
-
-    reset() {
-        this.emit(RESET);
-        this.restartCounter = 0;
-        this.packetCount = 0;
+    private handleSelfAnnounce() {
+        const ctrl = this._services[0] as ControlServiceHost;
+        ctrl.announce();
     }
 
     services(): JDServiceHost[] {
         return this._services.slice(0);
     }
 
-    get statusCode() {
-        return this._statusCode;
-    }
-
-    setStatusCode(code: number, vendorCode: number) {
-        const c = ((code & 0xffff) << 16) | (vendorCode & 0xffff)
-        if (c !== this._statusCode)
-            this._statusCode = c;
-    }
-
     toString() {
-        return this.deviceId;
+        return `host ${this.shortId}`;
     }
 
-    handlePacket(pkt: Packet) {
-        console.log({ pkt });
-        // control service
-        if (pkt.serviceIndex === 0) {
-            switch (pkt.serviceCommand) {
-                case ControlCmd.Services: this.announce(); break;
-                case ControlCmd.Identify: this.identify(); break;
-                case ControlCmd.Reset: this.reset(); break;
-                case ControlCmd.Noop: break;
-                case ControlCmd.FloodPing:
-                    // ignore
-                    break;
-            }
-            return;
+    async sendPacketAsync(pkt: Packet) {
+        if (!this._bus) return;
+
+        pkt.deviceIdentifier = this.deviceId;
+        // send to current bus
+        this.bus.processPacket(pkt);
+        // send to jd bus
+        await this.bus.sendPacketAsync(pkt);
+    }
+
+    private handlePacket(pkt: Packet) {
+        const devIdMatch = pkt.deviceIdentifier == this.deviceId;
+        if (pkt.requiresAck && devIdMatch) {
+            pkt.requiresAck = false // make sure we only do it once
+            const crc = pkt.crc;
+            const ack = Packet.onlyHeader(crc)
+            ack.serviceIndex = JD_SERVICE_INDEX_CRC_ACK;
+            this.sendPacketAsync(pkt);
         }
 
-        // route to other services
-
+        if (pkt.isMultiCommand) {
+            if (!pkt.isCommand)
+                return; // only commands supported
+            const multiCommandClass = pkt.serviceClass;
+            const h = this._services.find(s => s.serviceClass == multiCommandClass);
+            if (h) {
+                // pretend it's directly addressed to us
+                pkt.deviceIdentifier = this.deviceId
+                pkt.serviceIndex = h.serviceIndex
+                h.handlePacket(pkt)
+            }
+        } else if (devIdMatch) {
+            if (!pkt.isCommand)
+                return // huh? someone's pretending to be us?
+            const h = this._services[pkt.serviceIndex]
+            if (h) {
+                // log(`handle pkt at ${h.name} cmd=${pkt.service_command}`)
+                h.handlePacket(pkt)
+            }
+        } else {
+            if (pkt.isCommand)
+                return // it's a command, and it's not for us
+            if (pkt.serviceIndex == JD_SERVICE_INDEX_CRC_ACK) {
+                // TODO
+                //_gotAck(pkt)
+            }
+        }
     }
 }

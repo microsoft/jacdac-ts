@@ -42,7 +42,9 @@ import {
     REGISTER_OPTIONAL_POLL_COUNT,
     PACKET_PRE_PROCESS,
     STREAMING_DEFAULT_INTERVAL,
-    REGISTER_POLL_FIRST_REPORT_INTERVAL
+    REGISTER_POLL_FIRST_REPORT_INTERVAL,
+    DEVICE_HOST_ADDED,
+    DEVICE_HOST_REMOVED
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -50,6 +52,7 @@ import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flas
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
 import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
+import { JDDeviceHost, JDDeviceHostOptions } from "./host";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -125,6 +128,8 @@ export class JDBus extends JDNode {
     private _firmwareBlobs: FirmwareBlob[];
     private _announcing = false;
     private _gcDevicesEnabled = 0;
+
+    private _deviceHosts: JDDeviceHost[] = [];
 
     public readonly host: BusHost = {
         log
@@ -469,6 +474,43 @@ export class JDBus extends JDNode {
         if (options?.announced)
             r = this._devices.filter(s => s.announced);
         return r;
+    }
+
+    /**
+     * Gets the current list of device hosts on the bus
+     */
+    deviceHosts(): JDDeviceHost[] {
+        return this._deviceHosts.slice(0);
+    }
+
+    /**
+     * Adds the device host to the bus
+     * @param deviceHost
+     */
+    addDeviceHost(deviceHost: JDDeviceHost) {
+        if (deviceHost && this._deviceHosts.indexOf(deviceHost) < 0) {
+            this._deviceHosts.push(deviceHost);
+            deviceHost.bus = this;
+
+            this.emit(DEVICE_HOST_ADDED);
+            this.emit(CHANGE);
+        }
+    }
+
+    /**
+     * Adds the device host to the bus
+     * @param deviceHost
+     */
+    removeDeviceHost(deviceHost: JDDeviceHost) {
+        if (!deviceHost) return;
+        const i = this._deviceHosts.indexOf(deviceHost);
+        if (i > -1) {
+            this._deviceHosts.splice(i, 1)
+            deviceHost.bus = undefined;
+
+            this.emit(DEVICE_HOST_REMOVED);
+            this.emit(CHANGE);
+        }
     }
 
     get children(): JDNode[] {
