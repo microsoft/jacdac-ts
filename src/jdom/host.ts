@@ -1,4 +1,4 @@
-import { BaseReg, ControlAnnounceFlags, ControlCmd, ProtoTestReg, SRV_PROTO_TEST, SystemCmd, SystemEvent } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, ControlAnnounceFlags, ControlCmd, ProtoTestEvent, ProtoTestReg, SRV_PROTO_TEST, SystemCmd, SystemEvent } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
 import { JDBus } from "./bus";
 import { CHANGE, CMD_GET_REG, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, RESET, SELF_ANNOUNCE, SRV_CTRL } from "./constants";
@@ -7,7 +7,6 @@ import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
 import { shortDeviceId } from "./pretty";
 import { anyRandomUint32, bufferEq, memcpy, toHex } from "./utils";
-
 
 export class JDRegisterHost extends JDEventSource {
     data: Uint8Array;
@@ -109,11 +108,11 @@ export class JDServiceHost extends JDEventSource {
         await this.device.sendPacketAsync(pkt);
     }
 
-    protected sendEvent(event: number, data?: Buffer) {
+    protected sendEvent(event: number, data?: Uint8Array) {
         const payload = new Uint8Array(4 + (data ? data.length : 0))
         setNumber(payload, NumberFormat.UInt32LE, 0, event);
         if (data)
-            memcpy(payload, 0, data);
+            memcpy(payload, 4, data);
         this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
     }
 
@@ -169,12 +168,22 @@ export class ProtocolTestServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_PROTO_TEST);
 
-        this.addRegister(ProtoTestReg.RwBool, "u8", [false]);
-        this.addRegister(ProtoTestReg.RwI32, "i32", [0]);
-        this.addRegister(ProtoTestReg.RwU32, "u32", [0]);
-        this.addRegister(ProtoTestReg.RwString, "s", [""]);
-        this.addRegister(ProtoTestReg.RwBytes, "b", [new Uint8Array(0)]);
-        this.addRegister(ProtoTestReg.RwI8U8U16I32, "i8 u8 u16 i32", [0, 0, 0, 0]);
+
+        const init = (rwi: number, roi: number, ei: number, fmt: string, values: any[]) => {
+            const rw = this.addRegister(rwi, fmt, values);
+            const ro = this.addRegister(roi, rw.packFormat, rw.values());
+            rw.on(CHANGE, () => {
+                ro.setValues(rw.values())
+                this.sendEvent(ei, rw.data);
+            });
+        }
+
+        init(ProtoTestReg.RwBool, ProtoTestReg.RoBool, ProtoTestEvent.EBool, "u8", [false]);
+        init(ProtoTestReg.RwI32, ProtoTestReg.RoI32, ProtoTestEvent.EI32, "i32", [0]);
+        init(ProtoTestReg.RwU32, ProtoTestReg.RoU32, ProtoTestEvent.EU32, "u32", [0]);
+        init(ProtoTestReg.RwString, ProtoTestReg.RoString, ProtoTestEvent.EString, "s", [""]);
+        init(ProtoTestReg.RwBytes, ProtoTestReg.RoBytes, ProtoTestEvent.EBytes, "b", [new Uint8Array(0)]);
+        init(ProtoTestReg.RwI8U8U16I32, ProtoTestReg.RoI8U8U16I32, ProtoTestEvent.EI8U8U16I32, "i8 u8 u16 i32", [0, 0, 0, 0]);
     }
 }
 
@@ -242,7 +251,6 @@ export class JDDeviceHost extends JDEventSource {
     }
 
     private handleSelfAnnounce() {
-        this.log(`self announce`)
         const ctrl = this._services[0] as ControlServiceHost;
         ctrl.announce();
     }
