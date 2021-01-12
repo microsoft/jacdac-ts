@@ -28,8 +28,8 @@ const hostDefinitions = [
         services: () => [new BuzzerServiceHost()]
     },
     {
-        name: "humidity",
-        services: () => [new HumidityServiceHost()]
+        name: "humidity + temperature",
+        services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, [20], 1000)]
     },
     {
         name: "motor",
