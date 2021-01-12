@@ -190,8 +190,7 @@ export class JDService extends JDNode {
                 if (reg)
                     reg.processReport(pkt);
             } else if (pkt.isEvent) {
-                const id = pkt.intData
-                const ev = this.event(id)
+                const ev = this.event(pkt.eventCode)
                 if (ev)
                     ev.processEvent(pkt);
             } else if (pkt.isCommand) {

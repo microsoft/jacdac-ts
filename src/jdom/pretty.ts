@@ -4,7 +4,7 @@ import { roundWithPrecision, SMap, idiv, fromHex, hash, fromUTF8, uint8ArrayToSt
 import { isIntegerType, numberFormatFromStorageType, scaleIntToFloat, isRegister, serviceSpecificationFromName, serviceSpecificationFromClassIdentifier } from "./spec"
 import {
     CMD_SET_REG, CMD_GET_REG, CMD_REG_MASK, PIPE_METADATA_MASK, CMD_TOP_MASK, PIPE_PORT_SHIFT, JD_FRAME_FLAG_COMMAND,
-    JD_FRAME_FLAG_ACK_REQUESTED, CMD_ADVERTISEMENT_DATA, JD_SERVICE_INDEX_CTRL, 
+    JD_FRAME_FLAG_ACK_REQUESTED, CMD_ADVERTISEMENT_DATA, JD_SERVICE_INDEX_CTRL,
 } from "./constants"
 import { SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants"
 
