@@ -1,10 +1,10 @@
-import { Button, createStyles, Dialog, DialogContent, DialogTitle, IconButton, makeStyles } from '@material-ui/core';
+import { Dialog, DialogContent, IconButton } from '@material-ui/core';
 import React, { useState } from 'react'
 import { CirclePicker } from "react-color"
-import { useId } from 'react-use-id-hook';
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 
-export default function ColorPicker(props: { value: string, onChange: (color: string) => void }) {
+export default function ColorInput(props: { value: string, onChange: (color: string) => void }) {
     const { value, onChange } = props;
     const [picker, setPicker] = useState(false);
     const handleClick = () => setPicker(!picker);

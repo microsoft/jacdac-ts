@@ -1,4 +1,4 @@
-import { BaseReg, SystemCmd, SystemEvent } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, SystemCmd } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
 import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
@@ -61,16 +61,15 @@ export default class JDServiceHost extends JDEventSource {
         await this.device.sendPacketAsync(pkt);
     }
 
-    protected sendEvent(event: number, data?: Uint8Array) {
+    protected async sendEvent(event: number, data?: Uint8Array) {
         const payload = new Uint8Array(4 + (data ? data.length : 0))
         setNumber(payload, NumberFormat.UInt32LE, 0, event);
         if (data)
             memcpy(payload, 4, data);
-        this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
+        await this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
     }
 
-    protected sendChangeEvent() {
-        this.sendEvent(SystemEvent.Change)
+    refreshRegisters() {
+        // noop by default, implemented in sensor mostly
     }
-
 }
