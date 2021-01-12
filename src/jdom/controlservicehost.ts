@@ -1,13 +1,21 @@
-import { ControlAnnounceFlags, ControlCmd, IDENTIFY, RESET, SRV_CTRL } from "./constants";
+import { ControlAnnounceFlags, ControlCmd, ControlReg, IDENTIFY, RESET, SRV_CTRL } from "./constants";
 import Packet from "./packet";
+import JDRegisterHost from "./registerhost";
 import JDServiceHost from "./servicehost";
 
 export default class ControlServiceHost extends JDServiceHost {
     private restartCounter = 0;
     private packetCount = 0;
+    readonly deviceDescription: JDRegisterHost;
+    readonly mcuTemperature: JDRegisterHost;
+    readonly resetIn: JDRegisterHost;
 
     constructor() {
         super(SRV_CTRL)
+
+        this.deviceDescription = this.addRegister(ControlReg.DeviceDescription);
+        this.mcuTemperature = this.addRegister(ControlReg.McuTemperature, [25]);
+        this.resetIn = this.addRegister(ControlReg.ResetIn);
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));
