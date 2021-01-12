@@ -7,6 +7,10 @@ export class JDClient extends JDEventSource {
         super()
     }
 
+    protected log(msg: any) {
+        console.log(msg);
+    }
+
     mount(unsubscribe: () => void): () => void {
         if (unsubscribe && this.unsubscribers.indexOf(unsubscribe) < 0)
             this.unsubscribers.push(unsubscribe)
