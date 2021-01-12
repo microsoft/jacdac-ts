@@ -782,9 +782,27 @@ export class JDBus extends JDNode {
     withTimeout<T>(timeout: number, p: Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             let done = false
+            const tid = setTimeout(() => {
+                if (!done) {
+                    done = true
+                    if (!this.connected) {
+                        // the bus got disconnected so all operation will
+                        // time out going further
+                        this.emit(TIMEOUT_DISCONNECT)
+                        resolve(undefined);
+                    }
+                    else {
+                        // the command timed out
+                        this.emit(TIMEOUT)
+                        this.emit(ERROR, "Timeout (" + timeout + "ms)");
+                        resolve(undefined);
+                    }
+                }
+            }, timeout)            
             p.then(v => {
                 if (!done) {
                     done = true
+                    clearTimeout(tid);
                     resolve(v)
                 } else {
                     // we already gave up
