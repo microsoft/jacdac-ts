@@ -282,7 +282,7 @@ export class JDDeviceHost extends JDEventSource {
             const crc = pkt.crc;
             const ack = Packet.onlyHeader(crc)
             ack.serviceIndex = JD_SERVICE_INDEX_CRC_ACK;
-            this.sendPacketAsync(pkt);
+            this.sendPacketAsync(ack);
         }
 
         if (pkt.isMultiCommand) {

@@ -131,7 +131,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
 
         // the event should have triggered once
         log(`-- testing event`)
-        if (evCount + 1 !== ev.count)
+        if (packFormat !== "u8" && evCount + 1 !== ev.count)
             throw new Error(`expected 1 event, got ${ev.count - evCount}`)
     }
 
