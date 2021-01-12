@@ -267,10 +267,10 @@ export class JDDeviceHost extends JDEventSource {
         if (!this._bus) return;
 
         pkt.deviceIdentifier = this.deviceId;
+        // compute crc and send
+        pkt.sendCoreAsync(this.bus);
         // send to current bus
         this.bus.processPacket(pkt);
-        // send to jd bus
-        await this.bus.sendPacketAsync(pkt);
     }
 
     private handlePacket(pkt: Packet) {
