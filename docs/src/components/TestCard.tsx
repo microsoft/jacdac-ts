@@ -35,6 +35,8 @@ export default function TestCard(props: {
         }
 
         const logger = (msg: any) => {
+            if (msg instanceof Error)
+                log.push(msg + "")
             if (typeof msg === "object") {
                 Object.keys(msg)
                     .forEach(k => log.push(`${k}: ${toValue(msg[k])}`))

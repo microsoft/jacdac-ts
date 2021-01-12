@@ -407,33 +407,3 @@ export class JDDevice extends JDNode {
         })
     }
 }
-
-export function isBootloaderRelated(id1: string, id2: string) {
-    if (!id1 || !id2)
-        return false
-
-    const i0 = fromHex(id1)
-    const i1 = fromHex(id2)
-
-    // modern - one bit is flipped
-    if (i0[0] == (i1[0] ^ 1) && bufferEq(i0.slice(1), i1.slice(1)))
-        return true
-
-    // legacy - 1 was added
-    if (!bufferEq(i0.slice(4), i1.slice(4)))
-        return false
-    const n0 = num0(i0)
-    const n1 = num0(i1)
-    return (n0 == n1 + 1) || (n1 == n0 + 1)
-
-    function num0(buf: Uint8Array) {
-        return (buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24)) >>> 0
-    }
-}
-
-export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice) {
-    return devices.some(other =>
-        other != candidate
-        && flashing(other)
-        && isBootloaderRelated(other.deviceId, candidate.deviceId))
-}

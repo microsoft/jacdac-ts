@@ -79,6 +79,12 @@ export const GET_ATTEMPT = 'getAttempt'
 export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
 export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
 
+export const DEVICE_HOST_ADDED = `deviceHostAdded`
+export const DEVICE_HOST_REMOVED = `deviceHostRemoved`
+
+export const IDENTIFY = "identify"
+export const RESET = "reset"
+
 export const DATA = 'data'
 export const CLOSE = 'close'
 
