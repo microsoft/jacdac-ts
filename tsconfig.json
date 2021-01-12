@@ -26,5 +26,5 @@
   "include": [
     "src",
     "jacdac-spec/dist/specconstants.ts"
-  ]
+, "docs/src/components/jacdac/Context.tsx"  ]
 }
