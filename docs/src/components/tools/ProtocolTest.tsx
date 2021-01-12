@@ -95,7 +95,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
     }, []);
 
     const testRwRo = async (log) => {
-        log(`testing rw`)
+        log(`-- testing rw`)
         const packFormat = specification.packFormat;
         const payload = randomPayload(packFormat, fields);
         log({ payload })
@@ -120,7 +120,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
             throw new Error(`expected rw ${payload}, got ${rwpayload}`)
 
         // check ro
-        log(`testing ro`)
+        log(`-- testing ro`)
         await ro.sendGetAsync();
         // wait for response
         await delay(100);
@@ -130,12 +130,13 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
             throw new Error(`expected ro ${payload}, got ${ropayload}`)
 
         // the event should have triggered once
+        log(`-- testing event`)
         if (evCount + 1 !== ev.count)
             throw new Error(`expected 1 event, got ${ev.count - evCount}`)
     }
 
     const testCommand = async (log) => {
-        log(`testing cmd`)
+        log(`-- testing cmd`)
 
         const packFormat = specification.packFormat;
         const payload = randomPayload(packFormat, fields);
@@ -157,9 +158,11 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
     }
 
     const test = async (log) => {
+        log(`- testing no acks`)
         rw.service.registersUseAcks = false;
         await testRwRo(log);
         await testCommand(log);
+        log(`- testing acks`)
         rw.service.registersUseAcks = true;
         await testRwRo(log);
         await testCommand(log);

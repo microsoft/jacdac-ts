@@ -22,7 +22,7 @@ import {
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
 import { JDBus } from "./bus";
-import { commandName, DecodedPacket, decodePacketData, serviceName } from "./pretty";
+import { commandName, DecodedPacket, decodePacketData, serviceName, shortDeviceId } from "./pretty";
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
 import { jdpack, jdunpack } from "./pack";
 
@@ -313,7 +313,7 @@ export class Packet {
     }
 
     toString(): string {
-        let msg = `${this.deviceIdentifier}/${this.serviceIndex}[${this.frameFlags}]: ${this.serviceCommand} sz=${this.size}`
+        let msg = `${shortDeviceId(this.deviceIdentifier)}/${this.serviceIndex}[${this.frameFlags}]: ${this.serviceCommand} sz=${this.size}`
         if (this.size < 20) msg += ": " + toHex(this.data)
         else msg += ": " + toHex(this.data.slice(0, 20)) + "..."
         return msg
