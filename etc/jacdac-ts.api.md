@@ -6,18 +6,18 @@
 
 // @public (undocumented)
 export enum AccelerometerEvent {
-    FaceDown = 6,
-    FaceUp = 5,
-    Force_2g = 12,
-    Force_3g = 8,
-    Force_6g = 9,
-    Force_8g = 10,
-    Freefall = 7,
-    Shake = 11,
-    TiltDown = 2,
-    TiltLeft = 3,
-    TiltRight = 4,
-    TiltUp = 1
+    FaceDown = 134,
+    FaceUp = 133,
+    Force_2g = 140,
+    Force_3g = 136,
+    Force_6g = 137,
+    Force_8g = 138,
+    Freefall = 135,
+    Shake = 139,
+    TiltDown = 130,
+    TiltLeft = 131,
+    TiltRight = 132,
+    TiltUp = 129
 }
 
 // @public (undocumented)
@@ -88,7 +88,7 @@ export function bufferConcat(a: Uint8Array, b: Uint8Array): Uint8Array;
 export function bufferConcatMany(bufs: Uint8Array[]): Uint8Array;
 
 // @public (undocumented)
-export function bufferEq(a: Uint8Array, b: ArrayLike<number>): boolean;
+export function bufferEq(a: Uint8Array, b: ArrayLike<number>, offset?: number): boolean;
 
 // @public (undocumented)
 export function bufferToArray(data: Uint8Array, fmt: NumberFormat): number[];
@@ -133,9 +133,9 @@ export enum BusState {
 
 // @public (undocumented)
 export enum ButtonEvent {
-    Click = 3,
+    Click = 128,
     Down = 1,
-    LongClick = 4,
+    LongClick = 129,
     Up = 2
 }
 
@@ -341,6 +341,12 @@ export const DEVICE_FIRMWARE_INFO = "firmwareInfo";
 export const DEVICE_FOUND = "deviceFound";
 
 // @public (undocumented)
+export const DEVICE_HOST_ADDED = "deviceHostAdded";
+
+// @public (undocumented)
+export const DEVICE_HOST_REMOVED = "deviceHostRemoved";
+
+// @public (undocumented)
 export const DEVICE_LOST = "deviceLost";
 
 // @public (undocumented)
@@ -351,6 +357,18 @@ export const DEVICE_NODE_NAME = "device";
 
 // @public (undocumented)
 export const DEVICE_RESTART = "deviceRestart";
+
+// @public (undocumented)
+export interface DeviceFilter {
+    // (undocumented)
+    announced?: boolean;
+    // (undocumented)
+    ignoreSelf?: boolean;
+    // (undocumented)
+    serviceClass?: number;
+    // (undocumented)
+    serviceName?: string;
+}
 
 // @public (undocumented)
 export function deviceServiceName(pkt: Packet): string;
@@ -542,6 +560,9 @@ export function getMLModelFormatName(model: Uint8Array): string;
 export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: number): number;
 
 // @public (undocumented)
+export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]>;
+
+// @public (undocumented)
 export function hash(buf: Uint8Array, bits: number): number;
 
 // @public (undocumented)
@@ -643,6 +664,9 @@ export enum HumidityReg {
 export function identifierToUrlPath(id: string): string;
 
 // @public (undocumented)
+export const IDENTIFY = "identify";
+
+// @public (undocumented)
 export interface IDeviceNameSettings {
     // (undocumented)
     notifyUpdate(device: JDDevice, name: string): void;
@@ -678,9 +702,9 @@ export enum IotHubCmd {
 
 // @public (undocumented)
 export enum IotHubEvent {
-    Connected = 1,
-    ConnectionError = 2,
-    DeviceboundStr = 3
+    Connected = 128,
+    ConnectionError = 129,
+    DeviceboundStr = 130
 }
 
 // @public
@@ -706,12 +730,6 @@ export function isAckError(e: Error): boolean;
 export function isActuator(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
-export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice): boolean;
-
-// @public (undocumented)
-export function isBootloaderRelated(id1: string, id2: string): boolean;
-
-// @public (undocumented)
 export function isCancelError(e: Error): boolean;
 
 // @public (undocumented)
@@ -724,7 +742,7 @@ export function isConstRegister(pkt: jdspec.PacketInfo): boolean;
 export function isEvent(pkt: jdspec.PacketInfo): boolean;
 
 // @public
-export function isInstanceOf(classIdentifier: any, requiredClassIdentifier: number): boolean;
+export function isInstanceOf(classIdentifier: number, requiredClassIdentifier: number): boolean;
 
 // @public (undocumented)
 export function isIntegerType(tp: string): boolean;
@@ -807,6 +825,7 @@ export const JD_SERVICE_INDEX_PIPE = 62;
 // @public
 export class JDBus extends JDNode {
     constructor(transport: PacketTransport, options?: BusOptions);
+    addDeviceHost(deviceHost: JDDeviceHost): void;
     // (undocumented)
     get children(): JDNode[];
     // (undocumented)
@@ -819,10 +838,10 @@ export class JDBus extends JDNode {
     get connecting(): boolean;
     get connectionState(): BusState;
     device(id: string): JDDevice;
-    devices(options?: {
-        serviceName?: string;
-        serviceClass?: number;
-    }): JDDevice[];
+    deviceHost(deviceId: string): JDDeviceHost;
+    // Warning: (ae-forgotten-export) The symbol "JDDeviceHost" needs to be exported by the entry point jacdac.d.ts
+    deviceHosts(): JDDeviceHost[];
+    devices(options?: DeviceFilter): JDDevice[];
     // (undocumented)
     get devicesFrozen(): boolean;
     // (undocumented)
@@ -863,6 +882,7 @@ export class JDBus extends JDNode {
     processPacket(pkt: Packet): void;
     // (undocumented)
     get qualifiedName(): string;
+    removeDeviceHost(deviceHost: JDDeviceHost): void;
     // (undocumented)
     get safeBoot(): boolean;
     set safeBoot(enabled: boolean);
@@ -893,6 +913,8 @@ export class JDBus extends JDNode {
 export class JDClient extends JDEventSource {
     constructor();
     // (undocumented)
+    protected log(msg: any): void;
+    // (undocumented)
     mount(unsubscribe: () => void): () => void;
     // (undocumented)
     unmount(): void;
@@ -903,6 +925,8 @@ export class JDDevice extends JDNode {
     constructor(bus: JDBus, deviceId: string);
     // (undocumented)
     get announced(): boolean;
+    // (undocumented)
+    get announceFlags(): ControlAnnounceFlags;
     // (undocumented)
     readonly bus: JDBus;
     // (undocumented)
@@ -941,6 +965,8 @@ export class JDDevice extends JDNode {
     // (undocumented)
     get nodeKind(): string;
     // (undocumented)
+    get packetCount(): number;
+    // (undocumented)
     get parent(): JDNode;
     get physical(): boolean;
     // (undocumented)
@@ -956,6 +982,8 @@ export class JDDevice extends JDNode {
     reset(): Promise<void>;
     // (undocumented)
     resolveFirmwareIdentifier(): Promise<number>;
+    // (undocumented)
+    get restartCounter(): number;
     // (undocumented)
     sendCtrlCommand(cmd: number, payload?: Buffer): Promise<void>;
     // (undocumented)
@@ -974,8 +1002,6 @@ export class JDDevice extends JDNode {
         serviceName?: string;
         serviceClass?: number;
     }): JDService[];
-    // (undocumented)
-    servicesData: Uint8Array;
     // (undocumented)
     get shortId(): string;
     get source(): string;
@@ -1140,7 +1166,11 @@ export class JDRegister extends JDServiceMemberNode {
 export class JDService extends JDNode {
     constructor(device: JDDevice, service_index: number);
     // (undocumented)
+    addClient(client: JDServiceClient): void;
+    // (undocumented)
     get children(): JDNode[];
+    // (undocumented)
+    get clients(): JDServiceClient[];
     // (undocumented)
     compareTo(b: JDService): number;
     // (undocumented)
@@ -1172,11 +1202,13 @@ export class JDService extends JDNode {
     // (undocumented)
     registersUseAcks: boolean;
     // (undocumented)
+    removeClient(client: JDServiceClient): void;
+    // (undocumented)
     report(identifier: number): Packet;
     // (undocumented)
     get reports(): Packet[];
     // (undocumented)
-    sendCmdAsync(cmd: number, ack?: boolean): Promise<void>;
+    sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean): Promise<void>;
     // (undocumented)
     sendCmdAwaitResponseAsync(pkt: Packet, timeout?: number): Promise<Packet>;
     // (undocumented)
@@ -1314,6 +1346,7 @@ export enum LightReg {
     ActualBrightness = 384,
     Brightness = 1,
     LightType = 128,
+    MaxPixels = 385,
     MaxPower = 7,
     NumPixels = 129
 }
@@ -1481,11 +1514,11 @@ export enum MouseCmd {
 
 // @public (undocumented)
 export enum MultitouchEvent {
-    LongPress = 4,
+    LongPress = 129,
     Release = 2,
-    SwipeNeg = 17,
-    SwipePos = 16,
-    Tap = 3,
+    SwipeNeg = 145,
+    SwipePos = 144,
+    Tap = 128,
     Touch = 1
 }
 
@@ -2045,13 +2078,15 @@ export class RemoteRequestedDevice {
     // (undocumented)
     isCandidate(ldev: JDDevice): boolean;
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    parent: RoleManagerClient;
+    readonly parent: RoleManagerClient;
     // (undocumented)
-    select(dev: JDDevice): void;
+    select(dev: JDDevice): Promise<void>;
     // (undocumented)
-    services: number[];
+    readonly services: number[];
+    // (undocumented)
+    toString(): string;
 }
 
 // @public (undocumented)
@@ -2070,6 +2105,9 @@ export const REPORT_RECEIVE = "reportReceive";
 export const REPORT_UPDATE = "reportUpdate";
 
 // @public (undocumented)
+export const RESET = "reset";
+
+// @public (undocumented)
 export function resolveMakecodeService(service: jdspec.ServiceSpec): jdspec.MakeCodeServiceInfo;
 
 // @public (undocumented)
@@ -2080,15 +2118,25 @@ export const RESTART = "restart";
 
 // @public (undocumented)
 export class RoleManagerClient extends JDServiceClient {
-    constructor(service: JDService);
+    constructor(service: JDService, options?: {
+        autoBind?: boolean;
+    });
+    // (undocumented)
+    bindDevices(): Promise<void>;
     // (undocumented)
     clearRoles(): Promise<void>;
     // (undocumented)
-    static create(bus: JDBus, print?: (s: string) => void): RoleManagerClient;
+    readonly options?: {
+        autoBind?: boolean;
+    };
     // (undocumented)
     remoteRequestedDevices: RemoteRequestedDevice[];
     // (undocumented)
+    scan(): Promise<void>;
+    // (undocumented)
     setRole(dev: JDDevice, name: string): Promise<void>;
+    // (undocumented)
+    toString(): string;
 }
 
 // @public (undocumented)
@@ -2102,7 +2150,7 @@ export enum RoleManagerCmd {
 
 // @public
 export enum RoleManagerEvent {
-    Change = 2
+    Change = 3
 }
 
 // @public (undocumented)
@@ -2206,6 +2254,12 @@ export enum SensorReg {
     StreamingPreferredInterval = 258,
     StreamingSamples = 3
 }
+
+// @public (undocumented)
+export const SERVICE_CLIENT_ADDED = "serviceClientAdded";
+
+// @public (undocumented)
+export const SERVICE_CLIENT_REMOVED = "serviceClientRemoved";
 
 // @public (undocumented)
 export const SERVICE_NODE_NAME = "service";
@@ -2421,7 +2475,9 @@ export enum SystemCmd {
 
 // @public (undocumented)
 export enum SystemEvent {
-    Change = 2
+    Active = 1,
+    Change = 3,
+    Inactive = 2
 }
 
 // @public (undocumented)
@@ -2594,7 +2650,7 @@ export interface USBOptions {
 }
 
 // @public (undocumented)
-export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number): any[];
+export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number): number[];
 
 // @public (undocumented)
 export enum VibrationMotorReg {

@@ -39,7 +39,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "6"
+                  "text": "134"
                 }
               ],
               "releaseTag": "Public",
@@ -60,7 +60,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "5"
+                  "text": "133"
                 }
               ],
               "releaseTag": "Public",
@@ -81,7 +81,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "12"
+                  "text": "140"
                 }
               ],
               "releaseTag": "Public",
@@ -102,7 +102,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "8"
+                  "text": "136"
                 }
               ],
               "releaseTag": "Public",
@@ -123,7 +123,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "9"
+                  "text": "137"
                 }
               ],
               "releaseTag": "Public",
@@ -144,7 +144,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "10"
+                  "text": "138"
                 }
               ],
               "releaseTag": "Public",
@@ -165,7 +165,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "7"
+                  "text": "135"
                 }
               ],
               "releaseTag": "Public",
@@ -186,7 +186,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "11"
+                  "text": "139"
                 }
               ],
               "releaseTag": "Public",
@@ -207,7 +207,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "2"
+                  "text": "130"
                 }
               ],
               "releaseTag": "Public",
@@ -228,7 +228,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "3"
+                  "text": "131"
                 }
               ],
               "releaseTag": "Public",
@@ -249,7 +249,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "4"
+                  "text": "132"
                 }
               ],
               "releaseTag": "Public",
@@ -270,7 +270,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "1"
+                  "text": "129"
                 }
               ],
               "releaseTag": "Public",
@@ -716,7 +716,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!BaseReg.StatusCode:member",
-              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n * ```\n * const [code, vendorCode] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the announce packet.\n * ```\n * const [code, vendorCode] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1073,6 +1073,14 @@
             },
             {
               "kind": "Content",
+              "text": ", offset?: "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
               "text": "): "
             },
             {
@@ -1085,8 +1093,8 @@
             }
           ],
           "returnTypeTokenRange": {
-            "startIndex": 6,
-            "endIndex": 7
+            "startIndex": 8,
+            "endIndex": 9
           },
           "releaseTag": "Public",
           "overloadIndex": 1,
@@ -1103,6 +1111,13 @@
               "parameterTypeTokenRange": {
                 "startIndex": 3,
                 "endIndex": 5
+              }
+            },
+            {
+              "parameterName": "offset",
+              "parameterTypeTokenRange": {
+                "startIndex": 6,
+                "endIndex": 7
               }
             }
           ],
@@ -1542,7 +1557,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "3"
+                  "text": "128"
                 }
               ],
               "releaseTag": "Public",
@@ -1584,7 +1599,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "4"
+                  "text": "129"
                 }
               ],
               "releaseTag": "Public",
@@ -3912,6 +3927,40 @@
         },
         {
           "kind": "Variable",
+          "canonicalReference": "jacdac-ts!DEVICE_HOST_ADDED:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "DEVICE_HOST_ADDED = \"deviceHostAdded\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DEVICE_HOST_ADDED",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!DEVICE_HOST_REMOVED:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "DEVICE_HOST_REMOVED = \"deviceHostRemoved\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DEVICE_HOST_REMOVED",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
           "canonicalReference": "jacdac-ts!DEVICE_LOST:var",
           "docComment": "",
           "excerptTokens": [
@@ -3977,6 +4026,126 @@
             "startIndex": 0,
             "endIndex": 0
           }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "jacdac-ts!DeviceFilter:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DeviceFilter "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DeviceFilter",
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!DeviceFilter#announced:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "announced?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "announced",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!DeviceFilter#ignoreSelf:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "ignoreSelf?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "ignoreSelf",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!DeviceFilter#serviceClass:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "serviceClass?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "serviceClass",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!DeviceFilter#serviceName:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "serviceName?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "serviceName",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
         },
         {
           "kind": "Function",
@@ -6095,6 +6264,82 @@
         },
         {
           "kind": "Function",
+          "canonicalReference": "jacdac-ts!groupBy:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function groupBy<T>(list: "
+            },
+            {
+              "kind": "Content",
+              "text": "T[]"
+            },
+            {
+              "kind": "Content",
+              "text": ", key: "
+            },
+            {
+              "kind": "Content",
+              "text": "(value: T) => string"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "SMap",
+              "canonicalReference": "jacdac-ts!SMap:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<T[]>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 7
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "list",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "parameterName": "key",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "groupBy"
+        },
+        {
+          "kind": "Function",
           "canonicalReference": "jacdac-ts!hash:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -6827,6 +7072,23 @@
           "name": "identifierToUrlPath"
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!IDENTIFY:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "IDENTIFY = \"identify\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "IDENTIFY",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Interface",
           "canonicalReference": "jacdac-ts!IDeviceNameSettings:interface",
           "docComment": "",
@@ -7369,7 +7631,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "1"
+                  "text": "128"
                 }
               ],
               "releaseTag": "Public",
@@ -7390,7 +7652,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "2"
+                  "text": "129"
                 }
               ],
               "releaseTag": "Public",
@@ -7411,7 +7673,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "3"
+                  "text": "130"
                 }
               ],
               "releaseTag": "Public",
@@ -7711,152 +7973,6 @@
         },
         {
           "kind": "Function",
-          "canonicalReference": "jacdac-ts!isBootloaderFlashing:function(1)",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function isBootloaderFlashing(devices: "
-            },
-            {
-              "kind": "Reference",
-              "text": "JDDevice",
-              "canonicalReference": "jacdac-ts!JDDevice:class"
-            },
-            {
-              "kind": "Content",
-              "text": "[]"
-            },
-            {
-              "kind": "Content",
-              "text": ", flashing: "
-            },
-            {
-              "kind": "Content",
-              "text": "(device: "
-            },
-            {
-              "kind": "Reference",
-              "text": "JDDevice",
-              "canonicalReference": "jacdac-ts!JDDevice:class"
-            },
-            {
-              "kind": "Content",
-              "text": ") => boolean"
-            },
-            {
-              "kind": "Content",
-              "text": ", candidate: "
-            },
-            {
-              "kind": "Reference",
-              "text": "JDDevice",
-              "canonicalReference": "jacdac-ts!JDDevice:class"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Content",
-              "text": "boolean"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 10,
-            "endIndex": 11
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "devices",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 3
-              }
-            },
-            {
-              "parameterName": "flashing",
-              "parameterTypeTokenRange": {
-                "startIndex": 4,
-                "endIndex": 7
-              }
-            },
-            {
-              "parameterName": "candidate",
-              "parameterTypeTokenRange": {
-                "startIndex": 8,
-                "endIndex": 9
-              }
-            }
-          ],
-          "name": "isBootloaderFlashing"
-        },
-        {
-          "kind": "Function",
-          "canonicalReference": "jacdac-ts!isBootloaderRelated:function(1)",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare function isBootloaderRelated(id1: "
-            },
-            {
-              "kind": "Content",
-              "text": "string"
-            },
-            {
-              "kind": "Content",
-              "text": ", id2: "
-            },
-            {
-              "kind": "Content",
-              "text": "string"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
-            },
-            {
-              "kind": "Content",
-              "text": "boolean"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
-            }
-          ],
-          "returnTypeTokenRange": {
-            "startIndex": 5,
-            "endIndex": 6
-          },
-          "releaseTag": "Public",
-          "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "id1",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "parameterName": "id2",
-              "parameterTypeTokenRange": {
-                "startIndex": 3,
-                "endIndex": 4
-              }
-            }
-          ],
-          "name": "isBootloaderRelated"
-        },
-        {
-          "kind": "Function",
           "canonicalReference": "jacdac-ts!isCancelError:function(1)",
           "docComment": "",
           "excerptTokens": [
@@ -8042,7 +8158,7 @@
             },
             {
               "kind": "Content",
-              "text": "any"
+              "text": "number"
             },
             {
               "kind": "Content",
@@ -8936,6 +9052,52 @@
               ]
             },
             {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDBus#addDeviceHost:member(1)",
+              "docComment": "/**\n * Adds the device host to the bus\n *\n * @param deviceHost - \n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "addDeviceHost(deviceHost: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDDeviceHost",
+                  "canonicalReference": "jacdac-ts!default:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "deviceHost",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "addDeviceHost"
+            },
+            {
               "kind": "Property",
               "canonicalReference": "jacdac-ts!JDBus#children:member",
               "docComment": "",
@@ -9176,6 +9338,86 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDBus#deviceHost:member(1)",
+              "docComment": "/**\n * Get a device host for a given device\n *\n * @param deviceId - \n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "deviceHost(deviceId: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDDeviceHost",
+                  "canonicalReference": "jacdac-ts!default:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "deviceId",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "deviceHost"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDBus#deviceHosts:member(1)",
+              "docComment": "/**\n * Gets the current list of device hosts on the bus\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "deviceHosts(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDDeviceHost",
+                  "canonicalReference": "jacdac-ts!default:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "deviceHosts"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "jacdac-ts!JDBus#devices:member(1)",
               "docComment": "/**\n * Gets the current list of known devices on the bus\n */\n",
               "excerptTokens": [
@@ -9184,8 +9426,9 @@
                   "text": "devices(options?: "
                 },
                 {
-                  "kind": "Content",
-                  "text": "{\n        serviceName?: string;\n        serviceClass?: number;\n    }"
+                  "kind": "Reference",
+                  "text": "DeviceFilter",
+                  "canonicalReference": "jacdac-ts!DeviceFilter:interface"
                 },
                 {
                   "kind": "Content",
@@ -9883,6 +10126,52 @@
               "isStatic": false
             },
             {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDBus#removeDeviceHost:member(1)",
+              "docComment": "/**\n * Adds the device host to the bus\n *\n * @param deviceHost - \n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "removeDeviceHost(deviceHost: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDDeviceHost",
+                  "canonicalReference": "jacdac-ts!default:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "deviceHost",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "removeDeviceHost"
+            },
+            {
               "kind": "Property",
               "canonicalReference": "jacdac-ts!JDBus#safeBoot:member",
               "docComment": "",
@@ -10355,6 +10644,51 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDClient#log:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "protected log(msg: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "msg",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "log"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "jacdac-ts!JDClient#mount:member(1)",
               "docComment": "",
               "excerptTokens": [
@@ -10523,6 +10857,34 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "announced",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#announceFlags:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get announceFlags(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ControlAnnounceFlags",
+                  "canonicalReference": "jacdac-ts!ControlAnnounceFlags:enum"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "announceFlags",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -11049,6 +11411,33 @@
             },
             {
               "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#packetCount:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get packetCount(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "packetCount",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
               "canonicalReference": "jacdac-ts!JDDevice#parent:member",
               "docComment": "",
               "excerptTokens": [
@@ -11363,6 +11752,33 @@
               "name": "resolveFirmwareIdentifier"
             },
             {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#restartCounter:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get restartCounter(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "restartCounter",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
               "kind": "Method",
               "canonicalReference": "jacdac-ts!JDDevice#sendCtrlCommand:member(1)",
               "docComment": "",
@@ -11673,34 +12089,6 @@
                 }
               ],
               "name": "services"
-            },
-            {
-              "kind": "Property",
-              "canonicalReference": "jacdac-ts!JDDevice#servicesData:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "servicesData: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "Uint8Array",
-                  "canonicalReference": "!Uint8Array:interface"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isOptional": false,
-              "releaseTag": "Public",
-              "name": "servicesData",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isStatic": false
             },
             {
               "kind": "Property",
@@ -14808,6 +15196,52 @@
               ]
             },
             {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDService#addClient:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "addClient(client: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDServiceClient",
+                  "canonicalReference": "jacdac-ts!JDServiceClient:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "client",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "addClient"
+            },
+            {
               "kind": "Property",
               "canonicalReference": "jacdac-ts!JDService#children:member",
               "docComment": "",
@@ -14833,6 +15267,38 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "children",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDService#clients:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get clients(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDServiceClient",
+                  "canonicalReference": "jacdac-ts!JDServiceClient:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "clients",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 3
@@ -15337,6 +15803,52 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDService#removeClient:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "removeClient(client: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JDServiceClient",
+                  "canonicalReference": "jacdac-ts!JDServiceClient:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "client",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "name": "removeClient"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "jacdac-ts!JDService#report:member(1)",
               "docComment": "",
               "excerptTokens": [
@@ -15428,6 +15940,15 @@
                 },
                 {
                   "kind": "Content",
+                  "text": ", data?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Uint8Array",
+                  "canonicalReference": "!Uint8Array:interface"
+                },
+                {
+                  "kind": "Content",
                   "text": ", ack?: "
                 },
                 {
@@ -15455,8 +15976,8 @@
               "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
-                "startIndex": 5,
-                "endIndex": 7
+                "startIndex": 7,
+                "endIndex": 9
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -15469,10 +15990,17 @@
                   }
                 },
                 {
-                  "parameterName": "ack",
+                  "parameterName": "data",
                   "parameterTypeTokenRange": {
                     "startIndex": 3,
                     "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "ack",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
                   }
                 }
               ],
@@ -17192,6 +17720,27 @@
               ],
               "releaseTag": "Public",
               "name": "LightType",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LightReg.MaxPixels:member",
+              "docComment": "/**\n * Constant uint16_t. The maximum supported number of pixels. All writes to `num_pixels` are clamped to `max_pixels`.\n * ```\n * const [maxPixels] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxPixels = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "385"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxPixels",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -19143,7 +19692,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "4"
+                  "text": "129"
                 }
               ],
               "releaseTag": "Public",
@@ -19185,7 +19734,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "17"
+                  "text": "145"
                 }
               ],
               "releaseTag": "Public",
@@ -19206,7 +19755,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "16"
+                  "text": "144"
                 }
               ],
               "releaseTag": "Public",
@@ -19227,7 +19776,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "3"
+                  "text": "128"
                 }
               ],
               "releaseTag": "Public",
@@ -26251,7 +26800,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "name: "
+                  "text": "readonly name: "
                 },
                 {
                   "kind": "Content",
@@ -26278,7 +26827,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "parent: "
+                  "text": "readonly parent: "
                 },
                 {
                   "kind": "Reference",
@@ -26318,8 +26867,13 @@
                   "text": "): "
                 },
                 {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
                   "kind": "Content",
-                  "text": "void"
+                  "text": "<void>"
                 },
                 {
                   "kind": "Content",
@@ -26330,7 +26884,7 @@
               "isStatic": false,
               "returnTypeTokenRange": {
                 "startIndex": 3,
-                "endIndex": 4
+                "endIndex": 5
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -26352,7 +26906,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "services: "
+                  "text": "readonly services: "
                 },
                 {
                   "kind": "Content",
@@ -26371,6 +26925,35 @@
                 "endIndex": 2
               },
               "isStatic": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!RemoteRequestedDevice#toString:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "toString(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "toString"
             }
           ],
           "implementsTokenRanges": []
@@ -26523,6 +27106,23 @@
           }
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!RESET:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "RESET = \"reset\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "RESET",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!resolveMakecodeService:function(1)",
           "docComment": "",
@@ -26666,6 +27266,14 @@
                 },
                 {
                   "kind": "Content",
+                  "text": ", options?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        autoBind?: boolean;\n    }"
+                },
+                {
+                  "kind": "Content",
                   "text": ");"
                 }
               ],
@@ -26678,8 +27286,49 @@
                     "startIndex": 1,
                     "endIndex": 2
                   }
+                },
+                {
+                  "parameterName": "options",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
                 }
               ]
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!RoleManagerClient#bindDevices:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "bindDevices(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "bindDevices"
             },
             {
               "kind": "Method",
@@ -26716,66 +27365,31 @@
               "name": "clearRoles"
             },
             {
-              "kind": "Method",
-              "canonicalReference": "jacdac-ts!RoleManagerClient.create:member(1)",
+              "kind": "Property",
+              "canonicalReference": "jacdac-ts!RoleManagerClient#options:member",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "static create(bus: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "JDBus",
-                  "canonicalReference": "jacdac-ts!JDBus:class"
+                  "text": "readonly options?: "
                 },
                 {
                   "kind": "Content",
-                  "text": ", print?: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "(s: string) => void"
-                },
-                {
-                  "kind": "Content",
-                  "text": "): "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "RoleManagerClient",
-                  "canonicalReference": "jacdac-ts!RoleManagerClient:class"
+                  "text": "{\n        autoBind?: boolean;\n    }"
                 },
                 {
                   "kind": "Content",
                   "text": ";"
                 }
               ],
-              "isOptional": false,
-              "isStatic": true,
-              "returnTypeTokenRange": {
-                "startIndex": 5,
-                "endIndex": 6
-              },
+              "isOptional": true,
               "releaseTag": "Public",
-              "overloadIndex": 1,
-              "parameters": [
-                {
-                  "parameterName": "bus",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                },
-                {
-                  "parameterName": "print",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 3,
-                    "endIndex": 4
-                  }
-                }
-              ],
-              "name": "create"
+              "name": "options",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
             },
             {
               "kind": "Property",
@@ -26808,6 +27422,40 @@
                 "endIndex": 3
               },
               "isStatic": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!RoleManagerClient#scan:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "scan(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<void>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "scan"
             },
             {
               "kind": "Method",
@@ -26874,6 +27522,35 @@
                 }
               ],
               "name": "setRole"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "jacdac-ts!RoleManagerClient#toString:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "toString(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "toString"
             }
           ],
           "extendsTokenRange": {
@@ -27026,7 +27703,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "2"
+                  "text": "3"
                 }
               ],
               "releaseTag": "Public",
@@ -28294,6 +28971,40 @@
               }
             }
           ]
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SERVICE_CLIENT_ADDED:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SERVICE_CLIENT_ADDED = \"serviceClientAdded\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SERVICE_CLIENT_ADDED",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SERVICE_CLIENT_REMOVED:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SERVICE_CLIENT_REMOVED = \"serviceClientRemoved\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SERVICE_CLIENT_REMOVED",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
         },
         {
           "kind": "Variable",
@@ -30351,8 +31062,29 @@
           "members": [
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemEvent.Active:member",
+              "docComment": "/**\n * Notifies that the service has been activated (eg. button pressed, network connected, etc.)\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Active = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Active",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemEvent.Change:member",
-              "docComment": "/**\n * Emit notifying that the internal state of the service changed.\n */\n",
+              "docComment": "/**\n * Notifies that the internal state of the service changed.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -30360,11 +31092,32 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "2"
+                  "text": "3"
                 }
               ],
               "releaseTag": "Public",
               "name": "Change",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemEvent.Inactive:member",
+              "docComment": "/**\n * Notifies that the service has been dis-activated.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Inactive = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Inactive",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -30493,7 +31246,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.StatusCode:member",
-              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the anounce packet.\n * ```\n * const [code, vendorCode] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Reports the current state or error status of the device. ``code`` is a standardized value from the JACDAC error codes. ``vendor_code`` is any vendor specific error code describing the device state. This report is typically not queried, when a device has an error, it will typically add this report in frame along with the announce packet.\n * ```\n * const [code, vendorCode] = jdunpack<[number, number]>(buf, \"u16 u16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -32727,7 +33480,7 @@
             },
             {
               "kind": "Content",
-              "text": "any[]"
+              "text": "number[]"
             },
             {
               "kind": "Content",
