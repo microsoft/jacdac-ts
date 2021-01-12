@@ -1,5 +1,5 @@
 import { Grid, Typography } from "@material-ui/core";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { bufferEq, cryptoRandomUint32, delay, toHex } from "../../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
@@ -17,6 +17,7 @@ import TestCard from "../TestCard";
 import Packet from "../../../../src/jdom/packet";
 import { JDEvent } from "../../../../src/jdom/event";
 import { InPipeReader } from "../../../../src/jdom/pipes";
+import { JDDeviceHost, ProtocolTestServiceHost } from "../../../../src/jdom/host";
 
 function pick(...values: number[]) {
     return values.find(x => x !== undefined);
@@ -231,6 +232,13 @@ function ServiceProtocolTest(props: { service: JDService }) {
 export default function ProtocolTest() {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const services = useChange(bus, b => b.services({ serviceClass: SRV_PROTO_TEST }))
+
+    // add virtual device
+    useEffect(() => {
+        const d = new JDDeviceHost([new ProtocolTestServiceHost()]);
+        bus.addDeviceHost(d);
+        return () => bus.removeDeviceHost(d);
+    }, []);
 
     return <Grid container direction="row" spacing={2}>
         <Grid key="connect" item xs={12}>

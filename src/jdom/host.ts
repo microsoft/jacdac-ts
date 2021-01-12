@@ -1,7 +1,7 @@
-import { BaseReg, ControlAnnounceFlags, ControlCmd, SystemCmd, SystemEvent } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, ControlAnnounceFlags, ControlCmd, ProtoTestReg, SRV_PROTO_TEST, SystemCmd, SystemEvent } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
 import { JDBus } from "./bus";
-import { CHANGE, CMD_GET_REG, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, JD_SERVICE_INDEX_CTRL, PACKET_PROCESS, PACKET_SEND, RESET, SELF_ANNOUNCE, SRV_CTRL } from "./constants";
+import { CHANGE, CMD_GET_REG, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, RESET, SELF_ANNOUNCE, SRV_CTRL } from "./constants";
 import { JDEventSource } from "./eventsource";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
@@ -13,7 +13,7 @@ export class JDRegisterHost extends JDEventSource {
     data: Uint8Array;
 
     constructor(
-        public readonly service: JDServiceHost;
+        public readonly service: JDServiceHost,
         public readonly identifier: number,
         public readonly packFormat: string,
         defaultValue: any[]) {
@@ -70,11 +70,15 @@ export class JDServiceHost extends JDEventSource {
         return this._registers.slice(0);
     }
 
+    register(identifier: number) {
+        return this._registers.find(reg => reg.identifier === identifier);
+    }
+
     get statusCode() {
         return this._registers.find(reg => reg.identifier === BaseReg.StatusCode);
     }
 
-    protected addRegister(identifier: number, packFormat: string, defaultValue) {
+    protected addRegister(identifier: number, packFormat: string, defaultValue: any[]) {
         const reg = new JDRegisterHost(this, identifier, packFormat, defaultValue);
         this._registers.push(reg);
         return reg;
@@ -112,7 +116,7 @@ export class JDServiceHost extends JDEventSource {
             memcpy(payload, 0, data);
         this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
     }
-    
+
     protected sendChangeEvent() {
         this.sendEvent(SystemEvent.Change)
     }
@@ -142,9 +146,8 @@ export class ControlServiceHost extends JDServiceHost {
             ControlAnnounceFlags.SupportsACK,
             this.packetCount,
             this.device.services().slice(1).map(srv => srv.serviceClass)])
-        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL;
-        pkt.deviceIdentifier = this.device.deviceId;
-        await pkt.sendCoreAsync(this.device.bus);
+
+        this.sendPacketAsync(pkt);
 
         // reset counter
         this.packetCount = 0;
@@ -160,6 +163,19 @@ export class ControlServiceHost extends JDServiceHost {
         this.packetCount = 0;
     }
 
+}
+
+export class ProtocolTestServiceHost extends JDServiceHost {
+    constructor() {
+        super(SRV_PROTO_TEST);
+
+        this.addRegister(ProtoTestReg.RwBool, "u8", [false]);
+        this.addRegister(ProtoTestReg.RwI32, "i32", [0]);
+        this.addRegister(ProtoTestReg.RwU32, "u32", [0]);
+        this.addRegister(ProtoTestReg.RwString, "s", [""]);
+        this.addRegister(ProtoTestReg.RwBytes, "b", [new Uint8Array(0)]);
+        this.addRegister(ProtoTestReg.RwI8U8U16I32, "i8 u8 u16 i32", [0, 0, 0, 0]);
+    }
 }
 
 export interface JDDeviceHostOptions {
@@ -192,7 +208,7 @@ export class JDDeviceHost extends JDEventSource {
     }
 
     protected log(msg: any) {
-        console.log(`${this.deviceId}: ${msg}`);
+        console.log(`${this.shortId}: ${msg}`);
     }
 
     get bus() {
@@ -226,6 +242,7 @@ export class JDDeviceHost extends JDEventSource {
     }
 
     private handleSelfAnnounce() {
+        this.log(`self announce`)
         const ctrl = this._services[0] as ControlServiceHost;
         ctrl.announce();
     }
