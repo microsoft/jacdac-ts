@@ -82,7 +82,10 @@ export default function ToolsDrawer() {
         setToolsMenu(false)
     }
     const toggleDeviceHosts = () => {
-        setDeviceHosts(!deviceHosts);
+        const b = !deviceHosts;
+        setDeviceHosts(b);
+        if (!b)
+            setToolsMenu(false);
     }
     const links = [
         {
@@ -195,7 +198,7 @@ export default function ToolsDrawer() {
         </List>
         <Dialog open={deviceHosts} onClose={toggleDeviceHosts}>
             <DialogContent>
-                <DeviceHostDialog />
+                <DeviceHostDialog onAddedAll={toggleDeviceHosts} />
             </DialogContent>
         </Dialog>
     </Drawer>

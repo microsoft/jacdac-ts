@@ -73,8 +73,8 @@ const hostDefinitions = [
 
 ];
 
-export default function DeviceHostDialog(props: { onAdded?: () => void }) {
-    const { onAdded } = props;
+export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedAll?: () => void }) {
+    const { onAdded, onAddedAll } = props;
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [selected, setSelected] = useState("button");
     const { enqueueSnackbar } = useSnackbar();
@@ -96,7 +96,7 @@ export default function DeviceHostDialog(props: { onAdded?: () => void }) {
         hostDefinitions
             .forEach(addHost);
         enqueueSnackbar(`${hostDefinitions.length} devices started...`, { variant: "info" })
-        onAdded?.();
+        onAddedAll?.();
     }
 
     return <Grid container spacing={2}>

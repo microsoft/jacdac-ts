@@ -12,11 +12,18 @@ const VOLUME_SCALE = 0xff << 3;
 function init() {
     if (ctx === undefined) {
         try {
-            ctx = typeof window !== undefined && new window.AudioContext();
+            const context = typeof window !== undefined && new window.AudioContext();
+            // play silence sound within onlick to unlock it
+            const buffer = context.createBuffer(1, 1, 22050);
+            var source = context.createBufferSource();
+            source.buffer = buffer;
+            source.connect(context.destination);
+            source.start();
+            ctx = context;
         }
         catch (e) {
+            console.log(e);
             ctx = null;
-            return undefined;
         }
     }
 }

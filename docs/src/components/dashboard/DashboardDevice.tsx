@@ -15,6 +15,7 @@ import DashboardServiceWidget from "./DashboardServiceWidget";
 import DeviceActions from "../DeviceActions";
 import useDeviceHost from "../hooks/useDeviceHost";
 import DashboardServiceDetails from "./DashboardServiceDetails";
+import { MOBILE_BREAKPOINT } from "../layout";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -32,7 +33,7 @@ export default function DashboardDevice(props: {
             && !!service.specification));
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
-    const mobile = useMediaQuery(theme.breakpoints.down("xs"));
+    const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
     const host = useDeviceHost(device);
     const identifying = useChange(host, h => h.identifying);
 
@@ -40,12 +41,12 @@ export default function DashboardDevice(props: {
         <Card variant={identifying ? "outlined" : undefined}>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
-                action={<DeviceActions device={device} hideIdentity={!expanded} showReset={expanded}>
+                action={<DeviceActions device={device} hideIdentity={!expanded} showReset={expanded && !mobile}>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButtonWithTooltip>
                 </DeviceActions>}
-                title={<DeviceName showShortId={false} device={device} />}
+                title={<DeviceName expanded={expanded} showShortId={false} device={device} />}
                 subheader={<>
                     {!mobile && specification && <Typography variant="caption" gutterBottom>
                         {specification.name}

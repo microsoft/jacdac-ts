@@ -1,5 +1,5 @@
 
-import { Button, ButtonGroup, createStyles, makeStyles } from "@material-ui/core";
+import { Button, ButtonGroup, createStyles, Grid, makeStyles } from "@material-ui/core";
 import React from "react";
 import { BuzzerCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
@@ -39,14 +39,15 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     }
     const handlePlayTone = (f: number) => () => sendPlayTone(f)
 
-    return <ButtonGroup>
-        {notes.map(note => <Button
+    return <Grid container alignItems="center" alignContent="space-between">
+        {notes.map(note => <Grid item xs><Button
             key={note.frequency}
             className={classes.btn}
             size="small"
             variant="outlined"
             onPointerEnter={handlePointerEnter(note.frequency)}
             onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
+            </Grid>
         )}
-    </ButtonGroup>
+    </Grid>
 }
