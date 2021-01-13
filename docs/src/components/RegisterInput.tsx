@@ -31,7 +31,7 @@ export default function RegisterInput(props: {
     const [working, setWorking] = useState(false);
     const [args, setArgs] = useState<any[]>(register.unpackedValue || [])
     const host = useRegisterHost(register);
-    const hasSet = specification.kind === "rw" || host;
+    const hasSet = specification.kind === "rw" || (host && specification.kind !== "const");
     const hasData = !!register.data;
     const color = hasSet ? "secondary" : "primary"
 
