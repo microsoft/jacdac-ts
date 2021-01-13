@@ -195,7 +195,7 @@ export default function ToolsDrawer() {
         </List>
         <Dialog open={deviceHosts} onClose={toggleDeviceHosts}>
             <DialogContent>
-                <DeviceHostDialog onAdded={toggleDeviceHosts} />
+                <DeviceHostDialog />
             </DialogContent>
         </Dialog>
     </Drawer>
