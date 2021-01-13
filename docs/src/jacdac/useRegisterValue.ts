@@ -36,3 +36,12 @@ export function useRegisterStringValue(register: JDRegister): string {
     }), [register])
     return value;
 }
+
+export function useRegisterBoolValue(register: JDRegister): boolean {
+    const [value, setValue] = useState<boolean>(register?.boolValue)
+    // update value
+    useEffect(() => register?.subscribe(REPORT_UPDATE, () => {
+        setValue(register?.boolValue)
+    }), [register])
+    return value;
+}
