@@ -60,7 +60,7 @@ const hostDefinitions = [
     },
     {
         name: "slider",
-        services: () => [new JDSensorServiceHost(SRV_SLIDER, { variant: SliderVariant.Rotary })]
+        services: () => [new JDSensorServiceHost(SRV_SLIDER, { variant: SliderVariant.Slider })]
     },
     {
         name: "thermometer",
