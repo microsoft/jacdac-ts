@@ -1,19 +1,15 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
-import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_HUMIDITY, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER, SystemReg } from "../../../../src/jdom/constants";
+import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER, SystemReg } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
 import DashboardLight from "./DashboardLight";
 import DashboardRoleManager from "./DashboardRoleManager";
-import DashboardService from "./DashboardService";
 import DashboardGamepad from "./DashbaordGamepad";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
-import DashboardHumidity from "./DashboardHumidity";
-import useChange from "../../jacdac/useChange";
 import { isRegister } from "../../../../src/jdom/spec";
 import RegisterInput from "../RegisterInput";
-import { Grid } from "@material-ui/core";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -29,7 +25,6 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_GAMEPAD]: DashboardGamepad,
     [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
     [SRV_BUTTON]: DashboardButton,
-    [SRV_HUMIDITY]: DashboardHumidity,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
@@ -54,17 +49,15 @@ function DefaultWidget(props: DashboardServiceProps) {
     if (!register) // nothing to see here
         return null;
 
-    return <Grid item xs>
-        <RegisterInput key={register.id}
+    return <RegisterInput
             register={register}
             variant={"widget"}
             showServiceName={expanded}
             showRegisterName={expanded}
             hideMissingValues={!expanded}
-            showTrend={expanded && register.address === SystemReg.Reading}
-        />
-    </Grid>
+        />;
 }
+
 export default function DashboardServiceWidget(props: React.Attributes & DashboardServiceProps): JSX.Element {
     const { service } = props;
     const { specification } = service;

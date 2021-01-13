@@ -20,13 +20,11 @@ export default function DashboardButton(props: DashboardServiceProps) {
     const handleUp = () => host?.up();
     const handleClick = () => host?.click();
 
-    return <Grid item>
-        <ButtonWidget 
+    return <ButtonWidget 
             checked={!!pressed} 
             color={color} 
             size={widgetSize}
             onDown={host && handleDown}
             onUp={host && handleUp}
             onClick={host && handleClick} />
-    </Grid>
 }

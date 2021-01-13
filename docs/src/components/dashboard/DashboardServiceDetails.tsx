@@ -21,7 +21,7 @@ const collapsedRegisters = [
     SystemReg.Intensity
 ]
 
-export default function DashboardService(props: DashboardServiceProps) {
+export default function DashboardServiceDetails(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const specification = useChange(service, spec => spec.specification);
     const registers = useMemo(() => {
@@ -43,11 +43,10 @@ export default function DashboardService(props: DashboardServiceProps) {
     return <AutoGrid spacing={1}>
         {registers.map(register => <RegisterInput key={register.id}
             register={register}
-            variant={isReading(register.specification) && "widget"}
-            showServiceName={expanded}
-            showRegisterName={expanded}
-            hideMissingValues={!expanded}
-            showTrend={expanded && register.address === SystemReg.Reading}
+            showServiceName={true}
+            showRegisterName={true}
+            hideMissingValues={false}
+            showTrend={register.address === SystemReg.Reading}
         />)}
     </AutoGrid>
 }

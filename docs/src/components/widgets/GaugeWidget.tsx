@@ -22,7 +22,7 @@ export default function GaugeWidget(props: {
                 min={min}
                 max={max}
                 value={value}
-                showValue={true}
+                showValue={!!valueLabel}
                 color={color}
                 label={valueLabel} />
         </Grid>

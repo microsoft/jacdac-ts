@@ -11,6 +11,7 @@ import { useId } from "react-use-id-hook"
 import ButtonWidget from "../widgets/ButtonWidget";
 import GaugeWidget from "../widgets/GaugeWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
+import ValueWithUnitWidget from "../widgets/ValueWithUnitWidget";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -30,7 +31,7 @@ export default function MemberInput(props: {
     const [error, setError] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
-    const name = specification.name === "_" ? "" : specification.name
+    const name = specification.name === "_" ? serviceMemberSpecification.name : specification.name
     const label = name
     const helperText = error || prettyMemberUnit(specification, showDataType)
     const widgetSize = useWidgetSize();
@@ -84,13 +85,13 @@ export default function MemberInput(props: {
         return <>pipe <code>{specification.name}</code></>
     }
     else if (specification.type === 'bool') {
-        if (disabled && variant === "widget")
+        if (variant === "widget")
             return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
-        else
-            return <>
-                <Switch aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
-                <label id={labelid}>{label}</label>
-            </>
+
+        return <>
+            <Switch aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
+            <label id={labelid}>{label}</label>
+        </>
     } else if (enumInfo !== undefined) {
         return <Select
             disabled={disabled}
@@ -102,7 +103,7 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
-        if (disabled && variant === "widget")
+        if (variant === "widget")
             return <GaugeWidget
                 label={label}
                 value={scaleIntToFloat(value, specification)}
@@ -110,18 +111,26 @@ export default function MemberInput(props: {
                 min={0} max={1}
                 valueLabel={v => `${Math.round(v * 100)}%`}
                 size={widgetSize} />
-        else
-            return <Slider
-                color={color}
-                value={fv}
-                valueLabelFormat={percentValueFormat}
-                onChange={disabled ? undefined : handleScaledSliderChange}
-                min={0} max={1} step={0.01}
-                valueLabelDisplay="auto"
-            />
+
+        return <Slider
+            color={color}
+            value={fv}
+            valueLabelFormat={percentValueFormat}
+            onChange={disabled ? undefined : handleScaledSliderChange}
+            min={0} max={1} step={0.01}
+            valueLabelDisplay="auto"
+        />
     } else if (isSet(specification.typicalMin) && isSet(specification.typicalMax)) {
         const step = (specification.typicalMax - specification.typicalMin) / 100;
-        // TODO: make step nicer
+
+        if (variant === "widget")
+            return <ValueWithUnitWidget
+                label={specification.unit}
+                helperText={name}
+                value={value}
+                color={color}
+                size={widgetSize} />
+
         return <InputSlider
             value={value}
             color={color}
@@ -133,47 +142,47 @@ export default function MemberInput(props: {
         />
     } else if (isSet(specification.typicalMin) && isSet(specification.typicalMax)
         && isSet(specification.absoluteMin) && isSet(specification.absoluteMax)) {
-        if (disabled && variant === "widget")
-            return <GaugeWidget
-                label={label}
+        if (variant === "widget")
+            return <ValueWithUnitWidget
+                label={specification.unit}
+                helperText={name}
                 value={value}
-                min={specification.typicalMin}
-                max={specification.typicalMax}
                 color={color}
                 size={widgetSize} />
-        else {
-            const step = (specification.absoluteMax - specification.absoluteMin) / 100;
-            const marks = [
-                {
-                    value: specification.typicalMin,
-                    label: 'min',
-                },
-                {
-                    value: specification.typicalMax,
-                    label: 'max',
-                }
-            ];
-            return <InputSlider
-                value={value}
-                valueLabelFormat={valueLabelFormat}
-                onChange={disabled ? undefined : handleSliderChange}
-                min={specification.absoluteMin}
-                max={specification.absoluteMax}
-                step={step}
-                marks={marks}
-            />
-        }
+
+        const step = (specification.absoluteMax - specification.absoluteMin) / 100;
+        const marks = [
+            {
+                value: specification.typicalMin,
+                label: 'min',
+            },
+            {
+                value: specification.typicalMax,
+                label: 'max',
+            }
+        ];
+        return <InputSlider
+            value={value}
+            valueLabelFormat={valueLabelFormat}
+            onChange={disabled ? undefined : handleSliderChange}
+            min={specification.absoluteMin}
+            max={specification.absoluteMax}
+            step={step}
+            marks={marks}
+        />
     }
     else {// numbers or string
         const type = specification.type === 'string' || specification.type === 'string0' ? "string"
             : specification.isSimpleType ? "number"
                 : "";
 
-        if (disabled && specification.isSimpleType && variant == "widget")
-            return <>
-                <Typography component="span" variant={"h4"}>{roundWithPrecision(value, 2)}</Typography>
-                <Typography component="span" variant="caption">{helperText}</Typography>
-            </>;
+        if (variant === "widget")
+            return <ValueWithUnitWidget
+                value={roundWithPrecision(value, 2)}
+                label={specification.unit}
+                helperText={name}
+                color={color}
+                size={widgetSize} />
 
         return <TextField
             spellCheck={false}

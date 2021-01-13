@@ -96,7 +96,7 @@ export default function DashboardAccelerometer(props: DashboardServiceProps) {
     const forces = useRegisterUnpackedValue<[number, number, number]>(register);
 
     return (<>
-        { forces && <Grid container justify="center" spacing={1}>
+        {forces && <Grid container justify="center" spacing={1}>
             <Grid item>
                 <Cube forces={forces} />
             </Grid>
@@ -104,13 +104,5 @@ export default function DashboardAccelerometer(props: DashboardServiceProps) {
                 <Typography variant="caption">{forces.map(v => roundWithPrecision(v, 2)).join(", ")}</Typography>
             </Grid>
         </Grid>}
-        {expanded && <RegisterInput key={register.id}
-            register={register}
-            variant={"widget"}
-            showServiceName={expanded}
-            showRegisterName={true}
-            hideMissingValues={!expanded}
-            showTrend={expanded}
-        />}
     </>)
 }

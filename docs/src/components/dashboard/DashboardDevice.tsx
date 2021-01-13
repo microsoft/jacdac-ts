@@ -14,7 +14,7 @@ import DeviceAvatar from "../devices/DeviceAvatar"
 import DashboardServiceWidget from "./DashboardServiceWidget";
 import DeviceActions from "../DeviceActions";
 import useDeviceHost from "../hooks/useDeviceHost";
-import DashboardService from "./DashboardService";
+import DashboardServiceDetails from "./DashboardServiceDetails";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -54,10 +54,10 @@ export default function DashboardDevice(props: {
             />
             <CardContent>
                 <Grid container spacing={1} justify="center">
-                    {services?.map(service => <DashboardServiceWidget key={"widget" + service.service_index} service={service} expanded={expanded} />)}
+                    {services?.map(service => <Grid key={"widget" + service.service_index} item xs><DashboardServiceWidget service={service} expanded={expanded} /></Grid>)}
                 </Grid>
                 {expanded && <Grid container spacing={1} justify="center">
-                    {services?.map(service => <DashboardService key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
                 </Grid>}
             </CardContent>
         </Card>

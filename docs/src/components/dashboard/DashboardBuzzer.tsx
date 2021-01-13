@@ -1,5 +1,5 @@
 
-import { Button, createStyles, Grid, makeStyles } from "@material-ui/core";
+import { Button, ButtonGroup, createStyles, Grid, makeStyles } from "@material-ui/core";
 import React, { PointerEventHandler } from "react";
 import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
@@ -10,7 +10,7 @@ import CmdButton from "../CmdButton"
 const useStyles = makeStyles((theme) => createStyles({
     btn: {
         minWidth: "1em",
-        padding: "3em 0.75em 3em 0.75em"
+        padding: "2em 0.75em 2em 0.75em"
     }
 }));
 
@@ -47,14 +47,16 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
             <RegisterInput register={volume} showRegisterName={true} />
         </Grid>
         <Grid item>
-            {notes.map(note => <Button
-                key={note.frequency}
-                className={classes.btn}
-                size="small"
-                variant="outlined"
-                onPointerEnter={handlePointerEnter(note.frequency)}
-                onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
-            )}
+            <ButtonGroup>
+                {notes.map(note => <Button
+                    key={note.frequency}
+                    className={classes.btn}
+                    size="small"
+                    variant="outlined"
+                    onPointerEnter={handlePointerEnter(note.frequency)}
+                    onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
+                )}
+            </ButtonGroup>
         </Grid>
     </Grid>
 }
