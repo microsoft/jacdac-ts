@@ -18,11 +18,12 @@ import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
 import JDServiceHost from "../../../../src/jdom/servicehost";
 
-const thermometerOptions = {
-    readingValue: 20,
+const outdoorThermometerOptions = {
+    readingValue: 21.5,
     streamingInterval: 1000,
     minReading: -40,
     maxReading: 120,
+    errorReading: 0.25,
     variant: ThermometerVariant.Outdoor
 }
 
@@ -37,7 +38,7 @@ const hostDefinitions = [
     },
     {
         name: "humidity + temperature",
-        services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, thermometerOptions)]
+        services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
     },
     {
         name: "motor",
@@ -64,8 +65,19 @@ const hostDefinitions = [
         services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
     },
     {
-        name: "thermometer",
-        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, thermometerOptions)]
+        name: "thermometer (outdoor)",
+        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
+    },
+    {
+        name: "thermocouple",
+        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, {
+            readingValue: 550,
+            streamingInterval: 1000,
+            minReading: 0,
+            maxReading: 1100,
+            errorReading: 2.2,
+            variant: ThermometerVariant.Thermocouple
+        })]
     },
     {
         name: "vibration motor",

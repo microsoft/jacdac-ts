@@ -14,10 +14,11 @@ export default function MembersInput(props: {
     variant?: RegisterInputVariant,
     min?: number[],
     max?: number[],
+    error?: number[]
 }) {
     const { serviceSpecification, serviceMemberSpecification, specifications,
         values, setValues, showDataType, color, variant,
-        min, max } = props;
+        min, max, error } = props;
     const setValue = (index: number) => (value: any) => {
         const c = values.slice(0)
         c[index] = value;
@@ -39,6 +40,7 @@ export default function MembersInput(props: {
                     variant={variant}
                     min={min?.[fieldi]}
                     max={max?.[fieldi]}
+                    error={error?.[fieldi]}
                 />
             </Grid>;
         })}

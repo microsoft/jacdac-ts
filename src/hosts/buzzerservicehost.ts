@@ -6,10 +6,10 @@ import JDServiceHost from "../jdom/servicehost";
 
 let ctx: AudioContext;
 let volumeNode: GainNode;
-let volume: number = 20;
-const VOLUME_SCALE = 0xff << 3;
+const VOLUME_SCALE = 1500;
+let volume: number = 200;
 
-function init() {
+export function initAudioContext() {
     if (ctx === undefined) {
         try {
             const context = typeof window !== undefined && new window.AudioContext();
@@ -20,6 +20,7 @@ function init() {
             source.connect(context.destination);
             source.start();
             ctx = context;
+            console.log(`audio context created`)
         }
         catch (e) {
             console.log(e);
@@ -32,7 +33,8 @@ async function setVolume(vol: number) {
     volume = vol;
     if (ctx && volumeNode) {
         try {
-            volumeNode.gain.value = volume / VOLUME_SCALE;
+            const v = volume / VOLUME_SCALE;
+            volumeNode.gain.value = v;
         }
         catch (e) {
             console.log(e)
@@ -41,7 +43,7 @@ async function setVolume(vol: number) {
 }
 
 async function playTone(frequency: number, duration: number) {
-    init();
+    initAudioContext();
     if (ctx) {
         try {
             volumeNode = ctx.createGain();
@@ -65,14 +67,13 @@ export default class BuzzerServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_BUZZER);
 
-        this.volume = this.addRegister(BuzzerReg.Volume);
+        this.volume = this.addRegister(BuzzerReg.Volume, [200]);
         this.volume.on(CHANGE, this.handleVolumeChange.bind(this))
         this.addCommand(BuzzerCmd.PlayTone, this.handlePlayTone.bind(this));
     }
 
     private handleVolumeChange() {
         const [v] = this.volume.values<[number]>();
-
         setVolume(v) // don't be too loud
     }
 

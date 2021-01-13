@@ -23,24 +23,28 @@ export default function MemberInput(props: {
     color?: "primary" | "secondary",
     variant?: RegisterInputVariant,
     min?: number,
-    max?: number
+    max?: number,
+    error?: number
 }) {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
-        setValue, showDataType, color, variant, min, max } = props;
+        setValue, showDataType, color, variant, min, max, error } = props;
     const { typicalMin, typicalMax, absoluteMin, absoluteMax } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const labelid = useId();
-    const [error, setError] = useState("")
+    const [errorText, setErrorText] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? serviceMemberSpecification.name : specification.name
     const label = name
-    const helperText = error || prettyMemberUnit(specification, showDataType)
     const widgetSize = useWidgetSize();
 
     const minValue = pick(min, typicalMin, absoluteMin)
     const maxValue = pick(max, typicalMax, absoluteMax)
+    const errorValue = !!error && "±%" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString();
+    const helperText = errorText
+        || [prettyMemberUnit(specification, showDataType), errorValue]
+            .filter(v => v !== undefined).join(", ");
 
     const inputType = specification.type === 'string' || specification.type === 'string0' ? "string"
         : specification.isSimpleType || isIntegerType(specification.type) ? "number"
@@ -60,7 +64,7 @@ export default function MemberInput(props: {
         const r = tryParseMemberValue(newValue, specification)
         if (r.value !== undefined)
             setValue(r.value)
-        setError(r.error)
+        setErrorText(r.error)
     }
     const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
@@ -152,6 +156,7 @@ export default function MemberInput(props: {
             return <ValueWithUnitWidget
                 label={specification.unit}
                 value={value}
+                secondaryLabel={errorValue}
                 color={color}
                 size={widgetSize} />
 
@@ -180,7 +185,7 @@ export default function MemberInput(props: {
             helperText={helperText}
             onChange={disabled ? undefined : handleChange}
             required={value === undefined}
-            error={!!error}
+            error={!!errorText}
             type={inputType}
         />
     }

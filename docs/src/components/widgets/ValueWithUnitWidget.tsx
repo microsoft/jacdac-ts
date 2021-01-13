@@ -28,12 +28,13 @@ export default function ValueWithUnitWidget(props: {
     const labelVariant = "body2";
     const classes = useStyles();
     const valueText = isNaN(value) ? "--" : value.toLocaleString();
-    const valueTextLength = valueText.length;
+    const valueTextLength = valueText.replace(/[\.s]/g, '').length;
 
     const valueVariant = valueTextLength < 3 ? "h1"
-        : valueTextLength < 8 ? "h3"
-            : valueTextLength < 12 ? "h5"
-                : "h6";
+        : valueTextLength < 5 ? "h2"
+            : valueTextLength < 7 ? "h3"
+                : valueTextLength < 9 ? "h4"
+                    : "h6";
 
     return <div className={classes.gridContainer}>
         <div className={classes.value}>
