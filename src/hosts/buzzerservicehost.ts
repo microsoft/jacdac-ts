@@ -15,7 +15,7 @@ function init() {
             const context = typeof window !== undefined && new window.AudioContext();
             // play silence sound within onlick to unlock it
             const buffer = context.createBuffer(1, 1, 22050);
-            var source = context.createBufferSource();
+            const source = context.createBufferSource();
             source.buffer = buffer;
             source.connect(context.destination);
             source.start();
