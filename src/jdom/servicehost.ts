@@ -4,7 +4,7 @@ import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
 import JDRegisterHost from "./registerhost";
-import { serviceSpecificationFromClassIdentifier } from "./spec";
+import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
 export default class JDServiceHost extends JDEventSource {
@@ -34,8 +34,14 @@ export default class JDServiceHost extends JDEventSource {
     }
 
     protected addRegister(identifier: number, defaultValue?: any[]) {
-        const reg = new JDRegisterHost(this, identifier, defaultValue);
-        this._registers.push(reg);
+        let reg = this._registers.find(r => r.identifier === identifier);        
+        if (!reg) {
+            // make sure this register is supported
+            if (!this.specification.packets.find(pkt => isRegister(pkt) && pkt.identifier === identifier))
+                return undefined;
+            reg = new JDRegisterHost(this, identifier, defaultValue);
+            this._registers.push(reg);
+        }
         return reg;
     }
 

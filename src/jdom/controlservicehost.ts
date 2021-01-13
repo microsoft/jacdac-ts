@@ -9,13 +9,17 @@ export default class ControlServiceHost extends JDServiceHost {
     readonly deviceDescription: JDRegisterHost;
     readonly mcuTemperature: JDRegisterHost;
     readonly resetIn: JDRegisterHost;
+    readonly uptime: JDRegisterHost;
+    readonly startTime: number;
 
     constructor() {
         super(SRV_CTRL)
 
+        this.startTime = Date.now();
         this.deviceDescription = this.addRegister(ControlReg.DeviceDescription);
         this.mcuTemperature = this.addRegister(ControlReg.McuTemperature, [25]);
         this.resetIn = this.addRegister(ControlReg.ResetIn);
+        this.uptime = this.addRegister(ControlReg.Uptime);
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));
@@ -38,6 +42,9 @@ export default class ControlServiceHost extends JDServiceHost {
 
         // reset counter
         this.packetCount = 0;
+
+        // update uptime
+        this.uptime.setValues([Date.now() - this.startTime]);
     }
 
     async identify() {
