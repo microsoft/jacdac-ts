@@ -1,17 +1,12 @@
 
-import { Grid } from "@material-ui/core";
 import React from "react";
-import { ButtonReg, ServoReg } from "../../../../src/jdom/constants";
-import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
+import { ServoReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import ButtonWidget from "../widgets/ButtonWidget";
-import { useRegisterIntValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import useWidgetSize from "../widgets/useWidgetSize";
-import useServiceHost from "../hooks/useServiceHost";
+import { useRegisterIntValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 
 export default function DashboardServo(props: DashboardServiceProps) {
-    const { service, expanded } = props;
+    const { service } = props;
 
     const register = service.register(ServoReg.Pulse);
     const value = useRegisterIntValue(register);
