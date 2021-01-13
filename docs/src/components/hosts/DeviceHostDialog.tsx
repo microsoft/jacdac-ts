@@ -12,7 +12,7 @@ import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { SRV_SERVO, SRV_SLIDER, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { SliderVariant, SRV_SERVO, SRV_SLIDER, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
@@ -51,12 +51,16 @@ const hostDefinitions = [
         services: () => [new RotaryEncoderServiceHost(), new ButtonServiceHost()]
     },
     {
+        name: "rotary potentiometer",
+        services: () => [new JDSensorServiceHost(SRV_SLIDER, { variant: SliderVariant.Rotary })]
+    },
+    {
         name: "servo",
         services: () => [new JDServiceHost(SRV_SERVO)]
     },
     {
         name: "slider",
-        services: () => [new JDSensorServiceHost(SRV_SLIDER)]
+        services: () => [new JDSensorServiceHost(SRV_SLIDER, { variant: SliderVariant.Rotary })]
     },
     {
         name: "thermometer",
