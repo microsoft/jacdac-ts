@@ -24,9 +24,12 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
         case "u32": {
             const unsigned = specification.type[0] === "u";
             const n = Math.min(30, parseInt(specification.type.slice(1)));
-            const min = pick(specification.typicalMin, specification.absoluteMin, unsigned ? 0 : -((1 << (n - 1)) - 1));
-            const max = pick(specification.typicalMax, specification.absoluteMax, unsigned ? (1 << n) - 1 : (1 << (n - 1)) - 1);
-            r = (max + min) / 2;
+            const min = pick(specification.typicalMin, specification.absoluteMin, undefined);
+            const max = pick(specification.typicalMax, specification.absoluteMax, undefined);
+            if (max !== undefined && min !== undefined)
+                r = 0;
+            else
+                r = (max + min) / 2;
             break;
         }
         case "bytes": {
