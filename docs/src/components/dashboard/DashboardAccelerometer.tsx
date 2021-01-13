@@ -2,7 +2,7 @@
 import { createStyles, Grid, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
 import { AccelerometerReg } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import clsx from 'clsx';
 import RegisterInput from "../RegisterInput";

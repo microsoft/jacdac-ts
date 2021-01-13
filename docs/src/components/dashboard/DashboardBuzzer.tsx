@@ -2,7 +2,7 @@
 import { Button, createStyles, Grid, makeStyles } from "@material-ui/core";
 import React, { PointerEventHandler } from "react";
 import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import RegisterInput from "../RegisterInput";
 import { jdpack } from "../../../../src/jdom/pack";
 import CmdButton from "../CmdButton"

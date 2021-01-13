@@ -5,7 +5,7 @@ import { SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
 import { RoleManagerClient } from "../../../../src/jdom/rolemanagerclient";
 import useServiceClient from "../useServiceClient"
 import RemoteRequestDeviceView from "../RemoteRequestDeviceView";
-import { addServiceComponent, DashboardServiceProps } from "./DashboardServiceView";
+import { addServiceComponent, DashboardServiceProps } from "./DashboardServiceWidget";
 
 export default function DashboardRoleManager(props: DashboardServiceProps) {
     const { service, expanded } = props;

@@ -2,7 +2,7 @@
 import { Badge, Grid, Typography } from "@material-ui/core";
 import React from "react";
 import { GamepadButton, GamepadReg } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { groupBy } from "../../../../src/jdom/utils";
 import Alert from "../ui/Alert";

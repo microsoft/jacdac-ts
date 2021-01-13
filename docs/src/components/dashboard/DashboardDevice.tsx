@@ -11,9 +11,10 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import DeviceAvatar from "../devices/DeviceAvatar"
-import DashboardServiceView from "./DashboardServiceView";
+import DashboardServiceWidget from "./DashboardServiceWidget";
 import DeviceActions from "../DeviceActions";
 import useDeviceHost from "../hooks/useDeviceHost";
+import DashboardService from "./DashboardService";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -53,8 +54,11 @@ export default function DashboardDevice(props: {
             />
             <CardContent>
                 <Grid container spacing={1} justify="center">
-                    {services?.map(service => <DashboardServiceView key={service.service_index} service={service} expanded={expanded} />)}
+                    {services?.map(service => <DashboardServiceWidget key={"widget" + service.service_index} service={service} expanded={expanded} />)}
                 </Grid>
+                {expanded && <Grid container spacing={1} justify="center">
+                    {services?.map(service => <DashboardService key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                </Grid>}
             </CardContent>
         </Card>
     );

@@ -1,7 +1,7 @@
 import { Grid } from "@material-ui/core";
 import React from "react";
 import { RotaryEncoderReg } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterIntValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import CircleDotWidget from "../widgets/CircleDotWidget";

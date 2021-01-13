@@ -2,7 +2,7 @@ import { Grid } from "@material-ui/core";
 import React from "react";
 import { ButtonReg } from "../../../../src/jdom/constants";
 import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import ButtonWidget from "../widgets/ButtonWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useWidgetSize from "../widgets/useWidgetSize";

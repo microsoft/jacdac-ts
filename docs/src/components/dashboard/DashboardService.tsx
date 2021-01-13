@@ -5,7 +5,7 @@ import useChange from "../../jacdac/useChange";
 import AutoGrid from "../ui/AutoGrid";
 import RegisterInput from "../RegisterInput";
 import { isReading, isRegister } from "../../../../src/jdom/spec";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import useServiceHost from "../hooks/useServiceHost";
 
 // filter out common registers

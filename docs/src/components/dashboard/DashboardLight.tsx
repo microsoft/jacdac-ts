@@ -2,7 +2,7 @@
 import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
 import React, { ChangeEvent, useMemo, useState } from "react";
 import { LightReg, LightCmd } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import RegisterInput from "../RegisterInput";
 import { lightEncode } from "../../../../src/jdom/light";
 import ColorInput from "../ui/ColorInput";
