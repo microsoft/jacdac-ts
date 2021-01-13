@@ -1,7 +1,14 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { SensorReg } from "../jdom/constants";
 import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
+
+export interface JDSensorServiceOptions {
+    readingValue?: any,
+    streamingInterval?: number,
+    minReading?: number,
+    maxReading?: number
+}
 
 export default class JDSensorServiceHost extends JDServiceHost {
     readonly reading: JDRegisterHost;
@@ -14,15 +21,10 @@ export default class JDSensorServiceHost extends JDServiceHost {
 
     constructor(
         public readonly serviceClass: number,
-        options: {
-            readingValue?: any,
-            streamingInterval?: number,
-            minReading?: number,
-            maxReading?: number
-        } = {}
+        options: JDSensorServiceOptions & JDServiceHostOptions
     ) {
-        super(serviceClass);
-        const { readingValue, streamingInterval, minReading, maxReading } = options;
+        super(serviceClass, options);
+        const { readingValue, streamingInterval, minReading, maxReading } = options || {};
 
         this.reading = this.addRegister(SystemReg.Reading, readingValue !== undefined ? [readingValue] : undefined);
         this.streamingSamples = this.addRegister(SensorReg.StreamingSamples);

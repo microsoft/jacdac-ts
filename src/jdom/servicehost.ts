@@ -7,6 +7,10 @@ import JDRegisterHost from "./registerhost";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
+export interface JDServiceHostOptions {
+    variant?: number;
+}
+
 export default class JDServiceHost extends JDEventSource {
     public serviceIndex: number = -1; // set by device
     public device: JDDeviceHost;
@@ -14,12 +18,15 @@ export default class JDServiceHost extends JDEventSource {
     private readonly _registers: JDRegisterHost[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
 
-    constructor(public readonly serviceClass: number) {
+    constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
+        const { variant } = options || {};
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
         this.addRegister(BaseReg.StatusCode);
+        if (variant)
+            this.addRegister(SystemReg.Variant, [variant]);
     }
 
     get registers() {
