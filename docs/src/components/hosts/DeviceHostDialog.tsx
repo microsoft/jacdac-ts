@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import { Button } from "gatsby-theme-material-ui";
 import KindIcon from "../KindIcon";
 import SelectWithLabel from "../ui/SelectWithLabel";
@@ -17,6 +17,8 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import { SRV_SLIDER, SRV_THERMOMETER, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+import { useSnackbar } from "notistack";
+import JDServiceHost from "../../../../src/jdom/servicehost";
 
 const hostDefinitions = [
     {
@@ -58,7 +60,6 @@ const hostDefinitions = [
     {
         name: "vibration motor",
         services: () => [new VibrationMotorServiceHost()]
-        
     }
 
 ];
@@ -67,14 +68,25 @@ export default function DeviceHostDialog(props: { onAdded: () => void }) {
     const { onAdded } = props;
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [selected, setSelected] = useState("button");
+    const { enqueueSnackbar } = useSnackbar();
 
+    const addHost = (host: { name: string; services: () => JDServiceHost[]; }) => {
+        const d = new JDDeviceHost(host.services());
+        bus.addDeviceHost(d);
+    }
     const handleChange = (ev: React.ChangeEvent<{ value: unknown }>) => {
         setSelected(ev.target.value as string);
     };
     const handleClick = () => {
         const host = hostDefinitions.find(h => h.name === selected);
-        const d = new JDDeviceHost(host.services());
-        bus.addDeviceHost(d);
+        addHost(host);
+        enqueueSnackbar(`${host.name} started...`, { variant: "info" })
+        onAdded();
+    }
+    const handleAddAll = () => {
+        hostDefinitions
+            .forEach(addHost);
+        enqueueSnackbar(`${hostDefinitions.length} devices started...`, { variant: "info" })
         onAdded();
     }
 
@@ -92,6 +104,7 @@ export default function DeviceHostDialog(props: { onAdded: () => void }) {
         <Grid item xs={12}>
             <Alert severity="info">
                 Reload the page to clear out virtual devices.
+                <Box component="span" ml={"0.5em"}><Button variant="outlined" onClick={handleAddAll}>Add all</Button></Box>
             </Alert>
         </Grid>
     </Grid>
