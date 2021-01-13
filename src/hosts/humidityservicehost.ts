@@ -3,6 +3,6 @@ import JDSensorServiceHost from "./sensorservicehost";
 
 export default class HumidityServiceHost extends JDSensorServiceHost {
     constructor() {
-        super(SRV_HUMIDITY, [40], 1000)
+        super(SRV_HUMIDITY, { readingValue: 40, streamingInterval: 1000 });
     }
 }

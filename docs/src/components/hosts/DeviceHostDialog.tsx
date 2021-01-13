@@ -20,6 +20,13 @@ import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
 import JDServiceHost from "../../../../src/jdom/servicehost";
 
+const thermometerOptions = {
+    readingValue: 20, 
+    streamingInterval: 1000, 
+    minReading: -40, 
+    maxReading: 120
+}
+
 const hostDefinitions = [
     {
         name: "button",
@@ -31,7 +38,7 @@ const hostDefinitions = [
     },
     {
         name: "humidity + temperature",
-        services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, [20], 1000)]
+        services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, thermometerOptions)]
     },
     {
         name: "motor",
@@ -55,7 +62,7 @@ const hostDefinitions = [
     },
     {
         name: "thermometer",
-        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, [20], 1000)]
+        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, thermometerOptions)]
     },
     {
         name: "vibration motor",
