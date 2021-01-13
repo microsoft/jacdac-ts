@@ -6,24 +6,22 @@ import SelectWithLabel from "../ui/SelectWithLabel";
 import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
 import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost"
 import HumidityServiceHost from "../../../../src/hosts/humidityservicehost"
-import ServoServiceHost from "../../../../src/hosts/servoservicehost"
 import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost"
 import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
-import VibrationMotorServiceHost from "../../../../src/hosts/motorservicehost"
 
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { SRV_SERVO, SRV_SLIDER, SRV_THERMOMETER, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { SRV_SERVO, SRV_SLIDER, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
 import JDServiceHost from "../../../../src/jdom/servicehost";
 
 const thermometerOptions = {
-    readingValue: 20, 
-    streamingInterval: 1000, 
-    minReading: -40, 
+    readingValue: 20,
+    streamingInterval: 1000,
+    minReading: -40,
     maxReading: 120
 }
 
@@ -45,10 +43,6 @@ const hostDefinitions = [
         services: () => [new MotorEncoderServiceHost()]
     },
     {
-        name: "servo",
-        services: () => [new ServoServiceHost()]
-    },
-    {
         name: "rotary encoder",
         services: () => [new RotaryEncoderServiceHost()]
     },
@@ -58,7 +52,7 @@ const hostDefinitions = [
     },
     {
         name: "servo",
-        services: () => [new JDSensorServiceHost(SRV_SERVO)]
+        services: () => [new JDServiceHost(SRV_SERVO)]
     },
     {
         name: "slider",
@@ -70,12 +64,12 @@ const hostDefinitions = [
     },
     {
         name: "vibration motor",
-        services: () => [new VibrationMotorServiceHost()]
+        services: () => [new JDServiceHost(SRV_VIBRATION_MOTOR)]
     }
 
 ];
 
-export default function DeviceHostDialog(props: { onAdded: () => void }) {
+export default function DeviceHostDialog(props: { onAdded?: () => void }) {
     const { onAdded } = props;
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const [selected, setSelected] = useState("button");
@@ -92,13 +86,13 @@ export default function DeviceHostDialog(props: { onAdded: () => void }) {
         const host = hostDefinitions.find(h => h.name === selected);
         addHost(host);
         enqueueSnackbar(`${host.name} started...`, { variant: "info" })
-        onAdded();
+        onAdded?.();
     }
     const handleAddAll = () => {
         hostDefinitions
             .forEach(addHost);
         enqueueSnackbar(`${hostDefinitions.length} devices started...`, { variant: "info" })
-        onAdded();
+        onAdded?.();
     }
 
     return <Grid container spacing={2}>

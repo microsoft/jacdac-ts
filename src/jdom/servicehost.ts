@@ -1,4 +1,4 @@
-import { BaseReg, SystemCmd } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
 import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
@@ -18,7 +18,8 @@ export default class JDServiceHost extends JDEventSource {
         super();
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
-        this.addRegister(BaseReg.StatusCode)
+
+        this.addRegister(BaseReg.StatusCode);
     }
 
     get registers() {
@@ -52,9 +53,13 @@ export default class JDServiceHost extends JDEventSource {
     async handlePacket(pkt: Packet) {
         if (pkt.isRegisterGet || pkt.isRegisterSet) {
             // find register to handle
-            for (const reg of this._registers)
-                if (reg.handlePacket(pkt))
-                    break;
+            const rid = pkt.registerIdentifier;
+            let reg = this._registers.find(r => r.identifier === rid);
+            if (!reg) {
+                // try adding
+                reg = this.addRegister(rid);
+            }
+            reg?.handlePacket(pkt)
         } else if (pkt.isCommand) {
             const cmd = this.commands[pkt.serviceCommand];
             if (cmd)
