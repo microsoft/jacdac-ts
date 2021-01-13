@@ -62,6 +62,24 @@ const useStyles = makeStyles((theme) => createStyles({
     }
 }));
 
+function ToolsListItem(props: { text?: string; url?: string; icon?: JSX.Element, onClick?: () => void }) {
+    const { text, url, icon, onClick } = props;
+
+    return url ? <Link to={url} aria-label="Toggle Dark Mode">
+        <ListItem button={true}>
+            <ListItemIcon>{icon}</ListItemIcon>
+            <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={<>
+                <span>{text}</span>
+                {/^https:\/\//.test(url) && <OpenInNew fontSize="small" color="action" />}
+            </>} />
+        </ListItem>
+    </Link>
+        : <ListItem button={true} onClick={onClick} aria-label={text}>
+            <ListItemIcon>{icon}</ListItemIcon>
+            <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={text} />
+        </ListItem>
+}
+
 export default function ToolsDrawer() {
     const classes = useStyles()
     const { toolsMenu, setToolsMenu } = useContext(AppContext)
@@ -139,9 +157,9 @@ export default function ToolsDrawer() {
             url: "/tools/jupyterlab",
             icon: <JupyterIcon />
         },
-        /*        
+        /*
                 {
-                    text: "Azure IoT Hub",
+            text: "Azure IoT Hub",
                     url: "/tools/azure-iot-hub",
                     icon: <CloudIcon />
                 },
@@ -179,15 +197,7 @@ export default function ToolsDrawer() {
             </IconButton>
         </div>
         <List>
-            {links.map((link, i) => link.text ? <Link to={link.url} key={link.text} onClick={handleClick(link)}>
-                <ListItem button>
-                    <ListItemIcon>{link.icon}</ListItemIcon>
-                    <ListItemText primaryTypographyProps={({ color: "textPrimary" })} primary={<>
-                        <span>{link.text}</span>
-                        {/^https:\/\//.test(link.url) && <OpenInNew fontSize="small" color="action" />}
-                    </>} />
-                </ListItem>
-            </Link>
+            {links.map((link, i) => link.text ? <ToolsListItem key={link.text} {...link} onClick={handleClick(link)} />
                 : <Divider key={`div${i}`} />)}
             <Divider />
             {!isHosted &&
