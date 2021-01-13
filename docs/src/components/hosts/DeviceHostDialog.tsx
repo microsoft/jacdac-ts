@@ -12,7 +12,7 @@ import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { PotentiometerVariant, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { PotentiometerVariant, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
@@ -22,7 +22,8 @@ const thermometerOptions = {
     readingValue: 20,
     streamingInterval: 1000,
     minReading: -40,
-    maxReading: 120
+    maxReading: 120,
+    variant: ThermometerVariant.Outdoor
 }
 
 const hostDefinitions = [

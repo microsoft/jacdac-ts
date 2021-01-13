@@ -54,9 +54,9 @@ function DefaultWidget(props: DashboardServiceProps) {
     return <RegisterInput
             register={register}
             variant={"widget"}
-            showServiceName={expanded}
-            showRegisterName={expanded}
-            hideMissingValues={!expanded}
+            showServiceName={false}
+            showRegisterName={false}
+            hideMissingValues={false}
         />;
 }
 
