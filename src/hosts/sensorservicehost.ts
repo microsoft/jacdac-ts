@@ -16,7 +16,6 @@ export default class JDSensorServiceHost extends JDServiceHost {
         ) {
         super(serviceClass);
 
-        const readingRegister = this.specification.packets.find(pkt => isRegister(pkt) && pkt.identifier === SystemReg.Reading);
         this.reading = this.addRegister(SystemReg.Reading, readingValue);
         this.streamingSamples = this.addRegister(SensorReg.StreamingSamples);
         this.streamingInterval = this.addRegister(SensorReg.StreamingInterval, [streamingInterval || 50]);
