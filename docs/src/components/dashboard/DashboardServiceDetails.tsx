@@ -1,12 +1,10 @@
 import React, { useMemo } from "react";
 import { SystemReg } from "../../../../src/jdom/constants";
-import { JDService } from "../../../../src/jdom/service";
 import useChange from "../../jacdac/useChange";
-import AutoGrid from "../ui/AutoGrid";
 import RegisterInput from "../RegisterInput";
-import { isReading, isRegister } from "../../../../src/jdom/spec";
+import { isRegister } from "../../../../src/jdom/spec";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import useServiceHost from "../hooks/useServiceHost";
+import { Grid } from "@material-ui/core";
 
 // filter out common registers
 const ignoreRegisters = [
@@ -40,13 +38,17 @@ export default function DashboardServiceDetails(props: DashboardServiceProps) {
     if (!registers?.length)  // nothing to see here
         return null;
 
-    return <AutoGrid spacing={1}>
-        {registers.map(register => <RegisterInput key={register.id}
-            register={register}
-            showServiceName={true}
-            showRegisterName={true}
-            hideMissingValues={false}
-            showTrend={register.address === SystemReg.Reading}
-        />)}
-    </AutoGrid>
+    return <>
+        {registers.map(register => {
+            const showTrend = register.address === SystemReg.Reading;
+            const xs = showTrend ? 12 : true;
+            return <Grid key={register.id} item xs={xs}><RegisterInput
+                register={register}
+                showServiceName={true}
+                showRegisterName={true}
+                hideMissingValues={false}
+                showTrend={showTrend}
+            /></Grid>
+        })}
+    </>
 }

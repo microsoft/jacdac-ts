@@ -126,7 +126,7 @@ export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedA
         <Grid item xs={12}>
             <Alert severity="info">
                 Reload the page to clear out virtual devices.
-                <Box component="span" ml={"0.5em"}><Button variant="outlined" onClick={handleAddAll}>Add all</Button></Box>
+                <Box component="span" ml={"0.5em"}><Button variant="outlined" onClick={handleAddAll}>start all</Button></Box>
             </Alert>
         </Grid>
     </Grid>
