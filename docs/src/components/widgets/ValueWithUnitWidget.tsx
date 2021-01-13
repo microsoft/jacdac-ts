@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Grid, makeStyles, Typography } from "@material-ui/core";
+import { createStyles, makeStyles, Typography } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => createStyles({
     gridContainer: {
@@ -24,20 +24,20 @@ export default function ValueWithUnitWidget(props: {
     color?: "primary" | "secondary",
     size?: string
 }) {
-    const { value, secondaryLabel, color, label } = props;
-    const labelVariant = "body2"
+    const { value, secondaryLabel, label } = props;
+    const labelVariant = "body2";
     const classes = useStyles();
+    const valueText = isNaN(value) ? "--" : value.toLocaleString();
+    const valueTextLength = valueText.length;
 
-    const percent = isNaN(value) ? "--" : value.toLocaleString();
-    const valueVariant = percent.length < 3 ? "h1"
-        : percent.length < 5 ? "h2"
-            : percent.length < 7 ? "h3"
-                : percent.length < 9 ? "h4"
-                    : "h5";
+    const valueVariant = valueTextLength < 3 ? "h1"
+        : valueTextLength < 8 ? "h3"
+            : valueTextLength < 12 ? "h5"
+                : "h6";
 
     return <div className={classes.gridContainer}>
         <div className={classes.value}>
-            <Typography align="right" variant={valueVariant}>{percent}</Typography>
+            <Typography align="right" variant={valueVariant}>{valueText}</Typography>
         </div>
         {label && <div className={classes.upperUnit}>
             <Typography variant={labelVariant}>{label}</Typography>

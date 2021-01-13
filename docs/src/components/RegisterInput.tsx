@@ -10,6 +10,7 @@ import MembersInput from "./fields/MembersInput";
 import RegisterTrend from "./RegisterTrend";
 import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 import useRegisterHost from "./hooks/useRegisterHost"
+import useReadingBounds from "./hooks/useReadingBounds";
 
 export type RegisterInputVariant = "widget" | ""
 
@@ -34,6 +35,7 @@ export default function RegisterInput(props: {
     const hasSet = specification.kind === "rw" || (host && specification.kind !== "const");
     const hasData = !!register.data;
     const color = hasSet ? "secondary" : "primary"
+    const { minReading, maxReading } = useReadingBounds(register);
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -93,6 +95,8 @@ export default function RegisterInput(props: {
             setValues={hasSet && sendArgs}
             showDataType={showDataType}
             variant={variant}
+            min={minReading}
+            max={maxReading}
         />}
     </>
 }
