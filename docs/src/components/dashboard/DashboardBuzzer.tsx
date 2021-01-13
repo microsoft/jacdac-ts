@@ -1,13 +1,11 @@
 
-import { Button, ButtonGroup, createStyles, Grid, makeStyles } from "@material-ui/core";
-import React, { PointerEventHandler } from "react";
-import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
+import { Button, ButtonGroup, createStyles, makeStyles } from "@material-ui/core";
+import React from "react";
+import { BuzzerCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import RegisterInput from "../RegisterInput";
 import { jdpack } from "../../../../src/jdom/pack";
-import CmdButton from "../CmdButton"
 
-const useStyles = makeStyles((theme) => createStyles({
+const useStyles = makeStyles(() => createStyles({
     btn: {
         minWidth: "1em",
         padding: "2em 0.75em 2em 0.75em"
@@ -16,7 +14,6 @@ const useStyles = makeStyles((theme) => createStyles({
 
 export default function DashboardBuzzer(props: DashboardServiceProps) {
     const { service } = props;
-    const volume = service.register(BuzzerReg.Volume)
     const classes = useStyles();
 
     const notes = [
@@ -42,21 +39,14 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     }
     const handlePlayTone = (f: number) => () => sendPlayTone(f)
 
-    return <Grid container spacing={1}>
-        <Grid item xs={12}>
-            <RegisterInput register={volume} showRegisterName={true} />
-        </Grid>
-        <Grid item>
-            <ButtonGroup>
-                {notes.map(note => <Button
-                    key={note.frequency}
-                    className={classes.btn}
-                    size="small"
-                    variant="outlined"
-                    onPointerEnter={handlePointerEnter(note.frequency)}
-                    onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
-                )}
-            </ButtonGroup>
-        </Grid>
-    </Grid>
+    return <ButtonGroup>
+        {notes.map(note => <Button
+            key={note.frequency}
+            className={classes.btn}
+            size="small"
+            variant="outlined"
+            onPointerEnter={handlePointerEnter(note.frequency)}
+            onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
+        )}
+    </ButtonGroup>
 }
