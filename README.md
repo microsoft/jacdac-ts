@@ -3,6 +3,7 @@
 This repository contains a TypeScript/JavaScript client library for the [JACDAC](https://microsoft.github.io/jacdac) protocol.
 
 * [User Documentation](https://aka.ms/jacdac/)
+* Issues are tracked on https://github.com/microsoft/jacdac
 
 The rest of this page is for developers of the jacdac-ts library.
 
