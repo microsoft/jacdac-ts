@@ -4,7 +4,7 @@ import { CircularProgress, Slider, Typography, useMediaQuery, useTheme } from "@
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { clampToStorage, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
-import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
+import { isSet, pick, roundWithPrecision } from "../../../../src/jdom/utils";
 import InputSlider from "../ui/InputSlider";
 import { RegisterInputVariant } from "../RegisterInput";
 import { useId } from "react-use-id-hook"
@@ -21,10 +21,13 @@ export default function MemberInput(props: {
     setValue?: (v: any) => void,
     showDataType?: boolean,
     color?: "primary" | "secondary",
-    variant?: RegisterInputVariant
+    variant?: RegisterInputVariant,
+    min?: number,
+    max?: number
 }) {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
-        setValue, showDataType, color, variant } = props;
+        setValue, showDataType, color, variant, min, max } = props;
+    const { typicalMin, typicalMax, absoluteMin, absoluteMax } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const labelid = useId();
@@ -35,6 +38,9 @@ export default function MemberInput(props: {
     const label = name
     const helperText = error || prettyMemberUnit(specification, showDataType)
     const widgetSize = useWidgetSize();
+
+    const minValue = pick(min, typicalMin, absoluteMin)
+    const maxValue = pick(min, typicalMax, absoluteMax)
 
     // update coming from device
     useEffect(() => {
@@ -120,8 +126,21 @@ export default function MemberInput(props: {
             min={0} max={1} step={0.01}
             valueLabelDisplay="auto"
         />
-    } else if (isSet(specification.typicalMin) && isSet(specification.typicalMax)) {
-        const step = (specification.typicalMax - specification.typicalMin) / 100;
+    } else if (isSet(minValue) && isSet(maxValue)) {
+        const hasTypicalRange = isSet(typicalMin) && isSet(typicalMax);
+        const step = hasTypicalRange
+            ? (specification.typicalMax - specification.typicalMin) / 100
+            : (maxValue - minValue) / 100;
+        const marks = hasTypicalRange && (typicalMin !== minValue || typicalMax !== maxValue) && [
+            {
+                value: specification.typicalMin,
+                label: 'min',
+            },
+            {
+                value: specification.typicalMax,
+                label: 'max',
+            }
+        ];
 
         if (variant === "widget")
             return <ValueWithUnitWidget
@@ -135,41 +154,12 @@ export default function MemberInput(props: {
             color={color}
             valueLabelFormat={valueLabelFormat}
             onChange={disabled ? undefined : handleSliderChange}
-            min={specification.typicalMin}
-            max={specification.typicalMax}
-            step={step}
-        />
-    } else if (isSet(specification.typicalMin) && isSet(specification.typicalMax)
-        && isSet(specification.absoluteMin) && isSet(specification.absoluteMax)) {
-        if (variant === "widget")
-            return <ValueWithUnitWidget
-                label={specification.unit}
-                value={value}
-                color={color}
-                size={widgetSize} />
-
-        const step = (specification.absoluteMax - specification.absoluteMin) / 100;
-        const marks = [
-            {
-                value: specification.typicalMin,
-                label: 'min',
-            },
-            {
-                value: specification.typicalMax,
-                label: 'max',
-            }
-        ];
-        return <InputSlider
-            value={value}
-            valueLabelFormat={valueLabelFormat}
-            onChange={disabled ? undefined : handleSliderChange}
-            min={specification.absoluteMin}
-            max={specification.absoluteMax}
+            min={minValue}
+            max={maxValue}
             step={step}
             marks={marks}
         />
-    }
-    else {// numbers or string
+    } else {// numbers or string
         const type = specification.type === 'string' || specification.type === 'string0' ? "string"
             : specification.isSimpleType ? "number"
                 : "";
@@ -178,7 +168,6 @@ export default function MemberInput(props: {
             return <ValueWithUnitWidget
                 value={roundWithPrecision(value, 2)}
                 label={specification.unit}
-                helperText={name}
                 color={color}
                 size={widgetSize} />
 

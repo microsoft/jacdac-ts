@@ -1,14 +1,10 @@
 import JDServiceHost from "./servicehost";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
-import { assert, bufferEq } from "./utils";
+import { assert, bufferEq, pick } from "./utils";
 import { JDEventSource } from "./eventsource";
 import { CHANGE, CMD_GET_REG } from "./constants";
 import { isRegister } from "./spec";
-
-function pick(...values: number[]) {
-    return values.find(x => x !== undefined);
-}
 
 function defaultFieldPayload(specification: jdspec.PacketMember) {
     let r: any = undefined;

@@ -577,3 +577,7 @@ export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]> {
     });
     return r;
 }
+
+export function pick(...values: number[]) {
+    return values?.find(x => x !== undefined);
+}

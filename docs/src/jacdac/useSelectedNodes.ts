@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react"
 import { JDNode } from "../../../src/jdom/node"
 
-export default function useSelectedNodes<TNode extends JDNode>() {
+export default function useSelectedNodes<TNode extends JDNode>(singleSelection?: boolean) {
     const nodes = useRef<Set<string>>(new Set<string>())
-    const [size, setSize] = useState(0)
+    const [change, setChange] = useState(0)
 
     const selected = (node: TNode) => nodes.current.has(node?.id)
     const setSelected = (node: TNode, value: boolean) => {
@@ -12,14 +12,16 @@ export default function useSelectedNodes<TNode extends JDNode>() {
         if (!!value !== s) {
             if (!value)
                 nodes.current.delete(node.id)
-            else
+            else {
+                if(singleSelection)
+                    nodes.current.clear();
                 nodes.current.add(node.id)
-            setSize(nodes.current.size)
+            }
+            setChange(change + 1)
         }
     }
     return {
-        allSelected: nodes,
-        hasSelection: size > 0,
+        hasSelection: nodes.current.size > 0,
         selected,
         setSelected,
         toggleSelected: (node: TNode) => {
@@ -27,7 +29,7 @@ export default function useSelectedNodes<TNode extends JDNode>() {
         },
         clear: () => {
             nodes.current.clear()
-            setSize(0)
+            setChange(0)
         }
     }
 }

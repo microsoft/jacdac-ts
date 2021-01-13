@@ -1,6 +1,6 @@
 import { Grid, Switch, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
-import { bufferEq, cryptoRandomUint32, delay, toHex } from "../../../../src/jdom/utils";
+import { bufferEq, cryptoRandomUint32, delay, pick, toHex } from "../../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../../src/jdom/constants";
@@ -22,10 +22,6 @@ import Alert from "../ui/Alert";
 import Flags from "../../../../src/jdom/flags"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import ProtocolTestServiceHost from "../../../../src/jdom/protocoltestservicehost"
-
-function pick(...values: number[]) {
-    return values.find(x => x !== undefined);
-}
 
 function randomRange(min: number, max: number) {
     return Math.round(Math.random() * (max - min) + min);

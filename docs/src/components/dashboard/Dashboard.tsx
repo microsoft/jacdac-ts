@@ -1,5 +1,5 @@
-import { Grid, GridSize } from "@material-ui/core";
-import React, {  } from "react";
+import { Grid, GridSize, useMediaQuery, useTheme } from "@material-ui/core";
+import React, { } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
@@ -8,6 +8,7 @@ import ConnectAlert from "../alert/ConnectAlert"
 import Alert from "../ui/Alert";
 import useDevices from "../hooks/useDevices";
 import DashboardDevice from "./DashboardDevice";
+import { MOBILE_BREAKPOINT } from "../layout";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -24,7 +25,9 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 export default function Dashboard() {
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);
-    const { selected, toggleSelected } = useSelectedNodes()
+    const theme = useTheme();
+    const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
+    const { selected, toggleSelected } = useSelectedNodes(mobile)
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
     const breakpoints = (device: JDDevice): {
         xs?: GridSize,
