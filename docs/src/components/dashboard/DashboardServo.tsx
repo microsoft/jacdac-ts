@@ -6,6 +6,7 @@ import { useRegisterIntValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
+import useWidgetSize from "../widgets/useWidgetSize";
 
 export default function DashboardServo(props: DashboardServiceProps) {
     const { service } = props;
@@ -15,6 +16,7 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active } = useWidgetTheme(color)
+    const widgetSize = useWidgetSize()
 
     const cx = 56.661;
     const cy = 899.475;
@@ -27,7 +29,7 @@ export default function DashboardServo(props: DashboardServiceProps) {
 
     const transform = `translate(0 -752.688) rotate(${angle}, ${cx}, ${cy})`;
 
-    return <SvgWidget width={112.188} height={299.674} size={"5em"}>
+    return <SvgWidget width={112.188} height={299.674} size={widgetSize}>
         <g strokeLinecap="round" strokeLinejoin="round" transform="scale(0.8)">
             <path id="path8212" fill={background} strokeWidth="6.6" d="M.378 44.61v255.064h112.188V44.61H.378z" />
             <path id="crankbase" fill={controlBackground} strokeWidth="6.6" d="M56.57 88.047C25.328 88.047 0 113.373 0 144.615c.02 22.352 11.807 42.596 32.238 51.66.03 3.318.095 5.24.088 7.938 0 13.947 11.307 25.254 25.254 25.254 13.947 0 25.254-11.307 25.254-25.254-.006-2.986-.415-5.442-.32-8.746 19.487-9.45 30.606-29.195 30.625-50.852 0-31.24-25.33-56.568-56.57-56.568z" />
