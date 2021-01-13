@@ -126,7 +126,6 @@ export default function MemberInput(props: {
         if (variant === "widget")
             return <ValueWithUnitWidget
                 label={specification.unit}
-                helperText={name}
                 value={value}
                 color={color}
                 size={widgetSize} />
@@ -145,7 +144,6 @@ export default function MemberInput(props: {
         if (variant === "widget")
             return <ValueWithUnitWidget
                 label={specification.unit}
-                helperText={name}
                 value={value}
                 color={color}
                 size={widgetSize} />
