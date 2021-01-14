@@ -36,11 +36,6 @@ export const LIGHT_PROG_COL3 =0xC3
 
 export const LIGHT_PROG_COL1_SET =0xCF
 
-export const PROG_EOF =0
-export const PROG_CMD =1
-export const PROG_NUMBER =3
-export const PROG_COLOR_BLOCK =4
-
 function cmdCode(cmd: string) {
     switch (cmd) {
         case "setall": return LIGHT_PROG_SET_ALL

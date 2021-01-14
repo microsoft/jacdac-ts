@@ -1,7 +1,7 @@
 
 import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
 import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { LightReg, LightCmd, CHANGE, LightVariant } from "../../../../src/jdom/constants";
+import { LightReg, LightCmd, CHANGE, LightVariant, RENDER } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import RegisterInput from "../RegisterInput";
 import { lightEncode } from "../../../../src/jdom/light";
@@ -228,7 +228,8 @@ function LightWidget(props: DashboardServiceProps) {
     }, [variant, numPixels])
 
     // update DOM directly
-    useEffect(() => host.subscribe(CHANGE, () => {
+    useEffect(() => host.subscribe(RENDER, () => {
+        console.log('update colors')
         const colors = host.colors;
         console.log({ colors })
         const pixels = pixelsRef.current.children;

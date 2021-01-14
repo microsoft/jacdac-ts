@@ -1,3 +1,4 @@
+import { timeStamp } from "console";
 import {
     CHANGE, LightCmd, LightLightType,
     LightReg, LightVariant, RENDER, SRV_LIGHT
@@ -6,12 +7,17 @@ import {
     LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB,
     LIGHT_PROG_COL1, LIGHT_PROG_COL1_SET, LIGHT_PROG_COL2, LIGHT_PROG_COL3, LIGHT_PROG_COLN, LIGHT_PROG_FADE,
     LIGHT_PROG_FADE_HSV, LIGHT_PROG_MODE, LIGHT_PROG_MODE1, LIGHT_PROG_RANGE, LIGHT_PROG_ROTATE_BACK, LIGHT_PROG_ROTATE_FWD,
-    LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW, PROG_CMD, PROG_COLOR_BLOCK, PROG_EOF, PROG_NUMBER
+    LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW
 } from "../jdom/light";
 import Packet from "../jdom/packet";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
-import { memcpy } from "../jdom/utils";
+import { toHex } from "../jdom/utils";
+
+const PROG_EOF = 0
+const PROG_CMD = 1
+const PROG_NUMBER = 3
+const PROG_COLOR_BLOCK = 4
 
 interface RGB {
     r: number;
@@ -96,10 +102,6 @@ function SCALE0(c: number, i: number) {
     return ((((c) & 0xff) * (1 + (i & 0xff))) >> 8)
 }
 
-function PX_WORDS(NUM_PIXELS: number) {
-    return (((NUM_PIXELS) * 3 + 3) / 4)
-}
-
 function now(): number {
     return (performance.now() * 1000) >> 0;
 }
@@ -126,11 +128,8 @@ export default class LightServiceHost extends JDServiceHost {
     private range_len: number = 0;
     private range_ptr: number = 0;
 
-    private auto_refresh: number = 0;
-
     private prog_ptr: number = 0;
     private prog_size: number = 0;
-    private prog_next_step: number = 0;
     private prog_data = new Uint8Array(0);
 
     private dirty: boolean = true;
@@ -213,7 +212,7 @@ export default class LightServiceHost extends JDServiceHost {
     private allocRxBuffer() {
         if (this.numpixels > this.maxpixels)
             this.numPixels.setValues<[number]>([this.maxpixels]);
-        const n = PX_WORDS(this.numpixels); // don't need to prealloc here
+        const n = this.numpixels * 3; // don't need to prealloc here
         if (n !== this.pxbuffer.length)
             this.pxbuffer = new Uint8Array(n);
     }
@@ -380,9 +379,10 @@ export default class LightServiceHost extends JDServiceHost {
         let cmd: number;
         // skip until there's a command
         for (; ;) {
-            switch (this.prog_fetch().prog) {
+            const c = this.prog_fetch();
+            switch (c.prog) {
                 case PROG_CMD:
-                    return cmd;
+                    return c.dst;
                 case PROG_COLOR_BLOCK:
                     while (cmd--)
                         this.prog_fetch_color();
@@ -485,21 +485,24 @@ export default class LightServiceHost extends JDServiceHost {
     }
 
     private prog_process() {
-        if (this.prog_ptr >= this.prog_size)
-            return;
+        const data = this.prog_data;
 
-        for (; ;) {
+        if (this.prog_ptr >= this.prog_size)
+            return false;
+
+        // check that the program wasn't restarted
+        // concurrently
+        while (data === this.prog_data) {
             const cmd = this.prog_fetch_cmd();
             if (!cmd)
                 break;
 
             if (cmd == LIGHT_PROG_SHOW) {
                 const k = this.prog_fetch_num(50);
-                // base the next step of previous expect step time, not current time
-                // to keep the clock synchronized
-                this.prog_next_step += k * 1000;
                 this.dirty = true;
-                break;
+                setInterval(this.animationFrame.bind(this), k)
+                // check data is still current;
+                return data === this.prog_data;
             }
 
             switch (cmd) {
@@ -561,20 +564,20 @@ export default class LightServiceHost extends JDServiceHost {
             if (cmd != LIGHT_PROG_MODE1)
                 this.prog_tmpmode = this.prog_mode;
         }
+
+        return false;
     }
 
     /**
      * Perform an animation step
      */
     animationFrame() {
-        this.prog_process();
-        if (in_past(this.auto_refresh) && this.inited)
-            this.dirty = true;
-        if (!this.is_enabled())
-            return;
+        if (!this.prog_process())
+            return; // concurrently udpated
+
+        if (!this.is_enabled()) return;
         if (this.dirty) {
             this.dirty = false;
-            this.auto_refresh = now() + (64 << 10);
             if (is_empty(this.pxbuffer)) {
                 this.jd_power_enable(false);
                 return;
@@ -603,6 +606,8 @@ export default class LightServiceHost extends JDServiceHost {
     }
 
     private handle_run_cmd(pkt: Packet) {
+        console.log("run", { data: toHex(pkt.data) })
+
         this.prog_data = pkt.data;
         this.prog_size = this.prog_data.length;
         this.prog_ptr = 0;
@@ -611,33 +616,7 @@ export default class LightServiceHost extends JDServiceHost {
         this.range_end = this.range_len = this.numpixels;
         this.prog_tmpmode = this.prog_mode = 0;
 
-        this.prog_next_step = now();
         this.sync_config();
+        this.animationFrame();
     }
 }
-        /*
-switch (pkt.service_command) {
-case JD_LIGHT_CMD_RUN:
-handle_run_cmd(state, pkt);
-break;
-default:
-#ifdef LIGHT_LOCK_TYPE
-if (pkt -> service_command == JD_SET(JD_LIGHT_REG_LIGHT_TYPE))
-break;
-#endif
-#ifdef LIGHT_LOCK_NUM_PIXELS
-if (pkt -> service_command == JD_SET(JD_LIGHT_REG_NUM_PIXELS))
-break;
-#endif
-switch (service_handle_register(state, pkt, light_regs)) {
-case JD_LIGHT_REG_BRIGHTNESS:
-state -> intensity = state -> requested_intensity;
-break;
-case JD_LIGHT_REG_NUM_PIXELS:
-if (state -> numpixels > state -> maxpixels)
-state -> numpixels = state -> maxpixels;
-break;
-}
-break;
-}
-*/
