@@ -229,15 +229,13 @@ function LightWidget(props: DashboardServiceProps) {
 
     // update DOM directly
     useEffect(() => host.subscribe(RENDER, () => {
-        console.log('update colors')
         const colors = host.colors;
-        console.log({ colors })
         const pixels = pixelsRef.current.children;
         const pn = Math.min(pixels.length, colors.length / 3);
         let ci = 0;
         for (let i = 0; i < pn; ++i) {
             const pixel = pixels.item(i) as SVGCircleElement;
-            pixel.style.stroke = `rgb(${colors[ci]}, ${colors[ci + 1]}, ${colors[ci + 2]}})`
+            pixel.setAttribute("fill", `rgb(${colors[ci]}, ${colors[ci + 1]}, ${colors[ci + 2]})`)
             ci += 3;
         }
     }), [host]);
@@ -249,8 +247,8 @@ function LightWidget(props: DashboardServiceProps) {
                 {Array(numPixels).fill(0).map((_, i) => <circle key={"pixel" + i}
                         r={pr}
                         cx={w >> 1} cy={h >> 1}
-                        fill={"#cccccc"}
                         stroke={controlBackground}
+                        strokeWidth={1}
                     />)}
             </g>
         </>
