@@ -88,10 +88,10 @@ export default function LightWidget(props: { service: JDService }) {
         let i = 0;
         let dir = 1
         const dx = neoradius * 3
-        const tr = neoradius * 3
+        const tr = neoradius * 6
 
         let line = 1;
-        d = `M ${2 * tr} ${tr}`
+        d = `M ${2 * tr} ${dx}`
         while (i < numPixels) {
             d += ` h ${dx * dir}`;
             if ((i % side) === side - 1) {
@@ -103,11 +103,11 @@ export default function LightWidget(props: { service: JDService }) {
             i++;
         }
 
-        width = side * dx + 4 * dx;
-        height = line * tr + 2 * tr;
+        width = side * dx + 4 * tr;
+        height = line * tr + 2 * dx;
     }
     else {
-        const neoperimeter = numPixels * (2 * neoradius)
+        const neoperimeter = numPixels * (2.2 * neoradius)
         const ringradius = neoperimeter / (2 * Math.PI)
         const margin = 2 * neoradius;
         width = 2 * (margin + ringradius);
