@@ -1,0 +1,604 @@
+import { LightLightType, LightReg, LightVariant, SRV_LIGHT } from "../jdom/constants";
+import { LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB, LIGHT_PROG_COL1, LIGHT_PROG_COL1_SET, LIGHT_PROG_COL2, LIGHT_PROG_COL3, LIGHT_PROG_COLN, LIGHT_PROG_FADE, LIGHT_PROG_FADE_HSV, LIGHT_PROG_MODE, LIGHT_PROG_MODE1, LIGHT_PROG_RANGE, LIGHT_PROG_ROTATE_BACK, LIGHT_PROG_ROTATE_FWD, LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW, PROG_CMD, PROG_COLOR_BLOCK, PROG_EOF, PROG_NUMBER } from "../jdom/light";
+import { JDRegister } from "../jdom/register";
+import JDRegisterHost from "../jdom/registerhost";
+import JDServiceHost from "../jdom/servicehost";
+
+interface RGB {
+    r: number;
+    g: number;
+    b: number;
+}
+
+function rgb(r: number, g: number, b: number) {
+    return { r, g, b }
+}
+
+function hsv(hue: number, sat: number, val: number): RGB {
+    // scale down to 0..192
+    hue = (hue * 192) >> 8;
+
+    // reference: based on FastLED's hsv2rgb rainbow algorithm
+    // [https://github.com/FastLED/FastLED](MIT)
+    const invsat = 255 - sat;
+    const brightness_floor = (val * invsat) >> 8;
+    const color_amplitude = val - brightness_floor;
+    const section = (hue / 0x40) >> 0; // [0..2]
+    const offset = (hue % 0x40) >> 0;  // [0..63]
+
+    const rampup = offset;
+    const rampdown = (0x40 - 1) - offset;
+
+    const rampup_amp_adj = ((rampup * color_amplitude) / (256 / 4)) >> 0;
+    const rampdown_amp_adj = ((rampdown * color_amplitude) / (256 / 4)) >> 0;
+
+    const rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
+    const rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
+
+    let r: number = 0, g: number = 0, b: number = 0;
+    if (section) {
+        if (section == 1) {
+            // section 1: 0x40..0x7F
+            r = brightness_floor;
+            g = rampdown_adj_with_floor;
+            b = rampup_adj_with_floor;
+        } else {
+            // section 2; 0x80..0xBF
+            r = rampup_adj_with_floor;
+            g = brightness_floor;
+            b = rampdown_adj_with_floor;
+        }
+    } else {
+        // section 0: 0x00..0x3F
+        r = rampdown_adj_with_floor;
+        g = rampup_adj_with_floor;
+        b = brightness_floor;
+    }
+    return rgb(r, g, b);
+}
+
+function is_empty(data: Uint8Array): boolean {
+    const n = data.length;
+    for (let i = 0; i < data.length; ++i) {
+        if (data[i])
+            return false;
+    }
+    return true;
+}
+
+function mulcol(c: number, m: number): number {
+    let c2 = (c * m) >> 7;
+    if (m < 128 && c == c2)
+        c2--;
+    else if (m > 128 && c == c2)
+        c2++;
+    return c2;
+}
+
+function clamp(c: number): number {
+    if (c < 0)
+        return 0;
+    if (c > 255)
+        return 255;
+    return c;
+}
+
+function SCALE0(c: number, i: number) {
+    return ((((c) & 0xff) * (1 + (i & 0xff))) >> 8)
+}
+
+function SCALE(c: number, i: number) {
+    return (SCALE0((c) >> 0, i) << 0) | (SCALE0((c) >> 8, i) << 8) | (SCALE0((c) >> 16, i) << 16)
+}
+
+function PX_WORDS(NUM_PIXELS: number) {
+    return (((NUM_PIXELS) * 3 + 3) / 4)
+}
+
+function jd_power_enable(value: number) {
+
+}
+
+
+export default class LightServiceHost extends JDServiceHost {
+    readonly brightness: JDRegisterHost;
+    readonly actualBrightness: JDRegisterHost;
+    readonly lightType: JDRegisterHost;
+    readonly numPixels: JDRegisterHost;
+    readonly maxPower: JDRegisterHost;
+    readonly variant: JDRegisterHost;
+    readonly maxpixels = 300;
+
+    pxbuffer: Uint8Array;
+
+    prog_mode: number;
+    prog_tmpmode: number;
+
+    range_start: number;
+    range_end: number;
+    range_len: number;
+    range_ptr: number;
+
+    auto_refresh: number;
+
+    prog_ptr: number;
+    prog_size: number;
+    prog_next_step: number;
+    prog_data: Uint8Array;
+
+    anim_flag: number;
+    anim_step: number;
+    anim_value: number;
+    anim_fn: number;
+    anim_end: number;
+
+    dirty: boolean;
+    inited: boolean;
+
+    constructor() {
+        super(SRV_LIGHT);
+
+        this.brightness = this.addRegister(LightReg.Brightness, [15]);
+        this.actualBrightness = this.addRegister(LightReg.Brightness, [15]);
+        this.lightType = this.addRegister(LightReg.Brightness, [LightLightType.WS2812B_GRB]);
+        this.numPixels = this.addRegister(LightReg.Brightness, [15]);
+        this.maxPower = this.addRegister(LightReg.Brightness, [200]);
+        this.variant = this.addRegister(LightReg.Variant, [LightVariant.Strip]);
+    }
+
+    get maxpower(): number {
+        const [r] = this.maxPower.values<[number]>();
+        return r;
+    }
+
+    get numpixels(): number {
+        const [r] = this.numPixels.values<[number]>();
+        return r;
+    }
+
+    get requested_intensity(): number {
+        const [r] = this.brightness.values<[number]>();
+        return r;
+    }
+
+    render() {
+        const srv_t = this;
+    }
+
+    is_enabled() {
+        return this.numpixels > 0 && this.requested_intensity > 0;
+    }
+
+    private reset_range() {
+        this.range_ptr = this.range_start;
+    }
+
+    private set_next(c: RGB) {
+        if (this.range_ptr >= this.range_end)
+            return false;
+
+        const p = this.prog;
+        let pi = this.range_ptr++ * 3;
+        // fast path
+        if (this.prog_tmpmode == LIGHT_MODE_REPLACE) {
+            p[pi + 0] = c.r;
+            p[pi + 1] = c.g;
+            p[pi + 2] = c.b;
+            return true;
+        }
+
+        let r = p[pi + 0], g = p[pi + 1], b = p[pi + 2];
+        switch (this.prog_tmpmode) {
+            case LIGHT_MODE_ADD_RGB:
+                r += c.r;
+                g += c.g;
+                b += c.b;
+                break;
+            case LIGHT_MODE_SUBTRACT_RGB:
+                r -= c.r;
+                g -= c.g;
+                b -= c.b;
+                break;
+            case LIGHT_MODE_MULTIPLY_RGB:
+                r = mulcol(r, c.r);
+                g = mulcol(g, c.g);
+                b = mulcol(b, c.b);
+                break;
+        }
+        p[pi + 0] = clamp(r);
+        p[pi + 1] = clamp(g);
+        p[pi + 2] = clamp(b);
+        return true;
+    }
+
+    private limit_intensity() {
+        const numpixels = this.numpixels;
+        const requested_intensity = this.requested_intensity;
+        const maxpower = this.maxpower;
+
+        let n = numpixels * 3;
+        const prev_intensity = this.intensity;
+        let intensity = this.intensity;
+
+        intensity += 1 + (intensity >> 5);
+        if (intensity > this.requested_intensity)
+            intensity = this.requested_intensity;
+
+        let current_full = 0;
+        let current = 0;
+        let current_prev = 0;
+        while (n--) {
+            let v = * d++;
+            current += SCALE0(v, intensity);
+            current_prev += SCALE0(v, prev_intensity);
+            current_full += v;
+        }
+
+        // 46uA per step of LED
+        current *= 46;
+        current_prev *= 46;
+        current_full *= 46;
+
+        // 14mA is the chip at 48MHz, 930uA per LED is static
+        let base_current = 14000 + 930 * this.numpixels;
+        let current_limit = this.maxpower * 1000 - base_current;
+
+        if (current <= current_limit) {
+            this.intensity = intensity;
+            // LOG("curr: %dmA; not limiting %d", (base_current + current) / 1000, state->intensity);
+            return;
+        }
+
+        if (current_prev <= current_limit) {
+            return; // no change needed
+        }
+
+        let inten = current_limit / (current_full >> 8) - 1;
+        if (inten < 0)
+            inten = 0;
+        this.intensity = inten;
+    }
+
+    private prog_fetch_color(): RGB {
+        const ptr = this.prog_ptr;
+        if (ptr + 3 > this.prog_size)
+            return rgb(0, 0, 0);
+        const d = this.prog_data;
+        this.prog_ptr = ptr + 3;
+        return rgb(d[ptr + 0], d[ptr + 1], d[ptr + 2]);
+    }
+
+    private prog_fetch(): {
+        dst?: number,
+        prog: number
+    } {
+        if (this.prog_ptr >= this.prog_size)
+            return { prog: PROG_EOF };
+        const d = this.prog_data;
+        const c = d[this.prog_ptr++];
+        if (!(c & 0x80)) {
+            return { dst: c, prog: PROG_NUMBER };
+        } else if ((c & 0xc0) == 0x80) {
+            return {
+                dst: ((c & 0x3f) << 8) | d[this.prog_ptr++],
+                prog: PROG_NUMBER
+            }
+        } else
+            switch (c) {
+                case LIGHT_PROG_COL1:
+                    return {
+                        dst: 1,
+                        prog: PROG_COLOR_BLOCK
+                    };
+                case LIGHT_PROG_COL2:
+                    return {
+                        dst: 2,
+                        prog: PROG_COLOR_BLOCK
+                    }
+                case LIGHT_PROG_COL3:
+                    return {
+                        dst: 3,
+                        prog: PROG_COLOR_BLOCK
+                    }
+                case LIGHT_PROG_COLN:
+                    return {
+                        dst: d[this.prog_ptr++];
+                        prog: PROG_COLOR_BLOCK
+                    }
+                default:
+                    return {
+                        dst: c,
+                        prog: PROG_CMD
+                    }
+            }
+    }
+
+    private prog_fetch_num(defl: number): number {
+        const prev = this.prog_ptr;
+        const fr = this.prog_fetch();
+        const { dst: res, prog: r } = fr;
+        if (r == PROG_NUMBER)
+            return res;
+        else {
+            this.prog_ptr = prev; // rollback
+            return defl;
+        }
+    }
+
+    prog_fetch_cmd(): number {
+        let cmd: number;
+        // skip until there's a command
+        for (; ;) {
+            switch (this.prog_fetch().prog) {
+                case PROG_CMD:
+                    return cmd;
+                case PROG_COLOR_BLOCK:
+                    while (cmd--)
+                        this.prog_fetch_color();
+                    break;
+                case PROG_EOF:
+                    return 0;
+            }
+        }
+    }
+
+    private prog_set(len: number) {
+        this.reset_range();
+        const start = this.prog_ptr;
+        for (; ;) {
+            this.prog_ptr = start;
+            let ok = false;
+            for (let i = 0; i < len; ++i) {
+                // don't break the loop immediately if !ok - make sure the prog counter advances
+                ok = this.set_next(this.prog_fetch_color());
+            }
+            if (!ok)
+                break;
+        }
+    }
+
+    private prog_fade(len: number, usehsv: boolean) {
+        if (len < 2) {
+            this.prog_set(len);
+            return;
+        }
+        let colidx = 0;
+        const endp = this.prog_ptr + 3 * len;
+        let col0 = this.prog_fetch_color();
+        let col1 = this.prog_fetch_color();
+
+        const colstep = ((len - 1) << 16) / this.range_len;
+        let colpos = 0;
+
+        this.reset_range();
+
+        for (; ;) {
+            while (colidx < (colpos >> 16)) {
+                colidx++;
+                col0 = col1;
+                col1 = this.prog_fetch_color();
+            }
+            const fade1 = colpos & 0xffff;
+            const fade0 = 0xffff - fade1;
+            const col = rgb(
+                (col0.r * fade0 + col1.r * fade1 + 0x8000) >> 16,
+                (col0.g * fade0 + col1.g * fade1 + 0x8000) >> 16,
+                (col0.b * fade0 + col1.b * fade1 + 0x8000) >> 16
+            );
+            if (!this.set_next(usehsv ? hsv(col.r, col.g, col.b) : col))
+                break;
+            colpos += colstep;
+        }
+
+        this.prog_ptr = endp;
+    }
+
+    private prog_rot(shift: number) {
+        if (shift == 0 || shift >= this.range_len)
+            return;
+
+        const AT = (idx: number) => this.pxbuffer[(idx) * 3];
+
+        uint8_t * first = & AT(state -> range_start);
+        uint8_t * middle = & AT(state -> range_start + shift);
+        uint8_t * last = & AT(state -> range_end);
+        uint8_t * next = middle;
+
+        while (first != next) {
+            uint8_t tmp = * first;
+            * first++ = * next;
+            * next++ = tmp;
+
+            if (next == last)
+                next = middle;
+            else if (first == middle)
+                middle = next;
+        }
+    }
+
+    private fetch_mode(): number {
+        const m = this.prog_fetch_num(0);
+        if (m > LIGHT_MODE_LAST)
+            return 0;
+        return m;
+    }
+
+    private prog_process() {
+        if (this.prog_ptr >= this.prog_size)
+            return;
+
+        for (; ;) {
+            const cmd = this.prog_fetch_cmd();
+            if (!cmd)
+                break;
+
+            if (cmd == LIGHT_PROG_SHOW) {
+                const k = this.prog_fetch_num(50);
+                // base the next step of previous expect step time, not current time
+                // to keep the clock synchronized
+                this.prog_next_step += k * 1000;
+                this.dirty = true;
+                break;
+            }
+
+            switch (cmd) {
+                case LIGHT_PROG_COL1_SET:
+                    this.range_ptr = this.range_start + this.prog_fetch_num(0);
+                    this.set_next(this.prog_fetch_color());
+                    break;
+                case LIGHT_PROG_FADE:
+                case LIGHT_PROG_FADE_HSV:
+                case LIGHT_PROG_SET_ALL: {
+                    const { dst: len, prog: pcmd } = this.prog_fetch();
+                    if (pcmd != PROG_COLOR_BLOCK || len == 0)
+                        continue; // bailout
+                    if (cmd == LIGHT_PROG_SET_ALL)
+                        this.prog_set(len);
+                    else
+                        this.prog_fade(len, cmd == LIGHT_PROG_FADE_HSV);
+                    break;
+                }
+
+                case LIGHT_PROG_ROTATE_BACK:
+                case LIGHT_PROG_ROTATE_FWD: {
+                    let k = this.prog_fetch_num(1);
+                    const len = this.range_len;
+                    if (len == 0)
+                        continue;
+                    while (k >= len)
+                        k -= len;
+                    if (cmd == LIGHT_PROG_ROTATE_FWD && k != 0)
+                        k = len - k;
+                    this.prog_rot(k);
+                    break;
+                }
+
+                case LIGHT_PROG_MODE1:
+                    this.prog_tmpmode = this.fetch_mode();
+                    break;
+
+                case LIGHT_PROG_MODE:
+                    this.prog_mode = this.fetch_mode();
+                    break;
+
+                case LIGHT_PROG_RANGE: {
+                    let start = this.prog_fetch_num(0);
+                    const len = this.prog_fetch_num(this.numpixels);
+                    const numpixels = this.numpixels;
+                    if (start > numpixels)
+                        start = numpixels;
+                    let end = start + len;
+                    if (end > numpixels)
+                        end = numpixels;
+                    this.range_start = start;
+                    this.range_end = end;
+                    this.range_len = end - start;
+                    break;
+                }
+            }
+
+            if (cmd != LIGHT_PROG_MODE1)
+                this.prog_tmpmode = this.prog_mode;
+        }
+    }
+
+    private alloc() {
+        if (!this.pxbuffer)
+            this.pxbuffer = new Uint8Array(PX_WORDS(this.maxpixels));
+    }
+
+    private light_process() {
+        // it's important alloc() is called after all services have initalized (and allocated)
+        // as it consumes all remaining RAM
+        // the light_process() function is always called a few times before any packet is handled
+        this.alloc();
+
+        this.prog_process();
+
+        if (this.in_past(this.auto_refresh) && this.inited)
+            this.dirty = true;
+
+        if (!this.is_enabled())
+            return;
+
+        if (this.dirty) {
+            this.dirty = false;
+            this.auto_refresh = now + (64 << 10);
+            if (is_empty(this.pxbuffer)) {
+                jd_power_enable(0);
+                return;
+            } else {
+                jd_power_enable(1);
+            }
+            this.limit_intensity();
+            this.emit(RENDER);
+        }
+    }
+
+    private sync_config() {
+        if (!this.is_enabled()) {
+            jd_power_enable(0);
+            return;
+        }
+
+        if (!this.inited) {
+            this.inited = true;
+            px_init(this.lighttype);
+        }
+
+        this.jd_power_enable(1);
+    }
+
+    static void handle_run_cmd(srv_t * state, jd_packet_t * pkt) {
+        LOG("run: br %d->%d", state -> intensity, state -> requested_intensity);
+        state -> prog_size = pkt -> service_size;
+        state -> prog_ptr = 0;
+        memcpy(state -> prog_data, pkt -> data, state -> prog_size);
+
+        state -> range_start = 0;
+        state -> range_end = state -> range_len = state -> numpixels;
+        state -> prog_tmpmode = state -> prog_mode = 0;
+
+        state -> prog_next_step = now;
+        sync_config(state);
+    }
+
+void light_handle_packet(srv_t * state, jd_packet_t * pkt) {
+    LOG("cmd: %x", pkt -> service_command);
+    switch (pkt -> service_command) {
+        case JD_LIGHT_CMD_RUN:
+            handle_run_cmd(state, pkt);
+            break;
+        default:
+#ifdef LIGHT_LOCK_TYPE
+            if (pkt -> service_command == JD_SET(JD_LIGHT_REG_LIGHT_TYPE))
+                break;
+#endif
+#ifdef LIGHT_LOCK_NUM_PIXELS
+            if (pkt -> service_command == JD_SET(JD_LIGHT_REG_NUM_PIXELS))
+                break;
+#endif
+            switch (service_handle_register(state, pkt, light_regs)) {
+                case JD_LIGHT_REG_BRIGHTNESS:
+                    state -> intensity = state -> requested_intensity;
+                    break;
+                case JD_LIGHT_REG_NUM_PIXELS:
+                    if (state -> numpixels > state -> maxpixels)
+                        state -> numpixels = state -> maxpixels;
+                    break;
+            }
+            break;
+    }
+}
+
+SRV_DEF(light, JD_SERVICE_CLASS_LIGHT);
+void light_init(uint8_t default_light_type, uint32_t default_num_pixels,
+    uint32_t default_max_power) {
+    SRV_ALLOC(light);
+    state_ = state; // there is global singleton state
+    state -> lighttype = default_light_type;
+    state -> numpixels = default_num_pixels;
+    state -> maxpower = default_max_power;
+    state -> intensity = state -> requested_intensity = DEFAULT_INTENSITY;
+}
+}
