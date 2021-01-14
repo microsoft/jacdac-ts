@@ -52,6 +52,10 @@ const hostDefinitions = [
         services: () => [new LightServiceHost({ numPixels: 10, variant: LightVariant.Ring })]
     },
     {
+        name: "light strip 60",
+        services: () => [new LightServiceHost({ numPixels: 60, variant: LightVariant.Strip })]
+    },
+    {
         name: "motor",
         services: () => [new MotorServiceHost()]
     },

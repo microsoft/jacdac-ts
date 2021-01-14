@@ -1,17 +1,13 @@
 
 import React, { useEffect, useRef } from "react";
 import { LightVariant, RENDER } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceWidget";
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import useServiceHost from "../hooks/useServiceHost";
 import LightServiceHost from "../../../../src/hosts/lightservicehost";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useChange from "../../jacdac/useChange";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useWidgetSize from "../widgets/useWidgetSize";
-import { roundWithPrecision } from "../../../../src/jdom/utils";
+import { JDService } from "../../../../src/jdom/service";
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
     const [r$, g$, b$] = [r / 255, g / 255, b / 255];
@@ -58,7 +54,7 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
     el.setAttribute("r", "" + nr);
 }
 
-export default function LightWidget(props: DashboardServiceProps) {
+export default function LightWidget(props: { service: JDService }) {
     const { service } = props;
     const host = useServiceHost<LightServiceHost>(service);
     const { background, controlBackground } = useWidgetTheme()
@@ -70,17 +66,49 @@ export default function LightWidget(props: DashboardServiceProps) {
     const pixelsRef = useRef<SVGGElement>(undefined);
 
     const neoradius = 6;
-    const neoperimeter = numPixels * (3 * neoradius)
-    const ringradius = neoperimeter / (2 * Math.PI)
-    const margin = 2 * neoradius;
-    const width = 2 * (margin + ringradius);
-    const height = width;
     const neocircleradius = neoradius + 1;
-    const sw = margin;
-    const wm = width - 2 * margin;
+    const sw = neoradius * 2;
+    let width: number;
+    let height: number;
+
     let d = "";
-    //if (variant === LightVariant.Ring)
-    d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
+    if (variant === LightVariant.Strip) {
+        const r = neoradius * 4
+        const side = Math.ceil(Math.sqrt(numPixels) * 1.6108)
+
+        let i = 0;
+        let dir = 1
+        const dx = neoradius * 3
+        const tr = neoradius * 3
+
+        let line = 1;
+        d = `M ${2 * tr} ${tr}`
+        while (i < numPixels) {
+            d += ` h ${dx * dir}`;
+            if ((i % side) === side - 1) {
+                // turn around
+                d += ` c ${tr * dir} 0, ${tr * dir} ${tr}, 0 ${tr}`
+                dir = -dir;
+                line++;
+            }
+            i++;
+        }
+
+        width = side * dx + 4 * dx;
+        height = line * tr + 2 * tr;
+    }
+    else {
+        const neoperimeter = numPixels * (3 * neoradius)
+        const ringradius = neoperimeter / (2 * Math.PI)
+        const margin = 2 * neoradius;
+        width = 2 * (margin + ringradius);
+        height = width;
+        const wm = width - 2 * margin;
+        //if (variant === LightVariant.Ring)
+        d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
+    }
+
+    console.log({ d })
 
     // paint svg via dom
     const render = () => {
@@ -101,12 +129,12 @@ export default function LightWidget(props: DashboardServiceProps) {
         const pixels = pixelsRef.current.children;
         const pn = pixels.length;
         const length = p.getTotalLength();
-        const extra = variant === LightVariant.Ring ? 0 : 1;
+        const extra = variant === LightVariant.Ring ? 0 : 2;
         const step = length / (pn + extra);
 
         for (let i = 0; i < pn; ++i) {
             const pixel = pixels.item(i) as SVGCircleElement;
-            const point = p.getPointAtLength(step * (i + (extra >> 1)));
+            const point = p.getPointAtLength(step * (i + extra / 2.0));
             pixel.setAttribute("cx", "" + point.x);
             pixel.setAttribute("cy", "" + point.y);
         }
