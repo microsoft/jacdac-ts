@@ -255,6 +255,19 @@ function LightWidget(props: DashboardServiceProps) {
     //if (variant === LightVariant.Ring)
     d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
 
+    // paint svg via dom
+    const render = () => {
+        const colors = host.colors;
+        const pixels = pixelsRef.current.children;
+        const pn = Math.min(pixels.length, colors.length / 3);
+        let ci = 0;
+        for (let i = 0; i < pn; ++i) {
+            const pixel = pixels.item(i) as SVGCircleElement;
+            setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2]);
+            ci += 3;
+        }
+    }
+
     // reposition pixels along the path
     useEffect(() => {
         const p = pathRef.current;
@@ -270,20 +283,12 @@ function LightWidget(props: DashboardServiceProps) {
             pixel.setAttribute("cx", "" + point.x);
             pixel.setAttribute("cy", "" + point.y);
         }
+
+        render();
     }, [variant, numPixels])
 
-    // update DOM directly
-    useEffect(() => host.subscribe(RENDER, () => {
-        const colors = host.colors;
-        const pixels = pixelsRef.current.children;
-        const pn = Math.min(pixels.length, colors.length / 3);
-        let ci = 0;
-        for (let i = 0; i < pn; ++i) {
-            const pixel = pixels.item(i) as SVGCircleElement;
-            setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2]);
-            ci += 3;
-        }
-    }), [host]);
+    // render when new colors are in
+    useEffect(() => host.subscribe(RENDER, render), [host]);
 
     return <SvgWidget width={width} height={height} size={widgetSize}>
         <>

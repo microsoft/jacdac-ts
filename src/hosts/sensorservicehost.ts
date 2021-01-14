@@ -27,7 +27,10 @@ export default class JDSensorServiceHost extends JDServiceHost {
         super(serviceClass, options);
         const { readingValue, streamingInterval, minReading, maxReading, errorReading } = options || {};
 
-        this.reading = this.addRegister(SystemReg.Reading, readingValue !== undefined ? [readingValue] : undefined);
+        this.reading = this.addRegister(SystemReg.Reading, readingValue !== undefined
+            ? (Array.isArray(readingValue) ? readingValue : [readingValue])
+            : undefined
+        );
         this.streamingSamples = this.addRegister(SensorReg.StreamingSamples);
         this.streamingInterval = this.addRegister(SensorReg.StreamingInterval, [streamingInterval || 50]);
         if (streamingInterval !== undefined)

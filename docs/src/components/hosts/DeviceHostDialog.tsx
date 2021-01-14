@@ -13,7 +13,7 @@ import LightServiceHost from "../../../../src/hosts/lightservicehost"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { LightVariant, PotentiometerVariant, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
@@ -29,6 +29,12 @@ const outdoorThermometerOptions = {
 }
 
 const hostDefinitions = [
+    {
+        name: "accelerometer",
+        services: () => [new JDSensorServiceHost(SRV_ACCELEROMETER, {
+            readingValue: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
+        })]
+    },
     {
         name: "button",
         services: () => [new ButtonServiceHost()]
