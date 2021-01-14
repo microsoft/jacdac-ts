@@ -1,7 +1,7 @@
 
 import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
-import React, { ChangeEvent, useMemo, useState } from "react";
-import { LightReg, LightCmd } from "../../../../src/jdom/constants";
+import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { LightReg, LightCmd, CHANGE, LightVariant } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import RegisterInput from "../RegisterInput";
 import { lightEncode } from "../../../../src/jdom/light";
@@ -15,6 +15,12 @@ import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
+import useServiceHost from "../hooks/useServiceHost";
+import LightServiceHost from "../../../../src/hosts/lightservicehost";
+import { SvgWidget } from "../widgets/SvgWidget";
+import useChange from "../../jacdac/useChange";
+import useWidgetTheme from "../widgets/useWidgetTheme";
+import useWidgetSize from "../widgets/useWidgetSize";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */
@@ -183,20 +189,86 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
     </Grid>
 }
 
+function LightWidget(props: DashboardServiceProps) {
+    const { service } = props;
+    const host = useServiceHost<LightServiceHost>(service);
+    const { background, controlBackground } = useWidgetTheme()
+    const widgetSize = useWidgetSize()
+    const [numPixels] = useChange(host.numPixels, r => r.values<[number]>());
+    const [variant] = useChange(host.variant, r => r.values<[LightVariant]>());
+    const pathRef = useRef<SVGPathElement>(undefined)
+    const pixelsRef = useRef<SVGGElement>(undefined);
+
+    const w = 128;
+    const h = 128;
+    const m = 8;
+    const wm = w - 2 * m;
+    const r = wm >> 1;
+    const pr = m >> 1;
+    const sw = m;
+    let d = "";
+    //if (variant === LightVariant.Ring)
+    d = `M ${m},${h >> 1} a ${r},${r} 0 1,0 ${wm},0 a ${r},${r} 0 1,0 -${wm},0`
+
+    // reposition pixels along the path
+    useEffect(() => {
+        const p = pathRef.current;
+        const pixels = pixelsRef.current.children;
+        const pn = pixels.length;
+        const length = p.getTotalLength();
+        const extra = variant === LightVariant.Ring ? 0 : 1;
+        const step = length / (pn + extra);
+
+        for (let i = 0; i < pn; ++i) {
+            const pixel = pixels.item(i) as SVGCircleElement;
+            const point = p.getPointAtLength(step * (i + (extra >> 1)));
+            pixel.setAttribute("cx", "" + point.x);
+            pixel.setAttribute("cy", "" + point.y);
+        }
+    }, [variant, numPixels])
+
+    // update DOM directly
+    useEffect(() => host.subscribe(CHANGE, () => {
+        const colors = host.colors;
+        console.log({ colors })
+        const pixels = pixelsRef.current.children;
+        const pn = Math.min(pixels.length, colors.length / 3);
+        let ci = 0;
+        for (let i = 0; i < pn; ++i) {
+            const pixel = pixels.item(i) as SVGCircleElement;
+            pixel.style.stroke = `rgb(${colors[ci]}, ${colors[ci + 1]}, ${colors[ci + 2]}})`
+            ci += 3;
+        }
+    }), [host]);
+
+    return <SvgWidget width={w} height={h} size={widgetSize}>
+        <>
+            <path ref={pathRef} d={d} fill="transparent" stroke={background} strokeWidth={sw} />
+            <g ref={pixelsRef}>
+                {Array(numPixels).fill(0).map((_, i) => <circle key={"pixel" + i}
+                        r={pr}
+                        cx={w >> 1} cy={h >> 1}
+                        fill={"#cccccc"}
+                        stroke={controlBackground}
+                    />)}
+            </g>
+        </>
+    </SvgWidget>
+}
+
 export default function DashboardLight(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const brightness = service.register(LightReg.Brightness);
-    return (<Grid container spacing={1}>
-        <Grid item xs={12}>
-            <RegisterInput register={brightness} showRegisterName={true} />
-        </Grid>
-        <Grid item xs={12}>
-            <LightCommand service={service} expanded={expanded} />
-        </Grid>
-        {expanded && <>
-            {[LightReg.ActualBrightness, LightReg.NumPixels, LightReg.LightType, LightReg.MaxPower].map(id => <Grid item xs={12} sm={6} key={id}>
-                <RegisterInput register={service.register(id)} showRegisterName={true} />
-            </Grid>)}
-        </>}
-    </Grid>)
+    const host = useServiceHost<LightServiceHost>(service);
+    return <>
+        {host && <LightWidget {...props} />}
+        {expanded && <Grid container spacing={1}>
+            <Grid item xs={12}>
+                <RegisterInput register={brightness} showRegisterName={true} />
+            </Grid>
+            <Grid item xs={12}>
+                <LightCommand service={service} expanded={expanded} />
+            </Grid>
+        </Grid>}
+    </>
 }

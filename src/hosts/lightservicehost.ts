@@ -116,7 +116,7 @@ export default class LightServiceHost extends JDServiceHost {
     readonly variant: JDRegisterHost;
     readonly maxPixels: JDRegisterHost;
 
-    pxbuffer: Uint8Array = new Uint8Array(0);
+    private pxbuffer: Uint8Array = new Uint8Array(0);
 
     private prog_mode: number = 0;
     private prog_tmpmode: number = 0;
@@ -132,12 +132,6 @@ export default class LightServiceHost extends JDServiceHost {
     private prog_size: number = 0;
     private prog_next_step: number = 0;
     private prog_data = new Uint8Array(0);
-
-    private anim_flag: number = 0;
-    private anim_step: number = 0;
-    private anim_value: number = 0;
-    private anim_fn: number = 0;
-    private anim_end: number = 0;
 
     private dirty: boolean = true;
     private inited: boolean = false;
@@ -168,32 +162,39 @@ export default class LightServiceHost extends JDServiceHost {
         this.allocRxBuffer();
     }
 
-    get maxpower(): number {
+    /**
+     * Gets an array of RGB color numbers
+     */
+    get colors() {
+        return this.pxbuffer;
+    }
+
+    private get maxpower(): number {
         const [r] = this.maxPower.values<[number]>();
         return r;
     }
 
-    get maxpixels(): number {
+    private get maxpixels(): number {
         const [r] = this.maxPixels.values<[number]>();
         return r;
     }
 
-    get numpixels(): number {
+    private get numpixels(): number {
         const [r] = this.numPixels.values<[number]>();
         return r;
     }
 
-    get requested_intensity(): number {
+    private get requested_intensity(): number {
         const [r] = this.brightness.values<[number]>();
         return r;
     }
 
-    get intensity(): number {
+    private get intensity(): number {
         const [r] = this.actualBrightness.values<[number]>();
         return r;
     }
 
-    set intensity(v: number) {
+    private set intensity(v: number) {
         this.actualBrightness.setValues([v]);
     }
 
