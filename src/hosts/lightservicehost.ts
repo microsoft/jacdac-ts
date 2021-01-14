@@ -1,8 +1,14 @@
-import { LightLightType, LightReg, LightVariant, SRV_LIGHT } from "../jdom/constants";
-import { LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB, LIGHT_PROG_COL1, LIGHT_PROG_COL1_SET, LIGHT_PROG_COL2, LIGHT_PROG_COL3, LIGHT_PROG_COLN, LIGHT_PROG_FADE, LIGHT_PROG_FADE_HSV, LIGHT_PROG_MODE, LIGHT_PROG_MODE1, LIGHT_PROG_RANGE, LIGHT_PROG_ROTATE_BACK, LIGHT_PROG_ROTATE_FWD, LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW, PROG_CMD, PROG_COLOR_BLOCK, PROG_EOF, PROG_NUMBER } from "../jdom/light";
-import { JDRegister } from "../jdom/register";
+import { LightCmd, LightLightType, LightReg, LightVariant, RENDER, SRV_LIGHT } from "../jdom/constants";
+import {
+    LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB,
+    LIGHT_PROG_COL1, LIGHT_PROG_COL1_SET, LIGHT_PROG_COL2, LIGHT_PROG_COL3, LIGHT_PROG_COLN, LIGHT_PROG_FADE,
+    LIGHT_PROG_FADE_HSV, LIGHT_PROG_MODE, LIGHT_PROG_MODE1, LIGHT_PROG_RANGE, LIGHT_PROG_ROTATE_BACK, LIGHT_PROG_ROTATE_FWD,
+    LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW, PROG_CMD, PROG_COLOR_BLOCK, PROG_EOF, PROG_NUMBER
+} from "../jdom/light";
+import Packet from "../jdom/packet";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost from "../jdom/servicehost";
+import { memcpy } from "../jdom/utils";
 
 interface RGB {
     r: number;
@@ -87,10 +93,6 @@ function SCALE0(c: number, i: number) {
     return ((((c) & 0xff) * (1 + (i & 0xff))) >> 8)
 }
 
-function SCALE(c: number, i: number) {
-    return (SCALE0((c) >> 0, i) << 0) | (SCALE0((c) >> 8, i) << 8) | (SCALE0((c) >> 16, i) << 16)
-}
-
 function PX_WORDS(NUM_PIXELS: number) {
     return (((NUM_PIXELS) * 3 + 3) / 4)
 }
@@ -99,6 +101,12 @@ function jd_power_enable(value: number) {
 
 }
 
+function now(): number {
+    return (performance.now() * 1000) >> 0;
+}
+function in_past(t: number) {
+    return t < now();
+}
 
 export default class LightServiceHost extends JDServiceHost {
     readonly brightness: JDRegisterHost;
@@ -109,7 +117,7 @@ export default class LightServiceHost extends JDServiceHost {
     readonly variant: JDRegisterHost;
     readonly maxpixels = 300;
 
-    pxbuffer: Uint8Array;
+    readonly pxbuffer: Uint8Array;
 
     prog_mode: number;
     prog_tmpmode: number;
@@ -138,12 +146,16 @@ export default class LightServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_LIGHT);
 
+        this.pxbuffer = new Uint8Array(PX_WORDS(this.maxpixels));
+
         this.brightness = this.addRegister(LightReg.Brightness, [15]);
         this.actualBrightness = this.addRegister(LightReg.Brightness, [15]);
         this.lightType = this.addRegister(LightReg.Brightness, [LightLightType.WS2812B_GRB]);
         this.numPixels = this.addRegister(LightReg.Brightness, [15]);
         this.maxPower = this.addRegister(LightReg.Brightness, [200]);
         this.variant = this.addRegister(LightReg.Variant, [LightVariant.Strip]);
+
+        this.addCommand(LightCmd.Run, this.handle_run_cmd.bind(this));
     }
 
     get maxpower(): number {
@@ -159,6 +171,15 @@ export default class LightServiceHost extends JDServiceHost {
     get requested_intensity(): number {
         const [r] = this.brightness.values<[number]>();
         return r;
+    }
+
+    get intensity(): number {
+        const [r] = this.actualBrightness.values<[number]>();
+        return r;
+    }
+
+    set intensity(v: number) {
+        this.actualBrightness.setValues([v]);
     }
 
     render() {
@@ -177,7 +198,7 @@ export default class LightServiceHost extends JDServiceHost {
         if (this.range_ptr >= this.range_end)
             return false;
 
-        const p = this.prog;
+        const p = this.pxbuffer;
         let pi = this.range_ptr++ * 3;
         // fast path
         if (this.prog_tmpmode == LIGHT_MODE_REPLACE) {
@@ -215,20 +236,22 @@ export default class LightServiceHost extends JDServiceHost {
         const numpixels = this.numpixels;
         const requested_intensity = this.requested_intensity;
         const maxpower = this.maxpower;
+        const pxbuffer = this.pxbuffer;
 
         let n = numpixels * 3;
         const prev_intensity = this.intensity;
         let intensity = this.intensity;
 
         intensity += 1 + (intensity >> 5);
-        if (intensity > this.requested_intensity)
-            intensity = this.requested_intensity;
+        if (intensity > requested_intensity)
+            intensity = requested_intensity;
 
         let current_full = 0;
         let current = 0;
         let current_prev = 0;
+        let di = 0;
         while (n--) {
-            let v = * d++;
+            let v = pxbuffer[di++];
             current += SCALE0(v, intensity);
             current_prev += SCALE0(v, prev_intensity);
             current_full += v;
@@ -240,8 +263,8 @@ export default class LightServiceHost extends JDServiceHost {
         current_full *= 46;
 
         // 14mA is the chip at 48MHz, 930uA per LED is static
-        let base_current = 14000 + 930 * this.numpixels;
-        let current_limit = this.maxpower * 1000 - base_current;
+        let base_current = 14000 + 930 * numpixels;
+        let current_limit = maxpower * 1000 - base_current;
 
         if (current <= current_limit) {
             this.intensity = intensity;
@@ -302,7 +325,7 @@ export default class LightServiceHost extends JDServiceHost {
                     }
                 case LIGHT_PROG_COLN:
                     return {
-                        dst: d[this.prog_ptr++];
+                        dst: d[this.prog_ptr++],
                         prog: PROG_COLOR_BLOCK
                     }
                 default:
@@ -325,7 +348,7 @@ export default class LightServiceHost extends JDServiceHost {
         }
     }
 
-    prog_fetch_cmd(): number {
+    private prog_fetch_cmd(): number {
         let cmd: number;
         // skip until there's a command
         for (; ;) {
@@ -397,21 +420,31 @@ export default class LightServiceHost extends JDServiceHost {
         if (shift == 0 || shift >= this.range_len)
             return;
 
-        const AT = (idx: number) => this.pxbuffer[(idx) * 3];
+        const range_start = this.range_start;
+        const range_end = this.range_end;
+        const buf = this.pxbuffer;
 
-        uint8_t * first = & AT(state -> range_start);
-        uint8_t * middle = & AT(state -> range_start + shift);
-        uint8_t * last = & AT(state -> range_end);
-        uint8_t * next = middle;
+        let first = range_start * 3;
+        let middle = (range_start + shift) * 3;
+        let last = range_end * 3;
+        let next = middle;
 
         while (first != next) {
-            uint8_t tmp = * first;
-            * first++ = * next;
-            * next++ = tmp;
+            const tmp = buf[first];
+            const tmp1 = buf[first + 1];
+            const tmp2 = buf[first + 2];
 
-            if (next == last)
+            buf[first] = buf[next];
+            buf[first + 1] = buf[next + 1];
+            buf[first + 2] = buf[next + 2];
+
+            buf[tmp] = tmp;
+            buf[tmp1] = tmp1;
+            buf[tmp2] = tmp2;
+
+            if (next === last)
                 next = middle;
-            else if (first == middle)
+            else if (first === middle)
                 middle = next;
         }
     }
@@ -502,28 +535,18 @@ export default class LightServiceHost extends JDServiceHost {
         }
     }
 
-    private alloc() {
-        if (!this.pxbuffer)
-            this.pxbuffer = new Uint8Array(PX_WORDS(this.maxpixels));
-    }
-
-    private light_process() {
-        // it's important alloc() is called after all services have initalized (and allocated)
-        // as it consumes all remaining RAM
-        // the light_process() function is always called a few times before any packet is handled
-        this.alloc();
-
+    /**
+     * Perform an animation step
+     */
+    animationFrame() {
         this.prog_process();
-
-        if (this.in_past(this.auto_refresh) && this.inited)
+        if (in_past(this.auto_refresh) && this.inited)
             this.dirty = true;
-
         if (!this.is_enabled())
             return;
-
         if (this.dirty) {
             this.dirty = false;
-            this.auto_refresh = now + (64 << 10);
+            this.auto_refresh = now() + (64 << 10);
             if (is_empty(this.pxbuffer)) {
                 jd_power_enable(0);
                 return;
@@ -531,6 +554,7 @@ export default class LightServiceHost extends JDServiceHost {
                 jd_power_enable(1);
             }
             this.limit_intensity();
+            // we're ready to render...
             this.emit(RENDER);
         }
     }
@@ -543,62 +567,48 @@ export default class LightServiceHost extends JDServiceHost {
 
         if (!this.inited) {
             this.inited = true;
-            px_init(this.lighttype);
+            // px_init(this.lighttype);
         }
 
-        this.jd_power_enable(1);
+        jd_power_enable(1);
     }
 
-    static void handle_run_cmd(srv_t * state, jd_packet_t * pkt) {
-        LOG("run: br %d->%d", state -> intensity, state -> requested_intensity);
-        state -> prog_size = pkt -> service_size;
-        state -> prog_ptr = 0;
-        memcpy(state -> prog_data, pkt -> data, state -> prog_size);
+    private handle_run_cmd(pkt: Packet) {
+        this.prog_size = pkt.data.length;
+        this.prog_ptr = 0;
+        memcpy(this.prog_data, 0, pkt.data, 0, this.prog_size);
 
-        state -> range_start = 0;
-        state -> range_end = state -> range_len = state -> numpixels;
-        state -> prog_tmpmode = state -> prog_mode = 0;
+        this.range_start = 0;
+        this.range_end = this.range_len = this.numpixels;
+        this.prog_tmpmode = this.prog_mode = 0;
 
-        state -> prog_next_step = now;
-        sync_config(state);
+        this.prog_next_step = now();
+        this.sync_config();
     }
-
-void light_handle_packet(srv_t * state, jd_packet_t * pkt) {
-    LOG("cmd: %x", pkt -> service_command);
-    switch (pkt -> service_command) {
-        case JD_LIGHT_CMD_RUN:
-            handle_run_cmd(state, pkt);
-            break;
-        default:
+}
+        /*
+switch (pkt.service_command) {
+case JD_LIGHT_CMD_RUN:
+handle_run_cmd(state, pkt);
+break;
+default:
 #ifdef LIGHT_LOCK_TYPE
-            if (pkt -> service_command == JD_SET(JD_LIGHT_REG_LIGHT_TYPE))
-                break;
+if (pkt -> service_command == JD_SET(JD_LIGHT_REG_LIGHT_TYPE))
+break;
 #endif
 #ifdef LIGHT_LOCK_NUM_PIXELS
-            if (pkt -> service_command == JD_SET(JD_LIGHT_REG_NUM_PIXELS))
-                break;
+if (pkt -> service_command == JD_SET(JD_LIGHT_REG_NUM_PIXELS))
+break;
 #endif
-            switch (service_handle_register(state, pkt, light_regs)) {
-                case JD_LIGHT_REG_BRIGHTNESS:
-                    state -> intensity = state -> requested_intensity;
-                    break;
-                case JD_LIGHT_REG_NUM_PIXELS:
-                    if (state -> numpixels > state -> maxpixels)
-                        state -> numpixels = state -> maxpixels;
-                    break;
-            }
-            break;
-    }
+switch (service_handle_register(state, pkt, light_regs)) {
+case JD_LIGHT_REG_BRIGHTNESS:
+state -> intensity = state -> requested_intensity;
+break;
+case JD_LIGHT_REG_NUM_PIXELS:
+if (state -> numpixels > state -> maxpixels)
+state -> numpixels = state -> maxpixels;
+break;
 }
-
-SRV_DEF(light, JD_SERVICE_CLASS_LIGHT);
-void light_init(uint8_t default_light_type, uint32_t default_num_pixels,
-    uint32_t default_max_power) {
-    SRV_ALLOC(light);
-    state_ = state; // there is global singleton state
-    state -> lighttype = default_light_type;
-    state -> numpixels = default_num_pixels;
-    state -> maxpower = default_max_power;
-    state -> intensity = state -> requested_intensity = DEFAULT_INTENSITY;
+break;
 }
-}
+*/
