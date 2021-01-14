@@ -1,4 +1,7 @@
-import { LightCmd, LightLightType, LightReg, LightVariant, RENDER, SRV_LIGHT } from "../jdom/constants";
+import {
+    CHANGE, LightCmd, LightLightType,
+    LightReg, LightVariant, RENDER, SRV_LIGHT
+} from "../jdom/constants";
 import {
     LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB,
     LIGHT_PROG_COL1, LIGHT_PROG_COL1_SET, LIGHT_PROG_COL2, LIGHT_PROG_COL3, LIGHT_PROG_COLN, LIGHT_PROG_FADE,
@@ -97,10 +100,6 @@ function PX_WORDS(NUM_PIXELS: number) {
     return (((NUM_PIXELS) * 3 + 3) / 4)
 }
 
-function jd_power_enable(value: number) {
-
-}
-
 function now(): number {
     return (performance.now() * 1000) >> 0;
 }
@@ -115,51 +114,63 @@ export default class LightServiceHost extends JDServiceHost {
     readonly numPixels: JDRegisterHost;
     readonly maxPower: JDRegisterHost;
     readonly variant: JDRegisterHost;
-    readonly maxpixels = 300;
+    readonly maxPixels: JDRegisterHost;
 
-    readonly pxbuffer: Uint8Array;
+    pxbuffer: Uint8Array = new Uint8Array(0);
 
-    prog_mode: number;
-    prog_tmpmode: number;
+    private prog_mode: number = 0;
+    private prog_tmpmode: number = 0;
 
-    range_start: number;
-    range_end: number;
-    range_len: number;
-    range_ptr: number;
+    private range_start: number = 0;
+    private range_end: number = 0;
+    private range_len: number = 0;
+    private range_ptr: number = 0;
 
-    auto_refresh: number;
+    private auto_refresh: number = 0;
 
-    prog_ptr: number;
-    prog_size: number;
-    prog_next_step: number;
-    prog_data: Uint8Array;
+    private prog_ptr: number = 0;
+    private prog_size: number = 0;
+    private prog_next_step: number = 0;
+    private prog_data = new Uint8Array(0);
 
-    anim_flag: number;
-    anim_step: number;
-    anim_value: number;
-    anim_fn: number;
-    anim_end: number;
+    private anim_flag: number = 0;
+    private anim_step: number = 0;
+    private anim_value: number = 0;
+    private anim_fn: number = 0;
+    private anim_end: number = 0;
 
-    dirty: boolean;
-    inited: boolean;
+    private dirty: boolean = true;
+    private inited: boolean = false;
+
+    power_enable = false;
 
     constructor() {
         super(SRV_LIGHT);
 
-        this.pxbuffer = new Uint8Array(PX_WORDS(this.maxpixels));
-
         this.brightness = this.addRegister(LightReg.Brightness, [15]);
         this.actualBrightness = this.addRegister(LightReg.Brightness, [15]);
         this.lightType = this.addRegister(LightReg.Brightness, [LightLightType.WS2812B_GRB]);
-        this.numPixels = this.addRegister(LightReg.Brightness, [15]);
-        this.maxPower = this.addRegister(LightReg.Brightness, [200]);
+        this.numPixels = this.addRegister(LightReg.NumPixels, [15]);
+        this.maxPower = this.addRegister(LightReg.MaxPower, [200]);
+        this.maxPixels = this.addRegister(LightReg.MaxPixels, [300]);
         this.variant = this.addRegister(LightReg.Variant, [LightVariant.Strip]);
 
+        this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
+        this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
+        this.maxPixels.on(CHANGE, this.allocRxBuffer.bind(this));
+
         this.addCommand(LightCmd.Run, this.handle_run_cmd.bind(this));
+
+        this.allocRxBuffer();
     }
 
     get maxpower(): number {
         const [r] = this.maxPower.values<[number]>();
+        return r;
+    }
+
+    get maxpixels(): number {
+        const [r] = this.maxPixels.values<[number]>();
         return r;
     }
 
@@ -182,12 +193,24 @@ export default class LightServiceHost extends JDServiceHost {
         this.actualBrightness.setValues([v]);
     }
 
+    private jd_power_enable(value: boolean) {
+        this.power_enable = value;
+    }
+
     render() {
         const srv_t = this;
     }
 
     is_enabled() {
         return this.numpixels > 0 && this.requested_intensity > 0;
+    }
+
+    private allocRxBuffer() {
+        if (this.numpixels > this.maxpixels)
+            this.numPixels.setValues<[number]>([this.maxpixels]);
+        const n = PX_WORDS(this.numpixels); // don't need to prealloc here
+        if (n !== this.pxbuffer.length)
+            this.pxbuffer = new Uint8Array(n);
     }
 
     private reset_range() {
@@ -548,10 +571,10 @@ export default class LightServiceHost extends JDServiceHost {
             this.dirty = false;
             this.auto_refresh = now() + (64 << 10);
             if (is_empty(this.pxbuffer)) {
-                jd_power_enable(0);
+                this.jd_power_enable(false);
                 return;
             } else {
-                jd_power_enable(1);
+                this.jd_power_enable(true);
             }
             this.limit_intensity();
             // we're ready to render...
@@ -561,22 +584,23 @@ export default class LightServiceHost extends JDServiceHost {
 
     private sync_config() {
         if (!this.is_enabled()) {
-            jd_power_enable(0);
+            this.jd_power_enable(false);
             return;
         }
 
         if (!this.inited) {
             this.inited = true;
+            // initialize?
             // px_init(this.lighttype);
         }
 
-        jd_power_enable(1);
+        this.jd_power_enable(true);
     }
 
     private handle_run_cmd(pkt: Packet) {
-        this.prog_size = pkt.data.length;
+        this.prog_data = pkt.data;
+        this.prog_size = this.prog_data.length;
         this.prog_ptr = 0;
-        memcpy(this.prog_data, 0, pkt.data, 0, this.prog_size);
 
         this.range_start = 0;
         this.range_end = this.range_len = this.numpixels;
