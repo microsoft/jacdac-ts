@@ -7,12 +7,13 @@ import ButtonServiceHost from "../../../../src/hosts/buttonservicehost";
 import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost"
 import HumidityServiceHost from "../../../../src/hosts/humidityservicehost"
 import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost"
-import MotorEncoderServiceHost from "../../../../src/hosts/motorservicehost"
+import MotorServiceHost from "../../../../src/hosts/motorservicehost"
+import LightServiceHost from "../../../../src/hosts/lightservicehost"
 
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import { MenuItem } from '@material-ui/core';
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { PotentiometerVariant, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
+import { LightVariant, PotentiometerVariant, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant, VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Alert from "../ui/Alert";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useSnackbar } from "notistack";
@@ -41,8 +42,12 @@ const hostDefinitions = [
         services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
     },
     {
+        name: "light ring 10",
+        services: () => [new LightServiceHost({ numPixels: 10, variant: LightVariant.Ring })]
+    },
+    {
         name: "motor",
-        services: () => [new MotorEncoderServiceHost()]
+        services: () => [new MotorServiceHost()]
     },
     {
         name: "rotary encoder",

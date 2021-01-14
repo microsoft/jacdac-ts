@@ -10,7 +10,7 @@ import {
 } from "../jdom/light";
 import Packet from "../jdom/packet";
 import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
 import { memcpy } from "../jdom/utils";
 
 interface RGB {
@@ -144,15 +144,19 @@ export default class LightServiceHost extends JDServiceHost {
 
     power_enable = false;
 
-    constructor() {
-        super(SRV_LIGHT);
+    constructor(options?: {
+        numPixels?: number,
+        maxPixels?: number,
+        maxPower?: number
+    } & JDServiceHostOptions) {
+        super(SRV_LIGHT, options);
 
         this.brightness = this.addRegister(LightReg.Brightness, [15]);
         this.actualBrightness = this.addRegister(LightReg.Brightness, [15]);
         this.lightType = this.addRegister(LightReg.Brightness, [LightLightType.WS2812B_GRB]);
-        this.numPixels = this.addRegister(LightReg.NumPixels, [15]);
-        this.maxPower = this.addRegister(LightReg.MaxPower, [200]);
-        this.maxPixels = this.addRegister(LightReg.MaxPixels, [300]);
+        this.numPixels = this.addRegister(LightReg.NumPixels, [options?.numPixels || 15]);
+        this.maxPower = this.addRegister(LightReg.MaxPower, [options?.maxPower || 200]);
+        this.maxPixels = this.addRegister(LightReg.MaxPixels, [options?.maxPixels || 300]);
         this.variant = this.addRegister(LightReg.Variant, [LightVariant.Strip]);
 
         this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
