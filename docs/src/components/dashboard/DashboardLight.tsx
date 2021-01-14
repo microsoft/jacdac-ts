@@ -199,16 +199,18 @@ function LightWidget(props: DashboardServiceProps) {
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
 
-    const w = 128;
-    const h = 128;
-    const m = 8;
-    const wm = w - 2 * m;
-    const r = wm >> 1;
-    const pr = m >> 1;
-    const sw = m;
+    const neoradius = 6;
+    const neoperimeter = numPixels * (3 * neoradius)
+    const ringradius = neoperimeter / (2 * Math.PI)
+    const margin = 2 * neoradius;
+    const width = 2 * (margin + ringradius);
+    const height = width;
+    const neocircleradius = neoradius + 1;
+    const sw = margin;
+    const wm = width - 2 * margin;
     let d = "";
     //if (variant === LightVariant.Ring)
-    d = `M ${m},${h >> 1} a ${r},${r} 0 1,0 ${wm},0 a ${r},${r} 0 1,0 -${wm},0`
+    d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
 
     // reposition pixels along the path
     useEffect(() => {
@@ -240,13 +242,13 @@ function LightWidget(props: DashboardServiceProps) {
         }
     }), [host]);
 
-    return <SvgWidget width={w} height={h} size={widgetSize}>
+    return <SvgWidget width={width} height={height} size={widgetSize}>
         <>
             <path ref={pathRef} d={d} fill="transparent" stroke={background} strokeWidth={sw} />
             <g ref={pixelsRef}>
                 {Array(numPixels).fill(0).map((_, i) => <circle key={"pixel" + i}
-                        r={pr}
-                        cx={w >> 1} cy={h >> 1}
+                        r={neocircleradius}
+                        cx={width >> 1} cy={height >> 1}
                         stroke={controlBackground}
                         strokeWidth={1}
                     />)}
