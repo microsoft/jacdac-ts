@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Collapse, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React from "react";
 import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -57,9 +57,11 @@ export default function DashboardDevice(props: {
                 <Grid container spacing={1} justify="center" alignContent="space-between">
                     {services?.map(service => <Grid key={"widget" + service.service_index} item><DashboardServiceWidget service={service} expanded={expanded} /></Grid>)}
                 </Grid>
-                {expanded && <Grid container spacing={1} justify="center">
-                    {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
-                </Grid>}
+                <Collapse in={expanded}>
+                    <Grid container spacing={1} justify="center">
+                        {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    </Grid>
+                </Collapse>
             </CardContent>
         </Card>
     );
