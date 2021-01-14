@@ -55,7 +55,6 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
     const fill = `hsl(${h}, ${s}%, ${lum}%)`;
     el.setAttribute("fill", fill);
     const nr = radius * (1 + (l - 60) / 200);
-    console.log({ lum, radius, nr, l })
     el.setAttribute("r", "" + nr);
 }
 
