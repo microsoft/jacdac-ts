@@ -145,8 +145,8 @@ export default class LightServiceHost extends JDServiceHost {
         super(SRV_LIGHT, options);
 
         this.brightness = this.addRegister(LightReg.Brightness, [15]);
-        this.actualBrightness = this.addRegister(LightReg.Brightness, [15]);
-        this.lightType = this.addRegister(LightReg.Brightness, [LightLightType.WS2812B_GRB]);
+        this.actualBrightness = this.addRegister(LightReg.ActualBrightness, [15]);
+        this.lightType = this.addRegister(LightReg.LightType, [LightLightType.WS2812B_GRB]);
         this.numPixels = this.addRegister(LightReg.NumPixels, [options?.numPixels || 15]);
         this.maxPower = this.addRegister(LightReg.MaxPower, [options?.maxPower || 200]);
         this.maxPixels = this.addRegister(LightReg.MaxPixels, [options?.maxPixels || 300]);

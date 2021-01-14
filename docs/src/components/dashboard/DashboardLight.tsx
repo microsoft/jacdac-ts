@@ -1,7 +1,7 @@
 
 import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
-import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { LightReg, LightCmd, CHANGE, LightVariant, RENDER } from "../../../../src/jdom/constants";
+import React, { ChangeEvent, useMemo, useState } from "react";
+import { LightReg, LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import RegisterInput from "../RegisterInput";
 import { lightEncode } from "../../../../src/jdom/light";
@@ -17,10 +17,6 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useServiceHost from "../hooks/useServiceHost";
 import LightServiceHost from "../../../../src/hosts/lightservicehost";
-import { SvgWidget } from "../widgets/SvgWidget";
-import useChange from "../../jacdac/useChange";
-import useWidgetTheme from "../widgets/useWidgetTheme";
-import useWidgetSize from "../widgets/useWidgetSize";
 import LightWidget from "../widgets/LightWidget";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
