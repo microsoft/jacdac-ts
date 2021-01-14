@@ -1,5 +1,5 @@
 
-import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
+import { Collapse, Grid, MenuItem, TextField, Typography } from "@material-ui/core";
 import React, { ChangeEvent, useMemo, useState } from "react";
 import { LightReg, LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
@@ -153,17 +153,17 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
                 {lightCommands.map(cmd => <MenuItem key={cmd.name} value={cmd.name}>{cmd.name}</MenuItem>)}
             </SelectWithLabel>
         </Grid>
-        {expanded && <Grid item xs={2} key="time">
+        <Grid item xs={2} key="time">
             <TextField variant="outlined" label={"duration"} helperText="milliseconds" type="number" value={duration} onChange={handleDurationChange} />
-        </Grid>}
-        {expanded && <Grid item xs={2} key="mode">
+        </Grid>
+        <Grid item xs={2} key="mode">
             <SelectWithLabel fullWidth={true} label="update mode" value={mode + ""} onChange={handleModeChange}>
                 <MenuItem value={0}>replace</MenuItem>
                 <MenuItem value={1}>add</MenuItem>
                 <MenuItem value={2}>substract</MenuItem>
                 <MenuItem value={3}>multiply</MenuItem>
             </SelectWithLabel>
-        </Grid>}
+        </Grid>
         {(args === "K" || args === "PC") && <Grid item key="K">
             <TextField variant="outlined" type="number" helperText={valueDescription} value={offset} onChange={handleOffsetChange} />
         </Grid>}
@@ -188,17 +188,11 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
 
 export default function DashboardLight(props: DashboardServiceProps) {
     const { service, expanded } = props;
-    const brightness = service.register(LightReg.Brightness);
     const host = useServiceHost<LightServiceHost>(service);
     return <>
         {host && <LightWidget {...props} />}
-        {expanded && <Grid container spacing={1}>
-            <Grid item xs={12}>
-                <RegisterInput register={brightness} showRegisterName={true} />
-            </Grid>
-            <Grid item xs={12}>
-                <LightCommand service={service} expanded={expanded} />
-            </Grid>
-        </Grid>}
+        <Collapse in={expanded}>
+            <LightCommand service={service} expanded={expanded} />
+        </Collapse>
     </>
 }
