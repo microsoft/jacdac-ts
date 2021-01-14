@@ -48,11 +48,15 @@ const hostDefinitions = [
         services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
     },
     {
-        name: "light ring 10",
+        name: "light ring 16",
         services: () => [new LightServiceHost({ numPixels: 10, variant: LightVariant.Ring })]
     },
     {
-        name: "light strip 60",
+        name: "light stick 8",
+        services: () => [new LightServiceHost({ numPixels: 8, variant: LightVariant.Stick })]
+    },
+    {
+        name: "light strip 30",
         services: () => [new LightServiceHost({ numPixels: 60, variant: LightVariant.Strip })]
     },
     {

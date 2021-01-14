@@ -72,7 +72,16 @@ export default function LightWidget(props: { service: JDService }) {
     let height: number;
 
     let d = "";
-    if (variant === LightVariant.Strip) {
+    if (variant === LightVariant.Stick) {
+        const dx = neoradius * 3
+        d = `M 0 ${dx}`
+        for(let i = 0; i < numPixels;++i) {
+            d += ` h ${dx} 0`
+        }
+        width = (numPixels + 2) * dx;
+        height = 2 * dx;
+    }
+    else if (variant === LightVariant.Strip) {
         const r = neoradius * 4
         const side = Math.ceil(Math.sqrt(numPixels) * 1.6108)
 
@@ -98,7 +107,7 @@ export default function LightWidget(props: { service: JDService }) {
         height = line * tr + 2 * tr;
     }
     else {
-        const neoperimeter = numPixels * (3 * neoradius)
+        const neoperimeter = numPixels * (2 * neoradius)
         const ringradius = neoperimeter / (2 * Math.PI)
         const margin = 2 * neoradius;
         width = 2 * (margin + ringradius);
@@ -129,8 +138,8 @@ export default function LightWidget(props: { service: JDService }) {
         const pixels = pixelsRef.current.children;
         const pn = pixels.length;
         const length = p.getTotalLength();
-        const extra = variant === LightVariant.Ring ? 0 : 2;
-        const step = length / (pn + extra);
+        const extra = variant === LightVariant.Ring ? 0 : 1;
+        const step = length / pn;
 
         for (let i = 0; i < pn; ++i) {
             const pixel = pixels.item(i) as SVGCircleElement;
