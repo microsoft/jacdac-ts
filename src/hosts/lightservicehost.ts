@@ -445,7 +445,7 @@ export default class LightServiceHost extends JDServiceHost {
     }
 
     private prog_rot(shift: number) {
-        if (shift == 0 || shift >= this.range_len)
+        if (shift <= 0 || shift >= this.range_len)
             return;
 
         const range_start = this.range_start;
@@ -466,9 +466,12 @@ export default class LightServiceHost extends JDServiceHost {
             buf[first + 1] = buf[next + 1];
             buf[first + 2] = buf[next + 2];
 
-            buf[tmp] = tmp;
-            buf[tmp1] = tmp1;
-            buf[tmp2] = tmp2;
+            buf[next] = tmp;
+            buf[next + 1] = tmp1;
+            buf[next + 2] = tmp2;
+
+            first += 3;
+            next += 3;
 
             if (next === last)
                 next = middle;

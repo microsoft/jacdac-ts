@@ -92,7 +92,7 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
         if (mode)
             vargs.unshift(mode);
 
-        if (vargs.some(v => v === undefined))
+        if (vargs.some(v => v === undefined || isNaN(v)))
             return undefined;
 
         let ms = parseInt(duration);
