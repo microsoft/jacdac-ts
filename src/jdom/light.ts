@@ -13,28 +13,28 @@ import { fromHex } from "./utils"
 * `0xD8: mode1(K=0)` - set update mode for next command only
 */
 
-export const LIGHT_PROG_SET_ALL =0xD0
-export const LIGHT_PROG_FADE =0xD1
-export const LIGHT_PROG_FADE_HSV =0xD2
-export const LIGHT_PROG_ROTATE_FWD =0xD3
-export const LIGHT_PROG_ROTATE_BACK =0xD4
-export const LIGHT_PROG_SHOW =0xD5
-export const LIGHT_PROG_RANGE =0xD6
-export const LIGHT_PROG_MODE =0xD7
-export const LIGHT_PROG_MODE1 =0xD8
+export const LIGHT_PROG_SET_ALL = 0xD0
+export const LIGHT_PROG_FADE = 0xD1
+export const LIGHT_PROG_FADE_HSV = 0xD2
+export const LIGHT_PROG_ROTATE_FWD = 0xD3
+export const LIGHT_PROG_ROTATE_BACK = 0xD4
+export const LIGHT_PROG_SHOW = 0xD5
+export const LIGHT_PROG_RANGE = 0xD6
+export const LIGHT_PROG_MODE = 0xD7
+export const LIGHT_PROG_MODE1 = 0xD8
 
-export const LIGHT_MODE_REPLACE =0x00
-export const LIGHT_MODE_ADD_RGB =0x01
-export const LIGHT_MODE_SUBTRACT_RGB =0x02
-export const LIGHT_MODE_MULTIPLY_RGB =0x03
-export const LIGHT_MODE_LAST =0x03
+export const LIGHT_MODE_REPLACE = 0x00
+export const LIGHT_MODE_ADD_RGB = 0x01
+export const LIGHT_MODE_SUBTRACT_RGB = 0x02
+export const LIGHT_MODE_MULTIPLY_RGB = 0x03
+export const LIGHT_MODE_LAST = 0x03
 
-export const LIGHT_PROG_COLN =0xC0
-export const LIGHT_PROG_COL1 =0xC1
-export const LIGHT_PROG_COL2 =0xC2
-export const LIGHT_PROG_COL3 =0xC3
+export const LIGHT_PROG_COLN = 0xC0
+export const LIGHT_PROG_COL1 = 0xC1
+export const LIGHT_PROG_COL2 = 0xC2
+export const LIGHT_PROG_COL3 = 0xC3
 
-export const LIGHT_PROG_COL1_SET =0xCF
+export const LIGHT_PROG_COL1_SET = 0xCF
 
 function cmdCode(cmd: string) {
     switch (cmd) {
