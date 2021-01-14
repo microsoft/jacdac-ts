@@ -189,6 +189,49 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
     </Grid>
 }
 
+function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+    const [r$, g$, b$] = [r / 255, g / 255, b / 255];
+    let cMin = Math.min(r$, g$, b$);
+    let cMax = Math.max(r$, g$, b$);
+    let cDelta = cMax - cMin;
+    let h: number;
+    let s: number;
+    let l: number;
+    let maxAndMin = cMax + cMin;
+
+    //lum
+    l = (maxAndMin / 2) * 100
+
+    if (cDelta === 0)
+        s = h = 0;
+    else {
+        //hue
+        if (cMax === r$)
+            h = 60 * (((g$ - b$) / cDelta) % 6);
+        else if (cMax === g$)
+            h = 60 * (((b$ - r$) / cDelta) + 2);
+        else if (cMax === b$)
+            h = 60 * (((r$ - g$) / cDelta) + 4);
+
+        //sat
+        if (l > 50)
+            s = 100 * (cDelta / (2 - maxAndMin));
+        else
+            s = 100 * (cDelta / maxAndMin);
+    }
+
+    return [Math.floor(h), Math.floor(s), Math.floor(l)];
+}
+
+function setRgb(el: SVGElement, r: number, g: number, b: number) {
+    const hsl = rgbToHsl(r, g, b);
+    const [h, s, l] = hsl;
+    // at least 70% luminosity
+    const lum = Math.max(l, 60);
+    const fill = `hsl(${h}, ${s}%, ${lum}%)`;
+    el.setAttribute("fill", fill);
+}
+
 function LightWidget(props: DashboardServiceProps) {
     const { service } = props;
     const host = useServiceHost<LightServiceHost>(service);
@@ -237,7 +280,7 @@ function LightWidget(props: DashboardServiceProps) {
         let ci = 0;
         for (let i = 0; i < pn; ++i) {
             const pixel = pixels.item(i) as SVGCircleElement;
-            pixel.setAttribute("fill", `rgb(${colors[ci]}, ${colors[ci + 1]}, ${colors[ci + 2]})`)
+            setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2]);
             ci += 3;
         }
     }), [host]);
@@ -247,11 +290,11 @@ function LightWidget(props: DashboardServiceProps) {
             <path ref={pathRef} d={d} fill="transparent" stroke={background} strokeWidth={sw} />
             <g ref={pixelsRef}>
                 {Array(numPixels).fill(0).map((_, i) => <circle key={"pixel" + i}
-                        r={neocircleradius}
-                        cx={width >> 1} cy={height >> 1}
-                        stroke={controlBackground}
-                        strokeWidth={1}
-                    />)}
+                    r={neocircleradius}
+                    cx={width >> 1} cy={height >> 1}
+                    stroke={controlBackground}
+                    strokeWidth={1}
+                />)}
             </g>
         </>
     </SvgWidget>
