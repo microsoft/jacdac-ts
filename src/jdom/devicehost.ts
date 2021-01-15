@@ -47,7 +47,8 @@ export default class JDDeviceHost extends JDEventSource {
         if (value !== this._bus) {
             this.stop();
             this._bus = value;
-            this.start();
+            if (this._bus)
+                this.start();
         }
     }
 

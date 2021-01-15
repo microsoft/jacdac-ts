@@ -30,7 +30,7 @@ export default function ButtonWidget(props: {
             onPointerDown={onDown}
             onPointerUp={onUp}
             onClick={onClick}
-            className={clickeable && "clickeable"}
+            className={clickeable ? "clickeable" : undefined}
             />
         <text className={"no-pointer-events"} x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
     </SvgWidget>

@@ -513,10 +513,22 @@ export class JDBus extends JDNode {
         if (!deviceHost) return;
         const i = this._deviceHosts.indexOf(deviceHost);
         if (i > -1) {
+            // remove device as well
+            const devi = this._devices.findIndex(d => d.deviceId === deviceHost.deviceId);
+            if (devi > -1) {
+                const dev = this._devices[devi];
+                this._devices.splice(devi, 1)
+                dev.disconnect();
+                this.emit(DEVICE_DISCONNECT, dev);
+                this.emit(DEVICE_CHANGE, dev)
+            }
+
+            // remove host
             this._deviceHosts.splice(i, 1)
             deviceHost.bus = undefined;
-
             this.emit(DEVICE_HOST_REMOVED);
+
+            // removed host
             this.emit(CHANGE);
         }
     }

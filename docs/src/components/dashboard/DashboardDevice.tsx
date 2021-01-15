@@ -35,13 +35,13 @@ export default function DashboardDevice(props: {
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
     const host = useDeviceHost(device);
-    const identifying = useChange(host, h => h.identifying);
+    const identifying = useChange(host, h => h?.identifying);
 
     return (
         <Card variant={identifying ? "outlined" : undefined}>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
-                action={<DeviceActions device={device} hideIdentity={!expanded} showReset={expanded && !mobile}>
+                action={<DeviceActions device={device} showStopHost={expanded} hideIdentity={!expanded} showReset={expanded && !mobile}>
                     <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButtonWithTooltip>
