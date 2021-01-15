@@ -66,7 +66,7 @@ export default function RegisterInput(props: {
     }
 
     if (!specification)
-        return <Alert severity="error">{`Unknown member ${register.service}:${register.address}`}</Alert>
+        return <Alert severity="error">{`Unknown member ${register.service}:${register.code}`}</Alert>
 
     if (!fields.length)
         return null; // nothing to see here

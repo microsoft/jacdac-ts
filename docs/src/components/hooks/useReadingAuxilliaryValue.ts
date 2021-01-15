@@ -10,8 +10,8 @@ export default function useReadingAuxilliaryValue(register: JDRegister, identifi
     | SystemReg.StreamingInterval
     | SystemReg.StreamingPreferredInterval
 ) {
-    const { service, address } = register;
-    const reading = address === SystemReg.Reading;
+    const { service, code } = register;
+    const reading = code === SystemReg.Reading;
     const auxilliaryRegister = reading ? service.register(identifier) : undefined;
     const [value, setValue] = useState<number[]>(auxilliaryRegister?.unpackedValue);
 

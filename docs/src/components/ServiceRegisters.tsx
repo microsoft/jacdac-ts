@@ -35,7 +35,7 @@ export default function ServiceRegisters(props: {
             register={register}
             showRegisterName={showRegisterName}
             hideMissingValues={hideMissingValues}
-            showTrend={showTrends && register.address === SystemReg.Reading}
+            showTrend={showTrends && register.code === SystemReg.Reading}
         />)}
     </AutoGrid>
 }

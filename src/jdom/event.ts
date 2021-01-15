@@ -12,8 +12,8 @@ export class JDEvent extends JDServiceMemberNode {
 
     constructor(
         service: JDService,
-        address: number) {
-        super(service, address, isEvent)
+        code: number) {
+        super(service, code, isEvent)
     }
 
     get nodeKind() {

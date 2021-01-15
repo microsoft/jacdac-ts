@@ -144,7 +144,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
         const data = jdpack(packFormat, payload);
         log({ data: toHex(data) })
         // send over cmd packet
-        await rw.service.sendPacketAsync(Packet.from(rw.address, data))
+        await rw.service.sendPacketAsync(Packet.from(rw.code, data))
         // read packet
         await rw.sendGetAsync();
         // wait for response
@@ -181,7 +181,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
         .map(rw => {
             const roname = rw.name.replace(/^rw_/, "ro_");
             const ro = regs.find(r => r.specification.kind === "ro" && r.specification.name === roname)
-            const ev = service.event(rw.address);
+            const ev = service.event(rw.code);
             return { rw, ro, ev }
         });
 

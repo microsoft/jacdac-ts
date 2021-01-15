@@ -40,7 +40,7 @@ export default function DashboardServiceDetails(props: DashboardServiceProps) {
 
     return <>
         {registers.map(register => {
-            const showTrend = register.address === SystemReg.Reading;
+            const showTrend = register.code === SystemReg.Reading;
             const xs = showTrend ? 12 : true;
             return <Grid key={register.id} item xs={xs}><RegisterInput
                 register={register}

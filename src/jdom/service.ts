@@ -107,33 +107,33 @@ export class JDService extends JDNode {
         return [...this.registers(), ... this.events];
     }
 
-    register(identifier: number): JDRegister {
+    register(registerCode: number): JDRegister {
         // cache known registers
         this.registers()
-        let register = this._registers.find(reg => reg.address === identifier);
+        let register = this._registers.find(reg => reg.code === registerCode);
         // we may not have a spec.
         if (!register) {
             const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === identifier)) {
+            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === registerCode)) {
                 //this.log(`debug`, `attempting to access register 0x${identifier.toString(16)}`)
                 return undefined;
             }
-            this._registers.push(register = new JDRegister(this, identifier));
+            this._registers.push(register = new JDRegister(this, registerCode));
         }
         return register;
     }
 
-    event(identifier: number): JDEvent {
+    event(eventCode: number): JDEvent {
         if (!this._events)
             this._events = [];
-        let event = this._events.find(ev => ev.address === identifier);
+        let event = this._events.find(ev => ev.code === eventCode);
         if (!event) {
             const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === identifier)) {
-                this.log(`warn`, `attempting to access event 0x${identifier.toString(16)}`)
+            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === eventCode)) {
+                this.log(`warn`, `attempting to access event 0x${eventCode.toString(16)}`)
                 return undefined;
             }
-            this._events.push(event = new JDEvent(this, identifier));
+            this._events.push(event = new JDEvent(this, eventCode));
         }
         return event;
     }

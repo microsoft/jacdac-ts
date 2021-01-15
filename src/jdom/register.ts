@@ -24,8 +24,8 @@ export class JDRegister extends JDServiceMemberNode {
 
     constructor(
         service: JDService,
-        address: number) {
-        super(service, address, isRegister)
+        code: number) {
+        super(service, code, isRegister)
     }
 
     get nodeKind() {
@@ -56,7 +56,7 @@ export class JDRegister extends JDServiceMemberNode {
 
     // send a message to set the register value
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
-        const cmd = CMD_SET_REG | this.address;
+        const cmd = CMD_SET_REG | this.code;
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp;
         let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
@@ -72,7 +72,7 @@ export class JDRegister extends JDServiceMemberNode {
 
         this._lastGetTimestamp = this.service.device.bus.timestamp;
         this._lastGetAttempts++;
-        const cmd = CMD_GET_REG | this.address;
+        const cmd = CMD_GET_REG | this.code;
         return this.service.sendCmdAsync(cmd, undefined, this.service.registersUseAcks)
             .then(() => { this.emit(GET_ATTEMPT) });
     }
@@ -190,7 +190,7 @@ export class JDRegister extends JDServiceMemberNode {
 
     compareTo(b: JDRegister) {
         const a = this;
-        return a.address - b.address ||
+        return a.code - b.code ||
             a.service.compareTo(b.service);
     }
 }
