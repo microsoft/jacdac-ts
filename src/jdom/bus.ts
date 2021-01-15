@@ -857,7 +857,7 @@ export class JDBus extends JDNode {
             // do we wait?
             try {
                 this.sendPacketAsync(pkt);
-            } catch(e) {
+            } catch (e) {
                 // something went wrong, clear queue
                 this._delayedPackets = undefined;
                 throw e;
