@@ -1,21 +1,18 @@
 import { Grid, useMediaQuery, useTheme } from "@material-ui/core";
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useContext } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
 import { splitFilter, strcmp } from "../../../../src/jdom/utils";
 import Alert from "../ui/Alert";
 import useDevices from "../hooks/useDevices";
-import DashboardDevice from "./DashboardDevice";
 import { MOBILE_BREAKPOINT } from "../layout";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
-import KindIcon from "../KindIcon";
-import GridHeader from "../ui/GridHeader"
 import ConnectButton from "../../jacdac/ConnectButton";
 import AppContext from "../AppContext";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
-import { GridBreakpoints } from "../useGridBreakpoints";
+import DeviceGroup from "./DashboardDeviceGroup";
+import AddIcon from '@material-ui/icons/Add';
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -27,56 +24,6 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
     if (ls !== rs)
         return -ls + rs;
     return strcmp(l.deviceId, r.deviceId);
-}
-
-function DeviceItem(props: {
-    device: JDDevice,
-    expanded: boolean,
-    toggleExpanded: () => void,
-}) {
-    const { device, expanded, toggleExpanded } = props;
-    const readingCount = device.services()
-        .map(srv => srv.readingRegister ? 1 : 0)
-        .reduce((c: number, v) => c + v, 0);
-    const breakpoints: GridBreakpoints = useMemo(() => {
-        if (readingCount > 2)
-            return { xs: 12, sm: 12, md: 12, lg: 8, xl: 6 };
-        else if (readingCount == 2)
-            return { xs: 12, sm: 6, md: 6, lg: 6, xl: 4 };
-        else
-            return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: 4, xl: "auto" };
-    }, [expanded, readingCount]);
-
-    // based on size, expanded or reduce widget size
-    return <Grid item {...breakpoints}>
-        <DashboardDevice
-            device={device}
-            expanded={expanded}
-            toggleExpanded={toggleExpanded} />
-    </Grid>
-}
-
-function DeviceGroup(props: {
-    title: string,
-    action?: JSX.Element,
-    devices: JDDevice[],
-    expanded: (device: JDDevice) => boolean,
-    toggleExpanded: (device: JDDevice) => void,
-    children?: JSX.Element | JSX.Element[]
-}) {
-    const { title, action, devices, expanded, toggleExpanded, children } = props;
-    const handleExpand = (device: JDDevice) => () => toggleExpanded(device)
-    return <section>
-        <Grid container spacing={2}>
-            <GridHeader title={title} action={action} />
-            {devices?.map(device => <DeviceItem
-                key={device.id}
-                device={device}
-                expanded={expanded(device)}
-                toggleExpanded={handleExpand(device)} />)}
-            {children}
-        </Grid>
-    </section>
 }
 
 export default function Dashboard() {
@@ -95,7 +42,7 @@ export default function Dashboard() {
             action={<IconButtonWithTooltip
                 title="start simulator"
                 onClick={toggleShowDeviceHostsDialog}>
-                <KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />
+                <AddIcon />
             </IconButtonWithTooltip>}
             devices={hosted}
             expanded={selected}
