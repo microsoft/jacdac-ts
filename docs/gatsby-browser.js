@@ -1,7 +1,6 @@
 import Layout from "./src/components/layout"
 import React from 'react'
 import ReactDOM from 'react-dom'
-import reactAxe from "@axe-core/react"
 
 export const onRouteUpdate = ({ location }, options) => {
   window.analytics.page();
@@ -14,6 +13,8 @@ const isDev = activeEnv === 'development'
 
 export const onInitialClientRender = () => {
   if (isDev) {
-    reactAxe(React, ReactDOM, 1000, {})
+    import("@axe-core/react").then(reactAxe => {
+      reactAxe.default(React, ReactDOM, 1000, {})
+    });
   }
 }
