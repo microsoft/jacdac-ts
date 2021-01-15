@@ -11,6 +11,8 @@ import DashboardButton from "./DashboardButton";
 import { isRegister } from "../../../../src/jdom/spec";
 import RegisterInput from "../RegisterInput";
 import DashboardServo from "./DashboardServo";
+import { JDRegister } from "../../../../src/jdom/register";
+import { useRegisterIntValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -39,6 +41,20 @@ const collapsedRegisters = [
     SystemReg.Intensity
 ]
 
+function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRegister }) {
+    const { valueRegister, intensityRegister } = props;
+    const intensity = useRegisterUnpackedValue<[number]>(intensityRegister);
+    const off = intensity !== undefined && !intensity;
+    
+    return <RegisterInput
+        register={valueRegister}
+        variant={off ? "widget" : "offwidget"}
+        showServiceName={false}
+        showRegisterName={false}
+        hideMissingValues={false}
+    />;
+}
+
 function DefaultWidget(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const { specification } = service;
@@ -51,13 +67,20 @@ function DefaultWidget(props: DashboardServiceProps) {
     if (!register) // nothing to see here
         return null;
 
+    // if register is value, disable if enabled is 0.
+    if (register.specification.identifier == SystemReg.Value) {
+        const intensityRegister = register.service.register(SystemReg.Intensity);
+        if (intensityRegister)
+            return <ValueWidget valueRegister={register} intensityRegister={intensityRegister} />;
+    }
+
     return <RegisterInput
-            register={register}
-            variant={"widget"}
-            showServiceName={false}
-            showRegisterName={false}
-            hideMissingValues={false}
-        />;
+        register={register}
+        variant={"widget"}
+        showServiceName={false}
+        showRegisterName={false}
+        hideMissingValues={false}
+    />;
 }
 
 export default function DashboardServiceWidget(props: React.Attributes & DashboardServiceProps): JSX.Element {

@@ -1,7 +1,5 @@
 import React from "react";
 import { Grid, Typography } from "@material-ui/core";
-import { SvgWidget } from "./SvgWidget";
-import useWidgetTheme from "./useWidgetTheme";
 import Gauge from "./Gauge";
 
 export default function GaugeWidget(props: {
@@ -11,9 +9,11 @@ export default function GaugeWidget(props: {
     size?: string,
     min?: number,
     max?: number,
+    off?: boolean,
     valueLabel?: (v: number) => string,
 }) {
-    const { value, label, color, size, min, max, valueLabel } = props;
+    const { value, label, color, size, min, max, valueLabel, off } = props;
+    const offFormat = (v: number) => "off";
 
     return <Grid container direction="row" justify="center">
         <Grid container justify="center">
@@ -22,9 +22,9 @@ export default function GaugeWidget(props: {
                 min={min}
                 max={max}
                 value={value}
-                showValue={!!valueLabel}
+                showValue={!!valueLabel || off}
                 color={color}
-                label={valueLabel} />
+                label={off ? offFormat : valueLabel} />
         </Grid>
         {label && <Grid container justify="center">
             <Typography variant="caption">{label}</Typography>

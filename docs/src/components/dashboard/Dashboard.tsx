@@ -55,7 +55,7 @@ export default function Dashboard() {
             toggleExpanded={toggleSelected}>
             {!physicals.length && <Grid item xs={12}>
                 <Alert severity="info">
-                    Please <ConnectButton full={true} transparent={true} /> to see your physical devices.
+                    Please <ConnectButton showAlways={true} full={true} transparent={true} /> to see your physical devices.
                 </Alert>
             </Grid>}
         </DeviceGroup>
