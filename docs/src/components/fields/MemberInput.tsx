@@ -37,7 +37,8 @@ export default function MemberInput(props: {
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? serviceMemberSpecification.name : specification.name
     const label = name
-    const isWidget = variant === "widget"
+    const isWidget = variant === "widget" || variant === "offwidget"
+    const isOffWidget = variant === "offwidget"
     const widgetSize = useWidgetSize();
 
     const minValue = pick(min, typicalMin, absoluteMin)
@@ -90,6 +91,10 @@ export default function MemberInput(props: {
         // avoid super long floats
         return roundWithPrecision(value, 2);
     }
+    const percentValueLabelFormat = (v: number) => {
+        return `${Math.round(v * 100)}%`
+    }
+    const offFormat = (v: number) => "off";
 
     // value hasn't been loaded yet
     if (serviceMemberSpecification.kind !== "command" && value === undefined)
@@ -125,8 +130,10 @@ export default function MemberInput(props: {
                 value={scaleIntToFloat(value, specification)}
                 color={color}
                 min={0} max={1}
-                valueLabel={v => `${Math.round(v * 100)}%`}
-                size={widgetSize} />
+                valueLabel={percentValueLabelFormat}
+                size={widgetSize}
+                off={isOffWidget}
+            />
 
         return <Slider
             aria-label={label}
@@ -166,7 +173,7 @@ export default function MemberInput(props: {
         return <InputSlider
             value={value}
             color={color}
-            valueLabelFormat={valueLabelFormat}
+            valueLabelFormat={isOffWidget ? offFormat : valueLabelFormat}
             onChange={disabled ? undefined : handleSliderChange}
             min={minValue}
             max={maxValue}
@@ -175,7 +182,7 @@ export default function MemberInput(props: {
             type={inputType}
         />
     } else {// numbers or string
-        if (variant === "widget")
+        if (isWidget)
             return <ValueWithUnitWidget
                 value={roundWithPrecision(value, 2)}
                 label={specification.unit}
