@@ -117,8 +117,6 @@ export default function LightWidget(props: { service: JDService }) {
         d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
     }
 
-    console.log({ d })
-
     // paint svg via dom
     const render = () => {
         const colors = host.colors;

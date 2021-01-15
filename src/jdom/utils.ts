@@ -571,13 +571,32 @@ export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]> {
 
     const r: SMap<T[]> = {}
     list.forEach((item) => {
-         const k = key(item);
-         const a = r[k] || (r[k] = []);
-         a.push(item);
+        const k = key(item);
+        const a = r[k] || (r[k] = []);
+        a.push(item);
     });
     return r;
 }
 
 export function pick(...values: number[]) {
     return values?.find(x => x !== undefined);
+}
+
+/**
+ * Applies filters and returns array of [yays, nays]
+ * @param values 
+ * @param condition 
+ */
+export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolean): [T[], T[]] {
+    let yays: T[] = [];
+    let nays: T[] = [];
+    const n = values.length
+    for (let i = 0; i < n; ++i) {
+        const v = values[i];
+        if (condition(v))
+            yays.push(v)
+        else
+            nays.push(v);
+    }
+    return [yays, nays];
 }

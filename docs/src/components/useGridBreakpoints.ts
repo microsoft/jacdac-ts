@@ -2,13 +2,15 @@ import { GridSize } from "@material-ui/core"
 import React, { useContext } from "react"
 import AppContext, { DrawerType } from "./AppContext"
 
-export default function useGridBreakpoints(itemCount?: number): {
-    xs: GridSize,
-    md: GridSize,
-    sm: GridSize,
-    lg: GridSize,
-    xl: GridSize
-} {
+export interface GridBreakpoints {
+    xs?: GridSize,
+    md?: GridSize,
+    sm?: GridSize,
+    lg?: GridSize,
+    xl?: GridSize
+}
+
+export default function useGridBreakpoints(itemCount?: number): GridBreakpoints {
     const { drawerType } = useContext(AppContext)
 
     if (itemCount !== undefined) {
