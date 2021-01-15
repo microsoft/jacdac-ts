@@ -14,6 +14,7 @@ import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import KindIcon from "../KindIcon";
 import GridHeader from "../ui/GridHeader"
 import JacdacIcon from "../icons/JacdacIcon";
+import ConnectButton from "../../jacdac/ConnectButton";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -38,6 +39,10 @@ function DeviceGroup(props: {
 }) {
     const { title, icon, devices, breakpoints, selected, toggleSelected, children } = props;
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
+
+    if (!devices?.length)
+        return null;
+
     return <>
         <GridHeader title={title} icon={icon} />
         {devices?.map(device => <Grid key={device.id} item {...breakpoints(device)}>
@@ -70,8 +75,7 @@ export default function Dashboard() {
             devices={hosted}
             breakpoints={breakpoints}
             selected={selected}
-            toggleSelected={toggleSelected}
-        />
+            toggleSelected={toggleSelected} />
         <DeviceGroup
             title="Devices"
             icon={<JacdacIcon />}
@@ -79,10 +83,11 @@ export default function Dashboard() {
             breakpoints={breakpoints}
             selected={selected}
             toggleSelected={toggleSelected}
-        >
-            {!devices.length && <Grid item xs={12}>
-                <Alert severity="info">Please connect a JACDAC device to use the dashboard.</Alert>
-            </Grid>}
-        </DeviceGroup>
-    </Grid>
+        />
+        {!physicals.length && <Grid item xs={12}>
+            <Alert severity="info">
+                Please <ConnectButton full={true} transparent={true} /> to see your physical devices.
+            </Alert>
+        </Grid>}
+    </Grid >
 }

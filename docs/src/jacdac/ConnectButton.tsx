@@ -7,6 +7,7 @@ import UsbIcon from '@material-ui/icons/Usb';
 import { Badge, useMediaQuery, useTheme } from "@material-ui/core";
 import IconButtonWithProgress from "../components/ui/IconButtonWithProgress"
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../src/jdom/usb";
+import { MOBILE_BREAKPOINT } from "../components/layout";
 
 export default function ConnectButton(props: { full?: boolean, className?: string, transparent?: boolean }) {
     const { full, className, transparent } = props
@@ -14,7 +15,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const theme = useTheme()
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
-    const small = !full || useMediaQuery(theme.breakpoints.down("md"))
+    const small = full !== true && (!full || useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT)))
     const disabled = connectionState != BusState.Connected && connectionState != BusState.Disconnected
     const onClick = showDisconnect ? disconnectAsync : connectAsync;
     const icon = <Badge color="primary" variant="dot" invisible={!showDisconnect}>
@@ -23,7 +24,7 @@ export default function ConnectButton(props: { full?: boolean, className?: strin
     const title = showDisconnect ? "disconnect" : "connect";
 
     if (!isWebUSBEnabled() || !isWebUSBSupported())
-        return <></>
+        return null
 
     if (small)
         return <span><IconButtonWithProgress
