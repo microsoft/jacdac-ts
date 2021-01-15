@@ -12,7 +12,7 @@ export default class JDDeviceHost extends JDEventSource {
     private readonly _services: JDServiceHost[];
     public readonly deviceId: string;
     public readonly shortId: string;
-    private _eventCounter = 0;
+    private _eventCounter: number = undefined;
     identifying: boolean;
 
     constructor(services: JDServiceHost[], options?: {
@@ -160,6 +160,24 @@ export default class JDDeviceHost extends JDEventSource {
             if (pkt.serviceIndex == JD_SERVICE_INDEX_CRC_ACK) {
                 // TODO
                 //_gotAck(pkt)
+            }
+
+            if (pkt.isEvent) {
+                let ec = this._eventCounter
+                // if ec is undefined, it's the first event, so skip processing
+                if (ec !== undefined) {
+                    ec++
+                    // how many packets ahead and behind current are we?
+                    const ahead = (pkt.eventCounter - ec) & CMD_EVENT_COUNTER_MASK
+                    const behind = (ec - pkt.eventCounter) & CMD_EVENT_COUNTER_MASK
+                    // ahead == behind == 0 is the usual case, otherwise
+                    // behind < 60 means this is an old event (or retransmission of something we already processed)
+                    // ahead < 5 means we missed at most 5 events, so we ignore this one and rely on retransmission
+                    // of the missed events, and then eventually the current event
+                    if (ahead > 0 && (behind < 60 || ahead < 5))
+                        return
+                }
+                this._eventCounter = pkt.eventCounter
             }
         }
     }
