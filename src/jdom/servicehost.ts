@@ -9,6 +9,7 @@ import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
 export interface JDServiceHostOptions {
+    valueValues?: any[];
     variant?: number;
 }
 
@@ -22,11 +23,13 @@ export default class JDServiceHost extends JDEventSource {
 
     constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
-        const { variant } = options || {};
+        const { variant, valueValues } = options || {};
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
         this.statusCode = this.addRegister<[number]>(BaseReg.StatusCode);
+        if (valueValues)
+            this.addRegister(SystemReg.Value, valueValues);
         if (variant)
             this.addRegister<[number]>(SystemReg.Variant, [variant]);
     }

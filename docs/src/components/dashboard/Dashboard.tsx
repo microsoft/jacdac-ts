@@ -43,7 +43,7 @@ function DeviceItem(props: {
         else if (readingCount == 2)
             return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
         else
-            return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: 4, xl: 3 };
+            return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: 4, xl: expanded ? 4 : 3 };
     }, [expanded]);
 
     // based on size, expanded or reduce widget size

@@ -16,25 +16,22 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const value = useRegisterIntValue(register);
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
-    const { background, controlBackground, active } = useWidgetTheme(color)
+    const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
     const widgetSize = useWidgetSize()
 
-    const cx = 56.661;
-    const cy = 899.475;
+    const cx = 55.5;
+    const cy = 79.8;
 
-    const angle = enabled ? - (value - 2500) / (2000) * 180 : 0;
-    const transform = `translate(0 -752.688) rotate(${angle}, ${cx}, ${cy})`;
+    const angle = enabled ? 90 + (value - 2500) / (2000) * 180 : 0;
+    const transform = `rotate(${90 - angle}, ${cx}, ${cy})`;
+    const w = 111.406;
+    const h = 158.50195;
+    const text = enabled ? `${Math.round(angle)}°` : 'off';
 
-    return <SvgWidget width={112.188} height={299.674} size={widgetSize}>
-        <g strokeLinecap="round" strokeLinejoin="round" transform="scale(0.8)">
-            <path id="path8212" fill={background} strokeWidth="6.6" d="M.378 44.61v255.064h112.188V44.61H.378z" />
-            <path id="crankbase" fill={controlBackground} strokeWidth="6.6" d="M56.57 88.047C25.328 88.047 0 113.373 0 144.615c.02 22.352 11.807 42.596 32.238 51.66.03 3.318.095 5.24.088 7.938 0 13.947 11.307 25.254 25.254 25.254 13.947 0 25.254-11.307 25.254-25.254-.006-2.986-.415-5.442-.32-8.746 19.487-9.45 30.606-29.195 30.625-50.852 0-31.24-25.33-56.568-56.57-56.568z" />
-            <path id="lowertip" fill={controlBackground} strokeWidth="2" d="M.476 260.78v38.894h53.82v-10.486a6.82 6.566 0 0 1-4.545-6.182 6.82 6.566 0 0 1 6.82-6.566 6.82 6.566 0 0 1 6.82 6.566 6.82 6.566 0 0 1-4.545 6.182v10.486h53.82V260.78H.475z" />
-            <path id="uppertip" fill={controlBackground} strokeWidth="2" d="M112.566 83.503V44.61h-53.82v10.487a6.82 6.566 0 0 1 4.544 6.18 6.82 6.566 0 0 1-6.818 6.568 6.82 6.566 0 0 1-6.82-6.567 6.82 6.566 0 0 1 4.546-6.18V44.61H.378v38.893h112.188z" />
-            <g id="crank" transform={transform}>
-                <path id="arm" fill={active} d="M47.767 880.88c-4.447 1.162-8.412 8.278-8.412 18.492s3.77 18.312 8.412 18.494c8.024.314 78.496 5.06 78.51-16.952.012-22.013-74.377-21.117-78.51-20.035z" />
-                <circle fill={controlBackground} id="path8216" cx="56.661" cy="899.475" r="8.972" fill="gray" strokeWidth="2" />
-            </g>
-        </g>
+    return <SvgWidget width={w} height={h} size={widgetSize}>
+        <path fill={background} d="M10.687 0v158.502h89.75V0z" />
+        <path fill={controlBackground} d="M55.641 32.957c-24.994 0-45.256 20.26-45.256 45.254.016 17.882 9.446 34.077 25.79 41.328.024 2.655.076 4.192.07 6.35 0 11.158 9.046 20.204 20.204 20.204 11.158 0 20.203-9.046 20.203-20.203-.005-2.389-.332-4.354-.256-6.997 15.59-7.56 24.485-23.356 24.5-40.682 0-24.992-20.264-45.254-45.256-45.254z" />
+        <path fill={enabled ? active : background} stroke={active} transform={transform} d="M55.623 64.72c-3.809.032-6.403.19-7.023.352v.002c-3.558.93-6.73 6.621-6.73 14.793 0 8.17 3.016 14.649 6.73 14.795 6.419.25 62.795 4.049 62.806-13.561.008-14.308-39.277-16.52-55.783-16.38zm.08 8.05a7.178 7.178 0 01.012 0 7.178 7.178 0 017.176 7.179 7.178 7.178 0 01-7.176 7.177 7.178 7.178 0 01-7.178-7.177 7.178 7.178 0 017.166-7.178z" />
+        <text x={w / 2} y={20} textAnchor="middle" fill={textPrimary}>{text}</text>
     </SvgWidget>;
 }

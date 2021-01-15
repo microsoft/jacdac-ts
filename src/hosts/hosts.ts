@@ -79,7 +79,7 @@ const _hosts = [
     },
     {
         name: "servo",
-        services: () => [new JDServiceHost(SRV_SERVO)]
+        services: () => [new JDServiceHost(SRV_SERVO, { valueValues: [1500] })]
     },
     {
         name: "slider",

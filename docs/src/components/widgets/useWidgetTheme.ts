@@ -11,6 +11,7 @@ export default function useWidgetTheme(color?: "primary" | "secondary") {
     return {
         background: background.default,
         controlBackground: palette.background.paper,
-        active: pcolor
+        active: pcolor,
+        textPrimary: palette.text.primary
     }
 }
