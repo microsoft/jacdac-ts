@@ -4,6 +4,7 @@ const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
 const { serviceSpecifications } = require(`../dist/jacdac-jdom.cjs`)
 const { serviceSpecificationToDTDL, DTMIToRoute } = require(`../dist/jacdac-azure-iot.cjs`)
+const { IgnorePlugin } = require('webpack')
 
 async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
@@ -238,13 +239,24 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
 }
 
 exports.onCreateWebpackConfig = ({ stage, actions, getConfig }) => {
+  const { setWebpackConfig } = actions
   if (stage.startsWith("develop")) {
-    actions.setWebpackConfig({
+    setWebpackConfig({
       resolve: {
         alias: {
           "react-dom": "@hot-loader/react-dom",
         },
       },
+    })
+  }
+  // make sure axe is not part of the final build
+  if (stage === 'build-javascript') {
+    setWebpackConfig({
+      plugins: [
+        new IgnorePlugin({
+          resourceRegExp: /^@axe-core\/react$/,
+        }),
+      ],
     })
   }
 
