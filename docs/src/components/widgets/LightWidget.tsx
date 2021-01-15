@@ -78,7 +78,7 @@ export default function LightWidget(props: { service: JDService }) {
         for(let i = 0; i < numPixels;++i) {
             d += ` h ${dx} 0`
         }
-        width = (numPixels + 2) * dx;
+        width = numPixels * dx;
         height = 2 * dx;
     }
     else if (variant === LightVariant.Strip) {

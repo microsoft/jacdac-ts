@@ -51,15 +51,18 @@ function defaultPayload<T extends any[]>(specification: jdspec.PacketInfo): T {
 export default class JDRegisterHost<TValues extends any[]> extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
+    readonly readOnly: boolean;
 
     constructor(
         public readonly service: JDServiceHost,
         public readonly identifier: number,
-        defaultValue?: any[]) {
+        defaultValue?: any[],
+        readOnly?: boolean) {
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
         this.data = jdpack(this.packFormat, defaultValue || defaultPayload(this.specification));
+        this.readOnly = readOnly || this.specification.kind !== "rw";
     }
 
     get packFormat() {
@@ -71,6 +74,10 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
     }
 
     setValues(values: TValues) {
+        // dissallow
+        if (this.readOnly)
+            return;
+
         // enforce boundaries
         this.specification?.fields.forEach((field, fieldi) => {
             if (field.isSimpleType) {

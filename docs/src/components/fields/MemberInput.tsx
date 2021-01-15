@@ -42,7 +42,7 @@ export default function MemberInput(props: {
 
     const minValue = pick(min, typicalMin, absoluteMin)
     const maxValue = pick(max, typicalMax, absoluteMax)
-    const errorValue = !!error && "±%" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString();
+    const errorValue = !!error && "±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString();
     const helperText = errorText
         || [prettyMemberUnit(specification, showDataType), errorValue]
             .filter(v => v !== undefined).join(", ");

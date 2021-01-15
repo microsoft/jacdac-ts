@@ -1,3 +1,4 @@
+import { truncate } from "fs";
 import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -46,7 +47,19 @@ const _hosts = [
     },
     {
         name: "light strip 30",
-        services: () => [new LightServiceHost({ numPixels: 60, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 1000, variant: LightVariant.Strip })]
+    },
+    {
+        name: "light strip 60",
+        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 2000, variant: LightVariant.Strip })]
+    },
+    {
+        name: "light strip 150",
+        services: () => [new LightServiceHost({ numPixels: 150, maxPower: 5000, variant: LightVariant.Strip })]
+    },
+    {
+        name: "light strip 300",
+        services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LightVariant.Strip })]
     },
     {
         name: "motor",

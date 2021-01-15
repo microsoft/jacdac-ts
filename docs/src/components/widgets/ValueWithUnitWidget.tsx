@@ -9,7 +9,7 @@ export default function ValueWithUnitWidget(props: {
     size?: string
 }) {
     const { value, secondaryLabel, label } = props;
-    const labelVariant = "body2";
+    const labelVariant = "subtitle1";
     const valueText = isNaN(value) ? "--" : value.toLocaleString();
     const valueTextLength = valueText.replace(/[\.s]/g, '').length;
 
@@ -24,12 +24,12 @@ export default function ValueWithUnitWidget(props: {
             <Typography align="right" variant={valueVariant}>{valueText}</Typography>
         </Grid>
         {(label || secondaryLabel) && <Grid item>
-            <Grid container direction="column" alignItems="flex-start">
-                {label && <Grid>
+            <Grid container direction="column" alignContent="space-between">
+                {label && <Grid item>
                     <Typography variant={labelVariant}>{label}</Typography>
                 </Grid>}
                 {secondaryLabel && <Grid item>
-                    <Typography variant={labelVariant}>{secondaryLabel}</Typography>
+                    <Typography variant={"caption"}>{secondaryLabel}</Typography>
                 </Grid>}
             </Grid>
         </Grid>}
