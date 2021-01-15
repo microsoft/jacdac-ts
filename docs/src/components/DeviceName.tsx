@@ -1,8 +1,6 @@
-import { Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { Typography, useTheme } from "@material-ui/core";
 import React from "react"
 import { JDDevice } from "../../../src/jdom/device";
-import useDeviceHost from "./hooks/useDeviceHost";
-import { MOBILE_BREAKPOINT } from "./layout";
 import useDeviceName from "./useDeviceName";
 
 export default function DeviceName(props: {
@@ -11,18 +9,14 @@ export default function DeviceName(props: {
     expanded?: boolean,
     showShortId?: boolean
 }) {
-    const { device, serviceIndex, showShortId, expanded } = props
+    const { device, serviceIndex, showShortId } = props
     const name = useDeviceName(device)
     const { shortId } = device
-    const theme = useTheme();
-    const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
-    const host = useDeviceHost(device)
 
     return <span>
         {name || shortId}
         {showShortId && name && name !== shortId &&
             <Typography component="span" variant="body2"> {shortId}</Typography>}
         {serviceIndex !== undefined && `[${serviceIndex}]`}
-        {host && (expanded || !mobile) && <Typography component="span" variant="caption">(virtual)</Typography>}
     </span>
 }

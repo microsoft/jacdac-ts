@@ -254,7 +254,7 @@ export default function ProtocolTest() {
             <Alert severity="info">
                 <AlertTitle>Developer zone</AlertTitle>
                 <Switch checked={host} onChange={toggleHost} />
-                <label>Add virtual device</label>
+                <label>Add simulator</label>
             </Alert>
         </Grid>}
         <Grid key="connect" item xs={12}>

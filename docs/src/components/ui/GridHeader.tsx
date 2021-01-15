@@ -10,26 +10,23 @@ const useStyles = makeStyles((theme) => createStyles({
     start: {
         width: theme.spacing(2)
     },
-    title: {
-        verticalAlign: "text-bottom"
-    }
 }));
 
 export default function GridHeader(props: {
     title: string,
     variant?: "subtitle1" | "caption" | "subtitle2"
-    icon?: JSX.Element,
+    action?: JSX.Element
 }) {
-    const { title, variant, icon } = props;
+    const { title, variant, icon, action } = props;
     const classes = useStyles();
     return <Grid item xs={12}>
-        <Grid container direction="row" spacing={2} justify="center" alignItems="center">
+        <Grid container direction="row" spacing={1} justify="center" alignItems="center">
             <Grid item>
                 <hr className={clsx(classes.hr, classes.start)} />
             </Grid>
             <Grid item>
-                {icon && <Box component="span" ml={1} mr={1}>{icon}</Box>}
-                <Typography className={classes.title} component="span" variant={variant || "subtitle1"}>{title}</Typography>
+                {action && <Box component="span" mr={1}>{action}</Box>}
+                <Typography component="span" variant={variant || "subtitle1"}>{title}</Typography>
             </Grid>
             <Grid item xs>
                 <hr className={classes.hr} />

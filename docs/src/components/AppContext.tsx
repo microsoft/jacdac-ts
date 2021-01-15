@@ -1,9 +1,11 @@
+import { Dialog, DialogContent } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/jdom/bus";
 import { CONNECTION_STATE, ERROR } from "../../../src/jdom/constants";
 import { isCancelError } from "../../../src/jdom/utils";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import DeviceHostDialog from "./hosts/DeviceHostDialog";
 
 export enum DrawerType {
     None,
@@ -21,7 +23,9 @@ export interface AppProps {
     toolsMenu: boolean,
     setToolsMenu: (visible: boolean) => void,
     setError: (error: any) => void,
-    widgetMode: boolean
+    widgetMode: boolean,
+    showDeviceHostsDialog: boolean,
+    toggleShowDeviceHostsDialog: () => void
 }
 
 const AppContext = createContext<AppProps>({
@@ -32,7 +36,9 @@ const AppContext = createContext<AppProps>({
     toolsMenu: false,
     setToolsMenu: (v) => { },
     setError: (error: any) => { },
-    widgetMode: false
+    widgetMode: false,
+    showDeviceHostsDialog: false,
+    toggleShowDeviceHostsDialog: () => {}
 });
 AppContext.displayName = "app";
 
@@ -43,6 +49,8 @@ export const AppProvider = ({ children }) => {
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, _setToolsMenu] = useState(false)
+    const [showDeviceHostsDialog, setShowDeviceHostsDialog] = useState(false)
+
     const { enqueueSnackbar } = useSnackbar();
     const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
 
@@ -86,6 +94,13 @@ export const AppProvider = ({ children }) => {
         }
     }), [])
 
+    const toggleShowDeviceHostsDialog = () => {
+        const b = !showDeviceHostsDialog;
+        setShowDeviceHostsDialog(b);
+        if (!b)
+            setToolsMenu(false);
+    }
+
     return (
         <AppContext.Provider value={{
             drawerType: type,
@@ -95,9 +110,16 @@ export const AppProvider = ({ children }) => {
             toolsMenu,
             setToolsMenu,
             setError,
-            widgetMode
+            widgetMode,
+            showDeviceHostsDialog,
+            toggleShowDeviceHostsDialog
         }}>
             {children}
+            <Dialog open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog}>
+                <DialogContent>
+                    <DeviceHostDialog onAdded={toggleShowDeviceHostsDialog} onAddedAll={toggleShowDeviceHostsDialog} />
+                </DialogContent>
+            </Dialog>
         </AppContext.Provider>
     )
 }

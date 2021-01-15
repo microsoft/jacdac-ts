@@ -1,4 +1,4 @@
-import { Grid, useMediaQuery, useTheme } from "@material-ui/core";
+import { Button, Card, CardActions, CardContent, Grid, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useContext } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
@@ -15,6 +15,8 @@ import KindIcon from "../KindIcon";
 import GridHeader from "../ui/GridHeader"
 import JacdacIcon from "../icons/JacdacIcon";
 import ConnectButton from "../../jacdac/ConnectButton";
+import AppContext from "../AppContext";
+import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -31,20 +33,18 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 function DeviceGroup(props: {
     title: string,
     icon?: JSX.Element,
+    action?: JSX.Element,
     devices: JDDevice[],
     breakpoints: (device: JDDevice) => GridBreakpoints,
     selected: (device: JDDevice) => boolean,
     toggleSelected: (device: JDDevice) => void,
     children?: JSX.Element | JSX.Element[]
 }) {
-    const { title, icon, devices, breakpoints, selected, toggleSelected, children } = props;
+    const { title, icon, action, devices, breakpoints, selected, toggleSelected, children } = props;
     const handleExpand = (device: JDDevice) => () => toggleSelected(device)
 
-    if (!devices?.length)
-        return null;
-
     return <>
-        <GridHeader title={title} icon={icon} />
+        <GridHeader title={title} icon={icon} action={action} />
         {devices?.map(device => <Grid key={device.id} item {...breakpoints(device)}>
             <DashboardDevice device={device} expanded={selected(device)} toggleExpanded={handleExpand(device)} />
         </Grid>)}
@@ -52,8 +52,9 @@ function DeviceGroup(props: {
     </>
 }
 
-export default function Dashboard() {
+export default function Dashboard(props: {}) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { toggleShowDeviceHostsDialog } = useContext(AppContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);
     const theme = useTheme();
@@ -71,23 +72,28 @@ export default function Dashboard() {
     return <Grid container spacing={2}>
         <DeviceGroup
             title="Simulators"
-            icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
+            action={<IconButtonWithTooltip
+                title="start simulator"
+                onClick={toggleShowDeviceHostsDialog}>
+                <KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />
+            </IconButtonWithTooltip>}
             devices={hosted}
             breakpoints={breakpoints}
             selected={selected}
             toggleSelected={toggleSelected} />
         <DeviceGroup
             title="Devices"
-            icon={<JacdacIcon />}
+            action={<ConnectButton full={false} transparent={true} showAlways={true} />}
             devices={physicals}
             breakpoints={breakpoints}
             selected={selected}
             toggleSelected={toggleSelected}
-        />
-        {!physicals.length && <Grid item xs={12}>
-            <Alert severity="info">
-                Please <ConnectButton full={true} transparent={true} /> to see your physical devices.
-            </Alert>
-        </Grid>}
+        >
+            {!physicals.length && <Grid item xs={12}>
+                <Alert severity="info">
+                    Please <ConnectButton full={true} transparent={true} /> to see your physical devices.
+                </Alert>
+            </Grid>}
+        </DeviceGroup>
     </Grid >
 }

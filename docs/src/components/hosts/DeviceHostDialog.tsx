@@ -133,18 +133,18 @@ export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedA
 
     return <Grid container spacing={2}>
         <Grid item xs={12}>
-            <SelectWithLabel fullWidth={true} helperText={"Select the service that will run on the virtual device"} label={"Virtual device"} value={selected} onChange={handleChange}>
+            <SelectWithLabel fullWidth={true} helperText={"Select the service that will run on the simulator"} label={"Virtual device"} value={selected} onChange={handleChange}>
                 {hostDefinitions.map((host) => <MenuItem key={host.name} value={host.name}>{host.name}</MenuItem>)}
             </SelectWithLabel>
         </Grid>
         <Grid item>
-            <Button color="primary" variant="contained" title="Start new virtual device" onClick={handleClick} startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}>
+            <Button color="primary" variant="contained" title="Start new simulator" onClick={handleClick} startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}>
                 start
             </Button>
         </Grid>
         <Grid item xs={12}>
             <Alert severity="info">
-                Reload the page to clear out virtual devices.
+                Reload the page to clear out simulators.
                 <Box component="span" ml={"0.5em"}><Button variant="outlined" onClick={handleAddAll}>start all</Button></Box>
             </Alert>
         </Grid>

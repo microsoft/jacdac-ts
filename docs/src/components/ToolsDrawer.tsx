@@ -1,6 +1,6 @@
-import React, { useContext, useState } from "react";
-import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, ListItem, Divider, Dialog, DialogContent, Grid } from "@material-ui/core";
-import { Button, IconButton, Link } from "gatsby-theme-material-ui";
+import React, { useContext } from "react";
+import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, ListItem, Divider } from "@material-ui/core";
+import { IconButton, Link } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -28,15 +28,7 @@ import KindIcon from "./KindIcon";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
 import EdgeImpulseIcon from "./icons/EdgeImpulseIcon";
 import JupyterIcon from "./icons/JupyterIcon";
-import SelectWithLabel from "./ui/SelectWithLabel";
-import ButtonServiceHost from "../../../src/hosts/buttonservicehost";
-import JDDeviceHost from "../../../src/jdom/devicehost";
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import { MenuItem } from '@material-ui/core';
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
-import Alert from "./ui/Alert";
-import DeviceHostDialog from "./hosts/DeviceHostDialog";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -82,10 +74,9 @@ function ToolsListItem(props: { text?: string; url?: string; icon?: JSX.Element,
 
 export default function ToolsDrawer() {
     const classes = useStyles()
-    const { toolsMenu, setToolsMenu } = useContext(AppContext)
+    const { toolsMenu, setToolsMenu, toggleShowDeviceHostsDialog } = useContext(AppContext)
     const { isHosted } = useContext(ServiceManagerContext)
     const { toggleDarkMode, darkMode } = useContext(DarkModeContext)
-    const [deviceHosts, setDeviceHosts] = useState(false)
     const handleClick = (link) => () => {
         if (link.action)
             link.action();
@@ -98,12 +89,6 @@ export default function ToolsDrawer() {
     const handleDarkMode = () => {
         toggleDarkMode()
         setToolsMenu(false)
-    }
-    const toggleDeviceHosts = () => {
-        const b = !deviceHosts;
-        setDeviceHosts(b);
-        if (!b)
-            setToolsMenu(false);
     }
     const links = [
         {
@@ -122,8 +107,8 @@ export default function ToolsDrawer() {
             icon: <SystemUpdateAltIcon />
         },
         {
-            text: "Start virtual device",
-            action: toggleDeviceHosts,
+            text: "Start simulator",
+            action: toggleShowDeviceHostsDialog,
             icon: <KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />
         },
         {
@@ -206,10 +191,5 @@ export default function ToolsDrawer() {
                     <ListItemText>{darkMode === 'light' ? "Dark Mode" : "Light mode"}</ListItemText>
                 </ListItem>}
         </List>
-        <Dialog open={deviceHosts} onClose={toggleDeviceHosts}>
-            <DialogContent>
-                <DeviceHostDialog onAddedAll={toggleDeviceHosts} />
-            </DialogContent>
-        </Dialog>
     </Drawer>
 }
