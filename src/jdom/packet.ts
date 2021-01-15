@@ -17,7 +17,11 @@ import {
     PIPE_CLOSE_MASK,
     CMD_GET_REG,
     JD_SERVICE_INDEX_CTRL,
-    CMD_REG_MASK
+    CMD_REG_MASK,
+    CMD_EVENT_MASK,
+    CMD_EVENT_CODE_MASK,
+    CMD_EVENT_COUNTER_POS,
+    CMD_EVENT_COUNTER_MASK
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -173,7 +177,15 @@ export class Packet {
     }
 
     get isEvent() {
-        return this.serviceCommand === CMD_EVENT;
+        return this.isReport && (this.serviceCommand & CMD_EVENT_MASK) != 0
+    }
+
+    get eventCode() {
+        return this.isEvent ? (this.serviceCommand & CMD_EVENT_CODE_MASK) : undefined
+    }
+
+    get eventCounter() {
+        return this.isEvent ? (this.serviceCommand >> CMD_EVENT_COUNTER_POS) & CMD_EVENT_COUNTER_MASK : undefined
     }
 
     get isCRCAck() {

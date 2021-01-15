@@ -82,12 +82,13 @@ export default class JDServiceHost extends JDEventSource {
         await this.device.sendPacketAsync(pkt);
     }
 
-    protected async sendEvent(event: number, data?: Uint8Array) {
-        const payload = new Uint8Array(4 + (data ? data.length : 0))
-        setNumber(payload, NumberFormat.UInt32LE, 0, event);
-        if (data)
-            memcpy(payload, 4, data);
-        await this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
+    protected async sendEvent(eventCode: number, data?: Uint8Array) {
+        const { bus } = this.device;
+        const pkt = Packet.from(this.device.createEventCmd(eventCode), data)
+        await this.sendPacketAsync(pkt)
+        const now = bus.timestamp
+        bus.delayedSend(pkt, now + 20)
+        bus.delayedSend(pkt, now + 100)
     }
 
     refreshRegisters() {

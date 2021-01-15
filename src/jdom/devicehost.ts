@@ -5,13 +5,14 @@ import { shortDeviceId } from "./pretty";
 import { anyRandomUint32, delay, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
-import { CHANGE, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "./constants";
+import { CHANGE, CMD_EVENT_COUNTER_MASK, CMD_EVENT_COUNTER_POS, CMD_EVENT_MASK, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "./constants";
 
 export default class JDDeviceHost extends JDEventSource {
     private _bus: JDBus;
     private readonly _services: JDServiceHost[];
     public readonly deviceId: string;
     public readonly shortId: string;
+    private _eventCounter = 0;
     identifying: boolean;
 
     constructor(services: JDServiceHost[], options?: {
@@ -80,6 +81,21 @@ export default class JDDeviceHost extends JDEventSource {
 
     service(serviceIndex: number) {
         return serviceIndex !== undefined && this._services[serviceIndex];
+    }
+
+    /**
+     * Gets the current event cound
+     */
+    get eventCounter() {
+        return this._eventCounter;
+    }
+
+    createEventCmd(evCode: number) {
+        this._eventCounter = (this._eventCounter + 1) & CMD_EVENT_COUNTER_MASK;
+        // TODO: emit change?
+        if (evCode >> 8)
+            throw "invalid evcode"
+        return CMD_EVENT_MASK | (this._eventCounter << CMD_EVENT_COUNTER_POS) | evCode;
     }
 
     toString() {
