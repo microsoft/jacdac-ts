@@ -25,6 +25,9 @@ jobs:
       - run: npm run apidocs
       - run: npm run installdocs
       - run: npm run distdocs
+      - run: npm install -g @lhci/cli
+      - name: lighthouse
+        run: lhci autorun      
       - run: npm run builddtdl
       - run: npx semantic-release
         if: ${{ github.ref == 'refs/heads/main' }}
