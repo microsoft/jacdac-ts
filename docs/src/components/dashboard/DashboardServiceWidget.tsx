@@ -43,9 +43,10 @@ const collapsedRegisters = [
 
 function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRegister }) {
     const { valueRegister, intensityRegister } = props;
-    const intensity = useRegisterUnpackedValue<[number]>(intensityRegister);
+    const [intensity] = useRegisterUnpackedValue<[number | boolean]>(intensityRegister);
     const off = intensity !== undefined && !intensity;
-    
+
+    console.log({ off, intensity, ui: intensity !== undefined, ni: !intensity })
     return <RegisterInput
         register={valueRegister}
         variant={off ? "widget" : "offwidget"}
