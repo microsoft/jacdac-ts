@@ -17,7 +17,7 @@ export default function GridHeader(props: {
     variant?: "subtitle1" | "caption" | "subtitle2"
     action?: JSX.Element
 }) {
-    const { title, variant, icon, action } = props;
+    const { title, variant, action } = props;
     const classes = useStyles();
     return <Grid item xs={12}>
         <Grid container direction="row" spacing={1} justify="center" alignItems="center">

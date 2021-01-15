@@ -1,5 +1,5 @@
 import { Grid, useMediaQuery, useTheme } from "@material-ui/core";
-import React, { useCallback, useContext } from "react";
+import React, { useCallback, useContext, useMemo } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
@@ -15,6 +15,7 @@ import GridHeader from "../ui/GridHeader"
 import ConnectButton from "../../jacdac/ConnectButton";
 import AppContext from "../AppContext";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
+import { GridBreakpoints } from "../useGridBreakpoints";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -37,17 +38,17 @@ function DeviceItem(props: {
     const readingCount = device.services()
         .map(srv => srv.readingRegister ? 1 : 0)
         .reduce((c: number, v) => c + v, 0);
-    const breakpoints = useCallback(() => {
+    const breakpoints: GridBreakpoints = useMemo(() => {
         if (readingCount > 2)
-            return { xs: 12, sm: 12, md: 12, lg: 6, xl: 4 };
+            return { xs: 12, sm: 12, md: 12, lg: "auto", xl: "auto" };
         else if (readingCount == 2)
-            return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
+            return { xs: 12, sm: 6, md: 6, lg: "auto", xl: "auto" };
         else
-            return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: 4, xl: expanded ? 4 : 3 };
-    }, [expanded]);
+            return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: "auto", xl: "auto" };
+    }, [expanded, readingCount]);
 
     // based on size, expanded or reduce widget size
-    return <Grid key={device.id} item {...breakpoints}>
+    return <Grid item {...breakpoints}>
         <DashboardDevice
             device={device}
             expanded={expanded}

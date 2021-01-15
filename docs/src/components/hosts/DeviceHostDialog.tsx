@@ -12,6 +12,7 @@ import Alert from "../ui/Alert";
 import { useSnackbar } from "notistack";
 import JDServiceHost from "../../../../src/jdom/servicehost";
 import hosts from "../../../../src/hosts/hosts";
+import { delay } from "../../../../src/jdom/utils";
 
 export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedAll?: () => void }) {
     const { onAdded, onAddedAll } = props;
@@ -28,16 +29,21 @@ export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedA
         setSelected(ev.target.value as string);
     };
     const handleClick = () => {
+        onAdded?.();
         const host = hostDefinitions.find(h => h.name === selected);
         addHost(host);
         enqueueSnackbar(`${host.name} started...`, { variant: "info" })
-        onAdded?.();
     }
-    const handleAddAll = () => {
-        hostDefinitions
-            .forEach(addHost);
-        enqueueSnackbar(`${hostDefinitions.length} devices started...`, { variant: "info" })
+    const handleAddAll = async () => {
+        enqueueSnackbar(`starting ${hostDefinitions.length} simulator...`, {
+            variant: "info",
+            key: "startdevicehosts"
+        })
         onAddedAll?.();
+        for (const hostDef of hostDefinitions) {
+            await delay(100);
+            addHost(hostDef);
+        }
     }
 
     return <Grid container spacing={2}>
