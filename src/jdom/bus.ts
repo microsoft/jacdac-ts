@@ -1,6 +1,6 @@
 import Packet from "./packet";
 import { JDDevice } from "./device";
-import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
+import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex, delay } from "./utils";
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -130,6 +130,10 @@ export class JDBus extends JDNode {
     private _gcDevicesEnabled = 0;
 
     private _deviceHosts: JDDeviceHost[] = [];
+    private _delayedPackets: {
+        timestamp: number,
+        pkt: Packet
+    }[];
 
     public readonly host: BusHost = {
         log
@@ -166,6 +170,7 @@ export class JDBus extends JDNode {
     }
 
     private stopTimers() {
+        this._delayedPackets = undefined;
         if (this._announceInterval) {
             clearInterval(this._announceInterval);
             this._announceInterval = undefined;
@@ -228,6 +233,7 @@ export class JDBus extends JDNode {
     }
 
     clear() {
+        this._delayedPackets = undefined;
         const devs = this._devices;
         if (devs?.length) {
             this._devices = [];
@@ -828,5 +834,39 @@ export class JDBus extends JDNode {
                 }
             })
         })
+    }
+
+    delayedSend(pkt: Packet, timestamp: number) {
+        if (!this._delayedPackets) {
+            this._delayedPackets = [];
+            // start processing loop
+            setTimeout(this.processDelayedPackets.bind(this), 10);
+        }
+        const dp = { timestamp, pkt }
+        this._delayedPackets.push(dp);
+        this._delayedPackets.sort((l, r) => -l.timestamp + r.timestamp);
+    }
+
+    private processDelayedPackets() {
+        // consume packets that are ready
+        while (this._delayedPackets?.length) {
+            const { timestamp, pkt } = this._delayedPackets[0]
+            if (timestamp > this.timestamp)
+                break;
+            this._delayedPackets.shift();
+            // do we wait?
+            try {
+                this.sendPacketAsync(pkt);
+            } catch(e) {
+                // something went wrong, clear queue
+                this._delayedPackets = undefined;
+                throw e;
+            }
+        }
+        // keep waiting or stop
+        if (!this._delayedPackets?.length)
+            this._delayedPackets = undefined; // we're done
+        else
+            setTimeout(this.processDelayedPackets.bind(this), 10);
     }
 }
