@@ -6,20 +6,20 @@ import JDServiceHost from "./servicehost";
 export default class ControlServiceHost extends JDServiceHost {
     private restartCounter = 0;
     private packetCount = 0;
-    readonly deviceDescription: JDRegisterHost;
-    readonly mcuTemperature: JDRegisterHost;
-    readonly resetIn: JDRegisterHost;
-    readonly uptime: JDRegisterHost;
+    readonly deviceDescription: JDRegisterHost<[string]>;
+    readonly mcuTemperature: JDRegisterHost<[number]>;
+    readonly resetIn: JDRegisterHost<[number]>;
+    readonly uptime: JDRegisterHost<[number]>;
     readonly startTime: number;
 
     constructor() {
         super(SRV_CTRL)
 
         this.startTime = Date.now();
-        this.deviceDescription = this.addRegister(ControlReg.DeviceDescription);
-        this.mcuTemperature = this.addRegister(ControlReg.McuTemperature, [25]);
-        this.resetIn = this.addRegister(ControlReg.ResetIn);
-        this.uptime = this.addRegister(ControlReg.Uptime);
+        this.deviceDescription = this.addRegister<[string]>(ControlReg.DeviceDescription);
+        this.mcuTemperature = this.addRegister<[number]>(ControlReg.McuTemperature, [25]);
+        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn);
+        this.uptime = this.addRegister<[number]>(ControlReg.Uptime);
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));

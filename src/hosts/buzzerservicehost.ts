@@ -63,24 +63,24 @@ async function playTone(frequency: number, duration: number) {
 }
 
 export default class BuzzerServiceHost extends JDServiceHost {
-    readonly volume: JDRegisterHost;
+    readonly volume: JDRegisterHost<[number]>;
     constructor() {
         super(SRV_BUZZER);
 
-        this.volume = this.addRegister(BuzzerReg.Volume, [200]);
+        this.volume = this.addRegister<[number]>(BuzzerReg.Volume, [200]);
         this.volume.on(CHANGE, this.handleVolumeChange.bind(this))
         this.addCommand(BuzzerCmd.PlayTone, this.handlePlayTone.bind(this));
     }
 
     private handleVolumeChange() {
-        const [v] = this.volume.values<[number]>();
+        const [v] = this.volume.values();
         setVolume(v) // don't be too loud
     }
 
     private handlePlayTone(pkt: Packet) {
         const [period, duty, duration] = jdunpack<[number, number, number]>(pkt.data, "u16 u16 u16")
 
-        const [v] = this.volume.values<[number]>();
+        const [v] = this.volume.values();
         const frequency = 1000000 / period;
 
         playTone(frequency, duration);

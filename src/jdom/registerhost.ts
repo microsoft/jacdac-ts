@@ -48,7 +48,7 @@ function defaultPayload<T extends any[]>(specification: jdspec.PacketInfo): T {
     return rs as T;
 }
 
-export default class JDRegisterHost extends JDEventSource {
+export default class JDRegisterHost<TValues extends any[]> extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
 
@@ -66,11 +66,11 @@ export default class JDRegisterHost extends JDEventSource {
         return this.specification.packFormat;
     }
 
-    values<T extends any[]>(): T {
-        return jdunpack(this.data, this.packFormat) as T;
+    values(): TValues {
+        return jdunpack(this.data, this.packFormat) as TValues;
     }
 
-    setValues<T extends any[]>(values: T) {
+    setValues(values: TValues) {
         // enforce boundaries
         this.specification?.fields.forEach((field, fieldi) => {
             if (field.isSimpleType) {
