@@ -1,9 +1,9 @@
 import JDServiceHost from "./servicehost";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
-import { assert, bufferEq, pick } from "./utils";
+import { bufferEq, pick } from "./utils";
 import { JDEventSource } from "./eventsource";
-import { CHANGE, CMD_GET_REG } from "./constants";
+import { CHANGE, CMD_GET_REG, REPORT_RECEIVE } from "./constants";
 import { isRegister } from "./spec";
 
 function defaultFieldPayload(specification: jdspec.PacketMember) {
@@ -18,8 +18,6 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
         case "u8":
         case "u16":
         case "u32": {
-            const unsigned = specification.type[0] === "u";
-            const n = Math.min(30, parseInt(specification.type.slice(1)));
             const min = pick(specification.typicalMin, specification.absoluteMin, undefined);
             const max = pick(specification.typicalMax, specification.absoluteMax, undefined);
             if (max !== undefined && min !== undefined)
@@ -105,12 +103,16 @@ export default class JDRegisterHost extends JDEventSource {
         if (pkt.isRegisterGet) { // get
             this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
         } else if (this.identifier >> 8 !== 0x1) { // set, non-const
+            let changed = false;
             const d = pkt.data;
             if (!bufferEq(this.data, d)) {
                 this.data = d;
-                this.emit(CHANGE);
+                changed = true;
             }
-        }
+            this.emit(REPORT_RECEIVE);
+            if (changed)
+                this.emit(CHANGE);
+    }
         return true;
     }
 }

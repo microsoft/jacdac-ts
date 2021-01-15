@@ -1,4 +1,4 @@
-import { ControlAnnounceFlags, ControlCmd, ControlReg, IDENTIFY, RESET, SRV_CTRL } from "./constants";
+import { ControlAnnounceFlags, ControlCmd, ControlReg, IDENTIFY, REPORT_RECEIVE, RESET, SRV_CTRL } from "./constants";
 import Packet from "./packet";
 import JDRegisterHost from "./registerhost";
 import JDServiceHost from "./servicehost";
@@ -11,16 +11,20 @@ export default class ControlServiceHost extends JDServiceHost {
     readonly resetIn: JDRegisterHost;
     readonly uptime: JDRegisterHost;
     readonly startTime: number;
+    private _resetTimeOut: any;
 
     constructor() {
         super(SRV_CTRL)
 
         this.startTime = Date.now();
+        this.resetIn = this.addRegister(ControlReg.ResetIn, [0]);
         this.deviceDescription = this.addRegister(ControlReg.DeviceDescription);
         this.mcuTemperature = this.addRegister(ControlReg.McuTemperature, [25]);
         this.resetIn = this.addRegister(ControlReg.ResetIn);
         this.uptime = this.addRegister(ControlReg.Uptime);
 
+        this.resetIn.on(REPORT_RECEIVE, this.handleResetIn.bind(this));
+        
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));
         this.addCommand(ControlCmd.Reset, this.reset.bind(this));
@@ -56,5 +60,15 @@ export default class ControlServiceHost extends JDServiceHost {
         this.emit(RESET);
         this.restartCounter = 0;
         this.packetCount = 0;
+        this._resetTimeOut = undefined;
+        // TODO reset all registers
+    }
+
+    private handleResetIn() {
+        const [t] = this.resetIn.values<[number]>();
+        if (this._resetTimeOut)
+            clearTimeout(this._resetTimeOut);
+        if (t)
+            this._resetTimeOut = setTimeout(() => this.reset(), t);
     }
 }
