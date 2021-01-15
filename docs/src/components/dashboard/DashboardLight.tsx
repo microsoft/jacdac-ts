@@ -191,8 +191,7 @@ export default function DashboardLight(props: DashboardServiceProps) {
     const host = useServiceHost<LightServiceHost>(service);
     return <>
         {host && <LightWidget {...props} />}
-        <Collapse in={expanded}>
-            <LightCommand service={service} expanded={expanded} />
-        </Collapse>
+        {expanded &&
+            <LightCommand service={service} expanded={expanded} />}
     </>
 }
