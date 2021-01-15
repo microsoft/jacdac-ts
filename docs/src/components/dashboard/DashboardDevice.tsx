@@ -60,7 +60,7 @@ export default function DashboardDevice(props: {
                 </>}
             />
             <CardContent>
-                <Grid container spacing={1} justify="center" alignContent="space-between">
+                <Grid container spacing={1} justify="center" alignItems="center" alignContent="space-between">
                     {services?.map(service => <Grid key={"widget" + service.service_index} item><DashboardServiceWidget service={service} expanded={expanded} /></Grid>)}
                 </Grid>
                 <Collapse in={expanded}>

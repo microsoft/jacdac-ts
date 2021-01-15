@@ -37,6 +37,7 @@ export default function MemberInput(props: {
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? serviceMemberSpecification.name : specification.name
     const label = name
+    const isWidget = variant === "widget"
     const widgetSize = useWidgetSize();
 
     const minValue = pick(min, typicalMin, absoluteMin)
@@ -99,7 +100,7 @@ export default function MemberInput(props: {
         return <>pipe <code>{specification.name}</code></>
     }
     else if (specification.type === 'bool') {
-        if (variant === "widget")
+        if (isWidget)
             return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
 
         return <>
@@ -117,7 +118,7 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
-        if (variant === "widget")
+        if (isWidget)
             return <GaugeWidget
                 label={label}
                 value={scaleIntToFloat(value, specification)}
@@ -152,11 +153,11 @@ export default function MemberInput(props: {
             }
         ] : undefined;
 
-        if (variant === "widget")
+        if (isWidget)
             return <ValueWithUnitWidget
                 label={specification.unit}
                 value={value}
-                secondaryLabel={errorValue}
+                secondaryLabel={isWidget && errorValue}
                 color={color}
                 size={widgetSize} />
 
