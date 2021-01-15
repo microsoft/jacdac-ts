@@ -656,6 +656,10 @@ footer {
 .clickeable {
   cursor: pointer;
 }
+.clickeable:hover {
+  outline: 0;
+  stroke-width: 5px;
+}
 .no-pointer-events {
   pointer-events: none;
   user-select: none;

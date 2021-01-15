@@ -2,6 +2,7 @@ import React from "react";
 import { Grid, Typography, useTheme } from "@material-ui/core";
 import { SvgWidget } from "./SvgWidget";
 import useWidgetTheme from "./useWidgetTheme";
+import { useId } from "react-use-id-hook"
 
 export default function ButtonWidget(props: {
     checked?: boolean;
@@ -15,6 +16,7 @@ export default function ButtonWidget(props: {
     const { checked, label, color, size, onDown, onUp, onClick } = props;
     const { background, controlBackground, active } = useWidgetTheme(color);
     const theme = useTheme();
+    const textid = useId();
 
     const clickeable = !!onClick || !!onDown || !!onUp;
     const w = 64;
@@ -26,12 +28,14 @@ export default function ButtonWidget(props: {
     const ri = r - mo;
     return <SvgWidget width={w} size={size}>
         <circle cx={cx} cy={cy} r={ro} fill={background} />
-        <circle cx={cx} cy={cy} r={ri} fill={checked ? active : controlBackground}
+        <circle tabIndex={0} cx={cx} cy={cy} r={ri} fill={checked ? active : controlBackground}
             onPointerDown={onDown}
             onPointerUp={onUp}
             onClick={onClick}
             className={clickeable ? "clickeable" : undefined}
-            />
-        <text className={"no-pointer-events"} x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
+            role="button"
+            aria-labelledby={textid}
+        />
+        <text id={textid} className={"no-pointer-events"} x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
     </SvgWidget>
 }
