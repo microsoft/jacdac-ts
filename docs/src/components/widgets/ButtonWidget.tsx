@@ -34,8 +34,9 @@ export default function ButtonWidget(props: {
             onClick={onClick}
             className={clickeable ? "clickeable" : undefined}
             role="button"
-            aria-labelledby={textid}
+            aria-label={!label && "button"}
+            aria-labelledby={!!label && textid}
         />
-        <text id={textid} className={"no-pointer-events"} x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>
+        {!!label && <text id={textid} className={"no-pointer-events"} x={cx} y={cy + 6} textAnchor="middle" fill={theme.palette.text.primary}>{label}</text>}
     </SvgWidget>
 }

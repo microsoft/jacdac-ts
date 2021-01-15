@@ -20,7 +20,7 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
         {children}
     </Badge>
 
-    return <Tooltip title={title}>
+    return <Tooltip title={title} aria-label={props["aria-label"]}>
         <span><IconButton {...others}>
             {!indeterminate && badge}
             {indeterminate && <CircularProgressBox

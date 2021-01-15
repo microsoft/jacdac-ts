@@ -104,11 +104,12 @@ export default function MemberInput(props: {
             return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
 
         return <>
-            <Switch aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
+            <Switch aria-label={label} aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
             <label id={labelid}>{label}</label>
         </>
     } else if (enumInfo !== undefined) {
         return <Select
+            aria-label={label}
             disabled={disabled}
             multiple={enumInfo.isFlags}
             value={enumInfo.isFlags ? valueToFlags(enumInfo, value) : value}
@@ -128,6 +129,7 @@ export default function MemberInput(props: {
                 size={widgetSize} />
 
         return <Slider
+            aria-label={label}
             color={color}
             value={fv}
             valueLabelFormat={percentValueFormat}

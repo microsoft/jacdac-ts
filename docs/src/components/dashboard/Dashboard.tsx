@@ -66,15 +66,17 @@ function DeviceGroup(props: {
 }) {
     const { title, action, devices, expanded, toggleExpanded, children } = props;
     const handleExpand = (device: JDDevice) => () => toggleExpanded(device)
-    return <>
-        <GridHeader title={title} action={action} />
-        {devices?.map(device => <DeviceItem
-            key={device.id}
-            device={device}
-            expanded={expanded(device)}
-            toggleExpanded={handleExpand(device)} />)}
-        {children}
-    </>
+    return <section>
+        <Grid container spacing={2}>
+            <GridHeader title={title} action={action} />
+            {devices?.map(device => <DeviceItem
+                key={device.id}
+                device={device}
+                expanded={expanded(device)}
+                toggleExpanded={handleExpand(device)} />)}
+            {children}
+        </Grid>
+    </section>
 }
 
 export default function Dashboard() {
@@ -87,7 +89,7 @@ export default function Dashboard() {
     const { selected, toggleSelected } = useSelectedNodes(mobile)
     const [hosted, physicals] = splitFilter(devices, d => !!bus.deviceHost(d.deviceId))
 
-    return <Grid container spacing={2}>
+    return <>
         <DeviceGroup
             title="Simulators"
             action={<IconButtonWithTooltip
@@ -110,5 +112,5 @@ export default function Dashboard() {
                 </Alert>
             </Grid>}
         </DeviceGroup>
-    </Grid >
+    </>
 }

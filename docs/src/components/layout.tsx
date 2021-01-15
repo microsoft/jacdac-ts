@@ -283,7 +283,7 @@ function FabBar() {
 
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
-  const { path, pageContext } = pageProps;
+  const { path } = pageProps;
   console.log({ pageProps })
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)
@@ -293,28 +293,28 @@ function LayoutWithContext(props: LayoutProps) {
 
   return (
     <div className={clsx(darkMode, classes.root)}>
-      <SEO />
-      <MainAppBar {...props} />
-      <AppDrawer pagePath={path} />
-      <ToolsDrawer />
-      <Container maxWidth={"xl"} disableGutters={true}>
-        <main
-          className={clsx(classes.content, {
-            [classes.contentShift]: drawerOpen,
-            [classes.toolsContentShift]: toolsMenu,
-          })}
-        >
-          <div className={classes.mainContent}>
-            <div className={classes.drawerHeader} />
-            <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
-            <WebUSBAlert />
-            {Flags.diagnostics && <WebDiagnostics />}
-            <Typography className={'markdown'} component="span">
-              {element}
-            </Typography>
-          </div>
-          <Footer />
+      <header>
+        <SEO />
+      </header>
+      <nav>
+        <MainAppBar {...props} />
+        <AppDrawer pagePath={path} />
+        <ToolsDrawer />
+      </nav>
+      <Container maxWidth={"xl"} disableGutters={true} className={clsx(classes.content, {
+        [classes.contentShift]: drawerOpen,
+        [classes.toolsContentShift]: toolsMenu,
+      })}>
+        <main className={classes.mainContent}>
+          <div className={classes.drawerHeader} />
+          <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
+          <WebUSBAlert />
+          {Flags.diagnostics && <WebDiagnostics />}
+          <Typography className={'markdown'} component="span">
+            {element}
+          </Typography>
         </main>
+        <Footer />
       </Container>
     </div>
   )

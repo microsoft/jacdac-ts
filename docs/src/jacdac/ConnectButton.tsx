@@ -27,6 +27,7 @@ export default function ConnectButton(props: {
     const icon = <Badge color="primary" variant="dot" invisible={!showDisconnect}>
         <UsbIcon />
     </Badge>
+    const label = showDisconnect ? "disconnect from WebUSB" : "connect to a JACDAC device via WebUSB"
     const title = showDisconnect ? "disconnect" : "connect";
 
     if (!showAlways && !hasWebUSB) {
@@ -35,6 +36,7 @@ export default function ConnectButton(props: {
 
     if (small)
         return <span><IconButtonWithProgress
+            aria-label={label}
             title={title}
             color={transparent ? "inherit" : "primary"}
             className={className}
@@ -45,7 +47,8 @@ export default function ConnectButton(props: {
         </IconButtonWithProgress></span>
     else
         return <Button
-            aria-label={title}
+            aria-label={label}
+            title={title}
             size="small"
             variant={transparent ? "outlined" : "contained"}
             color={transparent ? "inherit" : "primary"}
