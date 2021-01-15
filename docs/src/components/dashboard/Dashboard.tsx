@@ -61,10 +61,16 @@ export default function Dashboard(props: {}) {
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
     const { selected, toggleSelected } = useSelectedNodes(mobile)
     const breakpoints = (device: JDDevice): GridBreakpoints => {
-        if (selected(device))
-            return { xs: 12, sm: 12, md: 6, lg: 4, xl: 3 };
+        const readings = device.services()
+            .map(srv => srv.readingRegister ? 1 : 0)
+            .reduce((c: number, v) => c + v, 0);
+
+        if (readings > 2)
+            return { xs: 12, sm: 12, md: 12, lg: 6, xl: 4 };
+        else if (readings == 2)
+            return { xs: 12, sm: 6, md: 6, lg: 4, xl: 3 };
         else
-            return { xs: 6, sm: 6, md: 6, lg: 4, xl: 3 };
+            return { xs: selected(device) ? 12 : 6, sm: 6, md: 6, lg: 4, xl: 3 };
     }
 
     const [hosted, physicals] = splitFilter(devices, d => !!bus.deviceHost(d.deviceId))

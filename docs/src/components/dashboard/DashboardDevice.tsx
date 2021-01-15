@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Collapse, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Collapse, Fade, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React from "react";
 import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -41,12 +41,18 @@ export default function DashboardDevice(props: {
         <Card variant={identifying ? "outlined" : undefined}>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
-                action={<DeviceActions device={device} showStopHost={expanded} hideIdentity={!expanded} showReset={expanded && !mobile}>
-                    <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
-                        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButtonWithTooltip>
-                </DeviceActions>}
-                title={<DeviceName expanded={expanded} showShortId={false} device={device} />}
+                action={
+                    <DeviceActions device={device} showStopHost={expanded && !mobile} hideIdentity={true} showReset={expanded && !mobile}>
+                        <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
+                            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </IconButtonWithTooltip>
+                    </DeviceActions>
+                }
+                title={
+                    <Collapse in={expanded}>
+                        <DeviceName expanded={expanded} showShortId={false} device={device} />
+                    </Collapse>
+                }
                 subheader={<>
                     {!mobile && specification && <Typography variant="caption" gutterBottom>
                         {specification.name}
