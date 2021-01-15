@@ -5,6 +5,7 @@ import RegisterInput from "../RegisterInput";
 import { isRegister } from "../../../../src/jdom/spec";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { Grid } from "@material-ui/core";
+import { JDRegister } from "../../../../src/jdom/register";
 
 // filter out common registers
 const ignoreRegisters = [
@@ -22,7 +23,7 @@ const collapsedRegisters = [
 export default function DashboardServiceDetails(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const specification = useChange(service, spec => spec.specification);
-    const registers = useMemo(() => {
+    const registers: JDRegister[] = useMemo(() => {
         const packets = specification?.packets;
         let ids = packets
             ?.filter(pkt => isRegister(pkt))

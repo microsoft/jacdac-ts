@@ -64,7 +64,9 @@ export default function DashboardDevice(props: {
                     {services?.map(service => <Grid key={"widget" + service.service_index} item><DashboardServiceWidget service={service} expanded={expanded} /></Grid>)}
                 </Grid>
                 <Collapse in={expanded}>
-                    {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    <Grid container direction="column" spacing={1} alignContent="stretch">
+                        {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    </Grid>
                 </Collapse>
             </CardContent>
         </Card>
