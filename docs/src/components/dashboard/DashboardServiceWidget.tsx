@@ -46,10 +46,9 @@ function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRe
     const [intensity] = useRegisterUnpackedValue<[number | boolean]>(intensityRegister);
     const off = intensity !== undefined && !intensity;
 
-    console.log({ off, intensity, ui: intensity !== undefined, ni: !intensity })
     return <RegisterInput
         register={valueRegister}
-        variant={off ? "widget" : "offwidget"}
+        variant={off ? "offwidget" : "widget"}
         showServiceName={false}
         showRegisterName={false}
         hideMissingValues={false}
