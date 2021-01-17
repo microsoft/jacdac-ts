@@ -161,11 +161,13 @@ export default function MemberInput(props: {
                 label: 'max',
             }
         ] : undefined;
-
         if (isWidget)
             return <ValueWithUnitWidget
                 label={specification.unit}
                 value={value}
+                min={minValue}
+                max={maxValue}
+                step={step}
                 secondaryLabel={isWidget && errorValue}
                 color={color}
                 size={widgetSize} />
@@ -184,7 +186,7 @@ export default function MemberInput(props: {
     } else {// numbers or string
         if (isWidget)
             return <ValueWithUnitWidget
-                value={roundWithPrecision(value, 2)}
+                value={roundWithPrecision(value, 1)}
                 label={specification.unit}
                 color={color}
                 size={widgetSize} />

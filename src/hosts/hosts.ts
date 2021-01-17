@@ -17,6 +17,14 @@ const outdoorThermometerOptions = {
     errorReading: 0.25,
     variant: ThermometerVariant.Outdoor
 }
+const medicalThermometerOptions = {
+    readingValue: 37.5,
+    streamingInterval: 1000,
+    minReading: 35,
+    maxReading: 42,
+    errorReading: 0.5,
+    variant: ThermometerVariant.Body
+}
 
 const _hosts = [
     {
@@ -88,6 +96,10 @@ const _hosts = [
     {
         name: "thermometer (outdoor)",
         services: () => [new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
+    },
+    {
+        name: "thermometer (medical)",
+        services: () => [new JDSensorServiceHost(SRV_THERMOMETER, medicalThermometerOptions)]
     },
     {
         name: "thermocouple",

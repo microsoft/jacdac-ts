@@ -1,22 +1,31 @@
 import React from "react";
 import { Grid, Typography } from "@material-ui/core";
+import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 
 export default function ValueWithUnitWidget(props: {
-    value?: number;
+    value: number,
+    min?: number,
+    max?: number,
+    step?: number,
     label: string,
     secondaryLabel?: string,
     color?: "primary" | "secondary",
     size?: string
 }) {
-    const { value, secondaryLabel, label } = props;
+    const { value, min, max, step, secondaryLabel, label } = props;
     const labelVariant = "subtitle1";
-    const valueText = isNaN(value) ? "--" : value.toLocaleString();
-    const valueTextLength = valueText.replace(/[\.s]/g, '').length;
+    const precision = step === undefined ? 1 : Math.floor(-Math.log10(step))
+    const valueText = isNaN(value) ? "--" : roundWithPrecision(value, precision).toLocaleString();
+    const valueTextLength = isSet(min) && isSet(max) ? [min, max]
+        .map(v => roundWithPrecision(v, precision).toLocaleString().length)
+        .reduce((l, r) => Math.max(l, r), 0)
+        + precision : valueText.length;
 
-    const valueVariant = valueTextLength < 3 ? "h1"
-        : valueTextLength < 5 ? "h2"
-            : valueTextLength < 7 ? "h3"
-                : valueTextLength < 9 ? "h4"
+    //console.log({ min, max, step, precision })
+    const valueVariant = valueTextLength < 4 ? "h1"
+        : valueTextLength < 7 ? "h2"
+            : valueTextLength < 9 ? "h3"
+                : valueTextLength < 12 ? "h4"
                     : "h6";
 
     return <Grid container direction="row" alignContent="flex-end">
