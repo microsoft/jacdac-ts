@@ -33,7 +33,7 @@ export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
         if (streamingInterval !== undefined)
             this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [streamingInterval]);
 
-        this.addRegister<[number]>(SystemReg.ReadingError, [errorReading || 0]);
+        this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [errorReading || 0]);
         if (minReading !== undefined)
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)
