@@ -9,7 +9,7 @@ export default class SettingsServiceHost extends JDServiceHost {
     private readonly key = "jacdac:settingsservice:1"
     private settings: SMap<string>;
 
-    constructor() {
+    constructor(readonly useLocalStorage?: boolean) {
         super(SRV_SETTINGS);
 
         this.addCommand(SettingsCmd.Get, this.handleGet.bind(this));
@@ -113,6 +113,9 @@ export default class SettingsServiceHost extends JDServiceHost {
     }
 
     private read(): SMap<string> {
+        if (!this.useLocalStorage)
+            return {};
+
         try {
             const payload = typeof window !== "undefined"
                 && window.localStorage.getItem(this.key);
@@ -125,6 +128,9 @@ export default class SettingsServiceHost extends JDServiceHost {
     }
 
     private save(): void {
+        if (!this.useLocalStorage)
+            return;
+
         try {
             if (typeof window !== "undefined")
                 window.localStorage.setItem(this.key, JSON.stringify(this.settings));
