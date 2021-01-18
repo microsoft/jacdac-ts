@@ -1,4 +1,5 @@
 import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
+import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
@@ -74,6 +75,10 @@ const _hosts = [
         services: () => [new MotorServiceHost()]
     },
     {
+        name: "protocol test",
+        services: () => [new ProtocolTestServiceHost()]
+    },
+    {
         name: "rotary encoder",
         services: () => [new RotaryEncoderServiceHost()]
     },
@@ -88,6 +93,10 @@ const _hosts = [
     {
         name: "servo",
         services: () => [new JDServiceHost(SRV_SERVO, { valueValues: [1500] })]
+    },
+    {
+        name: "settings",
+        services: () => [new SettingsServiceHost()]
     },
     {
         name: "slider",
@@ -111,10 +120,6 @@ const _hosts = [
             readingError: 2.2,
             variant: ThermometerVariant.Thermocouple
         })]
-    },
-    {
-        name: "settings",
-        services: () => [new SettingsServiceHost()]
     },
     {
         name: "vibration motor",

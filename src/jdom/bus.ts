@@ -703,10 +703,12 @@ export class JDBus extends JDNode {
         return this.device(this.selfDeviceId)
     }
 
-    async respondWithOutPipe<T>(pkt: Packet, items: T[], converter: (item: T) => Uint8Array) {
+    async respondWithOutPipe<T>(pkt: Packet, items: ArrayLike<T>, converter: (item: T) => Uint8Array) {
         const pipe = OutPipe.from(this, pkt)
         try {
-            for (const item of items) {
+            const n = items.length;
+            for (let i = 0; i < n; ++i) {
+                const item = items[i];
                 const data = converter(item);
                 await pipe.send(data);
             }
@@ -718,6 +720,7 @@ export class JDBus extends JDNode {
     enableAnnounce() {
         if (!this._announcing)
             return;
+        this.selfDevice; // ensure device exists
         this._announcing = true;
         let restartCounter = 0
         this.on(SELF_ANNOUNCE, () => {
