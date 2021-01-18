@@ -8,7 +8,7 @@ export interface JDSensorServiceOptions<TReading> {
     streamingInterval?: number,
     minReading?: number,
     maxReading?: number,
-    errorReading?: number,
+    readingError?: number,
 }
 
 export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
@@ -25,7 +25,7 @@ export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
         options: JDSensorServiceOptions<TReading> & JDServiceHostOptions
     ) {
         super(serviceClass, options);
-        const { readingValue, streamingInterval, minReading, maxReading, errorReading } = options || {};
+        const { readingValue, streamingInterval, minReading, maxReading, readingError } = options || {};
 
         this.reading = this.addRegister<[TReading]>(SystemReg.Reading, readingValue !== undefined ? Array.isArray(readingValue) ? (readingValue as unknown as [TReading]) : [readingValue] : undefined);
         this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
@@ -33,7 +33,8 @@ export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
         if (streamingInterval !== undefined)
             this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [streamingInterval]);
 
-        this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [errorReading || 0]);
+        this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [readingError || 0]);
+        this.reading.errorRegister = this.readingError;
         if (minReading !== undefined)
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)

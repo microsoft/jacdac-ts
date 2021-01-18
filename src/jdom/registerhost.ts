@@ -52,17 +52,16 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
     readOnly: boolean;
+    errorRegister: JDRegisterHost<[number]>;
 
     constructor(
         public readonly service: JDServiceHost,
         public readonly identifier: number,
-        defaultValue?: any[],
-        readOnly?: boolean) {
+        defaultValue?: any[]) {
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
         this.data = jdpack(this.packFormat, defaultValue || defaultPayload(this.specification));
-        this.readOnly = !!readOnly;
     }
 
     get packFormat() {
@@ -101,7 +100,17 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
     }
 
     async sendGetAsync() {
-        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, this.data));
+        let d = this.data;
+        const error = this.errorRegister?.values()[0];
+        if (error && !isNaN(error)) {
+            // apply error artifically
+            const vs = this.values() as number[];
+            for (let i = 0; i < vs.length; ++i) {
+                vs[i] += Math.random() * error;
+            }
+            d = jdpack(this.packFormat, vs);
+        }
+        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, d));
     }
 
     handlePacket(pkt: Packet): boolean {

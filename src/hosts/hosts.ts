@@ -14,7 +14,7 @@ const outdoorThermometerOptions = {
     streamingInterval: 1000,
     minReading: -40,
     maxReading: 120,
-    errorReading: 0.25,
+    readingError: 0.25,
     variant: ThermometerVariant.Outdoor
 }
 const medicalThermometerOptions = {
@@ -22,7 +22,7 @@ const medicalThermometerOptions = {
     streamingInterval: 1000,
     minReading: 35,
     maxReading: 42,
-    errorReading: 0.5,
+    readingError: 0.5,
     variant: ThermometerVariant.Body
 }
 
@@ -108,7 +108,7 @@ const _hosts = [
             streamingInterval: 1000,
             minReading: 0,
             maxReading: 1100,
-            errorReading: 2.2,
+            readingError: 2.2,
             variant: ThermometerVariant.Thermocouple
         })]
     },
