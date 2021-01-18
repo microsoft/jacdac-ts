@@ -1,5 +1,5 @@
 import { SettingsCmd, SettingsEvent, SRV_SETTINGS } from "../jdom/constants";
-import { jdpack, jdunpack } from "../jdom/pack";
+import { jdpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
 import { OutPipe } from "../jdom/pipes";
 import JDServiceHost from "../jdom/servicehost";
@@ -59,38 +59,24 @@ export default class SettingsServiceHost extends JDServiceHost {
     }
 
     private async handleListKeys(pkt: Packet) {
-        const [, pipePort, ] = pkt.jdunpack<[Uint8Array, number, number]>("b[8] u16 u16")
-        const dev = this.device.bus.device(this.device.deviceId);
-        const keys = Object.keys(this.settings);
-        console.log({ cmd: "listkeys", dev, pipePort, keys, data: pkt.data })
-        const pipe = new OutPipe(dev, pipePort);
-        try {
-            for (const key of keys) {
-                console.log('send', { key })
-                await pipe.send(jdpack<[string]>("s", [key]));
-            }
-        } catch (e) {
-            console.log({ cmd: 'close' })
-            await pipe.close();
-        }
+        await this.device.bus.respondWithOutPipe(
+            pkt,
+            Object.keys(this.settings),
+            k => jdpack<[string]>("s", [k])
+        )
     }
 
     private async handleList(pkt: Packet) {
-        const [, pipePort, ] = pkt.jdunpack<[Uint8Array, number, number]>("b[8] u16 u16")
-        const dev = this.device.bus.device(this.device.deviceId);
-        const pipe = new OutPipe(dev, pipePort);
-        try {
-            const keys = Object.keys(this.settings);
-            for (const key of keys) {
-                const payload = this.getPayload(key);
-                await pipe.send(jdpack<[string, Uint8Array]>("z b", [key, payload]));
-            }
-        } catch (e) {
-            await pipe.close();
-        }
+        await this.device.bus.respondWithOutPipe(
+            pkt,
+            Object.keys(this.settings),
+            k => {
+                const payload = this.getPayload(k);
+                return jdpack<[string, Uint8Array]>("z b", [k, payload]);
+            });
     }
 
-    private handleClear(pkt: Packet) {
+    private handleClear() {
         this.settings = {};
         this.save();
     }
@@ -111,17 +97,15 @@ export default class SettingsServiceHost extends JDServiceHost {
     }
 
     private async save() {
+        if (this.storageKey) {
+            try {
+                if (typeof window !== "undefined")
+                    window.localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
+            }
+            catch (e) {
+                console.log(e)
+            }
+        }
         await this.sendEvent(SettingsEvent.Change)
-
-        if (!this.storageKey)
-            return;
-
-        try {
-            if (typeof window !== "undefined")
-                window.localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
-        }
-        catch (e) {
-            console.log(e)
-        }
     }
 }

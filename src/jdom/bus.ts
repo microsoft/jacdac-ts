@@ -53,6 +53,7 @@ import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
 import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 import JDDeviceHost from "./devicehost";
+import { OutPipe } from "./pipes";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -700,6 +701,18 @@ export class JDBus extends JDNode {
 
     get selfDevice() {
         return this.device(this.selfDeviceId)
+    }
+
+    async respondWithOutPipe<T>(pkt: Packet, items: T[], converter: (item: T) => Uint8Array) {
+        const pipe = OutPipe.from(this, pkt)
+        try {
+            for (const item of items) {
+                const data = converter(item);
+                await pipe.send(data);
+            }
+        } finally {
+            await pipe.close();
+        }
     }
 
     enableAnnounce() {

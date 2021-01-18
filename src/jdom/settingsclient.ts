@@ -19,7 +19,7 @@ export default class SettingsClient extends JDServiceClient {
     async listKeys(): Promise<string[]> {
         const inp = new InPipeReader(this.bus)
         console.log({ cmd: "in", pipePort: inp.port })
-        await this.service.sendPacketAsync(inp.openCommand(SettingsCmd.ListKeys))
+        await this.service.sendPacketAsync(inp.openCommand(SettingsCmd.ListKeys), true)
         const { output } = await inp.readAll();
         const keys = output.map(pkt => pkt.stringData);
         return keys;
