@@ -1,4 +1,3 @@
-import { truncate } from "fs";
 import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -8,6 +7,7 @@ import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost from "./sensorservicehost";
+import SettingsServiceHost from "./settingsservicehost";
 
 const outdoorThermometerOptions = {
     readingValue: 21.5,
@@ -111,6 +111,10 @@ const _hosts = [
             readingError: 2.2,
             variant: ThermometerVariant.Thermocouple
         })]
+    },
+    {
+        name: "settings",
+        services: () => [new SettingsServiceHost()]
     },
     {
         name: "vibration motor",

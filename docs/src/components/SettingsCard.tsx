@@ -69,10 +69,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
                 <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} onChange={handleValueChange} />
             </Grid>
             <Grid item>
-                <Switch
-                    value={secret}
-                    onChange={handleChecked}
-                />
+                <Switch checked={secret} onChange={handleChecked} />
                 Secret
             </Grid>
             <Grid item>

@@ -1,11 +1,12 @@
 import { SettingsCmd, SRV_SETTINGS } from "../jdom/constants";
 import { jdpack, jdunpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
+import { OutPipe } from "../jdom/pipes";
 import JDServiceHost from "../jdom/servicehost";
 import { SMap } from "../jdom/utils";
 
-export default class ServiceSettingsHost extends JDServiceHost {
-    private readonly key = "jacdacsettingskeys"
+export default class SettingsServiceHost extends JDServiceHost {
+    private readonly key = "jacdac:settingsservice:1"
     private settings: SMap<string>;
 
     constructor() {
@@ -21,10 +22,8 @@ export default class ServiceSettingsHost extends JDServiceHost {
         this.settings = this.read();
     }
 
-    private async handleGet(pkt: Packet) {
-        const [key] = pkt.jdunpack<[string]>("s");
-        const settings = this.read();
-        const value = settings[key];
+    private getPayload(key: string) {
+        const value = this.settings[key];
         const secret = /^$/.test(key);
 
         let payload: Uint8Array;
@@ -34,16 +33,23 @@ export default class ServiceSettingsHost extends JDServiceHost {
             const payload = new Uint8Array(1);
             payload[0] = 0;
         } else { // return value
-            payload = ServiceSettingsHost.base64ToUint8Array(value);
+            payload = SettingsServiceHost.base64ToUint8Array(value);
         }
-        const resp = Packet.jdpacked<[string, Uint8Array]>(SettingsCmd.Get, "z b", [key, new Uint8Array(0)]);
+
+        return payload;
+    }
+
+    private async handleGet(pkt: Packet) {
+        const [key] = pkt.jdunpack<[string]>("s");
+        const payload = this.getPayload(key);
+        const resp = Packet.jdpacked<[string, Uint8Array]>(SettingsCmd.Get, "z b", [key, payload]);
         await this.sendPacketAsync(resp);
     }
 
     private handleSet(pkt: Packet) {
         const [key, value] = pkt.jdunpack<[string, Uint8Array]>("z b");
-        const settings = this.read();
-        settings[key] = ServiceSettingsHost.uint8ArrayToBase64(value);
+        console.log({ cmd: "set", key, value })
+        this.settings[key] = SettingsServiceHost.uint8ArrayToBase64(value);
         this.save();
     }
 
@@ -53,12 +59,33 @@ export default class ServiceSettingsHost extends JDServiceHost {
         this.save();
     }
 
-    private handleList(pkt: Packet) {
-
+    private async handleListKeys(pkt: Packet) {
+        const [pipePort] = pkt.jdunpack<[number]>("u16")
+        const dev = this.device.bus.device(this.device.deviceId);
+        const pipe = new OutPipe(dev, pipePort);
+        try {
+            const keys = Object.keys(this.settings);
+            for (const key of keys) {
+                await pipe.send(jdpack<[string]>("s", [key]));
+            }
+        } catch (e) {
+            await pipe.close();
+        }
     }
 
-    private handleListKeys(pkt: Packet) {
-
+    private async handleList(pkt: Packet) {
+        const [pipePort] = pkt.jdunpack<[number]>("u16")
+        const dev = this.device.bus.device(this.device.deviceId);
+        const pipe = new OutPipe(dev, pipePort);
+        try {
+            const keys = Object.keys(this.settings);
+            for (const key of keys) {
+                const payload = this.getPayload(key);
+                await pipe.send(jdpack<[string, Uint8Array]>("z b", [key, payload]));
+            }
+        } catch (e) {
+            await pipe.close();
+        }
     }
 
     private handleClear(pkt: Packet) {
