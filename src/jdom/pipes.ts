@@ -64,6 +64,10 @@ export class InPipe extends JDClient {
         this.mount(this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket))
     }
 
+    get port() {
+        return this._port;
+    }
+
     get isOpen() {
         return this._port != null
     }

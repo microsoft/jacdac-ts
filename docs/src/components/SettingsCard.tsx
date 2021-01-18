@@ -10,6 +10,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 import CmdButton from "./CmdButton";
+import { useId } from "react-use-id-hook"
 
 function SettingRow(props: { client: SettingsClient, name: string, mutable?: boolean }) {
     const { client, name, mutable } = props;
@@ -41,6 +42,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
     const [name, setName] = useState("")
     const [value, setValue] = useState("")
     const [secret, setSecret] = useState(true)
+    const secretLabelId = useId();
 
     const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         setName(ev.target.value.trim())
@@ -69,11 +71,12 @@ function AddSettingRow(props: { client: SettingsClient }) {
                 <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} onChange={handleValueChange} />
             </Grid>
             <Grid item>
-                <Switch checked={secret} onChange={handleChecked} />
-                Secret
+                <Switch checked={secret} onChange={handleChecked} aria-labelledby={secretLabelId} />
+                <label id={secretLabelId}>Secret</label>
             </Grid>
             <Grid item>
-                <CmdButton trackName="settings.add" disabled={!!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
+                <CmdButton trackName="settings.add" 
+                    disabled={!name || !!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
             </Grid>
         </Grid>
     </Grid>

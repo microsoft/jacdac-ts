@@ -1,15 +1,14 @@
-import { SettingsCmd, SRV_SETTINGS } from "../jdom/constants";
+import { SettingsCmd, SettingsEvent, SRV_SETTINGS } from "../jdom/constants";
 import { jdpack, jdunpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
 import { OutPipe } from "../jdom/pipes";
 import JDServiceHost from "../jdom/servicehost";
-import { SMap } from "../jdom/utils";
+import { bufferToString, SMap, stringToBuffer } from "../jdom/utils";
 
 export default class SettingsServiceHost extends JDServiceHost {
-    private readonly key = "jacdac:settingsservice:1"
     private settings: SMap<string>;
 
-    constructor(readonly useLocalStorage?: boolean) {
+    constructor(readonly storageKey?: string) {
         super(SRV_SETTINGS);
 
         this.addCommand(SettingsCmd.Get, this.handleGet.bind(this));
@@ -33,7 +32,7 @@ export default class SettingsServiceHost extends JDServiceHost {
             const payload = new Uint8Array(1);
             payload[0] = 0;
         } else { // return value
-            payload = SettingsServiceHost.base64ToUint8Array(value);
+            payload = stringToBuffer(value);
         }
 
         return payload;
@@ -46,35 +45,38 @@ export default class SettingsServiceHost extends JDServiceHost {
         await this.sendPacketAsync(resp);
     }
 
-    private handleSet(pkt: Packet) {
+    private async handleSet(pkt: Packet) {
         const [key, value] = pkt.jdunpack<[string, Uint8Array]>("z b");
         console.log({ cmd: "set", key, value })
-        this.settings[key] = SettingsServiceHost.uint8ArrayToBase64(value);
-        this.save();
+        this.settings[key] = bufferToString(value);
+        await this.save();
     }
 
-    private handleDelete(pkt: Packet) {
+    private async handleDelete(pkt: Packet) {
         const [key] = pkt.jdunpack<[string]>("s");
         delete this.settings[key];
-        this.save();
+        await this.save();
     }
 
     private async handleListKeys(pkt: Packet) {
-        const [pipePort] = pkt.jdunpack<[number]>("u16")
+        const [, pipePort, ] = pkt.jdunpack<[Uint8Array, number, number]>("b[8] u16 u16")
         const dev = this.device.bus.device(this.device.deviceId);
+        const keys = Object.keys(this.settings);
+        console.log({ cmd: "listkeys", dev, pipePort, keys, data: pkt.data })
         const pipe = new OutPipe(dev, pipePort);
         try {
-            const keys = Object.keys(this.settings);
             for (const key of keys) {
+                console.log('send', { key })
                 await pipe.send(jdpack<[string]>("s", [key]));
             }
         } catch (e) {
+            console.log({ cmd: 'close' })
             await pipe.close();
         }
     }
 
     private async handleList(pkt: Packet) {
-        const [pipePort] = pkt.jdunpack<[number]>("u16")
+        const [, pipePort, ] = pkt.jdunpack<[Uint8Array, number, number]>("b[8] u16 u16")
         const dev = this.device.bus.device(this.device.deviceId);
         const pipe = new OutPipe(dev, pipePort);
         try {
@@ -93,32 +95,13 @@ export default class SettingsServiceHost extends JDServiceHost {
         this.save();
     }
 
-    private static base64ToUint8Array(base64: string) {
-        const bstring = window.atob(base64);
-        const len = bstring.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = bstring.charCodeAt(i);
-        }
-        return bytes;
-    }
-
-    private static uint8ArrayToBase64(bytes: Uint8Array) {
-        let binary = '';
-        const len = bytes.length;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-    }
-
     private read(): SMap<string> {
-        if (!this.useLocalStorage)
+        if (!this.storageKey)
             return {};
 
         try {
             const payload = typeof window !== "undefined"
-                && window.localStorage.getItem(this.key);
+                && window.localStorage.getItem(this.storageKey);
             return JSON.parse(payload || "{}")
         }
         catch (e) {
@@ -127,13 +110,15 @@ export default class SettingsServiceHost extends JDServiceHost {
         }
     }
 
-    private save(): void {
-        if (!this.useLocalStorage)
+    private async save() {
+        await this.sendEvent(SettingsEvent.Change)
+
+        if (!this.storageKey)
             return;
 
         try {
             if (typeof window !== "undefined")
-                window.localStorage.setItem(this.key, JSON.stringify(this.settings));
+                window.localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
         }
         catch (e) {
             console.log(e)
