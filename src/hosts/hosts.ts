@@ -1,4 +1,4 @@
-import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
+import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -32,6 +32,12 @@ const _hosts = [
         name: "accelerometer",
         services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
             readingValue: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
+        })]
+    },
+    {
+        name: "barometer",
+        services: () => [new JDSensorServiceHost<[number]>(SRV_BAROMETER, {
+            readingValue: [1013]
         })]
     },
     {
