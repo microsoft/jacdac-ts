@@ -61,7 +61,7 @@ function DefaultWidget(props: DashboardServiceProps) {
     const register = useMemo(() => {
         const rspec = specification?.packets
             .find(pkt => isRegister(pkt) && collapsedRegisters.indexOf(pkt.identifier) > -1);
-        return service.register(rspec.identifier);
+        return service.register(rspec?.identifier);
     }, [service])
 
     if (!register) // nothing to see here

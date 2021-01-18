@@ -110,6 +110,8 @@ export class JDService extends JDNode {
     }
 
     register(registerCode: number): JDRegister {
+        if (registerCode === undefined)
+            return undefined;
         // cache known registers
         this.registers()
         let register = this._registers.find(reg => reg.code === registerCode);
