@@ -720,7 +720,6 @@ export class JDBus extends JDNode {
     enableAnnounce() {
         if (!this._announcing)
             return;
-        this.selfDevice; // ensure device exists
         this._announcing = true;
         let restartCounter = 0
         this.on(SELF_ANNOUNCE, () => {
