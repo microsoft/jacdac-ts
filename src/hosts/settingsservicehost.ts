@@ -87,7 +87,7 @@ export default class ServiceSettingsHost extends JDServiceHost {
 
     private read(): SMap<string> {
         try {
-            const payload = typeof window !== "undefined" 
+            const payload = typeof window !== "undefined"
                 && window.localStorage.getItem(this.key);
             return JSON.parse(payload || "{}")
         }
