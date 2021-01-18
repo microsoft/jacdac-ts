@@ -92,6 +92,7 @@ export default class ServiceSettingsHost extends JDServiceHost {
             return JSON.parse(payload || "{}")
         }
         catch (e) {
+            console.log(e)
             return {};
         }
     }
@@ -99,9 +100,10 @@ export default class ServiceSettingsHost extends JDServiceHost {
     private save(): void {
         try {
             if (typeof window !== "undefined")
-                window.localStorage[this.key, JSON.stringify(this.settings)];
+                window.localStorage.setItem(this.key, JSON.stringify(this.settings));
         }
         catch (e) {
+            console.log(e)
         }
     }
 }
