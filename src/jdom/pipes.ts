@@ -10,11 +10,10 @@ export class OutPipe {
     private _count = 0
 
     constructor(private device: JDDevice, private port: number) {
-        // maybe sure we're self announing
-        this.device.bus.enableAnnounce();
     }
 
     static from(bus: JDBus, pkt: Packet) {
+        bus.enableAnnounce(); // ned self device
         const [idbuf, port] = pkt.jdunpack<[Buffer, number]>("b[8] u16");
         const id = toHex(idbuf);
         const dev = bus.device(id);

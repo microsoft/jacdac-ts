@@ -142,8 +142,7 @@ export default class JDDeviceHost extends JDEventSource {
             if (pkt.isCommand)
                 return // it's a command, and it's not for us
             if (pkt.serviceIndex == JD_SERVICE_INDEX_CRC_ACK) {
-                // TODO
-                //_gotAck(pkt)
+                console.log("todo got ack")
             }
         }
     }
