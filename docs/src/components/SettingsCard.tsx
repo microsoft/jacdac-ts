@@ -12,11 +12,10 @@ import AddIcon from '@material-ui/icons/Add';
 import CmdButton from "./CmdButton";
 import { useId } from "react-use-id-hook"
 
-function SettingRow(props: { client: SettingsClient, name: string, mutable?: boolean }) {
-    const { client, name, mutable } = props;
+function SettingRow(props: { client: SettingsClient, name: string, value?: string, mutable?: boolean }) {
+    const { client, name, value, mutable } = props;
     const isSecret = name[0] == "$";
     const displayName = isSecret ? name.slice(1) : name;
-    const value = useChangeAsync(client, c => isSecret ? Promise.resolve("...") : c?.getValue(name), [name]);
     const handleComponentDelete = async () => {
         await client.deleteValue(name)
     }
@@ -85,17 +84,16 @@ function AddSettingRow(props: { client: SettingsClient }) {
 export default function SettingsCard(props: { service: JDService, mutable?: boolean }) {
     const { service, mutable } = props;
     const client = useServiceClient(service, srv => new SettingsClient(srv));
-    const keys = useChangeAsync(client, c => c?.listKeys());
+    const values = useChangeAsync(client, c => c?.list());
     if (!client)
         return null // wait till loaded
 
     const handleClear = async () => await client?.clear();
-    console.log({ keys })
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
             <Grid container spacing={2}>
-                {keys?.map(key => <SettingRow name={key} client={client} mutable={mutable} />)}
+                {values?.map(({ key, value }) => <SettingRow key={key} name={key} value={value} client={client} mutable={mutable} />)}
                 {mutable && <AddSettingRow client={client} key="add" />}
             </Grid>
         </CardContent>

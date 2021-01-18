@@ -1,5 +1,6 @@
 import { SRV_PROTO_TEST, CHANGE, ProtoTestReg, ProtoTestCmd, ProtoTestEvent, Packet } from "../jacdac";
 import { jdpack, jdunpack } from "./pack";
+import { OutPipe } from "./pipes";
 import JDRegisterHost from "./registerhost";
 import JDServiceHost from "./servicehost";
 
@@ -31,8 +32,9 @@ export default class ProtocolTestServiceHost extends JDServiceHost {
     }
 
 
-    private handleReportPipe(pkt: Packet) {
-        this.device.bus.respondWithOutPipe(pkt, this.rwBytes.data, (b: number) => {
+    private async handleReportPipe(pkt: Packet) {
+        const pipe = OutPipe.from(this.device.bus, pkt, true);
+        await pipe.respondForEach(this.rwBytes.data, (b: number) => {
             const buf = new Uint8Array(1);
             buf[0] = b;
             return jdpack<[Uint8Array]>("b", [buf]);

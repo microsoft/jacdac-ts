@@ -59,16 +59,16 @@ export default class SettingsServiceHost extends JDServiceHost {
     }
 
     private async handleListKeys(pkt: Packet) {
-        await this.device.bus.respondWithOutPipe(
-            pkt,
+        const pipe = OutPipe.from(this.device.bus, pkt, true);
+        await pipe.respondForEach(
             Object.keys(this.settings),
             k => jdpack<[string]>("s", [k])
         )
     }
 
     private async handleList(pkt: Packet) {
-        await this.device.bus.respondWithOutPipe(
-            pkt,
+        const pipe = OutPipe.from(this.device.bus, pkt, true);
+        await pipe.respondForEach(
             Object.keys(this.settings),
             k => {
                 const payload = this.getPayload(k);

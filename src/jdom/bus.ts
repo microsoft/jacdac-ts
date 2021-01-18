@@ -669,6 +669,7 @@ export class JDBus extends JDNode {
                     ack.serviceIndex = JD_SERVICE_INDEX_CRC_ACK
                     ack.deviceIdentifier = this.selfDeviceId
                     ack.sendReportAsync(this.selfDevice)
+                    console.log('send self ack')
                 }
             }
             pkt.device.processPacket(pkt);
@@ -701,20 +702,6 @@ export class JDBus extends JDNode {
 
     get selfDevice() {
         return this.device(this.selfDeviceId)
-    }
-
-    async respondWithOutPipe<T>(pkt: Packet, items: ArrayLike<T>, converter: (item: T) => Uint8Array) {
-        const pipe = OutPipe.from(this, pkt)
-        try {
-            const n = items.length;
-            for (let i = 0; i < n; ++i) {
-                const item = items[i];
-                const data = converter(item);
-                await pipe.send(data);
-            }
-        } finally {
-            await pipe.close();
-        }
     }
 
     enableAnnounce() {
