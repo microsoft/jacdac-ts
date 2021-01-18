@@ -26,6 +26,9 @@ const medicalThermometerOptions = {
     readingError: 0.5,
     variant: ThermometerVariant.Body
 }
+const barometerOptions = {
+    readingValue: 1013
+}
 
 const _hosts = [
     {
@@ -36,9 +39,7 @@ const _hosts = [
     },
     {
         name: "barometer",
-        services: () => [new JDSensorServiceHost<[number]>(SRV_BAROMETER, {
-            readingValue: [1013]
-        })]
+        services: () => [new JDSensorServiceHost<number>(SRV_BAROMETER, barometerOptions)]
     },
     {
         name: "button",
@@ -51,6 +52,13 @@ const _hosts = [
     {
         name: "humidity + temperature",
         services: () => [new HumidityServiceHost(), new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
+    },
+    {
+        name: "humidity + temperature + barometer",
+        services: () => [
+            new HumidityServiceHost(),
+            new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
+            new JDSensorServiceHost(SRV_BAROMETER, barometerOptions)]
     },
     {
         name: "light ring 16",
