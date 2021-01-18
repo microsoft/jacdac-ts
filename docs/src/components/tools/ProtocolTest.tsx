@@ -200,20 +200,11 @@ function ServiceProtocolTest(props: { service: JDService }) {
         if (!bufferEq(data, rw.data))
             throw new Error(`rw write failed, expected ${toHex(data)}, got ${toHex(rw.data)}`);
         // read packet back
-        const inp = new InPipeReader(bus)
-        await service.sendPacketAsync(
-            inp.openCommand(ProtoTestCmd.CReportPipe),
-            true)
-        log(`pipe connected`)
-        let recv: number[] = [];
-        for (const buf of await inp.readData()) {
-            const [byte] = jdunpack<[number]>(buf, "u8");
-            recv.push(byte);
-        }
-        const recvu = new Uint8Array(recv);
+        const recv = await service.receiveWithInPipe<[number]>(ProtoTestCmd.CReportPipe, "u8")
+        const recvu = new Uint8Array(recv.map(buf => buf[0]));
         log(`received ${toHex(recvu)}`)
         if (!bufferEq(data, recvu))
-            throw new Error(`expected ${toHex(data)}, got ${toHex(recv)}`)
+            throw new Error(`expected ${toHex(data)}, got ${toHex(recv.map(buf => buf[0]))}`)
     }
 
     return <Grid container spacing={1}>
