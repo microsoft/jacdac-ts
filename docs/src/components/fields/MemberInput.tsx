@@ -157,12 +157,12 @@ export default function MemberInput(props: {
             step = undefined;
         const marks = hasTypicalRange && (typicalMin !== minValue || typicalMax !== maxValue) ? [
             {
-                value: specification.typicalMin,
-                label: 'min',
+                value: typicalMin,
+                label: `${typicalMin}`,
             },
             {
-                value: specification.typicalMax,
-                label: 'max',
+                value: typicalMax,
+                label: `${typicalMin}`,
             }
         ] : undefined;
         if (isWidget)

@@ -19,7 +19,7 @@ export default class JDServiceHost extends JDEventSource {
     public readonly specification: jdspec.ServiceSpec;
     private readonly _registers: JDRegisterHost<any[]>[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
-    readonly statusCode: JDRegisterHost<[number]>;
+    readonly statusCode: JDRegisterHost<[number, number]>;
 
     constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
@@ -27,7 +27,7 @@ export default class JDServiceHost extends JDEventSource {
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
-        this.statusCode = this.addRegister<[number]>(BaseReg.StatusCode);
+        this.statusCode = this.addRegister<[number, number]>(BaseReg.StatusCode, [0, 0]);
         if (valueValues)
             this.addRegister(SystemReg.Value, valueValues);
         if (variant)

@@ -8,6 +8,7 @@ import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost from "./sensorservicehost";
+import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
 
 const outdoorThermometerOptions = {
@@ -106,7 +107,11 @@ const _hosts = [
     },
     {
         name: "servo",
-        services: () => [new JDServiceHost(SRV_SERVO, { valueValues: [1500] })]
+        services: () => [new ServoServiceHost()]
+    },
+    {
+        name: "servo (360)",
+        services: () => [new ServoServiceHost({ minAngle: -180, maxAngle: 180 })]
     },
     {
         name: "settings",

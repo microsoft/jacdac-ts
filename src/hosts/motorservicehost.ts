@@ -11,8 +11,8 @@ export default class MotorServiceHost extends JDServiceHost {
     constructor() {
         super(SRV_MOTOR);
 
-        this.duty = this.addRegister<[number]>(MotorReg.Duty);
-        this.enabled = this.addRegister<[boolean]>(MotorReg.Enabled);
+        this.duty = this.addRegister<[number]>(MotorReg.Duty, [0]);
+        this.enabled = this.addRegister<[boolean]>(MotorReg.Enabled, [false]);
         this.loadTorque = this.addRegister<[number]>(MotorReg.LoadTorque);
         this.loadSpeed = this.addRegister<[number]>(MotorReg.LoadSpeed);
     }

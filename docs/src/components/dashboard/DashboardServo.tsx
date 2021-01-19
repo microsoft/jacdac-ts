@@ -2,7 +2,7 @@
 import React from "react";
 import { ServoReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import { useRegisterBoolValue, useRegisterIntValue } from "../../jacdac/useRegisterValue";
+import { useRegisterBoolValue, useRegisterFloatValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
@@ -12,8 +12,10 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const { service } = props;
 
     const enabled = useRegisterBoolValue(service.register(ServoReg.Enabled))
-    const register = service.register(ServoReg.Pulse);
-    const value = useRegisterIntValue(register);
+    const angleRegister = service.register(ServoReg.Angle);
+    const [angle] = useRegisterUnpackedValue<[number]>(angleRegister);
+    const [offset] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Offset));
+
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
@@ -22,11 +24,11 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const cx = 78;
     const cy = 55;
 
-    const angle = enabled ? 90 + (value - 2500) / (2000) * 180 : 0;
-    const transform = `rotate(${- angle}, ${cx}, ${cy})`;
+    const a = enabled ? (angle + offset) : 0;
+    const transform = `rotate(${- a}, ${cx}, ${cy})`;
     const h = 111.406;
     const w = 158.50195;
-    const text = enabled ? `${Math.round(angle)}°` : 'off';
+    const text = enabled ? `${Math.round(a)}°` : 'off';
 
     return <SvgWidget width={w} height={h} size={widgetSize}>
         <path fill={background} d="M158.502 10.687H0v89.75h158.502z" />
