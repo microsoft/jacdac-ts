@@ -25,6 +25,7 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
         <span><IconButton {...others}>
             {!indeterminate && badge}
             {indeterminate && <CircularProgressBox
+                aria-label={title}
                 progress={progress}
                 progressColor={progressColor} 
                 progressStyle={progressStyle}

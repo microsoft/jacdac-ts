@@ -11,7 +11,6 @@ import TreeView from '@material-ui/lab/TreeView';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/jdom/device';
 import { JDEvent } from '../../../src/jdom/event';
 import { JDService } from '../../../src/jdom/service';
@@ -109,7 +108,7 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         kind={"service"}
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
-        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`} onClick={handleSpecClick}>
+        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`} aria-label={"Open specification"} onClick={handleSpecClick}>
             <LaunchIcon fontSize={"small"} />
         </Link>}
     >
