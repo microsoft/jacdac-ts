@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useState } from "react";
 import useStatusLightStyle, { StatusLightFrame } from "../hooks/useStatusLightStyle"
-import { Grid, TextField, Input } from "@material-ui/core"
-import { Button } from "gatsby-theme-material-ui";
+import { Card, CardActions, CardContent, CardHeader, Grid, TextField, Typography } from "@material-ui/core"
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import Helmet from "react-helmet"
@@ -11,6 +10,8 @@ import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
+import { ChromePicker } from "react-color";
+import PaperBox from "../ui/PaperBox";
 
 function StatusLightFrameDesigner(props: {
     frame: StatusLightFrame,
@@ -18,12 +19,11 @@ function StatusLightFrameDesigner(props: {
     onRemove: () => void
 }) {
     const { frame, setFrame, onRemove } = props;
-    const byteInputProps = {
-        step: 5,
-        min: 0,
-        max: 255,
-        type: 'number'
-    };
+    const [hsv, setHsv] = useState({
+        h: frame[0] * 360 / 0xff,
+        s: frame[1] / 0xff,
+        v: frame[2] / 0xff
+    })
     const handleValue = (i: number) => (ev: ChangeEvent<HTMLInputElement>) => {
         const v = parseInt(ev.target.value);
         if (!isNaN(v)) {
@@ -32,36 +32,45 @@ function StatusLightFrameDesigner(props: {
             setFrame(newFrame as StatusLightFrame);
         }
     }
+    const handleColorChangeComplete = (c: { hsv: { h: number; s: number; v: number; } }) => {
+        const newFrame = frame.slice(0) as StatusLightFrame;
+        const { hsv } = c;
+        const { h, s, v } = hsv;
+        newFrame[0] = (h / 360 * 0xff) & 0xff;
+        newFrame[1] = (s * 0xff) & 0xff;
+        newFrame[2] = (v * 0xff) & 0xff;
+        setFrame(newFrame)
+        setHsv(hsv);
+    }
 
-    return <Grid container direction="row" spacing={2}>
-        <Grid item>
-            <TextField label="hue" inputProps={byteInputProps} value={frame[0]} onChange={handleValue(0)} />
-        </Grid>
-        <Grid item>
-            <TextField label="saturation" inputProps={byteInputProps} value={frame[1]} onChange={handleValue(1)} />
-        </Grid>
-        <Grid item>
-            <TextField label="value" inputProps={byteInputProps} value={frame[2]} onChange={handleValue(2)} />
-        </Grid>
-        <Grid item>
-            <TextField label="duration" helperText="ms" inputProps={{
-                type: 'number',
-                min: 0
-            }} value={frame[3]} onChange={handleValue(3)} />
-        </Grid>
-        <Grid item>
+    return <Card>
+        <CardHeader>
             <IconButtonWithTooltip title="remove animation frame" disabled={!onRemove} onClick={onRemove}>
                 <DeleteIcon />
             </IconButtonWithTooltip>
-        </Grid>
-    </Grid>
+        </CardHeader>
+        <CardContent>
+            <Grid container direction="column" spacing={1}>
+                <Grid item>
+                    <ChromePicker triangle="hide"
+                        color={hsv}
+                        onChangeComplete={handleColorChangeComplete} />
+                </Grid>
+                <Grid item>
+                    <TextField label="duration" helperText="ms" inputProps={{
+                        type: 'number',
+                        min: 0
+                    }} value={frame[3]} onChange={handleValue(3)} />
+                </Grid>
+            </Grid>
+        </CardContent>
+    </Card >
 }
 
 export default function StatusLightDesigner() {
     const [frames, setFrames] = useState<StatusLightFrame[]>([
-        [0, 255, 100, 500], 
-        [180, 255, 100, 500],
-        [0, 255, 100, 500]
+        [173, 255, 100, 1000],
+        [200, 255, 100, 1000]
     ]);
     const { className, helmetStyle } = useStatusLightStyle(frames, {
         cssProperty: "fill"
@@ -80,23 +89,33 @@ export default function StatusLightDesigner() {
     const handleAdd = () => setFrames([...frames, [0, 255, 100, 500]]);
 
     return <Grid container spacing={1}>
-        {frames.map((frame, i) => <Grid item xs={12} key={i}>
+        {frames.map((frame, i) => <Grid item key={i}>
             <StatusLightFrameDesigner key={i} frame={frame} setFrame={handleFrame(i)}
                 onRemove={frames.length > 1 ? handleRemove(i) : undefined} />
         </Grid>)}
-        <Grid item xs={12}>
-            <IconButtonWithTooltip title="add animation frame" disabled={frames.length > 7} onClick={handleAdd}>
-                <AddIcon />
-            </IconButtonWithTooltip>
+        <Grid item>
+            <Card>
+                <CardContent>
+                    <IconButtonWithTooltip title="add animation frame" disabled={frames.length > 7} onClick={handleAdd}>
+                        <AddIcon />
+                    </IconButtonWithTooltip>
+                </CardContent>
+            </Card>
         </Grid>
-        {helmetStyle && <Grid item>
-            <Helmet><style>{helmetStyle}</style></Helmet>
-            <SvgWidget size={widgetSize} width={64} height={64}>
-                <circle cx={32} cy={32} r={32} className={className} />
-            </SvgWidget>
+        {helmetStyle && <Grid item xs={12}>
+            <PaperBox>
+                <Typography variant="h3">Preview</Typography>
+                <Helmet><style>{helmetStyle}</style></Helmet>
+                <SvgWidget size={widgetSize} width={64} height={64}>
+                    <circle cx={32} cy={32} r={32} className={className} />
+                </SvgWidget>
+            </PaperBox>
         </Grid>}
         <Grid item xs={12}>
-            <Snippet value={() => JSON.stringify(frames, null, 2)} mode={"json"} />
+            <PaperBox>
+                <Typography variant="h3">Code</Typography>
+                <Snippet value={() => JSON.stringify(frames, null, 2)} mode={"json"} />
+            </PaperBox>
         </Grid>
     </Grid>
 }

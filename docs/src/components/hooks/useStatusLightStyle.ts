@@ -18,7 +18,6 @@ function interpolate(frames: StatusLightFrame[], time: number) {
             const frame1 = i == nframes - 1 ? frames[0] : frames[i + 1]
             const ratio = (time - framet) / frame[3];
             const ratiom1 = 1 - ratio;
-            console.log({ ratio, ratiom1 })
             return {
                 hue: ratio * frame[0] + ratiom1 * frame1[0],
                 saturation: ratio * frame[1] + ratiom1 * frame1[1],
@@ -31,6 +30,23 @@ function interpolate(frames: StatusLightFrame[], time: number) {
     }
 
     return { hue: 0, saturation: 0, value: 0 };
+}
+
+function hsv_to_hsl(h: number, s: number, v: number) {
+    // both hsv and hsl values are in [0, 1]
+    const l = (2 - s) * v / 2;
+
+    if (l != 0) {
+        if (l == 1) {
+            s = 0
+        } else if (l < 0.5) {
+            s = s * v / (l * 2)
+        } else {
+            s = s * v / (2 - l * 2)
+        }
+    }
+
+    return [h, s, l]
 }
 
 export default function useStatusLightStyle(frames: StatusLightFrame[], options?: StatusLightProps) {
@@ -50,15 +66,15 @@ export default function useStatusLightStyle(frames: StatusLightFrame[], options?
         for (let kframei = 0; kframei < nkframes; ++kframei) {
             const kt = kframei / (nkframes - 1) * total;
             const { hue, saturation, value } = interpolate(frames, kt);
-            console.log({ frames, kframei, kt, hue, saturation, value })
             // generate new keyframe
             const percent = Math.round(kframei / (nkframes - 1) * 100)
-            const csshue = Math.round((monochrome ? 0 : hue) * 360 / 0xff);
-            const csssat = Math.round((monochrome ? 255 : saturation) * 100 / 0xff);
-            const lightness = Math.round(value / 0xff * 100);
-            const alpha = 1;//value / 0xff;
+            const csshue = (monochrome ? 0 : hue) * 360 / 0xff;
+            const csssat = (monochrome ? 0xff : saturation) / 0xff;
+            const cssval = value / 0xff;
+            const [h, s, l] = hsv_to_hsl(csshue, csssat, cssval)
+            const alpha = l;
             kf += `  ${percent}% { 
-    ${property}: hsla(${csshue}, ${csssat}%, ${lightness}%, ${alpha});
+    ${property}: hsla(${h}, ${s * 100}%, ${l * 100}%, ${alpha});
   }\n`
         }
         kf += `}\n`; // @keyframes

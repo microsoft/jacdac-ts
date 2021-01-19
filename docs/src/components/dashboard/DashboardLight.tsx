@@ -169,7 +169,9 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
             </Grid>
         </Grid>
         <Grid item>
-            <Grid container spacing={1} direction="row" alignItems="center" alignContents="flex-start" justify="flex-start">
+            <Grid container spacing={1} direction="row"
+                alignItems="center" alignContent="flex-start"
+                justify="flex-start">
                 {(args === "K" || args === "PC") && <Grid item key="K">
                     <TextField variant="outlined" type="number" helperText={valueDescription} value={offset} onChange={handleOffsetChange} />
                 </Grid>}
