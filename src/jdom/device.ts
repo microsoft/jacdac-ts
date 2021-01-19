@@ -1,10 +1,10 @@
 import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, ControlCmd, DEVICE_NODE_NAME, LOST,
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION
 } from "./constants"
-import { fromHex, read32, SMap, bufferEq, assert, setAckError, toHex } from "./utils"
+import { read32, SMap, bufferEq, assert, setAckError, delay } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";
@@ -40,11 +40,13 @@ export class JDDevice extends JDNode {
     private _firmwareInfo: FirmwareInfo;
     private _ackAwaiting: AckAwaiter[];
     private _flashing = false;
+    private _identifying: boolean;
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
         this.connected = true;
         this._lost = false;
+        this._identifying = false;
     }
 
     get id() {
@@ -321,9 +323,27 @@ export class JDDevice extends JDNode {
         this.emit(CHANGE)
     }
 
-    identify() {
-        return this.service(0)
-            ?.sendCmdAsync(ControlCmd.Identify, undefined, true)
+    async identify() {
+        if (this._identifying) return;
+
+        try {
+            this._identifying = true;
+            this.emit(CHANGE);
+
+            const ctrl = this.service(0);
+            await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, true)
+
+            // wait half second
+            await delay(IDENTIFY_DURATION);
+        }
+        finally {
+            this._identifying = false;
+            this.emit(CHANGE);
+        }
+    }
+
+    get identifying() {
+        return this._identifying;
     }
 
     reset() {

@@ -34,11 +34,9 @@ export default function DashboardDevice(props: {
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
-    const host = useDeviceHost(device);
-    const identifying = useChange(host, h => h?.identifying);
 
     return (
-        <Card variant={identifying ? "outlined" : undefined}>
+        <Card>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
                 action={
@@ -60,11 +58,13 @@ export default function DashboardDevice(props: {
                 </>}
             />
             <CardContent>
-                <Grid container spacing={1} justify="center" alignContent="space-between">
+                <Grid container spacing={1} justify="center" alignItems="center" alignContent="space-between">
                     {services?.map(service => <Grid key={"widget" + service.service_index} item><DashboardServiceWidget service={service} expanded={expanded} /></Grid>)}
                 </Grid>
                 <Collapse in={expanded}>
-                    {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    <Grid container direction="column" spacing={1} alignContent="stretch">
+                        {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    </Grid>
                 </Collapse>
             </CardContent>
         </Card>

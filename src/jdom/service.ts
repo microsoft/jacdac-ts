@@ -9,6 +9,8 @@ import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { JDServiceClient } from "./serviceclient";
+import { InPipeReader } from "./pipes";
+import { jdunpack } from "./pack";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -108,6 +110,8 @@ export class JDService extends JDNode {
     }
 
     register(registerCode: number): JDRegister {
+        if (registerCode === undefined)
+            return undefined;
         // cache known registers
         this.registers()
         let register = this._registers.find(reg => reg.code === registerCode);
@@ -224,6 +228,19 @@ export class JDService extends JDNode {
             this._clients.splice(i, 1);
             this.emit(SERVICE_CLIENT_REMOVED, client);
         }
+    }
+
+    async receiveWithInPipe<TValues extends any[]>(cmd: number, packFormat: string) {
+        const inp = new InPipeReader(this.device.bus)
+        await this.sendPacketAsync(
+            inp.openCommand(cmd),
+            true)
+        const recv: TValues[] = [];
+        for (const buf of await inp.readData()) {
+            const values = jdunpack<TValues>(buf, packFormat);
+            recv.push(values);
+        }
+        return recv;
     }
 }
 

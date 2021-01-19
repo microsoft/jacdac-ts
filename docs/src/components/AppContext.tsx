@@ -6,6 +6,7 @@ import { CONNECTION_STATE, ERROR } from "../../../src/jdom/constants";
 import { isCancelError } from "../../../src/jdom/utils";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
 import DeviceHostDialog from "./hosts/DeviceHostDialog";
+import { useId } from "react-use-id-hook"
 
 export enum DrawerType {
     None,
@@ -50,6 +51,7 @@ export const AppProvider = ({ children }) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, _setToolsMenu] = useState(false)
     const [showDeviceHostsDialog, setShowDeviceHostsDialog] = useState(false)
+    const deviceHostDialogId = useId();
 
     const { enqueueSnackbar } = useSnackbar();
     const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
@@ -115,7 +117,7 @@ export const AppProvider = ({ children }) => {
             toggleShowDeviceHostsDialog
         }}>
             {children}
-            <Dialog open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog}>
+            <Dialog id={deviceHostDialogId} aria-label="Start device simulators" open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog}>
                 <DialogContent>
                     <DeviceHostDialog onAdded={toggleShowDeviceHostsDialog} onAddedAll={toggleShowDeviceHostsDialog} />
                 </DialogContent>

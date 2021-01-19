@@ -12,7 +12,7 @@ import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 import useRegisterHost from "./hooks/useRegisterHost"
 import useReadingAuxilliaryValue from "./hooks/useReadingAuxilliaryValue";
 
-export type RegisterInputVariant = "widget" | ""
+export type RegisterInputVariant = "widget" |"offwidget" | ""
 
 export default function RegisterInput(props: {
     register: JDRegister,
@@ -37,7 +37,7 @@ export default function RegisterInput(props: {
     const color = hasSet ? "secondary" : "primary"
     const minReading = useReadingAuxilliaryValue(register, SystemReg.MinReading)
     const maxReading = useReadingAuxilliaryValue(register, SystemReg.MaxReading)
-    const errorReading = useReadingAuxilliaryValue(register, SystemReg.ReadingError);
+    const readingError = useReadingAuxilliaryValue(register, SystemReg.ReadingError);
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -99,7 +99,7 @@ export default function RegisterInput(props: {
             variant={variant}
             min={minReading}
             max={maxReading}
-            error={errorReading}
+            error={readingError}
         />}
     </>
 }

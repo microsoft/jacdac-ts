@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Slider, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { clampToStorage, isIntegerType, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
@@ -37,11 +37,13 @@ export default function MemberInput(props: {
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? serviceMemberSpecification.name : specification.name
     const label = name
+    const isWidget = variant === "widget" || variant === "offwidget"
+    const isOffWidget = variant === "offwidget"
     const widgetSize = useWidgetSize();
 
     const minValue = pick(min, typicalMin, absoluteMin)
     const maxValue = pick(max, typicalMax, absoluteMax)
-    const errorValue = !!error && "±%" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString();
+    const errorValue = !!error && "±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString();
     const helperText = errorText
         || [prettyMemberUnit(specification, showDataType), errorValue]
             .filter(v => v !== undefined).join(", ");
@@ -89,6 +91,10 @@ export default function MemberInput(props: {
         // avoid super long floats
         return roundWithPrecision(value, 2);
     }
+    const percentValueLabelFormat = (v: number) => {
+        return `${Math.round(v * 100)}%`
+    }
+    const offFormat = () => "off";
 
     // value hasn't been loaded yet
     if (serviceMemberSpecification.kind !== "command" && value === undefined)
@@ -99,15 +105,16 @@ export default function MemberInput(props: {
         return <>pipe <code>{specification.name}</code></>
     }
     else if (specification.type === 'bool') {
-        if (variant === "widget")
+        if (isWidget)
             return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
 
         return <>
-            <Switch aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
+            <Switch aria-label={label} aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
             <label id={labelid}>{label}</label>
         </>
     } else if (enumInfo !== undefined) {
         return <Select
+            aria-label={label}
             disabled={disabled}
             multiple={enumInfo.isFlags}
             value={enumInfo.isFlags ? valueToFlags(enumInfo, value) : value}
@@ -117,21 +124,28 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
-        if (variant === "widget")
+        const signed = specification.storage < 0;
+        const min = signed ? -1 : 0;
+        const max = 1;
+        if (isWidget)
             return <GaugeWidget
                 label={label}
                 value={scaleIntToFloat(value, specification)}
                 color={color}
-                min={0} max={1}
-                valueLabel={v => `${Math.round(v * 100)}%`}
-                size={widgetSize} />
+                variant={signed ? "fountain" : undefined}
+                min={min} max={max}
+                valueLabel={percentValueLabelFormat}
+                size={widgetSize}
+                off={isOffWidget}
+            />
 
         return <Slider
+            aria-label={label}
             color={color}
             value={fv}
             valueLabelFormat={percentValueFormat}
             onChange={disabled ? undefined : handleScaledSliderChange}
-            min={0} max={1} step={0.01}
+            min={min} max={max} step={0.01}
             valueLabelDisplay="auto"
         />
     } else if (isSet(minValue) && isSet(maxValue)) {
@@ -143,27 +157,29 @@ export default function MemberInput(props: {
             step = undefined;
         const marks = hasTypicalRange && (typicalMin !== minValue || typicalMax !== maxValue) ? [
             {
-                value: specification.typicalMin,
-                label: 'min',
+                value: typicalMin,
+                label: `${typicalMin}`,
             },
             {
-                value: specification.typicalMax,
-                label: 'max',
+                value: typicalMax,
+                label: `${typicalMin}`,
             }
         ] : undefined;
-
-        if (variant === "widget")
+        if (isWidget)
             return <ValueWithUnitWidget
                 label={specification.unit}
                 value={value}
-                secondaryLabel={errorValue}
+                min={minValue}
+                max={maxValue}
+                step={step}
+                secondaryLabel={isWidget && errorValue}
                 color={color}
                 size={widgetSize} />
 
         return <InputSlider
             value={value}
             color={color}
-            valueLabelFormat={valueLabelFormat}
+            valueLabelFormat={isOffWidget ? offFormat : valueLabelFormat}
             onChange={disabled ? undefined : handleSliderChange}
             min={minValue}
             max={maxValue}
@@ -172,9 +188,9 @@ export default function MemberInput(props: {
             type={inputType}
         />
     } else {// numbers or string
-        if (variant === "widget")
+        if (isWidget)
             return <ValueWithUnitWidget
-                value={roundWithPrecision(value, 2)}
+                value={roundWithPrecision(value, 1)}
                 label={specification.unit}
                 color={color}
                 size={widgetSize} />

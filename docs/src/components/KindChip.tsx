@@ -1,8 +1,9 @@
 import React, { useContext } from "react"
-import { Chip, Tooltip } from "@material-ui/core";
+import { Chip } from "@material-ui/core";
 import KindIcon, { kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext"
 import AppContext, { DrawerType } from "./AppContext"
+import Tooltip from "./ui/Tooltip";
 
 export default function KindChip(props: { kind: string, className?: string }) {
     const { kind, className } = props;

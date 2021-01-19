@@ -110,13 +110,13 @@ function in_past(t: number) {
 }
 
 export default class LightServiceHost extends JDServiceHost {
-    readonly brightness: JDRegisterHost;
-    readonly actualBrightness: JDRegisterHost;
-    readonly lightType: JDRegisterHost;
-    readonly numPixels: JDRegisterHost;
-    readonly maxPower: JDRegisterHost;
-    readonly variant: JDRegisterHost;
-    readonly maxPixels: JDRegisterHost;
+    readonly brightness: JDRegisterHost<[number]>;
+    readonly actualBrightness: JDRegisterHost<[number]>;
+    readonly lightType: JDRegisterHost<[LightLightType]>;
+    readonly numPixels: JDRegisterHost<[number]>;
+    readonly maxPower: JDRegisterHost<[number]>;
+    readonly variant: JDRegisterHost<[LightVariant]>;
+    readonly maxPixels: JDRegisterHost<[number]>;
 
     private pxbuffer: Uint8Array = new Uint8Array(0);
 
@@ -144,13 +144,13 @@ export default class LightServiceHost extends JDServiceHost {
     } & JDServiceHostOptions) {
         super(SRV_LIGHT, options);
 
-        this.brightness = this.addRegister(LightReg.Brightness, [15]);
-        this.actualBrightness = this.addRegister(LightReg.ActualBrightness, [15]);
-        this.lightType = this.addRegister(LightReg.LightType, [LightLightType.WS2812B_GRB]);
-        this.numPixels = this.addRegister(LightReg.NumPixels, [options?.numPixels || 15]);
-        this.maxPower = this.addRegister(LightReg.MaxPower, [options?.maxPower || 200]);
-        this.maxPixels = this.addRegister(LightReg.MaxPixels, [options?.maxPixels || 300]);
-        this.variant = this.addRegister(LightReg.Variant, [LightVariant.Strip]);
+        this.brightness = this.addRegister<[number]>(LightReg.Brightness, [15]);
+        this.actualBrightness = this.addRegister<[number]>(LightReg.ActualBrightness, [15]);
+        this.lightType = this.addRegister<[LightLightType]>(LightReg.LightType, [LightLightType.WS2812B_GRB]);
+        this.numPixels = this.addRegister<[number]>(LightReg.NumPixels, [options?.numPixels || 15]);
+        this.maxPower = this.addRegister<[number]>(LightReg.MaxPower, [options?.maxPower || 200]);
+        this.maxPixels = this.addRegister<[number]>(LightReg.MaxPixels, [options?.maxPixels || 300]);
+        this.variant = this.addRegister<[LightVariant]>(LightReg.Variant, [LightVariant.Strip]);
 
         this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
@@ -169,27 +169,27 @@ export default class LightServiceHost extends JDServiceHost {
     }
 
     private get maxpower(): number {
-        const [r] = this.maxPower.values<[number]>();
+        const [r] = this.maxPower.values();
         return r;
     }
 
     private get maxpixels(): number {
-        const [r] = this.maxPixels.values<[number]>();
+        const [r] = this.maxPixels.values();
         return r;
     }
 
     private get numpixels(): number {
-        const [r] = this.numPixels.values<[number]>();
+        const [r] = this.numPixels.values();
         return r;
     }
 
     private get requested_intensity(): number {
-        const [r] = this.brightness.values<[number]>();
+        const [r] = this.brightness.values();
         return r;
     }
 
     private get intensity(): number {
-        const [r] = this.actualBrightness.values<[number]>();
+        const [r] = this.actualBrightness.values();
         return r;
     }
 
@@ -211,7 +211,7 @@ export default class LightServiceHost extends JDServiceHost {
 
     private allocRxBuffer() {
         if (this.numpixels > this.maxpixels)
-            this.numPixels.setValues<[number]>([this.maxpixels]);
+            this.numPixels.setValues([this.maxpixels]);
         const n = this.numpixels * 3; // don't need to prealloc here
         if (n !== this.pxbuffer.length)
             this.pxbuffer = new Uint8Array(n);

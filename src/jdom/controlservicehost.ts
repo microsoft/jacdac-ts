@@ -6,25 +6,27 @@ import JDServiceHost from "./servicehost";
 export default class ControlServiceHost extends JDServiceHost {
     private restartCounter = 0;
     private packetCount = 0;
-    readonly deviceDescription: JDRegisterHost;
-    readonly mcuTemperature: JDRegisterHost;
-    readonly resetIn: JDRegisterHost;
-    readonly uptime: JDRegisterHost;
+    readonly deviceDescription: JDRegisterHost<[string]>;
+    readonly mcuTemperature: JDRegisterHost<[number]>;
+    readonly resetIn: JDRegisterHost<[number]>;
+    readonly uptime: JDRegisterHost<[number]>;
     readonly startTime: number;
+    readonly statusLight: JDRegisterHost<[[number, number, number, number][]]>;
     private _resetTimeOut: any;
 
     constructor() {
         super(SRV_CTRL)
 
         this.startTime = Date.now();
-        this.resetIn = this.addRegister(ControlReg.ResetIn, [0]);
-        this.deviceDescription = this.addRegister(ControlReg.DeviceDescription);
-        this.mcuTemperature = this.addRegister(ControlReg.McuTemperature, [25]);
-        this.resetIn = this.addRegister(ControlReg.ResetIn);
-        this.uptime = this.addRegister(ControlReg.Uptime);
+        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0]);
+        this.deviceDescription = this.addRegister<[string]>(ControlReg.DeviceDescription);
+        this.mcuTemperature = this.addRegister<[number]>(ControlReg.McuTemperature, [25]);
+        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn);
+        this.uptime = this.addRegister<[number]>(ControlReg.Uptime);
+        this.statusLight = this.addRegister<[[number, number, number, number][]]>(ControlReg.StatusLight, [[]]);
 
         this.resetIn.on(REPORT_RECEIVE, this.handleResetIn.bind(this));
-        
+
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));
         this.addCommand(ControlCmd.Reset, this.reset.bind(this));
@@ -53,7 +55,6 @@ export default class ControlServiceHost extends JDServiceHost {
 
     async identify() {
         this.emit(IDENTIFY);
-        this.device.identify();
     }
 
     async reset() {
@@ -65,7 +66,7 @@ export default class ControlServiceHost extends JDServiceHost {
     }
 
     private handleResetIn() {
-        const [t] = this.resetIn.values<[number]>();
+        const [t] = this.resetIn.values();
         if (this._resetTimeOut)
             clearTimeout(this._resetTimeOut);
         if (t)

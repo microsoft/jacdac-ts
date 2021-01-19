@@ -59,9 +59,9 @@ export default function LightWidget(props: { service: JDService }) {
     const host = useServiceHost<LightServiceHost>(service);
     const { background, controlBackground } = useWidgetTheme()
     const widgetSize = useWidgetSize()
-    const [numPixels] = useChange(host.numPixels, r => r.values<[number]>());
-    const [variant] = useChange(host.variant, r => r.values<[LightVariant]>());
-    const [actualBrightness] = useChange(host.actualBrightness, r => r.values<[number]>());
+    const [numPixels] = useChange(host.numPixels, r => r.values());
+    const [variant] = useChange(host.variant, r => r.values());
+    const [actualBrightness] = useChange(host.actualBrightness, r => r.values());
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
 
@@ -78,7 +78,7 @@ export default function LightWidget(props: { service: JDService }) {
         for(let i = 0; i < numPixels;++i) {
             d += ` h ${dx} 0`
         }
-        width = (numPixels + 2) * dx;
+        width = numPixels * dx;
         height = 2 * dx;
     }
     else if (variant === LightVariant.Strip) {

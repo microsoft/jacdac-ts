@@ -53,6 +53,7 @@ import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
 import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
 import JDDeviceHost from "./devicehost";
+import { OutPipe } from "./pipes";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -668,6 +669,7 @@ export class JDBus extends JDNode {
                     ack.serviceIndex = JD_SERVICE_INDEX_CRC_ACK
                     ack.deviceIdentifier = this.selfDeviceId
                     ack.sendReportAsync(this.selfDevice)
+                    console.log('send self ack')
                 }
             }
             pkt.device.processPacket(pkt);

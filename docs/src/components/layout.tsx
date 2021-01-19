@@ -26,7 +26,7 @@ import "./layout.css"
 import SEO from "./seo";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
-import { createMuiTheme, responsiveFontSizes, createStyles, useTheme } from '@material-ui/core/styles';
+import { createMuiTheme, responsiveFontSizes, createStyles, useTheme, ThemeOptions } from '@material-ui/core/styles';
 import AppContext, { DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./alert/WebUSBAlert";
@@ -174,12 +174,11 @@ export default function Layout(props: LayoutProps) {
 }
 
 function LayoutWithDarkMode(props: LayoutProps) {
-  console.log({ props })
   const { element, props: pageProps } = props;
   const { pageContext } = pageProps;
   const fullScreen = !!pageContext?.frontmatter?.fullScreen;
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
-  const rawTheme = createMuiTheme({
+  const themeDef: ThemeOptions = {
     palette: {
       primary: {
         main: '#2e7d32',
@@ -187,10 +186,21 @@ function LayoutWithDarkMode(props: LayoutProps) {
       secondary: {
         main: '#ffc400',
       },
+      contrastThreshold: 5.1,
       type: darkMode
     }
-  })
+  }
+  // accessibility
+  if (darkMode === 'dark') {
+//    themeDef.palette.contrastThreshold = 5;
+//    themeDef.palette.background = {
+ //     default: '#1a1a1a',
+  //    paper: '#2a2a2a'
+   // };
+  };
+  const rawTheme = createMuiTheme(themeDef)
   const theme = responsiveFontSizes(rawTheme);
+  console.log({ theme })
   const mdxComponents = useMdxComponents()
 
   if (!darkModeMounted)
@@ -283,8 +293,7 @@ function FabBar() {
 
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
-  const { path, pageContext } = pageProps;
-  console.log({ pageProps })
+  const { path } = pageProps;
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
@@ -293,28 +302,28 @@ function LayoutWithContext(props: LayoutProps) {
 
   return (
     <div className={clsx(darkMode, classes.root)}>
-      <SEO />
-      <MainAppBar {...props} />
-      <AppDrawer pagePath={path} />
-      <ToolsDrawer />
-      <Container maxWidth={"xl"} disableGutters={true}>
-        <main
-          className={clsx(classes.content, {
-            [classes.contentShift]: drawerOpen,
-            [classes.toolsContentShift]: toolsMenu,
-          })}
-        >
-          <div className={classes.mainContent}>
-            <div className={classes.drawerHeader} />
-            <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
-            <WebUSBAlert />
-            {Flags.diagnostics && <WebDiagnostics />}
-            <Typography className={'markdown'} component="span">
-              {element}
-            </Typography>
-          </div>
-          <Footer />
+      <header>
+        <SEO />
+      </header>
+      <nav>
+        <MainAppBar {...props} />
+        <AppDrawer pagePath={path} />
+        <ToolsDrawer />
+      </nav>
+      <Container maxWidth={"xl"} disableGutters={true} className={clsx(classes.content, {
+        [classes.contentShift]: drawerOpen,
+        [classes.toolsContentShift]: toolsMenu,
+      })}>
+        <main className={classes.mainContent}>
+          <div className={classes.drawerHeader} />
+          <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
+          <WebUSBAlert />
+          {Flags.diagnostics && <WebDiagnostics />}
+          <Typography className={'markdown'} component="span">
+            {element}
+          </Typography>
         </main>
+        <Footer />
       </Container>
     </div>
   )

@@ -1,4 +1,4 @@
-import { Badge, Tooltip } from "@material-ui/core";
+import { Badge } from "@material-ui/core";
 import React from "react";
 import { SRV_LOGGER } from "../../../jacdac-spec/dist/specconstants";
 import Packet from "../../../src/jdom/packet";
@@ -9,6 +9,7 @@ import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ClearIcon from '@material-ui/icons/Clear';
 import { CRC_ACK_NODE_NAME, META_ACK, META_ACK_FAILED, META_GET } from "../../../src/jdom/constants";
 import CodeIcon from '@material-ui/icons/Code';
+import Tooltip from "./ui/Tooltip";
 
 export default function PacketBadge(props: {
     packet: Packet, count?: number,

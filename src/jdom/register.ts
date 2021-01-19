@@ -2,11 +2,11 @@ import Packet from "./packet";
 import {
     CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG,
     REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1,
-    REGISTER_REFRESH_RETRY_0, ControlCmd, GET_ATTEMPT
+    REGISTER_REFRESH_RETRY_0, GET_ATTEMPT
 } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString, delay } from "./utils";
 import { DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
@@ -77,7 +77,7 @@ export class JDRegister extends JDServiceMemberNode {
             .then(() => { this.emit(GET_ATTEMPT) });
     }
 
-    sendSetPackedAsync<T extends any[]>(fmt: string, values: any[], autoRefresh?: boolean): Promise<void> {
+    sendSetPackedAsync(fmt: string, values: any[], autoRefresh?: boolean): Promise<void> {
         return this.sendSetAsync(jdpack(fmt, values), autoRefresh)
     }
 

@@ -3,7 +3,7 @@ import React from "react";
 import Chip from '@material-ui/core/Chip';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import CategoryIcon from '@material-ui/icons/Category';
-import { Tooltip } from "@material-ui/core";
+import Tooltip from "./ui/Tooltip";
 
 export default function PacketMembersChip(props: { spec: jdspec.PacketInfo, members: jdspec.PacketMember[], className?: string }) {
     const { members, className, spec } = props;

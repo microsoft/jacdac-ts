@@ -1,5 +1,5 @@
-import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useTheme } from "@material-ui/core";
-import React, { useState } from "react"
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from "@material-ui/core";
+import React from "react"
 import {
     JD_FRAME_FLAG_ACK_REQUESTED, JD_FRAME_FLAG_COMMAND,
     JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS,
@@ -9,6 +9,7 @@ import {
 import Packet from "../../../src/jdom/packet";
 import { fromHex, toHex } from "../../../src/jdom/utils";
 import PaperBox from "./ui/PaperBox";
+import Tooltip from "./ui/Tooltip";
 
 export default function PacketHeaderLayout(props: { packet?: Packet, data?: string, showSlots?: boolean, showFlags?: boolean }) {
     const { packet, data, showSlots, showFlags } = props;
@@ -107,7 +108,7 @@ export default function PacketHeaderLayout(props: { packet?: Packet, data?: stri
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {slots.map((slot, i) => {
+                        {slots.map((slot) => {
                             const buf = header.slice(slot.offset, slot.offset + slot.size);
                             const known = slot.know?.[toHex(buf)]
                             return <TableRow key={slot.name}>

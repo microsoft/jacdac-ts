@@ -21,9 +21,9 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
             const min = pick(specification.typicalMin, specification.absoluteMin, undefined);
             const max = pick(specification.typicalMax, specification.absoluteMax, undefined);
             if (max !== undefined && min !== undefined)
-                r = 0;
-            else
                 r = (max + min) / 2;
+            else
+                r = 0;
             break;
         }
         case "bytes": {
@@ -46,9 +46,11 @@ function defaultPayload<T extends any[]>(specification: jdspec.PacketInfo): T {
     return rs as T;
 }
 
-export default class JDRegisterHost extends JDEventSource {
+export default class JDRegisterHost<TValues extends any[]> extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
+    readOnly: boolean;
+    errorRegister: JDRegisterHost<[number]>;
 
     constructor(
         public readonly service: JDServiceHost,
@@ -57,18 +59,26 @@ export default class JDRegisterHost extends JDEventSource {
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
-        this.data = jdpack(this.packFormat, defaultValue || defaultPayload(this.specification));
+        let v: any[] = defaultValue;
+        if (!v && !this.specification.optional)
+            v = defaultPayload(this.specification);
+        if (v !== undefined && !v.some(vi => vi === undefined)) {
+            this.data = jdpack(this.packFormat, v);
+        }
     }
 
     get packFormat() {
         return this.specification.packFormat;
     }
 
-    values<T extends any[]>(): T {
-        return jdunpack(this.data, this.packFormat) as T;
+    values(): TValues {
+        return jdunpack(this.data, this.packFormat) as TValues;
     }
 
-    setValues<T extends any[]>(values: T) {
+    setValues(values: TValues) {
+        if (this.readOnly)
+            return;
+
         // enforce boundaries
         this.specification?.fields.forEach((field, fieldi) => {
             if (field.isSimpleType) {
@@ -93,7 +103,17 @@ export default class JDRegisterHost extends JDEventSource {
     }
 
     async sendGetAsync() {
-        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, this.data));
+        let d = this.data;
+        const error = this.errorRegister?.values()[0];
+        if (error && !isNaN(error)) {
+            // apply error artifically
+            const vs = this.values() as number[];
+            for (let i = 0; i < vs.length; ++i) {
+                vs[i] += Math.random() * error;
+            }
+            d = jdpack(this.packFormat, vs);
+        }
+        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, d));
     }
 
     handlePacket(pkt: Packet): boolean {
@@ -101,7 +121,9 @@ export default class JDRegisterHost extends JDEventSource {
             return false;
 
         if (pkt.isRegisterGet) { // get
-            this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
+            // send data or ignore
+            if (this.data)
+                this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
         } else if (this.identifier >> 8 !== 0x1) { // set, non-const
             let changed = false;
             const d = pkt.data;

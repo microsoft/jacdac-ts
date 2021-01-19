@@ -2,13 +2,13 @@ import { ButtonEvent, SRV_BUTTON } from "../jdom/constants";
 import JDSensorServiceHost from "./sensorservicehost";
 import { delay } from "../jdom/utils";
 
-export default class ButtonServiceHost extends JDSensorServiceHost {
+export default class ButtonServiceHost extends JDSensorServiceHost<boolean> {
     constructor() {
         super(SRV_BUTTON, { readingValue: false, streamingInterval: 50 });
     }
 
     async down() {
-        const [v] = this.reading.values<[number]>();
+        const [v] = this.reading.values();
         if (!v) {
             this.reading.setValues([true]);
             await this.sendEvent(ButtonEvent.Down);
@@ -16,7 +16,7 @@ export default class ButtonServiceHost extends JDSensorServiceHost {
     }
 
     async up() {
-        const [v] = this.reading.values<[number]>();
+        const [v] = this.reading.values();
         if (v) {
             this.reading.setValues([false]);
             await this.sendEvent(ButtonEvent.Up);

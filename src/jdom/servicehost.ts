@@ -3,11 +3,13 @@ import { NumberFormat, setNumber } from "./buffer";
 import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
+import { JDRegister } from "./register";
 import JDRegisterHost from "./registerhost";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
 export interface JDServiceHostOptions {
+    valueValues?: any[];
     variant?: number;
 }
 
@@ -15,39 +17,38 @@ export default class JDServiceHost extends JDEventSource {
     public serviceIndex: number = -1; // set by device
     public device: JDDeviceHost;
     public readonly specification: jdspec.ServiceSpec;
-    private readonly _registers: JDRegisterHost[] = [];
+    private readonly _registers: JDRegisterHost<any[]>[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
+    readonly statusCode: JDRegisterHost<[number, number]>;
 
     constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
-        const { variant } = options || {};
+        const { variant, valueValues } = options || {};
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
-        this.addRegister(BaseReg.StatusCode);
+        this.statusCode = this.addRegister<[number, number]>(BaseReg.StatusCode, [0, 0]);
+        if (valueValues)
+            this.addRegister(SystemReg.Value, valueValues);
         if (variant)
-            this.addRegister(SystemReg.Variant, [variant]);
+            this.addRegister<[number]>(SystemReg.Variant, [variant]);
     }
 
     get registers() {
         return this._registers.slice(0);
     }
 
-    register(identifier: number) {
-        return this._registers.find(reg => reg.identifier === identifier);
+    register<TValues extends any[] = any[]>(identifier: number): JDRegisterHost<TValues> {
+        return this._registers.find(reg => reg.identifier === identifier) as JDRegisterHost<TValues>;
     }
 
-    get statusCode() {
-        return this._registers.find(reg => reg.identifier === BaseReg.StatusCode);
-    }
-
-    protected addRegister(identifier: number, defaultValue?: any[]) {
-        let reg = this._registers.find(r => r.identifier === identifier);
+    protected addRegister<TValues extends any[] = any[]>(identifier: number, defaultValue?: TValues): JDRegisterHost<TValues> {
+        let reg = this._registers.find(r => r.identifier === identifier) as JDRegisterHost<TValues>;
         if (!reg) {
             // make sure this register is supported
             if (!this.specification.packets.find(pkt => isRegister(pkt) && pkt.identifier === identifier))
                 return undefined;
-            reg = new JDRegisterHost(this, identifier, defaultValue);
+            reg = new JDRegisterHost<TValues>(this, identifier, defaultValue);
             this._registers.push(reg);
         }
         return reg;

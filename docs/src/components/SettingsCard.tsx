@@ -10,12 +10,12 @@ import DeleteIcon from '@material-ui/icons/Delete';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 import CmdButton from "./CmdButton";
+import { useId } from "react-use-id-hook"
 
-function SettingRow(props: { client: SettingsClient, name: string, mutable?: boolean }) {
-    const { client, name, mutable } = props;
+function SettingRow(props: { client: SettingsClient, name: string, value?: string, mutable?: boolean }) {
+    const { client, name, value, mutable } = props;
     const isSecret = name[0] == "$";
     const displayName = isSecret ? name.slice(1) : name;
-    const value = useChangeAsync(client, c => isSecret ? Promise.resolve("...") : c?.getValue(name), [name]);
     const handleComponentDelete = async () => {
         await client.deleteValue(name)
     }
@@ -41,6 +41,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
     const [name, setName] = useState("")
     const [value, setValue] = useState("")
     const [secret, setSecret] = useState(true)
+    const secretLabelId = useId();
 
     const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
         setName(ev.target.value.trim())
@@ -69,14 +70,12 @@ function AddSettingRow(props: { client: SettingsClient }) {
                 <TextField fullWidth={true} error={!!valueError} variant="outlined" label="value" helperText={valueError} value={value} onChange={handleValueChange} />
             </Grid>
             <Grid item>
-                <Switch
-                    value={secret}
-                    onChange={handleChecked}
-                />
-                Secret
+                <Switch checked={secret} onChange={handleChecked} aria-labelledby={secretLabelId} />
+                <label id={secretLabelId}>Secret</label>
             </Grid>
             <Grid item>
-                <CmdButton trackName="settings.add" disabled={!!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
+                <CmdButton trackName="settings.add" 
+                    disabled={!name || !!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
             </Grid>
         </Grid>
     </Grid>
@@ -85,17 +84,16 @@ function AddSettingRow(props: { client: SettingsClient }) {
 export default function SettingsCard(props: { service: JDService, mutable?: boolean }) {
     const { service, mutable } = props;
     const client = useServiceClient(service, srv => new SettingsClient(srv));
-    const keys = useChangeAsync(client, c => c?.listKeys());
+    const values = useChangeAsync(client, c => c?.list());
     if (!client)
         return null // wait till loaded
 
     const handleClear = async () => await client?.clear();
-    console.log({ keys })
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
             <Grid container spacing={2}>
-                {keys?.map(key => <SettingRow name={key} client={client} mutable={mutable} />)}
+                {values?.map(({ key, value }) => <SettingRow key={key} name={key} value={value} client={client} mutable={mutable} />)}
                 {mutable && <AddSettingRow client={client} key="add" />}
             </Grid>
         </CardContent>

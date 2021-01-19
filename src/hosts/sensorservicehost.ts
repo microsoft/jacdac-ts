@@ -3,52 +3,50 @@ import { SensorReg } from "../jdom/constants";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
 
-export interface JDSensorServiceOptions {
-    readingValue?: any,
+export interface JDSensorServiceOptions<TReading> {
+    readingValue?: TReading,
     streamingInterval?: number,
     minReading?: number,
     maxReading?: number,
-    errorReading?: number,
+    readingError?: number,
 }
 
-export default class JDSensorServiceHost extends JDServiceHost {
-    readonly reading: JDRegisterHost;
-    readonly streamingSamples: JDRegisterHost;
-    readonly streamingInterval: JDRegisterHost;
+export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
+    readonly reading: JDRegisterHost<[TReading]>;
+    readonly streamingSamples: JDRegisterHost<[number]>;
+    readonly streamingInterval: JDRegisterHost<[number]>;
 
-    readonly readingError: JDRegisterHost;
+    readonly readingError: JDRegisterHost<[number]>;
 
     private lastStream = 0;
 
     constructor(
         public readonly serviceClass: number,
-        options: JDSensorServiceOptions & JDServiceHostOptions
+        options: JDSensorServiceOptions<TReading> & JDServiceHostOptions
     ) {
         super(serviceClass, options);
-        const { readingValue, streamingInterval, minReading, maxReading, errorReading } = options || {};
+        const { readingValue, streamingInterval, minReading, maxReading, readingError } = options || {};
 
-        this.reading = this.addRegister(SystemReg.Reading, readingValue !== undefined
-            ? (Array.isArray(readingValue) ? readingValue : [readingValue])
-            : undefined
-        );
-        this.streamingSamples = this.addRegister(SensorReg.StreamingSamples);
-        this.streamingInterval = this.addRegister(SensorReg.StreamingInterval, [streamingInterval || 50]);
+        this.reading = this.addRegister<[TReading]>(SystemReg.Reading, readingValue !== undefined ? Array.isArray(readingValue) ? (readingValue as unknown as [TReading]) : [readingValue] : undefined);
+        this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
+        this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, [streamingInterval || 50]);
         if (streamingInterval !== undefined)
-            this.addRegister(SensorReg.StreamingPreferredInterval, [streamingInterval]);
+            this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [streamingInterval]);
 
-        this.addRegister(SystemReg.ReadingError, [errorReading || 0]);
+        this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [readingError || 0]);
+        this.reading.errorRegister = this.readingError;
         if (minReading !== undefined)
-            this.addRegister(SystemReg.MinReading, [minReading]);
+            this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)
-            this.addRegister(SystemReg.MaxReading, [maxReading]);
+            this.addRegister<[number]>(SystemReg.MaxReading, [maxReading]);
     }
 
     refreshRegisters() {
-        const [samples] = this.streamingSamples.values<[number]>();
+        const [samples] = this.streamingSamples.values();
         if (samples <= 0)
             return;
         // is it time to stream?
-        const [interval] = this.streamingInterval.values<[number]>();
+        const [interval] = this.streamingInterval.values();
         const now = this.device.bus.timestamp;
         if (now - this.lastStream > interval) {
             // let's stream a value!
