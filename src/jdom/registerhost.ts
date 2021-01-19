@@ -18,14 +18,13 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
         case "u8":
         case "u16":
         case "u32": {
-            const unsigned = specification.type[0] === "u";
             const n = Math.min(30, parseInt(specification.type.slice(1)));
             const min = pick(specification.typicalMin, specification.absoluteMin, undefined);
             const max = pick(specification.typicalMax, specification.absoluteMax, undefined);
             if (max !== undefined && min !== undefined)
-                r = 0;
-            else
                 r = (max + min) / 2;
+            else
+                r = 0;
             break;
         }
         case "bytes": {
@@ -61,7 +60,10 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
-        this.data = jdpack(this.packFormat, defaultValue || defaultPayload(this.specification));
+        const v = defaultValue || defaultPayload(this.specification);
+        if (v !== undefined && !v.some(vi => vi === undefined)) {
+            this.data = jdpack(this.packFormat, v);
+        }
     }
 
     get packFormat() {
@@ -118,7 +120,9 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
             return false;
 
         if (pkt.isRegisterGet) { // get
-            this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
+            // send data or ignore
+            if (this.data)
+                this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
         } else if (this.identifier >> 8 !== 0x1) { // set, non-const
             const d = pkt.data;
             if (!bufferEq(this.data, d)) {
