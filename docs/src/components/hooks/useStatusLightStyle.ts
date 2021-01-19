@@ -13,13 +13,9 @@ function interpolate(frames: StatusLightFrame[], time: number) {
     const nframes = frames.length;
     for (let i = 0; i < nframes; ++i) {
         const frame = frames[i];
-        if (i == nframes - 1) {
-            // pass the end, return last frame
-            return { hue: frame[0], saturation: frame[1], value: frame[2] }
-        }
-        if (time >= framet && time < framet + frame[3]) {
+        if (i == nframes - 1 || (time >= framet && time < framet + frame[3])) {
             // found time interval
-            const frame1 = frames[i + 1]
+            const frame1 = i == nframes - 1 ? frames[0] : frames[i + 1]
             const ratio = (time - framet) / frame[3];
             const ratiom1 = 1 - ratio;
             console.log({ ratio, ratiom1 })
