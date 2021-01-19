@@ -66,8 +66,8 @@ function StatusLightFrameDesigner(props: {
 
 export default function StatusLightDesigner() {
     const [frames, setFrames] = useState<StatusLightFrame[]>([
-        [173, 255, 100, 1000],
-        [200, 255, 100, 1000]
+        [17, 255, 100, 1000],
+        [31, 255, 100, 1000]
     ]);
     const { className, helmetStyle } = useStatusLightStyle(frames, {
         cssProperty: "fill"
