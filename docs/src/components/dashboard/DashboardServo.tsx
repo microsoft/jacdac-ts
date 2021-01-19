@@ -2,7 +2,7 @@
 import React from "react";
 import { ServoReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import { useRegisterBoolValue, useRegisterFloatValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import { useRegisterBoolValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
