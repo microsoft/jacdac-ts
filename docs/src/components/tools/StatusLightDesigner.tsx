@@ -1,8 +1,7 @@
 import React, { ChangeEvent, useState } from "react";
 import useStatusLightStyle, { StatusLightFrame } from "../hooks/useStatusLightStyle"
-import { Card, CardActions, CardContent, CardHeader, Grid, TextField, Typography } from "@material-ui/core"
+import { Card, CardContent, CardHeader, Grid, TextField, useTheme } from "@material-ui/core"
 import { SvgWidget } from "../widgets/SvgWidget";
-import useWidgetSize from "../widgets/useWidgetSize";
 import Helmet from "react-helmet"
 import Snippet from "../ui/Snippet";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
@@ -10,8 +9,7 @@ import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { ChromePicker } from "react-color";
-import PaperBox from "../ui/PaperBox";
+import { TwitterPicker } from "react-color";
 
 function StatusLightFrameDesigner(props: {
     frame: StatusLightFrame,
@@ -44,15 +42,14 @@ function StatusLightFrameDesigner(props: {
     }
 
     return <Card>
-        <CardHeader>
+        <CardHeader action={
             <IconButtonWithTooltip title="remove animation frame" disabled={!onRemove} onClick={onRemove}>
                 <DeleteIcon />
-            </IconButtonWithTooltip>
-        </CardHeader>
+            </IconButtonWithTooltip>} />
         <CardContent>
             <Grid container direction="column" spacing={1}>
                 <Grid item>
-                    <ChromePicker triangle="hide"
+                    <TwitterPicker triangle="hide"
                         color={hsv}
                         onChangeComplete={handleColorChangeComplete} />
                 </Grid>
@@ -75,7 +72,7 @@ export default function StatusLightDesigner() {
     const { className, helmetStyle } = useStatusLightStyle(frames, {
         cssProperty: "fill"
     });
-    const widgetSize = useWidgetSize();
+    const theme = useTheme();
     const handleFrame = (i: number) => (frame: StatusLightFrame) => {
         const newFrames = frames.slice(0);
         newFrames[i] = frame;
@@ -86,9 +83,26 @@ export default function StatusLightDesigner() {
         newFrames.splice(i, 1)
         setFrames(newFrames);
     }
-    const handleAdd = () => setFrames([...frames, [0, 255, 100, 500]]);
+    const handleAdd = () => setFrames([
+        ...frames,
+        frames[frames.length - 1].slice(0) as StatusLightFrame
+    ]);
 
     return <Grid container spacing={1}>
+        <Grid item>
+            {helmetStyle && <Helmet><style>{helmetStyle}</style></Helmet>}
+            <Card>
+                <CardHeader title="preview" />
+                <CardContent>
+                    <SvgWidget size={"20vh"} width={64} height={64}>
+                        <circle cx={32} cy={32} r={30}
+                            className={className}
+                            stroke={theme.palette.background.default}
+                            strokeWidth={1} />
+                    </SvgWidget>
+                </CardContent>
+            </Card>
+        </Grid>
         {frames.map((frame, i) => <Grid item key={i}>
             <StatusLightFrameDesigner key={i} frame={frame} setFrame={handleFrame(i)}
                 onRemove={frames.length > 1 ? handleRemove(i) : undefined} />
@@ -102,20 +116,15 @@ export default function StatusLightDesigner() {
                 </CardContent>
             </Card>
         </Grid>
-        {helmetStyle && <Grid item xs={12}>
-            <PaperBox>
-                <Typography variant="h3">Preview</Typography>
-                <Helmet><style>{helmetStyle}</style></Helmet>
-                <SvgWidget size={widgetSize} width={64} height={64}>
-                    <circle cx={32} cy={32} r={32} className={className} />
-                </SvgWidget>
-            </PaperBox>
-        </Grid>}
         <Grid item xs={12}>
-            <PaperBox>
-                <Typography variant="h3">Code</Typography>
-                <Snippet value={() => JSON.stringify(frames, null, 2)} mode={"json"} />
-            </PaperBox>
+            <Card>
+                <CardHeader title="code" />
+                <CardContent>
+                    <Snippet
+                        value={() => JSON.stringify(frames, null, 2)} mode={"json"}
+                    />
+                </CardContent>
+            </Card>
         </Grid>
-    </Grid>
+    </Grid>;
 }
