@@ -1,11 +1,11 @@
-import { makeStyles, Theme, createStyles, Paper, InputBase, useTheme } from '@material-ui/core';
+import { makeStyles, Theme, createStyles, Paper, InputBase } from '@material-ui/core';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import FilterListIcon from '@material-ui/icons/FilterList';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import ClearIcon from '@material-ui/icons/Clear';
-import { Box, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from "@material-ui/core";
+import { Box, ListItemIcon, Menu, MenuItem, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import KindIcon, { allKinds, kindName } from "./KindIcon";
 import PacketsContext from "./PacketsContext";
@@ -20,6 +20,7 @@ import { IconButton } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import GroupWorkIcon from '@material-ui/icons/GroupWork';
 import { isCommand, isEvent, isPipeReport, isRegister } from '../../../src/jdom/spec';
+import Tooltip from './ui/Tooltip';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

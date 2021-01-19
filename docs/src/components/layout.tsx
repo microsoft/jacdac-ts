@@ -284,7 +284,6 @@ function FabBar() {
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { path } = pageProps;
-  console.log({ pageProps })
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)

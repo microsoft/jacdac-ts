@@ -1,7 +1,8 @@
-import { Badge, Box, CircularProgress, IconButtonProps, Tooltip, useTheme } from "@material-ui/core";
+import { Badge, IconButtonProps } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 import React from "react";
 import CircularProgressBox, { CircularProgressBoxProps } from "./CircularProgressBox";
+import Tooltip from "./Tooltip";
 
 export type IconButtonWithProgressProps = {
     badgeColor?: "default" | "primary" | "secondary",
