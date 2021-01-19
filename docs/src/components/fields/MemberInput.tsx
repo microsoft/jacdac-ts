@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Slider, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { clampToStorage, isIntegerType, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
@@ -94,7 +94,7 @@ export default function MemberInput(props: {
     const percentValueLabelFormat = (v: number) => {
         return `${Math.round(v * 100)}%`
     }
-    const offFormat = (v: number) => "off";
+    const offFormat = () => "off";
 
     // value hasn't been loaded yet
     if (serviceMemberSpecification.kind !== "command" && value === undefined)
@@ -124,12 +124,16 @@ export default function MemberInput(props: {
     }
     else if (specification.unit === "/") {
         const fv = scaleIntToFloat(value, specification);
+        const signed = specification.storage < 0;
+        const min = signed ? -1 : 0;
+        const max = 1;
         if (isWidget)
             return <GaugeWidget
                 label={label}
                 value={scaleIntToFloat(value, specification)}
                 color={color}
-                min={0} max={1}
+                variant={signed ? "fountain" : undefined}
+                min={min} max={max}
                 valueLabel={percentValueLabelFormat}
                 size={widgetSize}
                 off={isOffWidget}
@@ -141,7 +145,7 @@ export default function MemberInput(props: {
             value={fv}
             valueLabelFormat={percentValueFormat}
             onChange={disabled ? undefined : handleScaledSliderChange}
-            min={0} max={1} step={0.01}
+            min={min} max={max} step={0.01}
             valueLabelDisplay="auto"
         />
     } else if (isSet(minValue) && isSet(maxValue)) {

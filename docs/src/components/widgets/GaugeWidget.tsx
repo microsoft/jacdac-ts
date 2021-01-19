@@ -35,9 +35,10 @@ export default function GaugeWidget(props: {
     min?: number,
     max?: number,
     off?: boolean,
+    variant?: "fountain",
     valueLabel?: (v: number) => string,
 }) {
-    const { value, label, color, size, min, max, valueLabel, off } = props;
+    const { value, label, color, size, min, max, variant, valueLabel, off } = props;
     const { background, active, textPrimary } = useWidgetTheme(color);
 
     const w = 120;
@@ -49,10 +50,20 @@ export default function GaugeWidget(props: {
     const r = (w >> 1) - m;
     const sa = -135;
     const ea = 135;
-    const fraction = (value - min) / (max - min);
-    const va = sa + fraction * (ea - sa);
     const db = describeArc(cx, cy, r, sa, ea);
-    const dv = describeArc(cx, cy, r, sa, va);
+    let dv: string;
+    if (variant === "fountain") {
+        const mid = (ea + sa) / 2;
+        const fraction = value / (max - min) * (ea - sa);
+        if (fraction < 0)
+            dv = describeArc(cx, cy, r, mid + fraction, mid);
+        else
+            dv = describeArc(cx, cy, r, mid, mid + fraction);
+    } else {
+        const fraction = (value - min) / (max - min);
+        const va = sa + fraction * (ea - sa);
+        dv = describeArc(cx, cy, r, sa, va);
+    }
 
     return <SvgWidget width={w} height={h} size={size}>
         <path strokeWidth={sw} stroke={background} d={db} fill="transparent" />
