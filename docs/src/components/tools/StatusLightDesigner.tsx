@@ -94,7 +94,7 @@ export default function StatusLightDesigner() {
             <Card>
                 <CardHeader title="preview" />
                 <CardContent>
-                    <SvgWidget size={"20vh"} width={64} height={64}>
+                    <SvgWidget size={"21vh"} width={64} height={64}>
                         <circle cx={32} cy={32} r={30}
                             className={className}
                             stroke={theme.palette.background.default}
