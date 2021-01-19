@@ -26,7 +26,7 @@ import "./layout.css"
 import SEO from "./seo";
 import FlashButton from "./FlashButton";
 // tslint:disable-next-line: no-submodule-imports
-import { createMuiTheme, responsiveFontSizes, createStyles, useTheme } from '@material-ui/core/styles';
+import { createMuiTheme, responsiveFontSizes, createStyles, useTheme, ThemeOptions } from '@material-ui/core/styles';
 import AppContext, { DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
 import WebUSBAlert from "./alert/WebUSBAlert";
@@ -174,12 +174,11 @@ export default function Layout(props: LayoutProps) {
 }
 
 function LayoutWithDarkMode(props: LayoutProps) {
-  console.log({ props })
   const { element, props: pageProps } = props;
   const { pageContext } = pageProps;
   const fullScreen = !!pageContext?.frontmatter?.fullScreen;
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
-  const rawTheme = createMuiTheme({
+  const themeDef: ThemeOptions = {
     palette: {
       primary: {
         main: '#2e7d32',
@@ -187,10 +186,21 @@ function LayoutWithDarkMode(props: LayoutProps) {
       secondary: {
         main: '#ffc400',
       },
+      contrastThreshold: 5.1,
       type: darkMode
     }
-  })
+  }
+  // accessibility
+  if (darkMode === 'dark') {
+//    themeDef.palette.contrastThreshold = 5;
+//    themeDef.palette.background = {
+ //     default: '#1a1a1a',
+  //    paper: '#2a2a2a'
+   // };
+  };
+  const rawTheme = createMuiTheme(themeDef)
   const theme = responsiveFontSizes(rawTheme);
+  console.log({ theme })
   const mdxComponents = useMdxComponents()
 
   if (!darkModeMounted)

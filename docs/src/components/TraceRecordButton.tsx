@@ -8,10 +8,11 @@ import IconButtonWithProgress, { IconButtonWithProgressProps } from "./ui/IconBu
 export default function TraceRecordButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
     const { recording, tracing, toggleRecording } = useContext(PacketsContext)
-
+    const title = recording ? "Stop recording" : "Record trace";
     return <IconButtonWithProgress
         {...others}
-        title={recording ? "Stop recording" : "Record trace"}
+        aria-label={title}
+        title={title}
         indeterminate={recording}
         disabled={disabled || tracing}
         onClick={toggleRecording}

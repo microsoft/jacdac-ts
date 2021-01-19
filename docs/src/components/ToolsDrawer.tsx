@@ -177,7 +177,7 @@ export default function ToolsDrawer() {
         }}
     >
         <div className={classes.drawerHeader}>
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton aria-label="Collapse" onClick={handleDrawerClose}>
                 <ChevronRightIcon />
             </IconButton>
         </div>
