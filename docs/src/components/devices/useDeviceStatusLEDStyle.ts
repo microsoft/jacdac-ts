@@ -5,9 +5,13 @@ import { JDDevice } from "../../../../src/jdom/device";
 import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 
-const greenGlow = [
+const bootloaderFrames = [
     [0, 255, 0, 500],
     [5, 255, 5, 500]
+];
+const identifyFrames = [
+    [50, 255, 0, 350],
+    [50, 255, 50, 350]
 ];
 /*
 const announceTick = [
@@ -27,11 +31,13 @@ export function useDeviceStatusLEDStyle(device: JDDevice, options?: {
     const { monochrome, cssProperty } = options || {};
     const register = useChange(device, d => d.service(0).register(ControlReg.StatusLight));
     const bootloader = useChange(device, d => d.hasService(SRV_BOOTLOADER));
+    const identifying = useChange(device, d => d?.identifying)
     const registerFrames = useRegisterUnpackedValue<[[number, number, number, number][]]>(register)
     const className = useId();
 
     // pick animation step
-    const frames = bootloader ? greenGlow
+    const frames = identifying ? identifyFrames
+        : bootloader ? bootloaderFrames
         : registerFrames?.[0];
 
     // generate a CSS animation for the curren frames

@@ -34,11 +34,9 @@ export default function DashboardDevice(props: {
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
-    const host = useDeviceHost(device);
-    const identifying = useChange(host, h => h?.identifying);
 
     return (
-        <Card variant={identifying ? "outlined" : undefined}>
+        <Card>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
                 action={

@@ -84,6 +84,7 @@ export const DEVICE_HOST_ADDED = `deviceHostAdded`
 export const DEVICE_HOST_REMOVED = `deviceHostRemoved`
 
 export const IDENTIFY = "identify"
+export const IDENTIFY_DURATION = 2000
 export const RESET = "reset"
 
 export const DATA = 'data'
