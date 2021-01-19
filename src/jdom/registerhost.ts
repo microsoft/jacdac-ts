@@ -61,7 +61,7 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
         let v: any[] = defaultValue;
-        if (!v && !this.specification.optional) 
+        if (!v && !this.specification.optional)
             v = defaultPayload(this.specification);
         if (v !== undefined && !v.some(vi => vi === undefined)) {
             this.data = jdpack(this.packFormat, v);
