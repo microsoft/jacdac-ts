@@ -11,6 +11,7 @@ export default class ControlServiceHost extends JDServiceHost {
     readonly resetIn: JDRegisterHost<[number]>;
     readonly uptime: JDRegisterHost<[number]>;
     readonly startTime: number;
+    readonly statusLight: JDRegisterHost<[[number, number, number, number][]]>;
 
     constructor() {
         super(SRV_CTRL)
@@ -20,6 +21,7 @@ export default class ControlServiceHost extends JDServiceHost {
         this.mcuTemperature = this.addRegister<[number]>(ControlReg.McuTemperature, [25]);
         this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn);
         this.uptime = this.addRegister<[number]>(ControlReg.Uptime);
+        this.statusLight = this.addRegister<[[number, number, number, number][]]>(ControlReg.StatusLight, [[]]);
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));

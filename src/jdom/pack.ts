@@ -227,6 +227,7 @@ export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
 }
 
 function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
+    //console.log({ fmt, data })
     let idx = 0
     const parser = new TokenParser(fmt)
     while (parser.parse()) {
@@ -240,7 +241,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 
         let dataItem = data[idx++]
 
-        if (c0 == ch_r) {
+        if (c0 == ch_r && dataItem) {
             const fmt0 = fmt.slice(parser.fp)
             for (const velt of (dataItem as any[][])) {
                 off = jdpackCore(trg, fmt0, velt, off)
@@ -264,20 +265,21 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
                 off += parser.size
             } else {
                 let buf: Uint8Array
-                if (typeof v == "string") {
+                if (typeof v === "string") {
                     if (c0 == ch_z)
                         buf = stringToBuffer(v + "\u0000")
                     else if (c0 == ch_s)
                         buf = stringToBuffer(v)
                     else
                         throw new Error(`unexpected string`)
-                } else if (v && typeof v == "object" && v.length != null) {
+                } else if (v && typeof v === "object" && v.length != null) {
                     // assume buffer
                     if (c0 == ch_b)
                         buf = v
                     else
                         throw new Error(`unexpected buffer`)
                 } else {
+                    console.log({ parser, v })
                     throw new Error(`expecting string or buffer`)
                 }
 
