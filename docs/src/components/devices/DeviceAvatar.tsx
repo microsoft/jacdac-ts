@@ -6,7 +6,7 @@ import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import CmdButton from "../CmdButton";
 import useDeviceHost from "../hooks/useDeviceHost";
 import KindIcon from "../KindIcon"
-import { useDeviceStatusLEDStyle } from "./useDeviceStatusLEDStyle";
+import useDeviceStatusLightStyle from "./useDeviceStatusLightStyle";
 import Helmet from "react-helmet"
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -31,7 +31,7 @@ export default function DeviceAvatar(props: { device: JDDevice, showMissing?: bo
   const classes = useStyles();
   const sizeClassName = size === "small" ? classes.small : size === "large" ? classes.large : undefined;
   const host = useDeviceHost(device);
-  const { className: statusLEDClassName, helmetStyle: statusLEDHelmetStyle } = useDeviceStatusLEDStyle(device)
+  const { className: statusLEDClassName, helmetStyle: statusLEDHelmetStyle } = useDeviceStatusLightStyle(device)
 
   if (!showMissing && (!host && !imageUrl))
     return null;

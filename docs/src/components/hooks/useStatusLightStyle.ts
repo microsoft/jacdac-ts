@@ -8,6 +8,35 @@ export interface StatusLightProps {
     cssProperty?: "border" | "background-color" | "color" | "fill" | "stroke"
 }
 
+function interpolate(frames: StatusLightFrame[], time: number) {
+    let framet = 0;
+    const nframes = frames.length;
+    for (let i = 0; i < nframes; ++i) {
+        const frame = frames[i];
+        if (i == nframes - 1) {
+            // pass the end, return last frame
+            return { hue: frame[0], saturation: frame[1], value: frame[2] }
+        }
+        if (time >= framet && time < framet + frame[3]) {
+            // found time interval
+            const frame1 = frames[i + 1]
+            const ratio = (time - framet) / frame[3];
+            const ratiom1 = 1 - ratio;
+            console.log({ ratio, ratiom1 })
+            return {
+                hue: ratio * frame[0] + ratiom1 * frame1[0],
+                saturation: ratio * frame[1] + ratiom1 * frame1[1],
+                value: ratio * frame[2] + ratiom1 * frame1[2],
+            }
+        } else {
+            // keep adding time
+            framet += frame[3]; // current start time of frame
+        }
+    }
+
+    return { hue: 0, saturation: 0, value: 0 };
+}
+
 export default function useStatusLightStyle(frames: StatusLightFrame[], options?: StatusLightProps) {
     const { monochrome, cssProperty } = options || {};
     const className = useId();
@@ -18,27 +47,35 @@ export default function useStatusLightStyle(frames: StatusLightFrame[], options?
         const DURATION = 3;
         const property = cssProperty || "background-color";
         const total = frames.reduce((t, row) => t + row[DURATION], 0)
-        let curr = 0;
-        return `@keyframes ${className} {
-        ${frames.map(frame => {
-            const [hue, saturation, value, duration] = frame;
-            const percent = Math.floor(curr / total * 100)
-            curr += duration;
+        // one animation frame every 100ms
+        const KEYFRAME_DURATION = 100;
+        const nkframes = Math.ceil(total / KEYFRAME_DURATION);
+        let kf = `@keyframes ${className} {\n`;
+        for (let kframei = 0; kframei < nkframes; ++kframei) {
+            const kt = kframei / (nkframes - 1) * total;
+            const { hue, saturation, value } = interpolate(frames, kt);
+            console.log({ frames, kframei, kt, hue, saturation, value })
+            // generate new keyframe
+            const percent = Math.round(kframei / (nkframes - 1) * 100)
             const csshue = Math.round((monochrome ? 0 : hue) * 360 / 0xff);
             const csssat = Math.round((monochrome ? 255 : saturation) * 100 / 0xff);
             const lightness = Math.round(value / 0xff * 100);
-            const alpha = value === 0 ? 0 : 1;
-            return `${percent}% { ${property}: hsla(${csshue}, ${csssat}%, ${lightness}%, ${alpha}); }`
-        }).join("\n")}
-    }
-    .${className} {
-        animation-duration: ${total / 1000}s;
-        animation-name: ${className};
-        animation-delay: 0s;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-    }`
-            ;
+            const alpha = 1;//value / 0xff;
+            kf += `  ${percent}% { 
+    ${property}: hsla(${csshue}, ${csssat}%, ${lightness}%, ${alpha});
+  }\n`
+        }
+        kf += `}\n`; // @keyframes
+        // class
+        kf += `.${className} {
+  animation-duration: ${total / 1000}s;
+  animation-name: ${className};
+  animation-delay: 0s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}`;
+        console.log({ frames, total, nkframes, kf })
+        return kf;
     }, [frames?.map(frame => frame.toString()).join(), monochrome, cssProperty]);
 
     return { className, helmetStyle }

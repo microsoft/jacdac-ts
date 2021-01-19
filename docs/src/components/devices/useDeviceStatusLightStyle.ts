@@ -21,7 +21,7 @@ const announceTick = [
 ]
 */
 
-export function useDeviceStatusLightStyle(device: JDDevice, options?: StatusLightProps) {
+export default function useDeviceStatusLightStyle(device: JDDevice, options?: StatusLightProps) {
     const register = useChange(device, d => d.service(0).register(ControlReg.StatusLight));
     const bootloader = useChange(device, d => d.hasService(SRV_BOOTLOADER));
     const identifying = useChange(device, d => d?.identifying)
