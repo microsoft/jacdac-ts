@@ -1,13 +1,13 @@
 
 import React, { useEffect, useRef } from "react";
-import { LightVariant, RENDER } from "../../../../src/jdom/constants";
+import { LightReg, LightVariant, RENDER } from "../../../../src/jdom/constants";
 import useServiceHost from "../hooks/useServiceHost";
 import LightServiceHost from "../../../../src/hosts/lightservicehost";
 import { SvgWidget } from "../widgets/SvgWidget";
-import useChange from "../../jacdac/useChange";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useWidgetSize from "../widgets/useWidgetSize";
 import { JDService } from "../../../../src/jdom/service";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue"
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
     const [r$, g$, b$] = [r / 255, g / 255, b / 255];
@@ -56,18 +56,64 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
 
 export default function LightWidget(props: { service: JDService, widgetCount?: number }) {
     const { service, widgetCount } = props;
-    const host = useServiceHost<LightServiceHost>(service);
     const { background, controlBackground } = useWidgetTheme()
     const widgetSize = useWidgetSize(widgetCount)
-    const [numPixels] = useChange(host.numPixels, r => r.values());
-    const [variant] = useChange(host.variant, r => r.values());
-    const [actualBrightness] = useChange(host.actualBrightness, r => r.values());
+    const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LightReg.NumPixels));
+    const [variant] = useRegisterUnpackedValue<[number]>(service.register(LightReg.Variant));
+    const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LightReg.ActualBrightness));
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
+    const host = useServiceHost<LightServiceHost>(service);
 
     const neoradius = 6;
     const neocircleradius = neoradius + 1;
     const sw = neoradius * 2;
+
+    // paint svg via dom
+    const render = () => {
+        const pixels = pixelsRef.current?.children;
+        const colors = host?.colors;
+        if (!colors || !pixels)
+            return;
+
+        const pn = Math.min(pixels.length, colors.length / 3);
+        let ci = 0;
+        for (let i = 0; i < pn; ++i) {
+            const pixel = pixels.item(i) as SVGCircleElement;
+            setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2], neocircleradius);
+            ci += 3;
+        }
+    }
+
+    // reposition pixels along the path
+    useEffect(() => {
+        const p = pathRef.current;
+        const pixels = pixelsRef.current?.children;
+        if (!p || !pixels)
+            return;
+
+        const pn = pixels.length;
+        const length = p.getTotalLength();
+        const extra = variant === LightVariant.Ring ? 0 : 1;
+        const step = length / pn;
+
+        for (let i = 0; i < pn; ++i) {
+            const pixel = pixels.item(i) as SVGCircleElement;
+            const point = p.getPointAtLength(step * (i + extra / 2.0));
+            pixel.setAttribute("cx", "" + point.x);
+            pixel.setAttribute("cy", "" + point.y);
+        }
+
+        render();
+    }, [variant, numPixels])
+
+    // render when new colors are in
+    useEffect(() => host?.subscribe(RENDER, render), [host]);
+
+    // not enough data to draw anything
+    if (numPixels === undefined || actualBrightness === undefined)
+        return null;
+
     let width: number;
     let height: number;
 
@@ -75,14 +121,13 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
     if (variant === LightVariant.Stick) {
         const dx = neoradius * 3
         d = `M 0 ${dx}`
-        for(let i = 0; i < numPixels;++i) {
+        for (let i = 0; i < numPixels; ++i) {
             d += ` h ${dx} 0`
         }
         width = numPixels * dx;
         height = 2 * dx;
     }
     else if (variant === LightVariant.Strip) {
-        const r = neoradius * 4
         const side = Math.ceil(Math.sqrt(numPixels) * 1.6108)
 
         let i = 0;
@@ -116,41 +161,6 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
         //if (variant === LightVariant.Ring)
         d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
     }
-
-    // paint svg via dom
-    const render = () => {
-        const colors = host.colors;
-        const pixels = pixelsRef.current.children;
-        const pn = Math.min(pixels.length, colors.length / 3);
-        let ci = 0;
-        for (let i = 0; i < pn; ++i) {
-            const pixel = pixels.item(i) as SVGCircleElement;
-            setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2], neocircleradius);
-            ci += 3;
-        }
-    }
-
-    // reposition pixels along the path
-    useEffect(() => {
-        const p = pathRef.current;
-        const pixels = pixelsRef.current.children;
-        const pn = pixels.length;
-        const length = p.getTotalLength();
-        const extra = variant === LightVariant.Ring ? 0 : 1;
-        const step = length / pn;
-
-        for (let i = 0; i < pn; ++i) {
-            const pixel = pixels.item(i) as SVGCircleElement;
-            const point = p.getPointAtLength(step * (i + extra / 2.0));
-            pixel.setAttribute("cx", "" + point.x);
-            pixel.setAttribute("cy", "" + point.y);
-        }
-
-        render();
-    }, [variant, numPixels])
-
-    // render when new colors are in
-    useEffect(() => host.subscribe(RENDER, render), [host]);
 
     // tune opacity to account for global opacity
     const alpha = 0.7;
