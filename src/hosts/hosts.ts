@@ -169,7 +169,7 @@ const _hosts = [
         services: () => Array(2).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
-        name: "micro servo x 4",
+        name: "servo x 4",
         services: () => Array(4).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
