@@ -56,10 +56,10 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
     const { service } = props;
     const [sending, setSending] = useState(false);
 
-    const [command, setCommand] = useState(lightCommands[0]);
+    const [command, setCommand] = useState(lightCommands[1]);
     const [offset, setOffset] = useState("1");
     const [duration, setDuration] = useState("100");
-    const [colors, setColors] = useState(["#0000ff"]);
+    const [colors, setColors] = useState(["#0000ff", "#ff0000"]);
     const [mode, setMode] = useState(0);
 
     const { name, args, description, valueDescription } = command;
