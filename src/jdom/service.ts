@@ -17,6 +17,7 @@ export class JDService extends JDNode {
     private _events: JDEvent[];
     private _reports: Packet[] = [];
     private _specification: jdspec.ServiceSpec = null;
+    // packets received since last announce
     public registersUseAcks = false;
     private readonly _clients: JDServiceClient[] = [];
 

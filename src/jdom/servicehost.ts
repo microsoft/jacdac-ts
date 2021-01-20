@@ -3,7 +3,6 @@ import { NumberFormat, setNumber } from "./buffer";
 import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
-import { JDRegister } from "./register";
 import JDRegisterHost from "./registerhost";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";

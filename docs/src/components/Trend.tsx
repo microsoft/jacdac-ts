@@ -116,6 +116,7 @@ function UnitTrend(props: {
     horizon?: number,
     width?: number,
     height?: number,
+    mini?: boolean
 } & TrendProps) {
     const { dataSet, horizon, width, height, mini, gradient } = props;
     const { rows } = dataSet;
@@ -143,7 +144,7 @@ export default function Trend(props: {
     const classes = useStyles()
 
     const units = unique(dataSet.units.map(unit => unit || "/"))
-    return <div className={mini && classes.mini}>
+    return <div className={mini ? classes.mini : undefined}>
         {units.map(unit => <UnitTrend key={`graph${unit}`} unit={unit} {...props} />)}
     </div>
 }

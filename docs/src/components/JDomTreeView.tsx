@@ -44,20 +44,29 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
     const theme = useTheme()
     const showActions = useMediaQuery(theme.breakpoints.up('sm'))
+    const dropped = useChange(device.qos, qos => qos.dropped);
 
     const serviceNames = ellipseJoin(services
         .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
         .map(service => service.name), 18)
     const readingRegister = services.find(srv => srv.readingRegister)?.readingRegister;
     const reading = useRegisterHumanValue(readingRegister);
-    const labelInfo = [reading, serviceNames].filter(r => !!r).join(', ');
+
+    const alert = lost ? `Lost device...`
+        : dropped > 2 ? `${dropped} lost`
+            : undefined;
+    const labelInfo = [
+        !!dropped && `${dropped} lost`
+        , reading
+        , serviceNames
+    ].filter(r => !!r).join(', ');
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
         labelInfo={labelInfo}
-        alert={lost && "Lost device..."}
+        alert={alert}
         kind={kind}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
@@ -248,17 +257,17 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             onNodeToggle={handleToggle}
             onNodeSelect={handleSelect}
         >
-        {devices?.map(device => <DeviceTreeItem
-            key={device.id}
-            device={device}
-            checked={checked}
-            setChecked={handleChecked}
-            checkboxes={checkboxes}
-            expanded={expanded}
-            selected={selected}
-            dashboard={dashboard}
-            {...other}
-        />)}
-    </TreeView>
+            {devices?.map(device => <DeviceTreeItem
+                key={device.id}
+                device={device}
+                checked={checked}
+                setChecked={handleChecked}
+                checkboxes={checkboxes}
+                expanded={expanded}
+                selected={selected}
+                dashboard={dashboard}
+                {...other}
+            />)}
+        </TreeView>
     </>);
 }
