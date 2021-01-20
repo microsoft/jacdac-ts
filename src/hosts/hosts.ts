@@ -31,6 +31,8 @@ const barometerOptions = {
     readingValue: 1013
 }
 
+export const SG90_RESPONSE_SPEED = 0.12; // deg/60deg
+
 const _hosts = [
     {
         name: "accelerometer",
@@ -106,12 +108,34 @@ const _hosts = [
         services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Rotary })]
     },
     {
-        name: "servo",
-        services: () => [new ServoServiceHost()]
+        name: "micro servo",
+        services: () => [new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED })]
     },
     {
-        name: "servo (360)",
-        services: () => [new ServoServiceHost({ minAngle: -180, maxAngle: 180 })]
+        name: "micro servo (270)",
+        services: () => [new ServoServiceHost({
+            responseSpeed: SG90_RESPONSE_SPEED,
+            minAngle: -135, maxAngle: 135
+        })]
+    },
+    {
+        name: "micro servo (360)",
+        services: () => [new ServoServiceHost({
+            responseSpeed: SG90_RESPONSE_SPEED,
+            minAngle: -180, maxAngle: 180
+        })]
+    },
+    {
+        name: "micro servo x 2",
+        services: () => Array(2).fill(0).map((_,i) => new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED }))
+    },
+    {
+        name: "micro servo x 4",
+        services: () => Array(4).fill(0).map((_,i) => new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED }))
+    },
+    {
+        name: "micro servo x 16",
+        services: () => Array(16).fill(0).map((_,i) => new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED }))
     },
     {
         name: "settings",

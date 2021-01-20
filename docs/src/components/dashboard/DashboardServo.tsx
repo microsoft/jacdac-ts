@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ServoReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterBoolValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
@@ -7,13 +7,25 @@ import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
+import { JDService } from "../../../../src/jacdac";
+import useThrottledValue from "../hooks/useThrottledValue";
+import { SG90_RESPONSE_SPEED } from "../../../../src/hosts/hosts";
+
+function useActualAngle(service: JDService) {
+    const [angle] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Angle));
+    // sec/60deg
+    const [responseSpeed] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.ResponseSpeed));
+    const rotationalSpeed = 60 / (responseSpeed || SG90_RESPONSE_SPEED);
+    const actualAngle = useThrottledValue(angle || 0, rotationalSpeed)
+
+    return actualAngle;
+}
 
 export default function DashboardServo(props: DashboardServiceProps) {
     const { service } = props;
 
     const enabled = useRegisterBoolValue(service.register(ServoReg.Enabled))
-    const angleRegister = service.register(ServoReg.Angle);
-    const [angle] = useRegisterUnpackedValue<[number]>(angleRegister);
+    const angle = useActualAngle(service)
     const [offset] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Offset));
 
     const host = useServiceHost(service);
@@ -24,7 +36,7 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const cx = 78;
     const cy = 55;
 
-    const a = enabled ? (angle + offset) : 0;
+    const a = enabled ? (angle + (offset || 0)) : 0;
     const transform = `rotate(${- a}, ${cx}, ${cy})`;
     const h = 111.406;
     const w = 158.50195;

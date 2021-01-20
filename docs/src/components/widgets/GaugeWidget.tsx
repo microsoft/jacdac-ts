@@ -1,7 +1,7 @@
 import React from "react";
-import { Grid, Typography } from "@material-ui/core";
 import useWidgetTheme from "./useWidgetTheme";
 import { SvgWidget } from "./SvgWidget";
+import useThrottledValue from "../hooks/useThrottledValue"
 
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
     const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
@@ -40,6 +40,7 @@ export default function GaugeWidget(props: {
 }) {
     const { value, label, color, size, min, max, variant, valueLabel, off } = props;
     const { background, active, textPrimary } = useWidgetTheme(color);
+    const displayValue = useThrottledValue(value, (max - min) * 1.619);
 
     const w = 120;
     const h = 120;
@@ -50,24 +51,30 @@ export default function GaugeWidget(props: {
     const r = (w >> 1) - m;
     const sa = -135;
     const ea = 135;
-    const db = describeArc(cx, cy, r, sa, ea);
-    let dv: string;
-    if (variant === "fountain") {
-        const mid = (ea + sa) / 2;
-        const fraction = value / (max - min) * (ea - sa);
-        if (fraction < 0)
-            dv = describeArc(cx, cy, r, mid + fraction, mid);
-        else
-            dv = describeArc(cx, cy, r, mid, mid + fraction);
-    } else {
-        const fraction = (value - min) / (max - min);
-        const va = sa + fraction * (ea - sa);
-        dv = describeArc(cx, cy, r, sa, va);
+
+    const computeArc = (v: number) => {
+        if (variant === "fountain") {
+            const mid = (ea + sa) / 2;
+            const fraction = v / (max - min) * (ea - sa);
+            if (fraction < 0)
+                return describeArc(cx, cy, r, mid + fraction, mid);
+            else
+                return describeArc(cx, cy, r, mid, mid + fraction);
+        } else {
+            const fraction = (v - min) / (max - min);
+            const va = sa + fraction * (ea - sa);
+            return describeArc(cx, cy, r, sa, va);
+        }
     }
 
+    const db = describeArc(cx, cy, r, sa, ea);
+    const dvalue = computeArc(value);
+    const dactual = computeArc(displayValue);
+    const lineCap = "round"
     return <SvgWidget width={w} height={h} size={size}>
-        <path strokeWidth={sw} stroke={background} d={db} fill="transparent" />
-        {!off && <path strokeWidth={sw} stroke={active} d={dv} fill="transparent" />}
+        <path strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent" />
+        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
+        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent" />}
         {(valueLabel || off) && <text x={cx} y={cy} fill={textPrimary} textAnchor="middle">{off ? "off" : valueLabel(value)}</text>}
         {label && <text x={w >> 1} y={h - m} textAnchor={"middle"} fill={textPrimary}>{label}</text>}
     </SvgWidget>
