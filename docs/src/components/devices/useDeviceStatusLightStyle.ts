@@ -6,11 +6,11 @@ import useStatusLightStyle, { StatusLightFrame, StatusLightProps } from "../hook
 
 const bootloaderFrames: StatusLightFrame[] = [
     [0, 255, 0, 500],
-    [5, 255, 5, 500]
+    [5, 255, 255, 500]
 ];
 const identifyFrames: StatusLightFrame[] = [
-    [50, 255, 0, 350],
-    [50, 255, 50, 350]
+    [50, 255, 0, 250],
+    [50, 255, 255, 250]
 ];
 /*
 const announceTick = [
