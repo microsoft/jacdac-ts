@@ -1,5 +1,5 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
-import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SystemReg } from "../../../../src/jdom/constants";
+import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SystemReg } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
@@ -14,6 +14,7 @@ import DashboardServo from "./DashboardServo";
 import { JDRegister } from "../../../../src/jdom/register";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import DashboardSwitch from "./DashboardSwitch";
+import DashboardTrafficLight from "./DashboardTrafficLight";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -33,6 +34,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_BUTTON]: DashboardButton,
     [SRV_SERVO]: DashboardServo,
     [SRV_SWITCH]: DashboardSwitch,
+    [SRV_TRAFFIC_LIGHT]: DashboardTrafficLight,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {

@@ -1,4 +1,4 @@
-import { DistanceVariant, LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
+import { DistanceVariant, LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -11,6 +11,7 @@ import JDSensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
 import SwitchServiceHost from "./switchservicehost";
+import TrafficLightServiceHost from "./trafficlightservicehost";
 
 const outdoorThermometerOptions = {
     readingValue: 21.5,
@@ -211,6 +212,10 @@ const _hosts = [
     {
         name: "thermometer (medical)",
         services: () => [new JDSensorServiceHost(SRV_THERMOMETER, medicalThermometerOptions)]
+    },
+    {
+        name: "traffic light",
+        services: () => [new TrafficLightServiceHost()]
     },
     {
         name: "thermocouple",
