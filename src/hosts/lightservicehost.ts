@@ -117,6 +117,7 @@ export default class LightServiceHost extends JDServiceHost {
     readonly maxPower: JDRegisterHost<[number]>;
     readonly variant: JDRegisterHost<[LightVariant]>;
     readonly maxPixels: JDRegisterHost<[number]>;
+    readonly numRepeats: JDRegisterHost<[number]>;
 
     private pxbuffer: Uint8Array = new Uint8Array(0);
 
@@ -151,12 +152,13 @@ export default class LightServiceHost extends JDServiceHost {
         this.maxPower = this.addRegister<[number]>(LightReg.MaxPower, [options?.maxPower || 200]);
         this.maxPixels = this.addRegister<[number]>(LightReg.MaxPixels, [options?.maxPixels || 300]);
         this.variant = this.addRegister<[LightVariant]>(LightReg.Variant, [LightVariant.Strip]);
+        this.numRepeats = this.addRegister<[number]>(LightReg.NumRepeats, [0]);
 
         this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
         this.maxPixels.on(CHANGE, this.allocRxBuffer.bind(this));
 
-        this.addCommand(LightCmd.Run, this.handle_run_cmd.bind(this));
+        this.addCommand(LightCmd.Run, this.handleRun.bind(this));
 
         this.allocRxBuffer();
     }
@@ -199,10 +201,6 @@ export default class LightServiceHost extends JDServiceHost {
 
     private jd_power_enable(value: boolean) {
         this.power_enable = value;
-    }
-
-    render() {
-        const srv_t = this;
     }
 
     is_enabled() {
@@ -608,7 +606,7 @@ export default class LightServiceHost extends JDServiceHost {
         this.jd_power_enable(true);
     }
 
-    private handle_run_cmd(pkt: Packet) {
+    private handleRun(pkt: Packet) {
         console.log("run", { data: toHex(pkt.data) })
 
         this.prog_data = pkt.data;
