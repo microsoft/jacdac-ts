@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.12.1",
+    "toolVersion": "7.13.0",
     "schemaVersion": 1003,
     "oldestForwardsCompatibleVersion": 1001
   },
@@ -702,6 +702,63 @@
         },
         {
           "kind": "Enum",
+          "canonicalReference": "jacdac-ts!BarometerReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum BarometerReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "BarometerReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!BarometerReg.Pressure:member",
+              "docComment": "/**\n * Read-only hPa u22.10 (uint32_t). The air pressure.\n * ```\n * const [pressure] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Pressure = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "257"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Pressure",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!BarometerReg.PressureError:member",
+              "docComment": "/**\n * Read-only hPa u22.10 (uint32_t). The real pressure is between `pressure - pressure_error` and `pressure + pressure_error`.\n * ```\n * const [pressureError] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "PressureError = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "262"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "PressureError",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
           "canonicalReference": "jacdac-ts!BaseReg:enum",
           "docComment": "",
           "excerptTokens": [
@@ -773,7 +830,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!BootloaderCmd.PageData:member",
-              "docComment": "/**\n * Use to send flashing data. A physical page is split into `chunk_max + 1` chunks, where `chunk_no = 0 ... chunk_max`. Each chunk is stored at `page_address + page_offset`. `page_address` has to be equal in all chunks, and is included in response. Only the last chunk causes writing to flash and elicits response.\n * ```\n * const [pageAddress, pageOffset, chunkNo, chunkMax, sessionId, pageData] = jdunpack<[number, number, number, number, number, UInt8Array]>(buf, \"u32 u16 u8 u8 u32 x[4] x[4] x[4] x[4] b[208]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Use to send flashing data. A physical page is split into `chunk_max + 1` chunks, where `chunk_no = 0 ... chunk_max`. Each chunk is stored at `page_address + page_offset`. `page_address` has to be equal in all chunks, and is included in response. Only the last chunk causes writing to flash and elicits response.\n * ```\n * const [pageAddress, pageOffset, chunkNo, chunkMax, sessionId, pageData] = jdunpack<[number, number, number, number, number, Uint8Array]>(buf, \"u32 u16 u8 u8 u32 x[4] x[4] x[4] x[4] b[208]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2799,6 +2856,27 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ControlReg.StatusLight:member",
+              "docComment": "/**\n * Specifies a status light animation sequence on a colored or monochrome LED. ``hue``, ``saturation``, ``value`` are the components of an HSV color and ``duration8`` is the duration of transition to the next color in the array, in units of ``8ms``. Module with monochrome LED can ignore ``hue``, ``saturation`` and use ``value``. The animation is played in a loop. Typically, up to 8 steps (repeats) are supported. Set the register to empty buffer to disable the animation. The status light is also used by JACDAC software stack to indicate various status mode and this animation may be overridden when those modes are enabled.\n * ```\n * const [rest] = jdunpack<[([number, number, number, number])[]]>(buf, \"r: u8 u8 u8 u8\")\n * const [hue, saturation, value, duration8] = rest[0]\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StatusLight = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "129"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StatusLight",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.Uptime:member",
               "docComment": "/**\n * Read-only μs uint64_t. Number of microseconds since boot.\n * ```\n * const [uptime] = jdunpack<[number]>(buf, \"u64\")\n * ```\n *\n */\n",
               "excerptTokens": [
@@ -4392,6 +4470,204 @@
             "startIndex": 0,
             "endIndex": 0
           }
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!DistanceReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum DistanceReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DistanceReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceReg.Distance:member",
+              "docComment": "/**\n * Read-only m u6.10 (uint16_t). Current distance from the object\n * ```\n * const [distance] = jdunpack<[number]>(buf, \"u6.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Distance = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "257"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Distance",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceReg.MaxRange:member",
+              "docComment": "/**\n * Constant m u6.10 (uint16_t). Maximum measurable distance\n * ```\n * const [maxRange] = jdunpack<[number]>(buf, \"u6.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxRange = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "261"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxRange",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceReg.MinRange:member",
+              "docComment": "/**\n * Constant m u6.10 (uint16_t). Minimum measurable distance\n * ```\n * const [minRange] = jdunpack<[number]>(buf, \"u6.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MinRange = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "260"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MinRange",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceReg.Variant:member",
+              "docComment": "/**\n * Constant Variant (uint32_t). Determines the type of sensor used.\n * ```\n * const [variant] = jdunpack<[DistanceVariant]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!DistanceVariant:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum DistanceVariant "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "DistanceVariant",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceVariant.Infrared:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Infrared = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Infrared",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceVariant.LiDAR:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "LiDAR = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "3"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "LiDAR",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceVariant.TimeOfFlight:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "TimeOfFlight = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "TimeOfFlight",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!DistanceVariant.Ultrasonic:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Ultrasonic = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Ultrasonic",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
         },
         {
           "kind": "Function",
@@ -7025,6 +7301,27 @@
                 "startIndex": 1,
                 "endIndex": 2
               }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!HumidityReg.HumidityError:member",
+              "docComment": "/**\n * Read-only %RH u22.10 (uint32_t). The real humidity is between `humidity - humidity_error` and `humidity + humidity_error`.\n * ```\n * const [humidityError] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "HumidityError = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "262"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "HumidityError",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
             }
           ]
         },
@@ -7070,6 +7367,23 @@
             }
           ],
           "name": "identifierToUrlPath"
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!IDENTIFY_DURATION:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "IDENTIFY_DURATION = 2000"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "IDENTIFY_DURATION",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
         },
         {
           "kind": "Variable",
@@ -7440,7 +7754,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.GetTwin:member",
-              "docComment": "/**\n * Argument: twin_result pipe (bytes). Ask for current device digital twin.\n * ```\n * const [twinResult] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: twin_result pipe (bytes). Ask for current device digital twin.\n * ```\n * const [twinResult] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7545,7 +7859,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.Subscribe:member",
-              "docComment": "/**\n * Argument: devicebound pipe (bytes). Subscribes for cloud to device messages, which will be sent over the specified pipe.\n * ```\n * const [devicebound] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: devicebound pipe (bytes). Subscribes for cloud to device messages, which will be sent over the specified pipe.\n * ```\n * const [devicebound] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7566,7 +7880,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.SubscribeMethod:member",
-              "docComment": "/**\n * Argument: method_call pipe (bytes). Subscribe to direct method calls.\n * ```\n * const [methodCall] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: method_call pipe (bytes). Subscribe to direct method calls.\n * ```\n * const [methodCall] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7587,7 +7901,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!IotHubCmd.SubscribeTwin:member",
-              "docComment": "/**\n * Argument: twin_updates pipe (bytes). Subscribe to updates to our twin.\n * ```\n * const [twinUpdates] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: twin_updates pipe (bytes). Subscribe to updates to our twin.\n * ```\n * const [twinUpdates] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -7688,7 +8002,7 @@
         {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!IotHubPipeCmd:enum",
-          "docComment": "/**\n * pipe_command MethodResponse\n * ```\n * const [json] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+          "docComment": "/**\n * pipe_command MethodResponse\n * ```\n * const [json] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -11268,6 +11582,33 @@
             },
             {
               "kind": "Property",
+              "canonicalReference": "jacdac-ts!JDDevice#identifying:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get identifying(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "identifying",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false
+            },
+            {
+              "kind": "Property",
               "canonicalReference": "jacdac-ts!JDDevice#lastSeen:member",
               "docComment": "",
               "excerptTokens": [
@@ -12189,7 +12530,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": ", address: "
+                  "text": ", code: "
                 },
                 {
                   "kind": "Content",
@@ -12211,7 +12552,7 @@
                   }
                 },
                 {
-                  "parameterName": "address",
+                  "parameterName": "code",
                   "parameterTypeTokenRange": {
                     "startIndex": 3,
                     "endIndex": 4
@@ -14106,7 +14447,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": ", address: "
+                  "text": ", code: "
                 },
                 {
                   "kind": "Content",
@@ -14128,7 +14469,7 @@
                   }
                 },
                 {
-                  "parameterName": "address",
+                  "parameterName": "code",
                   "parameterTypeTokenRange": {
                     "startIndex": 3,
                     "endIndex": 4
@@ -14878,15 +15219,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "sendSetPackedAsync<T extends "
-                },
-                {
-                  "kind": "Content",
-                  "text": "any[]"
-                },
-                {
-                  "kind": "Content",
-                  "text": ">(fmt: "
+                  "text": "sendSetPackedAsync(fmt: "
                 },
                 {
                   "kind": "Content",
@@ -14929,8 +15262,8 @@
               "isOptional": false,
               "isStatic": false,
               "returnTypeTokenRange": {
-                "startIndex": 9,
-                "endIndex": 11
+                "startIndex": 7,
+                "endIndex": 9
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -14938,35 +15271,22 @@
                 {
                   "parameterName": "fmt",
                   "parameterTypeTokenRange": {
-                    "startIndex": 3,
-                    "endIndex": 4
+                    "startIndex": 1,
+                    "endIndex": 2
                   }
                 },
                 {
                   "parameterName": "values",
                   "parameterTypeTokenRange": {
-                    "startIndex": 5,
-                    "endIndex": 6
+                    "startIndex": 3,
+                    "endIndex": 4
                   }
                 },
                 {
                   "parameterName": "autoRefresh",
                   "parameterTypeTokenRange": {
-                    "startIndex": 7,
-                    "endIndex": 8
-                  }
-                }
-              ],
-              "typeParameters": [
-                {
-                  "typeParameterName": "T",
-                  "constraintTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  },
-                  "defaultTypeTokenRange": {
-                    "startIndex": 0,
-                    "endIndex": 0
+                    "startIndex": 5,
+                    "endIndex": 6
                   }
                 }
               ],
@@ -15386,7 +15706,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "event(identifier: "
+                  "text": "event(eventCode: "
                 },
                 {
                   "kind": "Content",
@@ -15416,7 +15736,7 @@
               "overloadIndex": 1,
               "parameters": [
                 {
-                  "parameterName": "identifier",
+                  "parameterName": "eventCode",
                   "parameterTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 2
@@ -15696,12 +16016,98 @@
             },
             {
               "kind": "Method",
+              "canonicalReference": "jacdac-ts!JDService#receiveWithInPipe:member(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "receiveWithInPipe<TValues extends "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(cmd: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", packFormat: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TValues[]>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 9
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "cmd",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  }
+                },
+                {
+                  "parameterName": "packFormat",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  }
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "TValues",
+                  "constraintTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "name": "receiveWithInPipe"
+            },
+            {
+              "kind": "Method",
               "canonicalReference": "jacdac-ts!JDService#register:member(1)",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "register(identifier: "
+                  "text": "register(registerCode: "
                 },
                 {
                   "kind": "Content",
@@ -15731,7 +16137,7 @@
               "overloadIndex": 1,
               "parameters": [
                 {
-                  "parameterName": "identifier",
+                  "parameterName": "registerCode",
                   "parameterTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 2
@@ -16438,6 +16844,74 @@
           "implementsTokenRanges": []
         },
         {
+          "kind": "Interface",
+          "canonicalReference": "jacdac-ts!JDServiceHostOptions:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface JDServiceHostOptions "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "JDServiceHostOptions",
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!JDServiceHostOptions#valueValues:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "valueValues?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "valueValues",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "jacdac-ts!JDServiceHostOptions#variant:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "variant?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "variant",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
           "kind": "Class",
           "canonicalReference": "jacdac-ts!JDServiceMemberNode:class",
           "docComment": "",
@@ -16475,7 +16949,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": ", address: "
+                  "text": ", code: "
                 },
                 {
                   "kind": "Content",
@@ -16514,7 +16988,7 @@
                   }
                 },
                 {
-                  "parameterName": "address",
+                  "parameterName": "code",
                   "parameterTypeTokenRange": {
                     "startIndex": 3,
                     "endIndex": 4
@@ -16531,12 +17005,12 @@
             },
             {
               "kind": "Property",
-              "canonicalReference": "jacdac-ts!JDServiceMemberNode#address:member",
+              "canonicalReference": "jacdac-ts!JDServiceMemberNode#code:member",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "readonly address: "
+                  "text": "readonly code: "
                 },
                 {
                   "kind": "Content",
@@ -16549,7 +17023,7 @@
               ],
               "isOptional": false,
               "releaseTag": "Public",
-              "name": "address",
+              "name": "code",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -17399,7 +17873,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixControllerReg.Leds:member",
-              "docComment": "/**\n * Read-write bytes. Read or writes the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n * ```\n * const [leds] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-write bytes. Read or writes the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n * ```\n * const [leds] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17456,7 +17930,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedMatrixDisplayReg.Leds:member",
-              "docComment": "/**\n * Read-only bytes. Streams the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n * ```\n * const [leds] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-only bytes. Streams the state of the screen where pixel on/off state is stored as a bit, column by column. The column should be byte aligned.\n * ```\n * const [leds] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17477,6 +17951,329 @@
           ]
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_MODE_ADD_RGB:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_MODE_ADD_RGB = 1"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_MODE_ADD_RGB",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_MODE_LAST:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_MODE_LAST = 3"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_MODE_LAST",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_MODE_MULTIPLY_RGB:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_MODE_MULTIPLY_RGB = 3"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_MODE_MULTIPLY_RGB",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_MODE_REPLACE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_MODE_REPLACE = 0"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_MODE_REPLACE",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_MODE_SUBTRACT_RGB:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_MODE_SUBTRACT_RGB = 2"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_MODE_SUBTRACT_RGB",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_COL1_SET:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_COL1_SET = 207"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_COL1_SET",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_COL1:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_COL1 = 193"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_COL1",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_COL2:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_COL2 = 194"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_COL2",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_COL3:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_COL3 = 195"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_COL3",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_COLN:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_COLN = 192"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_COLN",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_FADE_HSV:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_FADE_HSV = 210"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_FADE_HSV",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_FADE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_FADE = 209"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_FADE",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_MODE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_MODE = 215"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_MODE",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_MODE1:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_MODE1 = 216"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_MODE1",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_RANGE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_RANGE = 214"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_RANGE",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_ROTATE_BACK:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_ROTATE_BACK = 212"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_ROTATE_BACK",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_ROTATE_FWD:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_ROTATE_FWD = 211"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_ROTATE_FWD",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_SET_ALL:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_SET_ALL = 208"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_SET_ALL",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!LIGHT_PROG_SHOW:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "LIGHT_PROG_SHOW = 213"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LIGHT_PROG_SHOW",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!LightCmd:enum",
           "docComment": "",
@@ -17492,7 +18289,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LightCmd.Run:member",
-              "docComment": "/**\n * Argument: program bytes. Run the given light \"program\". See service description for details.\n * ```\n * const [program] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: program bytes. Run the given light \"program\". See service description for details.\n * ```\n * const [program] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -17783,6 +18580,126 @@
               ],
               "releaseTag": "Public",
               "name": "NumPixels",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LightReg.Variant:member",
+              "docComment": "/**\n * Constant Variant (uint32_t). Specifies the shape of the light strip.\n * ```\n * const [variant] = jdunpack<[LightVariant]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!LightVariant:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum LightVariant "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "LightVariant",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LightVariant.Jewel:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Jewel = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Jewel",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LightVariant.Ring:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Ring = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Ring",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LightVariant.Stick:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Stick = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "3"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Stick",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LightVariant.Strip:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Strip = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Strip",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -18463,7 +19380,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MicrophoneCmd.Sample:member",
-              "docComment": "/**\n * The samples will be streamed back over the `samples` pipe. If `num_samples` is `0`, streaming will only stop when the pipe is closed. Otherwise the specified number of samples is streamed. Samples are sent as `i16`.\n * ```\n * const [samples, numSamples] = jdunpack<[UInt8Array, number]>(buf, \"b[12] u32\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * The samples will be streamed back over the `samples` pipe. If `num_samples` is `0`, streaming will only stop when the pipe is closed. Otherwise the specified number of samples is streamed. Samples are sent as `i16`.\n * ```\n * const [samples, numSamples] = jdunpack<[Uint8Array, number]>(buf, \"b[12] u32\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -18850,7 +19767,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ModelRunnerCmd.Predict:member",
-              "docComment": "/**\n * Argument: outputs pipe (bytes). Open channel that can be used to manually invoke the model. When enough data is sent over the `inputs` pipe, the model is invoked, and results are send over the `outputs` pipe.\n * ```\n * const [outputs] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: outputs pipe (bytes). Open channel that can be used to manually invoke the model. When enough data is sent over the `inputs` pipe, the model is invoked, and results are send over the `outputs` pipe.\n * ```\n * const [outputs] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -19372,7 +20289,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!MotorReg.Duty:member",
-              "docComment": "/**\n * Read-write ratio int16_t. PWM duty cycle of the motor. Use negative/positive values to run the motor forwards and backwards. Positive is recommended to be clockwise rotation and negative counterclockwise.\n * ```\n * const [duty] = jdunpack<[number]>(buf, \"i16\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-write ratio int16_t. PWM duty cycle of the motor. Use negative/positive values to run the motor forwards and backwards. Positive is recommended to be clockwise rotation and negative counterclockwise. A duty of ``0`` while ``enabled`` acts as brake.\n * ```\n * const [duty] = jdunpack<[number]>(buf, \"i16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -19406,6 +20323,48 @@
               ],
               "releaseTag": "Public",
               "name": "Enabled",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MotorReg.LoadSpeed:member",
+              "docComment": "/**\n * Constant rpm u16.16 (uint32_t). Revolutions per minute of the motor under full load.\n * ```\n * const [loadSpeed] = jdunpack<[number]>(buf, \"u16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "LoadSpeed = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "385"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "LoadSpeed",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!MotorReg.LoadTorque:member",
+              "docComment": "/**\n * Constant kg/cm u16.16 (uint32_t). Torque required to produce the rated power of an electrical motor at load speed.\n * ```\n * const [loadTorque] = jdunpack<[number]>(buf, \"u16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "LoadTorque = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "384"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "LoadTorque",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -24234,6 +25193,49 @@
           "name": "parseUF2"
         },
         {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!pick:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function pick(...values: "
+            },
+            {
+              "kind": "Content",
+              "text": "number[]"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "values",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "name": "pick"
+        },
+        {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!PIPE_CLOSE_MASK:var",
           "docComment": "",
@@ -24402,6 +25404,120 @@
             }
           ],
           "extendsTokenRanges": []
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!PotentiometerReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum PotentiometerReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PotentiometerReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!PotentiometerReg.Position:member",
+              "docComment": "/**\n * Read-only ratio uint16_t. The relative position of the slider between `0x0000` and `0xffff`.\n * ```\n * const [position] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Position = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "257"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Position",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!PotentiometerReg.Variant:member",
+              "docComment": "/**\n * Constant Variant (uint32_t). Specifies the physical layout of the potentiometer.\n * ```\n * const [variant] = jdunpack<[PotentiometerVariant]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!PotentiometerVariant:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum PotentiometerVariant "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "PotentiometerVariant",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!PotentiometerVariant.Rotary:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Rotary = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Rotary",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!PotentiometerVariant.Slider:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Slider = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Slider",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
         },
         {
           "kind": "Enum",
@@ -25563,7 +26679,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CBytes:member",
-              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_string. Returns the value.\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: bytes bytes. A command to set rw_string. Returns the value.\n * ```\n * const [bytes] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25626,7 +26742,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestCmd.CReportPipe:member",
-              "docComment": "/**\n * Argument: p_bytes pipe (bytes). A command to read the rw_bytes, byte per byte, as a pipe.\n * ```\n * const [pBytes] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: p_bytes pipe (bytes). A command to read the content of rw_bytes, byte per byte, as a pipe.\n * ```\n * const [pBytes] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25725,7 +26841,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestEvent.EBytes:member",
-              "docComment": "/**\n * Argument: bytes bytes. An event raised when rw_bytes is modified\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: bytes bytes. An event raised when rw_bytes is modified\n * ```\n * const [bytes] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25866,7 +26982,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RoBytes:member",
-              "docComment": "/**\n * Read-only bytes. A read only string register. Mirrors ro_bytes.\n * ```\n * const [roBytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-only bytes. A read only string register. Mirrors ro_bytes.\n * ```\n * const [roBytes] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -25992,7 +27108,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ProtoTestReg.RwBytes:member",
-              "docComment": "/**\n * Read-write bytes. A read write string register.\n * ```\n * const [rwBytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-write bytes. A read write string register.\n * ```\n * const [rwBytes] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -26976,6 +28092,23 @@
           }
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!RENDER:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "RENDER = \"render\""
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "RENDER",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
           "kind": "Function",
           "canonicalReference": "jacdac-ts!replayLog:function(1)",
           "docComment": "",
@@ -27596,7 +28729,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.GetRole:member",
-              "docComment": "/**\n * Argument: device_id devid (uint64_t). Get the role corresponding to given device identifer. Returns empty string if unset.\n * ```\n * const [deviceId] = jdunpack<[UInt8Array]>(buf, \"b[8]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: device_id devid (uint64_t). Get the role corresponding to given device identifer. Returns empty string if unset.\n * ```\n * const [deviceId] = jdunpack<[Uint8Array]>(buf, \"b[8]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27617,7 +28750,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.ListRequiredRoles:member",
-              "docComment": "/**\n * Argument: required_roles pipe (bytes). List all roles required by the current program. `device_id` is `0` if role is unbound.\n * ```\n * const [requiredRoles] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: required_roles pipe (bytes). List all roles required by the current program. `device_id` is `0` if role is unbound.\n * ```\n * const [requiredRoles] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27638,7 +28771,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.ListStoredRoles:member",
-              "docComment": "/**\n * Argument: stored_roles pipe (bytes). Return all roles stored internally.\n * ```\n * const [storedRoles] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: stored_roles pipe (bytes). Return all roles stored internally.\n * ```\n * const [storedRoles] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27659,7 +28792,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!RoleManagerCmd.SetRole:member",
-              "docComment": "/**\n * Set role. Can set to empty to remove role binding.\n * ```\n * const [deviceId, role] = jdunpack<[UInt8Array, string]>(buf, \"b[8] s\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Set role. Can set to empty to remove role binding.\n * ```\n * const [deviceId, role] = jdunpack<[Uint8Array, string]>(buf, \"b[8] s\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -27682,7 +28815,7 @@
         {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!RoleManagerEvent:enum",
-          "docComment": "/**\n * pipe_report RequiredRoles\n * ```\n * const [deviceId, serviceClass, roles] = jdunpack<[UInt8Array, number, string]>(buf, \"b[8] u32 s\")\n * ```\n *\n */\n",
+          "docComment": "/**\n * pipe_report RequiredRoles\n * ```\n * const [deviceId, serviceClass, roles] = jdunpack<[Uint8Array, number, string]>(buf, \"b[8] u32 s\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -28581,7 +29714,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.CurrentSample:member",
-              "docComment": "/**\n * Read-only bytes. Last collected sample.\n * ```\n * const [currentSample] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-only bytes. Last collected sample.\n * ```\n * const [currentSample] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -28602,7 +29735,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SensorAggregatorReg.Inputs:member",
-              "docComment": "/**\n * Set automatic input collection. These settings are stored in flash.\n * ```\n * const [samplingInterval, samplesInWindow, rest] = jdunpack<[number, number, ([UInt8Array, number, number, number, SensorAggregatorSampleType, number])[]]>(buf, \"u16 u16 x[4] r: b[8] u32 u8 u8 u8 i8\")\n * const [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = rest[0]\n * ```\n *\n */\n",
+              "docComment": "/**\n * Set automatic input collection. These settings are stored in flash.\n * ```\n * const [samplingInterval, samplesInWindow, rest] = jdunpack<[number, number, ([Uint8Array, number, number, number, SensorAggregatorSampleType, number])[]]>(buf, \"u16 u16 x[4] r: b[8] u32 u8 u8 u8 i8\")\n * const [deviceId, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29328,6 +30461,27 @@
           "members": [
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoReg.Angle:member",
+              "docComment": "/**\n * Read-write ° i16.16 (int32_t). Specifies the angle of the arm.\n * ```\n * const [angle] = jdunpack<[number]>(buf, \"i16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Angle = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Angle",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ServoReg.Enabled:member",
               "docComment": "/**\n * Read-write bool (uint8_t). Turn the power to the servo on/off.\n * ```\n * const [enabled] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
               "excerptTokens": [
@@ -29349,12 +30503,153 @@
             },
             {
               "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!ServoReg.Pulse:member",
-              "docComment": "/**\n * Read-write μs uint32_t. Specifies length of the pulse in microseconds. The period is always 20ms.\n * ```\n * const [pulse] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "canonicalReference": "jacdac-ts!ServoReg.MaxAngle:member",
+              "docComment": "/**\n * Constant ° i16.16 (int32_t). Highest angle that can be set.\n * ```\n * const [maxAngle] = jdunpack<[number]>(buf, \"i16.16\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "Pulse = "
+                  "text": "MaxAngle = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "261"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxAngle",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoReg.MinAngle:member",
+              "docComment": "/**\n * Constant ° i16.16 (int32_t). Lowest angle that can be set.\n * ```\n * const [minAngle] = jdunpack<[number]>(buf, \"i16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MinAngle = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "260"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MinAngle",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoReg.Offset:member",
+              "docComment": "/**\n * Read-write ° i16.16 (int32_t). Correction applied to the angle to account for the servo arm drift.\n * ```\n * const [offset] = jdunpack<[number]>(buf, \"i16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Offset = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "129"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Offset",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoReg.ResponseSpeed:member",
+              "docComment": "/**\n * Constant s/60° u16.16 (uint32_t). Time to move 60°.\n * ```\n * const [responseSpeed] = jdunpack<[number]>(buf, \"u16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "ResponseSpeed = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "385"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "ResponseSpeed",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoReg.StallTorque:member",
+              "docComment": "/**\n * Constant kg/cm u16.16 (uint32_t). The servo motor will stop rotating when it is trying to move a ``stall_torque`` weight at a radial distance of ``1.0`` cm.\n * ```\n * const [stallTorque] = jdunpack<[number]>(buf, \"u16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "StallTorque = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "384"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "StallTorque",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoReg.Variant:member",
+              "docComment": "/**\n * Constant Variant (uint32_t). Specifies the type of servo motor. * Positional Rotation Servos: Positional servos can rotate the shaft in about half of the circle, with features to avoid over-rotating. Most servo have a range of 180° but some allow 270° or 360°. * Linear Servos: linear servos are also like a positional servo, but with additional gears to the adjust the output from circular to back-and-forth.\n * ```\n * const [variant] = jdunpack<[ServoVariant]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ServoVariant:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ServoVariant "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ServoVariant",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoVariant.Linear:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Linear = "
                 },
                 {
                   "kind": "Content",
@@ -29362,7 +30657,28 @@
                 }
               ],
               "releaseTag": "Public",
-              "name": "Pulse",
+              "name": "Linear",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ServoVariant.PositionalRotation:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "PositionalRotation = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "PositionalRotation",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -29662,7 +30978,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.List:member",
-              "docComment": "/**\n * Argument: results pipe (bytes). Return keys and values of all settings.\n * ```\n * const [results] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: results pipe (bytes). Return keys and values of all settings.\n * ```\n * const [results] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29683,7 +30999,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.ListKeys:member",
-              "docComment": "/**\n * Argument: results pipe (bytes). Return keys of all settings.\n * ```\n * const [results] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: results pipe (bytes). Return keys of all settings.\n * ```\n * const [results] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29704,7 +31020,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SettingsCmd.Set:member",
-              "docComment": "/**\n * Set the value of a given setting.\n * ```\n * const [key, value] = jdunpack<[string, UInt8Array]>(buf, \"z b\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Set the value of a given setting.\n * ```\n * const [key, value] = jdunpack<[string, Uint8Array]>(buf, \"z b\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -29717,6 +31033,42 @@
               ],
               "releaseTag": "Public",
               "name": "Set",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SettingsEvent:enum",
+          "docComment": "/**\n * pipe_report ListedEntry\n * ```\n * const [key, value] = jdunpack<[string, Uint8Array]>(buf, \"z b\")\n * ```\n *\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SettingsEvent "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SettingsEvent",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SettingsEvent.Change:member",
+              "docComment": "/**\n * Notifies that some setting have been modified.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Change = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "3"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Change",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -29913,42 +31265,6 @@
           "name": "sizeOfNumberFormat"
         },
         {
-          "kind": "Enum",
-          "canonicalReference": "jacdac-ts!SliderReg:enum",
-          "docComment": "",
-          "excerptTokens": [
-            {
-              "kind": "Content",
-              "text": "export declare enum SliderReg "
-            }
-          ],
-          "releaseTag": "Public",
-          "name": "SliderReg",
-          "members": [
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!SliderReg.Position:member",
-              "docComment": "/**\n * Read-only ratio uint16_t. The relative position of the slider between `0x0000` and `0xffff`.\n * ```\n * const [position] = jdunpack<[number]>(buf, \"u16\")\n * ```\n *\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Position = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "257"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Position",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            }
-          ]
-        },
-        {
           "kind": "Interface",
           "canonicalReference": "jacdac-ts!SMap:interface",
           "docComment": "",
@@ -30020,6 +31336,82 @@
           "extendsTokenRanges": []
         },
         {
+          "kind": "Function",
+          "canonicalReference": "jacdac-ts!splitFilter:function(1)",
+          "docComment": "/**\n * Applies filters and returns array of [yays, nays]\n *\n * @param values - \n *\n * @param condition - \n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function splitFilter<T>(values: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ArrayLike",
+              "canonicalReference": "!ArrayLike:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<T>"
+            },
+            {
+              "kind": "Content",
+              "text": ", condition: "
+            },
+            {
+              "kind": "Content",
+              "text": "(t: T) => boolean"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "[T[], T[]]"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "returnTypeTokenRange": {
+            "startIndex": 6,
+            "endIndex": 7
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "values",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "parameterName": "condition",
+              "parameterTypeTokenRange": {
+                "startIndex": 4,
+                "endIndex": 5
+              }
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "splitFilter"
+        },
+        {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_ACCELEROMETER:var",
           "docComment": "",
@@ -30031,6 +31423,23 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_ACCELEROMETER",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_BAROMETER:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_BAROMETER = 504462570"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_BAROMETER",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -30133,6 +31542,23 @@
           ],
           "releaseTag": "Public",
           "name": "SRV_CTRL",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_DISTANCE:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_DISTANCE = 337275786"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_DISTANCE",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -30378,6 +31804,23 @@
         },
         {
           "kind": "Variable",
+          "canonicalReference": "jacdac-ts!SRV_POTENTIOMETER:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "SRV_POTENTIOMETER = 522667846"
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SRV_POTENTIOMETER",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        },
+        {
+          "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_POWER:var",
           "docComment": "",
           "excerptTokens": [
@@ -30413,7 +31856,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_ROLE_MANAGER:var",
-          "docComment": "/**\n * pipe_report PBytes\n * ```\n * const [bytes] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+          "docComment": "/**\n * pipe_report PBytes\n * ```\n * const [byte] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -30497,16 +31940,16 @@
         },
         {
           "kind": "Variable",
-          "canonicalReference": "jacdac-ts!SRV_SLIDER:var",
-          "docComment": "/**\n * pipe_report ListedEntry\n * ```\n * const [key, value] = jdunpack<[string, UInt8Array]>(buf, \"z b\")\n * ```\n *\n */\n",
+          "canonicalReference": "jacdac-ts!SRV_SWITCH:var",
+          "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "SRV_SLIDER = 522667846"
+              "text": "SRV_SWITCH = 450008066"
             }
           ],
           "releaseTag": "Public",
-          "name": "SRV_SLIDER",
+          "name": "SRV_SWITCH",
           "variableTypeTokenRange": {
             "startIndex": 0,
             "endIndex": 0
@@ -30532,7 +31975,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "jacdac-ts!SRV_THERMOMETER:var",
-          "docComment": "/**\n * pipe_report Indata\n * ```\n * const [data] = jdunpack<[UInt8Array]>(buf, \"b\")\n * ```\n *\n */\n",
+          "docComment": "/**\n * pipe_report Indata\n * ```\n * const [data] = jdunpack<[Uint8Array]>(buf, \"b\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -30929,6 +32372,282 @@
         },
         {
           "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SwitchEvent:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SwitchEvent "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SwitchEvent",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchEvent.Off:member",
+              "docComment": "/**\n * Emitted when button goes from ``on`` to ``off``.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Off = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Off",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchEvent.On:member",
+              "docComment": "/**\n * Emitted when button goes from ``off`` to ``on``.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "On = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "On",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SwitchReg:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SwitchReg "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SwitchReg",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchReg.Active:member",
+              "docComment": "/**\n * Read-only bool (uint8_t). Indicates whether the switch is currently active (on).\n * ```\n * const [active] = jdunpack<[number]>(buf, \"u8\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Active = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "257"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Active",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchReg.AutoOffDelay:member",
+              "docComment": "/**\n * Constant s u16.16 (uint32_t). Specifies the delay without activity to automatically turn off after turning on.\n * ```\n * const [autoOffDelay] = jdunpack<[number]>(buf, \"u16.16\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "AutoOffDelay = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "384"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "AutoOffDelay",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchReg.Variant:member",
+              "docComment": "/**\n * Constant Variant (uint32_t). Describes the type of switch used.\n * ```\n * const [variant] = jdunpack<[SwitchVariant]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!SwitchVariant:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum SwitchVariant "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "SwitchVariant",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchVariant.Light:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Light = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "6"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Light",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchVariant.PushButton:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "PushButton = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "3"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "PushButton",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchVariant.Slide:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Slide = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Slide",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchVariant.Tactile:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Tactile = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Tactile",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchVariant.Tilt:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Tilt = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Tilt",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SwitchVariant.Toggle:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Toggle = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "5"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Toggle",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
           "canonicalReference": "jacdac-ts!SystemCmd:enum",
           "docComment": "",
           "excerptTokens": [
@@ -31224,6 +32943,48 @@
             },
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.MaxReading:member",
+              "docComment": "/**\n * Constant int32_t. The highest value that can be reported by the sensor.\n * ```\n * const [maxReading] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxReading = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "261"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxReading",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.MinReading:member",
+              "docComment": "/**\n * Constant int32_t. The lowest value that can be reported by the sensor.\n * ```\n * const [minReading] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MinReading = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "260"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MinReading",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!SystemReg.Reading:member",
               "docComment": "/**\n * Read-only int32_t. Read-only value of the sensor, also reported in streaming.\n * ```\n * const [reading] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
               "excerptTokens": [
@@ -31238,6 +32999,27 @@
               ],
               "releaseTag": "Public",
               "name": "Reading",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.ReadingError:member",
+              "docComment": "/**\n * Read-only int32_t. The real value of whatever is measured is between `reading - reading_error` and `reading + reading_error`. This register is often, but not always `const`.\n * ```\n * const [readingError] = jdunpack<[number]>(buf, \"i32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "ReadingError = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "262"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "ReadingError",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -31347,6 +33129,27 @@
                 "startIndex": 1,
                 "endIndex": 2
               }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!SystemReg.Variant:member",
+              "docComment": "/**\n * Constant uint32_t. The hardware variant of the service. For services which support this, there's an enum defining the meaning.\n * ```\n * const [variant] = jdunpack<[number]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
             }
           ]
         },
@@ -31366,7 +33169,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!TcpCmd.Open:member",
-              "docComment": "/**\n * Argument: inbound pipe (bytes). Open pair of pipes between network peripheral and a controlling device. In/outbound refers to direction from/to internet.\n * ```\n * const [inbound] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: inbound pipe (bytes). Open pair of pipes between network peripheral and a controlling device. In/outbound refers to direction from/to internet.\n * ```\n * const [inbound] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -31661,8 +33464,50 @@
           "members": [
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerReg.MaxTemperature:member",
+              "docComment": "/**\n * Constant °C i22.10 (int32_t). Highest temperature that can be reported.\n * ```\n * const [maxTemperature] = jdunpack<[number]>(buf, \"i22.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MaxTemperature = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "261"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MaxTemperature",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerReg.MinTemperature:member",
+              "docComment": "/**\n * Constant °C i22.10 (int32_t). Lowest temperature that can be reported.\n * ```\n * const [minTemperature] = jdunpack<[number]>(buf, \"i22.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "MinTemperature = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "260"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "MinTemperature",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ThermometerReg.Temperature:member",
-              "docComment": "/**\n * Read-only °C u22.10 (uint32_t). The temperature.\n * ```\n * const [temperature] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Read-only °C i22.10 (int32_t). The temperature.\n * ```\n * const [temperature] = jdunpack<[number]>(buf, \"i22.10\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -31675,6 +33520,168 @@
               ],
               "releaseTag": "Public",
               "name": "Temperature",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerReg.TemperatureError:member",
+              "docComment": "/**\n * Read-only °C u22.10 (uint32_t). The real temperature is between `temperature - temperature_error` and `temperature + temperature_error`.\n * ```\n * const [temperatureError] = jdunpack<[number]>(buf, \"u22.10\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "TemperatureError = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "262"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "TemperatureError",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerReg.Variant:member",
+              "docComment": "/**\n * Constant Variant (uint32_t). Specifies the type of thermometer.\n * ```\n * const [variant] = jdunpack<[ThermometerVariant]>(buf, \"u32\")\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Variant = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "263"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Variant",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Enum",
+          "canonicalReference": "jacdac-ts!ThermometerVariant:enum",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare enum ThermometerVariant "
+            }
+          ],
+          "releaseTag": "Public",
+          "name": "ThermometerVariant",
+          "members": [
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerVariant.Body:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Body = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "3"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Body",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerVariant.HeatProbe:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "HeatProbe = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "4"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "HeatProbe",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerVariant.Indoor:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Indoor = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "2"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Indoor",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerVariant.Outdoor:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Outdoor = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "1"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Outdoor",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!ThermometerVariant.Thermocouple:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Thermocouple = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "5"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Thermocouple",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -33994,7 +36001,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!WifiCmd.Scan:member",
-              "docComment": "/**\n * Argument: results pipe (bytes). Initiate search for WiFi networks. Results are returned via pipe, one entry per packet.\n * ```\n * const [results] = jdunpack<[UInt8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
+              "docComment": "/**\n * Argument: results pipe (bytes). Initiate search for WiFi networks. Results are returned via pipe, one entry per packet.\n * ```\n * const [results] = jdunpack<[Uint8Array]>(buf, \"b[12]\")\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -34074,7 +36081,7 @@
         {
           "kind": "Enum",
           "canonicalReference": "jacdac-ts!WifiReg:enum",
-          "docComment": "/**\n * pipe_report Results\n * ```\n * const [flags, rssi, channel, bssid, ssid] = jdunpack<[WifiAPFlags, number, number, UInt8Array, string]>(buf, \"u32 x[4] i8 u8 b[6] s[33]\")\n * ```\n *\n */\n",
+          "docComment": "/**\n * pipe_report Results\n * ```\n * const [flags, rssi, channel, bssid, ssid] = jdunpack<[WifiAPFlags, number, number, Uint8Array, string]>(buf, \"u32 x[4] i8 u8 b[6] s[33]\")\n * ```\n *\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

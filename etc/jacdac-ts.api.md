@@ -56,6 +56,12 @@ export function arrayShuffle<T>(a: T[]): T[];
 export function assert(cond: boolean, msg?: string): void;
 
 // @public (undocumented)
+export enum BarometerReg {
+    Pressure = 257,
+    PressureError = 262
+}
+
+// @public (undocumented)
 export enum BaseReg {
     StatusCode = 259
 }
@@ -253,6 +259,7 @@ export enum ControlReg {
     FirmwareVersion = 389,
     McuTemperature = 386,
     ResetIn = 128,
+    StatusLight = 129,
     Uptime = 390
 }
 
@@ -390,6 +397,26 @@ export const DISCONNECT = "disconnect";
 
 // @public (undocumented)
 export const DISCONNECTING = "disconnecting";
+
+// @public (undocumented)
+export enum DistanceReg {
+    Distance = 257,
+    MaxRange = 261,
+    MinRange = 260,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum DistanceVariant {
+    // (undocumented)
+    Infrared = 2,
+    // (undocumented)
+    LiDAR = 3,
+    // (undocumented)
+    TimeOfFlight = 4,
+    // (undocumented)
+    Ultrasonic = 1
+}
 
 // @public (undocumented)
 export function ellipseJoin(values: string[], maxChars: number, ellipse?: string): string;
@@ -657,7 +684,8 @@ export const HF2_STATUS_OK = 0;
 
 // @public (undocumented)
 export enum HumidityReg {
-    Humidity = 257
+    Humidity = 257,
+    HumidityError = 262
 }
 
 // @public (undocumented)
@@ -665,6 +693,9 @@ export function identifierToUrlPath(id: string): string;
 
 // @public (undocumented)
 export const IDENTIFY = "identify";
+
+// @public (undocumented)
+export const IDENTIFY_DURATION = 2000;
 
 // @public (undocumented)
 export interface IDeviceNameSettings {
@@ -953,6 +984,8 @@ export class JDDevice extends JDNode {
     // (undocumented)
     identify(): Promise<void>;
     // (undocumented)
+    get identifying(): boolean;
+    // (undocumented)
     lastSeen: number;
     // (undocumented)
     lastServiceUpdate: number;
@@ -1009,7 +1042,7 @@ export class JDDevice extends JDNode {
 
 // @public (undocumented)
 export class JDEvent extends JDServiceMemberNode {
-    constructor(service: JDService, address: number);
+    constructor(service: JDService, code: number);
     // (undocumented)
     get children(): JDNode[];
     // (undocumented)
@@ -1109,7 +1142,7 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T): bo
 
 // @public (undocumented)
 export class JDRegister extends JDServiceMemberNode {
-    constructor(service: JDService, address: number);
+    constructor(service: JDService, code: number);
     // (undocumented)
     get boolValue(): boolean;
     // (undocumented)
@@ -1151,7 +1184,7 @@ export class JDRegister extends JDServiceMemberNode {
     // (undocumented)
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void>;
     // (undocumented)
-    sendSetPackedAsync<T extends any[]>(fmt: string, values: any[], autoRefresh?: boolean): Promise<void>;
+    sendSetPackedAsync(fmt: string, values: any[], autoRefresh?: boolean): Promise<void>;
     // (undocumented)
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void>;
     // (undocumented)
@@ -1176,7 +1209,7 @@ export class JDService extends JDNode {
     // (undocumented)
     readonly device: JDDevice;
     // (undocumented)
-    event(identifier: number): JDEvent;
+    event(eventCode: number): JDEvent;
     // (undocumented)
     get events(): JDEvent[];
     // (undocumented)
@@ -1196,7 +1229,9 @@ export class JDService extends JDNode {
     // (undocumented)
     get readingRegister(): JDRegister;
     // (undocumented)
-    register(identifier: number): JDRegister;
+    receiveWithInPipe<TValues extends any[]>(cmd: number, packFormat: string): Promise<TValues[]>;
+    // (undocumented)
+    register(registerCode: number): JDRegister;
     // (undocumented)
     registers(): JDRegister[];
     // (undocumented)
@@ -1236,10 +1271,18 @@ export class JDServiceClient extends JDClient {
 }
 
 // @public (undocumented)
-export abstract class JDServiceMemberNode extends JDNode {
-    constructor(service: JDService, address: number, isPacket: (pkt: jdspec.PacketInfo) => boolean);
+export interface JDServiceHostOptions {
     // (undocumented)
-    readonly address: number;
+    valueValues?: any[];
+    // (undocumented)
+    variant?: number;
+}
+
+// @public (undocumented)
+export abstract class JDServiceMemberNode extends JDNode {
+    constructor(service: JDService, code: number, isPacket: (pkt: jdspec.PacketInfo) => boolean);
+    // (undocumented)
+    readonly code: number;
     // (undocumented)
     get friendlyName(): string;
     // (undocumented)
@@ -1324,6 +1367,63 @@ export enum LedMatrixDisplayReg {
 }
 
 // @public (undocumented)
+export const LIGHT_MODE_ADD_RGB = 1;
+
+// @public (undocumented)
+export const LIGHT_MODE_LAST = 3;
+
+// @public (undocumented)
+export const LIGHT_MODE_MULTIPLY_RGB = 3;
+
+// @public (undocumented)
+export const LIGHT_MODE_REPLACE = 0;
+
+// @public (undocumented)
+export const LIGHT_MODE_SUBTRACT_RGB = 2;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL1 = 193;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL1_SET = 207;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL2 = 194;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL3 = 195;
+
+// @public (undocumented)
+export const LIGHT_PROG_COLN = 192;
+
+// @public (undocumented)
+export const LIGHT_PROG_FADE = 209;
+
+// @public (undocumented)
+export const LIGHT_PROG_FADE_HSV = 210;
+
+// @public (undocumented)
+export const LIGHT_PROG_MODE = 215;
+
+// @public (undocumented)
+export const LIGHT_PROG_MODE1 = 216;
+
+// @public (undocumented)
+export const LIGHT_PROG_RANGE = 214;
+
+// @public (undocumented)
+export const LIGHT_PROG_ROTATE_BACK = 212;
+
+// @public (undocumented)
+export const LIGHT_PROG_ROTATE_FWD = 211;
+
+// @public (undocumented)
+export const LIGHT_PROG_SET_ALL = 208;
+
+// @public (undocumented)
+export const LIGHT_PROG_SHOW = 213;
+
+// @public (undocumented)
 export enum LightCmd {
     Run = 129
 }
@@ -1348,7 +1448,20 @@ export enum LightReg {
     LightType = 128,
     MaxPixels = 385,
     MaxPower = 7,
-    NumPixels = 129
+    NumPixels = 129,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum LightVariant {
+    // (undocumented)
+    Jewel = 4,
+    // (undocumented)
+    Ring = 2,
+    // (undocumented)
+    Stick = 3,
+    // (undocumented)
+    Strip = 1
 }
 
 // @public (undocumented)
@@ -1480,7 +1593,9 @@ export enum MonoLightReg {
 // @public (undocumented)
 export enum MotorReg {
     Duty = 2,
-    Enabled = 1
+    Enabled = 1,
+    LoadSpeed = 385,
+    LoadTorque = 384
 }
 
 // @public (undocumented)
@@ -1876,6 +1991,9 @@ export function parseTrace(contents: string): Trace;
 export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[];
 
 // @public (undocumented)
+export function pick(...values: number[]): number;
+
+// @public (undocumented)
 export const PIPE_CLOSE_MASK = 32;
 
 // @public (undocumented)
@@ -1899,6 +2017,20 @@ export interface PipeInfo {
     localPipe?: any;
     // (undocumented)
     pipeType?: string;
+}
+
+// @public (undocumented)
+export enum PotentiometerReg {
+    Position = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum PotentiometerVariant {
+    // (undocumented)
+    Rotary = 2,
+    // (undocumented)
+    Slider = 1
 }
 
 // @public (undocumented)
@@ -2091,6 +2223,9 @@ export class RemoteRequestedDevice {
 
 // @public (undocumented)
 export const REMOVE_LISTENER = "removeListener";
+
+// @public (undocumented)
+export const RENDER = "render";
 
 // @public (undocumented)
 export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void;
@@ -2287,8 +2422,22 @@ export function serviceSpecifications(): jdspec.ServiceSpec[];
 
 // @public (undocumented)
 export enum ServoReg {
+    Angle = 2,
     Enabled = 1,
-    Pulse = 2
+    MaxAngle = 261,
+    MinAngle = 260,
+    Offset = 129,
+    ResponseSpeed = 385,
+    StallTorque = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ServoVariant {
+    // (undocumented)
+    Linear = 2,
+    // (undocumented)
+    PositionalRotation = 1
 }
 
 // @public (undocumented)
@@ -2310,6 +2459,11 @@ export enum SettingsCmd {
     Set = 129
 }
 
+// @public
+export enum SettingsEvent {
+    Change = 3
+}
+
 // @public (undocumented)
 export function shortDeviceId(devid: string): string;
 
@@ -2328,18 +2482,19 @@ export function signal(): Signal;
 export function sizeOfNumberFormat(format: NumberFormat): 1 | 2 | 4 | 8 | 0;
 
 // @public (undocumented)
-export enum SliderReg {
-    Position = 257
-}
-
-// @public (undocumented)
 export interface SMap<T> {
     // (undocumented)
     [index: string]: T;
 }
 
+// @public
+export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolean): [T[], T[]];
+
 // @public (undocumented)
 export const SRV_ACCELEROMETER = 521405449;
+
+// @public (undocumented)
+export const SRV_BAROMETER = 504462570;
 
 // @public (undocumented)
 export const SRV_BOOTLOADER = 536516936;
@@ -2358,6 +2513,9 @@ export const SRV_CONTROL = 0;
 
 // @public (undocumented)
 export const SRV_CTRL = 0;
+
+// @public (undocumented)
+export const SRV_DISTANCE = 337275786;
 
 // @public (undocumented)
 export const SRV_GAMEPAD = 501915758;
@@ -2402,6 +2560,9 @@ export const SRV_MOUSE = 411425820;
 export const SRV_MULTITOUCH = 416636459;
 
 // @public (undocumented)
+export const SRV_POTENTIOMETER = 522667846;
+
+// @public (undocumented)
 export const SRV_POWER = 530893146;
 
 // @public (undocumented)
@@ -2422,8 +2583,8 @@ export const SRV_SERVO = 318542083;
 // @public (undocumented)
 export const SRV_SETTINGS = 285727818;
 
-// @public
-export const SRV_SLIDER = 522667846;
+// @public (undocumented)
+export const SRV_SWITCH = 450008066;
 
 // @public (undocumented)
 export const SRV_TCP = 457422603;
@@ -2465,6 +2626,35 @@ export function stringToBuffer(str: string): Uint8Array;
 export function stringToUint8Array(input: string): Uint8Array;
 
 // @public (undocumented)
+export enum SwitchEvent {
+    Off = 2,
+    On = 1
+}
+
+// @public (undocumented)
+export enum SwitchReg {
+    Active = 257,
+    AutoOffDelay = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum SwitchVariant {
+    // (undocumented)
+    Light = 6,
+    // (undocumented)
+    PushButton = 3,
+    // (undocumented)
+    Slide = 1,
+    // (undocumented)
+    Tactile = 4,
+    // (undocumented)
+    Tilt = 2,
+    // (undocumented)
+    Toggle = 5
+}
+
+// @public (undocumented)
 export enum SystemCmd {
     Announce = 0,
     Calibrate = 2,
@@ -2486,12 +2676,16 @@ export enum SystemReg {
     Intensity = 1,
     LowThreshold = 5,
     MaxPower = 7,
+    MaxReading = 261,
+    MinReading = 260,
     Reading = 257,
+    ReadingError = 262,
     StatusCode = 259,
     StreamingInterval = 4,
     StreamingPreferredInterval = 258,
     StreamingSamples = 3,
-    Value = 2
+    Value = 2,
+    Variant = 263
 }
 
 // @public (undocumented)
@@ -2529,7 +2723,25 @@ export interface TFModelStats {
 
 // @public (undocumented)
 export enum ThermometerReg {
-    Temperature = 257
+    MaxTemperature = 261,
+    MinTemperature = 260,
+    Temperature = 257,
+    TemperatureError = 262,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ThermometerVariant {
+    // (undocumented)
+    Body = 3,
+    // (undocumented)
+    HeatProbe = 4,
+    // (undocumented)
+    Indoor = 2,
+    // (undocumented)
+    Outdoor = 1,
+    // (undocumented)
+    Thermocouple = 5
 }
 
 // @public (undocumented)
