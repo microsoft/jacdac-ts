@@ -1,17 +1,24 @@
 import { createStyles, makeStyles, useTheme } from "@material-ui/core";
+import { useContext } from "react";
+import DarkModeContext from "../ui/DarkModeContext"
 
 export default function useWidgetTheme(color?: "primary" | "secondary") {
     const theme = useTheme();
     const { palette } = theme;
     const { background } = palette;
-    const pcolor: string = color === "primary" ? palette.primary.main
+    const { darkMode } = useContext(DarkModeContext);
+
+    const active: string = color === "primary" ? palette.primary.main
         : color === "secondary" ? palette.secondary.main
             : palette.info.main;
+    const backgroundColor = darkMode === "dark" ? background.default : palette.grey[800];
+    const controlBackground = darkMode === "dark" ? palette.grey[800] : palette.grey[400]
+    const textPrimary = palette.text.primary
 
     return {
-        background: background.default,
-        controlBackground: palette.background.paper,
-        active: pcolor,
-        textPrimary: palette.text.primary
+        background: backgroundColor,
+        controlBackground,
+        active,
+        textPrimary
     }
 }
