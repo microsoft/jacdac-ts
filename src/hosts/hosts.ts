@@ -31,6 +31,12 @@ const medicalThermometerOptions = {
 const barometerOptions = {
     readingValue: 1013
 }
+const sonarOptions = {
+    variant: DistanceVariant.Ultrasonic,
+    minReading: 0.02,
+    maxReading: 4,
+    readingValue: 1
+};
 
 const SG90_STALL_TORQUE = 1.8;
 export const SG90_RESPONSE_SPEED = 0.12; // deg/60deg
@@ -75,13 +81,15 @@ const _hosts = [
         services: () => [new BuzzerServiceHost()]
     },
     {
+        name: "chassis (motor x 2 + sonar)",
+        services: () => [
+            new MotorServiceHost(),
+            new MotorServiceHost(),
+            new JDSensorServiceHost(SRV_DISTANCE, sonarOptions)]
+    },
+    {
         name: "distance (sonar)",
-        services: () => [new JDSensorServiceHost(SRV_DISTANCE, {
-            variant: DistanceVariant.Ultrasonic,
-            minReading: 0.02,
-            maxReading: 4,
-            readingValue: 1
-        })]
+        services: () => [new JDSensorServiceHost(SRV_DISTANCE, sonarOptions)]
     },
     {
         name: "humidity + temperature",
@@ -152,15 +160,15 @@ const _hosts = [
     },
     {
         name: "servo x 2",
-        services: () => Array(2).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
+        services: () => Array(2).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
         name: "micro servo x 4",
-        services: () => Array(4).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
+        services: () => Array(4).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
         name: "servo x 16",
-        services: () => Array(16).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
+        services: () => Array(16).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
         name: "settings",
