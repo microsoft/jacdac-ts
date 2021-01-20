@@ -11,7 +11,7 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import ConnectButton from "../../jacdac/ConnectButton";
 import AppContext from "../AppContext";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
-import DeviceGroup from "./DashboardDeviceGroup";
+import DashboardDeviceGroup from "./DashboardDeviceGroup";
 import AddIcon from '@material-ui/icons/Add';
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
@@ -37,7 +37,7 @@ export default function Dashboard() {
     const [hosted, physicals] = splitFilter(devices, d => !!bus.deviceHost(d.deviceId))
 
     return <>
-        <DeviceGroup
+        <DashboardDeviceGroup
             title="Simulators"
             action={<IconButtonWithTooltip
                 title="start simulator"
@@ -47,7 +47,7 @@ export default function Dashboard() {
             devices={hosted}
             expanded={selected}
             toggleExpanded={toggleSelected} />
-        <DeviceGroup
+        <DashboardDeviceGroup
             title="Devices"
             action={<ConnectButton full={false} transparent={true} showAlways={true} />}
             devices={physicals}
@@ -58,6 +58,6 @@ export default function Dashboard() {
                     Please <ConnectButton showAlways={true} full={true} transparent={true} /> to see your physical devices.
                 </Alert>
             </Grid>}
-        </DeviceGroup>
+        </DashboardDeviceGroup>
     </>
 }
