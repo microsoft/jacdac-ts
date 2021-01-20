@@ -1,6 +1,6 @@
 import { ServoReg, SRV_SERVO } from "../jdom/constants";
 import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
 
 export default class ServoServiceHost extends JDServiceHost {
     readonly angle: JDRegisterHost<[number]>;
@@ -16,8 +16,8 @@ export default class ServoServiceHost extends JDServiceHost {
         maxAngle?: number,
         responseSpeed?: number,
         stallTorque?: number
-    }) {
-        super(SRV_SERVO);
+    } & JDServiceHostOptions) {
+        super(SRV_SERVO, options);
         const { minAngle, maxAngle, responseSpeed, stallTorque } = options || {};
 
         this.angle = this.addRegister<[number]>(ServoReg.Angle, [0]);

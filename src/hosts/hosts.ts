@@ -1,4 +1,4 @@
-import { LightVariant, PotentiometerVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
+import { LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -31,7 +31,28 @@ const barometerOptions = {
     readingValue: 1013
 }
 
+const SG90_STALL_TORQUE = 1.8;
 export const SG90_RESPONSE_SPEED = 0.12; // deg/60deg
+
+const microServoOptions = {
+    stallTorque: SG90_STALL_TORQUE, // kg/cm
+    responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
+    variant: ServoVariant.PositionalRotation
+}
+const microServo270Options = {
+    stallTorque: SG90_STALL_TORQUE, // kg/cm
+    responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
+    variant: ServoVariant.PositionalRotation,
+    minAngle: -135,
+    maxAngle: 135
+}
+const microServo360Options = {
+    stallTorque: SG90_STALL_TORQUE, // kg/cm
+    responseSpeed: SG90_RESPONSE_SPEED * 2, // s/60deg
+    variant: ServoVariant.PositionalRotation,
+    minAngle: -180,
+    maxAngle: 180
+}
 
 const _hosts = [
     {
@@ -109,33 +130,27 @@ const _hosts = [
     },
     {
         name: "micro servo",
-        services: () => [new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED })]
+        services: () => [new ServoServiceHost(microServoOptions)]
     },
     {
         name: "micro servo (270)",
-        services: () => [new ServoServiceHost({
-            responseSpeed: SG90_RESPONSE_SPEED,
-            minAngle: -135, maxAngle: 135
-        })]
+        services: () => [new ServoServiceHost(microServo270Options)]
     },
     {
         name: "micro servo (360)",
-        services: () => [new ServoServiceHost({
-            responseSpeed: SG90_RESPONSE_SPEED,
-            minAngle: -180, maxAngle: 180
-        })]
+        services: () => [new ServoServiceHost(microServo360Options)]
     },
     {
         name: "micro servo x 2",
-        services: () => Array(2).fill(0).map((_,i) => new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED }))
+        services: () => Array(2).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
     },
     {
         name: "micro servo x 4",
-        services: () => Array(4).fill(0).map((_,i) => new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED }))
+        services: () => Array(4).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
     },
     {
         name: "micro servo x 16",
-        services: () => Array(16).fill(0).map((_,i) => new ServoServiceHost({ responseSpeed: SG90_RESPONSE_SPEED }))
+        services: () => Array(16).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
     },
     {
         name: "settings",
