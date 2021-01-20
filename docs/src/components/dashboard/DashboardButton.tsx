@@ -8,10 +8,10 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 
 export default function DashboardButton(props: DashboardServiceProps) {
-    const { service } = props;
+    const { service, services } = props;
     const pressedRegister = service.register(ButtonReg.Pressed);
     const [pressed] = useRegisterUnpackedValue<[boolean]>(pressedRegister);
-    const widgetSize = useWidgetSize();
+    const widgetSize = useWidgetSize(services.length);
     const host = useServiceHost<ButtonServiceHost>(service);
     const color = host ? "secondary" : "primary";
 

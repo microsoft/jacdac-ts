@@ -16,7 +16,9 @@ import { useRegisterIntValue, useRegisterUnpackedValue } from "../../jacdac/useR
 
 export interface DashboardServiceProps {
     service: JDService,
-    expanded?: boolean
+    expanded?: boolean,
+    // all widget services
+    services?: JDService[],
 }
 export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>;
 

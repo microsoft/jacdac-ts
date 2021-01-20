@@ -1,9 +1,8 @@
 
-import { Collapse, Grid, MenuItem, TextField, Typography } from "@material-ui/core";
+import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
 import React, { ChangeEvent, useMemo, useState } from "react";
-import { LightReg, LightCmd } from "../../../../src/jdom/constants";
+import { LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import RegisterInput from "../RegisterInput";
 import { lightEncode } from "../../../../src/jdom/light";
 import ColorInput from "../ui/ColorInput";
 import SelectWithLabel from "../ui/SelectWithLabel";
@@ -54,7 +53,7 @@ const lightCommands = [
 ]
 
 function LightCommand(props: { service: JDService, expanded: boolean }) {
-    const { service, expanded } = props;
+    const { service } = props;
     const [sending, setSending] = useState(false);
 
     const [command, setCommand] = useState(lightCommands[0]);
@@ -197,10 +196,10 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
 }
 
 export default function DashboardLight(props: DashboardServiceProps) {
-    const { service, expanded } = props;
+    const { service, services, expanded } = props;
     const host = useServiceHost<LightServiceHost>(service);
     return <>
-        {host && <LightWidget {...props} />}
+        {host && <LightWidget widgetCount={services.length} {...props} />}
         {expanded &&
             <LightCommand service={service} expanded={expanded} />}
     </>

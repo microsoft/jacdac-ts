@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Collapse, Fade, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Collapse, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React from "react";
 import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -13,7 +13,6 @@ import useDeviceSpecification from "../../jacdac/useDeviceSpecification";
 import DeviceAvatar from "../devices/DeviceAvatar"
 import DashboardServiceWidget from "./DashboardServiceWidget";
 import DeviceActions from "../DeviceActions";
-import useDeviceHost from "../hooks/useDeviceHost";
 import DashboardServiceDetails from "./DashboardServiceDetails";
 import { MOBILE_BREAKPOINT } from "../layout";
 
@@ -59,7 +58,9 @@ export default function DashboardDevice(props: {
             />
             <CardContent>
                 <Grid container spacing={1} justify="center" alignItems="center" alignContent="space-between">
-                    {services?.map(service => <Grid key={"widget" + service.service_index} item><DashboardServiceWidget service={service} expanded={expanded} /></Grid>)}
+                    {services?.map(service => <Grid key={"widget" + service.service_index} item>
+                        <DashboardServiceWidget service={service} expanded={expanded} services={services} />
+                    </Grid>)}
                 </Grid>
                 <Collapse in={expanded}>
                     <Grid container direction="column" spacing={1} alignContent="stretch">

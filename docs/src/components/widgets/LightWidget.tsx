@@ -54,11 +54,11 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
     el.setAttribute("r", "" + nr);
 }
 
-export default function LightWidget(props: { service: JDService }) {
-    const { service } = props;
+export default function LightWidget(props: { service: JDService, widgetCount?: number }) {
+    const { service, widgetCount } = props;
     const host = useServiceHost<LightServiceHost>(service);
     const { background, controlBackground } = useWidgetTheme()
-    const widgetSize = useWidgetSize()
+    const widgetSize = useWidgetSize(widgetCount)
     const [numPixels] = useChange(host.numPixels, r => r.values());
     const [variant] = useChange(host.variant, r => r.values());
     const [actualBrightness] = useChange(host.actualBrightness, r => r.values());
