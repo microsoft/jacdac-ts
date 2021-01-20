@@ -1,4 +1,4 @@
-import { LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, ThermometerVariant } from "../jdom/constants";
+import { LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -10,6 +10,7 @@ import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
+import SwitchServiceHost from "./switchservicehost";
 
 const outdoorThermometerOptions = {
     readingValue: 21.5,
@@ -129,19 +130,19 @@ const _hosts = [
         services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Rotary })]
     },
     {
-        name: "micro servo",
+        name: "servo",
         services: () => [new ServoServiceHost(microServoOptions)]
     },
     {
-        name: "micro servo (270)",
+        name: "servo (270°)",
         services: () => [new ServoServiceHost(microServo270Options)]
     },
     {
-        name: "micro servo (360)",
+        name: "servo (360°)",
         services: () => [new ServoServiceHost(microServo360Options)]
     },
     {
-        name: "micro servo x 2",
+        name: "servo x 2",
         services: () => Array(2).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
     },
     {
@@ -149,7 +150,7 @@ const _hosts = [
         services: () => Array(4).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
     },
     {
-        name: "micro servo x 16",
+        name: "servo x 16",
         services: () => Array(16).fill(0).map((_,i) => new ServoServiceHost(microServoOptions))
     },
     {
@@ -159,6 +160,26 @@ const _hosts = [
     {
         name: "slider",
         services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
+    },
+    {
+        name: "switch (slide)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Slide })]
+    },
+    {
+        name: "switch (push button)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.PushButton })]
+    },
+    {
+        name: "switch (toggle)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Toggle })]
+    },
+    {
+        name: "switch (tilt)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Tilt })]
+    },
+    {
+        name: "switch (motion)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Light, autoOffDelay: 30 })]
     },
     {
         name: "thermometer (outdoor)",
