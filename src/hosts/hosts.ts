@@ -1,4 +1,6 @@
+import { JDBus } from "../jdom/bus";
 import { DistanceVariant, LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
+import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -236,4 +238,9 @@ const _hosts = [
 
 export default function hosts() {
     return _hosts.slice(0);
+}
+
+export function addHost(bus: JDBus, services: JDServiceHost[]) {
+    const d = new JDDeviceHost(services);
+    bus.addDeviceHost(d);
 }
