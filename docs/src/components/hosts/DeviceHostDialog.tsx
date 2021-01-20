@@ -48,7 +48,7 @@ export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedA
 
     return <Grid container spacing={2}>
         <Grid item xs={12}>
-            <SelectWithLabel fullWidth={true} helperText={"Select the service that will run on the simulator"} label={"Virtual device"} value={selected} onChange={handleChange}>
+            <SelectWithLabel fullWidth={true} helperText={"Select the service that will run on the simulator"} label={"Simulator"} value={selected} onChange={handleChange}>
                 {hostDefinitions.map((host) => <MenuItem key={host.name} value={host.name}>{host.name}</MenuItem>)}
             </SelectWithLabel>
         </Grid>
