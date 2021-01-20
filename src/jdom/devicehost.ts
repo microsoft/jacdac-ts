@@ -21,7 +21,7 @@ export default class JDDeviceHost extends JDEventSource {
         deviceId?: string;
     }) {
         super();
-        this._services = [this.controlService =new ControlServiceHost(), ...services];
+        this._services = [this.controlService = new ControlServiceHost(), ...services];
         this.deviceId = options?.deviceId;
         if (!this.deviceId) {
             const devId = anyRandomUint32(8);
@@ -184,5 +184,5 @@ export default class JDDeviceHost extends JDEventSource {
             clearTimeout(this._resetTimeOut);
         if (t)
             this._resetTimeOut = setTimeout(() => this.reset(), t);
-    }    
+    }
 }
