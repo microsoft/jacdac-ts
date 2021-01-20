@@ -15,12 +15,12 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
-        margin: theme.spacing(1),
         display: "grid",
         gridAutoFlow: "column",
         gridTemplateRows: "repeat(3, 20vw)",
         gridGap: theme.spacing(1),
-        overflow: "auto",
+        overflowX: "auto",
+        overflowY: "hidden"
     },
     item: {
         height: "20vw",
@@ -67,7 +67,7 @@ function CarouselItem(props: {
         gridColumnEnd: columnSpan > 1 ? column + 1 + columnSpan : undefined
     }}>
         <Paper style={{ height: "100%", width: "100%", }}>
-            <Grid container spacing={1} justify="center" alignItems="center" alignContent="space-between">
+            <Grid container direction="row" spacing={1} justify="center" alignItems="center" alignContent="stretch">
                 {services?.map(service => <Grid key={"widget" + service.service_index} item>
                     <DashboardServiceWidget
                         service={service}
@@ -98,11 +98,15 @@ function Carousel() {
             console.log({ col, span })
             return <CarouselItem device={device} column={col} columnSpan={span} />
         })}
-        <Paper key="add">
-            <IconButton>
-                <AddIcon />
-            </IconButton>
-        </Paper>
+        <div key="add" className={classes.item}>
+            <Paper style={{ height: "100%", width: "100%", }}>
+                <Grid container justify="center" alignItems="center">
+                    <IconButton>
+                        <AddIcon />
+                    </IconButton>
+                </Grid>
+            </Paper>
+        </div>
     </div>
 }
 
@@ -121,7 +125,7 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
         const hostDefinitions = hosts();
-        for (const hostDef of hostDefinitions.slice(0, 10)) {
+        for (const hostDef of hostDefinitions.slice(0, 16)) {
             addHost(bus, hostDef.services());
         }
     }, []);
