@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
-import { flagsToValue, prettyMemberUnit, valueToFlags } from "../../../../src/jdom/pretty";
+import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
 import { clampToStorage, isIntegerType, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
 import { isSet, pick, roundWithPrecision } from "../../../../src/jdom/utils";
-import InputSlider from "../ui/InputSlider";
 import { RegisterInputVariant } from "../RegisterInput";
 import { useId } from "react-use-id-hook"
 import ButtonWidget from "../widgets/ButtonWidget";
@@ -43,7 +42,8 @@ export default function MemberInput(props: {
 
     const minValue = pick(min, typicalMin, absoluteMin)
     const maxValue = pick(max, typicalMax, absoluteMax)
-    const errorValue = !!error && "±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString();
+    const errorValue = !!error ? ("±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString()) : undefined;
+    const unit = prettyUnit(specification.unit);
     const helperText = errorText
         || [prettyMemberUnit(specification, showDataType), errorValue]
             .filter(v => v !== undefined).join(", ");
@@ -77,7 +77,7 @@ export default function MemberInput(props: {
         const clamped = clampToStorage(scaled, specification.storage)
         setValue(clamped);
     }
-    const handleSliderChange = (newValue: number) => {
+    const handleSliderChange = (event: any, newValue: number | number[]) => {
         const v = (newValue as number);
         setValue(v);
     }
@@ -89,7 +89,7 @@ export default function MemberInput(props: {
 
     const valueLabelFormat = (value: number) => {
         // avoid super long floats
-        return roundWithPrecision(value, 2);
+        return roundWithPrecision(value, 1) + (unit || "");
     }
     const percentValueLabelFormat = (v: number) => {
         return `${Math.round(v * 100)}%`
@@ -157,12 +157,10 @@ export default function MemberInput(props: {
             step = undefined;
         const marks = hasTypicalRange && (typicalMin !== minValue || typicalMax !== maxValue) ? [
             {
-                value: typicalMin,
-                label: `${typicalMin}`,
+                value: typicalMin
             },
             {
-                value: typicalMax,
-                label: `${typicalMax}`,
+                value: typicalMax
             }
         ] : undefined;
         if (isWidget)
@@ -176,7 +174,7 @@ export default function MemberInput(props: {
                 color={color}
                 size={widgetSize} />
 
-        return <InputSlider
+        return <Slider
             value={value}
             color={color}
             valueLabelFormat={isOffWidget ? offFormat : valueLabelFormat}
@@ -185,7 +183,7 @@ export default function MemberInput(props: {
             max={maxValue}
             step={step}
             marks={marks}
-            type={inputType}
+            valueLabelDisplay="auto"
         />
     } else {// numbers or string
         if (isWidget)

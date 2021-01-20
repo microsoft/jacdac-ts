@@ -12,7 +12,7 @@ import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 import useRegisterHost from "./hooks/useRegisterHost"
 import useReadingAuxilliaryValue from "./hooks/useReadingAuxilliaryValue";
 
-export type RegisterInputVariant = "widget" |"offwidget" | ""
+export type RegisterInputVariant = "widget" | "offwidget" | ""
 
 export default function RegisterInput(props: {
     register: JDRegister,
@@ -74,15 +74,17 @@ export default function RegisterInput(props: {
     if (hideMissingValues && !hasData)
         return null;
 
+    const serviceName = register.service.name.toLocaleLowerCase().replace(/_/g, ' ');
+    const registerName = specification.name.replace(/_/g, ' ');
     return <>
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={device} />/
     </Typography>}
         {showServiceName && specification && <Typography variant="caption" key="servicename">
-            {register.service.name.toLocaleLowerCase().replace(/_/g, ' ') + " "}
+            {serviceName}
         </Typography>}
-        {showRegisterName && specification && <Typography variant="caption" key="registername">
-            {specification.name.replace(/_/g, ' ')}
+        {showRegisterName && specification && serviceName !== registerName && <Typography variant="caption" key="registername">
+            {" " + registerName}
         </Typography>}
         {!hasData && <Box>
             <IconButtonWithProgress title="refresh" indeterminate={true} onClick={handleRefresh} />

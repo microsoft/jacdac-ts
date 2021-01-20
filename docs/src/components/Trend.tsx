@@ -5,8 +5,6 @@ import { Paper, makeStyles, createStyles } from "@material-ui/core";
 import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => createStyles({
-    root: {
-    },
     graph: {
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
@@ -80,7 +78,7 @@ function UnitTrendChart(props: {
     const lastRow = data[data.length - 1]
 
     return (
-        <React.Fragment>
+        <>
             {useGradient && <defs>
                 <linearGradient key={`gradaxis`} id={`gradientaxis`} x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopOpacity="0" stopColor={axisColor} />
@@ -109,7 +107,7 @@ function UnitTrendChart(props: {
                     </g>
                 })}
             </g>
-        </React.Fragment>
+        </>
     )
 }
 
@@ -119,7 +117,7 @@ function UnitTrend(props: {
     width?: number,
     height?: number,
 } & TrendProps) {
-    const { dataSet, horizon, width, height, dot, gradient } = props;
+    const { dataSet, horizon, width, height, mini, gradient } = props;
     const { rows } = dataSet;
     const classes = useStyles()
     const vpw = width || 80;
@@ -128,7 +126,7 @@ function UnitTrend(props: {
     const useGradient = gradient || data.length < rows.length
     return (
         <Paper className={classes.graph} square>
-            <svg viewBox={`0 0 ${vpw} ${vph}`}>
+            <svg viewBox={`0 0 ${vpw} ${vph}`} style={{ maxHeight: mini ? "5vh" : "10vh", maxWidth: "100%" }}>
                 {data.length > 1 && <UnitTrendChart data={data} useGradient={useGradient} vpw={vpw} vph={vph} {...props} />}
             </svg>
         </Paper>
@@ -145,7 +143,7 @@ export default function Trend(props: {
     const classes = useStyles()
 
     const units = unique(dataSet.units.map(unit => unit || "/"))
-    return <div className={clsx(classes.root, mini && classes.mini)}>
+    return <div className={mini && classes.mini}>
         {units.map(unit => <UnitTrend key={`graph${unit}`} unit={unit} {...props} />)}
     </div>
 }
