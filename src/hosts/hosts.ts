@@ -81,11 +81,13 @@ const _hosts = [
         services: () => [new BuzzerServiceHost()]
     },
     {
-        name: "chassis (motor x 2 + sonar)",
+        name: "chassis (motor x 2 + sonar + light)",
         services: () => [
             new MotorServiceHost(),
             new MotorServiceHost(),
-            new JDSensorServiceHost(SRV_DISTANCE, sonarOptions)]
+            new JDSensorServiceHost(SRV_DISTANCE, sonarOptions),
+            new LightServiceHost({ numPixels: 5, variant: LightVariant.Stick })
+        ]
     },
     {
         name: "distance (sonar)",
