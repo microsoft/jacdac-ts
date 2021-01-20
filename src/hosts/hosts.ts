@@ -6,6 +6,7 @@ import BuzzerServiceHost from "./buzzerservicehost";
 import HumidityServiceHost from "./humidityservicehost";
 import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
+import RoleManagerServiceHost from "./rolemanagerservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
@@ -125,6 +126,10 @@ const _hosts = [
     {
         name: "protocol test",
         services: () => [new ProtocolTestServiceHost()]
+    },
+    {
+        name: "role manager",
+        services: () => [new RoleManagerServiceHost()]
     },
     {
         name: "rotary encoder",
