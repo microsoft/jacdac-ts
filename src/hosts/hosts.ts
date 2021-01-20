@@ -1,4 +1,4 @@
-import { LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
+import { DistanceVariant, LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -73,6 +73,15 @@ const _hosts = [
     {
         name: "buzzer",
         services: () => [new BuzzerServiceHost()]
+    },
+    {
+        name: "distance (sonar)",
+        services: () => [new JDSensorServiceHost(SRV_DISTANCE, {
+            variant: DistanceVariant.Ultrasonic,
+            minReading: 0.02,
+            maxReading: 4,
+            readingValue: 1
+        })]
     },
     {
         name: "humidity + temperature",

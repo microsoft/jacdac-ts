@@ -43,7 +43,7 @@ export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
 
     refreshRegisters() {
         const [samples] = this.streamingSamples.values();
-        if (samples <= 0)
+        if (samples <= 0 || !this.reading.data)
             return;
         // is it time to stream?
         const [interval] = this.streamingInterval.values();

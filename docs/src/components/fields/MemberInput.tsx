@@ -162,7 +162,7 @@ export default function MemberInput(props: {
             },
             {
                 value: typicalMax,
-                label: `${typicalMin}`,
+                label: `${typicalMax}`,
             }
         ] : undefined;
         if (isWidget)
