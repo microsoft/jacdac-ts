@@ -105,8 +105,12 @@ const _hosts = [
             new JDSensorServiceHost(SRV_BAROMETER, barometerOptions)]
     },
     {
-        name: "light ring 16",
+        name: "light ring 10",
         services: () => [new LightServiceHost({ numPixels: 10, variant: LightVariant.Ring })]
+    },
+    {
+        name: "light ring 24",
+        services: () => [new LightServiceHost({ numPixels: 24, variant: LightVariant.Ring })]
     },
     {
         name: "light stick 8",
