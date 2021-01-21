@@ -29,7 +29,7 @@ export default class RainGaugeServiceHost extends JDSensorServiceHost {
         if (!fraction) return;
 
         this._level += fraction;
-        if (this._level >= 1)
+        if (this._level >= 0.7)
             await this.tilt();
         else
             this.emit(CHANGE);

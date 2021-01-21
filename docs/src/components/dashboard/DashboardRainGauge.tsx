@@ -58,6 +58,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
                 strokeWidth={sw}
                 stroke={active}
                 fill={controlBackground}
+                aria-label={"bucket"}
                 onClick={host && handleClick}
                 className={clickeable ? "clickeable" : undefined}
                 role={clickeable ? "button" : undefined}
@@ -67,7 +68,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
                 height={bh}
                 stroke={active}
                 fill={active}
-                aria-label={"rain gauge"}
+                aria-label={"water"}
                 clipPath="url(#water)"
                 style={{ userSelect: "none" }}
             />
