@@ -23,10 +23,12 @@ export default function MemberInput(props: {
     variant?: RegisterInputVariant,
     min?: number,
     max?: number,
-    error?: number
+    error?: number,
+    showLoading?: boolean,
 }) {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
-        setValue, showDataType, color, variant, min, max, error } = props;
+        setValue, showDataType, color, variant, min, max, error,
+        showLoading } = props;
     const { typicalMin, typicalMax, absoluteMin, absoluteMax } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
@@ -97,8 +99,12 @@ export default function MemberInput(props: {
     const offFormat = () => "off";
 
     // value hasn't been loaded yet
-    if (serviceMemberSpecification.kind !== "command" && value === undefined)
-        return <CircularProgress disableShrink variant="indeterminate" size="1rem" />
+    if (serviceMemberSpecification.kind !== "command" && value === undefined) {
+        if (showLoading)
+            return <CircularProgress disableShrink variant="indeterminate" size="1rem" />
+        else
+            return null;
+    }
 
     //
     if (specification.type === 'pipe') {
@@ -106,7 +112,10 @@ export default function MemberInput(props: {
     }
     else if (specification.type === 'bool') {
         if (isWidget)
-            return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
+            return <ButtonWidget
+                label={!isWidget && label}
+                checked={!!value} color={color}
+                size={widgetSize} />
 
         return <>
             <Switch aria-label={label} aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />

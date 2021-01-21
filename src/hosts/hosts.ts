@@ -1,4 +1,9 @@
-import { DistanceVariant, LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
+import {
+    DistanceVariant, LightVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
+    SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_RELAY,
+    SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
+    SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant
+} from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
@@ -140,6 +145,19 @@ const _hosts = [
     {
         name: "protocol test",
         services: () => [new ProtocolTestServiceHost()]
+    },
+    {
+        name: "relay (SSR/10A)",
+        services: () => [new JDServiceHost(SRV_RELAY, {
+            intensityValues: [false],
+            variant: RelayVariant.SolidState,
+            registerValues: [
+                {
+                    code: RelayReg.MaxSwitchingCurrent,
+                    values: [10]
+                }
+            ]
+        })]
     },
     {
         name: "rotary encoder",
