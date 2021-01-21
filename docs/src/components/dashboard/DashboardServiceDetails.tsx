@@ -41,15 +41,12 @@ export default function DashboardServiceDetails(props: DashboardServiceProps) {
 
     return <>
         {registers.map(register => {
-            const showTrend = register.code === SystemReg.Reading
-                && register.specification?.fields?.every(fi => isIntegerType(fi.type));
-            const xs = showTrend ? 12 : true;
-            return <Grid key={register.id} item xs={xs}><RegisterInput
+            return <Grid key={register.id} item xs={true}><RegisterInput
                 register={register}
                 showServiceName={true}
                 showRegisterName={true}
                 hideMissingValues={false}
-                showTrend={showTrend}
+                showTrend={false}
             /></Grid>
         })}
     </>

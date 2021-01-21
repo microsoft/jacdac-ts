@@ -7,7 +7,7 @@ export default function useThrottledValue(value: number, maxRate: number) {
     let animated = actual;
     useAnimationFrame(time => {
         // no valid rate
-        if (isNaN(maxRate)) {
+        if (isNaN(maxRate) || isNaN(animated)) {
             setActual(value);
             return false;
         }

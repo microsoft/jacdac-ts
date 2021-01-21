@@ -5,7 +5,7 @@ import {
     DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_RELAY,
     SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
-    SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant
+    SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SwitchVariant, ThermometerVariant
 } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
@@ -311,6 +311,13 @@ const _hosts = [
             maxReading: 1100,
             readingError: 2.2,
             variant: ThermometerVariant.Thermocouple
+        })]
+    },
+    {
+        name: "wind direction",
+        services: () => [new JDSensorServiceHost(SRV_WIND_DIRECTION, { 
+            readingValues: [0],
+            readingError: 10
         })]
     },
     {

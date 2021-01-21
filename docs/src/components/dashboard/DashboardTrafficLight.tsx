@@ -1,14 +1,12 @@
 
-import React, { useEffect, useState } from "react";
-import { ServoReg, TrafficLightReg } from "../../../../src/jdom/constants";
+import React, {  } from "react";
+import { TrafficLightReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import { useRegisterBoolValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
-import { JDService } from "../../../../src/jacdac";
-import useThrottledValue from "../hooks/useThrottledValue";
 
 export default function DashboardTrafficLight(props: DashboardServiceProps) {
     const { service, services } = props;
@@ -21,7 +19,7 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
 
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
-    const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
+    const { background, controlBackground } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(services.length)
 
     const m = 2;
