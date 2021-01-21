@@ -63,6 +63,20 @@ function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRe
     />;
 }
 
+function IntensityWidget(props: { intensityRegister: JDRegister }) {
+    const { intensityRegister } = props;
+    const [intensity] = useRegisterUnpackedValue<[number | boolean]>(intensityRegister);
+    const off = intensity !== undefined && !intensity;
+
+    return <RegisterInput
+        register={intensityRegister}
+        variant={off ? "offwidget" : "widget"}
+        showServiceName={false}
+        showRegisterName={false}
+        hideMissingValues={true}
+    />;
+}
+
 function DefaultWidget(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const { specification } = service;
@@ -81,6 +95,10 @@ function DefaultWidget(props: DashboardServiceProps) {
         if (intensityRegister)
             return <ValueWidget valueRegister={register} intensityRegister={intensityRegister} />;
     }
+
+    // case of no streaming,value just intensity, like a relay
+    if (register.specification.identifier === SystemReg.Intensity)
+        return <IntensityWidget intensityRegister={register} />
 
     return <RegisterInput
         register={register}

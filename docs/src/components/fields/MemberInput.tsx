@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { clampToStorage, isIntegerType, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { clampToStorage, isIntegerType, isReading, isValueOrIntensity, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
 import { isSet, pick, roundWithPrecision } from "../../../../src/jdom/utils";
 import { RegisterInputVariant } from "../RegisterInput";
 import { useId } from "react-use-id-hook"
@@ -111,11 +111,12 @@ export default function MemberInput(props: {
         return <>pipe <code>{specification.name}</code></>
     }
     else if (specification.type === 'bool') {
-        if (isWidget)
+        if (isWidget && !isValueOrIntensity(serviceMemberSpecification)) {
             return <ButtonWidget
                 label={!isWidget && label}
                 checked={!!value} color={color}
                 size={widgetSize} />
+        }
 
         return <>
             <Switch aria-label={label} aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
