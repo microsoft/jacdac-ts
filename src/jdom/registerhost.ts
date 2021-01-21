@@ -118,7 +118,7 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
             for (let i = 0; i < vs.length; ++i) {
                 vs[i] += Math.random() * error;
             }
-            d = jdpack(this.packFormat, vs);        
+            d = jdpack(this.packFormat, vs);
         }
         await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, d));
     }

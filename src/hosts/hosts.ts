@@ -315,7 +315,7 @@ const _hosts = [
     },
     {
         name: "wind direction",
-        services: () => [new JDSensorServiceHost(SRV_WIND_DIRECTION, { 
+        services: () => [new JDSensorServiceHost(SRV_WIND_DIRECTION, {
             readingValues: [0],
             readingError: 10
         })]
