@@ -1,7 +1,7 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
 import {
-    SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN, SRV_GAMEPAD,
-    SRV_LED_MATRIX_DISPLAY, SRV_LIGHT, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
+    SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
+    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SystemReg
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
@@ -34,9 +34,8 @@ export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>
 const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_ROLE_MANAGER]: DashboardRoleManager,
     [SRV_BUZZER]: DashboardBuzzer,
-    [SRV_LIGHT]: DashboardLight,
+    [SRV_LED_PIXEL]: DashboardLight,
     [SRV_ACCELEROMETER]: DashboardAccelerometer,
-    [SRV_GAMEPAD]: DashboardGamepad,
     [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
     [SRV_BUTTON]: DashboardButton,
     [SRV_SERVO]: DashboardServo,
