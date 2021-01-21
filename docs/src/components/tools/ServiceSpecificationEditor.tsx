@@ -107,9 +107,6 @@ TODO describe this register
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
                 </Paper>
-                <ServiceSpecificationSource
-                    serviceSpecification={json}
-                    showSpecification={true} />
             </Grid>
         </Grid>
     );
