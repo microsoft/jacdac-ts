@@ -14,6 +14,7 @@ import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
 import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
+import RainGaugeServiceHost from "./raingaugeservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
@@ -162,6 +163,10 @@ const _hosts = [
     {
         name: "protocol test",
         services: () => [new ProtocolTestServiceHost()]
+    },
+    {
+        name: "rain gauge",
+        services: () => [new RainGaugeServiceHost()]
     },
     {
         name: "relay (EM/10A)",

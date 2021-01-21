@@ -33,7 +33,7 @@ export default function ButtonWidget(props: {
             onPointerUp={onUp}
             onClick={onClick}
             className={clickeable ? "clickeable" : undefined}
-            role="button"
+            role={clickeable ? "button" : undefined}
             aria-label={!label && "button"}
             aria-labelledby={!!label && textid}
         />
