@@ -1,7 +1,7 @@
 import {
     CharacterScreenTextDirection,
     CharacterScreenVariant,
-    DistanceVariant, LightVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
+    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_RELAY,
     SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant
@@ -111,7 +111,7 @@ const _hosts = [
             new MotorServiceHost(),
             new MotorServiceHost(),
             new JDSensorServiceHost(SRV_DISTANCE, sonarOptions),
-            new LightServiceHost({ numPixels: 5, variant: LightVariant.Stick })
+            new LightServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
         ]
     },
     {
@@ -143,31 +143,31 @@ const _hosts = [
     },
     {
         name: "light ring 10",
-        services: () => [new LightServiceHost({ numPixels: 10, variant: LightVariant.Ring })]
+        services: () => [new LightServiceHost({ numPixels: 10, variant: LedPixelVariant.Ring })]
     },
     {
         name: "light ring 24",
-        services: () => [new LightServiceHost({ numPixels: 24, variant: LightVariant.Ring })]
+        services: () => [new LightServiceHost({ numPixels: 24, variant: LedPixelVariant.Ring })]
     },
     {
         name: "light stick 8",
-        services: () => [new LightServiceHost({ numPixels: 8, variant: LightVariant.Stick })]
+        services: () => [new LightServiceHost({ numPixels: 8, variant: LedPixelVariant.Stick })]
     },
     {
         name: "light strip 30",
-        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 1000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 1000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 60",
-        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 2000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 2000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 150",
-        services: () => [new LightServiceHost({ numPixels: 150, maxPower: 5000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 150, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 300",
-        services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "motor",
@@ -272,8 +272,8 @@ const _hosts = [
         services: () => [new SwitchServiceHost({ variant: SwitchVariant.Tilt })]
     },
     {
-        name: "switch (motion)",
-        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Light, autoOffDelay: 30 })]
+        name: "switch (proximity)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Proximity, autoOffDelay: 30 })]
     },
     {
         name: "thermometer (outdoor)",
