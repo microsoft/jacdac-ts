@@ -95,12 +95,13 @@ const _hosts = [
     },
     {
         name: "character screen (OLED, 32x8, RTL)",
-        services: () => [new CharacterScreenServiceHost({ 
-            message: "hello\nworld!", 
+        services: () => [new CharacterScreenServiceHost({
+            message: "hello\nworld!",
             columns: 32,
-            rows: 8, 
+            rows: 8,
             variant: CharacterScreenVariant.OLED,
-            textDirection: CharacterScreenTextDirection.RightToLeft })]
+            textDirection: CharacterScreenTextDirection.RightToLeft
+        })]
     },
     {
         name: "chassis (motor x 2 + sonar + light)",
