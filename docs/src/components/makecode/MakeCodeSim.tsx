@@ -26,6 +26,9 @@ const useStyles = makeStyles((theme) => createStyles({
         height: "20vw",
         margin: 0,
         padding: 0
+    },
+    services: {
+        height: "100%",
     }
 }));
 
@@ -67,11 +70,12 @@ function CarouselItem(props: {
         gridColumnEnd: columnSpan > 1 ? column + 1 + columnSpan : undefined
     }}>
         <Paper style={{ height: "100%", width: "100%", }}>
-            <Grid container direction="row" spacing={1} justify="center" alignItems="center" alignContent="stretch">
+            <Grid container className={classes.services} direction="row" spacing={1} justify="center" alignItems="center" alignContent="stretch">
                 {services?.map(service => <Grid key={"widget" + service.service_index} item>
                     <DashboardServiceWidget
                         service={service}
                         expanded={false}
+                        variant="icon"
                         services={services} />
                 </Grid>)}
             </Grid>

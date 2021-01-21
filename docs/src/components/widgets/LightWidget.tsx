@@ -54,12 +54,12 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
     el.setAttribute("r", "" + nr);
 }
 
-export default function LightWidget(props: { service: JDService, widgetCount?: number }) {
-    const { service, widgetCount } = props;
+export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
+    const { service, widgetCount, variant } = props;
     const { background, controlBackground } = useWidgetTheme()
-    const widgetSize = useWidgetSize(widgetCount)
+    const widgetSize = useWidgetSize(variant, widgetCount)
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LightReg.NumPixels));
-    const [variant] = useRegisterUnpackedValue<[number]>(service.register(LightReg.Variant));
+    const [lightVariant] = useRegisterUnpackedValue<[number]>(service.register(LightReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LightReg.ActualBrightness));
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
@@ -94,7 +94,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
 
         const pn = pixels.length;
         const length = p.getTotalLength();
-        const extra = variant === LightVariant.Ring ? 0 : 1;
+        const extra = lightVariant === LightVariant.Ring ? 0 : 1;
         const step = length / pn;
 
         for (let i = 0; i < pn; ++i) {
@@ -118,7 +118,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
     let height: number;
 
     let d = "";
-    if (variant === LightVariant.Stick) {
+    if (lightVariant === LightVariant.Stick) {
         const dx = neoradius * 3
         d = `M 0 ${dx}`
         for (let i = 0; i < numPixels; ++i) {
@@ -127,7 +127,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
         width = numPixels * dx;
         height = 2 * dx;
     }
-    else if (variant === LightVariant.Strip) {
+    else if (lightVariant === LightVariant.Strip) {
         const side = Math.ceil(Math.sqrt(numPixels) * 1.6108)
 
         let i = 0;

@@ -1,6 +1,8 @@
 import { useMediaQuery, useTheme } from "@material-ui/core";
 
-export default function useWidgetSize(widgetCount?: number) {
+export default function useWidgetSize(variant?: "icon" | "", widgetCount?: number) {
+    if (variant === "icon")
+        return "18vw";
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down("xs"));
     let widgetSize: string;

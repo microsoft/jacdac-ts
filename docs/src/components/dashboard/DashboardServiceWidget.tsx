@@ -21,6 +21,7 @@ export interface DashboardServiceProps {
     expanded?: boolean,
     // all widget services
     services?: JDService[],
+    variant?: "icon" | ""
 }
 export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>;
 

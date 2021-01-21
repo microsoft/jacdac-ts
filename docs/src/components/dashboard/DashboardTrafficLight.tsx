@@ -11,7 +11,7 @@ import { JDService } from "../../../../src/jacdac";
 import useThrottledValue from "../hooks/useThrottledValue";
 
 export default function DashboardTrafficLight(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
 
     const [red] = useRegisterUnpackedValue<[boolean]>(service.register(TrafficLightReg.Red))
     const [orange] = useRegisterUnpackedValue<[boolean]>(service.register(TrafficLightReg.Orange))
@@ -22,7 +22,7 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(services.length)
+    const widgetSize = useWidgetSize(variant, services.length)
 
     const m = 2;
     const r = 8;
@@ -33,7 +33,7 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
     let cy = 0;
     const names = [
         "red",
-        "orange",
+        "yellow",
         "green"
     ]
     const colors = [
