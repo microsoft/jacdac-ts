@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from "react";
-import { LightReg, LightVariant, RENDER } from "../../../../src/jdom/constants";
+import { LedPixelReg, LedPixelVariant, RENDER } from "../../../../src/jdom/constants";
 import useServiceHost from "../hooks/useServiceHost";
 import LightServiceHost from "../../../../src/hosts/lightservicehost";
 import { SvgWidget } from "../widgets/SvgWidget";
@@ -58,9 +58,9 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
     const { service, widgetCount } = props;
     const { background, controlBackground } = useWidgetTheme()
     const widgetSize = useWidgetSize(widgetCount)
-    const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LightReg.NumPixels));
-    const [variant] = useRegisterUnpackedValue<[number]>(service.register(LightReg.Variant));
-    const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LightReg.ActualBrightness));
+    const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
+    const [variant] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.Variant));
+    const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
     const host = useServiceHost<LightServiceHost>(service);
@@ -94,7 +94,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
 
         const pn = pixels.length;
         const length = p.getTotalLength();
-        const extra = variant === LightVariant.Ring ? 0 : 1;
+        const extra = variant === LedPixelVariant.Ring ? 0 : 1;
         const step = length / pn;
 
         for (let i = 0; i < pn; ++i) {
@@ -118,7 +118,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
     let height: number;
 
     let d = "";
-    if (variant === LightVariant.Stick) {
+    if (variant === LedPixelVariant.Stick) {
         const dx = neoradius * 3
         d = `M 0 ${dx}`
         for (let i = 0; i < numPixels; ++i) {
@@ -127,7 +127,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
         width = numPixels * dx;
         height = 2 * dx;
     }
-    else if (variant === LightVariant.Strip) {
+    else if (variant === LedPixelVariant.Strip) {
         const side = Math.ceil(Math.sqrt(numPixels) * 1.6108)
 
         let i = 0;

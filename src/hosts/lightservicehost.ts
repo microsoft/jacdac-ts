@@ -1,7 +1,9 @@
 import { timeStamp } from "console";
 import {
-    CHANGE, LightCmd, LightLightType,
-    LightReg, LightVariant, RENDER, SRV_LIGHT
+    CHANGE, LedPixelCmd,
+    LedPixelLightType,
+    LedPixelReg,
+    LedPixelVariant, RENDER, SRV_LED_PIXEL
 } from "../jdom/constants";
 import {
     LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB,
@@ -112,10 +114,10 @@ function in_past(t: number) {
 export default class LightServiceHost extends JDServiceHost {
     readonly brightness: JDRegisterHost<[number]>;
     readonly actualBrightness: JDRegisterHost<[number]>;
-    readonly lightType: JDRegisterHost<[LightLightType]>;
+    readonly lightType: JDRegisterHost<[LedPixelLightType]>;
     readonly numPixels: JDRegisterHost<[number]>;
     readonly maxPower: JDRegisterHost<[number]>;
-    readonly variant: JDRegisterHost<[LightVariant]>;
+    readonly variant: JDRegisterHost<[LedPixelVariant]>;
     readonly maxPixels: JDRegisterHost<[number]>;
     readonly numRepeats: JDRegisterHost<[number]>;
 
@@ -143,22 +145,22 @@ export default class LightServiceHost extends JDServiceHost {
         maxPixels?: number,
         maxPower?: number
     } & JDServiceHostOptions) {
-        super(SRV_LIGHT, options);
+        super(SRV_LED_PIXEL, options);
 
-        this.brightness = this.addRegister<[number]>(LightReg.Brightness, [15]);
-        this.actualBrightness = this.addRegister<[number]>(LightReg.ActualBrightness, [15]);
-        this.lightType = this.addRegister<[LightLightType]>(LightReg.LightType, [LightLightType.WS2812B_GRB]);
-        this.numPixels = this.addRegister<[number]>(LightReg.NumPixels, [options?.numPixels || 15]);
-        this.maxPower = this.addRegister<[number]>(LightReg.MaxPower, [options?.maxPower || 200]);
-        this.maxPixels = this.addRegister<[number]>(LightReg.MaxPixels, [options?.maxPixels || 300]);
-        this.variant = this.addRegister<[LightVariant]>(LightReg.Variant, [LightVariant.Strip]);
-        this.numRepeats = this.addRegister<[number]>(LightReg.NumRepeats, [0]);
+        this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [15]);
+        this.actualBrightness = this.addRegister<[number]>(LedPixelReg.ActualBrightness, [15]);
+        this.lightType = this.addRegister<[LedPixelLightType]>(LedPixelReg.LightType, [LedPixelLightType.WS2812B_GRB]);
+        this.numPixels = this.addRegister<[number]>(LedPixelReg.NumPixels, [options?.numPixels || 15]);
+        this.maxPower = this.addRegister<[number]>(LedPixelReg.MaxPower, [options?.maxPower || 200]);
+        this.maxPixels = this.addRegister<[number]>(LedPixelReg.MaxPixels, [options?.maxPixels || 300]);
+        this.variant = this.addRegister<[LedPixelVariant]>(LedPixelReg.Variant, [LedPixelVariant.Strip]);
+        this.numRepeats = this.addRegister<[number]>(LedPixelReg.NumRepeats, [0]);
 
         this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
         this.maxPixels.on(CHANGE, this.allocRxBuffer.bind(this));
 
-        this.addCommand(LightCmd.Run, this.handleRun.bind(this));
+        this.addCommand(LedPixelCmd.Run, this.handleRun.bind(this));
 
         this.allocRxBuffer();
     }
