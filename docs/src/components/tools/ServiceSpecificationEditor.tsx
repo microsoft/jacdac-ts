@@ -51,9 +51,8 @@ TODO describe this register
 `
     )
 
-    const [debouncedSource] = useDebounce(source, 2000)
-    const includes = serviceMap()
-    const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, includes), [debouncedSource]);
+    const [debouncedSource] = useDebounce(source, 5000)
+    const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, serviceMap()), [debouncedSource]);
     useEffect(() => {
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
