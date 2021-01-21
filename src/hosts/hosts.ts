@@ -147,10 +147,10 @@ const _hosts = [
         services: () => [new ProtocolTestServiceHost()]
     },
     {
-        name: "relay (SSR/10A)",
+        name: "relay (EM/10A)",
         services: () => [new JDServiceHost(SRV_RELAY, {
             intensityValues: [false],
-            variant: RelayVariant.SolidState,
+            variant: RelayVariant.Electromechanical,
             registerValues: [
                 {
                     code: RelayReg.MaxSwitchingCurrent,
@@ -158,6 +158,19 @@ const _hosts = [
                 }
             ]
         })]
+    },
+    {
+        name: "relay 4x (SSR/5A)",
+        services: () => Array(4).fill(0).map(_ => new JDServiceHost(SRV_RELAY, {
+            intensityValues: [false],
+            variant: RelayVariant.SolidState,
+            registerValues: [
+                {
+                    code: RelayReg.MaxSwitchingCurrent,
+                    values: [5]
+                }
+            ]
+        }))
     },
     {
         name: "rotary encoder",
