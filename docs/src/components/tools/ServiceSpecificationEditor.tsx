@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme } from '@material-ui/core';
 import { parseServiceSpecificationMarkdownToJSON } from '../../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../../src/jdom/spec';
 import RandomGenerator from '../RandomGenerator';
@@ -21,6 +21,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         marginBottom: theme.spacing(2)
     },
     editor: {
+        backgroundColor: theme.palette.background.default,
+        padding: theme.spacing(1)
     },
     pre: {
         margin: "0",
@@ -51,6 +53,7 @@ TODO describe this register
 
     const [debouncedSource] = useDebounce(source, 700)
     const includes = serviceMap()
+    const theme = useTheme();
     const json = parseServiceSpecificationMarkdownToJSON(debouncedSource, includes)
     useEffect(() => {
         addCustomServiceSpecification(json)
@@ -71,17 +74,27 @@ TODO describe this register
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <PaperBox>
-                    {source !== undefined &&
-                        <TextField
-                            fullWidth={true}
-                            className={classes.editor}
-                            onChange={handleSourceChange}
-                            defaultValue={source}
-                            multiline={true}
-                            rows={42}
-                        />}
-                </PaperBox>
+                <TextField
+                    fullWidth={true}
+                    className={classes.editor}
+                    onChange={handleSourceChange}
+                    defaultValue={source || ""}
+                    multiline={true}
+                    rows={42}
+                    inputProps={{
+                        fontFamily: '"Lucida Console", Monaco, monospace'
+                    }}
+                />
+                <GithubPullRequestButton
+                    label={"submit service"}
+                    title={json && `Service: ${json.name}`}
+                    head={json && `services-0x${json.classIdentifier.toString(16)}`}
+                    body={`This pull request adds a new service definition for JACDAC.`}
+                    commit={json && `added service files`}
+                    files={servicePath && {
+                        [servicePath]: debouncedSource
+                    }}
+                />
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 {!!annotations?.length &&
@@ -97,18 +110,6 @@ TODO describe this register
                 <ServiceSpecificationSource
                     serviceSpecification={json}
                     showSpecification={true} />
-            </Grid>
-            <Grid key="submit" item xs={12}>
-                <GithubPullRequestButton
-                    label={"submit service"}
-                    title={json && `Service: ${json.name}`}
-                    head={json && `services-0x${json.classIdentifier.toString(16)}`}
-                    body={`This pull request adds a new service definition for JACDAC.`}
-                    commit={json && `added service files`}
-                    files={servicePath && {
-                        [servicePath]: debouncedSource
-                    }}
-                />
             </Grid>
         </Grid>
     );
