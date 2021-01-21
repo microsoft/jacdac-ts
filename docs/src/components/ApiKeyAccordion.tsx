@@ -8,6 +8,7 @@ import { Button, Link } from "gatsby-theme-material-ui";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import { useSnackbar } from "notistack";
 
 
 export default function ApiKeyAccordion(props: {
@@ -21,11 +22,11 @@ export default function ApiKeyAccordion(props: {
     const [key, setKey] = useState("")
     const [expanded, setExpanded] = useState(!apiKey)
     const [validated, setValidated] = useState(false)
+    const { enqueueSnackbar } = useSnackbar();
 
     useEffectAsync(async (mounted) => {
         if (!apiKey) {
-            if (mounted())
-                setValidated(false)
+            setValidated(false)
         }
         else {
             const { statusCode } = validateKey ? (await validateKey(apiKey)) : { statusCode: 200 }
@@ -48,9 +49,11 @@ export default function ApiKeyAccordion(props: {
     const handleSave = () => {
         setApiKey(key)
         setKey("")
+        enqueueSnackbar("key saved...")
     }
     const handleReset = () => {
         setApiKey("")
+        enqueueSnackbar("key cleared...")
     }
 
     const handleExpanded = () => {

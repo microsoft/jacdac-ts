@@ -43,7 +43,6 @@
     "gatsby-transformer-plaintext": "^1.0.0",
     "gatsby-transformer-remark": "^2.14.0",
     "gatsby-transformer-sharp": "^2.10.0",
-    "material-ui-confirm": "^2.1.1",
     "material-ui-dropzone": "^3.5.0",
     "notistack": "^1.0.3",
     "octokit-plugin-create-pull-request": "^3.9.1",
