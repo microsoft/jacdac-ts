@@ -8,7 +8,6 @@ export default function useDbValue(id: string, initialValue: string) {
     const [_value, _setValue] = useState<string>(undefined)
     const values = useChange(db, d => d?.values);
     let _mounted = true;
-    console.log(`dbvalue use ${id}`, { db, values })
 
     const setValue = async (value: string) => {
         console.log(`dbvalue store`, { db, values, id, value })

@@ -51,7 +51,7 @@ TODO describe this register
 `
     )
 
-    const [debouncedSource] = useDebounce(source, 1000)
+    const [debouncedSource] = useDebounce(source, 2000)
     const includes = serviceMap()
     const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, includes), [debouncedSource]);
     useEffect(() => {
@@ -80,14 +80,15 @@ TODO describe this register
                     defaultValue={source || ""}
                     multiline={true}
                     rows={42}
+                    spellCheck={false}
                     inputProps={{
-                        fontFamily: '"Lucida Console", Monaco, monospace'
+                        fontFamily: 'monospace'
                     }}
                 />
                 <GithubPullRequestButton
                     label={"submit service"}
                     title={json && `Service: ${json.name}`}
-                    head={json && `services/${servicePath}`}
+                    head={json && servicePath}
                     body={`This pull request adds a new service definition for JACDAC.`}
                     commit={json && `added service files`}
                     files={servicePath && {
@@ -99,7 +100,7 @@ TODO describe this register
                 {!!annotations?.length &&
                     <Alert severity="warning">
                         <ul>
-                            {annotations.map(a => <li>line {a.row}: {a.text}</li>)}
+                            {annotations.map((a, i) => <li key={i}>line {a.row}: {a.text}</li>)}
                         </ul>
                     </Alert>
                 }

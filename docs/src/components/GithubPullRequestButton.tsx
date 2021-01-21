@@ -78,7 +78,7 @@ export default function GithubPullRequestButton(props: {
     }
 
     return <>
-        <Button color="primary" variant="contained" onClick={handleOpenConfirm} startIcon={<GitHubIcon />}>
+        <Button disabled={busy} color="primary" variant="contained" onClick={handleOpenConfirm} startIcon={<GitHubIcon />}>
             {label || "Create Pull Request"}
             {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
         </Button>
