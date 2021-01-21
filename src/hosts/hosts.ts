@@ -1,4 +1,6 @@
 import {
+    CharacterScreenTextDirection,
+    CharacterScreenVariant,
     DistanceVariant, LightVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_RELAY,
     SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
@@ -8,6 +10,7 @@ import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
+import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
 import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
@@ -85,6 +88,19 @@ const _hosts = [
     {
         name: "buzzer",
         services: () => [new BuzzerServiceHost()]
+    },
+    {
+        name: "character screen (LDC, 16x2)",
+        services: () => [new CharacterScreenServiceHost({ message: "hello\nworld!" })]
+    },
+    {
+        name: "character screen (OLED, 32x8, RTL)",
+        services: () => [new CharacterScreenServiceHost({ 
+            message: "hello\nworld!", 
+            columns: 32,
+            rows: 8, 
+            variant: CharacterScreenVariant.OLED,
+            textDirection: CharacterScreenTextDirection.RightToLeft })]
     },
     {
         name: "chassis (motor x 2 + sonar + light)",
