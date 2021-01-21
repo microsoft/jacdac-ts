@@ -17,6 +17,9 @@ export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<Uin
         this.columns = this.addRegister(LedMatrixDisplayReg.Columns, [columns]);
         this.brightness = this.addRegister(LedMatrixDisplayReg.Brightness, [128]);
 
+        this.rows.skipBoundaryCheck = true;
+        this.rows.skipErrorInjection = true;
+
         // 20fps
         this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [50]);
 

@@ -195,7 +195,17 @@ export default function MemberInput(props: {
             marks={marks}
             valueLabelDisplay="auto"
         />
-    } else {// numbers or string
+    } else if (specification.type === "bytes") {
+        return <TextField
+            spellCheck={false}
+            value={textValue}
+            helperText={helperText}
+            onChange={disabled ? undefined : handleChange}
+            required={value === undefined}
+            error={!!errorText}
+            type={"text"}
+        />
+    } else {// numbers or string or uintarrays
         if (isWidget)
             return <ValueWithUnitWidget
                 value={roundWithPrecision(value, 1)}
