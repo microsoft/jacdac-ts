@@ -93,7 +93,7 @@ function Carousel() {
     const width = (columns * 20) + `vw`
 
     let column = 0;
-    return <div className={classes.root} style={{ width, gridTemplateColumns: `repeat(${columns + 1}, 20vw)` }}>
+    return <div className={classes.root} style={{ width, gridTemplateColumns: `repeat(${columns}, 20vw)` }}>
         {devices.map(device => {
             const dsrvs = carouselServices(device);
             const col = column;
@@ -102,7 +102,7 @@ function Carousel() {
             console.log({ col, span })
             return <CarouselItem device={device} column={col} columnSpan={span} />
         })}
-        <div key="add" className={classes.item}>
+        <div key="add" className={classes.item} style={{ gridColumnStart: columns, gridRowStart: rows }}>
             <Paper style={{ height: "100%", width: "100%", }}>
                 <Grid container justify="center" alignItems="center">
                     <IconButton>
