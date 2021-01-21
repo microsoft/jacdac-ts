@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { useId } from "react-use-id-hook"
 
 export function SvgWidget(props: {
@@ -7,7 +7,7 @@ export function SvgWidget(props: {
     size?: string,
     role?: string,
     title?: string,
-    children: JSX.Element | JSX.Element[]
+    children: ReactNode
 }) {
     const { width, height, size, children, role, title } = props;
     const h = height || width;

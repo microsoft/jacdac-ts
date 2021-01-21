@@ -62,7 +62,7 @@ export default function DashboardCharacterScreen(props: DashboardServiceProps) {
     }
     return <SvgWidget title={`character screen displaying ${message}`} width={w} height={h} size={widgetSize} >
         <>
-            <rect x={0} y={0} width={w} height={h} rx={m / 2} fill={background} />
+            <rect x={0} y={0} width={w} height={h} r={m / 2} fill={background} />
             {els}
         </>
     </SvgWidget>

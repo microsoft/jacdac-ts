@@ -12,6 +12,7 @@ import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
 import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
+import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
@@ -127,6 +128,18 @@ const _hosts = [
             new HumidityServiceHost(),
             new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
             new JDSensorServiceHost(SRV_BAROMETER, barometerOptions)]
+    },
+    {
+        name: "led matrix (5x5 micro:bit)",
+        services: () => [new LEDMatrixDisplayServiceHost(5, 5)]
+    },
+    {
+        name: "led matrix (8x8)",
+        services: () => [new LEDMatrixDisplayServiceHost(8, 8)]
+    },
+    {
+        name: "led matrix (11x7)",
+        services: () => [new LEDMatrixDisplayServiceHost(11, 7)]
     },
     {
         name: "light ring 10",
