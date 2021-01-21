@@ -105,13 +105,13 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
         }
 
         render();
-    }, [variant, numPixels])
+    }, [variant, numPixels, pathRef.current, pixelsRef.current])
 
     // render when new colors are in
     useEffect(() => host?.subscribe(RENDER, render), [host]);
 
     // not enough data to draw anything
-    if (numPixels === undefined || actualBrightness === undefined)
+    if (numPixels === undefined)
         return null;
 
     let width: number;
@@ -164,7 +164,7 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
 
     // tune opacity to account for global opacity
     const alpha = 0.7;
-    const opacity = alpha + (1 - alpha) * (actualBrightness / 0xff);
+    const opacity = alpha + (1 - alpha) * ((actualBrightness || 0) / 0xff);
 
     return <SvgWidget width={width} height={height} size={widgetSize}>
         <>
