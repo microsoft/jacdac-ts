@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme } from '@material-ui/core';
 import { parseServiceSpecificationMarkdownToJSON } from '../../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../../src/jdom/spec';
@@ -51,10 +51,9 @@ TODO describe this register
 `
     )
 
-    const [debouncedSource] = useDebounce(source, 700)
+    const [debouncedSource] = useDebounce(source, 1000)
     const includes = serviceMap()
-    const theme = useTheme();
-    const json = parseServiceSpecificationMarkdownToJSON(debouncedSource, includes)
+    const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, includes), [debouncedSource]);
     useEffect(() => {
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
