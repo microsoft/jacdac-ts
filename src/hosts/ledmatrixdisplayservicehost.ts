@@ -30,9 +30,9 @@ export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<Uin
     }
 
     toggle(bitindex: number) {
-        // this is very inefficient
-
+        // this is very inefficient?
         const [data] = this.reading.values();
+        // find bit to flip
         let byte = data[bitindex >> 3];
         const bit = bitindex % 8;
         const on = 1 === ((byte >> bit) & 1)
@@ -48,9 +48,9 @@ export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<Uin
     }
 
     clear() {
-        const { data } = this.reading;
+        const [data] = this.reading.values();
         data.fill(0);
-        this.reading.emit(CHANGE);
+        this.reading.setValues([data])
     }
 
     private updateLedBuffer() {
