@@ -88,7 +88,7 @@ export default function GithubPullRequestButton(props: {
         <Dialog open={confirmDialog} onClose={handleCloseConfirm}>
             <DialogContent>
                 <DialogContentText>
-                    We will open a new Pull Request for your service? If needed, we will fork ``microsoft/jacdac`` under your account and create a Pull Request in that repository.
+                    We will open a new Pull Request for your service? If needed, we will fork <code>microsoft/jacdac</code> under your account and create a Pull Request in that repository.
                 </DialogContentText>
                 <ApiKeyAccordion
                     apiName={GITHUB_API_KEY}
