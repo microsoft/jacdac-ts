@@ -227,6 +227,10 @@ const _hosts = [
         services: () => Array(4).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
+        name: "servo x 6",
+        services: () => Array(6).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
+    },
+    {
         name: "servo x 16",
         services: () => Array(16).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },

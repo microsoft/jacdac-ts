@@ -10,7 +10,6 @@ export default function useDbValue(id: string, initialValue: string) {
     let _mounted = true;
 
     const setValue = async (value: string) => {
-        console.log(`dbvalue store`, { db, values, id, value })
         await values?.set(id, value)
     }
 

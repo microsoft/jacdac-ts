@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme } from '@material-ui/core';
 import { parseServiceSpecificationMarkdownToJSON } from '../../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../../src/jdom/spec';
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const { drawerType } = useContext(AppContext)
-    const { value: source, setValue: setSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
+    const { value: storedSource, setValue: setStoredSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
         `# My Service
 
 TODO: describe your service
@@ -50,20 +50,21 @@ TODO: describe your service
 TODO describe this register
 `
     )
-
-    const [debouncedSource] = useDebounce(source, 5000)
+    const [source, setSource] = useState(storedSource);
+    const [debouncedSource] = useDebounce(source, 1000)
     const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, serviceMap()), [debouncedSource]);
-    useEffect(() => {
-        addCustomServiceSpecification(json)
-        if (json.classIdentifier)
-            clearCustomServiceSpecifications();
-    }, [debouncedSource])
-    const annotations = json?.errors?.map(error => ({
+    const annotations = useMemo(() => json?.errors?.map(error => ({
         row: error.line,
         column: 1,
         text: error.message,
         type: 'error'
-    }))
+    })), [json])
+    useEffect(() => {
+        setStoredSource(debouncedSource)
+        addCustomServiceSpecification(json)
+        if (json.classIdentifier)
+            clearCustomServiceSpecifications();
+    }, [debouncedSource])
     const drawerOpen = drawerType != DrawerType.None
     const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSource(ev.target.value)
