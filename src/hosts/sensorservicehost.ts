@@ -22,7 +22,7 @@ export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
 
     constructor(
         public readonly serviceClass: number,
-        options: JDSensorServiceOptions<TReading> & JDServiceHostOptions
+        options?: JDSensorServiceOptions<TReading> & JDServiceHostOptions
     ) {
         super(serviceClass, options);
         const { readingValue, streamingInterval, minReading, maxReading, readingError } = options || {};

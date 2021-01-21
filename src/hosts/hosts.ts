@@ -1,4 +1,5 @@
 import {
+    ArcadeGamepadButton,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
     DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
@@ -8,6 +9,7 @@ import {
 } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
+import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
 import CharacterScreenServiceHost from "./characterscreenservicehost";
@@ -78,6 +80,17 @@ const _hosts = [
         services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
             readingValue: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
         })]
+    },
+    {
+        name: "arcade gamepad DPad+A/B",
+        services: () => [new ArcadeGamepadServiceHost([
+            ArcadeGamepadButton.Left,
+            ArcadeGamepadButton.Right,
+            ArcadeGamepadButton.Up,
+            ArcadeGamepadButton.Down,
+            ArcadeGamepadButton.A,
+            ArcadeGamepadButton.B,
+        ])]
     },
     {
         name: "barometer",

@@ -1,6 +1,6 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
 import {
-    SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
+    SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SystemReg
 } from "../../../../src/jdom/constants";
@@ -9,7 +9,6 @@ import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
 import DashboardLight from "./DashboardLight";
 import DashboardRoleManager from "./DashboardRoleManager";
-import DashboardGamepad from "./DashbaordGamepad";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
 import { isRegister } from "../../../../src/jdom/spec";
@@ -22,6 +21,7 @@ import DashboardTrafficLight from "./DashboardTrafficLight";
 import DashboardCharacterScreen from "./DashboardCharacterScreen";
 import DashbaordRainGauge from "./DashboardRainGauge";
 import DashboardLEDMatrixDisplay from "./DashboardLEDMatrixDisplay";
+import DashboardArcadeGamepad from "./DashboardArcadeGamepad";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -44,6 +44,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_CHARACTER_SCREEN]: DashboardCharacterScreen,
     [SRV_RAIN_GAUGE]: DashbaordRainGauge,
     [SRV_LED_MATRIX_DISPLAY]: DashboardLEDMatrixDisplay,
+    [SRV_ARCADE_GAMEPAD]: DashboardArcadeGamepad,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
@@ -85,7 +86,7 @@ function IntensityWidget(props: { intensityRegister: JDRegister }) {
 }
 
 function DefaultWidget(props: DashboardServiceProps) {
-    const { service, expanded } = props;
+    const { service } = props;
     const { specification } = service;
     const register = useMemo(() => {
         const rspec = specification?.packets

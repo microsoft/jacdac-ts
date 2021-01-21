@@ -1,0 +1,49 @@
+import { ArcadeGamepadButton, ArcadeGamepadReg, SRV_ARCADE_GAMEPAD } from "../jdom/constants";
+import JDRegisterHost from "../jdom/registerhost";
+import JDSensorServiceHost from "./sensorservicehost";
+
+const defaultButtons = [
+    ArcadeGamepadButton.Left,
+    ArcadeGamepadButton.Right,
+    ArcadeGamepadButton.Down,
+    ArcadeGamepadButton.Up,
+    ArcadeGamepadButton.A,
+    ArcadeGamepadButton.B,
+    ArcadeGamepadButton.Menu,
+    ArcadeGamepadButton.MenuAlt,
+]
+
+export default class ArcadeGamepadServiceHost
+    extends JDSensorServiceHost<[ArcadeGamepadButton, number][]> {
+    readonly buttons: JDRegisterHost<[[ArcadeGamepadButton, number][]]>;
+    readonly availableButtons: JDRegisterHost<[[ArcadeGamepadButton][]]>;
+
+    constructor(availableButtons?: ArcadeGamepadButton[]) {
+        super(SRV_ARCADE_GAMEPAD, {
+            readingValue: []
+        })
+
+        this.availableButtons = this.addRegister<[[ArcadeGamepadButton][]]>(ArcadeGamepadReg.AvailableButtons,
+            [(availableButtons || defaultButtons).map(v => [v])]);
+    }
+
+    async down(button: ArcadeGamepadButton, pressure: number) {
+        const [values] = this.reading.values();
+        let value = values.find(v => v[0] === button);
+        if (!value) {
+            value = [button, pressure];
+            values.push(value);
+        }
+        value[1] = pressure;
+        this.reading.setValues([values]);
+    }
+
+    async up(button: ArcadeGamepadButton) {
+        const [values] = this.reading.values();
+        const valuei = values.findIndex(v => v[0] === button);
+        if (valuei >= 1) {
+            values.splice(valuei, 1)
+            this.reading.setValues([values]);
+        }
+    }
+}
