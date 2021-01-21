@@ -26,7 +26,7 @@ import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 
 const outdoorThermometerOptions = {
-    readingValue: 21.5,
+    readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -40,
     maxReading: 120,
@@ -34,7 +34,7 @@ const outdoorThermometerOptions = {
     variant: ThermometerVariant.Outdoor
 }
 const medicalThermometerOptions = {
-    readingValue: 37.5,
+    readingValues: [37.5],
     streamingInterval: 1000,
     minReading: 35,
     maxReading: 42,
@@ -42,13 +42,13 @@ const medicalThermometerOptions = {
     variant: ThermometerVariant.Body
 }
 const barometerOptions = {
-    readingValue: 1013
+    readingValues: [1013]
 }
 const sonarOptions = {
     variant: DistanceVariant.Ultrasonic,
     minReading: 0.02,
     maxReading: 4,
-    readingValue: 1
+    readingValues: [1]
 };
 
 const SG90_STALL_TORQUE = 1.8;
@@ -78,9 +78,10 @@ const _hosts = [
     {
         name: "accelerometer",
         services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
-            readingValue: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
+            readingValues: [[0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]]
         })]
     },
+    /*
     {
         name: "arcade gamepad DPad+A/B",
         services: () => [new ArcadeGamepadServiceHost([
@@ -92,6 +93,7 @@ const _hosts = [
             ArcadeGamepadButton.B,
         ])]
     },
+    */
     {
         name: "barometer",
         services: () => [new JDSensorServiceHost<number>(SRV_BAROMETER, barometerOptions)]
@@ -303,7 +305,7 @@ const _hosts = [
     {
         name: "thermocouple",
         services: () => [new JDSensorServiceHost(SRV_THERMOMETER, {
-            readingValue: 550,
+            readingValues: [550],
             streamingInterval: 1000,
             minReading: 0,
             maxReading: 1100,

@@ -6,7 +6,7 @@ export default class RotaryEncoderServiceHost extends JDSensorServiceHost<number
     readonly clicksPerTurn: JDRegisterHost<[number]>;
 
     constructor() {
-        super(SRV_ROTARY_ENCODER, { readingValue: 0, streamingInterval: 50 });
+        super(SRV_ROTARY_ENCODER, { readingValues: [0], streamingInterval: 50 });
 
         this.clicksPerTurn = this.addRegister<[number]>(RotaryEncoderReg.ClicksPerTurn, [12]);
     }

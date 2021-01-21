@@ -77,9 +77,6 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
         [ArcadeGamepadButton.Exit]: { cx: cw * 7, cy: ch },
     }
 
-    console.log({ available, pressed })
-    return <p>todo</p>
-    /*
     return <SvgWidget width={w} height={h} size={widgetSize}>
         {available.map(button => <ArcadeButton
             key={button[0]}
@@ -93,5 +90,4 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
             color={color}
         />)}
     </SvgWidget>
-    */
 }

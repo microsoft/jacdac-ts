@@ -14,17 +14,15 @@ const defaultButtons = [
 ]
 
 export default class ArcadeGamepadServiceHost
-    extends JDSensorServiceHost<[ArcadeGamepadButton, number][]> {
-    readonly buttons: JDRegisterHost<[[ArcadeGamepadButton, number][]]>;
-    readonly availableButtons: JDRegisterHost<[[ArcadeGamepadButton][]]>;
+    extends JDSensorServiceHost<([ArcadeGamepadButton, number])[]> {
+    readonly availableButtons: JDRegisterHost<[ArcadeGamepadButton[]]>;
 
     constructor(availableButtons?: ArcadeGamepadButton[]) {
         super(SRV_ARCADE_GAMEPAD, {
-            readingValue: []
+            readingValues: [[]]
         })
 
-        this.availableButtons = this.addRegister<[[ArcadeGamepadButton][]]>(ArcadeGamepadReg.AvailableButtons,
-            [(availableButtons || defaultButtons).map(v => [v])]);
+        this.availableButtons = this.addRegister<[ArcadeGamepadButton[]]>(ArcadeGamepadReg.AvailableButtons, [availableButtons || defaultButtons]);
     }
 
     async down(button: ArcadeGamepadButton, pressure: number) {
@@ -35,6 +33,7 @@ export default class ArcadeGamepadServiceHost
             values.push(value);
         }
         value[1] = pressure;
+        console.log({ values })
         this.reading.setValues([values]);
     }
 

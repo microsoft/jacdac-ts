@@ -302,7 +302,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     }
 
     if (data.length > idx)
-        throw new Error(`format too short`)
+        throw new Error(`format '${fmt}' too short`)
 
     return off
 }

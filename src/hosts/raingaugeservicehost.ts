@@ -9,7 +9,7 @@ export default class RainGaugeServiceHost extends JDSensorServiceHost {
 
     constructor(options?: { bucketSize?: number }) {
         super(SRV_RAIN_GAUGE, {
-            readingValue: 0
+            readingValues: [0]
         });
         const { bucketSize } = options || {};
 

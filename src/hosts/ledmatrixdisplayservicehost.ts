@@ -9,7 +9,7 @@ export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<Uin
 
     constructor(columns: number, rows: number) {
         super(SRV_LED_MATRIX_DISPLAY, {
-            readingValue: new Uint8Array(0),
+            readingValues: [new Uint8Array(0)],
             intensityValues: [0xff >> 1]
         })
 
