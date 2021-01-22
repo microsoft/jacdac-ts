@@ -199,12 +199,24 @@ const _hosts = [
         services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
-        name: "matrix keypad 3x4",
+        name: "matrix keypad (3x4)",
         services: () => [new MatrixKeypadServiceHost(3, 4, [
             "0", "1", "2",
             "3", "4", "5",
             "6", "7", "8",
             "*", "0", "#"])]
+    },
+    {
+        name: "matrix keypad (4x4)",
+        services: () => [new MatrixKeypadServiceHost(4, 4, [
+            "0", "1", "2", "A",
+            "3", "4", "5", "B",
+            "6", "7", "8", "C",
+            "*", "0", "#", "D"])]
+    },
+    {
+        name: "matrix keypad (1x4)",
+        services: () => [new MatrixKeypadServiceHost(4, 1, ["1", "2", "3", "4"])]
     },
     {
         name: "motor",
