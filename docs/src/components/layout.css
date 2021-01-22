@@ -659,12 +659,10 @@ footer {
 .clickeable:hover {
   outline: 0;
   stroke: #ffc400;
-  stroke-width: 4px;
 }
 .clickeable:focus {
   outline: 0;
   stroke: #000;
-  stroke-width: 4px;
 }
 .dark .clickeable:focus {
   stroke: #fff
