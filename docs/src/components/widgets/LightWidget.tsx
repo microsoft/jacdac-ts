@@ -54,12 +54,12 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
     el.setAttribute("r", "" + nr);
 }
 
-export default function LightWidget(props: { service: JDService, widgetCount?: number }) {
-    const { service, widgetCount } = props;
+export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
+    const { service, widgetCount, variant } = props;
     const { background, controlBackground } = useWidgetTheme()
     const widgetSize = useWidgetSize(widgetCount)
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
-    const [variant] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.Variant));
+    const [lightVariant] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
@@ -109,20 +109,20 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
         }
 
         render();
-    }, [variant, numPixels])
+    }, [variant, numPixels, pathRef.current, pixelsRef.current])
 
     // render when new colors are in
     useEffect(() => host?.subscribe(RENDER, render), [host]);
 
     // not enough data to draw anything
-    if (numPixels === undefined || actualBrightness === undefined)
+    if (numPixels === undefined)
         return null;
 
     let width: number;
     let height: number;
 
     let d = "";
-    if (variant === LedPixelVariant.Stick) {
+    if (lightVariant === LedPixelVariant.Stick) {
         const dx = neoradius * 3
         d = `M 0 ${dx}`
         for (let i = 0; i < numPixels; ++i) {
@@ -131,7 +131,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
         width = numPixels * dx;
         height = 2 * dx;
     }
-    else if (variant === LedPixelVariant.Strip) {
+    else if (lightVariant === LedPixelVariant.Strip) {
         const side = Math.ceil(Math.sqrt(numPixels) * 1.6108)
 
         let i = 0;
@@ -168,7 +168,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
 
     // tune opacity to account for global opacity
     const alpha = 0.7;
-    const opacity = alpha + (1 - alpha) * (actualBrightness / 0xff);
+    const opacity = alpha + (1 - alpha) * ((actualBrightness || 0) / 0xff);
 
     return <SvgWidget width={width} height={height} size={widgetSize}>
         <>
@@ -179,7 +179,7 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
                     cx={width >> 1} cy={height >> 1}
                     stroke={controlBackground}
                     strokeWidth={1}
-                    aria-lable={`pixel {i}`}
+                    aria-label={`pixel {i}`}
                 />)}
             </g>
         </>

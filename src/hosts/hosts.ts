@@ -1,3 +1,4 @@
+import { JDBus } from "../jdom/bus";
 import {
     ArcadeGamepadButton,
     CharacterScreenTextDirection,
@@ -7,6 +8,7 @@ import {
     SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
 } from "../jdom/constants";
+import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";
@@ -20,7 +22,7 @@ import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
-import JDSensorServiceHost from "./sensorservicehost";
+import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
 import SwitchServiceHost from "./switchservicehost";
@@ -42,7 +44,7 @@ const medicalThermometerOptions = {
     readingError: 0.5,
     variant: ThermometerVariant.Body
 }
-const barometerOptions = {
+const barometerOptions: JDSensorServiceOptions<[number]> = {
     readingValues: [1013]
 }
 const sonarOptions = {
@@ -86,7 +88,7 @@ const windSpeedOptions = {
     ]
 }
 
-const _hosts = [
+const _hosts: { name: string, services: () => JDServiceHost[] }[] = [
     {
         name: "accelerometer",
         services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
@@ -383,4 +385,9 @@ const _hosts = [
 
 export default function hosts() {
     return _hosts.slice(0);
+}
+
+export function addHost(bus: JDBus, services: JDServiceHost[]) {
+    const d = new JDDeviceHost(services);
+    bus.addDeviceHost(d);
 }

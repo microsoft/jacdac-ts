@@ -2,7 +2,7 @@ import { CHANGE, RainGaugeReg, SRV_RAIN_GAUGE } from "../jdom/constants"
 import JDRegisterHost from "../jdom/registerhost";
 import JDSensorServiceHost from "./sensorservicehost";
 
-export default class RainGaugeServiceHost extends JDSensorServiceHost {
+export default class RainGaugeServiceHost extends JDSensorServiceHost<[number]> {
     readonly precipitationPrecision: JDRegisterHost<[number]>;
     private _tiltCount = 0;
     private _level = 0;

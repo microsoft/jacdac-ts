@@ -2,7 +2,7 @@ import { Grid } from "@material-ui/core";
 import React, { } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import GridHeader from "../ui/GridHeader"
-import DeviceItem from "./DashboardDeviceItem";
+import DashbardDeviceItem from "./DashboardDeviceItem";
 
 export default function DeviceGroup(props: {
     title: string,
@@ -17,7 +17,7 @@ export default function DeviceGroup(props: {
     return <section>
         <Grid container spacing={2}>
             <GridHeader title={title} action={action} />
-            {devices?.map(device => <DeviceItem
+            {devices?.map(device => <DashbardDeviceItem
                 key={device.id}
                 device={device}
                 expanded={expanded(device)}

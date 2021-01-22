@@ -22,7 +22,7 @@ function useActualAngle(service: JDService) {
 }
 
 export default function DashboardServo(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
 
     const enabled = useRegisterBoolValue(service.register(ServoReg.Enabled))
     const angle = useActualAngle(service)
@@ -31,7 +31,7 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(services.length)
+    const widgetSize = useWidgetSize(variant, services.length)
 
     const cx = 78;
     const cy = 55;

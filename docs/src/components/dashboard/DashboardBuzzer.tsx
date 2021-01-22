@@ -9,7 +9,7 @@ import { initAudioContext } from "../../../../src/hosts/buzzerservicehost";
 const useStyles = makeStyles(() => createStyles({
     btn: {
         minWidth: "1em",
-        padding: "2em 0.75em 2em 0.75em"
+        padding: "1em 0.75em 1em 0.75em"
     }
 }));
 

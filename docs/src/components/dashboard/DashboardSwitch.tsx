@@ -10,19 +10,19 @@ import ButtonWidget from "../widgets/ButtonWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 
 export default function DashboardSwitch(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
 
     const labelId = useId();
     const on = useRegisterBoolValue(service.register(SwitchReg.Active))
-    const [variant] = useRegisterUnpackedValue<[SwitchVariant]>(service.register(SwitchReg.Variant));
+    const [switchVariant] = useRegisterUnpackedValue<[SwitchVariant]>(service.register(SwitchReg.Variant));
     const host = useServiceHost<SwitchServiceHost>(service);
-    const widgetSize = useWidgetSize(services.length);
+    const widgetSize = useWidgetSize(variant, services.length);
     const color = host ? "secondary" : "primary";
 
     const handleToggle = () => host?.toggle();
 
 
-    switch (variant) {
+    switch (switchVariant) {
         case SwitchVariant.PushButton:
             return <ButtonWidget
                 checked={on}

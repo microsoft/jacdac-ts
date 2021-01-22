@@ -30,7 +30,7 @@ function TrafficLight(props: { cx: number, cy: number, label: string, background
 }
 
 export default function DashboardTrafficLight(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
 
     const widgetRef = useRef<SVGGElement>();
     const [red] = useRegisterUnpackedValue<[boolean]>(service.register(TrafficLightReg.Red))
@@ -42,13 +42,13 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
 
     const host = useServiceHost<TrafficLightServiceHost>(service);
     const color = host ? "secondary" : "primary";
-    const { background, controlBackground } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(services.length)
+    const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
+    const widgetSize = useWidgetSize(variant, services.length)
 
     let cy = 0;
     const names = [
         "red",
-        "orange",
+        "yellow",
         "green"
     ]
     const colors = [
