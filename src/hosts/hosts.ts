@@ -75,11 +75,11 @@ const microServo360Options = {
 }
 const windDirectionOptions = {
     readingValues: [0],
-    readingError: 10
+    readingError: 5
 }
 const windSpeedOptions = {
     readingValues: [0],
-    readingError: 1,
+    readingError: 0.5,
     registerValues: [
         { code: WindSpeedReg.MaxWindSpeed, values: [55] }
     ]
