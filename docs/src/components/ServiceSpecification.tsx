@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useContext, useEffect } from "react";
 import { Link } from 'gatsby-theme-material-ui';
 import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf, deviceSpecificationsForService } from "../../../src/jdom/spec"
 import PacketSpecification from "../components/PacketSpecification"
@@ -6,11 +6,24 @@ import IDChip from "./IDChip";
 import ServiceSpecificationSource from "./ServiceSpecificationSource"
 import Markdown from "./ui/Markdown";
 import EnumSpecification from "./EnumSpecification";
-import { Box } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import DeviceSpecificationList from "./DeviceSpecificationList"
-import hosts, { addHost } from "../../../src/hosts/hosts";
 import useDeviceHostFromServiceClass from "./hooks/useDeviceHostFromServiceClass";
+import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import useChange from "../jacdac/useChange";
+import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
+
+function DashboardServiceDevices(props: { serviceClass: number }) {
+    const { serviceClass } = props;
+    const { bus } = useContext<JDContextProps>(JACDACContext);
+    const devices = useChange(bus, b => b.devices({ serviceClass }));
+    return <Grid container spacing={2}>
+        {devices.map(device => <DashbardDeviceItem
+            key={device.id}
+            device={device} />)}
+    </Grid >
+}
 
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
@@ -19,7 +32,7 @@ export default function ServiceSpecification(props: {
     showDerived?: boolean
 }) {
     const { service: node, showSource, showDevices, showDerived } = props;
-    const { shortId, name } = node;
+    const { shortId, name, classIdentifier } = node;
     const packets = node.packets.filter(pkt => showDerived || !pkt.derived);
     const registers = packets.filter(isRegister)
     const events = packets.filter(isEvent)
@@ -56,7 +69,8 @@ export default function ServiceSpecification(props: {
     .
     </p>}
         <Markdown key="noteslong" source={node.notes.long || ""} />
-        <EnumSpecification key="enums" serviceClass={node.classIdentifier} />
+        <DashboardServiceDevices serviceClass={classIdentifier} />
+        <EnumSpecification key="enums" serviceClass={classIdentifier} />
         {[
             { name: "Registers", packets: registers, note: node.notes["registers"] },
             { name: "Events", packets: events, note: node.notes["events"] },
@@ -67,7 +81,7 @@ export default function ServiceSpecification(props: {
                 <h2>{group.name}</h2>
                 {group.note && <Markdown key={`node${group.name}`} source={group.note} />}
                 {group.packets
-                    .sort((l,r) => (l.derived ? 1 : -1) - (r.derived ? 1 : -1))
+                    .sort((l, r) => (l.derived ? 1 : -1) - (r.derived ? 1 : -1))
                     .map((pkt, i) => <PacketSpecification
                         key={`pkt${pkt.name}`}
                         serviceClass={node.classIdentifier}

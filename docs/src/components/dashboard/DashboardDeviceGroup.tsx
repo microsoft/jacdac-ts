@@ -8,8 +8,8 @@ export default function DeviceGroup(props: {
     title: string,
     action?: JSX.Element,
     devices: JDDevice[],
-    expanded: (device: JDDevice) => boolean,
-    toggleExpanded: (device: JDDevice) => void,
+    expanded?: (device: JDDevice) => boolean,
+    toggleExpanded?: (device: JDDevice) => void,
     children?: JSX.Element | JSX.Element[]
 }) {
     const { title, action, devices, expanded, toggleExpanded, children } = props;

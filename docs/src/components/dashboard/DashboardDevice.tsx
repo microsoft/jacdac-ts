@@ -23,8 +23,8 @@ const ignoredServices = [
 
 export default function DashboardDevice(props: {
     device: JDDevice,
-    expanded: boolean,
-    toggleExpanded: () => void
+    expanded?: boolean,
+    toggleExpanded?: () => void
 }) {
     const { device, expanded, toggleExpanded } = props;
     const services = useChange(device, () => device.services()
@@ -40,9 +40,9 @@ export default function DashboardDevice(props: {
                 avatar={<DeviceAvatar device={device} />}
                 action={
                     <DeviceActions device={device} showStopHost={expanded && !mobile} hideIdentity={true} showReset={expanded && !mobile}>
-                        <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
+                        {toggleExpanded && <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                             {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                        </IconButtonWithTooltip>
+                        </IconButtonWithTooltip>}
                     </DeviceActions>
                 }
                 title={

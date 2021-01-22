@@ -6,8 +6,8 @@ import { GridBreakpoints } from "../useGridBreakpoints";
 
 export default function DeviceItem(props: {
     device: JDDevice,
-    expanded: boolean,
-    toggleExpanded: () => void,
+    expanded?: boolean,
+    toggleExpanded?: () => void,
 }) {
     const { device, expanded, toggleExpanded } = props;
     const readingCount = device.services()
