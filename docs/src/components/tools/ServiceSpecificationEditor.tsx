@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme } from '@material-ui/core';
+import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme, Button, Box } from '@material-ui/core';
 import { parseServiceSpecificationMarkdownToJSON } from '../../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../../src/jdom/spec';
 import RandomGenerator from '../RandomGenerator';
@@ -10,6 +10,7 @@ import { useDebounce } from 'use-debounce';
 import PaperBox from '../ui/PaperBox'
 import Alert from '../ui/Alert';
 import GithubPullRequestButton from '../GithubPullRequestButton';
+import ServiceSpecification from '../ServiceSpecification';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -52,6 +53,8 @@ TODO describe this register
     )
     const [source, setSource] = useState(storedSource);
     const [debouncedSource] = useDebounce(source, 1000)
+    const [preview, setPreview] = useState<jdspec.ServiceSpec>(undefined)
+    const theme = useTheme();
     const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, serviceMap()), [debouncedSource]);
     const annotations = useMemo(() => json?.errors?.map(error => ({
         row: error.line,
@@ -60,6 +63,7 @@ TODO describe this register
         type: 'error'
     })), [json])
     useEffect(() => {
+        setPreview(undefined)
         setStoredSource(debouncedSource)
         addCustomServiceSpecification(json)
         if (json.classIdentifier)
@@ -70,6 +74,7 @@ TODO describe this register
         setSource(ev.target.value)
     }
     const servicePath = json && `services/${(json.camelName || json.shortId || `0x${json.classIdentifier.toString(16)}`).toLowerCase()}`
+    const handlePreview = () => setPreview(json)
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
@@ -85,16 +90,23 @@ TODO describe this register
                         fontFamily: 'monospace'
                     }}
                 />
-                <GithubPullRequestButton
-                    label={"submit service"}
-                    title={json && `Service: ${json.name}`}
-                    head={json && servicePath}
-                    body={`This pull request adds a new service definition for JACDAC.`}
-                    commit={json && `added service files`}
-                    files={servicePath && {
-                        [servicePath + ".md"]: debouncedSource
-                    }}
-                />
+                <Grid container spacing={1}>
+                    <Grid item>
+                        <GithubPullRequestButton
+                            label={"submit service"}
+                            title={json && `Service: ${json.name}`}
+                            head={json && servicePath}
+                            body={`This pull request adds a new service definition for JACDAC.`}
+                            commit={json && `added service files`}
+                            files={servicePath && {
+                                [servicePath + ".md"]: debouncedSource
+                            }}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <Button title={"preview"} onClick={handlePreview} variant="outlined" disabled={!json || !!json.errors}>Preview</Button>
+                    </Grid>
+                </Grid>
             </Grid>
             <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
                 {!!annotations?.length &&
@@ -107,6 +119,7 @@ TODO describe this register
                 <Paper square className={classes.segment}>
                     <RandomGenerator device={false} />
                 </Paper>
+                {preview && <ServiceSpecification service={preview} />}
             </Grid>
         </Grid>
     );
