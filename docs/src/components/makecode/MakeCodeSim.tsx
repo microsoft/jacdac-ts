@@ -99,8 +99,8 @@ function Carousel() {
             const col = column;
             const span = dsrvs.length;
             column = (column + span) % columns;
-            console.log({ col, span })
-            return <CarouselItem device={device} column={col} columnSpan={span} />
+            //console.log({ col, span })
+            return <CarouselItem key={device.id} device={device} column={col} columnSpan={span} />
         })}
         <div key="add" className={classes.item} style={{ gridColumnStart: columns, gridRowStart: rows }}>
             <Paper style={{ height: "100%", width: "100%", }}>
