@@ -214,6 +214,9 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
     if (!buf || !fmt) return undefined;
 
+    // hot path for buffers
+    if (fmt === "b")
+        return [buf.slice(0)] as T;
     // hot path
     const nf = numberFormatOfType(fmt);
     if (nf !== null) {
@@ -299,7 +302,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     }
 
     if (data.length > idx)
-        throw new Error(`format too short`)
+        throw new Error(`format '${fmt}' too short`)
 
     return off
 }
@@ -307,6 +310,11 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 export function jdpack<T extends any[]>(fmt: string, data: T) {
     if (!fmt || !data)
         return undefined;
+
+    // hot path for buffers
+    if (fmt === "b")
+        return (data[0] as Uint8Array)?.slice(0);
+
     // hot path
     const nf = numberFormatOfType(fmt);
     if (nf !== null) {

@@ -17,13 +17,11 @@ export default function DashboardButton(props: DashboardServiceProps) {
 
     const handleDown = () => host?.down();
     const handleUp = () => host?.up();
-    const handleClick = () => host?.click();
 
-    return <ButtonWidget 
-            checked={!!pressed} 
-            color={color} 
-            size={widgetSize}
-            onDown={host && handleDown}
-            onUp={host && handleUp}
-            onClick={host && handleClick} />
+    return <ButtonWidget
+        checked={!!pressed}
+        color={color}
+        size={widgetSize}
+        onDown={host && handleDown}
+        onUp={host && handleUp} />
 }

@@ -63,7 +63,6 @@ export class Db extends JDEventSource {
     static STORE_STORAGE = "STORAGE"
     public static create(): Promise<Db> {
         return new Promise((resolve, reject) => {
-            console.log(`db: open`)
             // create or upgrade database
             const request = indexedDB.open(Db.DB_NAME, Db.DB_VERSION);
             const db: Db = new Db();

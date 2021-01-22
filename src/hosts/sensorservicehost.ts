@@ -4,7 +4,7 @@ import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
 
 export interface JDSensorServiceOptions<TReading> {
-    readingValue?: TReading,
+    readingValues?: TReading[],
     streamingInterval?: number,
     minReading?: number,
     maxReading?: number,
@@ -22,12 +22,12 @@ export default class JDSensorServiceHost<TReading = any> extends JDServiceHost {
 
     constructor(
         public readonly serviceClass: number,
-        options: JDSensorServiceOptions<TReading> & JDServiceHostOptions
+        options?: JDSensorServiceOptions<TReading> & JDServiceHostOptions
     ) {
         super(serviceClass, options);
-        const { readingValue, streamingInterval, minReading, maxReading, readingError } = options || {};
+        const { readingValues, streamingInterval, minReading, maxReading, readingError } = options || {};
 
-        this.reading = this.addRegister<[TReading]>(SystemReg.Reading, readingValue !== undefined ? Array.isArray(readingValue) ? (readingValue as unknown as [TReading]) : [readingValue] : undefined);
+        this.reading = this.addRegister<[TReading]>(SystemReg.Reading, readingValues);
         this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
         this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, [streamingInterval || 50]);
         if (streamingInterval !== undefined)

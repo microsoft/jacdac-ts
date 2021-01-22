@@ -8,7 +8,7 @@ export default class SwitchServiceHost extends JDSensorServiceHost<boolean> {
     private autoOffInterval: any;
 
     constructor(options?: { autoOffDelay?: number, variant?: SwitchVariant }) {
-        super(SRV_SWITCH, { readingValue: false, streamingInterval: 50 });
+        super(SRV_SWITCH, { readingValues: [false], streamingInterval: 50 });
         const { autoOffDelay, variant } = options || {};
 
         this.variant = this.addRegister(SwitchReg.Variant, variant !== undefined ? [variant] : undefined)

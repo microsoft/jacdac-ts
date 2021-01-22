@@ -1,11 +1,14 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
-import { SRV_ACCELEROMETER, SRV_BUTTON, SRV_BUZZER, SRV_GAMEPAD, SRV_LIGHT, SRV_ROLE_MANAGER, SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SystemReg } from "../../../../src/jdom/constants";
+import {
+    SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
+    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
+    SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WIND_DIRECTION, SystemReg
+} from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
 import DashboardLight from "./DashboardLight";
 import DashboardRoleManager from "./DashboardRoleManager";
-import DashboardGamepad from "./DashbaordGamepad";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
 import { isRegister } from "../../../../src/jdom/spec";
@@ -15,6 +18,11 @@ import { JDRegister } from "../../../../src/jdom/register";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import DashboardSwitch from "./DashboardSwitch";
 import DashboardTrafficLight from "./DashboardTrafficLight";
+import DashboardCharacterScreen from "./DashboardCharacterScreen";
+import DashbaordRainGauge from "./DashboardRainGauge";
+import DashboardLEDMatrixDisplay from "./DashboardLEDMatrixDisplay";
+import DashboardArcadeGamepad from "./DashboardArcadeGamepad";
+import DashboardWindDirection from "./DashboardWindDirection";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -28,14 +36,18 @@ export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>
 const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_ROLE_MANAGER]: DashboardRoleManager,
     [SRV_BUZZER]: DashboardBuzzer,
-    [SRV_LIGHT]: DashboardLight,
+    [SRV_LED_PIXEL]: DashboardLight,
     [SRV_ACCELEROMETER]: DashboardAccelerometer,
-    [SRV_GAMEPAD]: DashboardGamepad,
     [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
     [SRV_BUTTON]: DashboardButton,
     [SRV_SERVO]: DashboardServo,
     [SRV_SWITCH]: DashboardSwitch,
     [SRV_TRAFFIC_LIGHT]: DashboardTrafficLight,
+    [SRV_CHARACTER_SCREEN]: DashboardCharacterScreen,
+    [SRV_RAIN_GAUGE]: DashbaordRainGauge,
+    [SRV_LED_MATRIX_DISPLAY]: DashboardLEDMatrixDisplay,
+    [SRV_ARCADE_GAMEPAD]: DashboardArcadeGamepad,
+    [SRV_WIND_DIRECTION]: DashboardWindDirection,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
@@ -62,8 +74,22 @@ function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRe
     />;
 }
 
+function IntensityWidget(props: { intensityRegister: JDRegister }) {
+    const { intensityRegister } = props;
+    const [intensity] = useRegisterUnpackedValue<[number | boolean]>(intensityRegister);
+    const off = intensity !== undefined && !intensity;
+
+    return <RegisterInput
+        register={intensityRegister}
+        variant={off ? "offwidget" : "widget"}
+        showServiceName={false}
+        showRegisterName={false}
+        hideMissingValues={true}
+    />;
+}
+
 function DefaultWidget(props: DashboardServiceProps) {
-    const { service, expanded } = props;
+    const { service } = props;
     const { specification } = service;
     const register = useMemo(() => {
         const rspec = specification?.packets
@@ -80,6 +106,10 @@ function DefaultWidget(props: DashboardServiceProps) {
         if (intensityRegister)
             return <ValueWidget valueRegister={register} intensityRegister={intensityRegister} />;
     }
+
+    // case of no streaming,value just intensity, like a relay
+    if (register.specification.identifier === SystemReg.Intensity)
+        return <IntensityWidget intensityRegister={register} />
 
     return <RegisterInput
         register={register}

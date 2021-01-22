@@ -1,13 +1,23 @@
-import { JDBus } from "../jdom/bus";
-import { DistanceVariant, LightVariant, PotentiometerVariant, ServoVariant, SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT, SRV_VIBRATION_MOTOR, SwitchVariant, ThermometerVariant } from "../jdom/constants";
-import JDDeviceHost from "../jdom/devicehost";
+import {
+    ArcadeGamepadButton,
+    CharacterScreenTextDirection,
+    CharacterScreenVariant,
+    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
+    SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_RELAY,
+    SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
+    SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
+} from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
+import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
+import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
+import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LightServiceHost from "./lightservicehost";
 import MotorServiceHost from "./motorservicehost";
+import RainGaugeServiceHost from "./raingaugeservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
@@ -16,7 +26,7 @@ import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 
 const outdoorThermometerOptions = {
-    readingValue: 21.5,
+    readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -40,
     maxReading: 120,
@@ -24,7 +34,7 @@ const outdoorThermometerOptions = {
     variant: ThermometerVariant.Outdoor
 }
 const medicalThermometerOptions = {
-    readingValue: 37.5,
+    readingValues: [37.5],
     streamingInterval: 1000,
     minReading: 35,
     maxReading: 42,
@@ -32,13 +42,13 @@ const medicalThermometerOptions = {
     variant: ThermometerVariant.Body
 }
 const barometerOptions = {
-    readingValue: 1013
+    readingValues: [1013]
 }
 const sonarOptions = {
     variant: DistanceVariant.Ultrasonic,
     minReading: 0.02,
     maxReading: 4,
-    readingValue: 1
+    readingValues: [1]
 };
 
 const SG90_STALL_TORQUE = 1.8;
@@ -63,13 +73,39 @@ const microServo360Options = {
     minAngle: -180,
     maxAngle: 180
 }
+const windDirectionOptions = {
+    readingValues: [0],
+    readingError: 5
+}
+const windSpeedOptions = {
+    readingValues: [0],
+    readingError: 0.5,
+    registerValues: [
+        { code: WindSpeedReg.MaxWindSpeed, values: [55] }
+    ]
+}
 
 const _hosts = [
     {
         name: "accelerometer",
         services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
-            readingValue: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
+            readingValues: [[0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]]
         })]
+    },
+    {
+        name: "arcade gamepad (all buttons)",
+        services: () => [new ArcadeGamepadServiceHost()]
+    },
+    {
+        name: "arcade gamepad (only DPad+A/B)",
+        services: () => [new ArcadeGamepadServiceHost([
+            ArcadeGamepadButton.Left,
+            ArcadeGamepadButton.Right,
+            ArcadeGamepadButton.Up,
+            ArcadeGamepadButton.Down,
+            ArcadeGamepadButton.A,
+            ArcadeGamepadButton.B,
+        ])]
     },
     {
         name: "barometer",
@@ -84,12 +120,26 @@ const _hosts = [
         services: () => [new BuzzerServiceHost()]
     },
     {
+        name: "character screen (LDC, 16x2)",
+        services: () => [new CharacterScreenServiceHost({ message: "hello\nworld!" })]
+    },
+    {
+        name: "character screen (OLED, 32x8, RTL)",
+        services: () => [new CharacterScreenServiceHost({
+            message: "hello\nworld!",
+            columns: 32,
+            rows: 8,
+            variant: CharacterScreenVariant.OLED,
+            textDirection: CharacterScreenTextDirection.RightToLeft
+        })]
+    },
+    {
         name: "chassis (motor x 2 + sonar + light)",
         services: () => [
             new MotorServiceHost(),
             new MotorServiceHost(),
             new JDSensorServiceHost(SRV_DISTANCE, sonarOptions),
-            new LightServiceHost({ numPixels: 5, variant: LightVariant.Stick })
+            new LightServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
         ]
     },
     {
@@ -108,32 +158,44 @@ const _hosts = [
             new JDSensorServiceHost(SRV_BAROMETER, barometerOptions)]
     },
     {
+        name: "led matrix (5x5 micro:bit)",
+        services: () => [new LEDMatrixDisplayServiceHost(5, 5)]
+    },
+    {
+        name: "led matrix (8x8)",
+        services: () => [new LEDMatrixDisplayServiceHost(8, 8)]
+    },
+    {
+        name: "led matrix (11x7)",
+        services: () => [new LEDMatrixDisplayServiceHost(11, 7)]
+    },
+    {
         name: "light ring 10",
-        services: () => [new LightServiceHost({ numPixels: 10, variant: LightVariant.Ring })]
+        services: () => [new LightServiceHost({ numPixels: 10, variant: LedPixelVariant.Ring })]
     },
     {
         name: "light ring 24",
-        services: () => [new LightServiceHost({ numPixels: 24, variant: LightVariant.Ring })]
+        services: () => [new LightServiceHost({ numPixels: 24, variant: LedPixelVariant.Ring })]
     },
     {
         name: "light stick 8",
-        services: () => [new LightServiceHost({ numPixels: 8, variant: LightVariant.Stick })]
+        services: () => [new LightServiceHost({ numPixels: 8, variant: LedPixelVariant.Stick })]
     },
     {
         name: "light strip 30",
-        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 1000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 1000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 60",
-        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 2000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 2000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 150",
-        services: () => [new LightServiceHost({ numPixels: 150, maxPower: 5000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 150, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 300",
-        services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LightVariant.Strip })]
+        services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "motor",
@@ -142,6 +204,36 @@ const _hosts = [
     {
         name: "protocol test",
         services: () => [new ProtocolTestServiceHost()]
+    },
+    {
+        name: "rain gauge",
+        services: () => [new RainGaugeServiceHost()]
+    },
+    {
+        name: "relay (EM/10A)",
+        services: () => [new JDServiceHost(SRV_RELAY, {
+            intensityValues: [false],
+            variant: RelayVariant.Electromechanical,
+            registerValues: [
+                {
+                    code: RelayReg.MaxSwitchingCurrent,
+                    values: [10]
+                }
+            ]
+        })]
+    },
+    {
+        name: "relay 4x (SSR/5A)",
+        services: () => Array(4).fill(0).map(_ => new JDServiceHost(SRV_RELAY, {
+            intensityValues: [false],
+            variant: RelayVariant.SolidState,
+            registerValues: [
+                {
+                    code: RelayReg.MaxSwitchingCurrent,
+                    values: [5]
+                }
+            ]
+        }))
     },
     {
         name: "rotary encoder",
@@ -176,6 +268,10 @@ const _hosts = [
         services: () => Array(4).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
     {
+        name: "servo x 6",
+        services: () => Array(6).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
+    },
+    {
         name: "servo x 16",
         services: () => Array(16).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
     },
@@ -204,8 +300,8 @@ const _hosts = [
         services: () => [new SwitchServiceHost({ variant: SwitchVariant.Tilt })]
     },
     {
-        name: "switch (motion)",
-        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Light, autoOffDelay: 30 })]
+        name: "switch (proximity)",
+        services: () => [new SwitchServiceHost({ variant: SwitchVariant.Proximity, autoOffDelay: 30 })]
     },
     {
         name: "thermometer (outdoor)",
@@ -222,13 +318,29 @@ const _hosts = [
     {
         name: "thermocouple",
         services: () => [new JDSensorServiceHost(SRV_THERMOMETER, {
-            readingValue: 550,
+            readingValues: [550],
             streamingInterval: 1000,
             minReading: 0,
             maxReading: 1100,
             readingError: 2.2,
             variant: ThermometerVariant.Thermocouple
         })]
+    },
+    {
+        name: "wind direction",
+        services: () => [new JDSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions)]
+    },
+    {
+        name: "wind speed",
+        services: () => [new JDSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions)]
+    },
+    {
+        name: "weather station (wind speed, direction, rain)",
+        services: () => [
+            new JDSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions),
+            new JDSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions),
+            new RainGaugeServiceHost(),
+        ]
     },
     {
         name: "vibration motor",

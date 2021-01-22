@@ -29,7 +29,7 @@ interface AckAwaiter {
 export class QualityOfService extends JDEventSource {
     private _receivedPackets = 0;
     private readonly _data: { received: number; total: number }[] =
-        Array(10).fill(0).map(_ => ({ received: 1, total: 1, }));
+        Array(10).fill(0).map(_ => ({ received: 0, total: 0, }));
     private _dataIndex = 0;
 
     constructor() {
@@ -40,7 +40,9 @@ export class QualityOfService extends JDEventSource {
      * Average packet dropped per announce period
      */
     get dropped() {
-        const r = this._data.reduce((s, e) => s + (e.total - e.received), 0) / this._data.length;
+        const r = this._data
+            .filter(e => !!e.total) // ignore total 0
+            .reduce((s, e) => s + (e.total - e.received), 0) / this._data.length;
         return r;
     }
 

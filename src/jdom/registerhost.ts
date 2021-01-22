@@ -1,7 +1,7 @@
 import JDServiceHost from "./servicehost";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
-import { bufferEq, pick } from "./utils";
+import { bufferEq, isSet, pick } from "./utils";
 import { JDEventSource } from "./eventsource";
 import { CHANGE, CMD_GET_REG, REPORT_RECEIVE } from "./constants";
 import { isRegister } from "./spec";
@@ -51,6 +51,8 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
     readonly specification: jdspec.PacketInfo;
     readOnly: boolean;
     errorRegister: JDRegisterHost<[number]>;
+    skipBoundaryCheck = false;
+    skipErrorInjection = false;
 
     constructor(
         public readonly service: JDServiceHost,
@@ -65,6 +67,9 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         if (v !== undefined && !v.some(vi => vi === undefined)) {
             this.data = jdpack(this.packFormat, v);
         }
+
+        // don't check boundaries if there are none
+        this.skipBoundaryCheck = !this.specification?.fields.some(field => isSet(field.absoluteMin) || isSet(field.absoluteMax));
     }
 
     get packFormat() {
@@ -80,20 +85,22 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
             return;
 
         // enforce boundaries
-        this.specification?.fields.forEach((field, fieldi) => {
-            if (field.isSimpleType) {
-                let value = values[fieldi] as number;
-                // clamp within bounds
-                const min = field.absoluteMin;
-                if (min !== undefined)
-                    value = Math.max(min, value);
-                const max = field.absoluteMax;
-                if (max !== undefined)
-                    value = Math.min(max, value);
-                // update
-                values[fieldi] = value;
-            }
-        })
+        if (!this.skipBoundaryCheck) {
+            this.specification?.fields.forEach((field, fieldi) => {
+                if (field.isSimpleType) {
+                    let value = values[fieldi] as number;
+                    // clamp within bounds
+                    const min = field.absoluteMin;
+                    if (min !== undefined)
+                        value = Math.max(min, value);
+                    const max = field.absoluteMax;
+                    if (max !== undefined)
+                        value = Math.min(max, value);
+                    // update
+                    values[fieldi] = value;
+                }
+            })
+        }
 
         const d = jdpack(this.packFormat, values);
         if (!bufferEq(this.data, d)) {
@@ -104,7 +111,10 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
 
     async sendGetAsync() {
         let d = this.data;
-        const error = this.errorRegister?.values()[0];
+        if (!d)
+            return;
+
+        const error = !this.skipErrorInjection && this.errorRegister?.values()[0];
         if (error && !isNaN(error)) {
             // apply error artifically
             const vs = this.values() as number[];
@@ -120,10 +130,8 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         if (this.identifier !== pkt.registerIdentifier)
             return false;
 
-        if (pkt.isRegisterGet) { // get
-            // send data or ignore
-            if (this.data)
-                this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
+        if (pkt.isRegisterGet) {
+            this.sendGetAsync();
         } else if (this.identifier >> 8 !== 0x1) { // set, non-const
             let changed = false;
             const d = pkt.data;
@@ -134,7 +142,7 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
             this.emit(REPORT_RECEIVE);
             if (changed)
                 this.emit(CHANGE);
-    }
+        }
         return true;
     }
 }

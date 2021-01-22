@@ -600,3 +600,7 @@ export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolea
     }
     return [yays, nays];
 }
+
+export function range(end: number): number[] {
+    return Array(end).fill(0).map((_, i) => i);
+}

@@ -9,7 +9,12 @@ import { memcpy } from "./utils";
 
 export interface JDServiceHostOptions {
     valueValues?: any[];
+    intensityValues?: any[];
     variant?: number;
+    registerValues?: {
+        code: number,
+        values: any[]
+    }[]
 }
 
 export default class JDServiceHost extends JDEventSource {
@@ -22,15 +27,19 @@ export default class JDServiceHost extends JDEventSource {
 
     constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
-        const { variant, valueValues } = options || {};
+        const { variant, valueValues, intensityValues, registerValues } = options || {};
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
         this.statusCode = this.addRegister<[number, number]>(BaseReg.StatusCode, [0, 0]);
         if (valueValues)
             this.addRegister(SystemReg.Value, valueValues);
+        if (intensityValues)
+            this.addRegister(SystemReg.Intensity, intensityValues);
         if (variant)
             this.addRegister<[number]>(SystemReg.Variant, [variant]);
+        // any extra
+        registerValues?.forEach(({ code, values }) => this.addRegister<any[]>(code, values));
     }
 
     get registers() {

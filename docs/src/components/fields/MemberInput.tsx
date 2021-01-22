@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { clampToStorage, isIntegerType, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { clampToStorage, isIntegerType, isReading, isValueOrIntensity, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
 import { isSet, pick, roundWithPrecision } from "../../../../src/jdom/utils";
 import { RegisterInputVariant } from "../RegisterInput";
 import { useId } from "react-use-id-hook"
@@ -23,11 +23,13 @@ export default function MemberInput(props: {
     variant?: RegisterInputVariant,
     min?: number,
     max?: number,
-    error?: number
+    error?: number,
+    showLoading?: boolean,
 }) {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
-        setValue, showDataType, color, variant, min, max, error } = props;
-    const { typicalMin, typicalMax, absoluteMin, absoluteMax } = specification;
+        setValue, showDataType, color, variant, min, max, error,
+        showLoading } = props;
+    const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const labelid = useId();
@@ -40,7 +42,7 @@ export default function MemberInput(props: {
     const isOffWidget = variant === "offwidget"
     const widgetSize = useWidgetSize();
 
-    const minValue = pick(min, typicalMin, absoluteMin)
+    const minValue = pick(min, typicalMin, absoluteMin, /^u/.test(type) ? 0 : undefined)
     const maxValue = pick(max, typicalMax, absoluteMax)
     const errorValue = !!error ? ("±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString()) : undefined;
     const unit = prettyUnit(specification.unit);
@@ -97,16 +99,24 @@ export default function MemberInput(props: {
     const offFormat = () => "off";
 
     // value hasn't been loaded yet
-    if (serviceMemberSpecification.kind !== "command" && value === undefined)
-        return <CircularProgress disableShrink variant="indeterminate" size="1rem" />
+    if (serviceMemberSpecification.kind !== "command" && value === undefined) {
+        if (showLoading)
+            return <CircularProgress disableShrink variant="indeterminate" size="1rem" />
+        else
+            return null;
+    }
 
     //
     if (specification.type === 'pipe') {
         return <>pipe <code>{specification.name}</code></>
     }
     else if (specification.type === 'bool') {
-        if (isWidget)
-            return <ButtonWidget label={label} checked={!!value} color={color} size={widgetSize} />
+        if (isWidget && !isValueOrIntensity(serviceMemberSpecification)) {
+            return <ButtonWidget
+                label={!isWidget && label}
+                checked={!!value} color={color}
+                size={widgetSize} />
+        }
 
         return <>
             <Switch aria-label={label} aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
@@ -185,7 +195,17 @@ export default function MemberInput(props: {
             marks={marks}
             valueLabelDisplay="auto"
         />
-    } else {// numbers or string
+    } else if (specification.type === "bytes") {
+        return <TextField
+            spellCheck={false}
+            value={textValue}
+            helperText={helperText}
+            onChange={disabled ? undefined : handleChange}
+            required={value === undefined}
+            error={!!errorText}
+            type={"text"}
+        />
+    } else {// numbers or string or uintarrays
         if (isWidget)
             return <ValueWithUnitWidget
                 value={roundWithPrecision(value, 1)}

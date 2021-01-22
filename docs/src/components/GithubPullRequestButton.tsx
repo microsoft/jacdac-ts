@@ -2,12 +2,11 @@ import React, { useContext, useState } from "react"
 import { Octokit } from "@octokit/core";
 import { createPullRequest } from "octokit-plugin-create-pull-request";
 import { Button, Link } from "gatsby-theme-material-ui";
-import { CircularProgress, Typography } from "@material-ui/core";
+import { CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, Typography } from "@material-ui/core";
 import AppContext from "./AppContext";
 import { GITHUB_API_KEY } from "./github";
 import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
-import { useConfirm } from 'material-ui-confirm';
 import Alert from "./ui/Alert";
 import GitHubIcon from '@material-ui/icons/GitHub';
 import ApiKeyAccordion from "./ApiKeyAccordion";
@@ -26,31 +25,18 @@ export default function GithubPullRequestButton(props: {
     const [busy, setBusy] = useState(false)
     const { setError: setAppError } = useContext(AppContext)
     const { enqueueSnackbar } = useSnackbar();
-    const confirm = useConfirm();
+    const [confirmDialog, setConfirmDialog] = useState(false);
 
     const disabled = busy || !token || !commit || !title || !body || !head || !files || !Object.keys(files).length
-    const handleClick = async () => {
-        try {
-            await confirm({
-                title: label,
-                confirmationText: "create pull request",
-                description: <>
-                    <p>We will open a new Pull Request on https://github.com/microsoft/jacdac with your files?</p>
-                    <ApiKeyAccordion
-                        apiName={GITHUB_API_KEY}
-                        title="GitHub Developer Token"
-                        instructions={
-                            <p>Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens/new</a> and generate a new personal access token with **repo** scope.</p>
-                        }
-                    />
-                </>
-            });
-        } catch (e) {
-            return;
-        }
 
+    const handleOpenConfirm = () => setConfirmDialog(true);
+    const handleCloseConfirm = () => setConfirmDialog(false)
+
+    const handleCreatePullRequest = async () => {
+        enqueueSnackbar("creating pull request...");
+        setBusy(true);
+        setConfirmDialog(false);
         try {
-            setBusy(true);
             const MyOctokit = Octokit.plugin(createPullRequest);
             const octokit = new MyOctokit({
                 auth: token,
@@ -91,13 +77,32 @@ export default function GithubPullRequestButton(props: {
         }
     }
 
-    return <><Button color="primary" variant="contained" onClick={handleClick}
-        disabled={disabled} startIcon={<GitHubIcon />}>
-        {label || "Create Pull Request"}
-        {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
-    </Button>
+    return <>
+        <Button disabled={busy} color="primary" variant="contained" onClick={handleOpenConfirm} startIcon={<GitHubIcon />}>
+            {label || "Create Pull Request"}
+            {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
+        </Button>
         {response && <Alert severity="success">
             Pull Request <Link href={response.html_url}>#{response.number}</Link> created.
             </Alert>}
+        <Dialog open={confirmDialog} onClose={handleCloseConfirm}>
+            <DialogContent>
+                <DialogContentText>
+                    We will open a new Pull Request for your service? If needed, we will fork <code>microsoft/jacdac</code> under your account and create a Pull Request in that repository.
+                </DialogContentText>
+                <ApiKeyAccordion
+                    apiName={GITHUB_API_KEY}
+                    title="GitHub Developer Token"
+                    instructions={
+                        <Typography component="span" variant="caption">
+                            Open <a target="_blank" href="https://github.com/settings/tokens/new" rel="noreferrer nofollower">https://github.com/settings/tokens/new</a> and generate a new personal access token with **repo** scope.
+                            </Typography>
+                    }
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleCreatePullRequest} disabled={disabled} aria-label="create pull request">create pull request</Button>
+            </DialogActions>
+        </Dialog>
     </>
 }

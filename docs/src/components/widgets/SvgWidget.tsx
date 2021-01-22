@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { useId } from "react-use-id-hook"
 
 export function SvgWidget(props: {
@@ -7,14 +7,15 @@ export function SvgWidget(props: {
     size?: string,
     role?: string,
     title?: string,
-    children: JSX.Element | JSX.Element[]
+    viewBox?: string,
+    children: ReactNode
 }) {
-    const { width, height, size, children, role, title } = props;
+    const { width, height, size, children, role, title, viewBox } = props;
     const h = height || width;
     const titleId = useId();
     return <svg
         xmlns="http://www.w3.org/2000/svg"
-        viewBox={`0 0 ${width} ${h}`}
+        viewBox={viewBox || `0 0 ${width} ${h}`}
         style={size && { height: size, maxWidth: "100%" }}
         aria-labelledby={titleId}
         role={role || "group"}>

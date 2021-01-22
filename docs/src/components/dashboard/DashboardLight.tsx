@@ -1,7 +1,6 @@
 
 import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
 import React, { ChangeEvent, useMemo, useState } from "react";
-import { LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { lightEncode } from "../../../../src/jdom/light";
 import ColorInput from "../ui/ColorInput";
@@ -17,6 +16,7 @@ import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useServiceHost from "../hooks/useServiceHost";
 import LightServiceHost from "../../../../src/hosts/lightservicehost";
 import LightWidget from "../widgets/LightWidget";
+import { LedMatrixControllerCmd, LedPixelCmd } from "../../../../src/jacdac";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */
@@ -108,7 +108,7 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
         if (!encoded) return;
         try {
             setSending(true);
-            await service.sendCmdAsync(LightCmd.Run, encoded);
+            await service.sendCmdAsync(LedPixelCmd.Run, encoded);
         }
         finally {
             setSending(false)
