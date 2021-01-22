@@ -1,3 +1,4 @@
+import { JDBus } from "../jdom/bus";
 import {
     ArcadeGamepadButton,
     CharacterScreenTextDirection,
@@ -7,6 +8,7 @@ import {
     SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
 } from "../jdom/constants";
+import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
 import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";

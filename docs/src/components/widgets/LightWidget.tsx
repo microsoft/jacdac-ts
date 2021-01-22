@@ -179,7 +179,7 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
                     cx={width >> 1} cy={height >> 1}
                     stroke={controlBackground}
                     strokeWidth={1}
-                    aria-lable={`pixel {i}`}
+                    aria-label={`pixel {i}`}
                 />)}
             </g>
         </>
