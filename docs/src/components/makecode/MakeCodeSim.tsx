@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react"
-import { createMuiTheme, createStyles, IconButton, makeStyles, Paper, responsiveFontSizes } from "@material-ui/core";
+import { Button, createMuiTheme, createStyles, IconButton, makeStyles, Paper, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -103,13 +103,9 @@ function Carousel() {
             return <CarouselItem key={device.id} device={device} column={col} columnSpan={span} />
         })}
         <div key="add" className={classes.item} style={{ gridColumnStart: columns, gridRowStart: rows }}>
-            <Paper style={{ height: "100%", width: "100%", }}>
-                <Grid container justify="center" alignItems="center">
-                    <IconButton>
-                        <AddIcon />
-                    </IconButton>
-                </Grid>
-            </Paper>
+            <Grid container justify="center" alignItems="center">
+                <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />}>Add</Button>
+            </Grid>
         </div>
     </div>
 }
@@ -129,7 +125,7 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
         const hostDefinitions = hosts();
-        for (const hostDef of hostDefinitions.slice(0, 16)) {
+        for (const hostDef of hostDefinitions.slice(0, 3)) {
             addHost(bus, hostDef.services());
         }
     }, []);
