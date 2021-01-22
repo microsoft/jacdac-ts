@@ -82,9 +82,6 @@ export default function GithubPullRequestButton(props: {
             {label || "Create Pull Request"}
             {busy && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
         </Button>
-        {response && <Alert severity="success">
-            Pull Request <Link href={response.html_url}>#{response.number}</Link> created.
-            </Alert>}
         <Dialog open={confirmDialog} onClose={handleCloseConfirm}>
             <DialogContent>
                 <DialogContentText>
