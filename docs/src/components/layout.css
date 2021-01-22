@@ -658,8 +658,13 @@ footer {
 }
 .clickeable:hover {
   outline: 0;
-  stroke-width: 5px;
-  fill: #fff;
+  stroke: #fff;
+  stroke-width: 4px;
+}
+.clickeable:focus {
+  outline: 0;
+  stroke: #fff;
+  stroke-width: 4px;
 }
 .no-pointer-events {
   pointer-events: none;
