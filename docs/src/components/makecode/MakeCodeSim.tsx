@@ -6,6 +6,7 @@ import { JDDevice } from "../../../../src/jdom/device";
 import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
 import { arrayConcatMany, strcmp } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 import useChange from "../../jacdac/useChange";
 import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
@@ -91,6 +92,7 @@ function Carousel() {
     const rows = 3;
     const columns = Math.ceil(services.length / rows);
     const width = (columns * 20) + `vw`
+    const handleAdd = () => {};
 
     let column = 0;
     return <div className={classes.root} style={{ width, gridTemplateColumns: `repeat(${columns}, 20vw)` }}>
@@ -104,7 +106,7 @@ function Carousel() {
         })}
         <div key="add" className={classes.item} style={{ gridColumnStart: columns, gridRowStart: rows }}>
             <Grid container justify="center" alignItems="center">
-                <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />}>Add</Button>
+                <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />} aria-label={"Add blocks"}>Add</Button>
             </Grid>
         </div>
     </div>
