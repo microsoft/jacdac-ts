@@ -659,6 +659,7 @@ footer {
 .clickeable:hover {
   outline: 0;
   stroke-width: 5px;
+  fill: #fff;
 }
 .no-pointer-events {
   pointer-events: none;

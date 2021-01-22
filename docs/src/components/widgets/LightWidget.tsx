@@ -175,9 +175,8 @@ export default function LightWidget(props: { service: JDService, widgetCount?: n
                     cx={width >> 1} cy={height >> 1}
                     stroke={controlBackground}
                     strokeWidth={1}
-                >
-                    <title>pixel {i}</title>
-                </circle>)}
+                    aria-lable={`pixel {i}`}
+                />)}
             </g>
         </>
     </SvgWidget>

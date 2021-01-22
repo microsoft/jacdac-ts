@@ -1,4 +1,4 @@
-import React from "react";
+import React, { SVGProps } from "react";
 import { LedMatrixDisplayReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
@@ -7,6 +7,7 @@ import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import LEDMatrixDisplayServiceHost from "../../../../src/hosts/ledmatrixdisplayservicehost";
+import useFireKey from "../hooks/useFireKey";
 
 export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) {
     const { service, services } = props;
@@ -47,7 +48,11 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
         const onStroke = enabled ? undefined : active;
         const offFill = controlBackground;
         const offStroke = "transparent";
-        const ledClassName = clickeable ? "clickeable" : undefined;
+        const ledProps: SVGProps<SVGRectElement> = {
+            className: clickeable ? "clickeable" : undefined,
+            role: clickeable ? "button" : "",
+            tabIndex: clickeable ? 0 : undefined
+        }
 
         let y = m;
         for (let row = 0; row < rows; row++) {
@@ -61,16 +66,18 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
                 const byte = leds?.[bitindex >> 3];
                 const bit = bitindex % 8;
                 const on = 1 === ((byte >> bit) & 1)
+                const handleClick = clickeable ? handleLedClick(bitindex) : undefined
+                const fireClick = useFireKey(handleClick);
 
                 ledEls.push(<rect key={`l${row}-${col}`} x={x} y={y} width={pw} height={ph} r={pr}
                     fill={on ? onFill : offFill}
                     stroke={on ? onStroke : offStroke}
                     strokeWidth={ps}
-                    className={ledClassName}
-                    role={clickeable ? "button" : ""}
-                    onClick={clickeable ? handleLedClick(bitindex) : undefined}>
-                    <title>{`led ${row}, ${col} ${on ? "on" : "off"}`}</title>
-                </rect>)
+                    {...ledProps}
+                    
+                    aria-label={`led ${row}, ${col} ${on ? "on" : "off"}`}
+                    onKeyDown={fireClick}
+                    onClick={handleClick} />);
                 x += pw + m;
             }
             y += ph + m;

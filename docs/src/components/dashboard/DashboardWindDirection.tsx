@@ -48,9 +48,8 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
                 stroke={background} strokeWidth={sw} />
             <line x1={cx} y1={cy} x2={cx} y2={cy2}
                 stroke={active} strokeWidth={sw}
-                markerEnd={`url(#${arrowHeadId})`}>
-                <title>{`arrow point at ${direction}°`}</title>
-            </line>
+                markerEnd={`url(#${arrowHeadId})`}
+                aria-lable={`arrow point at ${direction}°`} />
         </g>
     </SvgWidget >
 
