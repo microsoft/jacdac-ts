@@ -8,6 +8,7 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
+import TrafficLightServiceHost from "../../../../src/hosts/trafficlightservicehost";
 
 const m = 2;
 const r = 8;
@@ -33,9 +34,10 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
     const [orange] = useRegisterUnpackedValue<[boolean]>(service.register(TrafficLightReg.Orange))
     const [green] = useRegisterUnpackedValue<[boolean]>(service.register(TrafficLightReg.Green))
 
+    const lightRegs = [TrafficLightReg.Red, TrafficLightReg.Orange, TrafficLightReg.Green]
     const lights = [red, orange, green]
 
-    const host = useServiceHost(service);
+    const host = useServiceHost<TrafficLightServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(services.length)
@@ -57,10 +59,12 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
             {lights.map((v, i) => {
                 cy += m + 2 * r;
                 const fill = v ? colors[i] : controlBackground;
-                return <TrafficLight 
-                    key={i} cx={cx} cy={cy} 
-                    background={background} 
-                    fill={fill} 
+                const onDown = () => host?.register(lightRegs[i]).setValues([!v]);
+                return <TrafficLight
+                    key={i} cx={cx} cy={cy}
+                    background={background}
+                    fill={fill}
+                    onDown={host && onDown}
                     label={`${names[i]} ${v ? "on" : "off"}`} />
             })}
         </>
