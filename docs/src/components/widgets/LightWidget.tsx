@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { LedPixelReg, LedPixelVariant, RENDER } from "../../../../src/jdom/constants";
 import useServiceHost from "../hooks/useServiceHost";
-import LightServiceHost from "../../../../src/hosts/lightservicehost";
+import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useWidgetSize from "../widgets/useWidgetSize";
@@ -63,11 +63,13 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
-    const host = useServiceHost<LightServiceHost>(service);
+    const host = useServiceHost<LedPixelServiceHost>(service);
 
     const neoradius = 6;
     const neocircleradius = neoradius + 1;
     const sw = neoradius * 2;
+    const isJewel = variant === LedPixelVariant.Jewel;
+    const isRing = variant === LedPixelVariant.Ring;
 
     // paint svg via dom
     const render = () => {
@@ -92,14 +94,16 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
         if (!p || !pixels)
             return;
 
+        const offset = isJewel ? 1 : 0;
         const pn = pixels.length;
         const length = p.getTotalLength();
-        const extra = lightVariant === LedPixelVariant.Ring ? 0 : 1;
-        const step = length / pn;
+        const extra = isRing || isJewel ? 0 : 1;
+        const step = length / (pn - offset);
 
-        for (let i = 0; i < pn; ++i) {
+        for (let i = offset; i < pn; ++i) {
             const pixel = pixels.item(i) as SVGCircleElement;
-            const point = p.getPointAtLength(step * (i + extra / 2.0));
+            const pos = i - offset;
+            const point = p.getPointAtLength(step * (pos + extra / 2.0));
             pixel.setAttribute("cx", "" + point.x);
             pixel.setAttribute("cy", "" + point.y);
         }
@@ -152,14 +156,14 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
         height = line * tr + 2 * dx;
     }
     else {
-        const neoperimeter = numPixels * (2.2 * neoradius)
-        const ringradius = neoperimeter / (2 * Math.PI)
+        const n = numPixels - (isJewel ? 1 : 0)
+        const neoperimeter = n * (2.2 * neoradius)
         const margin = 2 * neoradius;
+        const ringradius = neoperimeter / (2 * Math.PI);
         width = 2 * (margin + ringradius);
         height = width;
         const wm = width - 2 * margin;
-        //if (variant === LightVariant.Ring)
-        d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm},0`
+        d = `M ${margin},${height >> 1} a ${ringradius},${ringradius} 0 1,0 ${wm},0 a ${ringradius},${ringradius} 0 1,0 -${wm}, 0`
     }
 
     // tune opacity to account for global opacity

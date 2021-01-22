@@ -1,4 +1,4 @@
-import React, { SVGProps } from "react";
+import React, { SVGProps, useRef } from "react";
 import { LedMatrixDisplayReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
@@ -8,11 +8,13 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import LEDMatrixDisplayServiceHost from "../../../../src/hosts/ledmatrixdisplayservicehost";
 import useFireKey from "../hooks/useFireKey";
+import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
 
 export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) {
     const { service, services } = props;
     const widgetSize = useWidgetSize(services.length);
 
+    const widgetRef = useRef<SVGGElement>();
     const [leds] = useRegisterUnpackedValue<[Uint8Array]>(service.register(LedMatrixDisplayReg.Leds));
     const [brightness] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Brightness));
     const [rows] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Rows));
@@ -74,7 +76,6 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
                     stroke={on ? onStroke : offStroke}
                     strokeWidth={ps}
                     {...ledProps}
-                    
                     aria-label={`led ${row}, ${col} ${on ? "on" : "off"}`}
                     onKeyDown={fireClick}
                     onClick={handleClick} />);
@@ -86,11 +87,14 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     }
 
     const { boxEls, ledEls } = render();
+    const navProps = useKeyboardNavigationProps(widgetRef.current)
     return <SvgWidget width={w} height={h} size={widgetSize}>
         <rect x={0} y={0} width={w} height={h} r={pw} fill={background} />
-        {boxEls}
-        {ledEls.length && <g opacity={minOpacity + (brightness / 0xff) * (1 - minOpacity)}>
-            {ledEls}
-        </g>}
+        <g ref={widgetRef} {...navProps}>
+            {boxEls}
+            {ledEls.length && <g opacity={minOpacity + (brightness / 0xff) * (1 - minOpacity)}>
+                {ledEls}
+            </g>}
+        </g>
     </SvgWidget>
 }

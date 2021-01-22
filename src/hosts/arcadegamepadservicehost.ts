@@ -16,7 +16,7 @@ const defaultButtons = [
 ]
 
 export default class ArcadeGamepadServiceHost
-    extends JDSensorServiceHost<([ArcadeGamepadButton, number])[]> {
+    extends JDSensorServiceHost<[([ArcadeGamepadButton, number])[]]> {
     readonly availableButtons: JDRegisterHost<[([ArcadeGamepadButton])[]]>;
 
     constructor(availableButtons?: ArcadeGamepadButton[]) {

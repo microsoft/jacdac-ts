@@ -14,9 +14,9 @@ import AddIcon from '@material-ui/icons/Add';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useServiceHost from "../hooks/useServiceHost";
-import LightServiceHost from "../../../../src/hosts/lightservicehost";
+import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
 import LightWidget from "../widgets/LightWidget";
-import { LedMatrixControllerCmd, LedPixelCmd } from "../../../../src/jacdac";
+import { LedPixelCmd } from "../../../../src/jacdac";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */
@@ -195,9 +195,9 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
     </>
 }
 
-export default function DashboardLight(props: DashboardServiceProps) {
+export default function DashboardLedPixel(props: DashboardServiceProps) {
     const { service, services, expanded } = props;
-    const host = useServiceHost<LightServiceHost>(service);
+    const host = useServiceHost<LedPixelServiceHost>(service);
     return <>
         {host && <LightWidget widgetCount={services.length} {...props} />}
         {expanded &&

@@ -1,8 +1,8 @@
-import { ButtonEvent, RotaryEncoderReg, SRV_BUTTON, SRV_ROTARY_ENCODER } from "../jdom/constants";
+import { RotaryEncoderReg, SRV_ROTARY_ENCODER } from "../jdom/constants";
 import JDSensorServiceHost from "./sensorservicehost";
 import JDRegisterHost from "../jdom/registerhost";
 
-export default class RotaryEncoderServiceHost extends JDSensorServiceHost<number> {
+export default class RotaryEncoderServiceHost extends JDSensorServiceHost<[number]> {
     readonly clicksPerTurn: JDRegisterHost<[number]>;
 
     constructor() {

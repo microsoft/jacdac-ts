@@ -2,7 +2,7 @@ import { CHANGE, LedMatrixDisplayReg, SensorReg, SRV_LED_MATRIX_DISPLAY } from "
 import JDRegisterHost from "../jdom/registerhost";
 import JDSensorServiceHost from "./sensorservicehost";
 
-export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<Uint8Array> {
+export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<[Uint8Array]> {
     readonly rows: JDRegisterHost<[number]>;
     readonly columns: JDRegisterHost<[number]>;
     readonly brightness: JDRegisterHost<[number]>;

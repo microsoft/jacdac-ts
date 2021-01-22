@@ -111,7 +111,7 @@ function in_past(t: number) {
     return t < now();
 }
 
-export default class LightServiceHost extends JDServiceHost {
+export default class LedPixelServiceHost extends JDServiceHost {
     readonly brightness: JDRegisterHost<[number]>;
     readonly actualBrightness: JDRegisterHost<[number]>;
     readonly lightType: JDRegisterHost<[LedPixelLightType]>;

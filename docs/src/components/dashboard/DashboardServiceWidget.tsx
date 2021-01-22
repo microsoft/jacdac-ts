@@ -1,13 +1,13 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
 import {
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
-    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
+    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WIND_DIRECTION, SystemReg
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
-import DashboardLight from "./DashboardLight";
+import DashboardLedPixel from "./DashboardLedPixel";
 import DashboardRoleManager from "./DashboardRoleManager";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
@@ -23,6 +23,7 @@ import DashbaordRainGauge from "./DashboardRainGauge";
 import DashboardLEDMatrixDisplay from "./DashboardLEDMatrixDisplay";
 import DashboardArcadeGamepad from "./DashboardArcadeGamepad";
 import DashboardWindDirection from "./DashboardWindDirection";
+import DashboardMatrixKeypad from "./DashboardMatrixKeypad";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -36,7 +37,7 @@ export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>
 const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_ROLE_MANAGER]: DashboardRoleManager,
     [SRV_BUZZER]: DashboardBuzzer,
-    [SRV_LED_PIXEL]: DashboardLight,
+    [SRV_LED_PIXEL]: DashboardLedPixel,
     [SRV_ACCELEROMETER]: DashboardAccelerometer,
     [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
     [SRV_BUTTON]: DashboardButton,
@@ -48,6 +49,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_LED_MATRIX_DISPLAY]: DashboardLEDMatrixDisplay,
     [SRV_ARCADE_GAMEPAD]: DashboardArcadeGamepad,
     [SRV_WIND_DIRECTION]: DashboardWindDirection,
+    [SRV_MATRIX_KEYPAD]: DashboardMatrixKeypad,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
