@@ -16,6 +16,7 @@ import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
 import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LightServiceHost from "./lightservicehost";
+import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
@@ -196,6 +197,14 @@ const _hosts = [
     {
         name: "light strip 300",
         services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
+    },
+    {
+        name: "matrix keypad 3x4",
+        services: () => [new MatrixKeypadServiceHost(3, 4, [
+            "0", "1", "2",
+            "3", "4", "5",
+            "6", "7", "8",
+            "*", "0", "#"])]
     },
     {
         name: "motor",
