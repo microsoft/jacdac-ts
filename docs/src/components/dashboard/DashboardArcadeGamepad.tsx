@@ -8,6 +8,7 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import ArcadeGamepadServiceHost from "../../../../src/hosts/arcadegamepadservicehost";
+import useSvgButtonProps from "../hooks/useSvgButtonProps";
 
 function ArcadeButton(props: {
     cx: number,
@@ -28,20 +29,18 @@ function ArcadeButton(props: {
 
     const handleDown = () => host?.down(button, 0xff >> 1);
     const handleUp = () => host?.up(button);
+    const buttonProps = useSvgButtonProps<SVGCircleElement>(title, handleDown, handleUp, !clickeable)
 
     return <g transform={`translate(${cx},${cy})`}>
         <title>
             {`button ${title} ${checked ? "down" : "up"}`}
         </title>
         <circle cx={0} cy={0} r={ro} fill={background} />
-        <circle tabIndex={0} cx={0} cy={0} r={ri}
+        <circle 
+            cx={0} cy={0} r={ri}
             fill={checked ? active : controlBackground}
-            onPointerDown={handleDown}
-            onPointerUp={handleUp}
-            className={clickeable ? "clickeable" : undefined}
-            role={clickeable ? "button" : undefined}>
-            <title>{`button ${ArcadeGamepadButton[button]}`}</title>
-        </circle>
+            {...buttonProps}
+        />
         <text cx={0} cy={0} fontSize={ri} {...textProps}>{label}</text>
     </g>
 }
@@ -72,8 +71,8 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
 
     const pos = {
         [ArcadeGamepadButton.Left]: { cx: cw * 1.5, cy: 2 * ch, small: false },
-        [ArcadeGamepadButton.Right]: { cx: cw * 4.5, cy: 2 * ch, small: false },
         [ArcadeGamepadButton.Up]: { cx: cw * 3, cy: ch, small: false },
+        [ArcadeGamepadButton.Right]: { cx: cw * 4.5, cy: 2 * ch, small: false },
         [ArcadeGamepadButton.Down]: { cx: cw * 3, cy: 3 * ch, small: false },
 
         [ArcadeGamepadButton.A]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
