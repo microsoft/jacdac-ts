@@ -13,15 +13,18 @@ import DeviceSpecificationList from "./DeviceSpecificationList"
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
     showSource?: boolean,
-    showDevices?: boolean
+    showDevices?: boolean,
+    showDerived?: boolean
 }) {
-    const { service: node, showSource, showDevices } = props;
-    const registers = node.packets.filter(isRegister)
-    const events = node.packets.filter(isEvent)
-    const commands = node.packets.filter(isCommand)
-    const reports = node.packets.filter(r => r.secondary)
-    const pipeReports = node.packets.filter(isPipeReport)
-    const others = node.packets.filter(r => registers.indexOf(r) < 0
+    const { service: node, showSource, showDevices, showDerived } = props;
+    const { shortId, name } = node;
+    const packets = node.packets.filter(pkt => showDerived || !pkt.derived);
+    const registers = packets.filter(isRegister)
+    const events = packets.filter(isEvent)
+    const commands = packets.filter(isCommand)
+    const reports = packets.filter(r => r.secondary)
+    const pipeReports = packets.filter(isPipeReport)
+    const others = packets.filter(r => registers.indexOf(r) < 0
         && events.indexOf(r) < 0
         && commands.indexOf(r) < 0
         && reports.indexOf(r) < 0
@@ -31,10 +34,10 @@ export default function ServiceSpecification(props: {
     const reportOf = (pkt: jdspec.PacketInfo) => reports.find(rep => isReportOf(pkt, rep))
     const pipeReportOf = (pkt: jdspec.PacketInfo) => pipeReports.find(rep => isPipeReportOf(pkt, rep))
 
-    return (<Fragment key={`servicespec${node.shortId}`}>
-        <h1 key="title">{node.name}
+    return (<Fragment key={`servicespec${shortId}`}>
+        <h1 key="title">{name}
             <Box ml={1} component="span">
-                <IDChip id={node.classIdentifier} filter={`srv:${node.shortId}`} />
+                <IDChip id={node.classIdentifier} filter={`srv:${shortId}`} />
             </Box>
         </h1>
         <ServiceSpecificationStatusAlert specification={node} />
