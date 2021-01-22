@@ -1,11 +1,10 @@
 import { ButtonEvent, SRV_BUTTON } from "../jdom/constants";
 import JDSensorServiceHost from "./sensorservicehost";
-import { delay } from "../jdom/utils";
 
 const LONG_CLICK_DELAY = 500
 const CLICK_DELAY = 100
 
-export default class ButtonServiceHost extends JDSensorServiceHost<boolean> {
+export default class ButtonServiceHost extends JDSensorServiceHost<[boolean]> {
     private _downTime: number;
 
     constructor() {

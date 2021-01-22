@@ -89,7 +89,7 @@ const _hosts = [
     {
         name: "accelerometer",
         services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
-            readingValues: [[0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]]
+            readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
         })]
     },
     {
@@ -109,7 +109,7 @@ const _hosts = [
     },
     {
         name: "barometer",
-        services: () => [new JDSensorServiceHost<number>(SRV_BAROMETER, barometerOptions)]
+        services: () => [new JDSensorServiceHost<[number]>(SRV_BAROMETER, barometerOptions)]
     },
     {
         name: "button",
