@@ -19,7 +19,10 @@ export default function useWidgetTheme(color?: "primary" | "secondary") {
         alignmentBaseline: "central",
         dominantBaseline: "middle",
         textAnchor: "middle",
-        pointerEvents: "none"
+        pointerEvents: "none",
+        style: {
+            userSelect: "none"
+        }
     }
 
     return {
