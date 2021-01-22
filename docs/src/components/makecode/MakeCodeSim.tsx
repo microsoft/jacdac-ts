@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react"
+import React, { useContext, useEffect, useRef } from "react"
 import { Button, createMuiTheme, createStyles, IconButton, makeStyles, Paper, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
@@ -13,6 +13,7 @@ import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import DashboardServiceWidget from "../dashboard/DashboardServiceWidget";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import { inIFrame } from "../../../../src/jdom/iframeclient";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -85,6 +86,7 @@ function CarouselItem(props: {
 }
 
 function Carousel() {
+    const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);
     const classes = useStyles();
@@ -92,7 +94,12 @@ function Carousel() {
     const rows = 3;
     const columns = Math.ceil(services.length / rows);
     const width = (columns * 20) + `vw`
-    const handleAdd = () => {};
+    const hostsToAdd = useRef(hosts());
+    const handleAdd = () => {
+        if (!inIFrame() && hostsToAdd.current.length) {
+            addHost(bus, hostsToAdd.current.pop().services())
+        }
+    }
 
     let column = 0;
     return <div className={classes.root} style={{ width, gridTemplateColumns: `repeat(${columns}, 20vw)` }}>
@@ -106,7 +113,7 @@ function Carousel() {
         })}
         <div key="add" className={classes.item} style={{ gridColumnStart: columns, gridRowStart: rows }}>
             <Grid container justify="center" alignItems="center">
-                <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />} aria-label={"Add blocks"}>Add</Button>
+                <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />} onClick={handleAdd} aria-label={"Add blocks"}>Add</Button>
             </Grid>
         </div>
     </div>
