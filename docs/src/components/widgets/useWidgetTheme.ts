@@ -1,5 +1,5 @@
 import { createStyles, makeStyles, useTheme } from "@material-ui/core";
-import { useContext } from "react";
+import { SVGProps, useContext } from "react";
 import DarkModeContext from "../ui/DarkModeContext"
 
 export default function useWidgetTheme(color?: "primary" | "secondary") {
@@ -14,11 +14,19 @@ export default function useWidgetTheme(color?: "primary" | "secondary") {
     const backgroundColor = darkMode === "dark" ? background.default : palette.grey[800];
     const controlBackground = darkMode === "dark" ? palette.grey[800] : palette.grey[400]
     const textPrimary = palette.text.primary
+    const textProps: SVGProps<SVGTextElement> = {
+        fill: textPrimary,
+        alignmentBaseline: "central",
+        dominantBaseline: "middle",
+        textAnchor: "middle",
+        pointerEvents: "none"
+    }
 
     return {
         background: backgroundColor,
         controlBackground,
         active,
-        textPrimary
+        textPrimary,
+        textProps
     }
 }

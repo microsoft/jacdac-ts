@@ -92,9 +92,12 @@ const _hosts = [
             readingValues: [[0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]]
         })]
     },
-    /*
     {
-        name: "arcade gamepad DPad+A/B",
+        name: "arcade gamepad (all buttons)",
+        services: () => [new ArcadeGamepadServiceHost()]
+    },
+    {
+        name: "arcade gamepad (only DPad+A/B)",
         services: () => [new ArcadeGamepadServiceHost([
             ArcadeGamepadButton.Left,
             ArcadeGamepadButton.Right,
@@ -104,7 +107,6 @@ const _hosts = [
             ArcadeGamepadButton.B,
         ])]
     },
-    */
     {
         name: "barometer",
         services: () => [new JDSensorServiceHost<number>(SRV_BAROMETER, barometerOptions)]

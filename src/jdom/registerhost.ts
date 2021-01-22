@@ -1,7 +1,7 @@
 import JDServiceHost from "./servicehost";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
-import { bufferEq, pick } from "./utils";
+import { bufferEq, isSet, pick } from "./utils";
 import { JDEventSource } from "./eventsource";
 import { CHANGE, CMD_GET_REG, REPORT_RECEIVE } from "./constants";
 import { isRegister } from "./spec";
@@ -67,6 +67,9 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         if (v !== undefined && !v.some(vi => vi === undefined)) {
             this.data = jdpack(this.packFormat, v);
         }
+
+        // don't check boundaries if there are none
+        this.skipBoundaryCheck = !this.specification?.fields.some(field => isSet(field.absoluteMin) || isSet(field.absoluteMax));
     }
 
     get packFormat() {
