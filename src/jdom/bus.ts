@@ -512,6 +512,7 @@ export class JDBus extends JDNode {
      */
     removeDeviceHost(deviceHost: JDDeviceHost) {
         if (!deviceHost) return;
+
         const i = this._deviceHosts.indexOf(deviceHost);
         if (i > -1) {
             // remove device as well

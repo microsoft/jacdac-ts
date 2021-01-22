@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
 import { Link } from 'gatsby-theme-material-ui';
 import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf, deviceSpecificationsForService } from "../../../src/jdom/spec"
 import PacketSpecification from "../components/PacketSpecification"
@@ -9,6 +9,8 @@ import EnumSpecification from "./EnumSpecification";
 import { Box } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import DeviceSpecificationList from "./DeviceSpecificationList"
+import hosts, { addHost } from "../../../src/hosts/hosts";
+import useDeviceHostFromServiceClass from "./hooks/useDeviceHostFromServiceClass";
 
 export default function ServiceSpecification(props: {
     service: jdspec.ServiceSpec,
@@ -30,6 +32,8 @@ export default function ServiceSpecification(props: {
         && reports.indexOf(r) < 0
         && pipeReports.indexOf(r) < 0
     )
+    // spin up host on demand
+    useDeviceHostFromServiceClass(node.classIdentifier);
 
     const reportOf = (pkt: jdspec.PacketInfo) => reports.find(rep => isReportOf(pkt, rep))
     const pipeReportOf = (pkt: jdspec.PacketInfo) => pipeReports.find(rep => isPipeReportOf(pkt, rep))
