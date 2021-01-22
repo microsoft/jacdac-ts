@@ -8,7 +8,6 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import useWidgetSize from "../widgets/useWidgetSize";
 import { JDService } from "../../../../src/jdom/service";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue"
-import { light } from "@material-ui/core/styles/createPalette";
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
     const [r$, g$, b$] = [r / 255, g / 255, b / 255];
