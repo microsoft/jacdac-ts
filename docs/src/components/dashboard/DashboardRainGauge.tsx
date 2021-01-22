@@ -32,9 +32,9 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const w = 128;
     const h = 64;
     const bw = w / 2;
-    const bh = h / 2;
+    const bh = h / 3;
     const bx = (w - bw) / 2;
-    const by = h - bh - 16;
+    const by = h - bh - 24;
     const sw = 1;
     const ty = h - 4;
     const fs = 8;
@@ -50,14 +50,13 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
                     height={h} />
             </clipPath>
         </defs>
-        <rect x={0} y={0} width={w} height={h} fill={background} />
         <g transform={`rotate(${a}, ${w / 2}, ${by + bh})`}>
             <rect x={bx} y={by}
                 width={bw}
                 height={bh}
                 strokeWidth={sw}
                 stroke={active}
-                fill={controlBackground}
+                fill={background}
                 aria-label={"bucket"}
                 onClick={host && handleClick}
                 className={clickeable ? "clickeable" : undefined}

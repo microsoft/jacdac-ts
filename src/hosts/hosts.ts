@@ -5,7 +5,7 @@ import {
     DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_BAROMETER, SRV_DISTANCE, SRV_POTENTIOMETER, SRV_RELAY,
     SRV_SERVO, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
-    SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SwitchVariant, ThermometerVariant
+    SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
 } from "../jdom/constants";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
 import JDServiceHost from "../jdom/servicehost";
@@ -72,6 +72,17 @@ const microServo360Options = {
     variant: ServoVariant.PositionalRotation,
     minAngle: -180,
     maxAngle: 180
+}
+const windDirectionOptions = {
+    readingValues: [0],
+    readingError: 10
+}
+const windSpeedOptions = {
+    readingValues: [0],
+    readingError: 1,
+    registerValues: [
+        { code: WindSpeedReg.MaxWindSpeed, values: [55] }
+    ]
 }
 
 const _hosts = [
@@ -315,10 +326,19 @@ const _hosts = [
     },
     {
         name: "wind direction",
-        services: () => [new JDSensorServiceHost(SRV_WIND_DIRECTION, {
-            readingValues: [0],
-            readingError: 10
-        })]
+        services: () => [new JDSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions)]
+    },
+    {
+        name: "wind speed",
+        services: () => [new JDSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions)]
+    },
+    {
+        name: "weather station (wind speed, direction, rain)",
+        services: () => [
+            new JDSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions),
+            new JDSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions),
+            new RainGaugeServiceHost(),
+        ]
     },
     {
         name: "vibration motor",

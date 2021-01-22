@@ -29,7 +29,7 @@ export default function MemberInput(props: {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
         setValue, showDataType, color, variant, min, max, error,
         showLoading } = props;
-    const { typicalMin, typicalMax, absoluteMin, absoluteMax } = specification;
+    const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const labelid = useId();
@@ -42,7 +42,7 @@ export default function MemberInput(props: {
     const isOffWidget = variant === "offwidget"
     const widgetSize = useWidgetSize();
 
-    const minValue = pick(min, typicalMin, absoluteMin)
+    const minValue = pick(min, typicalMin, absoluteMin, /^u/.test(type) ? 0 : undefined)
     const maxValue = pick(max, typicalMax, absoluteMax)
     const errorValue = !!error ? ("±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString()) : undefined;
     const unit = prettyUnit(specification.unit);
