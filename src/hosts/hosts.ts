@@ -15,7 +15,7 @@ import BuzzerServiceHost from "./buzzerservicehost";
 import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
 import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
-import LightServiceHost from "./lightservicehost";
+import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
@@ -140,7 +140,7 @@ const _hosts = [
             new MotorServiceHost(),
             new MotorServiceHost(),
             new JDSensorServiceHost(SRV_DISTANCE, sonarOptions),
-            new LightServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
+            new LedPixelServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
         ]
     },
     {
@@ -171,32 +171,44 @@ const _hosts = [
         services: () => [new LEDMatrixDisplayServiceHost(11, 7)]
     },
     {
+        name: "light jewel 7",
+        services: () => [new LedPixelServiceHost({ numPixels: 7, variant: LedPixelVariant.Jewel })]
+    },
+    {
         name: "light ring 10",
-        services: () => [new LightServiceHost({ numPixels: 10, variant: LedPixelVariant.Ring })]
+        services: () => [new LedPixelServiceHost({ numPixels: 10, variant: LedPixelVariant.Ring })]
+    },
+    {
+        name: "light ring 12",
+        services: () => [new LedPixelServiceHost({ numPixels: 12, variant: LedPixelVariant.Ring })]
+    },
+    {
+        name: "light ring 16",
+        services: () => [new LedPixelServiceHost({ numPixels: 16, variant: LedPixelVariant.Ring })]
     },
     {
         name: "light ring 24",
-        services: () => [new LightServiceHost({ numPixels: 24, variant: LedPixelVariant.Ring })]
+        services: () => [new LedPixelServiceHost({ numPixels: 24, variant: LedPixelVariant.Ring })]
     },
     {
         name: "light stick 8",
-        services: () => [new LightServiceHost({ numPixels: 8, variant: LedPixelVariant.Stick })]
+        services: () => [new LedPixelServiceHost({ numPixels: 8, variant: LedPixelVariant.Stick })]
     },
     {
         name: "light strip 30",
-        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 1000, variant: LedPixelVariant.Strip })]
+        services: () => [new LedPixelServiceHost({ numPixels: 60, maxPower: 1000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 60",
-        services: () => [new LightServiceHost({ numPixels: 60, maxPower: 2000, variant: LedPixelVariant.Strip })]
+        services: () => [new LedPixelServiceHost({ numPixels: 60, maxPower: 2000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 150",
-        services: () => [new LightServiceHost({ numPixels: 150, maxPower: 5000, variant: LedPixelVariant.Strip })]
+        services: () => [new LedPixelServiceHost({ numPixels: 150, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "light strip 300",
-        services: () => [new LightServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
+        services: () => [new LedPixelServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
     },
     {
         name: "matrix keypad (3x4)",

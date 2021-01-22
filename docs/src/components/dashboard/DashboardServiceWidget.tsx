@@ -7,7 +7,7 @@ import {
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
-import DashboardLight from "./DashboardLight";
+import DashboardLedPixel from "./DashboardLedPixel";
 import DashboardRoleManager from "./DashboardRoleManager";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
@@ -36,7 +36,7 @@ export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>
 const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_ROLE_MANAGER]: DashboardRoleManager,
     [SRV_BUZZER]: DashboardBuzzer,
-    [SRV_LED_PIXEL]: DashboardLight,
+    [SRV_LED_PIXEL]: DashboardLedPixel,
     [SRV_ACCELEROMETER]: DashboardAccelerometer,
     [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
     [SRV_BUTTON]: DashboardButton,
