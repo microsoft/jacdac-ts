@@ -40,7 +40,7 @@ function SvgSliderHandle(props: {
 } & SVGAttributes<SVGCircleElement>) {
     const { pathRef, value, valueText, min, max, step, onValueChange, ...others } = props;
     const handleRef = useRef<SVGCircleElement>()
-    const pos = usePathPosition(pathRef, (value - min) / (max - min));
+    const pos = usePathPosition(pathRef, (max - value) / (max - min));
     const handleMove = (newValue: number) => {
         onValueChange(Math.max(min, Math.min(max, newValue)));
     }
@@ -122,8 +122,8 @@ export default function GaugeWidget(props: {
     const vlabel = off ? "off" : tvalue;
 
     return <SvgWidget width={w} height={h} size={size}>
-        <path strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent" />
-        {!off && <path ref={sliderPathRef} strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
+        <path ref={sliderPathRef} strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent" />
+        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
         {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent" />}
         {sliderPathRef.current && value !== undefined && <SvgSliderHandle
             pathRef={sliderPathRef.current}

@@ -8,7 +8,7 @@ export default function usePathPosition(pathRef: SVGPathElement, ratio: number) 
             const nratio = Math.max(0, Math.min(1, ratio));
             const distance = pathRef.getTotalLength() * nratio;
             const pos = pathRef.getPointAtLength(distance)
-            console.log({ length, nratio, distance, pos })
+            console.log({ length, nratio, distance, x: pos.x, y: pos.y })
             setPosition([pos.x, pos.y]);
         }
     }, [pathRef, ratio]);
