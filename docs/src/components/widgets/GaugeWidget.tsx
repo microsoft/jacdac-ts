@@ -137,7 +137,9 @@ export default function GaugeWidget(props: {
     return <SvgWidget width={w} height={h} size={size}>
         <path ref={sliderPathRef} strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent"
             onPointerDown={onBackPointerDown}
-            className={"clickeable"}
+            style={({
+                cursor: "pointer"
+            })}
         />
         {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
         {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent" />}
