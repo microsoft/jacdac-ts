@@ -89,12 +89,18 @@ function PowerOnButton(props: {
     const a = 135;
     const d = describeArc(cx, cy, r / 1.619, -a, a, true);
     const buttonProps = useSvgButtonProps<SVGCircleElement>("turn on", onClick)
+    const sw = 3;
 
     return <g transform={`rotate(180, ${cx}, ${cy})`}>
-        <circle cx={cx} cy={cy} r={r} fill={controlBackground} strokeWidth={4} stroke={background}
+        <circle cx={cx} cy={cy} r={r} fill={controlBackground}
+            strokeWidth={sw} stroke={active}
             {...buttonProps} />
-        <path d={d} strokeLinecap="round" fill="none" strokeWidth={4} stroke={background} style={({ userSelect: "none", pointerEvents: "none" })} />
-        <line strokeLinecap="round" x1={cx} y1={cy} x2={cx} y2={cy + r / 2} stroke={background} strokeWidth={4} style={({ userSelect: "none", pointerEvents: "none" })} />
+        <path d={d} strokeLinecap="round" fill="none"
+            strokeWidth={sw} stroke={active}
+            style={({ userSelect: "none", pointerEvents: "none" })} />
+        <line strokeLinecap="round" x1={cx} y1={cy} x2={cx} y2={cy + r / 2}
+            stroke={active} strokeWidth={sw}
+            style={({ userSelect: "none", pointerEvents: "none" })} />
     </g>
 }
 
@@ -191,7 +197,7 @@ export default function GaugeWidget(props: {
             fill={controlBackground}
             stroke={active}
             strokeWidth={2}
-            onValueChange={onChange}
+            onValueChange={!off && onChange}
         />}
         {off && <PowerOnButton cx={cx} cy={cy} r={roff} color={color} onClick={handleTurnOn} />}
         {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
