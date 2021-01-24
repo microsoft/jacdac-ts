@@ -5,6 +5,7 @@ import useThrottledValue from "../hooks/useThrottledValue"
 import useArrowKeys from "../hooks/useArrowKeys";
 import usePathPosition from "../hooks/useSvgPathPosition";
 import { closestPoint, svgPointerPoint } from "./svgutils";
+import useSvgButtonProps from "../hooks/useSvgButtonProps"
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
 
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
@@ -16,16 +17,17 @@ function polarToCartesian(centerX: number, centerY: number, radius: number, angl
     };
 }
 
-function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
+function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, large?: boolean) {
 
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
 
-    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    const largeArcFlag = large !== true && (endAngle - startAngle <= 180) ? "0" : "1";
 
     const d = [
         "M", start.x, start.y,
-        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+        "A", radius, radius, 0, largeArcFlag, 0,
+        end.x, end.y
     ].join(" ");
 
     return d;
@@ -75,6 +77,27 @@ function SvgSliderHandle(props: {
     />
 }
 
+function PowerOnButton(props: {
+    cx: number,
+    cy: number,
+    r: number,
+    color?: "primary" | "secondary",
+    onClick?: () => void
+}) {
+    const { cx, cy, r, onClick, color } = props;
+    const { background, active, controlBackground, textProps } = useWidgetTheme(color);
+    const a = 135;
+    const d = describeArc(cx, cy, r / 1.619, -a, a, true);
+    const buttonProps = useSvgButtonProps<SVGCircleElement>("turn on", onClick)
+
+    return <g transform={`rotate(180, ${cx}, ${cy})`}>
+        <circle cx={cx} cy={cy} r={r} fill={controlBackground} strokeWidth={4} stroke={background}
+            {...buttonProps} />
+        <path d={d} strokeLinecap="round" fill="none" strokeWidth={4} stroke={background} style={({ userSelect: "none", pointerEvents: "none" })} />
+        <line strokeLinecap="round" x1={cx} y1={cy} x2={cx} y2={cy + r / 2} stroke={background} strokeWidth={4} style={({ userSelect: "none", pointerEvents: "none" })} />
+    </g>
+}
+
 export default function GaugeWidget(props: {
     value: number,
     min: number,
@@ -95,6 +118,7 @@ export default function GaugeWidget(props: {
     const w = 120;
     const h = 120;
     const m = 8;
+    const roff = 18;
     const sw = m << 1;
     const cx = w >> 1;
     const cy = h >> 1;
@@ -124,9 +148,12 @@ export default function GaugeWidget(props: {
     const dactual = computeArc(displayValue);
     const lineCap = "round"
     const tvalue = valueLabel(value);
-    const vlabel = off ? "off" : tvalue;
+    const vlabel = !off && tvalue;
     const clickeable = !!onChange;
 
+    const handleTurnOn = () => {
+
+    }
     const handlePointerDown = (ev: React.PointerEvent<SVGPathElement>) => {
         ev.preventDefault();
         if (!ev.buttons) return;
@@ -166,6 +193,7 @@ export default function GaugeWidget(props: {
             strokeWidth={2}
             onValueChange={onChange}
         />}
+        {off && <PowerOnButton cx={cx} cy={cy} r={roff} color={color} onClick={handleTurnOn} />}
         {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
         {label && <text x={w >> 1} y={h - m} {...textProps}>{label}</text>}
     </SvgWidget>
