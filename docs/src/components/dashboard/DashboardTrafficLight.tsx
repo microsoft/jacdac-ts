@@ -56,7 +56,7 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
         "orange",
         "green"
     ]
-    const navProps = useKeyboardNavigationProps(widgetRef.current, true)
+    const navProps = useKeyboardNavigationProps(widgetRef.current)
     return <SvgWidget width={w} height={h} size={widgetSize}>
         <g ref={widgetRef} {...navProps}>
             <rect x={0} y={0} width={w} height={h} rx={m} fill={background} />

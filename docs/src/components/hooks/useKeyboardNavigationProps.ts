@@ -1,21 +1,14 @@
 import useArrowKeys from "./useArrowKeys";
+import useKeyboardNavigation from "./useKeyboardNavigation";
 
-export default function useKeyboardNavigationProps(parentRef: Element, symmetric?: boolean) {
-    const query = '[tabindex="0"]';
-
-    const onMove = (offset: number) => () => {
-        const focusable = Array.from<SVGElement>(parentRef.querySelectorAll(query));
-        if (focusable.length) {
-            const me = focusable.findIndex(f => f === document.activeElement);
-            const next = ((me + offset) + focusable.length) % focusable.length;
-            focusable[next].focus();
-        }
-    }
+export default function useKeyboardNavigationProps(parentRef: Element, vertical?: boolean) {
+    const onMove = useKeyboardNavigation(parentRef);
 
     const onKeyDown = useArrowKeys({
-        onLeft: onMove(-1),
-        onRight: onMove(1),
-        symmetric
+        onLeft: !vertical && onMove(-1),
+        onRight: !vertical && onMove(1),
+        onDown: vertical && onMove(1),
+        onUp: vertical && onMove(-1),
     });
 
     return {
