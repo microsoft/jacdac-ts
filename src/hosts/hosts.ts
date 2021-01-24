@@ -6,7 +6,7 @@ import {
     DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_DISTANCE, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTOR, SRV_POTENTIOMETER,
-    SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_RELAY,
+    SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_REFLECTOR_LIGHT, SRV_RELAY,
     SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
@@ -25,6 +25,7 @@ import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
+import ReflectedLightServiceHost from "./reflectedlightservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
@@ -254,6 +255,11 @@ const _hosts: {
             name: "light strip 300",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
+        },
+        {
+            name: "line tracker (digital)",
+            serviceClasses: [SRV_REFLECTOR_LIGHT],
+            services: () => [new ReflectedLightServiceHost()]
         },
         {
             name: "matrix keypad (3x4)",

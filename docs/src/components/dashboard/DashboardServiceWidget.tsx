@@ -1,7 +1,7 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
 import {
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
-    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_RAIN_GAUGE, SRV_ROLE_MANAGER,
+    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_RAIN_GAUGE, SRV_REFLECTOR_LIGHT, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WIND_DIRECTION, SystemReg
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
@@ -24,6 +24,7 @@ import DashboardLEDMatrixDisplay from "./DashboardLEDMatrixDisplay";
 import DashboardArcadeGamepad from "./DashboardArcadeGamepad";
 import DashboardWindDirection from "./DashboardWindDirection";
 import DashboardMatrixKeypad from "./DashboardMatrixKeypad";
+import DashboardReflectedLight from "./DashboardReflectedLight";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -50,6 +51,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_ARCADE_GAMEPAD]: DashboardArcadeGamepad,
     [SRV_WIND_DIRECTION]: DashboardWindDirection,
     [SRV_MATRIX_KEYPAD]: DashboardMatrixKeypad,
+    [SRV_REFLECTOR_LIGHT]: DashboardReflectedLight,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
