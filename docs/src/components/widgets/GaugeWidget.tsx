@@ -5,6 +5,7 @@ import useThrottledValue from "../hooks/useThrottledValue"
 import useArrowKeys from "../hooks/useArrowKeys";
 import usePathPosition from "../hooks/useSvgPathPosition";
 import { closestPoint, svgPointerPoint } from "./svgutils";
+import { CSSProperties } from "@material-ui/core/styles/withStyles";
 
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
     const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
@@ -124,31 +125,45 @@ export default function GaugeWidget(props: {
     const lineCap = "round"
     const tvalue = valueLabel(value);
     const vlabel = off ? "off" : tvalue;
+    const clickeable = !!onChange;
 
-    const onBackPointerDown = (ev: React.PointerEvent<SVGPathElement>) => {
+    const handlePointerDown = (ev: React.PointerEvent<SVGPathElement>) => {
         ev.preventDefault();
+        if (!ev.buttons) return;
         const svg = sliderPathRef.current.ownerSVGElement
         const pos = svgPointerPoint(svg, ev);
         const closest = closestPoint(sliderPathRef.current, _step, pos);
         console.log({ pos, closest })
         onChange(min + (1 - closest) * (max - min))
     }
+    const pointerStyle: CSSProperties = clickeable && {
+        cursor: "pointer"
+    }
+    const pathProps: SVGAttributes<SVGPathElement> = {
+        onPointerDown: clickeable && handlePointerDown,
+        onPointerMove: clickeable && handlePointerDown,
+        style: clickeable && pointerStyle
+    }
 
     return <SvgWidget width={w} height={h} size={size}>
         <path ref={sliderPathRef} strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent"
-            onPointerDown={onBackPointerDown}
-            style={({
-                cursor: "pointer"
-            })}
+            {...pathProps}
         />
-        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
-        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent" />}
+        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent"
+            {...pathProps}
+        />}
+        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent"
+            {...pathProps}
+        />}
         {sliderPathRef.current && value !== undefined && <SvgSliderHandle
             pathRef={sliderPathRef.current}
             value={value} valueText={tvalue}
             min={min} max={max} step={_step}
             label={`${label} slider`}
-            r={m} fill={controlBackground} stroke={active} strokeWidth={2}
+            r={m - 1}
+            fill={controlBackground}
+            stroke={active}
+            strokeWidth={2}
             onValueChange={onChange}
         />}
         {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
