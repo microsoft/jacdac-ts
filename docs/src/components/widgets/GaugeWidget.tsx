@@ -1,7 +1,9 @@
-import React from "react";
+import React, { SVGAttributes, useRef } from "react";
 import useWidgetTheme from "./useWidgetTheme";
 import { SvgWidget } from "./SvgWidget";
 import useThrottledValue from "../hooks/useThrottledValue"
+import useArrowKeys from "../hooks/useArrowKeys";
+import usePathPosition from "../hooks/useSvgPathPosition";
 
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
     const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
@@ -27,21 +29,64 @@ function describeArc(x: number, y: number, radius: number, startAngle: number, e
     return d;
 }
 
+function SvgSliderHandle(props: {
+    pathRef: SVGPathElement,
+    value: number,
+    valueText: string,
+    min: number,
+    max: number,
+    step: number,
+    onValueChange?: (newValue: number) => void,
+} & SVGAttributes<SVGCircleElement>) {
+    const { pathRef, value, valueText, min, max, step, onValueChange, ...others } = props;
+    const handleRef = useRef<SVGCircleElement>()
+    const pos = usePathPosition(pathRef, (value - min) / (max - min));
+    const handleMove = (newValue: number) => {
+        onValueChange(Math.max(min, Math.min(max, newValue)));
+    }
+
+    const onKeyDown = useArrowKeys({
+        onLeft: () => handleMove(value - step),
+        onRight: () => handleMove(value + step),
+        symmetric: true,
+    })
+
+    // nothing to see here
+    if (!onValueChange || !pos)
+        return null;
+
+    return <circle
+        ref={handleRef}
+        cx={pos[0]}
+        cy={pos[1]}
+        className={"clickeable"}
+        role="slider"
+        tabIndex={0}
+        aria-valuenow={value}
+        aria-valuetext={valueText}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        onKeyDown={onKeyDown}
+        {...others}
+    />
+}
+
 export default function GaugeWidget(props: {
-    value?: number,
+    value: number,
+    min: number,
+    max: number,
+    step?: number,
     label?: string,
     color?: "primary" | "secondary",
     size?: string,
-    min?: number,
-    max?: number,
     off?: boolean,
     variant?: "fountain",
     valueLabel?: (v: number) => string,
+    onChange?: (newValue: number) => void
 }) {
-    const { value, label, color, size, min, max, variant, valueLabel, off } = props;
-    const { background, active, textPrimary } = useWidgetTheme(color);
-    const displayValue = useThrottledValue(value, (max - min) * 1.619);
-
+    const { value, label, color, size, min, max, step, variant, valueLabel, off, onChange } = props;
+    const { background, active, controlBackground, textProps } = useWidgetTheme(color);
+    const sliderPathRef = useRef<SVGPathElement>();
     const w = 120;
     const h = 120;
     const m = 8;
@@ -51,6 +96,8 @@ export default function GaugeWidget(props: {
     const r = (w >> 1) - m;
     const sa = -135;
     const ea = 135;
+
+    const displayValue = useThrottledValue(value, (max - min) * 1.619);
 
     const computeArc = (v: number) => {
         if (variant === "fountain") {
@@ -71,11 +118,21 @@ export default function GaugeWidget(props: {
     const dvalue = computeArc(value);
     const dactual = computeArc(displayValue);
     const lineCap = "round"
+    const tvalue = valueLabel(value);
+    const vlabel = off ? "off" : tvalue;
+
     return <SvgWidget width={w} height={h} size={size}>
         <path strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent" />
-        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
+        {!off && <path ref={sliderPathRef} strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent" />}
         {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent" />}
-        {(valueLabel || off) && <text x={cx} y={cy} fill={textPrimary} textAnchor="middle">{off ? "off" : valueLabel(value)}</text>}
-        {label && <text x={w >> 1} y={h - m} textAnchor={"middle"} fill={textPrimary}>{label}</text>}
+        {sliderPathRef.current && value !== undefined && <SvgSliderHandle
+            pathRef={sliderPathRef.current}
+            value={value} valueText={tvalue}
+            min={min} max={max} step={step || (max - min) / 10}
+            r={m} fill={controlBackground} stroke={active} strokeWidth={2}
+            onValueChange={onChange}
+        />}
+        {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
+        {label && <text x={w >> 1} y={h - m} {...textProps}>{label}</text>}
     </SvgWidget>
 }

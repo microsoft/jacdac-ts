@@ -83,7 +83,11 @@ export default function MemberInput(props: {
         const v = (newValue as number);
         setValue(v);
     }
-
+    const handleGaugeChange = (newValue: number) => {
+        const scaled = scaleFloatToInt(newValue, specification);
+        const clamped = clampToStorage(scaled, specification.storage)
+        setValue(clamped);
+    }
     const percentValueFormat = (value: number) => {
         // avoid super long floats
         return ((value * 100) >> 0) + "%"
@@ -147,6 +151,7 @@ export default function MemberInput(props: {
                 valueLabel={percentValueLabelFormat}
                 size={widgetSize}
                 off={isOffWidget}
+                onChange={disabled ? undefined : handleGaugeChange}
             />
 
         return <Slider
