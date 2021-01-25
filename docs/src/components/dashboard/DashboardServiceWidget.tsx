@@ -76,7 +76,7 @@ function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRe
         variant={off ? "offwidget" : "widget"}
         showServiceName={false}
         showRegisterName={false}
-        hideMissingValues={false}
+        hideMissingValues={true}
     />;
 }
 
@@ -122,7 +122,7 @@ function DefaultWidget(props: DashboardServiceProps) {
         variant={"widget"}
         showServiceName={false}
         showRegisterName={false}
-        hideMissingValues={false}
+        hideMissingValues={true}
     />;
 }
 

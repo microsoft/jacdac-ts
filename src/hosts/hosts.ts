@@ -5,12 +5,12 @@ import {
     CharacterScreenVariant,
     DistanceVariant, LedPixelVariant, PotentiometerVariant, ReflectorLightVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
-    SRV_DISTANCE, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTOR, SRV_POTENTIOMETER,
+    SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTOR, SRV_POTENTIOMETER,
     SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_REFLECTOR_LIGHT, SRV_RELAY,
     SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
-    SRV_VIBRATION_MOTOR, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
+    SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -92,6 +92,12 @@ const windSpeedOptions = {
         { code: WindSpeedReg.MaxWindSpeed, values: [55] }
     ]
 }
+const eCO2Options: JDSensorServiceOptions<[number]> = {
+    readingValues: [4000]
+}
+const tvocOptions: JDSensorServiceOptions<[number]> = {
+    readingValues: [500]
+}
 
 const _hosts: {
     name: string,
@@ -172,6 +178,16 @@ const _hosts: {
             name: "distance (sonar)",
             serviceClasses: [SRV_DISTANCE],
             services: () => [new JDSensorServiceHost(SRV_DISTANCE, sonarOptions)]
+        },
+        {
+            name: "eCO²",
+            serviceClasses: [SRV_E_CO2],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_E_CO2, eCO2Options)]
+        },
+        {
+            name: "eCO² + TVOC",
+            serviceClasses: [SRV_E_CO2, SRV_TVOC],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_E_CO2, eCO2Options), new JDSensorServiceHost<[number]>(SRV_TVOC, tvocOptions)]
         },
         {
             name: "humidity",
@@ -448,6 +464,11 @@ const _hosts: {
                 readingError: 2.2,
                 variant: ThermometerVariant.Thermocouple
             })]
+        },
+        {
+            name: "TVOC",
+            serviceClasses: [SRV_TVOC],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_TVOC, tvocOptions)]
         },
         {
             name: "wind direction",
