@@ -10,7 +10,8 @@ import {
     SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
-    SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant
+    SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -30,6 +31,7 @@ import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
+import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
 import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 
@@ -434,6 +436,11 @@ const _hosts: {
             name: "slider",
             serviceClasses: [SRV_POTENTIOMETER],
             services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
+        },
+        {
+            name: "speech synthesis",
+            serviceClasses: [SRV_SPEECH_SYNTHESIS],
+            services: () => [new SpeechSynthesisServiceHost()]
         },
         {
             name: "switch (slide)",

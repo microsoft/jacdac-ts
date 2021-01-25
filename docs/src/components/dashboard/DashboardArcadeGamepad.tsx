@@ -29,11 +29,11 @@ function ArcadeButton(props: {
 
     const handleDown = () => host?.down(button, 0xff >> 1);
     const handleUp = () => host?.up(button);
-    const buttonProps = useSvgButtonProps<SVGCircleElement>(title, handleDown, handleUp, !clickeable)
+    const buttonProps = useSvgButtonProps<SVGCircleElement>(title, handleDown, handleUp)
 
     return <g transform={`translate(${cx},${cy})`} aria-label={`button ${title} ${checked ? "down" : "up"}`}>
         <circle cx={0} cy={0} r={ro} fill={background} />
-        <circle 
+        <circle
             cx={0} cy={0} r={ri}
             fill={checked ? active : controlBackground}
             {...buttonProps}
