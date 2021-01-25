@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@material-ui/core";
+import { Dialog, DialogContent, DialogTitle } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/jdom/bus";
@@ -52,6 +52,7 @@ export const AppProvider = ({ children }) => {
     const [toolsMenu, _setToolsMenu] = useState(false)
     const [showDeviceHostsDialog, setShowDeviceHostsDialog] = useState(false)
     const deviceHostDialogId = useId();
+    const deviceHostLabelId = useId()
 
     const { enqueueSnackbar } = useSnackbar();
     const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
@@ -117,7 +118,8 @@ export const AppProvider = ({ children }) => {
             toggleShowDeviceHostsDialog
         }}>
             {children}
-            <Dialog id={deviceHostDialogId} aria-label="Start device simulators" open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog}>
+            <Dialog id={deviceHostDialogId} aria-labelledby={deviceHostLabelId} open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog}>
+                <DialogTitle id={deviceHostLabelId}>Start a device simulator</DialogTitle>
                 <DialogContent>
                     <DeviceHostDialog onAdded={toggleShowDeviceHostsDialog} onAddedAll={toggleShowDeviceHostsDialog} />
                 </DialogContent>

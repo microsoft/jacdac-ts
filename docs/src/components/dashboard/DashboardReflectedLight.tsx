@@ -38,8 +38,6 @@ export default function DashboardReflectedLight(props: DashboardServiceProps) {
     const dark = "#000";
     const bright = "#ddd";
 
-    console.log({ brightness, maxValue, x })
-
     return <SvgWidget width={w} height={h} size={widgetSize}>
         <rect x={0} y={0} width={w >> 1} height={h} fill={dark} aria-label="dark area" />
         <rect x={w >> 1} y={0} width={w >> 1} height={h} fill={bright} aria-label="bright area" />
