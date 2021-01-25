@@ -29,19 +29,20 @@ export default function ValueWithUnitWidget(props: {
                 : valueTextLength < 12 ? "h4"
                     : "h6";
 
-    return <Grid container direction="row" alignContent="flex-end" tabIndex={tabIndex}>
+    return <Grid container direction="row" alignContent="flex-end" tabIndex={tabIndex}
+        aria-label={`${valueText} ${label}`}>
         <Grid item>
             <Typography align="right" variant={valueVariant}>{valueText}</Typography>
         </Grid>
-        {(label || secondaryLabel) && <Grid item>
+        <Grid item>
             <Grid container direction="column" alignContent="space-between">
-                {label && <Grid item>
+                <Grid item>
                     <Typography variant={labelVariant}>{label}</Typography>
-                </Grid>}
+                </Grid>
                 {secondaryLabel && <Grid item>
                     <Typography variant={"caption"}>{secondaryLabel}</Typography>
                 </Grid>}
             </Grid>
-        </Grid>}
+        </Grid>
     </Grid>;
 }

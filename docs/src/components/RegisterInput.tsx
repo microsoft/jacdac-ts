@@ -80,10 +80,10 @@ export default function RegisterInput(props: {
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={device} />/
     </Typography>}
-        {showServiceName && specification && <Typography variant="caption" key="servicename">
+        {showServiceName && specification && <Typography variant="caption" key="servicename" aria-label={serviceName}>
             {serviceName}
         </Typography>}
-        {showRegisterName && specification && serviceName !== registerName && <Typography variant="caption" key="registername">
+        {showRegisterName && specification && serviceName !== registerName && <Typography variant="caption" key="registername" aria-label={registerName}>
             {" " + registerName}
         </Typography>}
         {!hasData && <Box>
