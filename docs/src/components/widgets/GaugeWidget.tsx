@@ -2,10 +2,7 @@ import React, { SVGAttributes, useRef } from "react";
 import useWidgetTheme from "./useWidgetTheme";
 import { SvgWidget } from "./SvgWidget";
 import useThrottledValue from "../hooks/useThrottledValue"
-import useArrowKeys from "../hooks/useArrowKeys";
-import usePathPosition from "../hooks/useSvgPathPosition";
 import { closestPoint, describeArc, svgPointerPoint } from "./svgutils";
-import useSvgButtonProps from "../hooks/useSvgButtonProps"
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
 import SliderHandle from "./SliderHandle";
 import PowerButton from "./PowerButton";

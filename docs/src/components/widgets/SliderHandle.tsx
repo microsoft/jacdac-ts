@@ -1,4 +1,4 @@
-import { SVGAttributes, useRef } from "react";
+import React, { SVGAttributes, useRef } from "react";
 import useArrowKeys from "../hooks/useArrowKeys";
 import usePathPosition from "../hooks/useSvgPathPosition";
 
