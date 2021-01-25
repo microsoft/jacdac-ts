@@ -10,11 +10,11 @@ import {
     SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
-    SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg
+    SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED, SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
-import JDServiceHost from "../jdom/servicehost";
+import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
 import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
@@ -33,6 +33,14 @@ import SettingsServiceHost from "./settingsservicehost";
 import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 
+const indoorThermometerOptions = {
+    readingValues: [21.5],
+    streamingInterval: 1000,
+    minReading: -5,
+    maxReading: 50,
+    readingError: 0.25,
+    variant: ThermometerVariant.Indoor
+}
 const outdoorThermometerOptions = {
     readingValues: [21.5],
     streamingInterval: 1000,
@@ -92,8 +100,13 @@ const windSpeedOptions = {
         { code: WindSpeedReg.MaxWindSpeed, values: [55] }
     ]
 }
-const eCO2Options: JDSensorServiceOptions<[number]> = {
-    readingValues: [4000]
+const eCO2Options: JDSensorServiceOptions<[number]> & JDServiceHostOptions = {
+    readingValues: [4000],
+    variant: ECO2Variant.VOC
+}
+const CO2Options: JDSensorServiceOptions<[number]> & JDServiceHostOptions = {
+    readingValues: [4000],
+    variant: ECO2Variant.NDIR
 }
 const tvocOptions: JDSensorServiceOptions<[number]> = {
     readingValues: [500]
@@ -188,6 +201,15 @@ const _hosts: {
             name: "eCO² + TVOC",
             serviceClasses: [SRV_E_CO2, SRV_TVOC],
             services: () => [new JDSensorServiceHost<[number]>(SRV_E_CO2, eCO2Options), new JDSensorServiceHost<[number]>(SRV_TVOC, tvocOptions)]
+        },
+        {
+            name: "CO² + humidity + yhermometer",
+            serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
+            services: () => [
+                new JDSensorServiceHost<[number]>(SRV_E_CO2, CO2Options),
+                new HumidityServiceHost(), 
+                new JDSensorServiceHost(SRV_THERMOMETER, indoorThermometerOptions)                
+            ]
         },
         {
             name: "humidity",
