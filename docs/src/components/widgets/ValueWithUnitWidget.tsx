@@ -32,7 +32,7 @@ export default function ValueWithUnitWidget(props: {
     return <Grid container direction="row" alignContent="flex-end" tabIndex={tabIndex}
         aria-label={`${valueText} ${label}`}>
         <Grid item>
-            <Typography align="right" variant={valueVariant}>{valueText}</Typography>
+            <Typography role="timer" align="right" variant={valueVariant}>{valueText}</Typography>
         </Grid>
         <Grid item>
             <Grid container direction="column" alignContent="space-between">
