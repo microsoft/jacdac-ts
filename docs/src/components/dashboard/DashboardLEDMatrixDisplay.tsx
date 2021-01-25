@@ -11,8 +11,8 @@ import useFireKey from "../hooks/useFireKey";
 import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
 
 export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) {
-    const { service, services } = props;
-    const widgetSize = useWidgetSize(services.length);
+    const { service, services, variant } = props;
+    const widgetSize = useWidgetSize(variant, services.length);
 
     const widgetRef = useRef<SVGGElement>();
     const [leds] = useRegisterUnpackedValue<[Uint8Array]>(service.register(LedMatrixDisplayReg.Leds));

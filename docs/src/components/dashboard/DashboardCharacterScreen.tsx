@@ -17,8 +17,8 @@ const useStyles = makeStyles(() => createStyles({
 }));
 
 export default function DashboardCharacterScreen(props: DashboardServiceProps) {
-    const { service, services } = props;
-    const widgetSize = useWidgetSize(services.length);
+    const { service, services, variant } = props;
+    const widgetSize = useWidgetSize(variant, services.length);
     const classes = useStyles();
     const [message] = useRegisterUnpackedValue<[string]>(service.register(CharacterScreenReg.Message));
     const [rows] = useRegisterUnpackedValue<[number]>(service.register(CharacterScreenReg.Rows));

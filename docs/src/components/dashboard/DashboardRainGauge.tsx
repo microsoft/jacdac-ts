@@ -15,7 +15,7 @@ import { roundWithPrecision } from "../../../../src/jacdac";
 const TILT = 15;
 
 export default function DashbaordRainGauge(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
 
     const [precipitation] = useRegisterUnpackedValue<[number]>(service.register(RainGaugeReg.Precipitation))
     const host = useServiceHost<RainGaugeServiceHost>(service)
@@ -24,7 +24,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const tiltAngle = tiltCount !== undefined ? (tiltCount % 2 ? -TILT : TILT) : 0;
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(services.length)
+    const widgetSize = useWidgetSize(variant, services.length)
     const a = useThrottledValue(tiltAngle, 45)
     const l = useThrottledValue(level !== undefined ? level : 0.5, 1);
     const clickeable = !!host;

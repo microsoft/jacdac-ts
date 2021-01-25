@@ -10,14 +10,14 @@ import { useId } from "react-use-id-hook"
 import useThrottledValue from "../hooks/useThrottledValue";
 
 export default function DashboardWindDirection(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
 
     const [direction] = useRegisterUnpackedValue<[number]>(service.register(WindDirectionReg.WindDirection))
 
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(services.length)
+    const widgetSize = useWidgetSize(variant, services.length)
     const arrowHeadId = useId();
 
     const a = useThrottledValue(direction, 360);

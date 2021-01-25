@@ -43,10 +43,10 @@ function ArcadeButton(props: {
 }
 
 export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
-    const { service, services } = props;
+    const { service, services, variant } = props;
     const [available] = useRegisterUnpackedValue<[[ArcadeGamepadButton][]]>(service.register(ArcadeGamepadReg.AvailableButtons))
     const [pressed] = useRegisterUnpackedValue<[[ArcadeGamepadButton, number][]]>(service.register(ArcadeGamepadReg.Buttons));
-    const widgetSize = useWidgetSize(services.length);
+    const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<ArcadeGamepadServiceHost>(service);
     const color = host ? "secondary" : "primary";
 

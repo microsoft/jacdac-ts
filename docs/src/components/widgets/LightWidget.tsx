@@ -57,7 +57,7 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
 export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
     const { service, widgetCount, variant } = props;
     const { background, controlBackground } = useWidgetTheme()
-    const widgetSize = useWidgetSize(widgetCount)
+    const widgetSize = useWidgetSize(variant, widgetCount)
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
     const [lightVariant] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
@@ -68,8 +68,8 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
     const neoradius = 6;
     const neocircleradius = neoradius + 1;
     const sw = neoradius * 2;
-    const isJewel = variant === LedPixelVariant.Jewel;
-    const isRing = variant === LedPixelVariant.Ring;
+    const isJewel = lightVariant === LedPixelVariant.Jewel;
+    const isRing = lightVariant === LedPixelVariant.Ring;
 
     // paint svg via dom
     const render = () => {
