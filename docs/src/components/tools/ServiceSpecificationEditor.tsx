@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export default function ServiceSpecificationEditor() {
     const classes = useStyles();
     const { drawerType } = useContext(AppContext)
-    const { value: storedSource, setValue: setStoredSource } = useLocalStorage('jacdac:servicespecificationeditorsource',
+    const [storedSource, setStoredSource] = useLocalStorage('jacdac:servicespecificationeditorsource',
         `# My Service
 
 TODO: describe your service

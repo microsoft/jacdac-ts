@@ -105,19 +105,6 @@ export default function ToolsDrawer() {
             // separator
         },
         {
-            text: "Data collection",
-            url: "/tools/collector",
-            icon: <FiberManualRecordIcon />
-        },
-        {
-            text: "Model Uploader",
-            url: "/tools/model-uploader",
-            icon: <EmojiNatureIcon />
-        },
-        {
-            // separator
-        },
-        {
             text: "MakeCode",
             url: "/tools/makecode",
             icon: <MakeCodeIcon />

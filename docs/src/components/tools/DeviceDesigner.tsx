@@ -51,7 +51,7 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
 }
 
 export default function DeviceDesigner() {
-    const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
+    const [device, setDevice] = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
             id: "my-device",
             name: "My device",
