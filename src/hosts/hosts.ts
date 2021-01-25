@@ -3,7 +3,7 @@ import {
     ArcadeGamepadButton,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
-    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
+    DistanceVariant, LedPixelVariant, PotentiometerVariant, ReflectorLightVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_DISTANCE, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTOR, SRV_POTENTIOMETER,
     SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_REFLECTOR_LIGHT, SRV_RELAY,
@@ -260,6 +260,16 @@ const _hosts: {
             name: "line tracker (digital)",
             serviceClasses: [SRV_REFLECTOR_LIGHT],
             services: () => [new ReflectedLightServiceHost()]
+        },
+        {
+            name: "line tracker (2x digital)",
+            serviceClasses: [SRV_REFLECTOR_LIGHT],
+            services: () => [new ReflectedLightServiceHost(), new ReflectedLightServiceHost()]
+        },
+        {
+            name: "line tracker (analog)",
+            serviceClasses: [SRV_REFLECTOR_LIGHT],
+            services: () => [new ReflectedLightServiceHost({ variant: ReflectorLightVariant.InfraredAnalog })]
         },
         {
             name: "matrix keypad (3x4)",
