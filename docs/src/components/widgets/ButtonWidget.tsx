@@ -25,7 +25,7 @@ export default function ButtonWidget(props: {
     const cy = r;
     const ro = r;
     const ri = r - mo;
-    return <SvgWidget width={w} size={size}>
+    return <SvgWidget tabIndex={0} width={w} size={size}>
         <circle cx={cx} cy={cy} r={ro} fill={background} />
         <circle cx={cx} cy={cy} r={ri}
             aria-live="polite"

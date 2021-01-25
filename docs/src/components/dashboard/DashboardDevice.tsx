@@ -37,7 +37,7 @@ export default function DashboardDevice(props: {
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
 
     return (
-        <Card aria-live="polite" aria-label={`device ${name}`}>
+        <Card aria-live="polite" aria-label={`device ${name} started`}>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
                 action={

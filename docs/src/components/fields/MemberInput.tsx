@@ -143,6 +143,7 @@ export default function MemberInput(props: {
         const max = 1;
         if (isWidget)
             return <GaugeWidget
+                tabIndex={0}
                 label={label}
                 value={scaleIntToFloat(value, specification)}
                 color={color}
@@ -180,6 +181,7 @@ export default function MemberInput(props: {
         ] : undefined;
         if (isWidget)
             return <ValueWithUnitWidget
+                tabIndex={0}
                 label={specification.unit}
                 value={value}
                 min={minValue}
@@ -213,6 +215,7 @@ export default function MemberInput(props: {
     } else {// numbers or string or uintarrays
         if (isWidget)
             return <ValueWithUnitWidget
+                tabIndex={0}
                 value={roundWithPrecision(value, 1)}
                 label={specification.unit}
                 color={color}

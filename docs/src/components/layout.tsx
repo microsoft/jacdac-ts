@@ -192,11 +192,11 @@ function LayoutWithDarkMode(props: LayoutProps) {
   }
   // accessibility
   if (darkMode === 'dark') {
-//    themeDef.palette.contrastThreshold = 5;
-//    themeDef.palette.background = {
- //     default: '#1a1a1a',
-  //    paper: '#2a2a2a'
-   // };
+    //    themeDef.palette.contrastThreshold = 5;
+    //    themeDef.palette.background = {
+    //     default: '#1a1a1a',
+    //    paper: '#2a2a2a'
+    // };
   };
   const rawTheme = createMuiTheme(themeDef)
   const theme = responsiveFontSizes(rawTheme);
@@ -250,13 +250,7 @@ function MainAppBar(props: LayoutProps) {
     <Toolbar>
       <DrawerToolsButtonGroup className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} showToc={true} showCurrent={true} />
       {!drawerOpen && !toolsMenu && <Hidden implementation="css" mdDown={true}>
-        <Typography component="span" variant="h6">
-          <Link className={classes.menuButton} href="/jacdac-ts" color="inherit">{title}</Link>
-        </Typography>
-        {pageTitle && pageTitle !== "JACDAC" &&
-          <Typography component="span" variant="h6">
-            {"/"} {pageTitle}
-          </Typography>}
+        <Typography component="span" variant="h6">JACDAC {pageTitle && pageTitle !== "JACDAC" && `/ ${pageTitle}`}</Typography>
       </Hidden>}
       <div className={classes.grow} />
       <OpenDashboardButton className={clsx(classes.menuButton)} />
