@@ -31,7 +31,7 @@ export default function SelectWithLabel(props: {
             fullWidth={true}
             placeholder={placeholder}
             type={type}
-            aria-labelledby={labelId}
+            labelId={labelId}
             aria-describedby={hasDescr && descrId}
             onChange={onChange}>
             {children}
