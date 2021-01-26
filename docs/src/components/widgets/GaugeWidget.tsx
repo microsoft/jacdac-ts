@@ -17,10 +17,11 @@ export default function GaugeWidget(props: {
     size?: string,
     off?: boolean,
     variant?: "fountain",
+    tabIndex?: number,
     valueLabel?: (v: number) => string,
     onChange?: (newValue: number) => void
 }) {
-    const { value, label, color, size, min, max, step, variant, valueLabel, off, onChange } = props;
+    const { value, label, color, size, min, max, step, variant, valueLabel, off, onChange, tabIndex } = props;
     const { background, active, controlBackground, textProps } = useWidgetTheme(color);
 
     const sliderPathRef = useRef<SVGPathElement>();
@@ -81,7 +82,7 @@ export default function GaugeWidget(props: {
         style: clickeable && pointerStyle
     }
 
-    return <SvgWidget width={w} height={h} size={size}>
+    return <SvgWidget tabIndex={tabIndex} width={w} height={h} size={size}>
         <path ref={sliderPathRef} strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent"
             {...pathProps}
         />

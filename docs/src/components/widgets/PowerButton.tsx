@@ -1,3 +1,4 @@
+import React from "react"
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 import { describeArc } from "./svgutils";
 import useWidgetTheme from "./useWidgetTheme";

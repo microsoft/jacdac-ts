@@ -53,15 +53,16 @@ export default function DeviceHostDialog(props: { onAdded?: () => void, onAddedA
             </SelectWithLabel>
         </Grid>
         <Grid item>
-            <Button color="primary" variant="contained" title="Start new simulator" onClick={handleClick} startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}>
-                start
-            </Button>
-        </Grid>
-        <Grid item xs={12}>
-            <Alert severity="info">
-                Reload the page to clear out simulators.
-                <Box component="span" ml={"0.5em"}><Button variant="outlined" onClick={handleAddAll}>start all</Button></Box>
-            </Alert>
+            <Grid container spacing={1}>
+                <Grid item>
+                    <Button color="primary" variant="contained" title="Start new simulator" onClick={handleClick} startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}>
+                        start
+                </Button>
+               </Grid>
+                <Grid item>
+                    <Button variant="outlined" onClick={handleAddAll}>start all</Button>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 }

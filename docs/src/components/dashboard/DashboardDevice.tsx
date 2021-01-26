@@ -15,6 +15,7 @@ import DashboardServiceWidget from "./DashboardServiceWidget";
 import DeviceActions from "../DeviceActions";
 import DashboardServiceDetails from "./DashboardServiceDetails";
 import { MOBILE_BREAKPOINT } from "../layout";
+import useDeviceName from "../useDeviceName";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -27,6 +28,7 @@ export default function DashboardDevice(props: {
     toggleExpanded?: () => void
 }) {
     const { device, expanded, toggleExpanded } = props;
+    const name = useDeviceName(device)
     const services = useChange(device, () => device.services()
         .filter(service => ignoredServices.indexOf(service.serviceClass) < 0
             && !!service.specification));
@@ -35,7 +37,7 @@ export default function DashboardDevice(props: {
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
 
     return (
-        <Card>
+        <Card aria-live="polite" aria-label={`device ${name} started`}>
             <CardHeader
                 avatar={<DeviceAvatar device={device} />}
                 action={

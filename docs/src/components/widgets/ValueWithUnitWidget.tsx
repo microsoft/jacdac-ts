@@ -9,10 +9,11 @@ export default function ValueWithUnitWidget(props: {
     step?: number,
     label: string,
     secondaryLabel?: string,
+    tabIndex?: number,
     color?: "primary" | "secondary",
     size?: string
 }) {
-    const { value, min, max, step, secondaryLabel, label } = props;
+    const { value, min, max, step, secondaryLabel, label, tabIndex } = props;
     const labelVariant = "subtitle1";
     const precision = step === undefined ? 1 : Math.floor(-Math.log10(step))
     const valueText = isNaN(value) ? "--" : roundWithPrecision(value, precision).toLocaleString();
@@ -28,19 +29,20 @@ export default function ValueWithUnitWidget(props: {
                 : valueTextLength < 12 ? "h4"
                     : "h6";
 
-    return <Grid container direction="row" alignContent="flex-end">
+    return <Grid container direction="row" alignContent="flex-end" tabIndex={tabIndex}
+        aria-label={`${valueText} ${label}`}>
         <Grid item>
-            <Typography align="right" variant={valueVariant}>{valueText}</Typography>
+            <Typography role="timer" align="right" variant={valueVariant}>{valueText}</Typography>
         </Grid>
-        {(label || secondaryLabel) && <Grid item>
+        <Grid item>
             <Grid container direction="column" alignContent="space-between">
-                {label && <Grid item>
+                <Grid item>
                     <Typography variant={labelVariant}>{label}</Typography>
-                </Grid>}
+                </Grid>
                 {secondaryLabel && <Grid item>
                     <Typography variant={"caption"}>{secondaryLabel}</Typography>
                 </Grid>}
             </Grid>
-        </Grid>}
+        </Grid>
     </Grid>;
 }

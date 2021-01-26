@@ -8,18 +8,19 @@ export function SvgWidget(props: {
     role?: string,
     title?: string,
     viewBox?: string,
+    tabIndex?: number,
     children: ReactNode
 }) {
-    const { width, height, size, children, role, title, viewBox } = props;
+    const { width, height, size, children, role, title, viewBox, tabIndex } = props;
     const h = height || width;
     const titleId = useId();
     return <svg
         xmlns="http://www.w3.org/2000/svg"
+        tabIndex={tabIndex}
         viewBox={viewBox || `0 0 ${width} ${h}`}
         style={size && { height: size, maxWidth: "100%" }}
-        aria-labelledby={titleId}
+        aria-label={title}
         role={role || "group"}>
-        {title && <title id={titleId}>{title}</title>}
         {children}
     </svg>
 }

@@ -12,6 +12,7 @@ import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { roundWithPrecision } from "../../../../src/jacdac";
 import { useId } from "react-use-id-hook";
+import useSvgButtonProps from "../hooks/useSvgButtonProps";
 
 const TILT = 15;
 
@@ -30,6 +31,8 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const a = useThrottledValue(tiltAngle, 45)
     const l = useThrottledValue(level !== undefined ? level : 0.5, 1);
     const clickeable = !!host;
+    const handleClick = async () => await host?.rain(0.25);
+    const buttonProps = useSvgButtonProps<SVGRectElement>(`rain gauge at level ${Math.round(25 + level * 100)}%`, handleClick)
 
     const w = 128;
     const h = 64;
@@ -41,9 +44,8 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const ty = h - 4;
     const fs = 8;
 
-    const handleClick = async () => await host?.rain(0.25);
-
-    return <SvgWidget width={w} height={h} size={widgetSize}>
+    return <SvgWidget
+        width={w} height={h} size={widgetSize}>
         <defs>
             <clipPath id={clipId}>
                 <rect transform={`rotate(${-a}, ${w / 2}, ${by + bh})`}
@@ -54,13 +56,14 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
         </defs>
         <g transform={`rotate(${a}, ${w / 2}, ${by + bh})`}>
             <rect x={bx} y={by}
+                tabIndex={0}
                 width={bw}
                 height={bh}
                 strokeWidth={sw}
                 stroke={active}
                 fill={background}
-                aria-label={"bucket"}
-                onClick={host && handleClick}
+                aria-live="polite"
+                {...buttonProps}
                 className={clickeable ? "clickeable" : undefined}
                 role={clickeable ? "button" : undefined}
             />
@@ -74,7 +77,8 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
                 style={{ userSelect: "none" }}
             />
         </g>
-        <text x={w / 2} y={ty} fontSize={fs} textAnchor="middle" fill={textPrimary}>
+        <text x={w / 2} y={ty} fontSize={fs} textAnchor="middle" fill={textPrimary}
+            aria-label={`precipitation ${roundWithPrecision(precipitation || 0, 1)} millimeters`}>
             {roundWithPrecision(precipitation || 0, 1)}mm
         </text>
     </SvgWidget>;

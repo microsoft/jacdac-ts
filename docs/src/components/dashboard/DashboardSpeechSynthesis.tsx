@@ -27,7 +27,6 @@ export default function DashboardSpeechSynthesis(props: DashboardServiceProps) {
     return <>
         <Grid item xs={12}>
             <TextField
-                disabled={!text}
                 spellCheck={false}
                 value={text}
                 label={"speech synthesis"}
@@ -36,6 +35,7 @@ export default function DashboardSpeechSynthesis(props: DashboardServiceProps) {
                 type={"text"}
             />
             <CmdButton
+                disabled={!text}
                 title="speak text"
                 onClick={handleSpeak}
                 icon={<VoiceChatIcon />} />

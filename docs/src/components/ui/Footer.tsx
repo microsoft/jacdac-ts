@@ -34,7 +34,7 @@ export default function Footer() {
       }
     `)
 
-  return <footer className={classes.footer}>
+  return <footer role="contentinfo" className={classes.footer}>
     <a target="_blank" rel="noopener noreferrer" href={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>JACDAC-TS v{data.allJacdacTsJson.nodes[0].version}</a>
     <a href="https://makecode.com/privacy" target="_blank" rel="noopener noreferrer">Privacy &amp; Cookies</a>
     <a href="https://makecode.com/termsofuse" target="_blank" rel="noopener noreferrer">Terms Of Use</a>

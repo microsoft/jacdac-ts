@@ -45,7 +45,6 @@ export default function DashboardCharacterScreen(props: DashboardServiceProps) {
     let y = mo;
     for (let row = 0; row < rows; ++row) {
         let x = mo;
-
         const line = lines[row];
         for (let column = 0; column < columns; ++column) {
             const char = line?.[rtl ? (columns - 1 - column) : column];
@@ -53,14 +52,16 @@ export default function DashboardCharacterScreen(props: DashboardServiceProps) {
                 <rect x={x} y={y} width={cw} height={ch} className={classes.box}
                     fill={controlBackground} />
                 {char && <text x={x + cw / 2} y={y + ch - fs / 3} textAnchor="middle" fontSize={fs}
-                    className={classes.text} fill={textPrimary}>{char}</text>}
+                    className={classes.text} fill={textPrimary}
+                    aria-label={char}
+                >{char}</text>}
             </g>)
             x += cw + m;
         }
 
         y += ch + m;
     }
-    return <SvgWidget title={`character screen displaying ${message}`} width={w} height={h} size={widgetSize} >
+    return <SvgWidget tabIndex={0} title={`character screen displaying "${message}"`} width={w} height={h} size={widgetSize} >
         <>
             <rect x={0} y={0} width={w} height={h} r={m / 2} fill={background} />
             {els}
