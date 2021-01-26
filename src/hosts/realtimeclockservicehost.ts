@@ -23,9 +23,9 @@ export default class RealTimeClockServiceHost
     readonly precision: JDRegisterHost<[number]>;
     private lastEpoch: number = 0;
 
-    constructor(time: Date) {
+    constructor() {
         super(SRV_REAL_TIME_CLOCK, {
-            readingValues: dateToClock(time),
+            readingValues: dateToClock(new Date()),
             variant: RealTimeClockVariant.Computer
         })
 
