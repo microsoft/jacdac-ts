@@ -52,9 +52,9 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flashing";
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
-import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER } from "../../jacdac-spec/dist/specconstants";
+import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER, SRV_REAL_TIME_CLOCK } from "../../jacdac-spec/dist/specconstants";
 import JDDeviceHost from "./devicehost";
-import { OutPipe } from "./pipes";
+import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -152,13 +152,16 @@ export class JDBus extends JDNode {
 
         this.resetTime();
 
-        // ping loggers when device connects
-        this.pingLoggers = this.pingLoggers.bind(this)
-        const debouncedPingLoggers = debounceAsync(this.pingLoggers, 1000)
-        this.on(DEVICE_ANNOUNCE, debouncedPingLoggers);
+        // tell loggers to send data
+        this.on(DEVICE_ANNOUNCE, debounceAsync(this.pingLoggers.bind(this), 1000));
+        // tell RTC clock the computer time
+        this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this));
+
+        // start all timers
+        this.start();
     }
 
-    private startTimers() {
+    start() {
         if (!this._announceInterval)
             this._announceInterval = setInterval(() => this.emit(SELF_ANNOUNCE), 499);
         if (!this._refreshRegistersInterval)
@@ -167,7 +170,7 @@ export class JDBus extends JDNode {
             this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
     }
 
-    private stopTimers() {
+    stop() {
         if (this._announceInterval) {
             clearInterval(this._announceInterval);
             this._announceInterval = undefined;
@@ -331,6 +334,11 @@ export class JDBus extends JDNode {
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
         }
     }
+    private async handleRealTimeClockSync(device: JDDevice) {
+        // tell time to the RTC clocks
+        if (device.hasService(SRV_REAL_TIME_CLOCK))
+            await RealTimeClockServiceHost.syncTime(this);
+    }
 
     sendPacketAsync(p: Packet) {
         p.timestamp = this.timestamp;
@@ -397,7 +405,6 @@ export class JDBus extends JDNode {
             else {
                 // starting a fresh connection
                 this.log('debug', `connecting`)
-                this.startTimers();
                 this._connectPromise = Promise.resolve();
                 this.setConnectionState(BusState.Connecting)
                 if (this.transport?.connectAsync)
@@ -453,7 +460,6 @@ export class JDBus extends JDNode {
                 .finally(() => {
                     this._disconnectPromise = undefined;
                     this.setConnectionState(BusState.Disconnected);
-                    this.stopTimers();
                 });
         } else {
             this.log('debug', `disconnect with existing promise`)
