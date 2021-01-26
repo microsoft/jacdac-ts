@@ -183,7 +183,7 @@ const _hosts: {
         },
         {
             name: "chassis (motor x 2 + sonar + light)",
-            serviceClasses: [SRV_MOTOR, SRV_DISTANCE, SRV_LED_PIXEL],
+            serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
             services: () => [
                 new MotorServiceHost(),
                 new MotorServiceHost(),
@@ -364,7 +364,7 @@ const _hosts: {
         {
             name: "real time clock",
             serviceClasses: [SRV_REAL_TIME_CLOCK],
-            services: () => [new RealTimeClockServiceHost(new Date())]
+            services: () => [new RealTimeClockServiceHost()]
         },
         {
             name: "relay (EM/10A)",
