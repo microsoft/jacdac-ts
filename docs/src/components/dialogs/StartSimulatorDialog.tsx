@@ -2,7 +2,7 @@ import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem } from "@mat
 import { useSnackbar } from "notistack";
 import React, { useContext, useMemo, useState } from "react";
 import { useId } from "react-use-id-hook";
-import hosts from "../../../../src/hosts/hosts";
+import hosts, { addHost } from "../../../../src/hosts/hosts";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import Flags from "../../../../src/jdom/flags";
@@ -23,16 +23,12 @@ export default function StartSimulatorDialog(props: { open: boolean, onClose: ()
     const { enqueueSnackbar } = useSnackbar();
     const hostDefinitions = useMemo(() => hosts(), []);
 
-    const addHost = (host: { name: string; services: () => JDServiceHost[]; }) => {
-        const d = new JDDeviceHost(host.services());
-        bus.addDeviceHost(d);
-    }
     const handleChange = (ev: React.ChangeEvent<{ value: unknown }>) => {
         setSelected(ev.target.value as string);
     };
     const handleClick = () => {
         const host = hostDefinitions.find(h => h.name === selected);
-        addHost(host);
+        addHost(bus, host.services(), host.name.split(/\s+\(/g, 1)[0]);
         enqueueSnackbar(`${host.name} started...`, { variant: "info" })
         onClose();
     }
@@ -42,9 +38,9 @@ export default function StartSimulatorDialog(props: { open: boolean, onClose: ()
             key: "startdevicehosts"
         })
         onClose();
-        for (const hostDef of hostDefinitions) {
+        for (const host of hostDefinitions) {
             await delay(100);
-            addHost(hostDef);
+            addHost(bus, host.services(), host.name.split(/\s+\(/g, 1)[0]);
         }
     }
 

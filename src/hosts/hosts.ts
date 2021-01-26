@@ -547,9 +547,11 @@ export default function hosts() {
     return _hosts.slice(0);
 }
 
-export function addHost(bus: JDBus, services: JDServiceHost[]) {
+export function addHost(bus: JDBus, services: JDServiceHost[], name?: string) {
     const d = new JDDeviceHost(services);
-    bus.addDeviceHost(d);
+    const device = bus.addDeviceHost(d);
+    if (name)
+        device.name = name;
     return d;
 }
 

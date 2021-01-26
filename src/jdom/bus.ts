@@ -504,6 +504,8 @@ export class JDBus extends JDNode {
             this.emit(DEVICE_HOST_ADDED);
             this.emit(CHANGE);
         }
+
+        return this.device(deviceHost.deviceId);
     }
 
     /**
