@@ -200,7 +200,6 @@ function LayoutWithDarkMode(props: LayoutProps) {
   };
   const rawTheme = createMuiTheme(themeDef)
   const theme = responsiveFontSizes(rawTheme);
-  console.log({ theme })
   const mdxComponents = useMdxComponents()
 
   if (!darkModeMounted)
