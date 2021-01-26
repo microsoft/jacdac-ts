@@ -28,7 +28,6 @@ export default function SliderHandle(props: {
 
     // nothing to see here
     if (!onValueChange || !pos) {
-        console.log({ onValueChange, pos })
         return null;
     }
 

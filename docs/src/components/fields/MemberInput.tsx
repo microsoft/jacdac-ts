@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import { CircularProgress, Slider } from "@material-ui/core";
+import { CircularProgress, FormControlLabel, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { clampToStorage, isIntegerType, isReading, isValueOrIntensity, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { clampToStorage, isIntegerType, isValueOrIntensity, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
 import { isSet, pick, roundWithPrecision } from "../../../../src/jdom/utils";
 import { RegisterInputVariant } from "../RegisterInput";
-import { useId } from "react-use-id-hook"
 import ButtonWidget from "../widgets/ButtonWidget";
 import GaugeWidget from "../widgets/GaugeWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
@@ -32,7 +31,6 @@ export default function MemberInput(props: {
     const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
-    const labelid = useId();
     const [errorText, setErrorText] = useState("")
     const [textValue, setTextValue] = useState("")
     const valueString = memberValueToString(value, specification);
@@ -122,10 +120,14 @@ export default function MemberInput(props: {
                 size={widgetSize} />
         }
 
-        return <>
-            <Switch aria-label={label} aria-labelledby={labelid} checked={!!value} onChange={disabled ? undefined : handleChecked} color={color} />
-            <label id={labelid}>{label}</label>
-        </>
+        return <FormControlLabel
+            control={
+                <Switch checked={!!value}
+                    onChange={disabled ? undefined : handleChecked}
+                    color={color} />
+            }
+            label={label}
+        />
     } else if (enumInfo !== undefined) {
         return <Select
             aria-label={label}
