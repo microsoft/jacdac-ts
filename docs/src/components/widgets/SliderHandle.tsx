@@ -1,6 +1,7 @@
-import React, { SVGAttributes, useRef } from "react";
+import React, { CSSProperties, SVGAttributes, useRef } from "react";
 import useArrowKeys from "../hooks/useArrowKeys";
 import usePathPosition from "../hooks/useSvgPathPosition";
+import { closestPoint, svgPointerPoint } from "./svgutils";
 
 export default function SliderHandle(props: {
     pathRef: SVGPathElement,
@@ -26,8 +27,10 @@ export default function SliderHandle(props: {
     })
 
     // nothing to see here
-    if (!onValueChange || !pos)
+    if (!onValueChange || !pos) {
+        console.log({ onValueChange, pos })
         return null;
+    }
 
     return <circle
         ref={handleRef}
