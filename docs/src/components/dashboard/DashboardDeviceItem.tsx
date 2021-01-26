@@ -4,7 +4,7 @@ import { JDDevice } from "../../../../src/jdom/device";
 import DashboardDevice from "./DashboardDevice";
 import { GridBreakpoints } from "../useGridBreakpoints";
 
-export default function DeviceItem(props: {
+export default function DashboardDeviceItem(props: {
     device: JDDevice,
     expanded?: boolean,
     toggleExpanded?: () => void,
