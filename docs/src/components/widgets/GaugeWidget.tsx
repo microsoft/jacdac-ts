@@ -15,13 +15,15 @@ export default function GaugeWidget(props: {
     label?: string,
     color?: "primary" | "secondary",
     size?: string,
-    off?: boolean,
     variant?: "fountain",
     tabIndex?: number,
     valueLabel?: (v: number) => string,
     onChange?: (newValue: number) => void
+    off?: boolean,
+    toggleOff?: () => void
 }) {
-    const { value, label, color, size, min, max, step, variant, valueLabel, off, onChange, tabIndex } = props;
+    const { value, label, color, size, min, max, step, variant, valueLabel,
+        off, toggleOff, onChange, tabIndex } = props;
     const { background, active, controlBackground, textProps } = useWidgetTheme(color);
 
     const sliderPathRef = useRef<SVGPathElement>();
@@ -61,9 +63,6 @@ export default function GaugeWidget(props: {
     const vlabel = !off && tvalue;
     const clickeable = !!onChange;
 
-    const handleTurnOn = () => {
-
-    }
     const handlePointerDown = (ev: React.PointerEvent<SVGPathElement>) => {
         ev.preventDefault();
         if (!ev.buttons) return;
@@ -102,7 +101,7 @@ export default function GaugeWidget(props: {
             strokeWidth={2}
             onValueChange={!off && onChange}
         />}
-        {off && <PowerButton cx={cx} cy={cy} r={roff} color={color} onClick={handleTurnOn} />}
+        {toggleOff && <PowerButton cx={cx} cy={cy} r={roff} color={color} onClick={toggleOff} />}
         {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
         {label && <text x={w >> 1} y={h - m} {...textProps}>{label}</text>}
     </SvgWidget>

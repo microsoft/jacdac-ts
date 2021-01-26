@@ -12,7 +12,7 @@ import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 import useRegisterHost from "./hooks/useRegisterHost"
 import useReadingAuxilliaryValue from "./hooks/useReadingAuxilliaryValue";
 
-export type RegisterInputVariant = "widget" | "offwidget" | ""
+export type RegisterInputVariant = "widget" | ""
 
 export default function RegisterInput(props: {
     register: JDRegister,
@@ -22,9 +22,13 @@ export default function RegisterInput(props: {
     hideMissingValues?: boolean,
     showTrend?: boolean,
     showDataType?: boolean,
-    variant?: RegisterInputVariant
+    variant?: RegisterInputVariant,
+    off?: boolean,
+    toggleOff?: () => void
 }) {
-    const { register, showRegisterName, showDeviceName, showServiceName, hideMissingValues, showTrend, showDataType, variant } = props;
+    const { register, showRegisterName, showDeviceName, showServiceName,
+        hideMissingValues, showTrend, showDataType, variant,
+        off, toggleOff } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -102,6 +106,8 @@ export default function RegisterInput(props: {
             min={minReading}
             max={maxReading}
             error={readingError}
+            off={off}
+            toggleOff={toggleOff}
         />}
     </>
 }

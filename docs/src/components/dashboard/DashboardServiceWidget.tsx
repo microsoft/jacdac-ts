@@ -79,10 +79,11 @@ function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRe
 
     return <RegisterInput
         register={valueRegister}
-        variant={off ? "offwidget" : "widget"}
+        variant={"widget"}
         showServiceName={false}
         showRegisterName={false}
         hideMissingValues={true}
+        off={off}
     />;
 }
 
@@ -93,10 +94,11 @@ function IntensityWidget(props: { intensityRegister: JDRegister }) {
 
     return <RegisterInput
         register={intensityRegister}
-        variant={off ? "offwidget" : "widget"}
+        variant={"widget"}
         showServiceName={false}
         showRegisterName={false}
         hideMissingValues={true}
+        off={off}
     />;
 }
 

@@ -24,10 +24,12 @@ export default function MemberInput(props: {
     max?: number,
     error?: number,
     showLoading?: boolean,
+    off?: boolean,
+    toggleOff?: () => void
 }) {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
         setValue, showDataType, color, variant, min, max, error,
-        showLoading } = props;
+        showLoading, off, toggleOff } = props;
     const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
@@ -36,8 +38,7 @@ export default function MemberInput(props: {
     const valueString = memberValueToString(value, specification);
     const name = specification.name === "_" ? serviceMemberSpecification.name : specification.name
     const label = name
-    const isWidget = variant === "widget" || variant === "offwidget"
-    const isOffWidget = variant === "offwidget"
+    const isWidget = variant === "widget"
     const widgetSize = useWidgetSize();
 
     const minValue = pick(min, typicalMin, absoluteMin, /^u/.test(type) ? 0 : undefined)
@@ -153,8 +154,9 @@ export default function MemberInput(props: {
                 min={min} max={max}
                 valueLabel={percentValueLabelFormat}
                 size={widgetSize}
-                off={isOffWidget}
                 onChange={disabled ? undefined : handleGaugeChange}
+                off={off}
+                toggleOff={toggleOff}
             />
 
         return <Slider
@@ -197,7 +199,7 @@ export default function MemberInput(props: {
         return <Slider
             value={value}
             color={color}
-            valueLabelFormat={isOffWidget ? offFormat : valueLabelFormat}
+            valueLabelFormat={off ? offFormat : valueLabelFormat}
             onChange={disabled ? undefined : handleSliderChange}
             min={minValue}
             max={maxValue}
