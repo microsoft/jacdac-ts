@@ -101,7 +101,7 @@ export default function GaugeWidget(props: {
             strokeWidth={2}
             onValueChange={!off && onChange}
         />}
-        {off !== undefined && <PowerButton cx={cx} cy={cy} r={roff} color={color} onClick={toggleOff} />}
+        {off !== undefined && <PowerButton off={off} cx={cx} cy={cy} r={roff} color={color} onClick={toggleOff} />}
         {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
         {label && <text x={w >> 1} y={h - m} {...textProps}>{label}</text>}
     </SvgWidget>

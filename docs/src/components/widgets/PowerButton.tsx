@@ -8,13 +8,14 @@ export default function PowerButton(props: {
     cy: number,
     r: number,
     color?: "primary" | "secondary",
+    off?: boolean,
     onClick?: () => void
 }) {
-    const { cx, cy, r, onClick, color } = props;
+    const { cx, cy, r, onClick, off, color } = props;
     const { background, active, controlBackground, textProps } = useWidgetTheme(color);
     const a = 135;
     const d = describeArc(cx, cy, r / 1.619, -a, a, true);
-    const buttonProps = useSvgButtonProps<SVGCircleElement>("turn on", onClick)
+    const buttonProps = useSvgButtonProps<SVGCircleElement>(off ? "turn on" : "turn off", onClick)
     const sw = 3;
     const disabled = !onClick;
 
