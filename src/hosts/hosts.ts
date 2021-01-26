@@ -11,7 +11,7 @@ import {
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
-    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant, SRV_REAL_TIME_CLOCK
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -27,6 +27,7 @@ import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
+import RealTimeClockServiceHost from "./realtimeclockservicehost";
 import ReflectedLightServiceHost from "./reflectedlightservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
 import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost";
@@ -359,6 +360,11 @@ const _hosts: {
             name: "rain gauge",
             serviceClasses: [SRV_RAIN_GAUGE],
             services: () => [new RainGaugeServiceHost()]
+        },
+        {
+            name: "real time clock",
+            serviceClasses: [SRV_REAL_TIME_CLOCK],
+            services: () => [new RealTimeClockServiceHost(new Date())]
         },
         {
             name: "relay (EM/10A)",
