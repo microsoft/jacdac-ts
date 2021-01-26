@@ -30,7 +30,7 @@ export default function GaugeWidget(props: {
     const w = 120;
     const h = 120;
     const m = 8;
-    const roff = 18;
+    const roff = off ? 18 : 24;
     const sw = m << 1;
     const cx = w >> 1;
     const cy = h >> 1;
@@ -60,7 +60,6 @@ export default function GaugeWidget(props: {
     const dactual = computeArc(displayValue);
     const lineCap = "round"
     const tvalue = valueLabel(value);
-    const vlabel = !off && tvalue;
     const clickeable = !!onChange;
 
     const handlePointerDown = (ev: React.PointerEvent<SVGPathElement>) => {
@@ -101,8 +100,8 @@ export default function GaugeWidget(props: {
             strokeWidth={2}
             onValueChange={!off && onChange}
         />}
-        {off !== undefined && <PowerButton off={off} cx={cx} cy={cy} r={roff} color={color} onClick={toggleOff} />}
-        {vlabel && <text x={cx} y={cy} {...textProps}>{vlabel}</text>}
+        {off !== undefined && <PowerButton off={off} cx={cx} cy={cy} r={roff} color={color} label={tvalue} onClick={toggleOff} />}
+        {off === undefined && <text x={cx} y={cy} {...textProps}>{tvalue}</text>}
         {label && <text x={w >> 1} y={h - m} {...textProps}>{label}</text>}
     </SvgWidget>
 }

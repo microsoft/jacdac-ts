@@ -8,7 +8,7 @@ export type RealTimeClockReadingType = [number, number, number, number, number, 
 
 export function dateToClock(n: Date): RealTimeClockReadingType {
     const year = n.getFullYear();
-    const month = n.getMonth();
+    const month = n.getMonth() + 1;
     const date = n.getDate();
     const day = n.getDay()
     const hour = n.getHours()
@@ -22,7 +22,7 @@ export default class RealTimeClockServiceHost
     extends JDSensorServiceHost<RealTimeClockReadingType> {
     readonly error: JDRegisterHost<[number]>;
     readonly precision: JDRegisterHost<[number]>;
-    private lastEpoch: number = 0;
+    private lastSecond: number = 0;
 
     constructor() {
         super(SRV_REAL_TIME_CLOCK, {
@@ -51,10 +51,12 @@ export default class RealTimeClockServiceHost
     }
 
     private refreshTime() {
-        const r = dateToClock(new Date());
-        if (r[0] !== this.lastEpoch) {
+        const d = new Date();
+        const s = d.getSeconds();
+        if (s !== this.lastSecond) {
+            const r = dateToClock(d);
             this.reading.setValues(r);
-            this.lastEpoch = r[0];
+            this.lastSecond = s;
         }
     }
 }

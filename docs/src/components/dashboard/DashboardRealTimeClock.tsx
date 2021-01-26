@@ -9,10 +9,11 @@ import { Typography } from "@material-ui/core";
 export default function DashboardRealTimeClock(props: DashboardServiceProps) {
     const { service } = props;
 
-    const [epoch] = useRegisterUnpackedValue<RealTimeClockReadingType>(service.register(RealTimeClockReg.Now));
-    if (epoch === undefined)
+    const [year, month, dayOfMonth, day, hour, min, seconds]
+        = useRegisterUnpackedValue<RealTimeClockReadingType>(service.register(RealTimeClockReg.LocalTime));
+    if (year === undefined)
         return null;
-    const t = new Date(epoch * 1000);
+    const t = new Date(year, month - 1, dayOfMonth, hour, min, seconds);
     const date = t.toLocaleDateString()
     const time = t.toLocaleTimeString()
     return <>

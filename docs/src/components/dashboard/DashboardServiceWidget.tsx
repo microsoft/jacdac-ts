@@ -74,8 +74,12 @@ const collapsedRegisters = [
 
 function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRegister }) {
     const { valueRegister, intensityRegister } = props;
-    const [intensity] = useRegisterUnpackedValue<[number | boolean]>(intensityRegister);
-    const off = intensity !== undefined && !intensity;
+    const [intensity] = useRegisterUnpackedValue<[boolean]>(intensityRegister);
+    const hasIntensity = intensity !== undefined;
+    const off = hasIntensity ? !intensity : undefined;
+    const toggleOff = async () => {
+        await intensityRegister.sendSetBoolAsync(off, true);
+    }
 
     return <RegisterInput
         register={valueRegister}
@@ -84,6 +88,7 @@ function ValueWidget(props: { valueRegister: JDRegister, intensityRegister: JDRe
         showRegisterName={false}
         hideMissingValues={true}
         off={off}
+        toggleOff={hasIntensity ? toggleOff : undefined}
     />;
 }
 
@@ -117,8 +122,7 @@ function DefaultWidget(props: DashboardServiceProps) {
     // if register is value, disable if enabled is 0.
     if (register.specification.identifier == SystemReg.Value) {
         const intensityRegister = register.service.register(SystemReg.Intensity);
-        if (intensityRegister)
-            return <ValueWidget valueRegister={register} intensityRegister={intensityRegister} />;
+        return <ValueWidget valueRegister={register} intensityRegister={intensityRegister} />;
     }
 
     // case of no streaming,value just intensity, like a relay

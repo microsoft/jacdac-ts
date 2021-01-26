@@ -45,7 +45,6 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const w = 158.50195;
     const text = enabled ? `${Math.round(a)}°` : 'off';
 
-
     return <Grid container alignContent="center">
         <Grid item xs={12}>
             <SvgWidget tabIndex={0} title={`servo at angle ${angle}`}
