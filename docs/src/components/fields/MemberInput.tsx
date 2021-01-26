@@ -72,12 +72,12 @@ export default function MemberInput(props: {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
         setValue(v)
     }
-    const handleScaledSliderChange = (event: any, newValue: number | number[]) => {
+    const handleScaledSliderChange = (event: unknown, newValue: number | number[]) => {
         const scaled = scaleFloatToInt((newValue as number), specification);
         const clamped = clampToStorage(scaled, specification.storage)
         setValue(clamped);
     }
-    const handleSliderChange = (event: any, newValue: number | number[]) => {
+    const handleSliderChange = (event: unknown, newValue: number | number[]) => {
         const v = (newValue as number);
         setValue(v);
     }
@@ -189,9 +189,10 @@ export default function MemberInput(props: {
                 min={minValue}
                 max={maxValue}
                 step={step}
-                secondaryLabel={isWidget && errorValue}
+                secondaryLabel={errorValue}
                 color={color}
-                size={widgetSize} />
+                size={widgetSize}
+                onChange={disabled ? undefined : handleSliderChange} />
 
         return <Slider
             value={value}
@@ -215,7 +216,7 @@ export default function MemberInput(props: {
             type={"text"}
         />
     } else {// numbers or string or uintarrays
-        if (isWidget)
+        if (isWidget) // we need min/max to support a slider
             return <ValueWithUnitWidget
                 tabIndex={0}
                 value={roundWithPrecision(value, 1)}

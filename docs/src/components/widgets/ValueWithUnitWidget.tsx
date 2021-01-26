@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Typography } from "@material-ui/core";
+import { Grid, Slider, Typography } from "@material-ui/core";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 
 export default function ValueWithUnitWidget(props: {
@@ -11,12 +11,14 @@ export default function ValueWithUnitWidget(props: {
     secondaryLabel?: string,
     tabIndex?: number,
     color?: "primary" | "secondary",
-    size?: string
+    size?: string,
+    onChange?: (event: unknown, newValue: number | number[]) => void
 }) {
-    const { value, min, max, step, secondaryLabel, label, tabIndex } = props;
+    const { value, min, max, step, secondaryLabel, label, tabIndex, onChange } = props;
     const labelVariant = "subtitle1";
     const precision = step === undefined ? 1 : Math.floor(-Math.log10(step))
-    const valueText = isNaN(value) ? "--" : roundWithPrecision(value, precision).toLocaleString();
+    const hasValue = !isNaN(value);
+    const valueText = hasValue ? roundWithPrecision(value, precision).toLocaleString() : "--"
     const valueTextLength = isSet(min) && isSet(max) ? [min, max]
         .map(v => roundWithPrecision(v, precision).toLocaleString().length)
         .reduce((l, r) => Math.max(l, r), 0)
@@ -29,20 +31,26 @@ export default function ValueWithUnitWidget(props: {
                 : valueTextLength < 12 ? "h4"
                     : "h6";
 
-    return <Grid container direction="row" alignContent="flex-end" tabIndex={tabIndex}
-        aria-label={`${valueText} ${label}`}>
-        <Grid item>
-            <Typography role="timer" align="right" variant={valueVariant}>{valueText}</Typography>
-        </Grid>
-        <Grid item>
-            <Grid container direction="column" alignContent="space-between">
+    return <Grid container direction="column" tabIndex={tabIndex} aria-label={`${valueText} ${label}`}>
+        <Grid item xs={12}>
+            <Grid container direction="row" alignContent="flex-end">
                 <Grid item>
-                    <Typography variant={labelVariant}>{label}</Typography>
+                    <Typography role="timer" align="right" variant={valueVariant}>{valueText}</Typography>
                 </Grid>
-                {secondaryLabel && <Grid item>
-                    <Typography variant={"caption"}>{secondaryLabel}</Typography>
-                </Grid>}
+                <Grid item>
+                    <Grid container direction="column" alignContent="space-between">
+                        <Grid item>
+                            <Typography variant={labelVariant}>{label}</Typography>
+                        </Grid>
+                        {secondaryLabel && <Grid item>
+                            <Typography variant={"caption"}>{secondaryLabel}</Typography>
+                        </Grid>}
+                    </Grid>
+                </Grid>
             </Grid>
         </Grid>
+        {onChange && value !== undefined && <Grid item xs={12}>
+            <Slider valueLabelDisplay="off" color="secondary" min={min} max={max} step={step} value={value} onChange={onChange} />
+        </Grid>}
     </Grid>;
 }
