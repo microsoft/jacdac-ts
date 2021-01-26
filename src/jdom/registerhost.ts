@@ -80,7 +80,7 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         return jdunpack(this.data, this.packFormat) as TValues;
     }
 
-    setValues(values: TValues) {
+    setValues(values: TValues, skipChangeEvent?: boolean) {
         if (this.readOnly)
             return;
 
@@ -105,7 +105,8 @@ export default class JDRegisterHost<TValues extends any[]> extends JDEventSource
         const d = jdpack(this.packFormat, values);
         if (!bufferEq(this.data, d)) {
             this.data = d;
-            this.emit(CHANGE);
+            if (!skipChangeEvent)
+                this.emit(CHANGE);
         }
     }
 

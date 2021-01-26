@@ -1,5 +1,5 @@
 import JDSensorServiceHost from "./sensorservicehost";
-import { RealTimeClockReg, SRV_REAL_TIME_CLOCK } from "../jdom/constants"
+import { RealTimeClockReg, RealTimeClockVariant, REFRESH, SRV_REAL_TIME_CLOCK } from "../jdom/constants"
 import JDRegisterHost from "../jdom/registerhost";
 
 export type RealTimeClockReadingType = [number, number, number, number, number, number, number, number];
@@ -21,13 +21,25 @@ export default class RealTimeClockServiceHost
     extends JDSensorServiceHost<RealTimeClockReadingType> {
     readonly error: JDRegisterHost<[number]>;
     readonly precision: JDRegisterHost<[number]>;
+    private lastEpoch: number = 0;
 
     constructor(time: Date) {
         super(SRV_REAL_TIME_CLOCK, {
             readingValues: dateToClock(time),
+            variant: RealTimeClockVariant.Computer
         })
 
         this.error = this.addRegister<[number]>(RealTimeClockReg.Error, [0]);
         this.precision = this.addRegister<[number]>(RealTimeClockReg.Precision, [0]);
+
+        this.on(REFRESH, this.refreshTime.bind(this));
+    }
+
+    private refreshTime() {
+        const r = dateToClock(new Date());
+        if (r[0] !== this.lastEpoch) {
+            this.reading.setValues(r);
+            this.lastEpoch = r[0];
+        }
     }
 }

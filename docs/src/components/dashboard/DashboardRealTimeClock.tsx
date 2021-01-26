@@ -1,5 +1,5 @@
 
-import React, {  } from "react";
+import React, { } from "react";
 import { RealTimeClockReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
@@ -12,6 +12,11 @@ export default function DashboardRealTimeClock(props: DashboardServiceProps) {
     const [epoch] = useRegisterUnpackedValue<RealTimeClockReadingType>(service.register(RealTimeClockReg.Now));
     if (epoch === undefined)
         return null;
-    const time = new Date(epoch * 1000);
-    return <Typography tabIndex={0} role="timer" aria-label={`clock at ${time.toLocaleString()}`} variant="body1">{time.toLocaleString()}</Typography>
+    const t = new Date(epoch * 1000);
+    const date = t.toLocaleDateString()
+    const time = t.toLocaleTimeString()
+    return <>
+        <Typography align="center" tabIndex={0} role="timer" aria-label={date} variant="body2">{date}</Typography>
+        <Typography align="center" tabIndex={0} role="timer" aria-label={time} variant="body1">{time}</Typography>
+    </>
 }

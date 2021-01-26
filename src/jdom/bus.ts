@@ -44,7 +44,8 @@ import {
     STREAMING_DEFAULT_INTERVAL,
     REGISTER_POLL_FIRST_REPORT_INTERVAL,
     DEVICE_HOST_ADDED,
-    DEVICE_HOST_REMOVED
+    DEVICE_HOST_REMOVED,
+    REFRESH
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -788,7 +789,7 @@ export class JDBus extends JDNode {
         }
 
         // apply streaming samples to device hosts
-        this._deviceHosts.map(host => host.refreshRegisters());
+        this._deviceHosts.map(host => host.emit(REFRESH));
     }
 
     /**

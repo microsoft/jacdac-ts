@@ -98,8 +98,4 @@ export default class JDServiceHost extends JDEventSource {
             memcpy(payload, 4, data);
         await this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
     }
-
-    refreshRegisters() {
-        // noop by default, implemented in sensor mostly
-    }
 }

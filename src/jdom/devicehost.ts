@@ -5,7 +5,7 @@ import { shortDeviceId } from "./pretty";
 import { anyRandomUint32, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
-import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
+import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
 
 export default class JDDeviceHost extends JDEventSource {
     private _bus: JDBus;
@@ -37,7 +37,7 @@ export default class JDDeviceHost extends JDEventSource {
         this.handlePacket = this.handlePacket.bind(this);
 
         this.controlService.resetIn.on(REPORT_RECEIVE, this.handleResetIn.bind(this));
-
+        this.on(REFRESH, this.refreshRegisters.bind(this));
     }
 
     protected log(msg: any) {
@@ -160,8 +160,8 @@ export default class JDDeviceHost extends JDEventSource {
         }
     }
 
-    refreshRegisters() {
-        this._services.forEach(srv => srv.refreshRegisters());
+    private refreshRegisters() {
+        this._services.forEach(srv => srv.emit(REFRESH));
     }
 
     reset() {

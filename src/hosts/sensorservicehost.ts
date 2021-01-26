@@ -1,5 +1,5 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
-import { SensorReg } from "../jdom/constants";
+import { REFRESH, SensorReg } from "../jdom/constants";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
 
@@ -39,9 +39,11 @@ export default class JDSensorServiceHost<TReading extends any[]> extends JDServi
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)
             this.addRegister<[number]>(SystemReg.MaxReading, [maxReading]);
+
+        this.on(REFRESH, this.refreshRegisters.bind(this));
     }
 
-    refreshRegisters() {
+    private refreshRegisters() {
         const [samples] = this.streamingSamples.values();
         if (samples <= 0 || !this.reading.data)
             return;
