@@ -137,10 +137,6 @@ export default function Toc(props: { pagePath: string }) {
       path: "/services/",
       order: 2
     }, {
-      name: "Devices",
-      path: "/devices/",
-      order: 3
-    }, {
       name: "Tools",
       path: "/tools/",
       order: 4
@@ -148,6 +144,10 @@ export default function Toc(props: { pagePath: string }) {
       name: "Clients",
       path: "/clients/",
       order: 5
+    }, {
+      name: "Devices",
+      path: "/devices/",
+      order: 5.5
     }, {
       name: "Traces",
       path: "/traces/",
