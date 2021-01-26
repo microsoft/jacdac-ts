@@ -7,11 +7,11 @@ import {
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTOR, SRV_POTENTIOMETER,
     SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_REFLECTOR_LIGHT, SRV_RELAY,
-    SRV_ROLE_MANAGER,
+    SRV_ROLE_MANAGER, SRV_JOYSTICK,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
-    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -21,6 +21,7 @@ import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
 import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
+import JoystickSensorServiceHost from "./joystickservicehost";
 import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
@@ -205,7 +206,7 @@ const _hosts: {
             services: () => [new JDSensorServiceHost<[number]>(SRV_E_CO2, eCO2Options), new JDSensorServiceHost<[number]>(SRV_TVOC, tvocOptions)]
         },
         {
-            name: "CO² + humidity + yhermometer",
+            name: "CO² + humidity + thermometer",
             serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
             services: () => [
                 new JDSensorServiceHost<[number]>(SRV_E_CO2, CO2Options),
@@ -230,6 +231,16 @@ const _hosts: {
                 new HumidityServiceHost(),
                 new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
                 new JDSensorServiceHost(SRV_BAROMETER, barometerOptions)]
+        },
+        {
+            name: "joystick (thumbstick)",
+            serviceClasses: [SRV_JOYSTICK],
+            services: () => [new JoystickSensorServiceHost(JoystickVariant.Thumb)]
+        },
+        {
+            name: "joystick (arcade stick digital)",
+            serviceClasses: [SRV_JOYSTICK],
+            services: () => [new JoystickSensorServiceHost(JoystickVariant.ArcadeStick, true)]
         },
         {
             name: "led matrix (5x5 micro:bit)",

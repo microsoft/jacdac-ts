@@ -70,7 +70,6 @@ export default function GaugeWidget(props: {
         const svg = sliderPathRef.current.ownerSVGElement
         const pos = svgPointerPoint(svg, ev);
         const closest = closestPoint(sliderPathRef.current, _step, pos);
-        console.log({ pos, closest })
         onChange(min + (1 - closest) * (max - min))
     }
     const pointerStyle: CSSProperties = clickeable && {
