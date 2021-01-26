@@ -11,7 +11,7 @@ import {
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
-    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -435,7 +435,14 @@ const _hosts: {
         {
             name: "slider",
             serviceClasses: [SRV_POTENTIOMETER],
-            services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
+            services: () => [new JDSensorServiceHost<[number]>(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
+        },
+        {
+            name: "soil moisture",
+            serviceClasses: [SRV_SOIL_MOISTURE],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_SOIL_MOISTURE, {
+                readingValues: [0]
+            })]
         },
         {
             name: "speech synthesis",

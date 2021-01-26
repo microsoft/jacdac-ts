@@ -11,6 +11,7 @@ import RainGaugeServiceHost from "../../../../src/hosts/RainGaugeServiceHost"
 import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { roundWithPrecision } from "../../../../src/jacdac";
+import { useId } from "react-use-id-hook";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 
 const TILT = 15;
@@ -19,6 +20,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const { service, services, variant } = props;
 
     const [precipitation] = useRegisterUnpackedValue<[number]>(service.register(RainGaugeReg.Precipitation))
+    const clipId = useId();
     const host = useServiceHost<RainGaugeServiceHost>(service)
     const tiltCount = useChange(host, h => h?.tiltCount);
     const level = useChange(host, h => h?.level);
@@ -45,7 +47,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     return <SvgWidget
         width={w} height={h} size={widgetSize}>
         <defs>
-            <clipPath id="water">
+            <clipPath id={clipId}>
                 <rect transform={`rotate(${-a}, ${w / 2}, ${by + bh})`}
                     x={0} y={by + bh * (1 - l)}
                     width={w}
@@ -71,7 +73,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
                 stroke={active}
                 fill={active}
                 aria-label={"water"}
-                clipPath="url(#water)"
+                clipPath={`url(#${clipId})`}
                 style={{ userSelect: "none" }}
             />
         </g>
