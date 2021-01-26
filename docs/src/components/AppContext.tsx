@@ -1,12 +1,12 @@
-import { Dialog, DialogContent, DialogTitle } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/jdom/bus";
 import { CONNECTION_STATE, ERROR } from "../../../src/jdom/constants";
 import { isCancelError } from "../../../src/jdom/utils";
 import JACDACContext, { JDContextProps } from "../../../src/react/Context";
-import DeviceHostDialog from "./hosts/DeviceHostDialog";
-import { useId } from "react-use-id-hook"
+import { JDDevice } from "../../../src/jacdac";
+import DeviceRenameDialog from "./dialogs/DeviceRenameDialog";
+import StartSimulatorDialog from "./dialogs/StartSimulatorDialog";
 
 export enum DrawerType {
     None,
@@ -26,7 +26,8 @@ export interface AppProps {
     setError: (error: any) => void,
     widgetMode: boolean,
     showDeviceHostsDialog: boolean,
-    toggleShowDeviceHostsDialog: () => void
+    toggleShowDeviceHostsDialog: () => void,
+    showRenameDeviceDialog: (device: JDDevice) => void
 }
 
 const AppContext = createContext<AppProps>({
@@ -39,7 +40,8 @@ const AppContext = createContext<AppProps>({
     setError: (error: any) => { },
     widgetMode: false,
     showDeviceHostsDialog: false,
-    toggleShowDeviceHostsDialog: () => {}
+    toggleShowDeviceHostsDialog: () => { },
+    showRenameDeviceDialog: (device) => { }
 });
 AppContext.displayName = "app";
 
@@ -51,8 +53,7 @@ export const AppProvider = ({ children }) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, _setToolsMenu] = useState(false)
     const [showDeviceHostsDialog, setShowDeviceHostsDialog] = useState(false)
-    const deviceHostDialogId = useId();
-    const deviceHostLabelId = useId()
+    const [renameDevice, setRenameDevice] = useState<JDDevice>()
 
     const { enqueueSnackbar } = useSnackbar();
     const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
@@ -103,6 +104,8 @@ export const AppProvider = ({ children }) => {
         if (!b)
             setToolsMenu(false);
     }
+    const handleCloseRenameDialog = () => setRenameDevice(undefined)
+    const showRenameDeviceDialog = (device: JDDevice) => setRenameDevice(device)
 
     return (
         <AppContext.Provider value={{
@@ -115,15 +118,12 @@ export const AppProvider = ({ children }) => {
             setError,
             widgetMode,
             showDeviceHostsDialog,
-            toggleShowDeviceHostsDialog
+            toggleShowDeviceHostsDialog,
+            showRenameDeviceDialog
         }}>
             {children}
-            <Dialog id={deviceHostDialogId} aria-labelledby={deviceHostLabelId} open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog}>
-                <DialogTitle id={deviceHostLabelId}>Start a device simulator</DialogTitle>
-                <DialogContent>
-                    <DeviceHostDialog onAdded={toggleShowDeviceHostsDialog} onAddedAll={toggleShowDeviceHostsDialog} />
-                </DialogContent>
-            </Dialog>
+            {showDeviceHostsDialog && <StartSimulatorDialog open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog} />}
+            {renameDevice && <DeviceRenameDialog device={renameDevice} onClose={handleCloseRenameDialog} />}
         </AppContext.Provider>
     )
 }

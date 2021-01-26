@@ -4,7 +4,7 @@ import { JDDevice } from "../../../src/jdom/device"
 import FingerprintIcon from '@material-ui/icons/Fingerprint';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import RefreshIcon from '@material-ui/icons/Refresh';
-import DeviceRenameButton from "./DeviceRenameDialog";
+import DeviceRenameButton from "./DeviceRenameButton";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import CmdButton from "./CmdButton";
 import useDeviceHost from "./hooks/useDeviceHost"

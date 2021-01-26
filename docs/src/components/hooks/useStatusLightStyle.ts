@@ -86,7 +86,6 @@ export default function useStatusLightStyle(frames: StatusLightFrame[], options?
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }`;
-        console.log({ frames, total, nkframes, kf })
         return kf;
     }, [frames?.map(frame => frame.toString()).join(), monochrome, cssProperty]);
 
