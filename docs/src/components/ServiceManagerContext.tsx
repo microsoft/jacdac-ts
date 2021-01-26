@@ -7,7 +7,7 @@ import { IFrameTransport } from "../../../src/embed/transport";
 import DarkModeContext from "./ui/DarkModeContext";
 import JACDACContext, { JDContextProps } from '../../../src/react/Context';
 import { JDDevice } from "../../../src/jdom/device";
-import { IDeviceNameSettings } from "../../../src/jdom/bus"
+import { IDeviceNameSettings, JDBus } from "../../../src/jdom/bus"
 import { inIFrame } from "../../../src/jdom/iframeclient";
 
 export interface ISettings {
@@ -41,12 +41,13 @@ export class LocalStorageSettings implements ISettings {
 }
 
 class LocalStorageDeviceNameSettings implements IDeviceNameSettings {
-    constructor(private readonly settings: ISettings) { }
+    constructor(readonly bus: JDBus, private readonly settings: ISettings) { }
     resolve(device: JDDevice): string {
         return this.settings.get(device.deviceId)
     }
     notifyUpdate(device: JDDevice, name: string): void {
-        this.settings.set(device.deviceId, name)
+        if (this.bus.deviceHost(device.deviceId) === undefined)
+            this.settings.set(device.deviceId, name)
     }
 }
 
@@ -98,6 +99,7 @@ export const ServiceManagerProvider = ({ children }) => {
         const isHosted = inIFrame();
         let fileStorage: IFileStorage = new BrowserFileStorage()
         let deviceNames = new LocalStorageDeviceNameSettings(
+            bus,
             new LocalStorageSettings("jacdac_device_names")
         );
         bus.host.deviceNameSettings = deviceNames;
