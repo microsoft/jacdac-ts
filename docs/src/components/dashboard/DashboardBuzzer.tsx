@@ -1,10 +1,11 @@
 
 import { Button, ButtonGroup, createStyles, Grid, makeStyles } from "@material-ui/core";
-import React from "react";
+import React, { useRef } from "react";
 import { BuzzerCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { jdpack } from "../../../../src/jdom/pack";
 import { initAudioContext } from "../../../../src/hosts/buzzerservicehost";
+import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
 
 const useStyles = makeStyles(() => createStyles({
     btn: {
@@ -16,6 +17,8 @@ const useStyles = makeStyles(() => createStyles({
 export default function DashboardBuzzer(props: DashboardServiceProps) {
     const { service } = props;
     const classes = useStyles();
+    const gridRef = useRef<HTMLDivElement>();
+    const keyboardProps = useKeyboardNavigationProps(gridRef.current)
 
     const notes = [
         { name: "C", frequency: 261.64 },
@@ -41,13 +44,15 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     }
     const handlePlayTone = (f: number) => () => sendPlayTone(f)
 
-    return <Grid container alignItems="center" alignContent="space-between">
+    return <Grid ref={gridRef} container alignItems="center" alignContent="space-between">
         {notes.map(note => <Grid key={note.frequency} item xs><Button
             className={classes.btn}
             size="small"
             variant="outlined"
             onPointerEnter={handlePointerEnter(note.frequency)}
-            onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
+            onClick={handlePlayTone(note.frequency)}
+            {...keyboardProps}
+            >{note.name}</Button>
         </Grid>
         )}
     </Grid>
