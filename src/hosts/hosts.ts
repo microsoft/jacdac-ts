@@ -13,7 +13,7 @@ import {
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
-    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED
+    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY, SevenSegmentDisplayReg
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -39,6 +39,7 @@ import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
 import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 import LEDServiceHost from "./ledservicehost";
+import { fromHex } from "../jdom/utils";
 
 const indoorThermometerOptions = {
     readingValues: [21.5],
@@ -124,6 +125,30 @@ const _hosts: {
     serviceClasses: number[],
     services: () => JDServiceHost[]
 }[] = [
+       /* {
+            name: "7-segment",
+            serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
+            services: () => [new JDServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
+                intensityValues: [0xff],
+                valueValues: [fromHex("0ff01122")],
+                registerValues: [{
+                    code: SevenSegmentDisplayReg.DigitCount,
+                    values: [4]
+                }]
+            })]
+        }, */
+        {
+            name: "7-segment (8 segments)",
+            serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
+            services: () => [new JDServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
+                intensityValues: [0xff],
+                valueValues: [fromHex("01020408102040ff")],
+                registerValues: [{
+                    code: SevenSegmentDisplayReg.DigitCount,
+                    values: [8]
+                }]
+            })]
+        },
         {
             name: "accelerometer",
             serviceClasses: [SRV_ACCELEROMETER],
