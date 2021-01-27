@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme, useMediaQuery, useTheme } from '@material-ui/core';
+import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Theme, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import { deviceSpecifications, identifierToUrlPath, imageDeviceOf } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import InfoIcon from '@material-ui/icons/Info';
@@ -50,6 +50,9 @@ export default function DeviceSpecificationList(props: {
             r = r.slice(0, count)
         return r;
     }, [requiredServiceClasses, shuffle, count]);
+
+    if (!specs.length)
+        return <Typography variant="body1">No device registered yet.</Typography>
 
     return <GridList className={classes.root} cols={cols}>
         {specs.map(spec => <GridListTile key={spec.id}>
