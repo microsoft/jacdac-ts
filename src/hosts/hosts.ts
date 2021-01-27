@@ -3,15 +3,17 @@ import {
     ArcadeGamepadButton,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
-    DistanceVariant, LedPixelVariant, PotentiometerVariant, ReflectorLightVariant, RelayReg, RelayVariant, ServoVariant,
+    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTOR, SRV_POTENTIOMETER,
-    SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_REFLECTOR_LIGHT, SRV_RELAY,
+    SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_RELAY,
     SRV_ROLE_MANAGER, SRV_JOYSTICK,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
-    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant, SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant, 
+    SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant, 
+    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -264,6 +266,11 @@ const _hosts: {
             services: () => [new LEDMatrixDisplayServiceHost(11, 7)]
         },
         {
+            name: "light level (photo-resistor)",
+            serviceClasses: [SRV_LIGHT_LEVEL],
+            services: () => [new JDSensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.PhotoResistor })]
+        },
+        {
             name: "light ring 10",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 10, variant: LedPixelVariant.Ring })]
@@ -315,18 +322,18 @@ const _hosts: {
         },
         {
             name: "line tracker (digital)",
-            serviceClasses: [SRV_REFLECTOR_LIGHT],
+            serviceClasses: [SRV_REFLECTED_LIGHT],
             services: () => [new ReflectedLightServiceHost()]
         },
         {
             name: "line tracker (2x digital)",
-            serviceClasses: [SRV_REFLECTOR_LIGHT],
+            serviceClasses: [SRV_REFLECTED_LIGHT],
             services: () => [new ReflectedLightServiceHost(), new ReflectedLightServiceHost()]
         },
         {
             name: "line tracker (analog)",
-            serviceClasses: [SRV_REFLECTOR_LIGHT],
-            services: () => [new ReflectedLightServiceHost({ variant: ReflectorLightVariant.InfraredAnalog })]
+            serviceClasses: [SRV_REFLECTED_LIGHT],
+            services: () => [new ReflectedLightServiceHost({ variant: ReflectedLightVariant.InfraredAnalog })]
         },
         {
             name: "matrix keypad (3x4)",
@@ -527,6 +534,11 @@ const _hosts: {
             name: "TVOC",
             serviceClasses: [SRV_TVOC],
             services: () => [new JDSensorServiceHost<[number]>(SRV_TVOC, tvocOptions)]
+        },
+        {
+            name: "UV index",
+            serviceClasses: [SRV_UVINDEX],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_UVINDEX, { readingValues: [5] })]
         },
         {
             name: "wind direction",
