@@ -27,7 +27,6 @@ import JoystickSensorServiceHost from "./joystickservicehost";
 import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
-import MonoLightServiceHost from "./ledservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
 import RealTimeClockServiceHost from "./realtimeclockservicehost";
