@@ -9,7 +9,7 @@ import {
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
 import DashboardBuzzer from "./DashboardBuzzer";
-import DashboardLEDPixel from "./DashboardLEDPixel2";
+import DashboardLEDPixel from "./DashboardLEDPixel";
 import DashboardRoleManager from "./DashboardRoleManager";
 import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
 import DashboardButton from "./DashboardButton";
