@@ -11,9 +11,9 @@ import {
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
-    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant, 
-    SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant, 
-    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
+    SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
+    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -357,6 +357,11 @@ const _hosts: {
             name: "matrix keypad (1x4)",
             serviceClasses: [SRV_MATRIX_KEYPAD],
             services: () => [new MatrixKeypadServiceHost(4, 1, ["1", "2", "3", "4"])]
+        },
+        {
+            name: "motion",
+            serviceClasses: [SRV_MOTION],
+            services: () => [new JDSensorServiceHost(SRV_MOTION, { readingValues: [false] })]
         },
         {
             name: "motor",
