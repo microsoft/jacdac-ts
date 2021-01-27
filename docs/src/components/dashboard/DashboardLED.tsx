@@ -54,7 +54,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
     const r = w / 2;
     const sw = 2;
     return <Grid container direction="row">
-        {host && <Grid item>
+        <Grid item>
             <Slider
                 orientation="vertical"
                 min={0} max={0xffff}
@@ -63,7 +63,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
                 valueLabelDisplay="off"
                 value={brightness}
                 onChange={handleBrightnessChange} />
-        </Grid>}
+        </Grid>
         <Grid item>
             <SvgWidget width={w} height={h} size={widgetSize}>
                 <path fill="#999" d="M14.2 13V7.1C14.2 3.2 11 0 7.1 0 3.2 0 0 3.2 0 7.1v13.7c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.2-.5-2.3-1.3-3.2z" opacity=".65" />

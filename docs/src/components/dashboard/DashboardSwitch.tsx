@@ -29,7 +29,7 @@ export default function DashboardSwitch(props: DashboardServiceProps) {
                 color={color}
                 size={widgetSize}
                 label={on ? "on" : "off"}
-                onClick={host && handleToggle} />
+                onDown={host && handleToggle} />
         default:
             return <>
                 <Switch aria-labelledby={labelId} color={color} checked={on} onChange={host && handleToggle} />

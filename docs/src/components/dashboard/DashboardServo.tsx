@@ -31,6 +31,7 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const enabledRegister = service.register(ServoReg.Enabled);
     const [enabled] = useRegisterUnpackedValue<[boolean]>(enabledRegister)
     const off = !enabled;
+    const angleRegister = service.register(ServoReg.Angle);
     const angle = useActualAngle(service)
     const [offset] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Offset));
 
@@ -63,8 +64,8 @@ export default function DashboardServo(props: DashboardServiceProps) {
                     off={off} onClick={host && toggleOff} />
             </SvgWidget>
         </Grid>
-        {host && <Grid item xs={12}>
-            <RegisterInput register={service.register(ServoReg.Angle)} />
-        </Grid>}
+        <Grid item xs={12}>
+            <RegisterInput register={angleRegister} />
+        </Grid>
     </Grid>
 }

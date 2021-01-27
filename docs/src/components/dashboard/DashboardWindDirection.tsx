@@ -8,8 +8,9 @@ import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
 import { useId } from "react-use-id-hook"
 import useThrottledValue from "../hooks/useThrottledValue";
-import { Grid } from "@material-ui/core";
+import { Grid, Slider } from "@material-ui/core";
 import RegisterInput from "../RegisterInput";
+import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
 export default function DashboardWindDirection(props: DashboardServiceProps) {
     const { service, services, variant } = props;
@@ -17,7 +18,7 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
     const directionRegister = service.register(WindDirectionReg.WindDirection);
     const [direction] = useRegisterUnpackedValue<[number]>(directionRegister)
 
-    const host = useServiceHost(service);
+    const host = useServiceHost<JDSensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)
@@ -37,6 +38,10 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
     const cx = w >> 1
     const cy = h * 4 / 5
     const cy2 = h * 2 / 5;
+
+    const handleChange = async (ev: unknown, newValue: number | number[]) => {
+        await host?.reading.setValues([newValue as number])
+    }
 
     return <Grid container direction="column">
         <Grid item xs={12}>
@@ -59,7 +64,12 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
             </SvgWidget >
         </Grid>
         {host && <Grid item>
-            <RegisterInput register={directionRegister} />
+            <Slider
+                color={color}
+                valueLabelDisplay="off"
+                min={0} max={360} step={5} value={direction}
+                onChange={handleChange}
+            />
         </Grid>}
     </Grid>
 }

@@ -141,7 +141,7 @@ const _hosts: {
             name: "7-segment (8 segments)",
             serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
             services: () => [new JDServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
-                intensityValues: [0xff],
+                intensityValues: [0xffff],
                 valueValues: [fromHex("01020408102040ff")],
                 registerValues: [{
                     code: SevenSegmentDisplayReg.DigitCount,
