@@ -13,7 +13,7 @@ import {
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
-    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION
+    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_MONO_LIGHT
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -27,6 +27,7 @@ import JoystickSensorServiceHost from "./joystickservicehost";
 import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
+import MonoLightServiceHost from "./monolightservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
 import RealTimeClockServiceHost from "./realtimeclockservicehost";
@@ -357,6 +358,11 @@ const _hosts: {
             name: "matrix keypad (1x4)",
             serviceClasses: [SRV_MATRIX_KEYPAD],
             services: () => [new MatrixKeypadServiceHost(4, 1, ["1", "2", "3", "4"])]
+        },
+        {
+            name: "mono light",
+            serviceClasses: [SRV_MONO_LIGHT],
+            services: () => [new MonoLightServiceHost()]
         },
         {
             name: "motion",
