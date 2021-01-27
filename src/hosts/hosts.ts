@@ -11,7 +11,7 @@ import {
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
-    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant, SRV_REAL_TIME_CLOCK
+    SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant, SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -232,6 +232,11 @@ const _hosts: {
                 new HumidityServiceHost(),
                 new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
                 new JDSensorServiceHost(SRV_BAROMETER, barometerOptions)]
+        },
+        {
+            name: "illuminance",
+            serviceClasses: [SRV_ILLUMINANCE],
+            services: () => [new JDSensorServiceHost(SRV_ILLUMINANCE, { readingValues: [1] })]
         },
         {
             name: "joystick (thumbstick)",
