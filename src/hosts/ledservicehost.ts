@@ -1,12 +1,12 @@
-import { CHANGE, MonoLightReg, REPORT_UPDATE, SRV_MONO_LIGHT } from "../jdom/constants";
+import { CHANGE, LedReg, REPORT_UPDATE, SRV_LED } from "../jdom/constants";
 import { JDEventSource } from "../jdom/eventsource";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost from "../jdom/servicehost";
 
-export type MonoLightStep = [number, number];
-export type MonoLightStepsType = [MonoLightStep[]];
+export type LedAnimationStep = [number, number];
+export type LedAnimationStepsType = [LedAnimationStep[]];
 
-export class MonoLightAnimation extends JDEventSource {
+export class LedAnimation extends JDEventSource {
     private _currentStep: number;
     private _currentStepStartTime: number;
     private _currentItensity: number;
@@ -15,7 +15,7 @@ export class MonoLightAnimation extends JDEventSource {
         public maxIterations: number,
         public brightness: number,
         public currentIteration: number,
-        public steps: MonoLightStep[]
+        public steps: LedAnimationStep[]
         ) {
         super();
 
@@ -101,8 +101,8 @@ export class MonoLightAnimation extends JDEventSource {
     }
 }
 
-export default class MonoLightServiceHost extends JDServiceHost {
-    readonly steps: JDRegisterHost<MonoLightStepsType>;
+export default class LEDServiceHost extends JDServiceHost {
+    readonly steps: JDRegisterHost<LedAnimationStepsType>;
     readonly brightness: JDRegisterHost<[number]>;
     readonly maxPower: JDRegisterHost<[number]>;
     readonly maxSteps: JDRegisterHost<[number]>;
@@ -110,19 +110,19 @@ export default class MonoLightServiceHost extends JDServiceHost {
     readonly maxIterations: JDRegisterHost<[number]>;
 
     constructor() {
-        super(SRV_MONO_LIGHT);
+        super(SRV_LED);
 
-        this.steps = this.addRegister<MonoLightStepsType>(MonoLightReg.Steps, [
+        this.steps = this.addRegister<LedAnimationStepsType>(LedReg.Steps, [
             [
                 [0, 1000],
                 [0xffff, 1000],
             ]
         ]);
-        this.brightness = this.addRegister(MonoLightReg.Brightness, [0xffff]);
-        this.maxPower = this.addRegister(MonoLightReg.MaxPower, [200]);
-        this.maxSteps = this.addRegister(MonoLightReg.MaxSteps, [10]);
-        this.currentIteration = this.addRegister(MonoLightReg.CurrentIteration, [0]);
-        this.maxIterations = this.addRegister(MonoLightReg.MaxIterations, [0xffff]);
+        this.brightness = this.addRegister(LedReg.Brightness, [0xffff]);
+        this.maxPower = this.addRegister(LedReg.MaxPower, [200]);
+        this.maxSteps = this.addRegister(LedReg.MaxSteps, [10]);
+        this.currentIteration = this.addRegister(LedReg.CurrentIteration, [0]);
+        this.maxIterations = this.addRegister(LedReg.MaxIterations, [0xffff]);
 
         this.steps.on(REPORT_UPDATE, this.handleSteps.bind(this));
     }

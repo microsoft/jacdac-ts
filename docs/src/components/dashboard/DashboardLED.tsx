@@ -3,30 +3,30 @@ import { DashboardServiceProps } from "./DashboardServiceWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 import { SvgWidget } from "../widgets/SvgWidget";
-import MonoLightServiceHost, { MonoLightAnimation, MonoLightStepsType } from "../../../../src/hosts/monolightservicehost";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { MonoLightReg } from "../../../../src/jacdac";
 import useAnimationFrame from "../hooks/useAnimationFrame";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import { Grid, Slider } from "@material-ui/core";
+import LEDServiceHost, { LedAnimation, LedAnimationStepsType } from "../../../../src/hosts/ledservicehost";
+import { LedReg } from "../../../../src/jdom/constants";
 
 export default function DashboardMonoLight(props: DashboardServiceProps) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { service, services, variant } = props;
     const widgetSize = useWidgetSize(variant, services.length);
-    const host = useServiceHost<MonoLightServiceHost>(service);
+    const host = useServiceHost<LEDServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const { active } = useWidgetTheme(color);
-    const [maxIterations] = useRegisterUnpackedValue<[number]>(service.register(MonoLightReg.MaxIterations));
-    const brightnessRegister = service.register(MonoLightReg.Brightness);
+    const [maxIterations] = useRegisterUnpackedValue<[number]>(service.register(LedReg.MaxIterations));
+    const brightnessRegister = service.register(LedReg.Brightness);
     const [brightness] = useRegisterUnpackedValue<[number]>(brightnessRegister);
-    const [currentIteration] = useRegisterUnpackedValue<[number]>(service.register(MonoLightReg.CurrentIteration));
-    const [steps] = useRegisterUnpackedValue<MonoLightStepsType>(service.register(MonoLightReg.Steps));
+    const [currentIteration] = useRegisterUnpackedValue<[number]>(service.register(LedReg.CurrentIteration));
+    const [steps] = useRegisterUnpackedValue<LedAnimationStepsType>(service.register(LedReg.Steps));
 
     // restart animation with steps
-    const animation = useMemo(() => new MonoLightAnimation(maxIterations, brightness, currentIteration, steps)
+    const animation = useMemo(() => new LedAnimation(maxIterations, brightness, currentIteration, steps)
         , steps || [])
     // update animation on the fly
     useEffect(() => {

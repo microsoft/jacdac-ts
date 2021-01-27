@@ -1,6 +1,5 @@
 
 import React, {  } from "react";
-import { ReflectorLightReg, ReflectorLightVariant } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
@@ -10,12 +9,13 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import useThrottledValue from "../hooks/useThrottledValue";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 import ReflectedLightServiceHost from "../../../../src/hosts/reflectedlightservicehost";
+import { ReflectedLightReg, ReflectedLightVariant } from "../../../../src/jdom/constants";
 
 export default function DashboardReflectedLight(props: DashboardServiceProps) {
     const { service, services, variant } = props;
 
-    const [brightness] = useRegisterUnpackedValue<[number]>(service.register(ReflectorLightReg.Brightness));
-    const [sensorVariant] = useRegisterUnpackedValue<[ReflectorLightVariant]>(service.register(ReflectorLightReg.Variant));
+    const [brightness] = useRegisterUnpackedValue<[number]>(service.register(ReflectedLightReg.Brightness));
+    const [sensorVariant] = useRegisterUnpackedValue<[ReflectedLightVariant]>(service.register(ReflectedLightReg.Variant));
 
     const host = useServiceHost<ReflectedLightServiceHost>(service);
     const color = host ? "secondary" : "primary";
@@ -31,7 +31,7 @@ export default function DashboardReflectedLight(props: DashboardServiceProps) {
     const w = 64
     const h = 64
     const m = 4
-    const sw = sensorVariant === ReflectorLightVariant.InfraredAnalog ? 32 : 16;
+    const sw = sensorVariant === ReflectedLightVariant.InfraredAnalog ? 32 : 16;
     const dx = w >> 1
     const x = (w - sw - dx) / 2 + (actualBrightness / maxValue) * dx;
     const sh = 32;

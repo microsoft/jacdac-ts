@@ -195,7 +195,7 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
     </>
 }
 
-export default function DashboardLedPixel(props: DashboardServiceProps) {
+export default function DashboardLEDPixel(props: DashboardServiceProps) {
     const { service, services, expanded } = props;
     const host = useServiceHost<LedPixelServiceHost>(service);
     return <>

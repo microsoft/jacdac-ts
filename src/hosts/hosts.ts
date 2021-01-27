@@ -13,7 +13,7 @@ import {
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
-    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_MONO_LIGHT
+    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -27,7 +27,7 @@ import JoystickSensorServiceHost from "./joystickservicehost";
 import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
 import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
-import MonoLightServiceHost from "./monolightservicehost";
+import MonoLightServiceHost from "./ledservicehost";
 import MotorServiceHost from "./motorservicehost";
 import RainGaugeServiceHost from "./raingaugeservicehost";
 import RealTimeClockServiceHost from "./realtimeclockservicehost";
@@ -39,6 +39,7 @@ import SettingsServiceHost from "./settingsservicehost";
 import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
 import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
+import LEDServiceHost from "./ledservicehost";
 
 const indoorThermometerOptions = {
     readingValues: [21.5],
@@ -252,17 +253,22 @@ const _hosts: {
             services: () => [new JoystickSensorServiceHost(JoystickVariant.ArcadeStick, true)]
         },
         {
-            name: "led matrix (5x5 micro:bit)",
+            name: "LED",
+            serviceClasses: [SRV_LED],
+            services: () => [new LEDServiceHost()]
+        },
+        {
+            name: "LED matrix (5x5 micro:bit)",
             serviceClasses: [SRV_LED_MATRIX_DISPLAY],
             services: () => [new LEDMatrixDisplayServiceHost(5, 5)]
         },
         {
-            name: "led matrix (8x8)",
+            name: "LED matrix (8x8)",
             serviceClasses: [SRV_LED_MATRIX_DISPLAY],
             services: () => [new LEDMatrixDisplayServiceHost(8, 8)]
         },
         {
-            name: "led matrix (11x7)",
+            name: "LED matrix (11x7)",
             serviceClasses: [SRV_LED_MATRIX_DISPLAY],
             services: () => [new LEDMatrixDisplayServiceHost(11, 7)]
         },
@@ -358,11 +364,6 @@ const _hosts: {
             name: "matrix keypad (1x4)",
             serviceClasses: [SRV_MATRIX_KEYPAD],
             services: () => [new MatrixKeypadServiceHost(4, 1, ["1", "2", "3", "4"])]
-        },
-        {
-            name: "mono light",
-            serviceClasses: [SRV_MONO_LIGHT],
-            services: () => [new MonoLightServiceHost()]
         },
         {
             name: "motion",

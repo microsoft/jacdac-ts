@@ -1,14 +1,14 @@
-import { ReflectorLightReg, ReflectorLightVariant, SRV_REFLECTOR_LIGHT } from "../jdom/constants";
+import { ReflectedLightReg, ReflectedLightVariant, SRV_REFLECTED_LIGHT } from "../jdom/constants";
 import JDRegisterHost from "../jdom/registerhost";
 import JDSensorServiceHost from "./sensorservicehost";
 
 export default class ReflectedLightServiceHost extends JDSensorServiceHost<[number]> {
-    readonly variant: JDRegisterHost<[ReflectorLightVariant]>;
+    readonly variant: JDRegisterHost<[ReflectedLightVariant]>;
 
-    constructor(options?: { variant?: ReflectorLightVariant }) {
-        super(SRV_REFLECTOR_LIGHT, { readingValues: [0] })
+    constructor(options?: { variant?: ReflectedLightVariant }) {
+        super(SRV_REFLECTED_LIGHT, { readingValues: [0] })
         const { variant } = options || {};
 
-        this.variant = this.addRegister<[ReflectorLightVariant]>(ReflectorLightReg.Variant, [variant || ReflectorLightVariant.InfraredDigital])
+        this.variant = this.addRegister<[ReflectedLightVariant]>(ReflectedLightReg.Variant, [variant || ReflectorLightVariant.InfraredDigital])
     }
 }
