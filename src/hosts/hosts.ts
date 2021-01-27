@@ -125,18 +125,18 @@ const _hosts: {
     serviceClasses: number[],
     services: () => JDServiceHost[]
 }[] = [
-       /* {
-            name: "7-segment",
+       {
+            name: "7-segment (4 segments)",
             serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
             services: () => [new JDServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
-                intensityValues: [0xff],
-                valueValues: [fromHex("0ff01122")],
+                intensityValues: [0xffff],
+                valueValues: [fromHex("ff112233")],
                 registerValues: [{
                     code: SevenSegmentDisplayReg.DigitCount,
                     values: [4]
                 }]
             })]
-        }, */
+        },
         {
             name: "7-segment (8 segments)",
             serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
