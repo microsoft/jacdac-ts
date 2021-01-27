@@ -4,8 +4,8 @@ import { SvgWidget } from "./SvgWidget";
 import useThrottledValue from "../hooks/useThrottledValue"
 import { closestPoint, describeArc, svgPointerPoint } from "./svgutils";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
-import SliderHandle from "./SliderHandle";
 import PowerButton from "./PowerButton";
+import { Grid, Slider } from "@material-ui/core";
 
 export default function GaugeWidget(props: {
     value: number,
@@ -22,15 +22,15 @@ export default function GaugeWidget(props: {
     off?: boolean,
     toggleOff?: () => void
 }) {
-    const { value, label, color, size, min, max, step, variant, valueLabel,
+    const { value, color, size, min, max, step, variant, valueLabel,
         off, toggleOff, onChange, tabIndex } = props;
-    const { background, active, controlBackground, textProps } = useWidgetTheme(color);
+    const { background, active, textProps } = useWidgetTheme(color);
 
     const sliderPathRef = useRef<SVGPathElement>();
     const w = 120;
     const h = 120;
     const m = 8;
-    const roff = off ? 18 : 24;
+    const roff = 18;
     const sw = m << 1;
     const cx = w >> 1;
     const cy = h >> 1;
@@ -78,30 +78,33 @@ export default function GaugeWidget(props: {
         onPointerMove: clickeable && handlePointerDown,
         style: clickeable && pointerStyle
     }
+    const handleSliderChange = (ev: unknown, newValue: number | number[]) => {
+        onChange(newValue as number);
+    }
 
-    return <SvgWidget tabIndex={tabIndex} width={w} height={h} size={size}>
-        <path ref={sliderPathRef} strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent"
-            {...pathProps}
-        />
-        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent"
-            {...pathProps}
-        />}
-        {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent"
-            {...pathProps}
-        />}
-        {sliderPathRef.current && value !== undefined && <SliderHandle
-            pathRef={sliderPathRef.current}
-            value={value} valueText={tvalue}
-            min={min} max={max} step={_step}
-            label={`${label} slider`}
-            r={m - 1}
-            fill={controlBackground}
-            stroke={active}
-            strokeWidth={2}
-            onValueChange={!off && onChange}
-        />}
-        {off !== undefined && <PowerButton off={off} cx={cx} cy={cy} r={roff} color={color} label={tvalue} onClick={toggleOff} />}
-        {off === undefined && <text x={cx} y={cy} {...textProps}>{tvalue}</text>}
-        {label && <text x={w >> 1} y={h - m} {...textProps}>{label}</text>}
-    </SvgWidget>
+    return <Grid container direction="column">
+        <Grid item>
+            <SvgWidget tabIndex={tabIndex} width={w} height={h} size={size}>
+                <path ref={sliderPathRef} strokeWidth={sw} stroke={background} d={db} strokeLinecap={lineCap} fill="transparent"
+                    {...pathProps}
+                />
+                {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dvalue} opacity={0.2} fill="transparent"
+                    {...pathProps}
+                />}
+                {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent"
+                    {...pathProps}
+                />}
+                {off !== undefined && <PowerButton off={off} cx={cx} cy={cy} r={roff} color={color} onClick={toggleOff} />}
+                <text x={w >> 1} y={h - 2 * m} {...textProps}>{tvalue}</text>
+            </SvgWidget>
+        </Grid>
+        {clickeable && <Grid item>
+            <Slider
+                disabled={off}
+                color={color}
+                min={min} max={max} step={_step} valueLabelDisplay="off"
+                value={value} onChange={handleSliderChange} />
+        </Grid>}
+    </Grid>
+
 }
