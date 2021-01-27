@@ -12,7 +12,7 @@ import { Grid, Slider } from "@material-ui/core";
 import LEDServiceHost, { LedAnimation, LedAnimationStepsType } from "../../../../src/hosts/ledservicehost";
 import { LedReg } from "../../../../src/jdom/constants";
 
-export default function DashboardMonoLight(props: DashboardServiceProps) {
+export default function DashboardLED(props: DashboardServiceProps) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { service, services, variant } = props;
     const widgetSize = useWidgetSize(variant, services.length);
