@@ -207,7 +207,7 @@ const _hosts: {
             services: () => [new JDSensorServiceHost<[number]>(SRV_E_CO2, eCO2Options), new JDSensorServiceHost<[number]>(SRV_TVOC, tvocOptions)]
         },
         {
-            name: "CO² + humidity + thermometer",
+            name: "eCO² + humidity + thermometer",
             serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
             services: () => [
                 new JDSensorServiceHost<[number]>(SRV_E_CO2, CO2Options),
