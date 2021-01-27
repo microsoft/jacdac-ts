@@ -20,8 +20,10 @@ export default function useWidgetTheme(color?: "primary" | "secondary") {
         dominantBaseline: "middle",
         textAnchor: "middle",
         pointerEvents: "none",
+        letterSpacing: 0,
         style: {
-            userSelect: "none"
+            userSelect: "none",
+            pointerEvents: "none"
         }
     }
 
