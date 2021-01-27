@@ -18,8 +18,11 @@ export default function DashboardMonoLight(props: DashboardServiceProps) {
     const color = host ? "secondary" : "primary";
     const { background, active } = useWidgetTheme(color);
 
-    const intensity = useChange(host, h => h?.intensity) || 0.5
-    const opacity = intensity;
+    const intensity = useChange(host, h => h?.intensity);
+
+    // nothing to see
+    if (intensity === undefined)
+        return null;
 
     const w = 64;
     const r = w / 2;
@@ -30,6 +33,6 @@ export default function DashboardMonoLight(props: DashboardServiceProps) {
     const ri = ro - sw;
     return <SvgWidget width={w} size={widgetSize}>
         <circle cx={cx} cy={cy} r={ro} fill={background} stroke={background} strokeWidth={2} />
-        <circle cx={cx} cy={cy} r={ri} fill={active} opacity={opacity} />
+        <circle cx={cx} cy={cy} r={ri} fill={active} opacity={intensity} />
     </SvgWidget>
 }

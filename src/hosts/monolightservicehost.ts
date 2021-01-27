@@ -22,7 +22,7 @@ export default class MonoLightServiceHost extends JDServiceHost {
         this.steps = this.addRegister<MonoLightStepsType>(MonoLightReg.Steps, [
             [
                 [0, 1000],
-                [0xff, 1000],
+                [0xffff, 1000],
             ]
         ]);
         this.brightness = this.addRegister(MonoLightReg.Brightness, [0xffff]);
@@ -41,7 +41,7 @@ export default class MonoLightServiceHost extends JDServiceHost {
 
     get intensity() {
         const [brightness] = this.brightness.values();
-        return (this._currentItensity * brightness) / (0xff * 0xffff);
+        return (this._currentItensity * brightness) / (0xffff * 0xffff);
     }
 
     private handleSteps() {
@@ -94,7 +94,6 @@ export default class MonoLightServiceHost extends JDServiceHost {
 
             // restart iteration if needed
             if (this._currentStep === steps.length - 1) {
-                console.log({ currentIteration })
                 iteration++;
 
                 // done iterating?
