@@ -211,6 +211,8 @@ export default function MemberInput(props: {
         return <TextField
             spellCheck={false}
             value={textValue}
+            label={label}
+            inputProps={({ ["aria-label"]: label })}
             helperText={helperText}
             onChange={disabled ? undefined : handleChange}
             required={value === undefined}
@@ -229,6 +231,8 @@ export default function MemberInput(props: {
         return <TextField
             spellCheck={false}
             value={textValue}
+            label={label}
+            inputProps={({ ["aria-label"]: label })}
             helperText={helperText}
             onChange={disabled ? undefined : handleChange}
             required={value === undefined}

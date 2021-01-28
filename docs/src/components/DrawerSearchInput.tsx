@@ -16,6 +16,7 @@ export default function DrawerSearchInput() {
         variant="outlined"
         type="search"
         size="small"
+        aria-label="Search documentation"
         value={searchQuery}
         onChange={handleChange} />
 }

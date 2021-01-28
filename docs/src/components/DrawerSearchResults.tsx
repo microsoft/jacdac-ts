@@ -24,7 +24,9 @@ export default function DrawerSearchResults() {
             key={'search' + result.url}
             nodeId={result.url.replace(/\/$/, '')}
             label={<Link to={result.url}>
-                <ListItemText primary={result.title} />
+                <ListItemText
+                    aria-label={result.title}
+                    primary={result.title} />
             </Link>} />)}
     </TreeView>
 }
