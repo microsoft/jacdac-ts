@@ -77,7 +77,7 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
         const hostDefinitions = hosts();
-        for (const hostDef of hostDefinitions.slice(0, 20)) {
+        for (const hostDef of hostDefinitions.slice(0, 10)) {
             addHost(bus, hostDef.services());
         }
     }, []);

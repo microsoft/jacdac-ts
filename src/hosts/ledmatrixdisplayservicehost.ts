@@ -13,6 +13,8 @@ export default class LEDMatrixDisplayServiceHost extends JDSensorServiceHost<[Ui
             intensityValues: [0xff >> 1]
         })
 
+        this.dashboardWeight = 3;
+
         this.rows = this.addRegister(LedMatrixDisplayReg.Rows, [rows]);
         this.columns = this.addRegister(LedMatrixDisplayReg.Columns, [columns]);
         this.brightness = this.addRegister(LedMatrixDisplayReg.Brightness, [128]);

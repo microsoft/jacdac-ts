@@ -26,6 +26,9 @@ export default class JDServiceHost extends JDEventSource {
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
     readonly statusCode: JDRegisterHost<[SystemStatusCodes, number]>;
 
+    // this is a hint for dashboard layout, higher means wider
+    public dashboardWeight?: number = undefined;
+
     constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
         const { variant, valueValues, intensityValues, registerValues } = options || {};

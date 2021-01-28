@@ -46,10 +46,8 @@ export default function DashboardDevice(props: {
         </Grid>
 
     if (!showHeader)
-        return <Paper variant="outlined">
-            <Box mx={1.5} mt={0.5} mb={0.25}>
-                <ServiceWidgets />
-            </Box>
+        return <Paper style={({ padding: "0.25em" })} variant="outlined">
+            <ServiceWidgets />
         </Paper>
 
     return (
