@@ -40,7 +40,7 @@ function Carousel() {
     }
 
     return <Grid container spacing={1}>
-        {devices.map(device => <DashboardDeviceItem key={device.id} device={device} />)}
+        {devices.map(device => <DashboardDeviceItem key={device.id} device={device} variant="icon" />)}
         <Grid item>
             <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
                 onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>

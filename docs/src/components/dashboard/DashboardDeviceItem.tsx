@@ -8,8 +8,9 @@ export default function DashboardDeviceItem(props: {
     device: JDDevice,
     expanded?: boolean,
     toggleExpanded?: () => void,
+    variant?: "icon" | ""
 }) {
-    const { device, expanded, toggleExpanded } = props;
+    const { device, expanded, toggleExpanded, variant } = props;
     const readingCount = device.services()
         .map(srv => srv.readingRegister ? 1 : 0)
         .reduce((c: number, v) => c + v, 0);
@@ -27,6 +28,8 @@ export default function DashboardDeviceItem(props: {
         <DashboardDevice
             device={device}
             expanded={expanded}
-            toggleExpanded={toggleExpanded} />
+            toggleExpanded={toggleExpanded}
+            variant={variant}
+            />
     </Grid>
 }

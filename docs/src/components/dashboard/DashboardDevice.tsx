@@ -25,9 +25,10 @@ const ignoredServices = [
 export default function DashboardDevice(props: {
     device: JDDevice,
     expanded?: boolean,
-    toggleExpanded?: () => void
+    toggleExpanded?: () => void,
+    variant?: "icon" | ""
 }) {
-    const { device, expanded, toggleExpanded } = props;
+    const { device, expanded, toggleExpanded, variant } = props;
     const name = useDeviceName(device)
     const services = useChange(device, () => device.services()
         .filter(service => ignoredServices.indexOf(service.serviceClass) < 0
@@ -61,7 +62,7 @@ export default function DashboardDevice(props: {
             <CardContent>
                 <Grid container spacing={1} justify="center" alignItems="flex-end" alignContent="space-between">
                     {services?.map(service => <Grid key={"widget" + service.service_index} item>
-                        <DashboardServiceWidget service={service} expanded={expanded} services={services} />
+                        <DashboardServiceWidget service={service} expanded={expanded} services={services} variant={variant} />
                     </Grid>)}
                 </Grid>
                 {expanded && <Grid container direction="column" spacing={1} alignContent="stretch">
