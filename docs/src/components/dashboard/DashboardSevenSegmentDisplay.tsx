@@ -27,7 +27,6 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
 
     if (digitCount === undefined)
         return null;
-    console.log({ digits, brightness, digitCount })
 
     const md = 4;
     const rs = 4;
