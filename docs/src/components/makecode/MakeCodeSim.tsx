@@ -1,18 +1,18 @@
-import React, { useContext, useEffect, useRef } from "react"
-import { Button, createMuiTheme, createStyles, IconButton, makeStyles, Paper, responsiveFontSizes } from "@material-ui/core";
+import React, { useContext, useEffect } from "react"
+import { Button, createMuiTheme, Paper, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
 import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
-import { arrayConcatMany, strcmp } from "../../../../src/jdom/utils";
+import { strcmp } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import AddIcon from '@material-ui/icons/Add';
 import useChange from "../../jacdac/useChange";
-import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
+import { SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
 import DashboardServiceWidget from "../dashboard/DashboardServiceWidget";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import MakeCodeIcon from "../icons/MakeCodeIcon"
+import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -24,39 +24,6 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
     if (ls !== rs)
         return -ls + rs;
     return strcmp(l.deviceId, r.deviceId);
-}
-
-
-const ignoredServices = [
-    SRV_CTRL,
-    SRV_LOGGER
-]
-
-function carouselServices(device: JDDevice) {
-    return device?.services()
-        .filter(service => ignoredServices.indexOf(service.serviceClass) < 0
-            && !!service.specification);
-}
-
-function CarouselItem(props: {
-    device: JDDevice,
-}) {
-    const { device } = props;
-    const services = useChange(device, d => carouselServices(d));
-
-    return <Grid item>
-        <Paper>
-            <Grid container spacing={1} direction="row" justify="center" alignItems="center" alignContent="stretch">
-                {services?.map(service => <Grid key={"widget" + service.service_index} item>
-                    <DashboardServiceWidget
-                        service={service}
-                        expanded={false}
-                        variant="icon"
-                        services={services} />
-                </Grid>)}
-            </Grid>
-        </Paper>
-    </Grid>
 }
 
 function Carousel() {
@@ -73,12 +40,10 @@ function Carousel() {
     }
 
     return <Grid container spacing={1}>
-        {devices.map(device => {
-            return <CarouselItem key={device.id} device={device} />
-        })}
+        {devices.map(device => <DashboardDeviceItem key={device.id} device={device} />)}
         <Grid item>
-            <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />}
-                onClick={handleAdd} aria-label={"Add blocks"}>Add</Button>
+            <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
+                onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
         </Grid>
     </Grid>
 }
