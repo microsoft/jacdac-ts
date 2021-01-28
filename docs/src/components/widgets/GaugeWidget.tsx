@@ -18,13 +18,13 @@ export default function GaugeWidget(props: {
     variant?: "fountain",
     tabIndex?: number,
     valueLabel?: (v: number) => string,
-    onChange?: (newValue: number) => void
+    onChange?: (ev: unknown, newValue: number) => void
     off?: boolean,
     toggleOff?: () => void
 }) {
     const { value, color, size, min, max, step, variant, valueLabel,
         off, toggleOff, onChange, tabIndex } = props;
-    const { background, active } = useWidgetTheme(color);
+    const { background, active, textProps } = useWidgetTheme(color);
 
     const sliderPathRef = useRef<SVGPathElement>();
     const w = 120;
@@ -69,7 +69,7 @@ export default function GaugeWidget(props: {
         const svg = sliderPathRef.current.ownerSVGElement
         const pos = svgPointerPoint(svg, ev);
         const closest = closestPoint(sliderPathRef.current, _step, pos);
-        onChange(min + (1 - closest) * (max - min))
+        onChange(ev, min + (1 - closest) * (max - min))
     }
     const pointerStyle: CSSProperties = clickeable && {
         cursor: "pointer"
@@ -80,7 +80,7 @@ export default function GaugeWidget(props: {
         style: clickeable && pointerStyle
     }
     const handleSliderChange = (ev: unknown, newValue: number | number[]) => {
-        onChange(newValue as number);
+        onChange(ev, newValue as number);
     }
 
     return <Grid container direction="column">
@@ -95,7 +95,9 @@ export default function GaugeWidget(props: {
                 {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent"
                     {...pathProps}
                 />}
-                {off !== undefined && <PowerButton off={off} label={tvalue} cx={cx} cy={cy} r={roff} ri={riff} color={color} onClick={toggleOff} />}
+                {off !== undefined
+                    ? <PowerButton off={off} label={tvalue} cx={cx} cy={cy} r={roff} ri={riff} color={color} onClick={toggleOff} />
+                    : <text {...textProps} x={cx} y={cy} aria-label={tvalue}>{tvalue}</text>}
             </SvgWidget>
         </Grid>
         {clickeable && <Grid item>

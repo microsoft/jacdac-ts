@@ -762,22 +762,26 @@ export class JDBus extends JDNode {
             if (isReading(register.specification) && isSensor(register.service.specification)) {
                 // compute refresh interval
                 const intervalRegister = register.service.register(SensorReg.StreamingInterval);
-                let interval = intervalRegister.intValue;
+                let interval = intervalRegister?.intValue;
                 if (!interval) {
                     // no interval data
                     // use preferred interval data or default to 50
                     const preferredInterval = register.service.register(SensorReg.StreamingPreferredInterval);
                     interval = preferredInterval?.intValue || STREAMING_DEFAULT_INTERVAL;
-                    await intervalRegister.sendGetAsync();
+                    if (intervalRegister)
+                        await intervalRegister.sendGetAsync();
                 }
                 const samplesRegister = register.service.register(SensorReg.StreamingSamples);
-                const age = this.timestamp - samplesRegister.lastSetTimestamp;
-                // need to figure out when we asked for streaming
-                const midAge = interval * 0xff / 2;
-                // compute if half aged
-                if (age > midAge) {
-                    //console.log(`auto-refresh - restream`, register)
-                    await samplesRegister.sendSetPackedAsync("u8", [0xff]);
+                const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp;
+                if (samplesLastSetTimesamp !== undefined) {
+                    const age = this.timestamp - samplesRegister.lastSetTimestamp;
+                    // need to figure out when we asked for streaming
+                    const midAge = interval * 0xff / 2;
+                    // compute if half aged
+                    if (age > midAge) {
+                        //console.log(`auto-refresh - restream`, register)
+                        await samplesRegister.sendSetPackedAsync("u8", [0xff]);
+                    }
                 }
             } // regular register, ping if data is old
             else {

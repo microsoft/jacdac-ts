@@ -80,7 +80,7 @@ export class JDService extends JDNode {
     get statusCodeRegister(): JDRegister {
         if (!this._statusCodeRegister) {
             const pkt = this.specification?.packets
-                .find(pkt => pkt.identifier === BaseReg.StatusCode)
+                .find(pkt => pkt.identifier === SystemReg.StatusCode)
             this._statusCodeRegister = pkt && this.register(pkt.identifier);
         }
         return this._statusCodeRegister;

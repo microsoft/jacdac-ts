@@ -30,7 +30,7 @@ export default function MemberInput(props: {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
         setValue, showDataType, color, variant, min, max, error,
         showLoading, off, toggleOff } = props;
-    const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
+    const { typicalMin, typicalMax, absoluteMin, absoluteMax, type, shift } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const [errorText, setErrorText] = useState("")
@@ -73,19 +73,9 @@ export default function MemberInput(props: {
         const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
         setValue(v)
     }
-    const handleScaledSliderChange = (event: unknown, newValue: number | number[]) => {
-        const scaled = scaleFloatToInt((newValue as number), specification);
-        const clamped = clampToStorage(scaled, specification.storage)
-        setValue(clamped);
-    }
     const handleSliderChange = (event: unknown, newValue: number | number[]) => {
         const v = (newValue as number);
         setValue(v);
-    }
-    const handleGaugeChange = (newValue: number) => {
-        const scaled = scaleFloatToInt(newValue, specification);
-        const clamped = clampToStorage(scaled, specification.storage)
-        setValue(clamped);
     }
     const percentValueFormat = (value: number) => {
         // avoid super long floats
@@ -140,7 +130,6 @@ export default function MemberInput(props: {
         </Select>
     }
     else if (specification.unit === "/") {
-        const fv = scaleIntToFloat(value, specification);
         const signed = specification.storage < 0;
         const min = signed ? -1 : 0;
         const max = 1;
@@ -148,13 +137,13 @@ export default function MemberInput(props: {
             return <GaugeWidget
                 tabIndex={0}
                 label={label}
-                value={scaleIntToFloat(value, specification)}
+                value={value}
                 color={color}
                 variant={signed ? "fountain" : undefined}
                 min={min} max={max}
                 valueLabel={percentValueLabelFormat}
                 size={widgetSize}
-                onChange={disabled ? undefined : handleGaugeChange}
+                onChange={disabled ? undefined : handleSliderChange}
                 off={off}
                 toggleOff={toggleOff}
             />
@@ -162,9 +151,9 @@ export default function MemberInput(props: {
         return <Slider
             aria-label={label}
             color={color}
-            value={fv}
+            value={value}
             valueLabelFormat={percentValueFormat}
-            onChange={disabled ? undefined : handleScaledSliderChange}
+            onChange={disabled ? undefined : handleSliderChange}
             min={min} max={max} step={0.01}
             valueLabelDisplay="auto"
         />
