@@ -1,4 +1,4 @@
-import { BaseReg, SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, SystemCmd, SystemReg, SystemStatusCodes } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
 import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
@@ -23,7 +23,7 @@ export default class JDServiceHost extends JDEventSource {
     public readonly specification: jdspec.ServiceSpec;
     private readonly _registers: JDRegisterHost<any[]>[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
-    readonly statusCode: JDRegisterHost<[number, number]>;
+    readonly statusCode: JDRegisterHost<[SystemStatusCodes, number]>;
 
     constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
         super();
@@ -31,7 +31,7 @@ export default class JDServiceHost extends JDEventSource {
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
-        this.statusCode = this.addRegister<[number, number]>(BaseReg.StatusCode, [0, 0]);
+        this.statusCode = this.addRegister<[SystemStatusCodes, number]>(BaseReg.StatusCode, [SystemStatusCodes.Ready, 0]);
         if (valueValues)
             this.addRegister(SystemReg.Value, valueValues);
         if (intensityValues)

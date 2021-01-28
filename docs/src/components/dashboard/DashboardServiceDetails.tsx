@@ -9,7 +9,7 @@ import { JDRegister } from "../../../../src/jdom/register";
 
 // filter out common registers
 const ignoreRegisters = [
-    BaseReg.StatusCode,
+    SystemReg.StatusCode,
     SystemReg.StreamingPreferredInterval,
     SystemReg.StreamingSamples,
     SystemReg.StreamingInterval
