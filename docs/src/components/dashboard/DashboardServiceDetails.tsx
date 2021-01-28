@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { SystemReg } from "../../../../src/jdom/constants";
+import { BaseReg, SystemReg } from "../../../../src/jdom/constants";
 import useChange from "../../jacdac/useChange";
 import RegisterInput from "../RegisterInput";
 import { isIntegerType, isRegister } from "../../../../src/jdom/spec";
@@ -9,7 +9,7 @@ import { JDRegister } from "../../../../src/jdom/register";
 
 // filter out common registers
 const ignoreRegisters = [
-    SystemReg.StatusCode,
+    BaseReg.StatusCode,
     SystemReg.StreamingPreferredInterval,
     SystemReg.StreamingSamples,
     SystemReg.StreamingInterval

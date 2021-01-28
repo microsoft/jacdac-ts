@@ -42,11 +42,10 @@ function Carousel() {
             .filter(repo => !!repo)
             .join('|')
         ).filter(q => !!q).join('|');
-        console.log({ query })
         // send message to makecode
         window.parent.postMessage({
             type: "extensionsdialog",
-            query: query,
+            query: query || "jacdac",
             broadcast: true
         }, "*")
     }
