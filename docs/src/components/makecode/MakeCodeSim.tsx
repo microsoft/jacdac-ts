@@ -3,11 +3,11 @@ import { Button, createMuiTheme, Paper, responsiveFontSizes } from "@material-ui
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
-import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
+import { isReading, isValueOrIntensity, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
 import { strcmp } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
 import useChange from "../../jacdac/useChange";
-import { SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
+import { SRV_CONTROL, SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
 import DashboardServiceWidget from "../dashboard/DashboardServiceWidget";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
@@ -30,11 +30,19 @@ function Carousel() {
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);
     const handleAdd = () => {
-        console.log("add")
+        // list all devices connected to the bus
+        // and query for them, let makecode show the missing ones
+        const query = devices.map(device => device.services()
+            .map(srv => resolveMakecodeServiceFromClassIdentifier(srv.serviceClass))
+            .map(info => info?.client.repo)
+            .filter(repo => !!repo)
+            .join('|')
+        ).filter(q => !!q).join('|');
+        console.log({ query })
         // send message to makecode
         window.parent.postMessage({
             type: "extensionsdialog",
-            query: "jacdac",
+            query: query,
             broadcast: true
         }, "*")
     }
@@ -63,7 +71,7 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
         const hostDefinitions = hosts();
-        for (const hostDef of hostDefinitions.slice(0, 3)) {
+        for (const hostDef of hostDefinitions.slice(0, 5)) {
             addHost(bus, hostDef.services());
         }
     }, []);
