@@ -13,8 +13,7 @@ import hosts, { addHost } from "../../../../src/hosts/hosts";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import MakeCodeIcon from "../icons/MakeCodeIcon"
 import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
-
-import "./makecode.css"
+import Helmet from "react-helmet"
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -53,7 +52,8 @@ function Carousel() {
     }
 
     return <Grid container spacing={1}>
-        {devices.map(device => <DashboardDeviceItem key={device.id} device={device} variant="icon" />)}
+        {devices.map(device => <DashboardDeviceItem key={device.id}
+            device={device} variant="icon" showAvatar={false} />)}
         <Grid item>
             <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
                 onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
@@ -71,7 +71,9 @@ export default function Page() {
             secondary: {
                 main: '#ffc400',
             },
-        }
+            contrastThreshold: 5.1,
+            type: "dark"
+        },
     })
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
@@ -82,6 +84,19 @@ export default function Page() {
     }, []);
 
     return <ThemedLayout theme={theme}>
+        <Helmet>
+            <style>
+                {`
+html {
+    margin-right: 4px;
+    overflow-y: auto !important;
+}
+html, body {
+    background: transparent !important;
+}
+`}
+            </style>
+        </Helmet>
         <Carousel />
     </ThemedLayout>
 }
