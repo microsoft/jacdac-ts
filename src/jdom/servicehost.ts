@@ -31,7 +31,7 @@ export default class JDServiceHost extends JDEventSource {
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
-        this.statusCode = this.addRegister<[SystemStatusCodes, number]>(BaseReg.StatusCode, [SystemStatusCodes.Ready, 0]);
+        this.statusCode = this.addRegister<[SystemStatusCodes, number]>(SystemReg.StatusCode, [SystemStatusCodes.Ready, 0]);
         if (valueValues)
             this.addRegister(SystemReg.Value, valueValues);
         if (intensityValues)
