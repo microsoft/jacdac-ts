@@ -37,6 +37,9 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
         }
     }
 
+    if (/^(u|i)0\.\d+$/.test(specification.type))
+        r = 0;
+
     return r;
 }
 

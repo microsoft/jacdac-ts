@@ -461,7 +461,10 @@ const _hosts: {
         {
             name: "rotary potentiometer",
             serviceClasses: [SRV_POTENTIOMETER],
-            services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Rotary })]
+            services: () => [new JDSensorServiceHost(SRV_POTENTIOMETER, {
+                variant: PotentiometerVariant.Rotary,
+                readingValues: [0.5]
+            })]
         },
         {
             name: "servo",

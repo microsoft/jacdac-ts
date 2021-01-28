@@ -18,7 +18,7 @@ export default function GaugeWidget(props: {
     variant?: "fountain",
     tabIndex?: number,
     valueLabel?: (v: number) => string,
-    onChange?: (newValue: number) => void
+    onChange?: (ev: unknown, newValue: number) => void
     off?: boolean,
     toggleOff?: () => void
 }) {
@@ -68,7 +68,7 @@ export default function GaugeWidget(props: {
         const svg = sliderPathRef.current.ownerSVGElement
         const pos = svgPointerPoint(svg, ev);
         const closest = closestPoint(sliderPathRef.current, _step, pos);
-        onChange(min + (1 - closest) * (max - min))
+        onChange(ev, min + (1 - closest) * (max - min))
     }
     const pointerStyle: CSSProperties = clickeable && {
         cursor: "pointer"
@@ -79,7 +79,7 @@ export default function GaugeWidget(props: {
         style: clickeable && pointerStyle
     }
     const handleSliderChange = (ev: unknown, newValue: number | number[]) => {
-        onChange(newValue as number);
+        onChange(ev, newValue as number);
     }
 
     return <Grid container direction="column">
