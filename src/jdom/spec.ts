@@ -141,7 +141,11 @@ export function isReading(pkt: jdspec.PacketInfo) {
 }
 
 export function isIntensity(pkt: jdspec.PacketInfo) {
-    return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Intensity
+    return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Intensity;
+}
+
+export function isValue(pkt: jdspec.PacketInfo) {
+    return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Value;
 }
 
 export function isValueOrIntensity(pkt: jdspec.PacketInfo) {

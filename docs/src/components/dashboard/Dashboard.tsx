@@ -27,6 +27,7 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 }
 
 export interface DashboardDeviceProps {
+    showHeader?: boolean,
     showAvatar?: boolean
 }
 

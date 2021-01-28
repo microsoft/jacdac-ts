@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Collapse, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
+import { Box, Card, CardContent, CardHeader, Collapse, Grid, Paper, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React from "react";
 import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
@@ -29,7 +29,7 @@ export default function DashboardDevice(props: {
     toggleExpanded?: () => void,
     variant?: "icon" | ""
 } & DashboardDeviceProps) {
-    const { device, expanded, toggleExpanded, variant, showAvatar } = props;
+    const { device, expanded, toggleExpanded, variant, showAvatar, showHeader } = props;
     const name = useDeviceName(device)
     const services = useChange(device, () => device.services()
         .filter(service => ignoredServices.indexOf(service.serviceClass) < 0
@@ -37,6 +37,20 @@ export default function DashboardDevice(props: {
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
+
+    const ServiceWidgets = () =>
+        <Grid container spacing={1} justify="center" alignItems="flex-end" alignContent="space-between">
+            {services?.map(service => <Grid key={"widget" + service.service_index} item>
+                <DashboardServiceWidget service={service} expanded={expanded} services={services} variant={variant} />
+            </Grid>)}
+        </Grid>
+
+    if (!showHeader)
+        return <Paper variant="outlined">
+            <Box mx={1.5} mt={0.5} mb={0.25}>
+                <ServiceWidgets />
+            </Box>
+        </Paper>
 
     return (
         <Card aria-live="polite" aria-label={`device ${name} started`}>
@@ -61,11 +75,7 @@ export default function DashboardDevice(props: {
                 </>}
             />
             <CardContent>
-                <Grid container spacing={1} justify="center" alignItems="flex-end" alignContent="space-between">
-                    {services?.map(service => <Grid key={"widget" + service.service_index} item>
-                        <DashboardServiceWidget service={service} expanded={expanded} services={services} variant={variant} />
-                    </Grid>)}
-                </Grid>
+                <ServiceWidgets />
                 {expanded && <Grid container direction="column" spacing={1} alignContent="stretch">
                     {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
                 </Grid>}

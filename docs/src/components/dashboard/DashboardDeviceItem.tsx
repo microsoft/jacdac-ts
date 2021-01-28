@@ -13,12 +13,14 @@ export default function DashboardDeviceItem(props: {
 } & DashboardDeviceProps) {
     const { device, expanded, toggleExpanded, variant, ...other } = props;
     const readingCount = device.services()
-        .map(srv => srv.readingRegister ? 1 : 0)
+        .map(srv => srv.readingRegister || srv.valueRegister || srv.intensityRegister ? 1 : 0)
         .reduce((c: number, v) => c + v, 0);
     const breakpoints: GridBreakpoints = useMemo(() => {
         if (readingCount > 3)
             return { xs: 12, sm: 12, md: 12, lg: 8, xl: 6 };
         else if (readingCount == 3)
+            return { xs: 12, sm: 12, md: 6, lg: 6, xl: 4 };
+        else if (readingCount == 2)
             return { xs: 12, sm: 6, md: 6, lg: 6, xl: 4 };
         else
             return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: 4, xl: "auto" };
@@ -32,6 +34,6 @@ export default function DashboardDeviceItem(props: {
             toggleExpanded={toggleExpanded}
             variant={variant}
             {...other}
-            />
+        />
     </Grid>
 }

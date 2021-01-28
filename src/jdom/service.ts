@@ -4,7 +4,7 @@ import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
 import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED } from "./constants";
 import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator } from "./spec";
+import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator, isValueOrIntensity, isValue, isIntensity } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
 import { BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
@@ -74,6 +74,24 @@ export class JDService extends JDNode {
             this._readingRegister = pkt && this.register(pkt.identifier)
         }
         return this._readingRegister;
+    }
+
+    private _valueRegister: JDRegister;
+    get valueRegister(): JDRegister {
+        if (!this._valueRegister) {
+            const pkt = this.specification?.packets.find(pkt => isValue(pkt))
+            this._valueRegister = pkt && this.register(pkt.identifier)
+        }
+        return this._valueRegister;
+    }
+
+    private _intensityRegister: JDRegister;
+    get intensityRegister(): JDRegister {
+        if (!this._intensityRegister) {
+            const pkt = this.specification?.packets.find(pkt => isIntensity(pkt))
+            this._intensityRegister = pkt && this.register(pkt.identifier)
+        }
+        return this._intensityRegister;
     }
 
     private _statusCodeRegister: JDRegister;
