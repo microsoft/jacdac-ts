@@ -1,5 +1,6 @@
-import { BaseReg, SystemCmd, SystemReg, SystemStatusCodes } from "../../jacdac-spec/dist/specconstants";
+import { BaseEvent, SystemCmd, SystemReg, SystemStatusCodes } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
+import { CHANGE } from "./constants";
 import JDDeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
@@ -40,6 +41,9 @@ export default class JDServiceHost extends JDEventSource {
             this.addRegister<[number]>(SystemReg.Variant, [variant]);
         // any extra
         registerValues?.forEach(({ code, values }) => this.addRegister<any[]>(code, values));
+
+        // emit event when status code changes
+        this.statusCode.on(CHANGE, () => this.sendEvent(BaseEvent.StatusCodeChanged, this.statusCode.data));
     }
 
     get registers() {
