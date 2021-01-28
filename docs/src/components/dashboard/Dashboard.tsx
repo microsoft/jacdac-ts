@@ -26,7 +26,12 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
     return strcmp(l.deviceId, r.deviceId);
 }
 
-export default function Dashboard() {
+export interface DashboardDeviceProps {
+    showAvatar?: boolean
+}
+
+export default function Dashboard(props: DashboardDeviceProps) {
+    const { ...other } = props;
     const { bus } = useContext<JDContextProps>(JACDACContext)
     const { toggleShowDeviceHostsDialog } = useContext(AppContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
@@ -46,13 +51,15 @@ export default function Dashboard() {
             </IconButtonWithTooltip>}
             devices={hosted}
             expanded={selected}
-            toggleExpanded={toggleSelected} />
+            toggleExpanded={toggleSelected}
+            {...other} />
         <DashboardDeviceGroup
             title="Devices"
             action={<ConnectButton full={false} transparent={true} showAlways={true} />}
             devices={physicals}
             expanded={selected}
-            toggleExpanded={toggleSelected}>
+            toggleExpanded={toggleSelected}
+            {...other}>
             {!physicals.length && <Grid item xs={12}>
                 <Alert severity="info">
                     Please <ConnectButton showAlways={true} full={true} transparent={true} /> to see your physical devices.

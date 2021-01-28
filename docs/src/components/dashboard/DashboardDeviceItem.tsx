@@ -3,13 +3,15 @@ import React, { useMemo } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import DashboardDevice from "./DashboardDevice";
 import { GridBreakpoints } from "../useGridBreakpoints";
+import { DashboardDeviceProps } from "./Dashboard";
 
 export default function DashboardDeviceItem(props: {
     device: JDDevice,
     expanded?: boolean,
     toggleExpanded?: () => void,
-}) {
-    const { device, expanded, toggleExpanded } = props;
+    variant?: "icon" | ""
+} & DashboardDeviceProps) {
+    const { device, expanded, toggleExpanded, variant, ...other } = props;
     const readingCount = device.services()
         .map(srv => srv.readingRegister ? 1 : 0)
         .reduce((c: number, v) => c + v, 0);
@@ -27,6 +29,9 @@ export default function DashboardDeviceItem(props: {
         <DashboardDevice
             device={device}
             expanded={expanded}
-            toggleExpanded={toggleExpanded} />
+            toggleExpanded={toggleExpanded}
+            variant={variant}
+            {...other}
+            />
     </Grid>
 }

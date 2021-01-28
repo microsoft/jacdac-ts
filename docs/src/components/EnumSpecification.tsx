@@ -5,7 +5,7 @@ import { Chip } from "@material-ui/core"
 export default function EnumSpecification(props: { serviceClass: number }) {
     const { serviceClass } = props
     const spec = serviceSpecificationFromClassIdentifier(serviceClass)
-    const enums = Object.values(spec?.enums || {})
+    const enums = Object.values(spec?.enums || {}).filter(en => !en.derived)
     if (!enums.length)
         return <></>
 

@@ -24,13 +24,14 @@ export default function GaugeWidget(props: {
 }) {
     const { value, color, size, min, max, step, variant, valueLabel,
         off, toggleOff, onChange, tabIndex } = props;
-    const { background, active, textProps } = useWidgetTheme(color);
+    const { background, active } = useWidgetTheme(color);
 
     const sliderPathRef = useRef<SVGPathElement>();
     const w = 120;
     const h = 120;
     const m = 8;
-    const roff = 18;
+    const roff = 30;
+    const riff = 10;
     const sw = m << 1;
     const cx = w >> 1;
     const cy = h >> 1;
@@ -94,8 +95,7 @@ export default function GaugeWidget(props: {
                 {!off && <path strokeWidth={sw} stroke={active} strokeLinecap={lineCap} d={dactual} fill="transparent"
                     {...pathProps}
                 />}
-                {off !== undefined && <PowerButton off={off} cx={cx} cy={cy} r={roff} color={color} onClick={toggleOff} />}
-                <text x={w >> 1} y={h - 2 * m} {...textProps}>{tvalue}</text>
+                {off !== undefined && <PowerButton off={off} label={tvalue} cx={cx} cy={cy} r={roff} ri={riff} color={color} onClick={toggleOff} />}
             </SvgWidget>
         </Grid>
         {clickeable && <Grid item>

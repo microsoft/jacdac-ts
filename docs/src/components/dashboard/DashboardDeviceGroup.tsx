@@ -2,6 +2,7 @@ import { Grid } from "@material-ui/core";
 import React, { } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import GridHeader from "../ui/GridHeader"
+import { DashboardDeviceProps } from "./Dashboard";
 import DashboardDeviceItem from "./DashboardDeviceItem";
 
 export default function DeviceGroup(props: {
@@ -11,8 +12,8 @@ export default function DeviceGroup(props: {
     expanded?: (device: JDDevice) => boolean,
     toggleExpanded?: (device: JDDevice) => void,
     children?: JSX.Element | JSX.Element[]
-}) {
-    const { title, action, devices, expanded, toggleExpanded, children } = props;
+} & DashboardDeviceProps) {
+    const { title, action, devices, expanded, toggleExpanded, children, ...other } = props;
     const handleExpand = (device: JDDevice) => () => toggleExpanded(device)
     return <section>
         <Grid container spacing={2}>
@@ -21,7 +22,8 @@ export default function DeviceGroup(props: {
                 key={device.id}
                 device={device}
                 expanded={expanded(device)}
-                toggleExpanded={handleExpand(device)} />)}
+                toggleExpanded={handleExpand(device)}
+                {...other} />)}
             {children}
         </Grid>
     </section>

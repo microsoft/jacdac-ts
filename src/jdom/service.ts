@@ -7,7 +7,7 @@ import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
-import { SystemReg } from "../../jacdac-spec/dist/specconstants";
+import { BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { JDServiceClient } from "./serviceclient";
 import { InPipeReader } from "./pipes";
 import { jdunpack } from "./pack";
@@ -79,7 +79,8 @@ export class JDService extends JDNode {
     private _statusCodeRegister: JDRegister;
     get statusCodeRegister(): JDRegister {
         if (!this._statusCodeRegister) {
-            const pkt = this.specification?.packets.find(pkt => pkt.identifier === SystemReg.StatusCode)
+            const pkt = this.specification?.packets
+                .find(pkt => pkt.identifier === BaseReg.StatusCode)
             this._statusCodeRegister = pkt && this.register(pkt.identifier);
         }
         return this._statusCodeRegister;

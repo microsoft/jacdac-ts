@@ -16,6 +16,7 @@ import DeviceActions from "../DeviceActions";
 import DashboardServiceDetails from "./DashboardServiceDetails";
 import { MOBILE_BREAKPOINT } from "../layout";
 import useDeviceName from "../useDeviceName";
+import { DashboardDeviceProps } from "./Dashboard";
 
 const ignoredServices = [
     SRV_CTRL,
@@ -25,9 +26,10 @@ const ignoredServices = [
 export default function DashboardDevice(props: {
     device: JDDevice,
     expanded?: boolean,
-    toggleExpanded?: () => void
-}) {
-    const { device, expanded, toggleExpanded } = props;
+    toggleExpanded?: () => void,
+    variant?: "icon" | ""
+} & DashboardDeviceProps) {
+    const { device, expanded, toggleExpanded, variant, showAvatar } = props;
     const name = useDeviceName(device)
     const services = useChange(device, () => device.services()
         .filter(service => ignoredServices.indexOf(service.serviceClass) < 0
@@ -39,7 +41,7 @@ export default function DashboardDevice(props: {
     return (
         <Card aria-live="polite" aria-label={`device ${name} started`}>
             <CardHeader
-                avatar={<DeviceAvatar device={device} />}
+                avatar={showAvatar && <DeviceAvatar device={device} />}
                 action={
                     <DeviceActions device={device} showStopHost={expanded && !mobile} hideIdentity={true} showReset={expanded && !mobile}>
                         {toggleExpanded && <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
@@ -61,7 +63,7 @@ export default function DashboardDevice(props: {
             <CardContent>
                 <Grid container spacing={1} justify="center" alignItems="flex-end" alignContent="space-between">
                     {services?.map(service => <Grid key={"widget" + service.service_index} item>
-                        <DashboardServiceWidget service={service} expanded={expanded} services={services} />
+                        <DashboardServiceWidget service={service} expanded={expanded} services={services} variant={variant} />
                     </Grid>)}
                 </Grid>
                 {expanded && <Grid container direction="column" spacing={1} alignContent="stretch">
