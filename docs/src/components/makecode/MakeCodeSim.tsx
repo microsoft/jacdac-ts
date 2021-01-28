@@ -13,26 +13,6 @@ import { SRV_CTRL, SRV_LOGGER } from "../../../../src/jdom/constants";
 import DashboardServiceWidget from "../dashboard/DashboardServiceWidget";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
-import { inIFrame } from "../../../../src/jdom/iframeclient";
-
-const useStyles = makeStyles((theme) => createStyles({
-    root: {
-        display: "grid",
-        gridAutoFlow: "column",
-        gridTemplateRows: "repeat(3, 20vw)",
-        gridGap: theme.spacing(1),
-        overflowX: "auto",
-        overflowY: "hidden"
-    },
-    item: {
-        height: "20vw",
-        margin: 0,
-        padding: 0
-    },
-    services: {
-        height: "100%",
-    }
-}));
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -60,19 +40,13 @@ function carouselServices(device: JDDevice) {
 
 function CarouselItem(props: {
     device: JDDevice,
-    column: number,
-    columnSpan: number
 }) {
-    const { device, column, columnSpan } = props;
-    const classes = useStyles();
+    const { device } = props;
     const services = useChange(device, d => carouselServices(d));
 
-    return <div className={classes.item} style={{
-        gridColumnStart: columnSpan > 1 ? column + 1 : undefined,
-        gridColumnEnd: columnSpan > 1 ? column + 1 + columnSpan : undefined
-    }}>
-        <Paper style={{ height: "100%", width: "100%", }}>
-            <Grid container className={classes.services} direction="row" spacing={1} justify="center" alignItems="center" alignContent="stretch">
+    return <Grid item>
+        <Paper>
+            <Grid container spacing={1} direction="row" justify="center" alignItems="center" alignContent="stretch">
                 {services?.map(service => <Grid key={"widget" + service.service_index} item>
                     <DashboardServiceWidget
                         service={service}
@@ -82,41 +56,31 @@ function CarouselItem(props: {
                 </Grid>)}
             </Grid>
         </Paper>
-    </div>;
+    </Grid>
 }
 
 function Carousel() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);
-    const classes = useStyles();
-    const services = arrayConcatMany(devices.map(carouselServices));
-    const rows = 3;
-    const columns = Math.ceil(services.length / rows);
-    const width = (columns * 20) + `vw`
-    const hostsToAdd = useRef(hosts());
     const handleAdd = () => {
-        if (!inIFrame() && hostsToAdd.current.length) {
-            addHost(bus, hostsToAdd.current.pop().services())
-        }
+        console.log("add")
+        // send message to makecode
+        window.parent.postMessage({
+            type: "extensionsdialog",
+            query: "jacdac",
+            broadcast: true
+        }, "*")
     }
 
-    let column = 0;
-    return <div className={classes.root} style={{ width, gridTemplateColumns: `repeat(${columns}, 20vw)` }}>
+    return <Grid container spacing={1}>
         {devices.map(device => {
-            const dsrvs = carouselServices(device);
-            const col = column;
-            const span = dsrvs.length;
-            column = (column + span) % columns;
-            //console.log({ col, span })
-            return <CarouselItem key={device.id} device={device} column={col} columnSpan={span} />
+            return <CarouselItem key={device.id} device={device} />
         })}
-        <div key="add" className={classes.item} style={{ gridColumnStart: columns, gridRowStart: rows }}>
-            <Grid container justify="center" alignItems="center">
-                <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />} onClick={handleAdd} aria-label={"Add blocks"}>Add</Button>
-            </Grid>
-        </div>
-    </div>
+        <Grid item>
+            <Button size="medium" color="primary" variant="contained" startIcon={<AddIcon />}
+                onClick={handleAdd} aria-label={"Add blocks"}>Add</Button>
+        </Grid>
+    </Grid>
 }
 
 export default function Page() {
