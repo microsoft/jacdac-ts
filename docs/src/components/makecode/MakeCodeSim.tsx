@@ -14,6 +14,8 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import MakeCodeIcon from "../icons/MakeCodeIcon"
 import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 
+import "./makecode.css"
+
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
         .reduce((prev, pkt) => prev + (isReading(pkt) ? 10 : isValueOrIntensity(pkt) ? 1 : 0), 0)
@@ -28,6 +30,9 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 
 function Carousel() {
     const devices = useDevices({ announced: true, ignoreSelf: true })
+        // ignore MakeCode device (role manager)
+        .filter(device => device.serviceClasses.indexOf(SRV_ROLE_MANAGER) < 0)
+        // show best in front
         .sort(deviceSort);
     const handleAdd = () => {
         // list all devices connected to the bus
@@ -61,7 +66,7 @@ export default function Page() {
     const rawTheme = createMuiTheme({
         palette: {
             primary: {
-                main: '#2e7d32',
+                main: '#63c',
             },
             secondary: {
                 main: '#ffc400',
@@ -71,7 +76,7 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
         const hostDefinitions = hosts();
-        for (const hostDef of hostDefinitions.slice(0, 5)) {
+        for (const hostDef of hostDefinitions.slice(0, 3)) {
             addHost(bus, hostDef.services());
         }
     }, []);
