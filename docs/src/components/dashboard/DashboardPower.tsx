@@ -27,9 +27,18 @@ export default function DashboardPower(props: DashboardServiceProps) {
 
     const w = 128
     const h = 64
+    const r = h >> 2;
+    const ro = r - 8
+    const ri = r - 16
     const label = enabled ? "on" : "off"
 
     return <SvgWidget width={w} height={h} size={widgetSize}>
-        <PowerButton label={label} cx={w / 3} cy={h >> 1} r={h / 3} off={!enabled} color={color} />        
+        <PowerButton label={label}
+            cx={w / 3}
+            cy={r}
+            r={ro}
+            ri={ri}
+            off={!enabled}
+            color={color} />
     </SvgWidget>
 }
