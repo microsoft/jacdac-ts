@@ -1,5 +1,5 @@
-import React, { CSSProperties, useRef } from "react";
-import { SoilMoistureReg, SoilMoistureVariant } from "../../../../src/jdom/constants";
+import React, { } from "react";
+import { SoilMoistureReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useWidgetSize from "../widgets/useWidgetSize";
@@ -7,33 +7,30 @@ import useServiceHost from "../hooks/useServiceHost";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
-import { scaleFloatToInt, scaleIntToFloat } from "../../../../src/jacdac";
+import { scaleFloatToInt } from "../../../../src/jacdac";
 import { useId } from "react-use-id-hook";
-import { closestPoint, svgPointerPoint } from "../widgets/svgutils";
 import { Grid, Slider } from "@material-ui/core";
 
 
 export default function DashboardSoilMoisture(props: DashboardServiceProps) {
     const { service, services, variant } = props;
     const moistureReg = service.register(SoilMoistureReg.Moisture);
-    const [moisture] = useRegisterUnpackedValue<[number]>(moistureReg);
+    const [value] = useRegisterUnpackedValue<[number]>(moistureReg);
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<JDSensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { active, background, controlBackground, textProps } = useWidgetTheme(color);
     const clipId = useId();
 
-    const value = scaleIntToFloat(moisture, moistureReg.specification.fields[0]);
     const hasValue = !isNaN(value);
     const tvalue = hasValue ? `${Math.round(value * 100)}%` : `--`
 
     const w = 5;
     const h = 9.488;
-    const sw = 0.5;
     const cm = 3.3;
     const ch = (h - cm) * ((0.12 + value) / 1.12);
     const onChange = (event: unknown, newValue: number | number[]): void => {
-        const svalue = scaleFloatToInt(newValue as number, moistureReg.specification.fields[0]);
+        const svalue = newValue as number;
         host?.reading.setValues([svalue])
     }
 

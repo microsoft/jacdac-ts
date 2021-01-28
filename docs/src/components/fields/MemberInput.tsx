@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, FormControlLabel, Slider } from "@material-ui/core";
 import { MenuItem, Select, Switch, TextField } from "@material-ui/core";
 import { flagsToValue, prettyMemberUnit, prettyUnit, valueToFlags } from "../../../../src/jdom/pretty";
-import { clampToStorage, isIntegerType, isValueOrIntensity, memberValueToString, scaleFloatToInt, scaleIntToFloat, tryParseMemberValue } from "../../../../src/jdom/spec";
+import { isIntegerType, isValueOrIntensity, memberValueToString, tryParseMemberValue } from "../../../../src/jdom/spec";
 import { isSet, pick, roundWithPrecision } from "../../../../src/jdom/utils";
 import { RegisterInputVariant } from "../RegisterInput";
 import ButtonWidget from "../widgets/ButtonWidget";
@@ -30,7 +30,7 @@ export default function MemberInput(props: {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
         setValue, showDataType, color, variant, min, max, error,
         showLoading, off, toggleOff } = props;
-    const { typicalMin, typicalMax, absoluteMin, absoluteMax, type, shift } = specification;
+    const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
     const disabled = !setValue;
     const [errorText, setErrorText] = useState("")

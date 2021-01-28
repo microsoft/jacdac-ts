@@ -1,15 +1,13 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
-import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useAnimationFrame from "../hooks/useAnimationFrame";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import JoystickSensorServiceHost from "../../../../src/hosts/joystickservicehost";
-import { JoystickReg, scaleFloatToInt, scaleIntToFloat } from "../../../../src/jacdac";
+import { JoystickReg } from "../../../../src/jacdac";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
 
 function decay(value: number, rate: number, precision: number) {
@@ -40,11 +38,8 @@ export default function DashboardJoystick(props: DashboardServiceProps) {
     const pw = 12
     const ph = 8
 
-    const fx = scaleIntToFloat(x || 0, directionRegister.fields[0].specification)
-    const fy = scaleIntToFloat(y || 0, directionRegister.fields[1].specification)
-
-    const jx = cx + fx * rj
-    const jy = cy + fy * rj
+    const jx = cx + x * rj
+    const jy = cy + y * rj
     const jw = 1
 
     const updateJoystickDrag = async (x: number, y: number) => {
@@ -56,8 +51,8 @@ export default function DashboardJoystick(props: DashboardServiceProps) {
         const angle = Math.atan2(dy, dx);
         const distance = Math.min(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)), rj) / rj;
 
-        const newx = scaleFloatToInt(distance * Math.cos(angle), directionRegister.fields[0].specification);
-        const newy = scaleFloatToInt(distance * Math.sin(angle), directionRegister.fields[1].specification);
+        const newx = distance * Math.cos(angle)
+        const newy = distance * Math.sin(angle)
 
         host.reading.setValues([newx, newy]);
     }
