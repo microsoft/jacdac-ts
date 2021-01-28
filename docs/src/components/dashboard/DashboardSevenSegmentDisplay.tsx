@@ -18,6 +18,7 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
     const brightnessRegister = service.register(SevenSegmentDisplayReg.Brightness);
     const [brightness] = useRegisterUnpackedValue<[number]>(brightnessRegister);
     const [digitCount] = useRegisterUnpackedValue<[number]>(service.register(SevenSegmentDisplayReg.DigitCount));
+    const [decimalPoint] = useRegisterUnpackedValue<[boolean]>(service.register(SevenSegmentDisplayReg.DecimalPoint))
 
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost(service);
@@ -70,6 +71,16 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
         </>;
     }
 
+    const DotSegment = (props: { digit: number }) => {
+        const bit = (props.digit & 0x80) == 0x80;
+        const mx = rs + wd + 2 * rs
+        const my = rs + 2 * hd + 2 * hs
+        return <>
+            <circle fill={background} stroke="none" r={rs} cx={mx} cy={my} />
+            {bit && <circle opacity={opacity} fill={active} stroke="none" r={rs} cx={mx} cy={my} />}
+        </>;
+    }
+
     const Digit = (dprops: { x: number, y: number, digit: number }) => {
         const { x, y, digit } = dprops;
         return <g transform={`translate(${x}, ${y})`}>
@@ -85,6 +96,8 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
             <VerticalSegment key="B" mx={rs + wd} my={rs} digit={digit} mask={0x20} />
 
             <HorizontalSegment key="A" mx={rs} my={rs} digit={digit} mask={0x40} />
+
+            {decimalPoint && <DotSegment digit={digit} />}
         </g>
     }
 
