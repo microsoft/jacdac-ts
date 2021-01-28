@@ -13,7 +13,8 @@ import {
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
-    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY, SevenSegmentDisplayReg
+    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -247,6 +248,16 @@ const _hosts: {
                 new JDSensorServiceHost<[number]>(SRV_E_CO2, CO2Options),
                 new HumidityServiceHost(),
                 new JDSensorServiceHost(SRV_THERMOMETER, indoorThermometerOptions)
+            ]
+        },
+        {
+            name: "heart rate",
+            serviceClasses: [SRV_HEART_RATE],
+            services: () => [
+                new JDSensorServiceHost<[number]>(SRV_HEART_RATE, { 
+                    readingValues: [80],
+                    variant: HeartRateVariant.Finger
+                })
             ]
         },
         {
