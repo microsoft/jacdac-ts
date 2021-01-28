@@ -254,7 +254,7 @@ const _hosts: {
             name: "heart rate",
             serviceClasses: [SRV_HEART_RATE],
             services: () => [
-                new JDSensorServiceHost<[number]>(SRV_HEART_RATE, { 
+                new JDSensorServiceHost<[number]>(SRV_HEART_RATE, {
                     readingValues: [80],
                     variant: HeartRateVariant.Finger
                 })
