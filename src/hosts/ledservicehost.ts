@@ -1,10 +1,10 @@
-import { CHANGE, LedReg, REPORT_UPDATE, SRV_LED } from "../jdom/constants";
+import { CHANGE, LedReg, LedVariant, REPORT_UPDATE, SRV_LED } from "../jdom/constants";
 import { JDEventSource } from "../jdom/eventsource";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost from "../jdom/servicehost";
 
-export type LedAnimationStep = [number, number];
-export type LedAnimationStepsType = [LedAnimationStep[]];
+export type LedAnimationFrame = [number, number, number, number]
+export type LedAnimationStepsType = [LedAnimationFrame[]];
 
 export class LedAnimation extends JDEventSource {
     private _currentStep: number;
@@ -15,8 +15,8 @@ export class LedAnimation extends JDEventSource {
         public maxIterations: number,
         public brightness: number,
         public currentIteration: number,
-        public steps: LedAnimationStep[]
-        ) {
+        public steps: LedAnimationFrame[]
+    ) {
         super();
 
         this.maxIterations = this.maxIterations || 1;
@@ -105,35 +105,34 @@ export default class LEDServiceHost extends JDServiceHost {
     readonly steps: JDRegisterHost<LedAnimationStepsType>;
     readonly brightness: JDRegisterHost<[number]>;
     readonly maxPower: JDRegisterHost<[number]>;
-    readonly maxSteps: JDRegisterHost<[number]>;
-    readonly currentIteration: JDRegisterHost<[number]>;
-    readonly maxIterations: JDRegisterHost<[number]>;
+    readonly ledCount: JDRegisterHost<[number]>;
+    readonly luminousIntensity: JDRegisterHost<[number]>;
+    readonly waveLength: JDRegisterHost<[number]>;
+    readonly variant: JDRegisterHost<[LedVariant]>;
 
-    constructor() {
+    constructor(options?: {
+        ledCount?: number,
+        variant?: LedVariant,
+        luminousIntensity?: number,
+        waveLength?: number
+    }) {
         super(SRV_LED);
+        const { ledCount, variant,
+            luminousIntensity, waveLength } = options || {};
 
         this.steps = this.addRegister<LedAnimationStepsType>(LedReg.Steps, [
             [
-                [0, 1000],
-                [0xffff, 1000],
+                [0, 0, 0, 0xf0],
+                [0, 0xff, 0xff, 0xf0],
             ]
-        ]);
+        ])
         this.brightness = this.addRegister(LedReg.Brightness, [0xffff]);
         this.maxPower = this.addRegister(LedReg.MaxPower, [200]);
-        this.maxSteps = this.addRegister(LedReg.MaxSteps, [10]);
-        this.currentIteration = this.addRegister(LedReg.CurrentIteration, [0]);
-        this.maxIterations = this.addRegister(LedReg.MaxIterations, [0xffff]);
-
-        this.steps.on(REPORT_UPDATE, this.handleSteps.bind(this));
-    }
-
-    private handleSteps() {
-        // drop extras steps
-        const [maxSteps] = this.maxSteps.values();
-        const [steps] = this.steps.values();
-        if (steps.length > maxSteps)
-            this.steps.setValues([steps.slice(0, maxSteps)], false);
-        // reset counter
-        this.currentIteration.setValues([0])
+        this.ledCount = this.addRegister(LedReg.LedCount, [ledCount || 1]);
+        if (luminousIntensity !== undefined)
+            this.luminousIntensity = this.addRegister(LedReg.LuminousIntensity, [luminousIntensity])
+        if (waveLength !== undefined)
+            this.waveLength = this.addRegister(LedReg.WaveLength, [waveLength]);
+        this.variant = this.addRegister(LedReg.Variant, [variant || LedVariant.ThroughHole])
     }
 }

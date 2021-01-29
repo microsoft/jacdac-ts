@@ -14,7 +14,7 @@ import {
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -294,9 +294,20 @@ const _hosts: {
             services: () => [new JoystickSensorServiceHost(JoystickVariant.ArcadeStick, true)]
         },
         {
-            name: "LED",
+            name: "LED (red through hole)",
             serviceClasses: [SRV_LED],
-            services: () => [new LEDServiceHost()]
+            services: () => [new LEDServiceHost({
+                variant: LedVariant.ThroughHole,
+                waveLength: 624
+            })]
+        },
+        {
+            name: "LED (blue SMD)",
+            serviceClasses: [SRV_LED],
+            services: () => [new LEDServiceHost({ 
+                variant: LedVariant.ThroughHole,
+                waveLength: 470
+            })]
         },
         {
             name: "LED matrix (5x5 micro:bit)",

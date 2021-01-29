@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { useId } from "react-use-id-hook"
 
-export type LedAnimationFrame = [number, number, number, number]
-
 export function hueToCSSHue(hue: number) {
     return hue * 360 / 0xff
 }
