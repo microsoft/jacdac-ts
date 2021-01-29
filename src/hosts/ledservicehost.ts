@@ -40,11 +40,12 @@ export class LedAnimation extends JDEventSource {
             this._currentStepStartTime = now;
 
         while (this._currentStep < steps.length) {
-            const [, duration] = steps[this._currentStep];
+            const [, duration8] = steps[this._currentStep];
+            const duration = duration8 << 3;
             if (duration === 0)
                 break;
             const elapsed = now - this._currentStepStartTime;
-            if (elapsed < duration) {
+            if (elapsed < duration << 3) {
                 break;
             }
 
@@ -62,11 +63,11 @@ export class LedAnimation extends JDEventSource {
 
         // render
         if (this._currentStep < steps.length) {
-            const [startHue, startSat, startValue, duration] = steps[this._currentStep];
+            const [startHue, startSat, startValue, duration8] = steps[this._currentStep];
             const [endHue, endSat, endValue,] = steps[(this._currentStep + 1) % steps.length]
 
             const elapsed = now - this._currentStepStartTime;
-            const alpha = elapsed / duration;
+            const alpha = elapsed / (duration8 << 3);
             const oneAlpha = 1 - alpha;
 
             const h = oneAlpha * startHue + alpha * endHue;
