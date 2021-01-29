@@ -21,7 +21,10 @@ function DashboardServiceDevices(props: { serviceClass: number }) {
     return <Grid container spacing={2}>
         {devices.map(device => <DashbardDeviceItem
             key={device.id}
-            device={device} />)}
+            device={device}
+            showAvatar={true}
+            showHeader={true}
+            />)}
     </Grid >
 }
 

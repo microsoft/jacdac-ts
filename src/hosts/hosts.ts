@@ -217,16 +217,6 @@ const _hosts: {
             })]
         },
         {
-            name: "chassis (motor x 2 + sonar + light)",
-            serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
-            services: () => [
-                new MotorServiceHost(),
-                new MotorServiceHost(),
-                new JDSensorServiceHost(SRV_DISTANCE, sonarOptions),
-                new LedPixelServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
-            ]
-        },
-        {
             name: "distance (sonar)",
             serviceClasses: [SRV_DISTANCE],
             services: () => [new JDSensorServiceHost(SRV_DISTANCE, sonarOptions)]
@@ -637,6 +627,16 @@ const _hosts: {
             name: "vibration motor",
             serviceClasses: [SRV_VIBRATION_MOTOR],
             services: () => [new JDServiceHost(SRV_VIBRATION_MOTOR)]
+        },
+        {
+            name: "chassis (motor x 2 + sonar + light)",
+            serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
+            services: () => [
+                new MotorServiceHost(),
+                new MotorServiceHost(),
+                new JDSensorServiceHost(SRV_DISTANCE, sonarOptions),
+                new LedPixelServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
+            ]
         }
     ];
 
