@@ -24,7 +24,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
     const [brightness] = useRegisterUnpackedValue<[number]>(brightnessRegister);
     const [steps] = useRegisterUnpackedValue<LedAnimationStepsType>(service.register(LedReg.Steps));
     const [waveLength] = useRegisterUnpackedValue<[number]>(service.register(LedReg.WaveLength));
-    const [ledCount] = useRegisterUnpackedValue<[number]>(service.register(LedReg.LedCount)) || [1];
+    const [ledCount] = useRegisterUnpackedValue<[number]>(service.register(LedReg.LedCount));
 
     // restart animation with steps
     const animation = useMemo(() => new LedAnimation(steps), [steps?.join("|")])
@@ -46,7 +46,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
     const opacity = brightness;
     const fill = hsvToCss(hsv[0], hsv[1], hsv[2], brightness * 0xff, waveLength);
 
-    const ln = ledCount
+    const ln = Math.min(ledCount || 1, 5)
     const lw = 15.5;
     const m = 1;
     const w = (lw + m) * ln;
