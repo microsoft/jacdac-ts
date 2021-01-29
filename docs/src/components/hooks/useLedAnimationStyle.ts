@@ -1,14 +1,17 @@
 import { useMemo } from "react";
 import { useId } from "react-use-id-hook"
 
-export type StatusLightFrame = [number, number, number, number]
+export type LedAnimationFrame = [number, number, number, number]
 
-export interface StatusLightProps {
+export function hueToCSSHue(hue: number) {
+    return hue * 360 / 0xff
+}
+export interface LedAnimationProps {
     monochrome?: boolean,
     cssProperty?: "border" | "background-color" | "color" | "fill" | "stroke"
 }
 
-function interpolate(frames: StatusLightFrame[], time: number) {
+function interpolate(frames: LedAnimationFrame[], time: number) {
     let framet = 0;
     const nframes = frames.length;
     for (let i = 0; i < nframes; ++i) {
@@ -49,7 +52,7 @@ function hsv_to_hsl(h: number, s: number, v: number) {
     return [h, s, l]
 }
 
-export default function useStatusLightStyle(frames: StatusLightFrame[], options?: StatusLightProps) {
+export default function useLedAnimationStyle(frames: LedAnimationFrame[], options?: LedAnimationProps) {
     const { monochrome, cssProperty } = options || {};
     const className = useId();
     // generate a CSS animation for the curren frames
@@ -59,12 +62,13 @@ export default function useStatusLightStyle(frames: StatusLightFrame[], options?
         const DURATION = 3;
         const property = cssProperty || "background-color";
         const total = frames.reduce((t, row) => t + row[DURATION], 0)
-        // one animation frame every 100ms
-        const KEYFRAME_DURATION = 100;
+        const totals = (total << 3) / 1000;
+        // 25fps
+        const KEYFRAME_DURATION = 40 >> 3;
         const nkframes = Math.ceil(total / KEYFRAME_DURATION);
         let kf = `@keyframes ${className} {\n`;
         for (let kframei = 0; kframei < nkframes; ++kframei) {
-            const kt = kframei / (nkframes - 1) * total;
+            const kt = kframei / (nkframes) * total;
             const { hue, saturation, value } = interpolate(frames, kt);
             // generate new keyframe
             const percent = Math.round(kframei / (nkframes - 1) * 100)
@@ -80,7 +84,7 @@ export default function useStatusLightStyle(frames: StatusLightFrame[], options?
         kf += `}\n`; // @keyframes
         // class
         kf += `.${className} {
-  animation-duration: ${total / 1000}s;
+  animation-duration: ${totals}s;
   animation-name: ${className};
   animation-delay: 0s;
   animation-timing-function: linear;

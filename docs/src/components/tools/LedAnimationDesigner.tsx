@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
-import useStatusLightStyle, { StatusLightFrame } from "../hooks/useStatusLightStyle"
+import useLedAnimationStyle, { LedAnimationFrame } from "../hooks/useLedAnimationStyle"
 import { Card, CardContent, CardHeader, Grid, TextField, useTheme } from "@material-ui/core"
 import { SvgWidget } from "../widgets/SvgWidget";
 import Helmet from "react-helmet"
@@ -11,9 +11,9 @@ import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { TwitterPicker } from "react-color";
 
-function StatusLightFrameDesigner(props: {
-    frame: StatusLightFrame,
-    setFrame: (frame: StatusLightFrame) => void,
+function LedAnimationFrameDesigner(props: {
+    frame: LedAnimationFrame,
+    setFrame: (frame: LedAnimationFrame) => void,
     onRemove: () => void
 }) {
     const { frame, setFrame, onRemove } = props;
@@ -26,12 +26,12 @@ function StatusLightFrameDesigner(props: {
         const v = parseInt(ev.target.value);
         if (!isNaN(v)) {
             const newFrame = frame.slice(0);
-            newFrame[i] = v;
-            setFrame(newFrame as StatusLightFrame);
+            newFrame[i] = v >> 3; // 8ms units
+            setFrame(newFrame as LedAnimationFrame);
         }
     }
     const handleColorChangeComplete = (c: { hsv: { h: number; s: number; v: number; } }) => {
-        const newFrame = frame.slice(0) as StatusLightFrame;
+        const newFrame = frame.slice(0) as LedAnimationFrame;
         const { hsv } = c;
         const { h, s, v } = hsv;
         newFrame[0] = (h / 360 * 0xff) & 0xff;
@@ -57,23 +57,23 @@ function StatusLightFrameDesigner(props: {
                     <TextField label="duration" helperText="ms" inputProps={{
                         type: 'number',
                         min: 0
-                    }} value={frame[3]} onChange={handleValue(3)} />
+                    }} value={frame[3] << 3} onChange={handleValue(3)} />
                 </Grid>
             </Grid>
         </CardContent>
     </Card >
 }
 
-export default function StatusLightDesigner() {
-    const [frames, setFrames] = useState<StatusLightFrame[]>([
-        [17, 255, 100, 1000],
-        [31, 255, 100, 1000]
+export default function LedAnimationDesigner() {
+    const [frames, setFrames] = useState<LedAnimationFrame[]>([
+        [17, 255, 100, 64],
+        [31, 255, 100, 64]
     ]);
-    const { className, helmetStyle } = useStatusLightStyle(frames, {
+    const { className, helmetStyle } = useLedAnimationStyle(frames, {
         cssProperty: "fill"
     });
     const theme = useTheme();
-    const handleFrame = (i: number) => (frame: StatusLightFrame) => {
+    const handleFrame = (i: number) => (frame: LedAnimationFrame) => {
         const newFrames = frames.slice(0);
         newFrames[i] = frame;
         setFrames(newFrames)
@@ -85,7 +85,7 @@ export default function StatusLightDesigner() {
     }
     const handleAdd = () => setFrames([
         ...frames,
-        frames[frames.length - 1].slice(0) as StatusLightFrame
+        frames[frames.length - 1].slice(0) as LedAnimationFrame
     ]);
 
     return <Grid container spacing={1}>
@@ -104,13 +104,13 @@ export default function StatusLightDesigner() {
             </Card>
         </Grid>
         {frames.map((frame, i) => <Grid item key={i}>
-            <StatusLightFrameDesigner key={i} frame={frame} setFrame={handleFrame(i)}
+            <LedAnimationFrameDesigner key={i} frame={frame} setFrame={handleFrame(i)}
                 onRemove={frames.length > 1 ? handleRemove(i) : undefined} />
         </Grid>)}
         <Grid item>
             <Card>
                 <CardContent>
-                    <IconButtonWithTooltip title="add animation frame" disabled={frames.length > 7} onClick={handleAdd}>
+                    <IconButtonWithTooltip title="add animation frame" onClick={handleAdd}>
                         <AddIcon />
                     </IconButtonWithTooltip>
                 </CardContent>

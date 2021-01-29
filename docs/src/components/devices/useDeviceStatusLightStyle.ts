@@ -2,26 +2,18 @@ import { ControlReg, SRV_BOOTLOADER } from "../../../../src/jacdac";
 import { JDDevice } from "../../../../src/jdom/device";
 import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import useStatusLightStyle, { StatusLightFrame, StatusLightProps } from "../hooks/useStatusLightStyle";
+import useLedAnimationStyle, { LedAnimationFrame, LedAnimationProps } from "../hooks/useLedAnimationStyle";
 
-const bootloaderFrames: StatusLightFrame[] = [
-    [0, 255, 0, 500],
-    [5, 255, 255, 500]
+const bootloaderFrames: LedAnimationFrame[] = [
+    [0, 255, 0, 500 >> 3],
+    [5, 255, 255, 500 >> 3]
 ];
-const identifyFrames: StatusLightFrame[] = [
-    [50, 255, 0, 250],
-    [50, 255, 255, 250]
+const identifyFrames: LedAnimationFrame[] = [
+    [50, 255, 0, 250 >> 3],
+    [50, 255, 255, 250 >> 3]
 ];
-/*
-const announceTick = [
-    [30, 255, 0, 400],
-    [30, 255, 0, 0],
-    [30, 255, 50, 100],
-    [30, 255, 0, 0]
-]
-*/
 
-export default function useDeviceStatusLightStyle(device: JDDevice, options?: StatusLightProps) {
+export default function useDeviceStatusLightStyle(device: JDDevice, options?: LedAnimationProps) {
     const register = useChange(device, d => d.service(0).register(ControlReg.StatusLight));
     const bootloader = useChange(device, d => d.hasService(SRV_BOOTLOADER));
     const identifying = useChange(device, d => d?.identifying)
@@ -32,5 +24,5 @@ export default function useDeviceStatusLightStyle(device: JDDevice, options?: St
         : bootloader ? bootloaderFrames
             : registerFrames?.[0];
 
-    return useStatusLightStyle(frames, options);
+    return useLedAnimationStyle(frames, options);
 }
