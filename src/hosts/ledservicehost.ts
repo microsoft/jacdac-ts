@@ -9,53 +9,31 @@ export type LedAnimationStepsType = [LedAnimationFrame[]];
 export class LedAnimation extends JDEventSource {
     private _currentStep: number;
     private _currentStepStartTime: number;
-    private _currentItensity: number;
+    private _currentHsv: number;
 
-    constructor(
-        public maxIterations: number,
-        public brightness: number,
-        public currentIteration: number,
-        public steps: LedAnimationFrame[]
-    ) {
+    constructor(public steps: LedAnimationFrame[]) {
         super();
-
-        this.maxIterations = this.maxIterations || 1;
-        this.brightness = this.brightness !== undefined ? this.brightness : 0xffff;
-        this.currentIteration = this.currentIteration || 0;
 
         this._currentStep = 0;
         this._currentStepStartTime = 0;
-        this._currentItensity = 0;
+        this._currentHsv = 0;
     }
 
-    get intensity() {
-        return (this._currentItensity * this.brightness) / (0xffff * 0xffff);
+    get hsv() {
+        return this._currentHsv;
     }
 
     update(now: number) {
-        // check iteration count
-        const currentIteration = this.currentIteration;
-        const maxIterations = this.maxIterations;
-
-        if (currentIteration > maxIterations)
-            return;
-
-        // don't animate when brightness is 0
-        const brightness = this.brightness;
-        if (brightness === 0)
-            return;
-
         // grab current step
         const steps = this.steps;
         if (!steps?.length) {
-            this._currentItensity = 0;
+            // nothing to do
             return;
         }
 
         // find the step we are in
         if (this._currentStepStartTime == 0)
             this._currentStepStartTime = now;
-        let iteration = currentIteration;
 
         while (this._currentStep < steps.length) {
             const [, duration] = steps[this._currentStep];
@@ -68,12 +46,6 @@ export class LedAnimation extends JDEventSource {
 
             // restart iteration if needed
             if (this._currentStep === steps.length - 1) {
-                iteration++;
-
-                // done iterating?
-                if (iteration >= maxIterations)
-                    break;
-
                 // restart
                 this._currentStep = 0;
                 this._currentStepStartTime = now;
@@ -86,15 +58,20 @@ export class LedAnimation extends JDEventSource {
 
         // render
         if (this._currentStep < steps.length) {
-            const [startIntensity, duration] = steps[this._currentStep];
-            const [endItensity,] = steps[(this._currentStep + 1) % steps.length]
+            const [startHue, startSat, startValue, duration] = steps[this._currentStep];
+            const [endHue, endSat, endValue,] = steps[(this._currentStep + 1) % steps.length]
 
             const elapsed = now - this._currentStepStartTime;
             const alpha = elapsed / duration;
-            const intensity = (1 - alpha) * startIntensity + alpha * endItensity;
+            const oneAlpha = 1 - alpha;
 
-            if (intensity !== this._currentItensity) {
-                this._currentItensity = intensity;
+            const h = oneAlpha * startHue + alpha * endHue;
+            const s = oneAlpha * startSat + alpha * endSat;
+            const v = oneAlpha * startValue + alpha * endValue;
+            const hsv = ((h & 0xff) << 16) | ((s & 0xff) << 8) | (v & 0xff)
+
+            if (hsv !== this._currentHsv) {
+                this._currentHsv = hsv;
                 this.emit(CHANGE);
             }
         }

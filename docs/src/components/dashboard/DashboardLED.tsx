@@ -11,6 +11,7 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import { Grid, Slider } from "@material-ui/core";
 import LEDServiceHost, { LedAnimation, LedAnimationStepsType } from "../../../../src/hosts/ledservicehost";
 import { LedReg } from "../../../../src/jdom/constants";
+import { hsvToCss } from "../../../../src/jacdac";
 
 export default function DashboardLED(props: DashboardServiceProps) {
     const { bus } = useContext<JDContextProps>(JACDACContext)
@@ -19,35 +20,30 @@ export default function DashboardLED(props: DashboardServiceProps) {
     const host = useServiceHost<LEDServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const { active } = useWidgetTheme(color);
-    const [maxIterations] = useRegisterUnpackedValue<[number]>(service.register(LedReg.MaxIterations));
     const brightnessRegister = service.register(LedReg.Brightness);
     const [brightness] = useRegisterUnpackedValue<[number]>(brightnessRegister);
-    const [currentIteration] = useRegisterUnpackedValue<[number]>(service.register(LedReg.CurrentIteration));
     const [steps] = useRegisterUnpackedValue<LedAnimationStepsType>(service.register(LedReg.Steps));
+    const [waveLength] = useRegisterUnpackedValue<[number]>(service.register(LedReg.WaveLength));
 
     // restart animation with steps
-    const animation = useMemo(() => new LedAnimation(maxIterations, brightness, currentIteration, steps)
-        , steps || [])
-    // update animation on the fly
-    useEffect(() => {
-        animation.maxIterations = maxIterations
-        animation.brightness = brightness
-        animation.currentIteration = currentIteration
-    }, [animation, maxIterations, currentIteration, brightness]);
+    const animation = useMemo(() => new LedAnimation(steps), steps || [])
     // animate
     useAnimationFrame(() => {
         animation.update(bus.timestamp); return true;
     }, [animation])
 
-    const intensity = useChange(animation, a => a.intensity)
+    const hsv = useChange(animation, a => a?.hsv)
 
     const handleBrightnessChange = async (ev: unknown, newValue: number | number[]) => {
         await brightnessRegister.sendSetPackedAsync("u16", [newValue as number], true);
     }
 
     // nothing to see
-    if (intensity === undefined)
+    if (hsv === undefined)
         return null;
+
+    const opacity = brightness;
+    const fill = hsvToCss(hsv[0], hsv[1], hsv[2], brightness, waveLength);
 
     const w = 15.5;
     const h = 42;
@@ -68,7 +64,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
             <SvgWidget width={w} height={h} size={widgetSize}>
                 <path fill="#999" d="M14.2 13V7.1C14.2 3.2 11 0 7.1 0 3.2 0 0 3.2 0 7.1v13.7c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.2-.5-2.3-1.3-3.2z" opacity=".65" />
                 <path fill="#8c8c8c" d="M2.8 17.5l-1.2-1.4h1L5 17.5v18.6c0 .3-.5.5-1.1.5-.6 0-1.1-.2-1.1-.5zm10.1 6.7c0-.7-1.1-1.3-2.1-1.8-.4-.2-1.2-.6-1.2-.9v-3.4l2.5-2h-.9l-3.7 2v3.5c0 .7.9 1.2 1.9 1.7.4.2 1.3.8 1.3 1.1v16.9c0 .4.5.7 1.1.7.6 0 1.1-.3 1.1-.7z" />
-                <path opacity={intensity} fill={active} d="M14.2 13V7.1C14.2 3.2 11 0 7.1 0 3.2 0 0 3.2 0 7.1v13.7c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.2-.5-2.3-1.3-3.2z" />
+                <path opacity={opacity} fill={fill} d="M14.2 13V7.1C14.2 3.2 11 0 7.1 0 3.2 0 0 3.2 0 7.1v13.7c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.2-.5-2.3-1.3-3.2z" />
                 <path fill="#d1d1d1" d="M14.2 13v3.1c0 2.7-3.2 5-7.1 5-3.9 0-7.1-2.2-7.1-5v4.6c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.1-.5-2.2-1.3-3.1z" opacity=".9" />
                 <path fill="#e6e6e6" d="M14.2 13v3.1c0 2.7-3.2 5-7.1 5-3.9 0-7.1-2.2-7.1-5v4.6c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.1-.5-2.2-1.3-3.1z" opacity=".7" />
                 <path fill="#e6e6e6" d="M14.2 13v3.1c0 2.7-3.2 5-7.1 5-3.9 0-7.1-2.2-7.1-5v3.1c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9 0-1.1-.5-2.2-1.3-3.1z" opacity=".25" />

@@ -1,11 +1,10 @@
 import { useMemo } from "react";
 import { useId } from "react-use-id-hook"
+import { LedAnimationFrame } from "../../../../src/hosts/ledservicehost";
+import { hsvToCss } from "../../../../src/jdom/color";
 
-export function hueToCSSHue(hue: number) {
-    return hue * 360 / 0xff
-}
 export interface LedAnimationProps {
-    monochrome?: boolean,
+    monochromeHue?: number,
     cssProperty?: "border" | "background-color" | "color" | "fill" | "stroke"
 }
 
@@ -33,25 +32,8 @@ function interpolate(frames: LedAnimationFrame[], time: number) {
     return { hue: 0, saturation: 0, value: 0 };
 }
 
-function hsv_to_hsl(h: number, s: number, v: number) {
-    // both hsv and hsl values are in [0, 1]
-    const l = (2 - s) * v / 2;
-
-    if (l != 0) {
-        if (l == 1) {
-            s = 0
-        } else if (l < 0.5) {
-            s = s * v / (l * 2)
-        } else {
-            s = s * v / (2 - l * 2)
-        }
-    }
-
-    return [h, s, l]
-}
-
 export default function useLedAnimationStyle(frames: LedAnimationFrame[], options?: LedAnimationProps) {
-    const { monochrome, cssProperty } = options || {};
+    const { monochromeHue, cssProperty } = options || {};
     const className = useId();
     // generate a CSS animation for the curren frames
     const helmetStyle = useMemo(() => {
@@ -70,13 +52,9 @@ export default function useLedAnimationStyle(frames: LedAnimationFrame[], option
             const { hue, saturation, value } = interpolate(frames, kt);
             // generate new keyframe
             const percent = Math.round(kframei / (nkframes - 1) * 100)
-            const csshue = (monochrome ? 0 : hue) * 360 / 0xff;
-            const csssat = (monochrome ? 0xff : saturation) / 0xff;
-            const cssval = value / 0xff;
-            const [h, s, l] = hsv_to_hsl(csshue, csssat, cssval)
-            const alpha = l;
+            const csscolor = hsvToCss(hue, saturation, value, 0xff, monochromeHue)
             kf += `  ${percent}% { 
-    ${property}: hsla(${h}, ${s * 100}%, ${l * 100}%, ${alpha});
+    ${property}: ${csscolor});
   }\n`
         }
         kf += `}\n`; // @keyframes
@@ -89,7 +67,7 @@ export default function useLedAnimationStyle(frames: LedAnimationFrame[], option
   animation-iteration-count: infinite;
 }`;
         return kf;
-    }, [frames?.map(frame => frame.toString()).join(), monochrome, cssProperty]);
+    }, [frames?.map(frame => frame.toString()).join(), monochromeHue, cssProperty]);
 
     return { className, helmetStyle }
 }
