@@ -95,7 +95,7 @@ export default function LedAnimationDesigner() {
             <Card>
                 <CardHeader title="preview" />
                 <CardContent>
-                    <SvgWidget size={"21vh"} width={64} height={64}>
+                    <SvgWidget size={"14vh"} width={64} height={64}>
                         <circle cx={32} cy={32} r={30}
                             className={className}
                             stroke={theme.palette.background.default}
@@ -104,7 +104,7 @@ export default function LedAnimationDesigner() {
                 </CardContent>
             </Card>
         </Grid>
-        {frames.map((frame, i) => <Grid item key={i}>
+        {frames.map((frame, i) => <Grid item xs={12} sm={6} lg={4} key={i}>
             <LedAnimationFrameDesigner key={i} frame={frame} setFrame={handleFrame(i)}
                 onRemove={frames.length > 1 ? handleRemove(i) : undefined} />
         </Grid>)}
