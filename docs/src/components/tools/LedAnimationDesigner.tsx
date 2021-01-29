@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
-import useLedAnimationStyle, { LedAnimationFrame } from "../hooks/useLedAnimationStyle"
+import useLedAnimationStyle, {  } from "../hooks/useLedAnimationStyle"
 import { Card, CardContent, CardHeader, Grid, TextField, useTheme } from "@material-ui/core"
 import { SvgWidget } from "../widgets/SvgWidget";
 import Helmet from "react-helmet"
@@ -9,7 +9,8 @@ import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { TwitterPicker } from "react-color";
+import { SliderPicker } from "react-color";
+import { LedAnimationFrame } from "../../../../src/hosts/ledservicehost";
 
 function LedAnimationFrameDesigner(props: {
     frame: LedAnimationFrame,
@@ -49,7 +50,7 @@ function LedAnimationFrameDesigner(props: {
         <CardContent>
             <Grid container direction="column" spacing={1}>
                 <Grid item>
-                    <TwitterPicker triangle="hide"
+                    <SliderPicker triangle="hide"
                         color={hsv}
                         onChangeComplete={handleColorChangeComplete} />
                 </Grid>
