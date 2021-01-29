@@ -289,7 +289,7 @@ export class JDDevice extends JDNode {
     }
 
 
-    services(options?: { serviceIndex?: number, serviceName?: string, serviceClass?: number }): JDService[] {
+    services(options?: { serviceIndex?: number, serviceName?: string, serviceClass?: number, specification?: boolean }): JDService[] {
         if (!this.announced) return [];
 
         if (options?.serviceIndex >= 0)
@@ -304,6 +304,10 @@ export class JDDevice extends JDNode {
         this.initServices();
         let r = this._services.slice();
         if (sc > -1) r = r.filter(s => s.serviceClass == sc)
+
+        if (options?.specification)
+            r = r.filter(s => !!s.specification)
+
         return r;
     }
 

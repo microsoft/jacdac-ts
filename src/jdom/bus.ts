@@ -743,7 +743,7 @@ export class JDBus extends JDNode {
         // collect registers
         const registers = arrayConcatMany(devices
             .map(device => arrayConcatMany(
-                device.services()
+                device.services({ specification: true })
                     .map(service => service.registers()
                         // someone is listening for reports
                         .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
@@ -761,21 +761,25 @@ export class JDBus extends JDNode {
 
         // refresh values
         for (const register of registers) {
+            const { service, specification } = register;
             // streaming register? use streaming sample
-            if (isReading(register.specification) && isSensor(register.service.specification)) {
+            if (isReading(specification) && isSensor(service.specification)) {
                 // compute refresh interval
-                const intervalRegister = register.service.register(SensorReg.StreamingInterval);
+                const intervalRegister = service.register(SensorReg.StreamingInterval);
                 let interval = intervalRegister?.intValue;
-                if (!interval) {
-                    // no interval data
+                // no interval data
+                if (interval === undefined) {
                     // use preferred interval data or default to 50
-                    const preferredInterval = register.service.register(SensorReg.StreamingPreferredInterval);
-                    interval = preferredInterval?.intValue || STREAMING_DEFAULT_INTERVAL;
+                    const preferredInterval = service.register(SensorReg.StreamingPreferredInterval);
+                    interval = preferredInterval?.intValue;
                     if (intervalRegister)
                         // all async
                         intervalRegister.sendGetAsync();
                 }
-                const samplesRegister = register.service.register(SensorReg.StreamingSamples);
+                // still no interval data use from spec or default
+                if (interval === undefined)
+                    interval = specification.preferredInterval || STREAMING_DEFAULT_INTERVAL
+                const samplesRegister = service.register(SensorReg.StreamingSamples);
                 const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp;
                 if (samplesLastSetTimesamp !== undefined) {
                     const age = this.timestamp - samplesRegister.lastSetTimestamp;
