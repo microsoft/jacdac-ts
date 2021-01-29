@@ -42,7 +42,7 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
 
     const host = useServiceHost<TrafficLightServiceHost>(service);
     const color = host ? "secondary" : "primary";
-    const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
+    const { background, controlBackground } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)
 
     let cy = 0;
@@ -63,12 +63,15 @@ export default function DashboardTrafficLight(props: DashboardServiceProps) {
             {lights.map((v, i) => {
                 cy += m + 2 * r;
                 const fill = v ? colors[i] : controlBackground;
-                const onDown = () => host?.register(lightRegs[i]).setValues([!v]);
+                const onDown = async () => {
+                    const reg = service.register(lightRegs[i]);
+                    await reg.sendSetBoolAsync(!v, true)
+                }
                 return <TrafficLight
                     key={i} cx={cx} cy={cy}
                     background={background}
                     fill={fill}
-                    onDown={host && onDown}
+                    onDown={onDown}
                     label={`${names[i]} ${v ? "on" : "off"}`} />
             })}
         </g>
