@@ -40,12 +40,12 @@ export class LedAnimation extends JDEventSource {
             this._currentStepStartTime = now;
 
         while (this._currentStep < steps.length) {
-            const [, duration8] = steps[this._currentStep];
+            const [h, s, v, duration8] = steps[this._currentStep];
             const duration = duration8 << 3;
             if (duration === 0)
                 break;
             const elapsed = now - this._currentStepStartTime;
-            if (elapsed < duration << 3) {
+            if (elapsed < duration) {
                 break;
             }
 
@@ -64,10 +64,11 @@ export class LedAnimation extends JDEventSource {
         // render
         if (this._currentStep < steps.length) {
             const [startHue, startSat, startValue, duration8] = steps[this._currentStep];
+            const duration = duration8 << 3;
             const [endHue, endSat, endValue,] = steps[(this._currentStep + 1) % steps.length]
 
             const elapsed = now - this._currentStepStartTime;
-            const alpha = elapsed / (duration8 << 3);
+            const alpha = elapsed / (duration);
             const oneAlpha = 1 - alpha;
 
             const h = oneAlpha * startHue + alpha * endHue;
@@ -94,21 +95,22 @@ export default class LEDServiceHost extends JDServiceHost {
 
     constructor(options?: {
         ledCount?: number,
+        brightness?: number,
         variant?: LedVariant,
         luminousIntensity?: number,
         waveLength?: number
     }) {
         super(SRV_LED);
-        const { ledCount, variant,
+        const { ledCount, variant, brightness,
             luminousIntensity, waveLength } = options || {};
 
         this.steps = this.addRegister<LedAnimationStepsType>(LedReg.Steps, [
             [
-                [0, 0, 0, 0xf0],
-                [0, 0xff, 0xff, 0xf0],
+                [0, 0, 0, 1000 >> 3],
+                [0, 0xff, 0xff, 1000 >> 3],
             ]
         ])
-        this.brightness = this.addRegister(LedReg.Brightness, [0xffff]);
+        this.brightness = this.addRegister(LedReg.Brightness, [brightness || 0.5]);
         this.maxPower = this.addRegister(LedReg.MaxPower, [200]);
         this.ledCount = this.addRegister(LedReg.LedCount, [ledCount || 1]);
         if (luminousIntensity !== undefined)
