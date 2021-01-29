@@ -98,18 +98,14 @@ export default class LEDServiceHost extends JDServiceHost {
         brightness?: number,
         variant?: LedVariant,
         luminousIntensity?: number,
-        waveLength?: number
+        waveLength?: number,
+        steps?: LedAnimationFrame[]
     }) {
         super(SRV_LED);
         const { ledCount, variant, brightness,
-            luminousIntensity, waveLength } = options || {};
+            luminousIntensity, waveLength, steps } = options || {};
 
-        this.steps = this.addRegister<LedAnimationStepsType>(LedReg.Steps, [
-            [
-                [0, 0, 0, 1000 >> 3],
-                [0, 0xff, 0xff, 1000 >> 3],
-            ]
-        ])
+        this.steps = this.addRegister<LedAnimationStepsType>(LedReg.Steps, [steps || []])
         this.brightness = this.addRegister(LedReg.Brightness, [brightness || 0.5]);
         this.maxPower = this.addRegister(LedReg.MaxPower, [200]);
         this.ledCount = this.addRegister(LedReg.LedCount, [ledCount || 1]);

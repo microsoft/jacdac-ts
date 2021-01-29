@@ -5,7 +5,8 @@ export function hsvToCss(hue: number, saturation: number, value: number, brightn
     const csssat = (monochome ? 0xff : saturation) / 0xff;
     const cssval = value / 0xff;
     const [h, s, l] = hsv_to_hsl(csshue, csssat, cssval)
-    const alpha = l * brightness;
+    const mixl = 0.3;
+    const alpha = (mixl + (1 - mixl) * l) * brightness;
 
     return `hsla(${h}, ${s * 100}%, ${l * 100}%, ${alpha}`
 }

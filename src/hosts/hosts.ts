@@ -294,20 +294,26 @@ const _hosts: {
             services: () => [new JoystickSensorServiceHost(JoystickVariant.ArcadeStick, true)]
         },
         {
-            name: "LED (red through hole)",
+            name: "LED (RGB through hole)",
+            serviceClasses: [SRV_LED],
+            services: () => [new LEDServiceHost({
+                variant: LedVariant.ThroughHole,
+                ledCount: 2,
+                steps:
+                    [
+                        [0xff >> 1, 0xff, 0xff >> 1, 3000 >> 3],
+                        [0xff, 0xff, 0xff, 30000 >> 3],
+                    ]
+            })]
+        },
+        {
+            name: "LED (blue through hole)",
             serviceClasses: [SRV_LED],
             services: () => [new LEDServiceHost({
                 variant: LedVariant.ThroughHole,
                 waveLength: 624,
-                ledCount: 3
-            })]
-        },
-        {
-            name: "LED (blue SMD)",
-            serviceClasses: [SRV_LED],
-            services: () => [new LEDServiceHost({ 
-                variant: LedVariant.ThroughHole,
-                waveLength: 470
+                ledCount: 3,
+                steps: [[0, 0, 0xff, 0xff]]
             })]
         },
         {
