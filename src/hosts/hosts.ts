@@ -298,7 +298,8 @@ const _hosts: {
             serviceClasses: [SRV_LED],
             services: () => [new LEDServiceHost({
                 variant: LedVariant.ThroughHole,
-                waveLength: 624
+                waveLength: 624,
+                ledCount: 3
             })]
         },
         {

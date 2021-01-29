@@ -19,8 +19,12 @@ export class LedAnimation extends JDEventSource {
         this._currentHsv = 0;
     }
 
-    get hsv() {
-        return this._currentHsv;
+    get hsv(): [number, number, number] {
+        return [
+            (this._currentHsv >> 16) & 0xff,
+            (this._currentHsv >> 8) & 0xff,
+            (this._currentHsv) & 0xff
+        ]
     }
 
     update(now: number) {
