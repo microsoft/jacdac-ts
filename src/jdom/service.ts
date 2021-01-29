@@ -2,12 +2,12 @@ import { JDDevice } from "./device";
 import Packet from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED } from "./constants";
+import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED, EVENT, CHANGE } from "./constants";
 import { JDNode } from "./node";
 import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator, isValueOrIntensity, isValue, isIntensity } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
-import { BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
+import { BaseEvent, BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { JDServiceClient } from "./serviceclient";
 import { InPipeReader } from "./pipes";
 import { jdunpack } from "./pack";
@@ -26,6 +26,13 @@ export class JDService extends JDNode {
         public readonly service_index: number
     ) {
         super()
+
+        const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged);
+        statusCodeChanged.on(CHANGE, () => {
+            // todo update status code with event payload
+            const { data } = statusCodeChanged;
+            console.log("status code changed", { data })
+        })
     }
 
     get id() {

@@ -14,7 +14,7 @@ import {
 import Packet from "../jdom/packet";
 import JDRegisterHost from "../jdom/registerhost";
 import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
-import { toHex } from "../jdom/utils";
+import { isBufferEmpty, toHex } from "../jdom/utils";
 
 const PROG_EOF = 0
 const PROG_CMD = 1
@@ -72,15 +72,6 @@ function hsv(hue: number, sat: number, val: number): RGB {
         b = brightness_floor;
     }
     return rgb(r, g, b);
-}
-
-function is_empty(data: Uint8Array): boolean {
-    const n = data.length;
-    for (let i = 0; i < data.length; ++i) {
-        if (data[i])
-            return false;
-    }
-    return true;
 }
 
 function mulcol(c: number, m: number): number {
@@ -581,7 +572,7 @@ export default class LedPixelServiceHost extends JDServiceHost {
         if (!this.is_enabled()) return;
         if (this.dirty) {
             this.dirty = false;
-            if (is_empty(this.pxbuffer)) {
+            if (isBufferEmpty(this.pxbuffer)) {
                 this.jd_power_enable(false);
                 return;
             } else {

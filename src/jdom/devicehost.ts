@@ -2,7 +2,7 @@ import { JDBus } from "./bus";
 import JDServiceHost from "./servicehost";
 import Packet from "./packet";
 import { shortDeviceId } from "./pretty";
-import { anyRandomUint32, toHex } from "./utils";
+import { anyRandomUint32, isBufferEmpty, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
 import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
@@ -80,7 +80,12 @@ export default class JDDeviceHost extends JDEventSource {
         if (this._restartCounter < 0xf)
             this._restartCounter++
 
+        // async
         this.controlService.announce();
+        // also send status codes, for non-zero codes
+        this.services()
+            .filter(srv => !isBufferEmpty(srv.statusCode.data))
+            .forEach(srv => srv.statusCode.sendGetAsync());
 
         // reset counter
         this._packetCount = 0;

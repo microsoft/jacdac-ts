@@ -38,7 +38,7 @@ export default class ControlServiceHost extends JDServiceHost {
                 this.device.services().slice(1).map(srv => srv.serviceClass)
             ])
 
-        this.sendPacketAsync(pkt);
+        await this.sendPacketAsync(pkt);
 
         // update uptime
         this.uptime.setValues([Date.now() - this.startTime]);

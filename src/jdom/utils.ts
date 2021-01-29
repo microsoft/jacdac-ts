@@ -315,6 +315,17 @@ export function decodeU32LE(buf: Uint8Array) {
     return res
 }
 
+export function isBufferEmpty(data: Uint8Array): boolean {
+    if (!data) return true;
+    const n = data.length;
+    for (let i = 0; i < data.length; ++i) {
+        if (data[i])
+            return false;
+    }
+    return true;
+}
+
+
 export function bufferToString(buf: Uint8Array) {
     return fromUTF8(uint8ArrayToString(buf))
 }

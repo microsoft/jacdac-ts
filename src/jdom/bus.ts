@@ -52,7 +52,7 @@ import { JDNode, Log, LogLevel } from "./node";
 import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flashing";
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
-import { LoggerPriority, LoggerReg, SensorReg, SRV_LOGGER, SRV_REAL_TIME_CLOCK } from "../../jacdac-spec/dist/specconstants";
+import { ControlReg, LoggerPriority, LoggerReg, SensorReg, SRV_CONTROL, SRV_LOGGER, SRV_REAL_TIME_CLOCK, SystemReg } from "../../jacdac-spec/dist/specconstants";
 import JDDeviceHost from "./devicehost";
 import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost";
 
@@ -732,7 +732,7 @@ export class JDBus extends JDNode {
     /**
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
-    private async refreshRegisters() {
+    private refreshRegisters() {
         const devices = this._devices
             .filter(device => device.announced && !device.lost); // don't try lost devices or devices flashing
 
@@ -747,8 +747,11 @@ export class JDBus extends JDNode {
                     .map(service => service.registers()
                         // someone is listening for reports
                         .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
-                        // ask if data is missing or non-const
-                        .filter(reg => !reg.data || !isConstRegister(reg.specification))
+                        // ask if data is missing or non-const/status code
+                        .filter(reg => !reg.data
+                            || !(isConstRegister(reg.specification) || reg.code === SystemReg.StatusCode))
+                        // double double-query status light
+                        .filter(reg => !reg.data || !(service.serviceClass === SRV_CONTROL && reg.code === ControlReg.StatusLight))
                         // stop asking optional registers
                         .filter(reg => !reg.specification?.optional || reg.lastGetAttempts < REGISTER_OPTIONAL_POLL_COUNT)
                     )
@@ -769,7 +772,8 @@ export class JDBus extends JDNode {
                     const preferredInterval = register.service.register(SensorReg.StreamingPreferredInterval);
                     interval = preferredInterval?.intValue || STREAMING_DEFAULT_INTERVAL;
                     if (intervalRegister)
-                        await intervalRegister.sendGetAsync();
+                        // all async
+                        intervalRegister.sendGetAsync();
                 }
                 const samplesRegister = register.service.register(SensorReg.StreamingSamples);
                 const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp;
@@ -780,7 +784,7 @@ export class JDBus extends JDNode {
                     // compute if half aged
                     if (age > midAge) {
                         //console.log(`auto-refresh - restream`, register)
-                        await samplesRegister.sendSetPackedAsync("u8", [0xff]);
+                        samplesRegister.sendSetPackedAsync("u8", [0xff]);
                     }
                 }
             } // regular register, ping if data is old
@@ -793,7 +797,7 @@ export class JDBus extends JDNode {
                     * (1 << backoff))
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
-                    await register.sendGetAsync();
+                    register.sendGetAsync();
                 }
             }
         }
