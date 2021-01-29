@@ -26,7 +26,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         super(bus)
         this.postPacket = this.postPacket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
-        this.handleResize = debounce(this.handleResize.bind(this), 1000);
+        this.handleResize = debounce(this.handleResize.bind(this), 500);
         this.registerEvents();
     }
 
