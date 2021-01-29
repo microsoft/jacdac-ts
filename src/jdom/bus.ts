@@ -752,6 +752,8 @@ export class JDBus extends JDNode {
                             || !(isConstRegister(reg.specification) || reg.code === SystemReg.StatusCode))
                         // double double-query status light
                         .filter(reg => !reg.data || !(service.serviceClass === SRV_CONTROL && reg.code === ControlReg.StatusLight))
+                        // reading_error is streamed with reading
+                        .filter(reg => reg.code !== SystemReg.ReadingError)
                         // stop asking optional registers
                         .filter(reg => !reg.specification?.optional || reg.lastGetAttempts < REGISTER_OPTIONAL_POLL_COUNT)
                     )
@@ -762,6 +764,10 @@ export class JDBus extends JDNode {
         // refresh values
         for (const register of registers) {
             const { service, specification } = register;
+            const noDataYet = !register.data;
+            const age = this.timestamp - register.lastGetTimestamp;
+            const backoff = register.lastGetAttempts;
+
             // streaming register? use streaming sample
             if (isReading(specification) && isSensor(service.specification)) {
                 // compute refresh interval
@@ -791,11 +797,12 @@ export class JDBus extends JDNode {
                         samplesRegister.sendSetPackedAsync("u8", [0xff]);
                     }
                 }
+
+                // first query, get data asap once per second
+                if (noDataYet && age > 1000)
+                    register.sendGetAsync();
             } // regular register, ping if data is old
             else {
-                const age = this.timestamp - register.lastGetTimestamp;
-                const backoff = register.lastGetAttempts;
-                const noDataYet = !register.data;
                 const expiration = Math.min(REGISTER_POLL_REPORT_MAX_INTERVAL,
                     (noDataYet ? REGISTER_POLL_FIRST_REPORT_INTERVAL : REGISTER_POLL_REPORT_INTERVAL)
                     * (1 << backoff))

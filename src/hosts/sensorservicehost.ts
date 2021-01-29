@@ -29,12 +29,13 @@ export default class JDSensorServiceHost<TReading extends any[]> extends JDServi
 
         this.reading = this.addRegister<TReading>(SystemReg.Reading, readingValues);
         this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
-        this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, [streamingInterval || 50]);
+        this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, streamingInterval ? [streamingInterval] : undefined);
         if (streamingInterval !== undefined)
             this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [streamingInterval]);
-
-        this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [readingError || 0]);
-        this.reading.errorRegister = this.readingError;
+        if (readingError !== undefined) {
+            this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [readingError || 0]);
+            this.reading.errorRegister = this.readingError;
+        }
         if (minReading !== undefined)
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)
@@ -48,13 +49,16 @@ export default class JDSensorServiceHost<TReading extends any[]> extends JDServi
         if (samples <= 0 || !this.reading.data)
             return;
         // is it time to stream?
-        const [interval] = this.streamingInterval.values();
+        let [interval] = this.streamingInterval.values();
+        if (interval === undefined) // use spec info is needed
+            interval = this.streamingInterval.specification.preferredInterval;
         const now = this.device.bus.timestamp;
         if (now - this.lastStream > interval) {
             // let's stream a value!
             this.lastStream = now;
             this.streamingSamples.setValues([samples - 1]);
             this.reading.sendGetAsync();
+            this.readingError?.sendGetAsync();
         }
     }
 }
