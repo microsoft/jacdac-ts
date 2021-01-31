@@ -40,8 +40,9 @@ export default class ControlServiceHost extends JDServiceHost {
 
         await this.sendPacketAsync(pkt);
 
-        // update uptime
-        this.uptime.setValues([Date.now() - this.startTime]);
+        // update uptime every 60
+        if (Date.now() - this.startTime > 60000)
+            this.uptime.setValues([Date.now() - this.startTime]);
     }
 
     async identify() {

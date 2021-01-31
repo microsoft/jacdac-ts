@@ -22,8 +22,10 @@ export default function DashboardReflectedLight(props: DashboardServiceProps) {
     const { background, controlBackground } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)
 
-    const maxValue = (1 << 16) - 1;
-    const handleDown = () => host.reading.setValues([brightness > 0 ? 0 : maxValue]);
+    const maxValue = 1.0;
+    const handleDown = () => {
+        host.reading.setValues([brightness > 0 ? 0 : maxValue]);
+    }
     const buttonProps = useSvgButtonProps<SVGRectElement>("line detector", host && handleDown)
 
     const actualBrightness = useThrottledValue(brightness || 0, maxValue << 2)
