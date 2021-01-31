@@ -9,6 +9,6 @@ export default class ReflectedLightServiceHost extends JDSensorServiceHost<[numb
         super(SRV_REFLECTED_LIGHT, { readingValues: [0] })
         const { variant } = options || {};
 
-        this.variant = this.addRegister<[ReflectedLightVariant]>(ReflectedLightReg.Variant, [variant || ReflectorLightVariant.InfraredDigital])
+        this.variant = this.addRegister<[ReflectedLightVariant]>(ReflectedLightReg.Variant, [variant || ReflectedLightVariant.InfraredDigital])
     }
 }
