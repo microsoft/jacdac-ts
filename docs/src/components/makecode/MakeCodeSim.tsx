@@ -4,7 +4,7 @@ import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
 import { isReading, isValueOrIntensity, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
-import { strcmp } from "../../../../src/jdom/utils";
+import { arrayConcatMany, strcmp, unique } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
 import useChange from "../../jacdac/useChange";
 import { SRV_CONTROL, SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
@@ -36,12 +36,16 @@ function Carousel() {
     const handleAdd = () => {
         // list all devices connected to the bus
         // and query for them, let makecode show the missing ones
-        const query = devices.map(device => device.services()
-            .map(srv => resolveMakecodeServiceFromClassIdentifier(srv.serviceClass))
-            .map(info => info?.client.repo)
-            .filter(repo => !!repo)
-            .join('|')
-        ).filter(q => !!q).join('|');
+        const query = unique(
+            arrayConcatMany(
+                devices.map(device => device.services()
+                    .map(srv => resolveMakecodeServiceFromClassIdentifier(srv.serviceClass))
+                    .map(info => info?.client.repo)
+                    .filter(q => !!q)
+                )
+            )
+        ).join('|');
+        console.log({ query })
         // send message to makecode
         window.parent.postMessage({
             type: "extensionsdialog",
