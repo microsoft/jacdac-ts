@@ -28,7 +28,7 @@ export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     const wx = 6;
     const n = 8;
     const w = (wx + mx) * n + 2 * mx;
-    const mty = 28;
+    const mty = 42;
     const mby = mx;
     const hy = w * 2;
     const h = hy + mty + mby;

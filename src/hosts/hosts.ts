@@ -607,7 +607,7 @@ const _hosts: {
         {
             name: "water level",
             serviceClasses: [SRV_WATER_LEVEL],
-            services: () => [new JDSensorServiceHost<[number]>(SRV_WATER_LEVEL, { 
+            services: () => [new JDSensorServiceHost<[number]>(SRV_WATER_LEVEL, {
                 readingValues: [0.5],
                 lowThreshold: 0.2,
                 highTreshold: 0.8
