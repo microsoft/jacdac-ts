@@ -7,9 +7,9 @@ import useServiceHost from "../hooks/useServiceHost";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
-import { scaleFloatToInt } from "../../../../src/jacdac";
 import { useId } from "react-use-id-hook";
 import { Grid, Slider } from "@material-ui/core";
+import useThresholdMarks from "../hooks/useThresholdMarks";
 
 
 export default function DashboardSoilMoisture(props: DashboardServiceProps) {
@@ -20,6 +20,7 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
     const host = useServiceHost<JDSensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { active, background, controlBackground, textProps } = useWidgetTheme(color);
+    const marks = useThresholdMarks(service, color);
     const clipId = useId();
 
     const hasValue = !isNaN(value);
@@ -36,16 +37,6 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
     }
 
     return <Grid container direction="row">
-        {host && hasValue && <Grid item>
-            <Slider
-                orientation="vertical"
-                valueLabelDisplay="off"
-                min={0} max={1} step={0.05}
-                value={value}
-                onChange={onChange}
-                color={color}
-            />
-        </Grid>}
         <Grid item>
             <SvgWidget width={w} height={h} size={widgetSize}>
                 {hasValue && <defs>
@@ -61,5 +52,16 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
                 <text x={w / 2} y="1.4" fontSize="1.058" strokeWidth=".026" {...textProps}>{tvalue}</text>
             </SvgWidget>
         </Grid>
+        {host && hasValue && <Grid item>
+            <Slider
+                orientation="vertical"
+                valueLabelDisplay="off"
+                min={0} max={1} step={0.05}
+                value={value}
+                onChange={onChange}
+                color={color}
+                marks={marks}
+            />
+        </Grid>}
     </Grid>
 }

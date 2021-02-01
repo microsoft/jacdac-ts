@@ -541,7 +541,9 @@ const _hosts: {
             name: "soil moisture",
             serviceClasses: [SRV_SOIL_MOISTURE],
             services: () => [new JDAnalogSensorServiceHost(SRV_SOIL_MOISTURE, {
-                readingValues: [0]
+                readingValues: [0.5],
+                lowThreshold: 0.1,
+                highThreshold: 0.9
             })]
         },
         {
