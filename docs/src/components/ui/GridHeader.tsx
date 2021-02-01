@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, makeStyles, Typography, useTheme } from "@material-ui/core";
+import { Box, Chip, createStyles, Grid, makeStyles, Typography, useTheme } from "@material-ui/core";
 import React from "react";
 import clsx from 'clsx';
 
@@ -13,11 +13,12 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 export default function GridHeader(props: {
-    title: string,
-    variant?: "subtitle1" | "caption" | "subtitle2"
+    title?: string,
+    count?: number,
+    variant?: "subtitle1" | "caption" | "subtitle2",
     action?: JSX.Element
 }) {
-    const { title, variant, action } = props;
+    const { title, count, variant, action } = props;
     const classes = useStyles();
     return <Grid item xs={12}>
         <Grid container direction="row" spacing={1} justify="center" alignItems="center">
@@ -27,6 +28,7 @@ export default function GridHeader(props: {
             <Grid item>
                 {action && <Box component="span" mr={1}>{action}</Box>}
                 <Typography component="span" variant={variant || "subtitle1"}>{title}</Typography>
+                {count !== undefined && <Box component="span" ml={0.5}><Chip label={count} /></Box>}
             </Grid>
             <Grid item xs>
                 <hr className={classes.hr} />

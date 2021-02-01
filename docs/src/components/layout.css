@@ -55,6 +55,7 @@ a:hover {
 .markdown h5 a, 
 .markdown h6 a
 {
+  color: #fff;
   text-decoration: underline;
 }
 abbr[title] {
