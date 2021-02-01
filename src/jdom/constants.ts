@@ -80,6 +80,7 @@ export const LATE = 'late'
 export const GET_ATTEMPT = 'getAttempt'
 export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
 export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
+export const READING_SENT = 'readingSent'
 
 export const DEVICE_HOST_ADDED = `deviceHostAdded`
 export const DEVICE_HOST_REMOVED = `deviceHostRemoved`

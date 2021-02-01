@@ -43,17 +43,17 @@ export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     return <Grid container direction="row">
         <Grid item><SvgWidget width={w} height={h} size={widgetSize}>
             <rect fill={background} x={0} y={0} width={w} height={h} r={r} />
-            {Array(n).fill(0).map((_, i) => <path stroke={controlBackground}
+            {Array(n).fill(0).map((_, i) => <path key={`back${i}`} stroke={controlBackground}
                 d={`M ${2 * mx + i * (wx + mx)} ${h - mby} v ${-hy}`}
                 strokeWidth={wx}
                 strokeLinecap={i % 2 === 0 ? "round" : "square"}
             />)}
-            {hasValue && Array(n).fill(0).map((_, i) => <path stroke={active}
+            {hasValue && Array(n).fill(0).map((_, i) => <path key={`water${i}`} stroke={active}
                 d={`M ${2 * mx + i * (wx + mx)} ${h - mby - 2} v ${-hy * value}`}
                 strokeWidth={wx + 2}
                 strokeLinecap={"square"}
             />)}
-            {tvalue && <text x={w >> 1} y={mty >> 1} {...textProps}>{tvalue}</text>}
+            {tvalue && <text key="text" x={w >> 1} y={mty >> 1} {...textProps}>{tvalue}</text>}
         </SvgWidget>
         </Grid>
         {host && hasValue && <Grid item>

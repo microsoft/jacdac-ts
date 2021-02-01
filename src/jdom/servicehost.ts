@@ -98,7 +98,7 @@ export default class JDServiceHost extends JDEventSource {
         await this.device.sendPacketAsync(pkt);
     }
 
-    protected async sendEvent(event: number, data?: Uint8Array) {
+    async sendEvent(event: number, data?: Uint8Array) {
         const payload = new Uint8Array(4 + (data ? data.length : 0))
         setNumber(payload, NumberFormat.UInt32LE, 0, event);
         if (data)
