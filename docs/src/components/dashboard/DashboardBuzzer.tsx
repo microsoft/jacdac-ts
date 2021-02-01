@@ -50,7 +50,7 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
             size="small"
             variant="outlined"
             onPointerEnter={handlePointerEnter(note.frequency)}
-            onClick={handlePlayTone(note.frequency)}
+            onPointerDown={handlePlayTone(note.frequency)}
             {...keyboardProps}
             >{note.name}</Button>
         </Grid>
