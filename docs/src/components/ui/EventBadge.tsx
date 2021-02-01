@@ -1,15 +1,23 @@
-import { Badge, Chip } from "@material-ui/core";
-import React from "react";
+import { Badge } from "@material-ui/core";
+import React, { useEffect, useState } from "react";
 import { JDEvent } from "../../../../src/jacdac";
 import useEventCount from "../../jacdac/useEventCount";
-import KindIcon from "../KindIcon";
 
-export default function EventBadge(props: { event: JDEvent }) {
-    const { event } = props;
+export default function EventBadge(props: { event: JDEvent, color?: "primary" | "secondary" }) {
+    const { event, color } = props;
     const { name } = event;
-    const count = useEventCount(event)
+    const count = useEventCount(event);
+    const [dot, setDot] = useState(false);
+    // start timer to clear dot
+    useEffect(() => {
+        if (!count) return () => { };
 
-    return <Badge badgeContent={count} color="primary">
+        setDot(true);
+        const id = setTimeout(() => setDot(false), 500)
+        return () => clearTimeout(id);
+    }, [count])
+
+    return <Badge variant={dot ? "dot" : "standard"} color={color}>
         {name}
     </Badge>
 }

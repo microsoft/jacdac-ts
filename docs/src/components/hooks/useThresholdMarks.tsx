@@ -4,7 +4,7 @@ import { JDService, SystemEvent, SystemReg } from "../../../../src/jacdac";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import EventBadge from "../ui/EventBadge"
 
-export default function useThresholdMarks(service: JDService): Mark[] {
+export default function useThresholdMarks(service: JDService, color?: "primary" | "secondary"): Mark[] {
     const marks: Mark[] = [];
     const lowRegister = service.register(SystemReg.LowThreshold);
     const [low] = useRegisterUnpackedValue<[number]>(lowRegister)
@@ -15,7 +15,7 @@ export default function useThresholdMarks(service: JDService): Mark[] {
         const lowEvent = service.event(SystemEvent.Low);
         marks.push({
             value: low,
-            label: lowEvent ? <EventBadge event={lowEvent} /> : lowRegister.name
+            label: lowEvent ? <EventBadge event={lowEvent} color={color} /> : lowRegister.name
         });
     }
 
@@ -23,7 +23,7 @@ export default function useThresholdMarks(service: JDService): Mark[] {
         const highEvent = service.event(SystemEvent.High);
         marks.push({
             value: high,
-            label: highEvent ? <EventBadge event={highEvent} /> : highRegister.name
+            label: highEvent ? <EventBadge event={highEvent} color={color} /> : highRegister.name
         });
     }
     
