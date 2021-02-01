@@ -32,6 +32,8 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
     const onChange = (event: unknown, newValue: number | number[]): void => {
         const svalue = newValue as number;
         host?.reading.setValues([svalue])
+        // refresh
+        moistureReg.sendGetAsync();
     }
 
     return <Grid container direction="row">
