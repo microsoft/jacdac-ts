@@ -195,6 +195,20 @@ export function numberFormatFromStorageType(tp: jdspec.StorageType) {
     }
 }
 
+export function numberFormatToStorageType(nf: NumberFormat) {
+    switch (nf) {
+        case NumberFormat.Int8LE: return -1;
+        case NumberFormat.UInt8LE: return 1;
+        case NumberFormat.Int16LE: return -2;
+        case NumberFormat.UInt16LE: return 2;
+        case NumberFormat.Int32LE: return -4;
+        case NumberFormat.UInt32LE: return 4;
+        case NumberFormat.Int64LE: return -8;
+        case NumberFormat.UInt64LE: return 8;
+        default: return null
+    }
+}
+
 export function scaleIntToFloat(v: number, info: jdspec.PacketMember) {
     if (!info.shift) return v
     if (info.shift < 0)

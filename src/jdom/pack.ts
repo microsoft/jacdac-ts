@@ -1,4 +1,5 @@
 import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer"
+import { clampToStorage, numberFormatToStorageType } from "./spec"
 import { bufferEq, bufferToString, stringToBuffer } from "./utils"
 
 /*
@@ -263,8 +264,10 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
                     throw new Error(`expecting number, got ` + typeof v)
-                if (trg)
-                    setNumber(trg, parser.nfmt, off, (v * parser.div) | 0)
+                if (trg) {
+                    const st: jdspec.StorageType = numberFormatToStorageType(parser.nfmt);
+                    setNumber(trg, parser.nfmt, off, clampToStorage((Math.round(v * parser.div)), st))
+                }
                 off += parser.size
             } else {
                 let buf: Uint8Array
@@ -340,14 +343,15 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
 }
 
 
-/*
+
 import { toHex } from "./utils"
 export function jdpackTest() {
-    function testOne(fmt: string, data0: any[]) {
+    function testOne(fmt: string, data0: any[], maxError?: number) {
         function checksame(a: any, b: any) {
             function fail(msg: string): never {
+                const err = `jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(a)}; b=${JSON.stringify(b)})`;
                 debugger
-                throw new Error(`jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(a)}; b=${JSON.stringify(b)})`)
+                throw new Error(err)
             }
 
             if (a === b)
@@ -363,6 +367,12 @@ export function jdpackTest() {
                     checksame(a[i], b[i])
                 return
             }
+            if (maxError !== undefined
+                && typeof a === 'number'
+                && typeof b === 'number'
+                && Math.abs((a as number) - (b as number)) < maxError)
+                return;
+
             fail("not the same")
         }
 
@@ -389,7 +399,14 @@ export function jdpackTest() {
     testOne("u16 u16[]", [42, [18]])
     testOne("u16 u16[]", [42, []])
     testOne("u16 z[]", [42, ["foo", "bar", "bz"]])
+
+    const err = 1e-4
+    testOne("u0.16", [0], err)
+    testOne("u0.16", [0.42], err)
+    testOne("u0.16", [1], err)
+    testOne("i1.15", [0], err)
+    testOne("i1.15", [1], err)
+    testOne("i1.15", [-1], err)
 }
 
 jdpackTest()
-*/
