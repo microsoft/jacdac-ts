@@ -3,7 +3,7 @@ import {
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_JOYSTICK,
     SRV_LED,
-    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_POWER, SRV_RAIN_GAUGE, SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_ROLE_MANAGER,
+    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE, SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SEVEN_SEGMENT_DISPLAY, SRV_SOIL_MOISTURE, SRV_SPEECH_SYNTHESIS, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WIND_DIRECTION, SystemReg
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
@@ -34,6 +34,7 @@ import DashboardRealTimeClock from "./DashboardRealTimeClock";
 import DashboardLED from "./DashboardLED";
 import DashboardJoystick from "./DashboardJoystick";
 import DashboardSevenSegmentDisplay from "./DashboardSevenSegmentDisplay";
+import DashboardMotion from "./DashboardMotion";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -68,6 +69,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_LED]: DashboardLED,
     [SRV_JOYSTICK]: DashboardJoystick,
     [SRV_SEVEN_SEGMENT_DISPLAY]: DashboardSevenSegmentDisplay,
+    [SRV_MOTION]: DashboardMotion,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
