@@ -552,7 +552,7 @@ const _hosts: {
         {
             name: "sound level",
             serviceClasses: [SRV_SOUND_LEVEL],
-            services: () => [new JDAnalogSensorServiceHost(SRV_SOUND_LEVEL, { 
+            services: () => [new JDAnalogSensorServiceHost(SRV_SOUND_LEVEL, {
                 readingValues: [0],
                 lowThreshold: 10,
                 highThreshold: 70
