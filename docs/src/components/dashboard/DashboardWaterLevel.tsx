@@ -1,0 +1,74 @@
+
+import React, { useEffect, useState } from "react";
+import { CHANGE, RainGaugeReg, WaterLevelReg } from "../../../../src/jdom/constants";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
+import { SvgWidget } from "../widgets/SvgWidget";
+import useWidgetTheme from "../widgets/useWidgetTheme";
+import useServiceHost from "../hooks/useServiceHost";
+import useWidgetSize from "../widgets/useWidgetSize";
+import useThrottledValue from "../hooks/useThrottledValue";
+import RainGaugeServiceHost from "../../../../src/hosts/RainGaugeServiceHost"
+import useChange from "../../jacdac/useChange";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import { roundWithPrecision } from "../../../../src/jacdac";
+import { useId } from "react-use-id-hook";
+import useSvgButtonProps from "../hooks/useSvgButtonProps";
+import { Grid, Slider } from "@material-ui/core";
+import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+
+export default function DashbaordWaterLevel(props: DashboardServiceProps) {
+    const { service, services, variant } = props;
+
+    const levelRegister = service.register(WaterLevelReg.Level);
+    const [value] = useRegisterUnpackedValue<[number]>(levelRegister)
+    const host = useServiceHost<JDSensorServiceHost<[number]>>(service)
+    const color = host ? "secondary" : "primary";
+    const { background, controlBackground, active, textProps } = useWidgetTheme(color)
+    const widgetSize = useWidgetSize(variant, services.length)
+    const hasValue = !isNaN(value);
+    const tvalue = hasValue ? `${Math.round(value * 100)}%` : `--`
+
+    const mx = 5;
+    const wx = 6;
+    const n = 8;
+    const w = (wx + mx) * n + 2 * mx;
+    const mty = 28;
+    const mby = mx;
+    const hy = w * 2;
+    const h = hy + mty + mby;
+    const r = 1;
+
+    const onChange = (event: unknown, newValue: number | number[]): void => {
+        const svalue = newValue as number;
+        host?.reading.setValues([svalue])
+        levelRegister.refresh();
+    }
+
+    return <Grid container direction="row">
+        {host && hasValue && <Grid item>
+            <Slider
+                orientation="vertical"
+                valueLabelDisplay="off"
+                min={0} max={1} step={0.05}
+                value={value}
+                onChange={onChange}
+                color={color}
+            />
+        </Grid>}
+        <Grid item><SvgWidget width={w} height={h} size={widgetSize}>
+            <rect fill={background} x={0} y={0} width={w} height={h} r={r} />
+            {Array(n).fill(0).map((_, i) => <path stroke={controlBackground}
+                d={`M ${2 * mx + i * (wx + mx)} ${h - mby} v ${-hy}`}
+                strokeWidth={wx}
+                strokeLinecap={i % 2 === 0 ? "round" : "square"}
+            />)}
+            {hasValue && Array(n).fill(0).map((_, i) => <path stroke={active}
+                d={`M ${2 * mx + i * (wx + mx)} ${h - mby - 2} v ${-hy * value}`}
+                strokeWidth={wx + 2}
+                strokeLinecap={"square"}
+            />)}
+            {tvalue && <text x={w >> 1} y={mty >> 1} {...textProps}>{tvalue}</text>}
+        </SvgWidget>
+        </Grid>
+    </Grid>
+}

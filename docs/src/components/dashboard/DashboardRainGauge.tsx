@@ -19,7 +19,8 @@ const TILT = 15;
 export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const { service, services, variant } = props;
 
-    const [precipitation] = useRegisterUnpackedValue<[number]>(service.register(RainGaugeReg.Precipitation))
+    const precipitationRegister = service.register(RainGaugeReg.Precipitation);
+    const [precipitation] = useRegisterUnpackedValue<[number]>(precipitationRegister)
     const clipId = useId();
     const host = useServiceHost<RainGaugeServiceHost>(service)
     const tiltCount = useChange(host, h => h?.tiltCount);
@@ -31,7 +32,10 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const a = useThrottledValue(tiltAngle, 45)
     const l = useThrottledValue(level !== undefined ? level : 0.5, 1);
     const clickeable = !!host;
-    const handleClick = async () => await host?.rain(0.25);
+    const handleClick = async () => {
+        await host?.rain(0.25);
+        await precipitationRegister.refresh();
+    }
     const buttonProps = useSvgButtonProps<SVGRectElement>(`rain gauge at level ${Math.round(25 + level * 100)}%`, handleClick)
 
     const w = 128;

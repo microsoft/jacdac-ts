@@ -14,7 +14,7 @@ import {
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE, JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -603,6 +603,11 @@ const _hosts: {
             name: "UV index",
             serviceClasses: [SRV_UVINDEX],
             services: () => [new JDSensorServiceHost<[number]>(SRV_UVINDEX, { readingValues: [5] })]
+        },
+        {
+            name: "water level",
+            serviceClasses: [SRV_WATER_LEVEL],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_WATER_LEVEL, { readingValues: [0.5]})]
         },
         {
             name: "wind direction",
