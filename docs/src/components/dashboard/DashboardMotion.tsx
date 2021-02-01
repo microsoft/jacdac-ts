@@ -21,7 +21,7 @@ export default function DashboardButton(props: DashboardServiceProps) {
 
   const handleDown = () => {
     host?.reading.setValues([!moving])
-    movingRegister.sendGetAsync()
+    movingRegister.refresh()
   }
   const buttonProps = useSvgButtonProps<SVGPathElement>("movement detected", host && handleDown)
 

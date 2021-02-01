@@ -26,7 +26,7 @@ export default function DashboardReflectedLight(props: DashboardServiceProps) {
     const maxValue = 1.0;
     const handleDown = () => {
         host.reading.setValues([brightness > 0 ? 0 : 1.0]);
-        brighessRegister.sendGetAsync();
+        brighessRegister.refresh();
     }
     const buttonProps = useSvgButtonProps<SVGRectElement>("line detector", host && handleDown)
 

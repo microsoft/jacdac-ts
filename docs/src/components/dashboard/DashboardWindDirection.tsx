@@ -41,6 +41,7 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
 
     const handleChange = async (ev: unknown, newValue: number | number[]) => {
         await host?.reading.setValues([newValue as number])
+        directionRegister.refresh()
     }
 
     return <Grid container direction="column">

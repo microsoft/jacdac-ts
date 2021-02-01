@@ -18,17 +18,23 @@ function ArcadeButton(props: {
     pressure: number,
     button: ArcadeGamepadButton,
     host: ArcadeGamepadServiceHost,
+    onRefresh: () => void,
     color?: "primary" | "secondary"
 }) {
-    const { cx, cy, ro, color, pressure, ri, button, host } = props;
+    const { cx, cy, ro, color, pressure, ri, button, host, onRefresh } = props;
     const { textProps, active, background, controlBackground } = useWidgetTheme(color);
-    const clickeable = !!host;
     const checked = (pressure || 0) > 0;
     const title = ArcadeGamepadButton[button]
     const label = title[0]
 
-    const handleDown = () => host?.down(button, 0xff >> 1);
-    const handleUp = () => host?.up(button);
+    const handleDown = () => {
+        host?.down(button, 0.7);
+        onRefresh()
+    }
+    const handleUp = () => {
+        host?.up(button);
+        onRefresh()
+    }
     const buttonProps = useSvgButtonProps<SVGCircleElement>(title, handleDown, handleUp)
 
     return <g transform={`translate(${cx},${cy})`} aria-label={`button ${title} ${checked ? "down" : "up"}`}>
@@ -45,7 +51,8 @@ function ArcadeButton(props: {
 export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
     const { service, services, variant } = props;
     const [available] = useRegisterUnpackedValue<[[ArcadeGamepadButton][]]>(service.register(ArcadeGamepadReg.AvailableButtons))
-    const [pressed] = useRegisterUnpackedValue<[[ArcadeGamepadButton, number][]]>(service.register(ArcadeGamepadReg.Buttons));
+    const pressedRegister = service.register(ArcadeGamepadReg.Buttons);
+    const [pressed] = useRegisterUnpackedValue<[[ArcadeGamepadButton, number][]]>(pressedRegister);
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<ArcadeGamepadServiceHost>(service);
     const color = host ? "secondary" : "primary";
@@ -81,6 +88,8 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
         [ArcadeGamepadButton.Reset]: { cx: cw * 9, cy: scy, small: true },
     }
 
+    const handleRefresh = async () => await pressedRegister.refresh();
+
     return <SvgWidget width={w} height={h} size={widgetSize}>
         {available.map(button => ({ button: button[0], pos: pos[button[0]] }))
             .map(({ button, pos }) => <ArcadeButton
@@ -91,6 +100,7 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
                 ri={pos.small ? sri : ri}
                 button={button}
                 host={host}
+                onRefresh={handleRefresh}
                 pressure={pressed?.find(p => p[0] === button)?.[1] || 0}
                 color={color}
             />)}

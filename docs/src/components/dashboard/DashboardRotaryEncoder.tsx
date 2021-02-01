@@ -28,6 +28,7 @@ export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
 
     const handleChange = async (ev: unknown, newValue: number | number[]) => {
         host?.reading.setValues([newValue as number]);
+        positionRegister.refresh();
     }
 
     const throttled = useThrottledValue(position, clicksPerTurn)

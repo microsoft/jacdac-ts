@@ -55,6 +55,7 @@ export default function DashboardJoystick(props: DashboardServiceProps) {
         const newy = distance * Math.sin(angle)
 
         host.reading.setValues([newx, newy]);
+        directionRegister.refresh();
     }
 
     const handlePointerDown = async (ev: React.PointerEvent<SVGCircleElement>) => {
@@ -78,6 +79,7 @@ export default function DashboardJoystick(props: DashboardServiceProps) {
         const nx = decay(ax, 0.9, 16)
         const ny = decay(ay, 0.9, 16)
         host.reading.setValues([nx, ny]);
+        directionRegister.refresh()
         return nx !== 0 || ny !== 0;
     }, [host, grabbing])
 
