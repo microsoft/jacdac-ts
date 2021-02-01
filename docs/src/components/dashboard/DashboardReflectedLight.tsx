@@ -14,7 +14,8 @@ import { ReflectedLightReg, ReflectedLightVariant } from "../../../../src/jdom/c
 export default function DashboardReflectedLight(props: DashboardServiceProps) {
     const { service, services, variant } = props;
 
-    const [brightness] = useRegisterUnpackedValue<[number]>(service.register(ReflectedLightReg.Brightness));
+    const brighessRegister = service.register(ReflectedLightReg.Brightness);
+    const [brightness] = useRegisterUnpackedValue<[number]>(brighessRegister);
     const [sensorVariant] = useRegisterUnpackedValue<[ReflectedLightVariant]>(service.register(ReflectedLightReg.Variant));
 
     const host = useServiceHost<ReflectedLightServiceHost>(service);
@@ -24,7 +25,8 @@ export default function DashboardReflectedLight(props: DashboardServiceProps) {
 
     const maxValue = 1.0;
     const handleDown = () => {
-        host.reading.setValues([brightness > 0 ? 0 : maxValue]);
+        host.reading.setValues([brightness > 0 ? 0 : 1.0]);
+        brighessRegister.sendGetAsync();
     }
     const buttonProps = useSvgButtonProps<SVGRectElement>("line detector", host && handleDown)
 
