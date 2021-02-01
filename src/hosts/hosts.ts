@@ -16,7 +16,7 @@ import {
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -548,6 +548,15 @@ const _hosts: {
             name: "speech synthesis",
             serviceClasses: [SRV_SPEECH_SYNTHESIS],
             services: () => [new SpeechSynthesisServiceHost()]
+        },
+        {
+            name: "sound level",
+            serviceClasses: [SRV_SOUND_LEVEL],
+            services: () => [new JDAnalogSensorServiceHost(SRV_SOUND_LEVEL, { 
+                readingValues: [0],
+                lowThreshold: 10,
+                highThreshold: 70
+            })]
         },
         {
             name: "switch (slide)",
