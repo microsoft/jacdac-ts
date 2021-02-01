@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { useId } from "react-use-id-hook"
 
 export function SvgWidget(props: {
     width: number,
@@ -13,7 +12,6 @@ export function SvgWidget(props: {
 }) {
     const { width, height, size, children, role, title, viewBox, tabIndex } = props;
     const h = height || width;
-    const titleId = useId();
     return <svg
         xmlns="http://www.w3.org/2000/svg"
         tabIndex={tabIndex}

@@ -9,6 +9,8 @@ export interface JDSensorServiceOptions<TReading extends any[]> {
     minReading?: number,
     maxReading?: number,
     readingError?: number,
+    lowThreshold?: number,
+    highTreshold?: number,
 }
 
 export default class JDSensorServiceHost<TReading extends any[]> extends JDServiceHost {
@@ -25,7 +27,8 @@ export default class JDSensorServiceHost<TReading extends any[]> extends JDServi
         options?: JDSensorServiceOptions<TReading> & JDServiceHostOptions
     ) {
         super(serviceClass, options);
-        const { readingValues, streamingInterval, minReading, maxReading, readingError } = options || {};
+        const { readingValues, streamingInterval, minReading, maxReading, readingError,
+            lowThreshold, highTreshold } = options || {};
 
         this.reading = this.addRegister<TReading>(SystemReg.Reading, readingValues);
         this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
@@ -40,6 +43,10 @@ export default class JDSensorServiceHost<TReading extends any[]> extends JDServi
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)
             this.addRegister<[number]>(SystemReg.MaxReading, [maxReading]);
+        if (lowThreshold !== undefined)
+            this.addRegister<[number]>(SystemReg.LowThreshold, [lowThreshold]);
+        if (highTreshold !== undefined)
+            this.addRegister<[number]>(SystemReg.HighThreshold, [highTreshold]);
 
         this.on(REFRESH, this.refreshRegisters.bind(this));
     }
