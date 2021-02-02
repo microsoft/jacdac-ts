@@ -16,7 +16,7 @@ import {
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -217,6 +217,13 @@ const _hosts: {
                 rows: 8,
                 variant: CharacterScreenVariant.OLED,
                 textDirection: CharacterScreenTextDirection.RightToLeft
+            })]
+        },
+        {
+            name: "color",
+            serviceClasses: [SRV_COLOR],
+            services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_COLOR, {
+                readingValues: [0.5, 0, 0.5]
             })]
         },
         {

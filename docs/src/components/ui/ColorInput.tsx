@@ -10,7 +10,7 @@ export default function ColorInput(props: { value: string, onChange: (color: str
     const [picker, setPicker] = useState(false);
     const handleClick = () => setPicker(!picker);
     const handleClose = () => setPicker(false);
-    const handleChange = color => {
+    const handleChange = (color: { hex: string }) => {
         setPicker(false);
         onChange(color.hex);
     }
@@ -23,7 +23,7 @@ export default function ColorInput(props: { value: string, onChange: (color: str
             </IconButtonWithTooltip>
             <Dialog open={picker} onClose={handleClose}>
                 <DialogContent>
-                    <CirclePicker color={value} onChange={handleChange} />
+                    <CirclePicker color={value} onChangeComplete={handleChange} />
                 </DialogContent>
             </Dialog>
         </>

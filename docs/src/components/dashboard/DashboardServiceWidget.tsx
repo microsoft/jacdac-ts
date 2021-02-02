@@ -1,6 +1,7 @@
 import React, { createElement, FunctionComponent, useMemo } from "react";
 import {
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
+    SRV_COLOR,
     SRV_JOYSTICK,
     SRV_LED,
     SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE, SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_ROLE_MANAGER,
@@ -36,6 +37,7 @@ import DashboardJoystick from "./DashboardJoystick";
 import DashboardSevenSegmentDisplay from "./DashboardSevenSegmentDisplay";
 import DashboardMotion from "./DashboardMotion";
 import DashbaordWaterLevel from "./DashboardWaterLevel";
+import DashboardColor from "./DashboardColor";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -72,6 +74,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_SEVEN_SEGMENT_DISPLAY]: DashboardSevenSegmentDisplay,
     [SRV_MOTION]: DashboardMotion,
     [SRV_WATER_LEVEL]: DashbaordWaterLevel,
+    [SRV_COLOR]: DashboardColor,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
