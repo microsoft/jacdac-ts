@@ -36,7 +36,7 @@ export default function DashboardSoundPlayer(props: DashboardServiceProps) {
             host.onPlay = (vol: number, name: string) => {
                 // Setup the new Howl.
                 const sound = new Howl({
-                    src: [`/sounds/${name}.wav`],
+                    src: [`/jacdac-ts/sounds/${name}.wav`],
                     volume: vol * volume
                 });
                 sound.play();
