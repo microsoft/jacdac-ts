@@ -9,7 +9,6 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useId } from "react-use-id-hook";
 import { Grid, Slider } from "@material-ui/core";
-import useThresholdMarks from "../hooks/useThresholdMarks";
 
 
 export default function DashboardSoilMoisture(props: DashboardServiceProps) {
@@ -20,7 +19,6 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
     const host = useServiceHost<JDSensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { active, background, controlBackground, textProps } = useWidgetTheme(color);
-    const marks = useThresholdMarks(service, color);
     const clipId = useId();
 
     const hasValue = !isNaN(value);
@@ -60,7 +58,6 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
                 value={value}
                 onChange={onChange}
                 color={color}
-                marks={marks}
             />
         </Grid>}
     </Grid>

@@ -9,7 +9,6 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { Grid, Slider } from "@material-ui/core";
 import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
-import useThresholdMarks from "../hooks/useThresholdMarks";
 
 export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     const { service, services, variant } = props;
