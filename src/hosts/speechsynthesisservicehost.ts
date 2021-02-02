@@ -21,7 +21,7 @@ export default class SpeechSynthesisServiceHost extends JDServiceHost {
         this.pitch = this.addRegister<[number]>(SpeechSynthesisReg.Pitch, [1]);
         this.rate = this.addRegister<[number]>(SpeechSynthesisReg.Rate, [1]);
         this.lang = this.addRegister<[string]>(SpeechSynthesisReg.Lang, [""]);
-        this.volume = this.addRegister<[number]>(SpeechSynthesisReg.Volume, [0xff])
+        this.volume = this.addRegister<[number]>(SpeechSynthesisReg.Volume, [0.5])
 
         this.addCommand(SpeechSynthesisCmd.Speak, this.handleSpeak.bind(this));
         this.addCommand(SpeechSynthesisCmd.Cancel, this.handleCancel.bind(this));
@@ -41,9 +41,7 @@ export default class SpeechSynthesisServiceHost extends JDServiceHost {
         utterance.pitch = pitch;
         utterance.rate = rate;
         utterance.lang = lang;
-        utterance.volume = volume / 0xff;
-
-        console.log(utterance)
+        utterance.volume = volume;
 
         this.synthesis.speak(utterance);
     }
