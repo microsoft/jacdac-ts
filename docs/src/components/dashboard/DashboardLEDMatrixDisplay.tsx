@@ -15,7 +15,8 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const widgetSize = useWidgetSize(variant, services.length);
 
     const widgetRef = useRef<SVGGElement>();
-    const [leds] = useRegisterUnpackedValue<[Uint8Array]>(service.register(LedMatrixDisplayReg.Leds));
+    const ledsRegister = service.register(LedMatrixDisplayReg.Leds);
+    const [leds] = useRegisterUnpackedValue<[Uint8Array]>(ledsRegister);
     const [brightness] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Brightness));
     const [rows] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Rows));
     const [columns] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Columns));
@@ -40,7 +41,10 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const h = rows * ph + (rows + 1) * m;
 
     const columnspadded = columns + (8 - columns % 8)
-    const handleLedClick = (bitindex: number) => () => host.toggle(bitindex);
+    const handleLedClick = (bitindex: number) => () => {
+        host.toggle(bitindex);
+        ledsRegister.refresh();
+    }
 
     // add leds
     const render = () => {
@@ -92,7 +96,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
         <rect x={0} y={0} width={w} height={h} r={pw} fill={background} />
         <g ref={widgetRef} {...navProps}>
             {boxEls}
-            {ledEls.length && <g opacity={minOpacity + (brightness / 0xff) * (1 - minOpacity)}>
+            {ledEls.length && <g opacity={minOpacity + brightness * (1 - minOpacity)}>
                 {ledEls}
             </g>}
         </g>
