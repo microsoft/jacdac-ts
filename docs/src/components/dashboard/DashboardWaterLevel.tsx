@@ -18,7 +18,6 @@ export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     const [value] = useRegisterUnpackedValue<[number]>(levelRegister)
     const host = useServiceHost<JDSensorServiceHost<[number]>>(service)
     const color = host ? "secondary" : "primary";
-    const marks = useThresholdMarks(service, color);
     const { background, controlBackground, active, textProps } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)
     const hasValue = !isNaN(value);
@@ -64,7 +63,6 @@ export default function DashbaordWaterLevel(props: DashboardServiceProps) {
                 value={value}
                 onChange={onChange}
                 color={color}
-                marks={marks}
             />
         </Grid>}
     </Grid>

@@ -669,9 +669,7 @@ const _hosts: {
             name: "water level",
             serviceClasses: [SRV_WATER_LEVEL],
             services: () => [new JDAnalogSensorServiceHost(SRV_WATER_LEVEL, {
-                readingValues: [0.5],
-                lowThreshold: 0.2,
-                highThreshold: 0.8
+                readingValues: [0.5]
             })]
         },
         {
