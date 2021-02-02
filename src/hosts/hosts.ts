@@ -642,6 +642,11 @@ const _hosts: {
             services: () => [new TrafficLightServiceHost()]
         },
         {
+            name: "traffic crossing (4 x lights)",
+            serviceClasses: [SRV_TRAFFIC_LIGHT],
+            services: () => Array(4).fill(0).map(_ => new TrafficLightServiceHost())
+        },
+        {
             name: "thermocouple",
             serviceClasses: [SRV_THERMOMETER],
             services: () => [new JDAnalogSensorServiceHost(SRV_THERMOMETER, {
@@ -703,7 +708,24 @@ const _hosts: {
                 new JDAnalogSensorServiceHost(SRV_DISTANCE, sonarOptions),
                 new LedPixelServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
             ]
-        }
+        },
+        {
+            name: "railway crossing (2 x lights, 2 x servos, 1 x buffer)",
+            serviceClasses: [SRV_TRAFFIC_LIGHT, SRV_SERVO],
+            services: () => [
+                new TrafficLightServiceHost(),
+                new TrafficLightServiceHost(),
+                new ServoServiceHost({
+                    minAngle: 0,
+                    maxAngle: 90
+                }),
+                new ServoServiceHost({
+                    minAngle: 0,
+                    maxAngle: 90
+                }),
+                new BuzzerServiceHost()
+            ]
+        },
     ];
 
 export default function hosts() {
