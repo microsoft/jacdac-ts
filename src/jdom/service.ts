@@ -11,6 +11,7 @@ import { BaseEvent, BaseReg, SystemReg } from "../../jacdac-spec/dist/specconsta
 import { JDServiceClient } from "./serviceclient";
 import { InPipeReader } from "./pipes";
 import { jdunpack } from "./pack";
+import Flags from "./flags";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
@@ -146,7 +147,8 @@ export class JDService extends JDNode {
         if (!register) {
             const spec = this.specification;
             if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === registerCode)) {
-                //this.log(`debug`, `attempting to access register 0x${identifier.toString(16)}`)
+                if (Flags.diagnostics)
+                    this.log(`warn`, `attempting to access register 0x${registerCode.toString(16)}`)
                 return undefined;
             }
             this._registers.push(register = new JDRegister(this, registerCode));
@@ -161,7 +163,8 @@ export class JDService extends JDNode {
         if (!event) {
             const spec = this.specification;
             if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === eventCode)) {
-                this.log(`warn`, `attempting to access event 0x${eventCode.toString(16)}`)
+                if (Flags.diagnostics)
+                    this.log(`warn`, `attempting to access event 0x${eventCode.toString(16)}`)
                 return undefined;
             }
             this._events.push(event = new JDEvent(this, eventCode));
