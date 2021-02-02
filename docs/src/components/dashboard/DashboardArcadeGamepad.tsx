@@ -43,7 +43,9 @@ function ArcadeButton(props: {
             cx={0} cy={0} r={ri}
             fill={checked ? active : controlBackground}
             {...buttonProps}
-        />
+        >
+            <title>{title}</title>
+        </circle>
         <text cx={0} cy={0} fontSize={ri} {...textProps}>{label}</text>
     </g>
 }
@@ -56,6 +58,7 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<ArcadeGamepadServiceHost>(service);
     const color = host ? "secondary" : "primary";
+    const { background } = useWidgetTheme(color);
 
     if (!available?.length)
         return null
@@ -90,7 +93,13 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
 
     const handleRefresh = async () => await pressedRegister.refresh();
 
+    const abx = cw * 8 + 1
+    const aby = ch * 3 + 4
+    const abr = cw / 2;
+    const abw = cw * 5 - 6;
     return <SvgWidget width={w} height={h} size={widgetSize}>
+        <circle cx={cw * 3} cy={2 * ch} r={2.6 * cw} fill="none" stroke={background} strokeWidth={4} />
+        <rect transform={`rotate(-66, ${abx}, ${aby})`} x={abx} y={aby} rx={abr} ry={abr} width={abw} height={cw * 2.2} fill="none" stroke={background} strokeWidth={4} />
         {available.map(button => ({ button: button[0], pos: pos[button[0]] }))
             .map(({ button, pos }) => <ArcadeButton
                 key={button}

@@ -5,7 +5,7 @@ export default function useWidgetSize(variant?: "icon" | "", widgetCount?: numbe
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down("xs"));
 
-    const mini = icon || mobile;
+    const mini = icon;
     let widgetSize: string;
     switch (widgetCount || 1) {
         case 1:
