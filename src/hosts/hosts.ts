@@ -16,7 +16,7 @@ import {
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -35,7 +35,7 @@ import RainGaugeServiceHost from "./raingaugeservicehost";
 import RealTimeClockServiceHost from "./realtimeclockservicehost";
 import ReflectedLightServiceHost from "./reflectedlightservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
-import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost";
+import JDSensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
 import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
@@ -44,6 +44,7 @@ import TrafficLightServiceHost from "./trafficlightservicehost";
 import LEDServiceHost from "./ledservicehost";
 import { fromHex } from "../jdom/utils";
 import JDAnalogSensorServiceHost, { JDAnalogSensorServiceHostOptions } from "./analogsensorservicehost";
+import SoundPlayerServiceHost from "./soundplayerservicehost";
 
 const indoorThermometerOptions: JDAnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -566,6 +567,15 @@ const _hosts: {
                 lowThreshold: 10,
                 highThreshold: 70
             })]
+        },
+        {
+            name: "sound player",
+            serviceClasses: [SRV_SOUND_PLAYER],
+            services: () => [new SoundPlayerServiceHost([
+                [1, "giggle"],
+                [1, "happy"],
+                [1, "hello"]
+            ])]
         },
         {
             name: "switch (slide)",
