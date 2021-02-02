@@ -6,6 +6,7 @@ import { LevelDetector } from "./leveldetector";
 
 export interface JDSensorServiceOptions<TReading extends any[]> extends JDServiceHostOptions {
     readingValues?: TReading,
+    readingError?: number,
     streamingInterval?: number,
 };
 

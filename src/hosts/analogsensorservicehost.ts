@@ -6,7 +6,6 @@ import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost
 export interface JDAnalogSensorServiceHostOptions extends JDSensorServiceOptions<[number]> {
     minReading?: number,
     maxReading?: number,
-    readingError?: number,
     lowThreshold?: number,
     highThreshold?: number,
 }

@@ -16,7 +16,7 @@ import {
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -443,6 +443,14 @@ const _hosts: {
             name: "protocol test",
             serviceClasses: [SRV_PROTO_TEST],
             services: () => [new ProtocolTestServiceHost()]
+        },
+        {
+            name: "pulse oxymeter",
+            serviceClasses: [SRV_PULSE_OXIMETER],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
+                readingValues: [95],
+                
+            })]
         },
         {
             name: "rain gauge",
