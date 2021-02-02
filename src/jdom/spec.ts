@@ -4,7 +4,7 @@ import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap, toHex } from "./utils";
-import { SystemReg, SensorReg } from "./constants";
+import { SystemReg, SensorReg, SRV_CONTROL, SRV_ROLE_MANAGER, SRV_SETTINGS, SRV_BOOTLOADER, SRV_LOGGER, SRV_POWER, SRV_PROTO_TEST } from "./constants";
 import makecodeServicesData from "../../jacdac-spec/services/makecode.json";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
@@ -83,6 +83,16 @@ export function isInstanceOf(classIdentifier: number, requiredClassIdentifier: n
         const extendSpec = serviceSpecificationFromName(extend);
         return !!extendSpec && isInstanceOf(extendSpec.classIdentifier, requiredClassIdentifier)
     });
+}
+
+export function isInfrastructure(spec: jdspec.ServiceSpec) {
+    return spec &&
+        ([
+            SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER,
+            SRV_POWER, SRV_SETTINGS, SRV_BOOTLOADER,
+            SRV_PROTO_TEST
+        ].indexOf(spec.classIdentifier) > -1
+            || spec.shortId[0] === "_");
 }
 
 export function makeCodeServices(): jdspec.MakeCodeServiceInfo[] {

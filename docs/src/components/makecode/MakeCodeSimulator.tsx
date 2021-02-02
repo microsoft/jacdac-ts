@@ -55,7 +55,7 @@ export default function MakeCodeSimulator(props: { snippet: MakeCodeSnippetSourc
     return <PaperBox>
         <div className={classes.root}>
             <div className={classes.root2}>
-                <iframe ref={frameRef} className={classes.iframe} src={url} />
+                <iframe ref={frameRef} className={classes.iframe} src={url} aria-label="MakeCode rendering iframe to generate blocks images." />
             </div>
         </div>
     </PaperBox>
