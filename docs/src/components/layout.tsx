@@ -248,8 +248,8 @@ function MainAppBar(props: LayoutProps) {
   >
     <Toolbar>
       <DrawerToolsButtonGroup className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} showToc={true} showCurrent={true} />
-      {!drawerOpen && !toolsMenu && <Hidden implementation="css" mdDown={true}>
-        <Typography component="span" variant="h6">JACDAC {pageTitle && pageTitle !== "JACDAC" && `/ ${pageTitle}`}</Typography>
+      {<Hidden implementation="css" smDown={true}>
+        <Typography component="h1" variant="h6">JACDAC {pageTitle && pageTitle !== "JACDAC" && `/ ${pageTitle}`}</Typography>
       </Hidden>}
       <div className={classes.grow} />
       <OpenDashboardButton className={clsx(classes.menuButton)} />
