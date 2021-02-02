@@ -14,8 +14,7 @@ export default function ButtonWidget(props: {
     onUp?: () => void
 }) {
     const { checked, label, color, size, onDown, onUp } = props;
-    const { background, controlBackground, active, textProps } = useWidgetTheme(color);
-    const textid = useId();
+    const { background, controlBackground, active } = useWidgetTheme(color);
 
     const buttonProps = useSvgButtonProps<SVGCircleElement>(label, onDown, onUp)
     const w = 64;
@@ -25,14 +24,13 @@ export default function ButtonWidget(props: {
     const cy = r;
     const ro = r;
     const ri = r - mo;
+    console.log({ buttonProps })
     return <SvgWidget tabIndex={0} width={w} size={size}>
         <circle cx={cx} cy={cy} r={ro} fill={background} />
         <circle cx={cx} cy={cy} r={ri}
             aria-live="polite"
-            aria-label={`button ${checked ? `down` : `up`}`}
             fill={checked ? active : controlBackground}
             {...buttonProps}
         />
-        {!!label && <text id={textid} {...textProps} x={cx} y={cy + 6}>{label}</text>}
     </SvgWidget>
 }

@@ -75,7 +75,6 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     private handleResize() {
         const size = document.body.getBoundingClientRect()
         const value = size.width / size.height;
-        console.log("handle resize", { size, value })
         if (!isNaN(value) && this._lastAspectRatio !== value) {
             window.parent.postMessage({
                 type: "aspectratio",

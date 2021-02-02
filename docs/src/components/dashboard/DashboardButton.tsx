@@ -14,7 +14,7 @@ export default function DashboardButton(props: DashboardServiceProps) {
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<ButtonServiceHost>(service);
     const color = host ? "secondary" : "primary";
-
+    const label = `button ${pressed ? `down` : `up`}`
     const handleDown = () => host?.down();
     const handleUp = () => host?.up();
 
@@ -23,5 +23,7 @@ export default function DashboardButton(props: DashboardServiceProps) {
         color={color}
         size={widgetSize}
         onDown={host && handleDown}
-        onUp={host && handleUp} />
+        onUp={host && handleUp}
+        label={label}
+    />
 }
