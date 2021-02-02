@@ -448,8 +448,19 @@ const _hosts: {
             name: "pulse oxymeter",
             serviceClasses: [SRV_PULSE_OXIMETER],
             services: () => [new JDSensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
-                readingValues: [95],
-                
+                readingValues: [98],
+
+            })]
+        },
+        {
+            name: "oxymeter + heart beat",
+            serviceClasses: [SRV_PULSE_OXIMETER, SRV_HEART_RATE],
+            services: () => [new JDSensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
+                readingValues: [98],
+
+            }), new JDAnalogSensorServiceHost(SRV_HEART_RATE, {
+                readingValues: [80],
+                variant: HeartRateVariant.Finger
             })]
         },
         {
