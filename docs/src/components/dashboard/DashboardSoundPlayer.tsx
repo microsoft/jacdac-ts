@@ -10,15 +10,6 @@ import { jdpack } from "../../../../src/jdom/pack";
 import SoundPlayerServiceHost from "../../../../src/hosts/soundplayerservicehost";
 import { Howl } from 'howler';
 
-const onPlay = (volume: number, name: string) => {
-    // Setup the new Howl.
-    const sound = new Howl({ 
-        src: [`/sounds/${name}.wav`],
-        volume
-    });
-    sound.play();
-}
-
 function SoundButton(props: { service: JDService, name: string, duration: number }) {
     const { name, service } = props;
     const handleClick = async () => {
@@ -38,13 +29,20 @@ export default function DashboardSoundPlayer(props: DashboardServiceProps) {
         return sounds;
     }, [service])
     const handleVolumeChange = async (ev: unknown, newValue: number | number[]) => {
-        volumeRegister.sendSetPackedAsync("u0.8", [newValue], true);
+        volumeRegister.sendSetPackedAsync("u0.16", [newValue], true);
     }
     useEffect(() => {
         if (host)
-            host.onPlay = onPlay;
+            host.onPlay = (vol: number, name: string) => {
+                // Setup the new Howl.
+                const sound = new Howl({
+                    src: [`/sounds/${name}.wav`],
+                    volume: vol * volume
+                });
+                sound.play();
+            };
         return () => host.onPlay = undefined;
-    }, []);
+    }, [volume, host]);
     return <Grid container spacing={1}>
         {sounds?.map(sound => <Grid item key={sound[1]}>
             <SoundButton service={service} duration={sound[0]} name={sound[1]} />

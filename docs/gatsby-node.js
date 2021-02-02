@@ -190,7 +190,7 @@ async function generateServicesJSON() {
   // JSON
   for (const srv of services) {
     const f = path.join(dir, "services", `x${srv.classIdentifier.toString(16)}.json`)
-    console.log(`json x${srv.classIdentifier.toString(16)} => ${f}`)
+    //console.log(`json x${srv.classIdentifier.toString(16)} => ${f}`)
     await fs.outputFile(f, JSON.stringify(srv, null, 2))
   }
 
@@ -201,7 +201,7 @@ async function generateServicesJSON() {
     for (const model of models) {
       const route = DTMIToRoute(model["@id"])
       const f = path.join(dir, route)
-      console.log(`dtml ${model["@id"]} => ${f}`)
+      //console.log(`dtml ${model["@id"]} => ${f}`)
       await fs.outputFile(f, JSON.stringify(model, null, 2))
     }
     await fs.outputFile('./public/dtmi/jacdac/services.json', JSON.stringify(models, null, 2))

@@ -569,12 +569,19 @@ const _hosts: {
             })]
         },
         {
-            name: "sound player",
+            name: "sound player (micro:bit v2 sounds)",
             serviceClasses: [SRV_SOUND_PLAYER],
             services: () => [new SoundPlayerServiceHost([
-                [1, "giggle"],
-                [1, "happy"],
-                [1, "hello"]
+                [0, "giggle"],
+                [0, "happy"],
+                [0, "hello"],
+                [0, "mysterious"],
+                [0, "sad"],
+                [0, "slide"],
+                [0, "soaring"],
+                [0, "spring"],
+                [0, "twinkle"],
+                [0, "yawn"],
             ])]
         },
         {
