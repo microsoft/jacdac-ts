@@ -37,7 +37,7 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
 
     const w = digitCount * (wd + 4 * md) + md;
     const h = 2 * md + 3 * hd + 2 * hs
-    const opacity = (brightness || 0) / 0xffff;
+    const opacity = (brightness || 0);
 
     /*
     GFEDCBA DP
