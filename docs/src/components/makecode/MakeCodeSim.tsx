@@ -14,6 +14,7 @@ import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import MakeCodeIcon from "../icons/MakeCodeIcon"
 import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 import Helmet from "react-helmet"
+import Flags from "../../../../src/jdom/flags";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -80,6 +81,7 @@ export default function Page() {
     })
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
+        if (!Flags.diagnostics) return;
         const hostDefinitions = hosts();
         for (const hostDef of hostDefinitions.slice(0, 10)) {
             addHost(bus, hostDef.services());

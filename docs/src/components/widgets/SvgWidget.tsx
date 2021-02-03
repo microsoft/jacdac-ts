@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 
-export function SvgWidget(props: {
+export default function SvgWidget(props: {
     width: number,
     height?: number,
     size?: string,
