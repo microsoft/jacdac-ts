@@ -1,25 +1,23 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { READING_SENT, REFRESH, REPORT_UPDATE, SensorReg } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
-import { LevelDetector } from "./leveldetector";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
 
-export interface JDSensorServiceOptions<TReading extends any[]> extends JDServiceHostOptions {
+export interface SensorServiceOptions<TReading extends any[]> extends ServiceHostOptions {
     readingValues?: TReading,
-    readingError?: number,
     streamingInterval?: number,
 };
 
-export default class JDSensorServiceHost<TReading extends any[]> extends JDServiceHost {
-    readonly reading: JDRegisterHost<TReading>;
-    readonly streamingSamples: JDRegisterHost<[number]>;
-    readonly streamingInterval: JDRegisterHost<[number]>;
+export default class SensorServiceHost<TReading extends any[]> extends ServiceHost {
+    readonly reading: RegisterHost<TReading>;
+    readonly streamingSamples: RegisterHost<[number]>;
+    readonly streamingInterval: RegisterHost<[number]>;
 
     private lastStream = 0;
 
     constructor(
         public readonly serviceClass: number,
-        options?: JDSensorServiceOptions<TReading>
+        options?: SensorServiceOptions<TReading>
     ) {
         super(serviceClass, options);
         const { readingValues, streamingInterval } = options || {};

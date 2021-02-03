@@ -1,13 +1,13 @@
 import { CharacterScreenReg, CharacterScreenTextDirection, CharacterScreenVariant, SRV_CHARACTER_SCREEN } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
-export default class CharacterScreenServiceHost extends JDServiceHost {
-    readonly message: JDRegisterHost<[string]>;
-    readonly rows: JDRegisterHost<[number]>;
-    readonly columns: JDRegisterHost<[number]>;
-    readonly variant: JDRegisterHost<[CharacterScreenVariant]>;
-    readonly textDirection: JDRegisterHost<[CharacterScreenTextDirection]>;
+export default class CharacterScreenServiceHost extends ServiceHost {
+    readonly message: RegisterHost<[string]>;
+    readonly rows: RegisterHost<[number]>;
+    readonly columns: RegisterHost<[number]>;
+    readonly variant: RegisterHost<[CharacterScreenVariant]>;
+    readonly textDirection: RegisterHost<[CharacterScreenTextDirection]>;
 
     constructor(options?: {
         message?: string,

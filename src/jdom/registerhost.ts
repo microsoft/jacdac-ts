@@ -1,4 +1,4 @@
-import JDServiceHost from "./servicehost";
+import ServiceHost from "./servicehost";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
 import { bufferEq, isSet, pick } from "./utils";
@@ -49,16 +49,16 @@ function defaultPayload<T extends any[]>(specification: jdspec.PacketInfo): T {
     return rs as T;
 }
 
-export default class JDRegisterHost<TValues extends any[]> extends JDEventSource {
+export default class RegisterHost<TValues extends any[]> extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
     readOnly: boolean;
-    errorRegister: JDRegisterHost<[number]>;
+    errorRegister: RegisterHost<[number]>;
     skipBoundaryCheck = false;
     skipErrorInjection = false;
 
     constructor(
-        public readonly service: JDServiceHost,
+        public readonly service: ServiceHost,
         public readonly identifier: number,
         defaultValue?: any[]) {
         super();

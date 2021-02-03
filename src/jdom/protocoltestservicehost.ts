@@ -1,11 +1,11 @@
 import { SRV_PROTO_TEST, CHANGE, ProtoTestReg, ProtoTestCmd, ProtoTestEvent, Packet } from "../jacdac";
 import { jdpack, jdunpack } from "./pack";
 import { OutPipe } from "./pipes";
-import JDRegisterHost from "./registerhost";
-import JDServiceHost from "./servicehost";
+import RegisterHost from "./registerhost";
+import ServiceHost from "./servicehost";
 
-export default class ProtocolTestServiceHost extends JDServiceHost {
-    private rwBytes: JDRegisterHost<[Uint8Array]>;
+export default class ProtocolTestServiceHost extends ServiceHost {
+    private rwBytes: RegisterHost<[Uint8Array]>;
 
     constructor() {
         super(SRV_PROTO_TEST);

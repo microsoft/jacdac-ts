@@ -1,9 +1,9 @@
 import { RotaryEncoderReg, SRV_ROTARY_ENCODER } from "../jdom/constants";
-import JDSensorServiceHost from "./sensorservicehost";
-import JDRegisterHost from "../jdom/registerhost";
+import SensorServiceHost from "./sensorservicehost";
+import RegisterHost from "../jdom/registerhost";
 
-export default class RotaryEncoderServiceHost extends JDSensorServiceHost<[number]> {
-    readonly clicksPerTurn: JDRegisterHost<[number]>;
+export default class RotaryEncoderServiceHost extends SensorServiceHost<[number]> {
+    readonly clicksPerTurn: RegisterHost<[number]>;
 
     constructor() {
         super(SRV_ROTARY_ENCODER, { readingValues: [0], streamingInterval: 50 });

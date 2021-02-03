@@ -1,14 +1,14 @@
 import { SpeechSynthesisCmd, SpeechSynthesisReg, SRV_SPEECH_SYNTHESIS } from "../jdom/constants";
 import { Packet } from "../jdom/packet";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
-export default class SpeechSynthesisServiceHost extends JDServiceHost {
-    readonly enabled: JDRegisterHost<[boolean]>;
-    readonly pitch: JDRegisterHost<[number]>;
-    readonly rate: JDRegisterHost<[number]>;
-    readonly lang: JDRegisterHost<[string]>;
-    readonly volume: JDRegisterHost<[number]>;
+export default class SpeechSynthesisServiceHost extends ServiceHost {
+    readonly enabled: RegisterHost<[boolean]>;
+    readonly pitch: RegisterHost<[number]>;
+    readonly rate: RegisterHost<[number]>;
+    readonly lang: RegisterHost<[string]>;
+    readonly volume: RegisterHost<[number]>;
 
     readonly synthesis: SpeechSynthesis;
 

@@ -53,7 +53,7 @@ import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flas
 import { JDService } from "./service";
 import { isConstRegister, isReading, isSensor } from "./spec";
 import { ControlReg, LoggerPriority, LoggerReg, SensorReg, SRV_CONTROL, SRV_LOGGER, SRV_REAL_TIME_CLOCK, SystemReg } from "../../jacdac-spec/dist/specconstants";
-import JDDeviceHost from "./devicehost";
+import DeviceHost from "./devicehost";
 import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost";
 
 export interface IDeviceNameSettings {
@@ -131,7 +131,7 @@ export class JDBus extends JDNode {
     private _announcing = false;
     private _gcDevicesEnabled = 0;
 
-    private _deviceHosts: JDDeviceHost[] = [];
+    private _deviceHosts: DeviceHost[] = [];
 
     public readonly host: BusHost = {
         log
@@ -487,7 +487,7 @@ export class JDBus extends JDNode {
     /**
      * Gets the current list of device hosts on the bus
      */
-    deviceHosts(): JDDeviceHost[] {
+    deviceHosts(): DeviceHost[] {
         return this._deviceHosts.slice(0);
     }
 
@@ -503,7 +503,7 @@ export class JDBus extends JDNode {
      * Adds the device host to the bus
      * @param deviceHost
      */
-    addDeviceHost(deviceHost: JDDeviceHost) {
+    addDeviceHost(deviceHost: DeviceHost) {
         if (deviceHost && this._deviceHosts.indexOf(deviceHost) < 0) {
             this._deviceHosts.push(deviceHost);
             deviceHost.bus = this;
@@ -519,7 +519,7 @@ export class JDBus extends JDNode {
      * Adds the device host to the bus
      * @param deviceHost
      */
-    removeDeviceHost(deviceHost: JDDeviceHost) {
+    removeDeviceHost(deviceHost: DeviceHost) {
         if (!deviceHost) return;
 
         const i = this._deviceHosts.indexOf(deviceHost);

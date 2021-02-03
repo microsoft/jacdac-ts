@@ -2,11 +2,11 @@ import { SoundPlayerCmd, SoundPlayerReg, SRV_SOUND_PLAYER } from "../jdom/consta
 import { jdpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
 import { OutPipe } from "../jdom/pipes";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
-export default class SoundPlayerServiceHost extends JDServiceHost {
-    readonly volume: JDRegisterHost<[number]>;
+export default class SoundPlayerServiceHost extends ServiceHost {
+    readonly volume: RegisterHost<[number]>;
     onPlay?: (volume: number, name: string) => void;
     constructor(
         private readonly sounds: [number, string][]) {

@@ -1,11 +1,11 @@
 import { MatrixKeypadReg, SRV_MATRIX_KEYPAD } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDSensorServiceHost from "./sensorservicehost";
+import RegisterHost from "../jdom/registerhost";
+import SensorServiceHost from "./sensorservicehost";
 
-export default class MatrixKeypadServiceHost extends JDSensorServiceHost<[([number])[]]> {
-    readonly rows: JDRegisterHost<[number]>;
-    readonly columns: JDRegisterHost<[number]>;
-    readonly labels: JDRegisterHost<[([string])[]]>;
+export default class MatrixKeypadServiceHost extends SensorServiceHost<[([number])[]]> {
+    readonly rows: RegisterHost<[number]>;
+    readonly columns: RegisterHost<[number]>;
+    readonly labels: RegisterHost<[([string])[]]>;
 
     constructor(columns: number, rows: number, labels?: string[]) {
         super(SRV_MATRIX_KEYPAD, {

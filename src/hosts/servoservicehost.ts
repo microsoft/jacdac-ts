@@ -1,22 +1,22 @@
 import { ServoReg, SRV_SERVO } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
 
-export default class ServoServiceHost extends JDServiceHost {
-    readonly angle: JDRegisterHost<[number]>;
-    readonly offset: JDRegisterHost<[number]>;
-    readonly enabled: JDRegisterHost<[boolean]>;
-    readonly minAngle: JDRegisterHost<[number]>;
-    readonly maxAngle: JDRegisterHost<[number]>;
-    readonly responseSpeed: JDRegisterHost<[number]>;
-    readonly stallTorque: JDRegisterHost<[number]>;
+export default class ServoServiceHost extends ServiceHost {
+    readonly angle: RegisterHost<[number]>;
+    readonly offset: RegisterHost<[number]>;
+    readonly enabled: RegisterHost<[boolean]>;
+    readonly minAngle: RegisterHost<[number]>;
+    readonly maxAngle: RegisterHost<[number]>;
+    readonly responseSpeed: RegisterHost<[number]>;
+    readonly stallTorque: RegisterHost<[number]>;
 
     constructor(options?: {
         minAngle?: number,
         maxAngle?: number,
         responseSpeed?: number,
         stallTorque?: number
-    } & JDServiceHostOptions) {
+    } & ServiceHostOptions) {
         super(SRV_SERVO, options);
         const { minAngle, maxAngle, responseSpeed, stallTorque } = options || {};
 

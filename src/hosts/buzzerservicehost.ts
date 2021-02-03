@@ -1,8 +1,8 @@
 import { BuzzerCmd, BuzzerReg, CHANGE, SRV_BUZZER } from "../jdom/constants";
 import { jdunpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
 let ctx: AudioContext;
 let volumeNode: GainNode;
@@ -61,8 +61,8 @@ async function playTone(frequency: number, duration: number) {
     }
 }
 
-export default class BuzzerServiceHost extends JDServiceHost {
-    readonly volume: JDRegisterHost<[number]>;
+export default class BuzzerServiceHost extends ServiceHost {
+    readonly volume: RegisterHost<[number]>;
     constructor() {
         super(SRV_BUZZER);
 

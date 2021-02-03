@@ -12,8 +12,8 @@ import {
     LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW
 } from "../jdom/light";
 import Packet from "../jdom/packet";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
 import { isBufferEmpty, toHex } from "../jdom/utils";
 
 const PROG_EOF = 0
@@ -102,15 +102,15 @@ function in_past(t: number) {
     return t < now();
 }
 
-export default class LedPixelServiceHost extends JDServiceHost {
-    readonly brightness: JDRegisterHost<[number]>;
-    readonly actualBrightness: JDRegisterHost<[number]>;
-    readonly lightType: JDRegisterHost<[LedPixelLightType]>;
-    readonly numPixels: JDRegisterHost<[number]>;
-    readonly maxPower: JDRegisterHost<[number]>;
-    readonly variant: JDRegisterHost<[LedPixelVariant]>;
-    readonly maxPixels: JDRegisterHost<[number]>;
-    readonly numRepeats: JDRegisterHost<[number]>;
+export default class LedPixelServiceHost extends ServiceHost {
+    readonly brightness: RegisterHost<[number]>;
+    readonly actualBrightness: RegisterHost<[number]>;
+    readonly lightType: RegisterHost<[LedPixelLightType]>;
+    readonly numPixels: RegisterHost<[number]>;
+    readonly maxPower: RegisterHost<[number]>;
+    readonly variant: RegisterHost<[LedPixelVariant]>;
+    readonly maxPixels: RegisterHost<[number]>;
+    readonly numRepeats: RegisterHost<[number]>;
 
     private pxbuffer: Uint8Array = new Uint8Array(0);
 
@@ -135,7 +135,7 @@ export default class LedPixelServiceHost extends JDServiceHost {
         numPixels?: number,
         maxPixels?: number,
         maxPower?: number
-    } & JDServiceHostOptions) {
+    } & ServiceHostOptions) {
         super(SRV_LED_PIXEL, options);
 
         this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [15]);

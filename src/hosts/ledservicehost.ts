@@ -1,7 +1,7 @@
 import { CHANGE, LedReg, LedVariant, REPORT_UPDATE, SRV_LED } from "../jdom/constants";
 import { JDEventSource } from "../jdom/eventsource";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
 export type LedAnimationFrame = [number, number, number, number]
 export type LedAnimationStepsType = [LedAnimationFrame[]];
@@ -84,14 +84,14 @@ export class LedAnimation extends JDEventSource {
     }
 }
 
-export default class LEDServiceHost extends JDServiceHost {
-    readonly steps: JDRegisterHost<LedAnimationStepsType>;
-    readonly brightness: JDRegisterHost<[number]>;
-    readonly maxPower: JDRegisterHost<[number]>;
-    readonly ledCount: JDRegisterHost<[number]>;
-    readonly luminousIntensity: JDRegisterHost<[number]>;
-    readonly waveLength: JDRegisterHost<[number]>;
-    readonly variant: JDRegisterHost<[LedVariant]>;
+export default class LEDServiceHost extends ServiceHost {
+    readonly steps: RegisterHost<LedAnimationStepsType>;
+    readonly brightness: RegisterHost<[number]>;
+    readonly maxPower: RegisterHost<[number]>;
+    readonly ledCount: RegisterHost<[number]>;
+    readonly luminousIntensity: RegisterHost<[number]>;
+    readonly waveLength: RegisterHost<[number]>;
+    readonly variant: RegisterHost<[LedVariant]>;
 
     constructor(options?: {
         ledCount?: number,

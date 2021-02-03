@@ -1,6 +1,6 @@
 import { ArcadeGamepadButton, ArcadeGamepadReg, SRV_ARCADE_GAMEPAD } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDSensorServiceHost from "./sensorservicehost";
+import RegisterHost from "../jdom/registerhost";
+import SensorServiceHost from "./sensorservicehost";
 
 const defaultButtons = [
     ArcadeGamepadButton.Left,
@@ -16,8 +16,8 @@ const defaultButtons = [
 ]
 
 export default class ArcadeGamepadServiceHost
-    extends JDSensorServiceHost<[([ArcadeGamepadButton, number])[]]> {
-    readonly availableButtons: JDRegisterHost<[([ArcadeGamepadButton])[]]>;
+    extends SensorServiceHost<[([ArcadeGamepadButton, number])[]]> {
+    readonly availableButtons: RegisterHost<[([ArcadeGamepadButton])[]]>;
 
     constructor(availableButtons?: ArcadeGamepadButton[]) {
         super(SRV_ARCADE_GAMEPAD, {

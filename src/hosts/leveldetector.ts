@@ -1,7 +1,7 @@
 import { JDClient } from "../jdom/client";
 import { CHANGE, REPORT_UPDATE, SystemEvent, SystemReadingThreshold, SystemReg } from "../jdom/constants";
 import JDAnalogSensorServiceHost from "./analogsensorservicehost";
-import JDSensorServiceHost from "./sensorservicehost";
+import SensorServiceHost from "./sensorservicehost";
 
 export class LevelDetector extends JDClient {
     private _state: number;

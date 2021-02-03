@@ -1,20 +1,21 @@
-import { JDServiceHostOptions, SystemReg, READING_SENT } from "../jacdac";
-import JDRegisterHost from "../jdom/registerhost";
+import { ServiceHostOptions, SystemReg, READING_SENT } from "../jacdac";
+import RegisterHost from "../jdom/registerhost";
 import { LevelDetector } from "./leveldetector";
-import JDSensorServiceHost, { JDSensorServiceOptions } from "./sensorservicehost";
+import SensorServiceHost, { SensorServiceOptions } from "./sensorservicehost";
 
-export interface JDAnalogSensorServiceHostOptions extends JDSensorServiceOptions<[number]> {
+export interface JDAnalogSensorServiceHostOptions extends SensorServiceOptions<[number]> {
     minReading?: number,
     maxReading?: number,
+    readingError?: number,
     lowThreshold?: number,
     highThreshold?: number,
     readingResolution?: number,
 }
 
-export default class JDAnalogSensorServiceHost extends JDSensorServiceHost<[number]> {
-    readonly readingError: JDRegisterHost<[number]>;
-    readonly lowThreshold: JDRegisterHost<[number]>;
-    readonly highThreshold: JDRegisterHost<[number]>;
+export default class JDAnalogSensorServiceHost extends SensorServiceHost<[number]> {
+    readonly readingError: RegisterHost<[number]>;
+    readonly lowThreshold: RegisterHost<[number]>;
+    readonly highThreshold: RegisterHost<[number]>;
     readonly levelDetector: LevelDetector;
 
     constructor(serviceClass: number, options: JDAnalogSensorServiceHostOptions) {

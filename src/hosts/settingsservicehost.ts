@@ -2,10 +2,10 @@ import { SettingsCmd, SettingsEvent, SRV_SETTINGS } from "../jdom/constants";
 import { jdpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
 import { OutPipe } from "../jdom/pipes";
-import JDServiceHost from "../jdom/servicehost";
+import ServiceHost from "../jdom/servicehost";
 import { bufferToString, SMap, stringToBuffer } from "../jdom/utils";
 
-export default class SettingsServiceHost extends JDServiceHost {
+export default class SettingsServiceHost extends ServiceHost {
     private settings: SMap<string>;
 
     constructor(readonly storageKey?: string) {

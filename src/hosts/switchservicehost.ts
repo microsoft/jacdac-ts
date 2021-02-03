@@ -1,10 +1,10 @@
 import { SRV_SWITCH, SwitchEvent, SwitchReg, SwitchVariant } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDSensorServiceHost from "./sensorservicehost";
+import RegisterHost from "../jdom/registerhost";
+import SensorServiceHost from "./sensorservicehost";
 
-export default class SwitchServiceHost extends JDSensorServiceHost<[boolean]> {
-    readonly variant: JDRegisterHost<[SwitchVariant]>;
-    readonly autoOffDelay: JDRegisterHost<[number]>;
+export default class SwitchServiceHost extends SensorServiceHost<[boolean]> {
+    readonly variant: RegisterHost<[SwitchVariant]>;
+    readonly autoOffDelay: RegisterHost<[number]>;
     private autoOffInterval: any;
 
     constructor(options?: { autoOffDelay?: number, variant?: SwitchVariant }) {

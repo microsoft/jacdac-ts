@@ -1,15 +1,15 @@
 import { ControlAnnounceFlags, ControlCmd, ControlReg, IDENTIFY, REPORT_RECEIVE, RESET, SRV_CTRL } from "./constants";
 import Packet from "./packet";
-import JDRegisterHost from "./registerhost";
-import JDServiceHost from "./servicehost";
+import RegisterHost from "./registerhost";
+import ServiceHost from "./servicehost";
 
-export default class ControlServiceHost extends JDServiceHost {
-    readonly deviceDescription: JDRegisterHost<[string]>;
-    readonly mcuTemperature: JDRegisterHost<[number]>;
-    readonly resetIn: JDRegisterHost<[number]>;
-    readonly uptime: JDRegisterHost<[number]>;
+export default class ControlServiceHost extends ServiceHost {
+    readonly deviceDescription: RegisterHost<[string]>;
+    readonly mcuTemperature: RegisterHost<[number]>;
+    readonly resetIn: RegisterHost<[number]>;
+    readonly uptime: RegisterHost<[number]>;
     readonly startTime: number;
-    readonly statusLight: JDRegisterHost<[[number, number, number, number][]]>;
+    readonly statusLight: RegisterHost<[[number, number, number, number][]]>;
 
     constructor() {
         super(SRV_CTRL)

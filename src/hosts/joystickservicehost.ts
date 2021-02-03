@@ -1,10 +1,10 @@
 import { JoystickReg, JoystickVariant, SRV_JOYSTICK } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDSensorServiceHost from "./sensorservicehost";
+import RegisterHost from "../jdom/registerhost";
+import SensorServiceHost from "./sensorservicehost";
 
-export default class JoystickSensorServiceHost extends JDSensorServiceHost<[number, number]> {
-    readonly variant: JDRegisterHost<[JoystickVariant]>;
-    readonly digital: JDRegisterHost<[boolean]>;
+export default class JoystickSensorServiceHost extends SensorServiceHost<[number, number]> {
+    readonly variant: RegisterHost<[JoystickVariant]>;
+    readonly digital: RegisterHost<[boolean]>;
 
     constructor(variant?: JoystickVariant, digital?: boolean) {
         super(SRV_JOYSTICK, { readingValues: [0, 0] })

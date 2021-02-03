@@ -1,11 +1,11 @@
 import { SRV_TRAFFIC_LIGHT, TrafficLightReg } from "../jdom/constants";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
-export default class TrafficLightServiceHost extends JDServiceHost {
-    readonly red: JDRegisterHost<[boolean]>;
-    readonly orange: JDRegisterHost<[boolean]>;
-    readonly green: JDRegisterHost<[boolean]>;
+export default class TrafficLightServiceHost extends ServiceHost {
+    readonly red: RegisterHost<[boolean]>;
+    readonly orange: RegisterHost<[boolean]>;
+    readonly green: RegisterHost<[boolean]>;
 
     constructor() {
         super(SRV_TRAFFIC_LIGHT);

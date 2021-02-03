@@ -20,9 +20,9 @@ import {
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
     SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant
 } from "../jdom/constants";
-import JDDeviceHost from "../jdom/devicehost";
+import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
-import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
+import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
 import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
@@ -37,7 +37,7 @@ import RainGaugeServiceHost from "./raingaugeservicehost";
 import RealTimeClockServiceHost from "./realtimeclockservicehost";
 import ReflectedLightServiceHost from "./reflectedlightservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
-import JDSensorServiceHost from "./sensorservicehost";
+import SensorServiceHost from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
 import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
@@ -131,12 +131,12 @@ const tvocOptions: JDAnalogSensorServiceHostOptions = {
 const _hosts: {
     name: string,
     serviceClasses: number[],
-    services: () => JDServiceHost[]
+    services: () => ServiceHost[]
 }[] = [
         {
             name: "7-segment (4 segments)",
             serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
-            services: () => [new JDServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
+            services: () => [new ServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
                 intensityValues: [0xffff],
                 valueValues: [fromHex("ff112233")],
                 registerValues: [{
@@ -151,7 +151,7 @@ const _hosts: {
         {
             name: "7-segment (8 segments)",
             serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
-            services: () => [new JDServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
+            services: () => [new ServiceHost(SRV_SEVEN_SEGMENT_DISPLAY, {
                 intensityValues: [0xffff],
                 valueValues: [fromHex("0102040810204080")],
                 registerValues: [{
@@ -166,7 +166,7 @@ const _hosts: {
         {
             name: "accelerometer",
             serviceClasses: [SRV_ACCELEROMETER],
-            services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
+            services: () => [new SensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
                 readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
             })]
         },
@@ -211,7 +211,7 @@ const _hosts: {
             name: "capacitive button",
             serviceClasses: [SRV_ANALOG_BUTTON],
             services: () => [new JDAnalogSensorServiceHost(SRV_ANALOG_BUTTON, {
-                lowThreshold: 0.2,
+                lowThreshold: 0.3,
                 highThreshold: 0.8,
                 readingValues: [0],
                 variant: AnalogButtonVariant.Capacitive
@@ -236,7 +236,7 @@ const _hosts: {
         {
             name: "color",
             serviceClasses: [SRV_COLOR],
-            services: () => [new JDSensorServiceHost<[number, number, number]>(SRV_COLOR, {
+            services: () => [new SensorServiceHost<[number, number, number]>(SRV_COLOR, {
                 readingValues: [0.5, 0, 0.5]
             })]
         },
@@ -352,7 +352,7 @@ const _hosts: {
         {
             name: "light level (photo-resistor)",
             serviceClasses: [SRV_LIGHT_LEVEL],
-            services: () => [new JDSensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.PhotoResistor })]
+            services: () => [new SensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.PhotoResistor })]
         },
         {
             name: "light ring 10",
@@ -445,7 +445,7 @@ const _hosts: {
         {
             name: "motion",
             serviceClasses: [SRV_MOTION],
-            services: () => [new JDSensorServiceHost(SRV_MOTION, { readingValues: [false] })]
+            services: () => [new SensorServiceHost(SRV_MOTION, { readingValues: [false] })]
         },
         {
             name: "motor",
@@ -460,7 +460,7 @@ const _hosts: {
         {
             name: "pulse oxymeter",
             serviceClasses: [SRV_PULSE_OXIMETER],
-            services: () => [new JDSensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
+            services: () => [new SensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
                 readingValues: [98],
 
             })]
@@ -468,7 +468,7 @@ const _hosts: {
         {
             name: "oxymeter + heart beat",
             serviceClasses: [SRV_PULSE_OXIMETER, SRV_HEART_RATE],
-            services: () => [new JDSensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
+            services: () => [new SensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
                 readingValues: [98],
 
             }), new JDAnalogSensorServiceHost(SRV_HEART_RATE, {
@@ -489,7 +489,7 @@ const _hosts: {
         {
             name: "relay (EM/10A)",
             serviceClasses: [SRV_RELAY],
-            services: () => [new JDServiceHost(SRV_RELAY, {
+            services: () => [new ServiceHost(SRV_RELAY, {
                 intensityValues: [false],
                 variant: RelayVariant.Electromechanical,
                 registerValues: [
@@ -503,7 +503,7 @@ const _hosts: {
         {
             name: "relay 4x (SSR/5A)",
             serviceClasses: [SRV_RELAY],
-            services: () => Array(4).fill(0).map(_ => new JDServiceHost(SRV_RELAY, {
+            services: () => Array(4).fill(0).map(_ => new ServiceHost(SRV_RELAY, {
                 intensityValues: [false],
                 variant: RelayVariant.SolidState,
                 registerValues: [
@@ -642,7 +642,7 @@ const _hosts: {
         {
             name: "thermometer (outdoor)",
             serviceClasses: [SRV_THERMOMETER],
-            services: () => [new JDSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
+            services: () => [new SensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
         },
         {
             name: "thermometer (medical)",
@@ -741,7 +741,7 @@ const _hosts: {
         {
             name: "vibration motor",
             serviceClasses: [SRV_VIBRATION_MOTOR],
-            services: () => [new JDServiceHost(SRV_VIBRATION_MOTOR)]
+            services: () => [new ServiceHost(SRV_VIBRATION_MOTOR)]
         },
         {
             name: "chassis (motor x 2 + sonar + light)",
@@ -776,8 +776,8 @@ export default function hosts() {
     return _hosts.slice(0);
 }
 
-export function addHost(bus: JDBus, services: JDServiceHost[], name?: string) {
-    const d = new JDDeviceHost(services);
+export function addHost(bus: JDBus, services: ServiceHost[], name?: string) {
+    const d = new DeviceHost(services);
     const device = bus.addDeviceHost(d);
     if (name)
         device.name = name;

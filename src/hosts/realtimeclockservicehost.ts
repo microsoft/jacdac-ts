@@ -1,6 +1,6 @@
-import JDSensorServiceHost from "./sensorservicehost";
+import SensorServiceHost from "./sensorservicehost";
 import { RealTimeClockCmd, RealTimeClockReg, RealTimeClockVariant, REFRESH, SRV_REAL_TIME_CLOCK } from "../jdom/constants"
-import JDRegisterHost from "../jdom/registerhost";
+import RegisterHost from "../jdom/registerhost";
 import { JDBus } from "../jdom/bus";
 import Packet from "../jdom/packet";
 
@@ -19,9 +19,9 @@ export function dateToClock(n: Date): RealTimeClockReadingType {
 }
 
 export default class RealTimeClockServiceHost
-    extends JDSensorServiceHost<RealTimeClockReadingType> {
-    readonly error: JDRegisterHost<[number]>;
-    readonly precision: JDRegisterHost<[number]>;
+    extends SensorServiceHost<RealTimeClockReadingType> {
+    readonly error: RegisterHost<[number]>;
+    readonly precision: RegisterHost<[number]>;
     private lastSecond: number = 0;
 
     constructor() {

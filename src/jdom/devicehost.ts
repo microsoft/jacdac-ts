@@ -1,5 +1,5 @@
 import { JDBus } from "./bus";
-import JDServiceHost from "./servicehost";
+import ServiceHost from "./servicehost";
 import Packet from "./packet";
 import { shortDeviceId } from "./pretty";
 import { anyRandomUint32, isBufferEmpty, toHex } from "./utils";
@@ -7,9 +7,9 @@ import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
 import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
 
-export default class JDDeviceHost extends JDEventSource {
+export default class DeviceHost extends JDEventSource {
     private _bus: JDBus;
-    private readonly _services: JDServiceHost[];
+    private readonly _services: ServiceHost[];
     public readonly deviceId: string;
     public readonly shortId: string;
     public readonly controlService: ControlServiceHost;
@@ -17,7 +17,7 @@ export default class JDDeviceHost extends JDEventSource {
     private _resetTimeOut: any;
     private _packetCount = 0;
 
-    constructor(services: JDServiceHost[], options?: {
+    constructor(services: ServiceHost[], options?: {
         deviceId?: string;
     }) {
         super();
@@ -99,7 +99,7 @@ export default class JDDeviceHost extends JDEventSource {
         return this._packetCount;
     }
 
-    services(): JDServiceHost[] {
+    services(): ServiceHost[] {
         return this._services.slice(0);
     }
 

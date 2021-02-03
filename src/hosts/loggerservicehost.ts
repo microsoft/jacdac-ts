@@ -1,10 +1,10 @@
 import { LoggerCmd, LoggerPriority, LoggerReg, SRV_LOGGER } from "../jdom/constants";
 import Packet from "../jdom/packet";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
-export default class LoggerServiceHost extends JDServiceHost {
-    readonly minPriority: JDRegisterHost<[LoggerPriority]>;
+export default class LoggerServiceHost extends ServiceHost {
+    readonly minPriority: RegisterHost<[LoggerPriority]>;
 
     constructor() {
         super(SRV_LOGGER);
