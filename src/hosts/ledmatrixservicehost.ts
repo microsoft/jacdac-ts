@@ -2,6 +2,21 @@ import { CHANGE, LEDMatrixReg, SensorReg, SRV_LEDMATRIX } from "../jdom/constant
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost from "../jdom/servicehost";
 
+export function toggle(data: Uint8Array, bitindex: number) {
+    // find bit to flip
+    let byte = data[bitindex >> 3];
+    const bit = bitindex % 8;
+    const on = 1 === ((byte >> bit) & 1)
+    // flip bit
+    if (on) {
+        byte &= ~(1 << bit);
+    } else {
+        byte |= 1 << bit;
+    }
+    // save
+    data[bitindex >> 3] = byte;
+}
+
 export default class LEDMatrixServiceHost extends ServiceHost {
     readonly leds: RegisterHost<[Uint8Array]>;
     readonly rows: RegisterHost<[number]>;
@@ -30,30 +45,6 @@ export default class LEDMatrixServiceHost extends ServiceHost {
         this.columns.on(CHANGE, this.updateLedBuffer.bind(this));
 
         this.updateLedBuffer();
-    }
-
-    toggle(bitindex: number) {
-        // this is very inefficient?
-        const [data] = this.leds.values();
-        // find bit to flip
-        let byte = data[bitindex >> 3];
-        const bit = bitindex % 8;
-        const on = 1 === ((byte >> bit) & 1)
-        // flip bit
-        if (on) {
-            byte &= ~(1 << bit);
-        } else {
-            byte |= 1 << bit;
-        }
-        // save
-        data[bitindex >> 3] = byte;
-        this.leds.setValues([data])
-    }
-
-    clear() {
-        const [data] = this.leds.values();
-        data.fill(0);
-        this.leds.setValues([data])
     }
 
     private updateLedBuffer() {

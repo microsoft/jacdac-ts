@@ -6,9 +6,9 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
-import LEDMatrixServiceHost from "../../../../src/hosts/ledmatrixservicehost";
 import useFireKey from "../hooks/useFireKey";
 import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
+import { toggle } from "../../../../src/hosts/ledmatrixservicehost";
 
 export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) {
     const { service, services, variant } = props;
@@ -20,7 +20,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const [brightness] = useRegisterUnpackedValue<[number]>(service.register(LEDMatrixReg.Brightness));
     const [rows] = useRegisterUnpackedValue<[number]>(service.register(LEDMatrixReg.Rows));
     const [columns] = useRegisterUnpackedValue<[number]>(service.register(LEDMatrixReg.Columns));
-    const host = useServiceHost<LEDMatrixServiceHost>(service);
+    const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active } = useWidgetTheme(color)
 
@@ -29,7 +29,6 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
         return null;
 
     const enabled = !!leds && brightness > 0;
-    const clickeable = !!host;
     // compute size
     const minOpacity = 0.3;
     const pw = 8;
@@ -41,9 +40,11 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const h = rows * ph + (rows + 1) * m;
 
     const columnspadded = columns + (8 - columns % 8)
-    const handleLedClick = (bitindex: number) => () => {
-        host.toggle(bitindex);
-        ledsRegister.refresh();
+    const handleLedClick = (bitindex: number) => (ev: React.PointerEvent<SVGRectElement>) => {
+        if (ev && !ev.buttons) return;
+        const newLeds = leds.slice(0);
+        toggle(newLeds, bitindex);
+        ledsRegister.sendSetAsync(newLeds, true)
     }
 
     // add leds
@@ -55,9 +56,9 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
         const offFill = controlBackground;
         const offStroke = "transparent";
         const ledProps: SVGProps<SVGRectElement> = {
-            className: clickeable ? "clickeable" : undefined,
-            role: clickeable ? "button" : "",
-            tabIndex: clickeable ? 0 : undefined
+            className: "clickeable",
+            role: "button",
+            tabIndex: 0
         }
 
         let y = m;
@@ -72,7 +73,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
                 const byte = leds?.[bitindex >> 3];
                 const bit = bitindex % 8;
                 const on = 1 === ((byte >> bit) & 1)
-                const handleClick = clickeable ? handleLedClick(bitindex) : undefined
+                const handleClick = handleLedClick(bitindex)
                 const fireClick = useFireKey(handleClick);
 
                 ledEls.push(<rect key={`l${row}-${col}`} x={x} y={y} width={pw} height={ph} r={pr}
@@ -81,8 +82,10 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
                     strokeWidth={ps}
                     {...ledProps}
                     aria-label={`led ${row}, ${col} ${on ? "on" : "off"}`}
+                    onPointerDown={handleClick}
+                    onPointerEnter={handleClick}
                     onKeyDown={fireClick}
-                    onClick={handleClick} />);
+                />);
                 x += pw + m;
             }
             y += ph + m;
