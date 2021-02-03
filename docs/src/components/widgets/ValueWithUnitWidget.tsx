@@ -17,10 +17,10 @@ export default function ValueWithUnitWidget(props: {
 }) {
     const { value, min, max, step, secondaryLabel, label, tabIndex, onChange } = props;
     const labelVariant = "subtitle1";
-    const precision = step === undefined ? 1 : Math.floor(-Math.log10(step))
+    const precision = step === undefined ? 1 : step < 1 ? Math.ceil(-Math.log10(step)) : 0;
     const hasValue = !isNaN(value);
     const valueText = hasValue ? roundWithPrecision(value, precision).toLocaleString() : "--"
-    const valueTextLength = isSet(min) && isSet(max) ? [min, max]
+    const valueTextLength = isSet(min) && isSet(max) ? [min, max, min + (min + max) / 3]
         .map(v => roundWithPrecision(v, precision).toLocaleString().replace(/[,\.]/, '').length)
         .reduce((l, r) => Math.max(l, r), 0)
         + precision : valueText.length;
@@ -55,7 +55,8 @@ export default function ValueWithUnitWidget(props: {
             </Grid>
         </Grid>
         {onChange && value !== undefined && <Grid item xs={12}>
-            <Slider valueLabelDisplay="off" color="secondary" min={min} max={max} step={step} value={value} onChange={onChange} />
+            <Slider valueLabelDisplay="off" color="secondary"
+                min={min} max={max} step={step} value={value} onChange={onChange} />
         </Grid>}
     </Grid>;
 }

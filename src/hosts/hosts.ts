@@ -16,7 +16,7 @@ import {
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER
+    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER, SRV_WEIGHT_SCALE, WeightScaleVariant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -673,6 +673,37 @@ const _hosts: {
             serviceClasses: [SRV_WATER_LEVEL],
             services: () => [new JDAnalogSensorServiceHost(SRV_WATER_LEVEL, {
                 readingValues: [0.5]
+            })]
+        },
+        {
+            name: "weight scale (jewelry)",
+            serviceClasses: [SRV_WEIGHT_SCALE],
+            services: () => [new JDAnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
+                readingValues: [0.001],
+                variant: WeightScaleVariant.Jewelry,
+                maxReading: 0.2,
+                minReading: 0.0005,
+                readingResolution: 0.00001
+            })]
+        },
+        {
+            name: "weight scale (body)",
+            serviceClasses: [SRV_WEIGHT_SCALE],
+            services: () => [new JDAnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
+                readingValues: [60],
+                variant: WeightScaleVariant.Body,
+                maxReading: 180,
+                readingResolution: 0.1
+            })]
+        },
+        {
+            name: "weight scale (food)",
+            serviceClasses: [SRV_WEIGHT_SCALE],
+            services: () => [new JDAnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
+                readingValues: [0.5],
+                variant: WeightScaleVariant.Food,
+                maxReading: 6,
+                readingResolution: 0.001
             })]
         },
         {

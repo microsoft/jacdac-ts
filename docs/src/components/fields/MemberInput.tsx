@@ -22,13 +22,14 @@ export default function MemberInput(props: {
     variant?: RegisterInputVariant,
     min?: number,
     max?: number,
+    resolution?: number,
     error?: number,
     showLoading?: boolean,
     off?: boolean,
     toggleOff?: () => void
 }) {
     const { specification, serviceSpecification, serviceMemberSpecification, value,
-        setValue, showDataType, color, variant, min, max, error,
+        setValue, showDataType, color, variant, min, max, resolution, error,
         showLoading, off, toggleOff } = props;
     const { typicalMin, typicalMax, absoluteMin, absoluteMax, type } = specification;
     const enumInfo = serviceSpecification.enums?.[specification.type]
@@ -133,6 +134,7 @@ export default function MemberInput(props: {
         const signed = specification.storage < 0;
         const min = signed ? -1 : 0;
         const max = 1;
+        const step = resolution !== undefined ? resolution : 0.01;
         if (isWidget)
             return <GaugeWidget
                 tabIndex={0}
@@ -140,7 +142,7 @@ export default function MemberInput(props: {
                 value={value}
                 color={color}
                 variant={signed ? "fountain" : undefined}
-                min={min} max={max}
+                min={min} max={max} step={step}
                 valueLabel={percentValueLabelFormat}
                 size={widgetSize}
                 onChange={disabled ? undefined : handleSliderChange}
@@ -154,14 +156,15 @@ export default function MemberInput(props: {
             value={value}
             valueLabelFormat={percentValueFormat}
             onChange={disabled ? undefined : handleSliderChange}
-            min={min} max={max} step={0.01}
+            min={min} max={max} step={step}
             valueLabelDisplay="auto"
         />
     } else if (isSet(minValue) && isSet(maxValue)) {
         const hasTypicalRange = isSet(typicalMin) && isSet(typicalMax);
-        let step = hasTypicalRange
-            ? (specification.typicalMax - specification.typicalMin) / 100
-            : (maxValue - minValue) / 100;
+        let step = resolution !== undefined ? resolution
+            : hasTypicalRange
+                ? (specification.typicalMax - specification.typicalMin) / 100
+                : (maxValue - minValue) / 100;
         if (step === 0 || isNaN(step)) // edge case
             step = undefined;
         const marks = hasTypicalRange && (typicalMin !== minValue || typicalMax !== maxValue) ? [

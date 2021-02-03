@@ -11,6 +11,7 @@ import RegisterTrend from "./RegisterTrend";
 import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 import useRegisterHost from "./hooks/useRegisterHost"
 import useReadingAuxilliaryValue from "./hooks/useReadingAuxilliaryValue";
+import { useRegisterUnpackedValue } from "../jacdac/useRegisterValue";
 
 export type RegisterInputVariant = "widget" | ""
 
@@ -42,6 +43,7 @@ export default function RegisterInput(props: {
     const minReading = useReadingAuxilliaryValue(register, SystemReg.MinReading)
     const maxReading = useReadingAuxilliaryValue(register, SystemReg.MaxReading)
     const readingError = useReadingAuxilliaryValue(register, SystemReg.ReadingError);
+    const resolution = useReadingAuxilliaryValue(register, SystemReg.ReadingResolution);
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -105,6 +107,7 @@ export default function RegisterInput(props: {
             variant={variant}
             min={minReading}
             max={maxReading}
+            resolution={resolution}
             error={readingError}
             off={off}
             toggleOff={toggleOff}

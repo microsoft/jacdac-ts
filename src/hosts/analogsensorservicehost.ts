@@ -8,6 +8,7 @@ export interface JDAnalogSensorServiceHostOptions extends JDSensorServiceOptions
     maxReading?: number,
     lowThreshold?: number,
     highThreshold?: number,
+    readingResolution?: number,
 }
 
 export default class JDAnalogSensorServiceHost extends JDSensorServiceHost<[number]> {
@@ -19,7 +20,7 @@ export default class JDAnalogSensorServiceHost extends JDSensorServiceHost<[numb
     constructor(serviceClass: number, options: JDAnalogSensorServiceHostOptions) {
         super(serviceClass, options)
         const { minReading, maxReading, readingError,
-            lowThreshold, highThreshold } = options || {};
+            lowThreshold, highThreshold, readingResolution } = options || {};
         if (readingError !== undefined) {
             this.readingError = this.addRegister<[number]>(SystemReg.ReadingError, [readingError || 0]);
             this.reading.errorRegister = this.readingError;
@@ -28,6 +29,8 @@ export default class JDAnalogSensorServiceHost extends JDSensorServiceHost<[numb
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
         if (maxReading !== undefined)
             this.addRegister<[number]>(SystemReg.MaxReading, [maxReading]);
+        if (readingResolution !== undefined)
+            this.addRegister<[number]>(SystemReg.ReadingResolution, [readingResolution]);
         if (lowThreshold !== undefined || this.highThreshold !== undefined) {
             if (lowThreshold !== undefined)
                 this.lowThreshold = this.addRegister<[number]>(SystemReg.LowThreshold, [lowThreshold]);

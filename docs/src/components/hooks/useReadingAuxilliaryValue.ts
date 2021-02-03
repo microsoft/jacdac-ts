@@ -5,11 +5,12 @@ import { JDRegister } from "../../../../src/jdom/register";
 
 export default function useReadingAuxilliaryValue(register: JDRegister, identifier: number =
     SystemReg.ReadingError
+    | SystemReg.ReadingResolution
     | SystemReg.MaxReading
     | SystemReg.MinReading
     | SystemReg.StreamingInterval
     | SystemReg.StreamingPreferredInterval
-) {
+) : number[] {
     const { service, code } = register;
     const reading = code === SystemReg.Reading || code === SystemReg.Value;
     const auxilliaryRegister = reading ? service.register(identifier) : undefined;
