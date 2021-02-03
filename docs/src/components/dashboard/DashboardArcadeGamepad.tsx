@@ -3,7 +3,7 @@ import React from "react";
 import { ArcadeGamepadButton, ArcadeGamepadReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetTheme from "../widgets/useWidgetTheme";

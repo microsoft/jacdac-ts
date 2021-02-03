@@ -1,6 +1,6 @@
 import React from "react";
 import { useTheme } from "@material-ui/core";
-import { SvgWidget } from "./SvgWidget";
+import SvgWidget from "./SvgWidget";
 import useWidgetTheme from "./useWidgetTheme";
 import { useId } from "react-use-id-hook"
 import useSvgButtonProps from "../hooks/useSvgButtonProps";

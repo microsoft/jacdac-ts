@@ -3,7 +3,7 @@ import { CharacterScreenReg, CharacterScreenTextDirection } from "../../../../sr
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useWidgetSize from "../widgets/useWidgetSize";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import { createStyles, makeStyles } from "@material-ui/core";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 

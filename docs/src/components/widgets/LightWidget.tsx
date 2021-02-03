@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { LedPixelReg, LedPixelVariant, RENDER } from "../../../../src/jdom/constants";
 import useServiceHost from "../hooks/useServiceHost";
 import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useWidgetSize from "../widgets/useWidgetSize";
 import { JDService } from "../../../../src/jdom/service";

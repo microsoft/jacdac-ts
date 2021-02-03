@@ -4,7 +4,7 @@ import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import { MotionReg } from "../../../../src/jacdac";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";

@@ -1,6 +1,6 @@
 import React, { SVGAttributes, useRef } from "react";
 import useWidgetTheme from "./useWidgetTheme";
-import { SvgWidget } from "./SvgWidget";
+import SvgWidget from "./SvgWidget";
 import useThrottledValue from "../hooks/useThrottledValue"
 import { closestPoint, describeArc, svgPointerPoint } from "./svgutils";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";

@@ -2,7 +2,7 @@ import React from "react";
 import { RotaryEncoderReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterIntValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 import RotaryEncoderServiceHost from "../../../../src/hosts/rotaryencoderservicehost";

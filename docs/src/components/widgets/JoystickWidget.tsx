@@ -1,6 +1,6 @@
 import React, { useRef, useState, CSSProperties } from "react";
 import useAnimationFrame from "../hooks/useAnimationFrame";
-import { SvgWidget } from "./SvgWidget";
+import SvgWidget from "./SvgWidget";
 import useWidgetTheme from "./useWidgetTheme";
 
 

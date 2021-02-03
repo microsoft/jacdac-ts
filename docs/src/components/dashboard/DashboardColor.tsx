@@ -7,7 +7,7 @@ import useServiceHost from "../hooks/useServiceHost";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { BlockPicker } from "react-color"
 import ColorInput from "../ui/ColorInput";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 
 export default function DashboardColor(props: DashboardServiceProps) {

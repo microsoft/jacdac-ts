@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState } from "react";
 import useLedAnimationStyle, {  } from "../hooks/useLedAnimationStyle"
 import { Card, CardContent, CardHeader, Grid, TextField, useTheme } from "@material-ui/core"
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import Helmet from "react-helmet"
 import Snippet from "../ui/Snippet";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";

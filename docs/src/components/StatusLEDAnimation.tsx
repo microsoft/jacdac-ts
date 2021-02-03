@@ -13,13 +13,14 @@ export default function StatusLEDAnimation(props: { status: "startup" | "identif
     const { controlBackground } = useWidgetTheme();
 
     const w = 32;
-    return <>
+    return <h2>
         <Helmet>
             <style>{helmetStyle}</style>
         </Helmet>
-        <SvgWidget width={32} height={32} size={"3vw"}>
+        <SvgWidget width={32 + 12} height={32} size={"1em"}>
             <circle cx={w >> 1} cy={w >> 1} r={(w >> 1) - 1} fill={controlBackground} />
             <circle cx={w >> 1} cy={w >> 1} r={(w >> 1) - 1} className={className} stroke={controlBackground} strokeWidth={1} />
         </SvgWidget>
-    </>
+        {status}
+    </h2>
 }

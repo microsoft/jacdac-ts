@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
-import { SvgWidget } from "../widgets/SvgWidget";
+import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useAnimationFrame from "../hooks/useAnimationFrame";
