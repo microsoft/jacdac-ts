@@ -5,7 +5,7 @@ import {
     CharacterScreenVariant,
     DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
-    SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD,
+    SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD,
     SRV_MOTOR, SRV_POTENTIOMETER,
     SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_RELAY,
     SRV_ROLE_MANAGER, SRV_JOYSTICK,
@@ -18,7 +18,7 @@ import {
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -29,7 +29,7 @@ import BuzzerServiceHost from "./buzzerservicehost";
 import CharacterScreenServiceHost from "./characterscreenservicehost";
 import HumidityServiceHost from "./humidityservicehost";
 import JoystickSensorServiceHost from "./joystickservicehost";
-import LEDMatrixDisplayServiceHost from "./ledmatrixdisplayservicehost";
+import LEDMatrixServiceHost from "./ledmatrixservicehost";
 import LedPixelServiceHost from "./ledpixelservicehost";
 import MatrixKeypadServiceHost from "./matrixkeypadservicehost";
 import MotorServiceHost from "./motorservicehost";
@@ -335,18 +335,18 @@ const _hosts: {
         },
         {
             name: "LED matrix (5x5 micro:bit)",
-            serviceClasses: [SRV_LED_MATRIX_DISPLAY],
-            services: () => [new LEDMatrixDisplayServiceHost(5, 5)]
+            serviceClasses: [SRV_LEDMATRIX],
+            services: () => [new LEDMatrixServiceHost(5, 5)]
         },
         {
             name: "LED matrix (8x8)",
-            serviceClasses: [SRV_LED_MATRIX_DISPLAY],
-            services: () => [new LEDMatrixDisplayServiceHost(8, 8)]
+            serviceClasses: [SRV_LEDMATRIX],
+            services: () => [new LEDMatrixServiceHost(8, 8)]
         },
         {
             name: "LED matrix (11x7)",
-            serviceClasses: [SRV_LED_MATRIX_DISPLAY],
-            services: () => [new LEDMatrixDisplayServiceHost(11, 7)]
+            serviceClasses: [SRV_LEDMATRIX],
+            services: () => [new LEDMatrixServiceHost(11, 7)]
         },
         {
             name: "light level (photo-resistor)",

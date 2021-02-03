@@ -4,7 +4,8 @@ import {
     SRV_COLOR,
     SRV_JOYSTICK,
     SRV_LED,
-    SRV_LED_MATRIX_DISPLAY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE,
+    SRV_LEDMATRIX,
+    SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE,
     SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SEVEN_SEGMENT_DISPLAY, SRV_SOIL_MOISTURE,
     SRV_SOUND_PLAYER, SRV_SPEECH_SYNTHESIS, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WATER_LEVEL,
@@ -26,7 +27,7 @@ import DashboardSwitch from "./DashboardSwitch";
 import DashboardTrafficLight from "./DashboardTrafficLight";
 import DashboardCharacterScreen from "./DashboardCharacterScreen";
 import DashbaordRainGauge from "./DashboardRainGauge";
-import DashboardLEDMatrixDisplay from "./DashboardLEDMatrixDisplay";
+import DashboardLEDMatrix from "./DashboardLEDMatrix";
 import DashboardArcadeGamepad from "./DashboardArcadeGamepad";
 import DashboardWindDirection from "./DashboardWindDirection";
 import DashboardMatrixKeypad from "./DashboardMatrixKeypad";
@@ -65,7 +66,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_TRAFFIC_LIGHT]: DashboardTrafficLight,
     [SRV_CHARACTER_SCREEN]: DashboardCharacterScreen,
     [SRV_RAIN_GAUGE]: DashbaordRainGauge,
-    [SRV_LED_MATRIX_DISPLAY]: DashboardLEDMatrixDisplay,
+    [SRV_LEDMATRIX]: DashboardLEDMatrix,
     [SRV_ARCADE_GAMEPAD]: DashboardArcadeGamepad,
     [SRV_WIND_DIRECTION]: DashboardWindDirection,
     [SRV_MATRIX_KEYPAD]: DashboardMatrixKeypad,

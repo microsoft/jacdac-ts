@@ -1,23 +1,24 @@
-import { CHANGE, LedMatrixDisplayReg, SensorReg, SRV_LED_MATRIX_DISPLAY } from "../jdom/constants";
+import { CHANGE, LEDMatrixReg, SensorReg, SRV_LEDMATRIX } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
-import SensorServiceHost from "./sensorservicehost";
+import ServiceHost from "../jdom/servicehost";
 
-export default class LEDMatrixDisplayServiceHost extends SensorServiceHost<[Uint8Array]> {
+export default class LEDMatrixServiceHost extends ServiceHost {
+    readonly leds: RegisterHost<[Uint8Array]>;
     readonly rows: RegisterHost<[number]>;
     readonly columns: RegisterHost<[number]>;
     readonly brightness: RegisterHost<[number]>;
 
     constructor(columns: number, rows: number) {
-        super(SRV_LED_MATRIX_DISPLAY, {
-            readingValues: [new Uint8Array(0)],
+        super(SRV_LEDMATRIX, {
             intensityValues: [0xff >> 1]
         })
 
         this.dashboardWeight = 3;
 
-        this.rows = this.addRegister(LedMatrixDisplayReg.Rows, [rows]);
-        this.columns = this.addRegister(LedMatrixDisplayReg.Columns, [columns]);
-        this.brightness = this.addRegister(LedMatrixDisplayReg.Brightness, [128]);
+        this.leds = this.addRegister(LEDMatrixReg.Leds, [new Uint8Array(0)])
+        this.rows = this.addRegister(LEDMatrixReg.Rows, [rows]);
+        this.columns = this.addRegister(LEDMatrixReg.Columns, [columns]);
+        this.brightness = this.addRegister(LEDMatrixReg.Brightness, [128]);
 
         this.rows.skipBoundaryCheck = true;
         this.rows.skipErrorInjection = true;
@@ -33,7 +34,7 @@ export default class LEDMatrixDisplayServiceHost extends SensorServiceHost<[Uint
 
     toggle(bitindex: number) {
         // this is very inefficient?
-        const [data] = this.reading.values();
+        const [data] = this.leds.values();
         // find bit to flip
         let byte = data[bitindex >> 3];
         const bit = bitindex % 8;
@@ -46,13 +47,13 @@ export default class LEDMatrixDisplayServiceHost extends SensorServiceHost<[Uint
         }
         // save
         data[bitindex >> 3] = byte;
-        this.reading.setValues([data])
+        this.leds.setValues([data])
     }
 
     clear() {
-        const [data] = this.reading.values();
+        const [data] = this.leds.values();
         data.fill(0);
-        this.reading.setValues([data])
+        this.leds.setValues([data])
     }
 
     private updateLedBuffer() {
@@ -65,13 +66,13 @@ export default class LEDMatrixDisplayServiceHost extends SensorServiceHost<[Uint
         // total bits needed
         const n = rows * columnspadded;
 
-        if (this.reading.data?.length !== n) {
+        if (this.leds.data?.length !== n) {
             // skip serialization
-            this.reading.data = new Uint8Array(n);
+            this.leds.data = new Uint8Array(n);
 
             // testing
-            this.reading.data.fill(0x01 | 0x04 | 0x10 | 0x40)
-            this.reading.emit(CHANGE);
+            this.leds.data.fill(0x01 | 0x04 | 0x10 | 0x40)
+            this.leds.emit(CHANGE);
         }
     }
 }

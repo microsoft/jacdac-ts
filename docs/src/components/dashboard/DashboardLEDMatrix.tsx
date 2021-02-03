@@ -1,12 +1,12 @@
 import React, { SVGProps, useRef } from "react";
-import { LedMatrixDisplayReg } from "../../../../src/jdom/constants";
+import { LEDMatrixReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useWidgetSize from "../widgets/useWidgetSize";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
-import LEDMatrixDisplayServiceHost from "../../../../src/hosts/ledmatrixdisplayservicehost";
+import LEDMatrixServiceHost from "../../../../src/hosts/ledmatrixservicehost";
 import useFireKey from "../hooks/useFireKey";
 import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
 
@@ -15,12 +15,12 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const widgetSize = useWidgetSize(variant, services.length);
 
     const widgetRef = useRef<SVGGElement>();
-    const ledsRegister = service.register(LedMatrixDisplayReg.Leds);
+    const ledsRegister = service.register(LEDMatrixReg.Leds);
     const [leds] = useRegisterUnpackedValue<[Uint8Array]>(ledsRegister);
-    const [brightness] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Brightness));
-    const [rows] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Rows));
-    const [columns] = useRegisterUnpackedValue<[number]>(service.register(LedMatrixDisplayReg.Columns));
-    const host = useServiceHost<LEDMatrixDisplayServiceHost>(service);
+    const [brightness] = useRegisterUnpackedValue<[number]>(service.register(LEDMatrixReg.Brightness));
+    const [rows] = useRegisterUnpackedValue<[number]>(service.register(LEDMatrixReg.Rows));
+    const [columns] = useRegisterUnpackedValue<[number]>(service.register(LEDMatrixReg.Columns));
+    const host = useServiceHost<LEDMatrixServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active } = useWidgetTheme(color)
 
