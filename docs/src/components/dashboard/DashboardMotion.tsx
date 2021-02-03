@@ -8,14 +8,14 @@ import { SvgWidget } from "../widgets/SvgWidget";
 import { MotionReg } from "../../../../src/jacdac";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
-import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
 export default function DashboardButton(props: DashboardServiceProps) {
   const { service, services, variant } = props;
   const movingRegister = service.register(MotionReg.Moving);
   const [moving] = useRegisterUnpackedValue<[boolean]>(movingRegister);
   const widgetSize = useWidgetSize(variant, services.length);
-  const host = useServiceHost<JDSensorServiceHost<[boolean]>>(service);
+  const host = useServiceHost<SensorServiceHost<[boolean]>>(service);
   const color = host ? "secondary" : "primary";
   const { background, controlBackground, active } = useWidgetTheme(color)
 

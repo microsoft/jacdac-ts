@@ -6,7 +6,7 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
 import { SvgWidget } from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
-import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { useId } from "react-use-id-hook";
 import { Grid, Slider } from "@material-ui/core";
 
@@ -16,7 +16,7 @@ export default function DashboardSoilMoisture(props: DashboardServiceProps) {
     const moistureReg = service.register(SoilMoistureReg.Moisture);
     const [value] = useRegisterUnpackedValue<[number]>(moistureReg);
     const widgetSize = useWidgetSize(variant, services.length);
-    const host = useServiceHost<JDSensorServiceHost<[number]>>(service);
+    const host = useServiceHost<SensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { active, background, controlBackground, textProps } = useWidgetTheme(color);
     const clipId = useId();

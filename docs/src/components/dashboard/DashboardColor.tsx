@@ -4,7 +4,7 @@ import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
-import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { BlockPicker } from "react-color"
 import ColorInput from "../ui/ColorInput";
 import { SvgWidget } from "../widgets/SvgWidget";
@@ -15,7 +15,7 @@ export default function DashboardColor(props: DashboardServiceProps) {
     const register = service.register(ColorReg.Color);
     const [r, g, b] = useRegisterUnpackedValue<[number, number, number]>(register);
     const widgetSize = useWidgetSize(variant, services.length);
-    const host = useServiceHost<JDSensorServiceHost<[number, number, number]>>(service);
+    const host = useServiceHost<SensorServiceHost<[number, number, number]>>(service);
     const color = host ? "secondary" : "primary";
     const { background, textProps } = useWidgetTheme(color)
 

@@ -3,7 +3,7 @@ import RegisterHost from "../jdom/registerhost";
 import { LevelDetector } from "./leveldetector";
 import SensorServiceHost, { SensorServiceOptions } from "./sensorservicehost";
 
-export interface JDAnalogSensorServiceHostOptions extends SensorServiceOptions<[number]> {
+export interface AnalogSensorServiceHostOptions extends SensorServiceOptions<[number]> {
     minReading?: number,
     maxReading?: number,
     readingError?: number,
@@ -12,13 +12,13 @@ export interface JDAnalogSensorServiceHostOptions extends SensorServiceOptions<[
     readingResolution?: number,
 }
 
-export default class JDAnalogSensorServiceHost extends SensorServiceHost<[number]> {
+export default class AnalogSensorServiceHost extends SensorServiceHost<[number]> {
     readonly readingError: RegisterHost<[number]>;
     readonly lowThreshold: RegisterHost<[number]>;
     readonly highThreshold: RegisterHost<[number]>;
     readonly levelDetector: LevelDetector;
 
-    constructor(serviceClass: number, options: JDAnalogSensorServiceHostOptions) {
+    constructor(serviceClass: number, options: AnalogSensorServiceHostOptions) {
         super(serviceClass, options)
         const { minReading, maxReading, readingError,
             lowThreshold, highThreshold, readingResolution } = options || {};

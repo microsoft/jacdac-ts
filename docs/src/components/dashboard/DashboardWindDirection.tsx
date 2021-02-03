@@ -1,5 +1,5 @@
 import React, { } from "react";
-import { TrafficLightReg, WindDirectionReg } from "../../../../src/jdom/constants";
+import { WindDirectionReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { SvgWidget } from "../widgets/SvgWidget";
@@ -9,8 +9,7 @@ import useWidgetSize from "../widgets/useWidgetSize";
 import { useId } from "react-use-id-hook"
 import useThrottledValue from "../hooks/useThrottledValue";
 import { Grid, Slider } from "@material-ui/core";
-import RegisterInput from "../RegisterInput";
-import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
 export default function DashboardWindDirection(props: DashboardServiceProps) {
     const { service, services, variant } = props;
@@ -18,7 +17,7 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
     const directionRegister = service.register(WindDirectionReg.WindDirection);
     const [direction] = useRegisterUnpackedValue<[number]>(directionRegister)
 
-    const host = useServiceHost<JDSensorServiceHost<[number]>>(service);
+    const host = useServiceHost<SensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)

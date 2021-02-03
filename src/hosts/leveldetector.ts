@@ -1,12 +1,11 @@
 import { JDClient } from "../jdom/client";
-import { CHANGE, REPORT_UPDATE, SystemEvent, SystemReadingThreshold, SystemReg } from "../jdom/constants";
-import JDAnalogSensorServiceHost from "./analogsensorservicehost";
-import SensorServiceHost from "./sensorservicehost";
+import { CHANGE, SystemEvent, SystemReadingThreshold } from "../jdom/constants";
+import AnalogSensorServiceHost from "./analogsensorservicehost";
 
 export class LevelDetector extends JDClient {
     private _state: number;
 
-    constructor(readonly service: JDAnalogSensorServiceHost) {
+    constructor(readonly service: AnalogSensorServiceHost) {
         super();
         this.reset();
         if (this.service.lowThreshold)
@@ -47,7 +46,6 @@ export class LevelDetector extends JDClient {
         if (state === this._state)
             return;
 
-        const now = this.service.device.bus.timestamp;
         this._state = state;
         switch (state) {
             case SystemReadingThreshold.High:

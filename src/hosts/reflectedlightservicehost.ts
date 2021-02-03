@@ -1,9 +1,8 @@
 import { ReflectedLightReg, ReflectedLightVariant, SRV_REFLECTED_LIGHT } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
-import JDAnalogSensorServiceHost from "./analogsensorservicehost";
-import SensorServiceHost from "./sensorservicehost";
+import AnalogSensorServiceHost from "./analogsensorservicehost";
 
-export default class ReflectedLightServiceHost extends JDAnalogSensorServiceHost {
+export default class ReflectedLightServiceHost extends AnalogSensorServiceHost {
     readonly variant: RegisterHost<[ReflectedLightVariant]>;
 
     constructor(options?: { variant?: ReflectedLightVariant }) {

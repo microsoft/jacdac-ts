@@ -18,6 +18,7 @@ export default function useSvgButtonProps<T extends SVGElement>(
         ["aria-label"]: label,
         onPointerDown: onDown,
         onPointerUp: onUp,
+        onPointerLeave: onUp,
         onKeyDown: fireDownOnEnter,
         onKeyUp: fireUpOnEnter
     }

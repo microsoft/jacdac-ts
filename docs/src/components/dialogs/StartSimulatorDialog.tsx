@@ -6,7 +6,7 @@ import hosts, { addHost } from "../../../../src/hosts/hosts";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import Flags from "../../../../src/jdom/flags";
-import JDServiceHost from "../../../../src/jdom/servicehost";
+import ServiceHost from "../../../../src/jdom/servicehost";
 import { delay } from "../../../../src/jdom/utils";
 import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
 import KindIcon from "../KindIcon";

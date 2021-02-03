@@ -45,11 +45,10 @@ import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 import LEDServiceHost from "./ledservicehost";
 import { fromHex } from "../jdom/utils";
-import JDAnalogSensorServiceHost, { JDAnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 import SoundPlayerServiceHost from "./soundplayerservicehost";
-import AnalogButtonServiceHost from "./analogbuttonservicehost";
+import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 
-const indoorThermometerOptions: JDAnalogSensorServiceHostOptions = {
+const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -5,
@@ -57,7 +56,7 @@ const indoorThermometerOptions: JDAnalogSensorServiceHostOptions = {
     readingError: 0.25,
     variant: ThermometerVariant.Indoor
 }
-const outdoorThermometerOptions: JDAnalogSensorServiceHostOptions = {
+const outdoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -40,
@@ -65,7 +64,7 @@ const outdoorThermometerOptions: JDAnalogSensorServiceHostOptions = {
     readingError: 0.25,
     variant: ThermometerVariant.Outdoor
 }
-const medicalThermometerOptions: JDAnalogSensorServiceHostOptions = {
+const medicalThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [37.5],
     streamingInterval: 1000,
     minReading: 35,
@@ -73,10 +72,10 @@ const medicalThermometerOptions: JDAnalogSensorServiceHostOptions = {
     readingError: 0.5,
     variant: ThermometerVariant.Body
 }
-const barometerOptions: JDAnalogSensorServiceHostOptions = {
+const barometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [1013]
 }
-const sonarOptions: JDAnalogSensorServiceHostOptions = {
+const sonarOptions: AnalogSensorServiceHostOptions = {
     variant: DistanceVariant.Ultrasonic,
     minReading: 0.02,
     maxReading: 4,
@@ -105,26 +104,26 @@ const microServo360Options = {
     minAngle: -180,
     maxAngle: 180
 }
-const windDirectionOptions: JDAnalogSensorServiceHostOptions = {
+const windDirectionOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
     readingError: 5
 }
-const windSpeedOptions: JDAnalogSensorServiceHostOptions = {
+const windSpeedOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
     readingError: 0.5,
     registerValues: [
         { code: WindSpeedReg.MaxWindSpeed, values: [55] }
     ]
 }
-const eCO2Options: JDAnalogSensorServiceHostOptions = {
+const eCO2Options: AnalogSensorServiceHostOptions = {
     readingValues: [4000],
     variant: ECO2Variant.VOC
 }
-const CO2Options: JDAnalogSensorServiceHostOptions = {
+const CO2Options: AnalogSensorServiceHostOptions = {
     readingValues: [4000],
     variant: ECO2Variant.NDIR
 }
-const tvocOptions: JDAnalogSensorServiceHostOptions = {
+const tvocOptions: AnalogSensorServiceHostOptions = {
     readingValues: [500]
 }
 
@@ -190,7 +189,7 @@ const _hosts: {
         {
             name: "barometer",
             serviceClasses: [SRV_BAROMETER],
-            services: () => [new JDAnalogSensorServiceHost(SRV_BAROMETER, barometerOptions)]
+            services: () => [new AnalogSensorServiceHost(SRV_BAROMETER, barometerOptions)]
         },
         {
             name: "button",
@@ -210,7 +209,7 @@ const _hosts: {
         {
             name: "capacitive button",
             serviceClasses: [SRV_ANALOG_BUTTON],
-            services: () => [new JDAnalogSensorServiceHost(SRV_ANALOG_BUTTON, {
+            services: () => [new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, {
                 lowThreshold: 0.3,
                 highThreshold: 0.8,
                 readingValues: [0],
@@ -243,34 +242,34 @@ const _hosts: {
         {
             name: "distance (sonar)",
             serviceClasses: [SRV_DISTANCE],
-            services: () => [new JDAnalogSensorServiceHost(SRV_DISTANCE, sonarOptions)]
+            services: () => [new AnalogSensorServiceHost(SRV_DISTANCE, sonarOptions)]
         },
         {
             name: "eCO²",
             serviceClasses: [SRV_E_CO2],
-            services: () => [new JDAnalogSensorServiceHost(SRV_E_CO2, eCO2Options)]
+            services: () => [new AnalogSensorServiceHost(SRV_E_CO2, eCO2Options)]
         },
         {
             name: "eCO² + TVOC",
             serviceClasses: [SRV_E_CO2, SRV_TVOC],
             services: () => [
-                new JDAnalogSensorServiceHost(SRV_E_CO2, eCO2Options),
-                new JDAnalogSensorServiceHost(SRV_TVOC, tvocOptions)]
+                new AnalogSensorServiceHost(SRV_E_CO2, eCO2Options),
+                new AnalogSensorServiceHost(SRV_TVOC, tvocOptions)]
         },
         {
             name: "eCO² + humidity + thermometer",
             serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
             services: () => [
-                new JDAnalogSensorServiceHost(SRV_E_CO2, CO2Options),
+                new AnalogSensorServiceHost(SRV_E_CO2, CO2Options),
                 new HumidityServiceHost(),
-                new JDAnalogSensorServiceHost(SRV_THERMOMETER, indoorThermometerOptions)
+                new AnalogSensorServiceHost(SRV_THERMOMETER, indoorThermometerOptions)
             ]
         },
         {
             name: "heart rate",
             serviceClasses: [SRV_HEART_RATE],
             services: () => [
-                new JDAnalogSensorServiceHost(SRV_HEART_RATE, {
+                new AnalogSensorServiceHost(SRV_HEART_RATE, {
                     readingValues: [80],
                     variant: HeartRateVariant.Finger
                 })
@@ -286,20 +285,20 @@ const _hosts: {
             serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
             services: () => [
                 new HumidityServiceHost(),
-                new JDAnalogSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
+                new AnalogSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions)]
         },
         {
             name: "humidity + temperature + barometer",
             serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
             services: () => [
                 new HumidityServiceHost(),
-                new JDAnalogSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
-                new JDAnalogSensorServiceHost(SRV_BAROMETER, barometerOptions)]
+                new AnalogSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
+                new AnalogSensorServiceHost(SRV_BAROMETER, barometerOptions)]
         },
         {
             name: "illuminance",
             serviceClasses: [SRV_ILLUMINANCE],
-            services: () => [new JDAnalogSensorServiceHost(SRV_ILLUMINANCE, { readingValues: [1] })]
+            services: () => [new AnalogSensorServiceHost(SRV_ILLUMINANCE, { readingValues: [1] })]
         },
         {
             name: "joystick (thumbstick)",
@@ -471,7 +470,7 @@ const _hosts: {
             services: () => [new SensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
                 readingValues: [98],
 
-            }), new JDAnalogSensorServiceHost(SRV_HEART_RATE, {
+            }), new AnalogSensorServiceHost(SRV_HEART_RATE, {
                 readingValues: [80],
                 variant: HeartRateVariant.Finger
             })]
@@ -527,7 +526,7 @@ const _hosts: {
         {
             name: "rotary potentiometer",
             serviceClasses: [SRV_POTENTIOMETER],
-            services: () => [new JDAnalogSensorServiceHost(SRV_POTENTIOMETER, {
+            services: () => [new AnalogSensorServiceHost(SRV_POTENTIOMETER, {
                 variant: PotentiometerVariant.Rotary,
                 readingValues: [0.5]
             })]
@@ -575,12 +574,12 @@ const _hosts: {
         {
             name: "slider",
             serviceClasses: [SRV_POTENTIOMETER],
-            services: () => [new JDAnalogSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
+            services: () => [new AnalogSensorServiceHost(SRV_POTENTIOMETER, { variant: PotentiometerVariant.Slider })]
         },
         {
             name: "soil moisture",
             serviceClasses: [SRV_SOIL_MOISTURE],
-            services: () => [new JDAnalogSensorServiceHost(SRV_SOIL_MOISTURE, {
+            services: () => [new AnalogSensorServiceHost(SRV_SOIL_MOISTURE, {
                 readingValues: [0.5]
             })]
         },
@@ -592,7 +591,7 @@ const _hosts: {
         {
             name: "sound level",
             serviceClasses: [SRV_SOUND_LEVEL],
-            services: () => [new JDAnalogSensorServiceHost(SRV_SOUND_LEVEL, {
+            services: () => [new AnalogSensorServiceHost(SRV_SOUND_LEVEL, {
                 readingValues: [0],
                 lowThreshold: 10,
                 highThreshold: 70
@@ -647,7 +646,7 @@ const _hosts: {
         {
             name: "thermometer (medical)",
             serviceClasses: [SRV_THERMOMETER],
-            services: () => [new JDAnalogSensorServiceHost(SRV_THERMOMETER, medicalThermometerOptions)]
+            services: () => [new AnalogSensorServiceHost(SRV_THERMOMETER, medicalThermometerOptions)]
         },
         {
             name: "traffic light",
@@ -662,7 +661,7 @@ const _hosts: {
         {
             name: "thermocouple",
             serviceClasses: [SRV_THERMOMETER],
-            services: () => [new JDAnalogSensorServiceHost(SRV_THERMOMETER, {
+            services: () => [new AnalogSensorServiceHost(SRV_THERMOMETER, {
                 readingValues: [550],
                 streamingInterval: 1000,
                 minReading: 0,
@@ -674,24 +673,24 @@ const _hosts: {
         {
             name: "TVOC",
             serviceClasses: [SRV_TVOC],
-            services: () => [new JDAnalogSensorServiceHost(SRV_TVOC, tvocOptions)]
+            services: () => [new AnalogSensorServiceHost(SRV_TVOC, tvocOptions)]
         },
         {
             name: "UV index",
             serviceClasses: [SRV_UVINDEX],
-            services: () => [new JDAnalogSensorServiceHost(SRV_UVINDEX, { readingValues: [5] })]
+            services: () => [new AnalogSensorServiceHost(SRV_UVINDEX, { readingValues: [5] })]
         },
         {
             name: "water level",
             serviceClasses: [SRV_WATER_LEVEL],
-            services: () => [new JDAnalogSensorServiceHost(SRV_WATER_LEVEL, {
+            services: () => [new AnalogSensorServiceHost(SRV_WATER_LEVEL, {
                 readingValues: [0.5]
             })]
         },
         {
             name: "weight scale (jewelry)",
             serviceClasses: [SRV_WEIGHT_SCALE],
-            services: () => [new JDAnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
+            services: () => [new AnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
                 readingValues: [0.001],
                 variant: WeightScaleVariant.Jewelry,
                 maxReading: 0.2,
@@ -702,7 +701,7 @@ const _hosts: {
         {
             name: "weight scale (body)",
             serviceClasses: [SRV_WEIGHT_SCALE],
-            services: () => [new JDAnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
+            services: () => [new AnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
                 readingValues: [60],
                 variant: WeightScaleVariant.Body,
                 maxReading: 180,
@@ -712,7 +711,7 @@ const _hosts: {
         {
             name: "weight scale (food)",
             serviceClasses: [SRV_WEIGHT_SCALE],
-            services: () => [new JDAnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
+            services: () => [new AnalogSensorServiceHost(SRV_WEIGHT_SCALE, {
                 readingValues: [0.5],
                 variant: WeightScaleVariant.Food,
                 maxReading: 6,
@@ -722,19 +721,19 @@ const _hosts: {
         {
             name: "wind direction",
             serviceClasses: [SRV_WIND_DIRECTION],
-            services: () => [new JDAnalogSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions)]
+            services: () => [new AnalogSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions)]
         },
         {
             name: "wind speed",
             serviceClasses: [SRV_WIND_SPEED],
-            services: () => [new JDAnalogSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions)]
+            services: () => [new AnalogSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions)]
         },
         {
             name: "weather station (wind speed, direction, rain)",
             serviceClasses: [SRV_WIND_SPEED, SRV_WIND_DIRECTION, SRV_RAIN_GAUGE],
             services: () => [
-                new JDAnalogSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions),
-                new JDAnalogSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions),
+                new AnalogSensorServiceHost(SRV_WIND_SPEED, windSpeedOptions),
+                new AnalogSensorServiceHost(SRV_WIND_DIRECTION, windDirectionOptions),
                 new RainGaugeServiceHost(),
             ]
         },
@@ -749,7 +748,7 @@ const _hosts: {
             services: () => [
                 new MotorServiceHost(),
                 new MotorServiceHost(),
-                new JDAnalogSensorServiceHost(SRV_DISTANCE, sonarOptions),
+                new AnalogSensorServiceHost(SRV_DISTANCE, sonarOptions),
                 new LedPixelServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
             ]
         },

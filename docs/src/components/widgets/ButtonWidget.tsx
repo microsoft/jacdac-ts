@@ -24,7 +24,6 @@ export default function ButtonWidget(props: {
     const cy = r;
     const ro = r;
     const ri = r - mo;
-    console.log({ buttonProps })
     return <SvgWidget width={w} size={size}>
         <circle cx={cx} cy={cy} r={ro} fill={background} />
         <circle cx={cx} cy={cy} r={ri}

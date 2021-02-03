@@ -8,14 +8,14 @@ import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { Grid, Slider } from "@material-ui/core";
-import JDSensorServiceHost from "../../../../src/hosts/sensorservicehost";
+import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
 export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     const { service, services, variant } = props;
 
     const levelRegister = service.register(WaterLevelReg.Level);
     const [value] = useRegisterUnpackedValue<[number]>(levelRegister)
-    const host = useServiceHost<JDSensorServiceHost<[number]>>(service)
+    const host = useServiceHost<SensorServiceHost<[number]>>(service)
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textProps } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)
