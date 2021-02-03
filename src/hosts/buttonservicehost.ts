@@ -31,11 +31,11 @@ export default class ButtonServiceHost extends JDSensorServiceHost<[boolean]> {
             // generate clicks
             if (this._downTime !== undefined) {
                 const dt = upTime - this._downTime;
+                this._downTime = undefined;
                 if (dt > LONG_CLICK_DELAY)
                     await this.sendEvent(ButtonEvent.LongClick);
                 else if (dt > CLICK_DELAY)
                     await this.sendEvent(ButtonEvent.Click);
-                this._downTime = undefined;
             }
         }
     }

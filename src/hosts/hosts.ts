@@ -16,7 +16,9 @@ import {
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
-    SevenSegmentDisplayReg, SRV_HEART_RATE, HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER, SRV_WEIGHT_SCALE, WeightScaleVariant
+    SevenSegmentDisplayReg, SRV_HEART_RATE,
+    HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant
 } from "../jdom/constants";
 import JDDeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -45,6 +47,7 @@ import LEDServiceHost from "./ledservicehost";
 import { fromHex } from "../jdom/utils";
 import JDAnalogSensorServiceHost, { JDAnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 import SoundPlayerServiceHost from "./soundplayerservicehost";
+import AnalogButtonServiceHost from "./analogbuttonservicehost";
 
 const indoorThermometerOptions: JDAnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -203,6 +206,16 @@ const _hosts: {
             name: "buzzer",
             serviceClasses: [SRV_BUZZER],
             services: () => [new BuzzerServiceHost()]
+        },
+        {
+            name: "capacitive button",
+            serviceClasses: [SRV_ANALOG_BUTTON],
+            services: () => [new JDAnalogSensorServiceHost(SRV_ANALOG_BUTTON, {
+                lowThreshold: 0.2,
+                highThreshold: 0.8,
+                readingValues: [0],
+                variant: AnalogButtonVariant.Capacitive
+            })]
         },
         {
             name: "character screen (LDC, 16x2)",
