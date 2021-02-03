@@ -241,18 +241,18 @@ export default function ProtocolTest() {
     }, [host]);
 
     return <Grid container direction="row" spacing={2}>
-        {Flags.diagnostics && <Grid item xs={12}>
-            <Alert severity="info">
-                <AlertTitle>Developer zone</AlertTitle>
-                <Switch checked={host} onChange={toggleHost} />
-                <label>Add simulator</label>
-            </Alert>
-        </Grid>}
         <Grid key="connect" item xs={12}>
             <ConnectAlert serviceClass={SRV_PROTO_TEST} />
         </Grid>
         {services?.map(service => <Grid key={service.id} item xs={12}>
             <ServiceProtocolTest service={service} />
         </Grid>)}
+        <Grid item xs={12}>
+            <Alert severity="info">
+                <AlertTitle>Developer zone</AlertTitle>
+                <Switch checked={host} onChange={toggleHost} />
+                <label>Add simulator</label>
+            </Alert>
+        </Grid>
     </Grid>
 }
