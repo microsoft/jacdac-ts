@@ -5,32 +5,54 @@ import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useLedAnimationStyle, { LedAnimationProps } from "../hooks/useLedAnimationStyle";
 
-const ledHue = 255
+const statusHue = 32
+const statusSaturation = 255
+
+//Every 524ms it changes from 5.9% and 1.6% (i.e. 1 sec duty cycle)
 const bootloaderFrames: LedAnimationFrame[] = [
-    [0, 255, 0, 500 >> 3],
-    [5, 255, 255, 500 >> 3]
+    [statusHue, statusSaturation, 96, 524 / 8],
+    [statusHue, statusSaturation, 96, 0.1],
+    [statusHue, statusSaturation, 56, 524 / 8],
+    [statusHue, statusSaturation, 56, 0.1],
 ];
+// 50ms every 150ms (50 on, 100 off) seven times (i.e. for 1 second)
 const identifyFrames: LedAnimationFrame[] = [
-    [50, 255, 0, 250 >> 3],
-    [50, 255, 255, 250 >> 3]
+    [statusHue, statusSaturation, 255, 50 / 8],
+    [statusHue, statusSaturation, 255, 0.1],
+    [statusHue, statusSaturation, 0, 100 / 8],
+    [statusHue, statusSaturation, 0, 0.1],
 ];
 // lights at 100% for 270ms, then 5.9% for rest of 530ms, 
 // then goes into application that turns it on full for 200ms
 const startupFrames: LedAnimationFrame[] = [
-    [0, 255, 0, 500 >> 3],
-    [5, 255, 255, 500 >> 3]
+    [statusHue, statusSaturation, 255, 270 / 8],
+    [statusHue, statusSaturation, 6 / 100 * 0xff, 530 / 8],
+    [statusHue, statusSaturation, 200, 200 / 8],
+    [statusHue, statusSaturation, 0, 0.1],
+    [statusHue, statusSaturation, 0, 2000 / 8],
+    [statusHue, statusSaturation, 0, 0.1],
 ];
+// Synchronized fast blink 50us every 500ms
 const connectedFrames: LedAnimationFrame[] = [
-    [0, 255, 0, 500 >> 3],
-    [5, 255, 255, 500 >> 3]
+    [statusHue, statusSaturation, 0, 500 / 8],
+    [statusHue, statusSaturation, 0, 0.1],
+    [statusHue, statusSaturation, 128, 24 / 8],
+    [statusHue, statusSaturation, 128, 0.1],
+    [statusHue, statusSaturation, 0, 0.1],
 ];
+//5ms every 250ms
 const disconnectedFrames: LedAnimationFrame[] = [
-    [0, 255, 0, 500 >> 3],
-    [5, 255, 255, 500 >> 3]
+    [statusHue, statusSaturation, 128, 24 / 8],
+    [statusHue, statusSaturation, 128, 0.1],
+    [statusHue, statusSaturation, 0, 250 / 8],
+    [statusHue, statusSaturation, 0, 0.1],
 ];
+// fast blink 70ms on, 70ms off - 30 times (4.2 seconds) before a reboot
 const panicFrames: LedAnimationFrame[] = [
-    [0, 255, 0, 500 >> 3],
-    [5, 255, 255, 500 >> 3]
+    [statusHue, statusSaturation, 128, 70 / 8],
+    [statusHue, statusSaturation, 128, 0.1],
+    [statusHue, statusSaturation, 0, 70 / 8],
+    [statusHue, statusSaturation, 0, 0.1],
 ];
 
 export type LEDStatus = "startup" | "identify" | "connected" | "disconnected" | "panic" | "bootloader";

@@ -1,8 +1,6 @@
-export function hsvToCss(hue: number, saturation: number, value: number, brightness: number, monochromeHue?: number) {
-    const monochome = monochromeHue !== undefined;
-
-    const csshue = (monochome ? monochromeHue : hue) * 360 / 0xff;
-    const csssat = (monochome ? 0xff : saturation) / 0xff;
+export function hsvToCss(hue: number, saturation: number, value: number, brightness: number, monochrome?: boolean) {
+    const csshue = hue * 360 / 0xff;
+    const csssat = (monochrome ? 0xff : saturation) / 0xff;
     const cssval = value / 0xff;
     const [h, s, l] = hsv_to_hsl(csshue, csssat, cssval)
     const mixl = 0.3;

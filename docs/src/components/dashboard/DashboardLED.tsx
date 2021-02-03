@@ -44,7 +44,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
         return null;
 
     const opacity = brightness;
-    const fill = hsvToCss(hsv[0], hsv[1], hsv[2], brightness * 0xff, waveLength);
+    const fill = hsvToCss(hsv[0], hsv[1], hsv[2], brightness * 0xff, waveLength !== undefined);
 
     const ln = Math.min(ledCount || 1, 5)
     const lw = 15.5;
