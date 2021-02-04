@@ -65,7 +65,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
         for (let row = 0; row < rows; row++) {
             let x = m;
             for (let col = 0; col < columns; col++) {
-                const box = <rect key={`b${row}-${col}`} x={x} y={y} width={pw} height={ph} r={pr}
+                const box = <rect key={`b${row}-${col}`} x={x} y={y} width={pw} height={ph} rx={pr} ry={pr}
                     fill={controlBackground} />;
                 boxEls.push(box)
 
@@ -76,7 +76,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
                 const handleClick = handleLedClick(bitindex)
                 const fireClick = useFireKey(handleClick);
 
-                ledEls.push(<rect key={`l${row}-${col}`} x={x} y={y} width={pw} height={ph} r={pr}
+                ledEls.push(<rect key={`l${row}-${col}`} x={x} y={y} width={pw} height={ph} rx={pr} ry={pr}
                     fill={on ? onFill : offFill}
                     stroke={on ? onStroke : offStroke}
                     strokeWidth={ps}
@@ -96,7 +96,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const { boxEls, ledEls } = render();
     const navProps = useKeyboardNavigationProps(widgetRef.current)
     return <SvgWidget width={w} height={h} size={widgetSize}>
-        <rect x={0} y={0} width={w} height={h} r={pw} fill={background} />
+        <rect x={0} y={0} width={w} height={h} rx={2} ry={2} fill={background} />
         <g ref={widgetRef} {...navProps}>
             {boxEls}
             {ledEls.length && <g opacity={minOpacity + brightness * (1 - minOpacity)}>

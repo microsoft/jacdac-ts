@@ -32,7 +32,7 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
     const pw = 8;
     const ph = 8;
     const ps = 0.5;
-    const pr = 2;
+    const pr = 1;
     const m = 2;
     const w = columns * pw + (columns + 1) * m;
     const h = rows * ph + (rows + 1) * m;
@@ -62,7 +62,7 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
                 const fireUp = useFireKey(handleUp);
                 const fireDown = useFireKey(handleDown);
 
-                ledEls.push(<rect key={`l${row}-${col}`} x={x} y={y} width={pw} height={ph} r={pr}
+                ledEls.push(<rect key={`l${row}-${col}`} x={x} y={y} width={pw} height={ph} rx={pr} ry={pr}
                     fill={on ? active : controlBackground}
                     stroke={"none"}
                     strokeWidth={ps}
@@ -86,7 +86,7 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
     const { ledEls } = render();
     const navProps = useKeyboardNavigationProps(widgetRef.current)
     return <SvgWidget width={w} height={h} size={widgetSize}>
-        <rect x={0} y={0} width={w} height={h} r={pw} fill={background} />
+        <rect x={0} y={0} width={w} height={h} rx={pr} ry={pr} fill={background} />
         <g ref={widgetRef} {...navProps}>
             {ledEls}
         </g>
