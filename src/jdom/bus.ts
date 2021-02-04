@@ -143,14 +143,14 @@ export class BusStatsMonitor extends JDEventSource {
     }
 
     get current(): BusStats {
-        const r : BusStats = {
+        const r: BusStats = {
             packets: 0,
             announce: 0,
             acks: 0,
             bytes: 0
         }
         const n = this._prev.length;
-        for(let i = 0; i< this._prev.length; ++i) {
+        for (let i = 0; i < this._prev.length; ++i) {
             const p = this._prev[i];
             r.packets += p.packets;
             r.announce += p.announce;
