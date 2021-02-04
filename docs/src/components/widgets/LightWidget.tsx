@@ -40,18 +40,34 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
             s = 100 * (cDelta / maxAndMin);
     }
 
+    // at least 60% luminosity
+    l = Math.max(l, 60);
     return [Math.floor(h), Math.floor(s), Math.floor(l)];
 }
 
-function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number) {
+function setRgb(el: SVGElement, r: number, g: number, b: number, radius?: number) {
     const hsl = rgbToHsl(r, g, b);
     const [h, s, l] = hsl;
-    // at least 70% luminosity
-    const lum = Math.max(l, 60);
-    const fill = `hsl(${h}, ${s}%, ${lum}%)`;
+    const fill = `hsl(${h}, ${s}%, ${l}%)`;
     el.setAttribute("fill", fill);
-    const nr = radius * (1 + (l - 60) / 200);
-    el.setAttribute("r", "" + nr);
+    if (radius !== undefined) {
+        const nr = radius * (1 + (l - 60) / 200);
+        el.setAttribute("r", "" + nr);
+    }
+}
+
+function setRgbLeds(pixelsContainer: SVGElement, colors: Uint8Array, radius?: number) {
+    const pixels = pixelsContainer?.children;
+    if (!colors || !pixels)
+        return;
+
+    const pn = Math.min(pixels.length, colors.length / 3);
+    let ci = 0;
+    for (let i = 0; i < pn; ++i) {
+        const pixel = pixels.item(i) as SVGElement;
+        setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2], radius);
+        ci += 3;
+    }
 }
 
 function LightStripWidget(props: {
@@ -62,6 +78,7 @@ function LightStripWidget(props: {
     widgetSize: string,
 }) {
     const { lightVariant, numPixels, actualBrightness, host, widgetSize } = props;
+    const { background, controlBackground } = useWidgetTheme()
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
     const neoradius = 6;
@@ -69,23 +86,9 @@ function LightStripWidget(props: {
     const sw = neoradius * 2;
     const isJewel = lightVariant === LedPixelVariant.Jewel;
     const isRing = lightVariant === LedPixelVariant.Ring;
-    const { background, controlBackground } = useWidgetTheme()
 
     // paint svg via dom
-    const render = () => {
-        const pixels = pixelsRef.current?.children;
-        const colors = host?.colors;
-        if (!colors || !pixels)
-            return;
-
-        const pn = Math.min(pixels.length, colors.length / 3);
-        let ci = 0;
-        for (let i = 0; i < pn; ++i) {
-            const pixel = pixels.item(i) as SVGCircleElement;
-            setRgb(pixel, colors[ci], colors[ci + 1], colors[ci + 2], neocircleradius);
-            ci += 3;
-        }
-    }
+    const paint = () => setRgbLeds(pixelsRef.current, host?.colors, neocircleradius);
 
     // reposition pixels along the path
     useEffect(() => {
@@ -108,15 +111,11 @@ function LightStripWidget(props: {
             pixel.setAttribute("cy", "" + point.y);
         }
 
-        render();
+        paint();
     }, [lightVariant, numPixels, pathRef.current, pixelsRef.current])
 
     // render when new colors are in
-    useEffect(() => host?.subscribe(RENDER, render), [host]);
-
-    // not enough data to draw anything
-    if (numPixels === undefined)
-        return null;
+    useEffect(() => host?.subscribe(RENDER, paint), [host]);
 
     let width: number;
     let height: number;
@@ -155,9 +154,6 @@ function LightStripWidget(props: {
         width = side * dx + 4 * tr;
         height = line * tr + 2 * dx;
     }
-    else if (lightVariant === LedPixelVariant.Matrix) {
-        // don't
-    }
     else {
         const n = numPixels - (isJewel ? 1 : 0)
         const neoperimeter = n * (2.2 * neoradius)
@@ -182,13 +178,81 @@ function LightStripWidget(props: {
                     cx={width >> 1} cy={height >> 1}
                     stroke={controlBackground}
                     strokeWidth={1}
-                    aria-label={`pixel {i}`}
-                />)}
+                    aria-label={`pixel ${i}`}
+                >
+                    <title>pixel {i}</title>
+                </circle>)}
             </g>
         </>
     </SvgWidget>
 }
 
+
+function LightMatrixWidget(props: {
+    lightVariant: LedPixelVariant,
+    actualBrightness: number,
+    host: LedPixelServiceHost,
+    widgetSize: string,
+    columns: number,
+    rows: number,
+}) {
+    const { actualBrightness, columns, rows, host, widgetSize } = props;
+    const { background, controlBackground } = useWidgetTheme()
+
+    const widgetRef = useRef<SVGGElement>();
+    const clickeable = !!host;
+    // compute size
+    const pw = 8;
+    const ph = 8;
+    const ps = 0.5;
+    const pr = 1;
+    const m = 2;
+    const w = columns * pw + (columns + 1) * m;
+    const h = rows * ph + (rows + 1) * m;
+
+    // paint svg via dom
+    const paint = () => setRgbLeds(widgetRef.current, host?.colors);
+
+    // add leds
+    const render = () => {
+        const ledEls: JSX.Element[] = [];
+
+        let y = m;
+        for (let row = 0; row < rows; row++) {
+            let x = m;
+            for (let col = 0; col < columns; col++) {
+                const index = row * columns + col;
+                const label = `pixel ${index} at ${row},${col}`
+                ledEls.push(<rect key={`l${row}-${col}`}
+                    x={x} y={y} width={pw}
+                    height={ph} rx={pr} ry={pr}
+                    fill={controlBackground}
+                    stroke={"none"}
+                    strokeWidth={ps}
+                    aria-label={label}
+                >
+                    <title>{label}</title>
+                </rect>);
+                x += pw + m;
+            }
+            y += ph + m;
+        }
+        return ledEls
+    }
+
+    // render when DOM render
+    useEffect(paint, [columns, rows, widgetRef.current]);
+
+    // render when new colors are in
+    useEffect(() => host?.subscribe(RENDER, paint), [host]);
+
+    return <SvgWidget width={w} height={h} size={widgetSize}>
+        <rect x={0} y={0} width={w} height={h} rx={pr} ry={pr} fill={background} />
+        <g ref={widgetRef}>
+            {render()}
+        </g>
+    </SvgWidget>
+}
 
 export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
     const { service, widgetCount, variant } = props;
@@ -196,10 +260,24 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
     const [lightVariant] = useRegisterUnpackedValue<[LedPixelVariant]>(service.register(LedPixelReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
+    const [numColumns] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumColumns))
     const host = useServiceHost<LedPixelServiceHost>(service);
 
-    if (lightVariant === LedPixelVariant.Matrix)
-        return <></>;
+    if (!numPixels)
+        return null; // nothing to render
+
+    if (lightVariant === LedPixelVariant.Matrix) {
+        const columns = numColumns || Math.floor(Math.sqrt(numPixels));
+        const rows = Math.floor(numPixels / columns);
+        return <LightMatrixWidget
+            lightVariant={lightVariant}
+            actualBrightness={actualBrightness}
+            host={host}
+            widgetSize={widgetSize}
+            columns={columns}
+            rows={rows}
+        />
+    }
     else
         return <LightStripWidget
             numPixels={numPixels}

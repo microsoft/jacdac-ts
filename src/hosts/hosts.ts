@@ -349,59 +349,74 @@ const _hosts: {
             services: () => [new LEDMatrixServiceHost(11, 7)]
         },
         {
-            name: "light level (photo-resistor)",
-            serviceClasses: [SRV_LIGHT_LEVEL],
-            services: () => [new SensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.PhotoResistor })]
-        },
-        {
-            name: "light ring 10",
+            name: "LED pixel ring 10",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 10, variant: LedPixelVariant.Ring })]
         },
         {
-            name: "light ring 12",
+            name: "LED pixel ring 12",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 12, variant: LedPixelVariant.Ring })]
         },
         {
-            name: "light ring 16",
+            name: "LED pixel ring 16",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 16, variant: LedPixelVariant.Ring })]
         },
         {
-            name: "light ring 24",
+            name: "LED pixel ring 24",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 24, variant: LedPixelVariant.Ring })]
         },
         {
-            name: "light jewel 7",
+            name: "LED pixel jewel 7",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 7, variant: LedPixelVariant.Jewel })]
         },
         {
-            name: "light stick 8",
+            name: "LED pixel stick 8",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 8, variant: LedPixelVariant.Stick })]
         },
         {
-            name: "light strip 30",
+            name: "LED pixel strip 30",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 60, maxPower: 1000, variant: LedPixelVariant.Strip })]
         },
         {
-            name: "light strip 60",
+            name: "LED pixel strip 60",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 60, maxPower: 2000, variant: LedPixelVariant.Strip })]
         },
         {
-            name: "light strip 150",
+            name: "LED pixel strip 150",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 150, maxPower: 5000, variant: LedPixelVariant.Strip })]
         },
         {
-            name: "light strip 300",
+            name: "LED pixel strip 300",
             serviceClasses: [SRV_LED_PIXEL],
             services: () => [new LedPixelServiceHost({ numPixels: 300, maxPower: 5000, variant: LedPixelVariant.Strip })]
+        },
+        {
+            name: "LED pixel matrix (4x4)",
+            serviceClasses: [SRV_LED_PIXEL],
+            services: () => [new LedPixelServiceHost({ numPixels: 16, variant: LedPixelVariant.Matrix })]
+        },
+        {
+            name: "LED pixel matrix (8x8)",
+            serviceClasses: [SRV_LED_PIXEL],
+            services: () => [new LedPixelServiceHost({ numPixels: 64, variant: LedPixelVariant.Matrix })]
+        },
+        {
+            name: "LED pixel matrix (16x4)",
+            serviceClasses: [SRV_LED_PIXEL],
+            services: () => [new LedPixelServiceHost({ numPixels: 64, numColumns: 16, variant: LedPixelVariant.Matrix })]
+        },
+        {
+            name: "light level (photo-resistor)",
+            serviceClasses: [SRV_LIGHT_LEVEL],
+            services: () => [new SensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.PhotoResistor })]
         },
         {
             name: "line tracker (digital)",

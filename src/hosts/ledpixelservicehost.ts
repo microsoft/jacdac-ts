@@ -111,6 +111,7 @@ export default class LedPixelServiceHost extends ServiceHost {
     readonly variant: RegisterHost<[LedPixelVariant]>;
     readonly maxPixels: RegisterHost<[number]>;
     readonly numRepeats: RegisterHost<[number]>;
+    readonly numColumns: RegisterHost<[number]>;
 
     private pxbuffer: Uint8Array = new Uint8Array(0);
 
@@ -133,19 +134,24 @@ export default class LedPixelServiceHost extends ServiceHost {
 
     constructor(options?: {
         numPixels?: number,
+        numColumns?: number,
         maxPixels?: number,
         maxPower?: number
     } & ServiceHostOptions) {
         super(SRV_LED_PIXEL, options);
 
+        const { numColumns, maxPower = 200, maxPixels = 300, numPixels = 15 } = options || {};
+
         this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [15]);
         this.actualBrightness = this.addRegister<[number]>(LedPixelReg.ActualBrightness, [15]);
         this.lightType = this.addRegister<[LedPixelLightType]>(LedPixelReg.LightType, [LedPixelLightType.WS2812B_GRB]);
-        this.numPixels = this.addRegister<[number]>(LedPixelReg.NumPixels, [options?.numPixels || 15]);
-        this.maxPower = this.addRegister<[number]>(LedPixelReg.MaxPower, [options?.maxPower || 200]);
-        this.maxPixels = this.addRegister<[number]>(LedPixelReg.MaxPixels, [options?.maxPixels || 300]);
+        this.numPixels = this.addRegister<[number]>(LedPixelReg.NumPixels, [numPixels]);
+        this.maxPower = this.addRegister<[number]>(LedPixelReg.MaxPower, [maxPower]);
+        this.maxPixels = this.addRegister<[number]>(LedPixelReg.MaxPixels, [maxPixels]);
         this.variant = this.addRegister<[LedPixelVariant]>(LedPixelReg.Variant, [LedPixelVariant.Strip]);
         this.numRepeats = this.addRegister<[number]>(LedPixelReg.NumRepeats, [0]);
+        if (numColumns !== undefined)
+            this.numColumns = this.addRegister<[number]>(LedPixelReg.NumColumns, [numColumns]);
 
         this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
