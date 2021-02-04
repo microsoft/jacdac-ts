@@ -8,8 +8,9 @@ import {
     SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE,
     SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SEVEN_SEGMENT_DISPLAY, SRV_SOIL_MOISTURE,
+    SRV_SOUND_LEVEL,
     SRV_SOUND_PLAYER, SRV_SPEECH_SYNTHESIS, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WATER_LEVEL,
-    SRV_WIND_DIRECTION, SystemReg
+    SRV_WIND_DIRECTION, SystemReg,
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
 import DashboardAccelerometer from "./DashboardAccelerometer";
@@ -44,6 +45,7 @@ import DashbaordWaterLevel from "./DashboardWaterLevel";
 import DashboardColor from "./DashboardColor";
 import DashboardSoundPlayer from "./DashboardSoundPlayer";
 import DashboardAnalogButton from "./DashboardAnalogButton";
+import DashboardSoundLevel from "./DashboardSoundLevel";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -83,6 +85,7 @@ const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
     [SRV_COLOR]: DashboardColor,
     [SRV_SOUND_PLAYER]: DashboardSoundPlayer,
     [SRV_ANALOG_BUTTON]: DashboardAnalogButton,
+    [SRV_SOUND_LEVEL]: DashboardSoundLevel,
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {

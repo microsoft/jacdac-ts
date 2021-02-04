@@ -47,6 +47,7 @@ import LEDServiceHost from "./ledservicehost";
 import { fromHex } from "../jdom/utils";
 import SoundPlayerServiceHost from "./soundplayerservicehost";
 import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
+import SoundLevelServiceHost from "./soundlevelservicehost";
 
 const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -606,11 +607,7 @@ const _hosts: {
         {
             name: "sound level",
             serviceClasses: [SRV_SOUND_LEVEL],
-            services: () => [new AnalogSensorServiceHost(SRV_SOUND_LEVEL, {
-                readingValues: [0],
-                lowThreshold: 10,
-                highThreshold: 70
-            })]
+            services: () => [new SoundLevelServiceHost()]
         },
         {
             name: "sound player (micro:bit v2 sounds)",
