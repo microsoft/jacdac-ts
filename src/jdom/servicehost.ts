@@ -9,6 +9,7 @@ import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
 export interface ServiceHostOptions {
+    instanceName?: string;
     valueValues?: any[];
     intensityValues?: any[];
     variant?: number;
@@ -25,13 +26,14 @@ export default class ServiceHost extends JDEventSource {
     private readonly _registers: RegisterHost<any[]>[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
     readonly statusCode: RegisterHost<[SystemStatusCodes, number]>;
+    readonly instanceName: RegisterHost<[string]>;
 
     // this is a hint for dashboard layout, higher means wider
     public dashboardWeight?: number = undefined;
 
     constructor(public readonly serviceClass: number, options?: ServiceHostOptions) {
         super();
-        const { variant, valueValues, intensityValues, registerValues } = options || {};
+        const { instanceName, variant, valueValues, intensityValues, registerValues } = options || {};
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
@@ -42,6 +44,8 @@ export default class ServiceHost extends JDEventSource {
             this.addRegister(SystemReg.Intensity, intensityValues);
         if (variant)
             this.addRegister<[number]>(SystemReg.Variant, [variant]);
+        this.instanceName = this.addRegister<[string]>(SystemReg.InstanceName, [instanceName || ""]);
+
         // any extra
         registerValues?.forEach(({ code, values }) => this.addRegister<any[]>(code, values));
 

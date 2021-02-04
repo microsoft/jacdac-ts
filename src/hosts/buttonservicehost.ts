@@ -9,8 +9,8 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
     private _downTime: number;
     private _held: boolean;
 
-    constructor() {
-        super(SRV_BUTTON, { readingValues: [false], streamingInterval: 50 });
+    constructor(instanceName?: string) {
+        super(SRV_BUTTON, { instanceName, readingValues: [false], streamingInterval: 50 });
         this._downTime = undefined;
         this._held = false;
 

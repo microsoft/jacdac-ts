@@ -760,8 +760,8 @@ const _hosts: {
             name: "chassis (motor x 2 + sonar + light)",
             serviceClasses: [SRV_DISTANCE, SRV_LED_PIXEL, SRV_MOTOR],
             services: () => [
-                new MotorServiceHost(),
-                new MotorServiceHost(),
+                new MotorServiceHost("L"),
+                new MotorServiceHost("R"),
                 new AnalogSensorServiceHost(SRV_DISTANCE, sonarOptions),
                 new LedPixelServiceHost({ numPixels: 5, variant: LedPixelVariant.Stick })
             ]
@@ -788,8 +788,8 @@ const _hosts: {
             serviceClasses: [SRV_LEDMATRIX, SRV_BUTTON, SRV_ACCELEROMETER, SRV_SOUND_LEVEL, SRV_LIGHT_LEVEL, SRV_BUZZER, SRV_SOUND_PLAYER],
             services: () => [
                 new LEDMatrixServiceHost(5, 5),
-                new ButtonServiceHost(),
-                new ButtonServiceHost(),
+                new ButtonServiceHost("A"),
+                new ButtonServiceHost("B"),
                 new SensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
                     readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
                 }),

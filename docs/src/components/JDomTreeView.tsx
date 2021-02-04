@@ -18,10 +18,10 @@ import { JDRegister } from '../../../src/jdom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent } from '../../../src/jdom/spec';
 import { useMediaQuery, useTheme } from '@material-ui/core';
-import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
+import { useRegisterHumanValue, useRegisterStringValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, GET_ATTEMPT } from '../../../src/jdom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, GET_ATTEMPT, BaseReg } from '../../../src/jdom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import { ellipseJoin } from '../../../src/jdom/utils';
@@ -88,7 +88,6 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
     const specification = service.specification;
     const showSpecificationAction = specification && !dashboard;
     const id = service.id
-    const name = service.name
     const open = checked?.indexOf(id) > -1;
     const packets = specification?.packets;
     const registers = packets?.filter(isRegister)
@@ -100,6 +99,8 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         .filter(ev => !eventFilter || eventFilter(ev))
     const readingRegister = service.readingRegister;
     const reading = useRegisterHumanValue(readingRegister)
+    const instanceName = useRegisterStringValue(service.register(BaseReg.InstanceName));
+    const name = service.name + (instanceName ? ` ${instanceName}` : '');
     const theme = useTheme()
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
     const { setDrawerType } = useContext(AppContext);

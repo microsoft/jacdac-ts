@@ -8,8 +8,8 @@ export default class MotorServiceHost extends ServiceHost {
     readonly loadTorque: RegisterHost<[number]>;
     readonly loadSpeed: RegisterHost<[number]>;
 
-    constructor() {
-        super(SRV_MOTOR);
+    constructor(instanceName?: string) {
+        super(SRV_MOTOR, { instanceName });
 
         this.duty = this.addRegister<[number]>(MotorReg.Duty, [0]);
         this.enabled = this.addRegister<[boolean]>(MotorReg.Enabled, [false]);
