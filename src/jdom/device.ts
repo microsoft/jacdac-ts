@@ -39,10 +39,10 @@ export class QualityOfService extends JDEventSource {
     /**
      * Average packet dropped per announce period
      */
-    get dropped() {
+    get dropped(): number {
         const r = this._data
             .filter(e => !!e.total) // ignore total 0
-            .reduce((s, e) => s + (e.total - e.received), 0) / this._data.length;
+            .reduce((s, e) => s + (e.total - e.received), 0) / this._data.length || 0;
         return r;
     }
 

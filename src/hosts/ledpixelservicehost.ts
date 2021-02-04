@@ -1,4 +1,3 @@
-import { timeStamp } from "console";
 import {
     CHANGE, LedPixelCmd,
     LedPixelLightType,
@@ -95,13 +94,6 @@ function SCALE0(c: number, i: number) {
     return ((((c) & 0xff) * (1 + (i & 0xff))) >> 8)
 }
 
-function now(): number {
-    return (performance.now() * 1000) >> 0;
-}
-function in_past(t: number) {
-    return t < now();
-}
-
 export default class LedPixelServiceHost extends ServiceHost {
     readonly brightness: RegisterHost<[number]>;
     readonly actualBrightness: RegisterHost<[number]>;
@@ -141,6 +133,7 @@ export default class LedPixelServiceHost extends ServiceHost {
         super(SRV_LED_PIXEL, options);
 
         const { numColumns, maxPower = 200, maxPixels = 300, numPixels = 15 } = options || {};
+
 
         this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [15]);
         this.actualBrightness = this.addRegister<[number]>(LedPixelReg.ActualBrightness, [15]);
