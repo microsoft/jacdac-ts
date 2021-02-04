@@ -11,8 +11,14 @@ export default function useWidgetSize(variant?: "icon" | "", widgetCount?: numbe
         case 2:
             widgetSize = mini ? "14vh" : "25vh";
             break;
-        default:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
             widgetSize = mini ? "10vh" : "16vh";
+            break;
+        default:
+            widgetSize = mini ? "8vh" : "14vh";
             break;
     }
     return widgetSize;
