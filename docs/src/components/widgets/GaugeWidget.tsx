@@ -77,7 +77,7 @@ export default function GaugeWidget(props: {
     const pathProps: SVGAttributes<SVGPathElement> = {
         onPointerDown: clickeable && handlePointerDown,
         onPointerMove: clickeable && handlePointerDown,
-        style: clickeable && pointerStyle
+        style: clickeable ? pointerStyle : undefined
     }
     const handleSliderChange = (ev: unknown, newValue: number | number[]) => {
         onChange(ev, newValue as number);
