@@ -771,11 +771,11 @@ const _hosts: {
             serviceClasses: [SRV_TRAFFIC_LIGHT, SRV_SERVO, SRV_BUZZER],
             services: () => [
                 new TrafficLightServiceHost(),
-                new TrafficLightServiceHost(),
                 new ServoServiceHost({
                     minAngle: 0,
                     maxAngle: 90
                 }),
+                new TrafficLightServiceHost(),
                 new ServoServiceHost({
                     minAngle: 0,
                     maxAngle: 90
