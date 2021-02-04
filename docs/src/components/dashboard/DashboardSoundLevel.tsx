@@ -8,6 +8,7 @@ import { Grid, Slider, Switch } from "@material-ui/core";
 import RegisterTrend from "../RegisterTrend";
 import { useId } from "react-use-id-hook"
 import SoundLevelServiceHost from "../../../../src/hosts/soundlevelservicehost"
+import MicIcon from '@material-ui/icons/Mic';
 
 export default function DashboardSoundLevel(props: DashboardServiceProps) {
     const { service, services, variant } = props;
@@ -28,16 +29,23 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
 
     return <Grid container direction="column">
         <Grid item>
-            <RegisterTrend register={soundLevelRegister} mini={true} />
+            <RegisterTrend register={soundLevelRegister} mini={true} interval={50} />
         </Grid>
         {host && <Grid item>
-            <Slider
-                valueLabelDisplay="off"
-                min={0} max={1} step={0.1}
-                value={soundLevel}
-                onChange={onChange}
-                color={color}
-            />
+            <Grid container spacing={2}>
+                <Grid item>
+                    <MicIcon />
+                </Grid>
+                <Grid item xs>
+                    <Slider
+                        valueLabelDisplay="off"
+                        min={0} max={1} step={0.1}
+                        value={soundLevel}
+                        onChange={onChange}
+                        color={color}
+                    />
+                </Grid>
+            </Grid>
         </Grid>}
     </Grid>
 }

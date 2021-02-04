@@ -15,19 +15,24 @@ export default function RegisterTrend(props: {
     showName?: boolean,
     horizon?: number,
     height?: number,
-    mini?: boolean
+    mini?: boolean,
+    interval?: number,
 }) {
-    const { register, mini, horizon, height } = props;
+    const { register, mini, horizon, height,interval } = props;
     const { bus } = useContext<JDContextProps>(JacdacContext)
     const palette = useChartPalette()
     const dataSet = useRef(FieldDataSet.create(bus, [register], "output", palette, 100));
 
     useChange(dataSet.current);
 
-    // register on change...
-    useEffect(() => register.subscribe(REPORT_RECEIVE, () => {
-        dataSet.current.addRow();
-    }), [register])
+    const addRow = () => dataSet.current.addRow();
+    // register on change if no intervals
+    useEffect(() => interval ? undefined : register?.subscribe(REPORT_RECEIVE, addRow), [interval, register])
+    // keep logging
+    useEffect(() => {
+        const id = interval && setInterval(addRow, interval);
+        return () => id && clearInterval(id);
+    }, [interval])
 
     return <Trend dataSet={dataSet.current}
         horizon={horizon || DEFAULT_HORIZON}
