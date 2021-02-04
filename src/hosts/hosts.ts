@@ -245,19 +245,19 @@ const _hosts: {
             services: () => [new AnalogSensorServiceHost(SRV_DISTANCE, sonarOptions)]
         },
         {
-            name: "eCO²",
+            name: "eCO₂",
             serviceClasses: [SRV_E_CO2],
             services: () => [new AnalogSensorServiceHost(SRV_E_CO2, eCO2Options)]
         },
         {
-            name: "eCO² + TVOC",
+            name: "eCO₂ + TVOC",
             serviceClasses: [SRV_E_CO2, SRV_TVOC],
             services: () => [
                 new AnalogSensorServiceHost(SRV_E_CO2, eCO2Options),
                 new AnalogSensorServiceHost(SRV_TVOC, tvocOptions)]
         },
         {
-            name: "eCO² + humidity + thermometer",
+            name: "eCO₂ + humidity + thermometer",
             serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
             services: () => [
                 new AnalogSensorServiceHost(SRV_E_CO2, CO2Options),
