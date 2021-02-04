@@ -28,7 +28,7 @@ const startupFrames: LedAnimationFrame[] = [
     [statusHue, statusSaturation, 255, 270 / 8],
     [statusHue, statusSaturation, 255, 0.1],
     [statusHue, statusSaturation, 6 / 100 * 0xff, 530 / 8],
-    [statusHue, statusSaturation, 0, 0.1],
+    [statusHue, statusSaturation, 6 / 100 * 0xff, 0.1],
     [statusHue, statusSaturation, 255, 200 / 8],
     [statusHue, statusSaturation, 255, 0.1],
     [statusHue, statusSaturation, 0, 0.1],
