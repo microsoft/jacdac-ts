@@ -54,22 +54,22 @@ function setRgb(el: SVGElement, r: number, g: number, b: number, radius: number)
     el.setAttribute("r", "" + nr);
 }
 
-export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
-    const { service, widgetCount, variant } = props;
-    const { background, controlBackground } = useWidgetTheme()
-    const widgetSize = useWidgetSize(variant, widgetCount)
-    const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
-    const [lightVariant] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.Variant));
-    const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
+function LightStripWidget(props: {
+    lightVariant: LedPixelVariant,
+    numPixels: number,
+    actualBrightness: number,
+    host: LedPixelServiceHost,
+    widgetSize: string,
+}) {
+    const { lightVariant, numPixels, actualBrightness, host, widgetSize } = props;
     const pathRef = useRef<SVGPathElement>(undefined)
     const pixelsRef = useRef<SVGGElement>(undefined);
-    const host = useServiceHost<LedPixelServiceHost>(service);
-
     const neoradius = 6;
     const neocircleradius = neoradius + 1;
     const sw = neoradius * 2;
     const isJewel = lightVariant === LedPixelVariant.Jewel;
     const isRing = lightVariant === LedPixelVariant.Ring;
+    const { background, controlBackground } = useWidgetTheme()
 
     // paint svg via dom
     const render = () => {
@@ -109,7 +109,7 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
         }
 
         render();
-    }, [variant, numPixels, pathRef.current, pixelsRef.current])
+    }, [lightVariant, numPixels, pathRef.current, pixelsRef.current])
 
     // render when new colors are in
     useEffect(() => host?.subscribe(RENDER, render), [host]);
@@ -155,6 +155,9 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
         width = side * dx + 4 * tr;
         height = line * tr + 2 * dx;
     }
+    else if (lightVariant === LedPixelVariant.Matrix) {
+        // don't
+    }
     else {
         const n = numPixels - (isJewel ? 1 : 0)
         const neoperimeter = n * (2.2 * neoradius)
@@ -184,4 +187,25 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
             </g>
         </>
     </SvgWidget>
+}
+
+
+export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
+    const { service, widgetCount, variant } = props;
+    const widgetSize = useWidgetSize(variant, widgetCount)
+    const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
+    const [lightVariant] = useRegisterUnpackedValue<[LedPixelVariant]>(service.register(LedPixelReg.Variant));
+    const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
+    const host = useServiceHost<LedPixelServiceHost>(service);
+
+    if (lightVariant === LedPixelVariant.Matrix)
+        return <></>;
+    else
+        return <LightStripWidget
+            numPixels={numPixels}
+            lightVariant={lightVariant}
+            actualBrightness={actualBrightness}
+            host={host}
+            widgetSize={widgetSize}
+        />
 }
