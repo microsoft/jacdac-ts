@@ -15,6 +15,7 @@ import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
 import DrawerSearchResults from "./DrawerSearchResults";
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
+import PacketStats from "./PacketStats";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -98,6 +99,7 @@ export default function AppDrawer(props: {
         <div className={classes.drawerHeader}>
             {toc && <div className={classes.fluid}><DrawerSearchInput /></div>}
             {!toc && !spec && <><PacketRecorder />
+                <PacketStats />
                 <span className={classes.fluid} />
                 <DrawerToolsButtonGroup showConnect={true} />
             </>}
