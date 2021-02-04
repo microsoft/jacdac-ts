@@ -15,7 +15,8 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
     const widgetSize = useWidgetSize(variant, services.length);
 
     const widgetRef = useRef<SVGGElement>();
-    const [pressed] = useRegisterUnpackedValue<[([number])[]]>(service.register(MatrixKeypadReg.Pressed));
+    const pressedRegister = service.register(MatrixKeypadReg.Pressed);
+    const [pressed] = useRegisterUnpackedValue<[([number])[]]>(pressedRegister);
     const [labels] = useRegisterUnpackedValue<[([string])[]]>(service.register(MatrixKeypadReg.Labels));
     const [rows] = useRegisterUnpackedValue<[number]>(service.register(MatrixKeypadReg.Rows));
     const [columns] = useRegisterUnpackedValue<[number]>(service.register(MatrixKeypadReg.Columns));
@@ -37,8 +38,14 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
     const w = columns * pw + (columns + 1) * m;
     const h = rows * ph + (rows + 1) * m;
 
-    const handleButtonUp = (index: number) => () => host.up(index);
-    const handleButtonDown = (index: number) => () => host.down(index);
+    const handleButtonUp = (index: number) => () => {
+        host.up(index);
+        pressedRegister.refresh();
+    }
+    const handleButtonDown = (index: number) => () => {
+        host.down(index);
+        pressedRegister.refresh();
+    }
 
     // add leds
     const render = () => {
