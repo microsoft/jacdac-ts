@@ -15,7 +15,7 @@ const m = 2;
 const r = 8;
 const ri = 7;
 const w = 2 * r + 2 * m;
-const h = 6 * w + 4 * m;
+const h = 4 * w + 2 * m;
 const cx = w / 2;
 const sw = 2;
 

@@ -49,7 +49,6 @@ export default function useLedAnimationStyle(frames: LedAnimationFrame[], option
         const total8ms = frames.reduce((t, row) => t + row[DURATION], 0) * nrepeat;
         const totals = (total8ms * 8) / 1000 + (interval || 0) / 1000;
 
-        console.log({ frames, total8ms, totals, nrepeat });
         let kf = `@keyframes ${className} {\n`;
         if (step) {
             let t8ms = 0;
@@ -89,7 +88,5 @@ animation-iteration-count: infinite;
         return kf;
     }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty, interval, repeat]);
 
-    console.log({ frames })
-    console.log(helmetStyle)
     return { className, helmetStyle }
 }

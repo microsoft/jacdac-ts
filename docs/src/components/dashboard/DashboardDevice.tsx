@@ -39,7 +39,7 @@ export default function DashboardDevice(props: {
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
 
     const ServiceWidgets = () =>
-        <Grid container spacing={1} justify="center" alignItems="flex-end" alignContent="space-between">
+        <Grid container spacing={2} justify="center" alignItems="flex-end" alignContent="space-between">
             {services?.map(service => <Grid key={"widget" + service.service_index} item>
                 <DashboardServiceWidget service={service} expanded={expanded} services={services} variant={variant} />
             </Grid>)}
