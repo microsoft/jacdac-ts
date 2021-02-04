@@ -5,7 +5,7 @@ import { shortDeviceId } from "./pretty";
 import { anyRandomUint32, isBufferEmpty, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
-import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
+import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE, CMD_EVENT_COUNTER_MASK, CMD_EVENT_COUNTER_POS, CMD_EVENT_MASK } from "./constants";
 
 export default class DeviceHost extends JDEventSource {
     private _bus: JDBus;
