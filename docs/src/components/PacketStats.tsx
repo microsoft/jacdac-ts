@@ -10,8 +10,11 @@ export default function PacketStats() {
     const { stats } = bus;
 
     const current = useChange(stats, s => s.current);
+    if (!current.bytes)
+        return null;
 
-    return <Typography variant="caption" component="span">
-            {prettySize(current.bytes)}/s
-        </Typography>
+    const size = `${prettySize(current.bytes)}/s`
+    return <Typography variant="caption" component="span" aria-label={size}>
+        {size}
+    </Typography>
 }

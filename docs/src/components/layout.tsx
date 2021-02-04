@@ -45,6 +45,7 @@ import WebDiagnostics from "./WebDiagnostics";
 import Flags from "../../../src/jdom/flags"
 import ThemedLayout from "./ui/ThemedLayout";
 import OpenDashboardButton from "./buttons/OpenDashboardButton";
+import PacketStats from "./PacketStats";
 
 export const TOC_DRAWER_WIDTH = 18;
 export const DRAWER_WIDTH = 40;
@@ -252,6 +253,7 @@ function MainAppBar(props: LayoutProps) {
         <Typography component="h1" variant="h6">JACDAC {pageTitle && pageTitle !== "JACDAC" && `/ ${pageTitle}`}</Typography>
       </Hidden>}
       <div className={classes.grow} />
+      <PacketStats />
       <OpenDashboardButton className={clsx(classes.menuButton)} />
       <GitHubButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} repo={"/github"} />
       <FlashButton className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} />
