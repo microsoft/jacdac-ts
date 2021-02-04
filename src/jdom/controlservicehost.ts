@@ -1,60 +1,53 @@
-import { ControlAnnounceFlags, ControlCmd, ControlReg, IDENTIFY, RESET, SRV_CTRL } from "./constants";
+import { ControlAnnounceFlags, ControlCmd, ControlReg, IDENTIFY, REPORT_RECEIVE, RESET, SRV_CTRL } from "./constants";
 import Packet from "./packet";
-import JDRegisterHost from "./registerhost";
-import JDServiceHost from "./servicehost";
+import RegisterHost from "./registerhost";
+import ServiceHost from "./servicehost";
 
-export default class ControlServiceHost extends JDServiceHost {
-    private restartCounter = 0;
-    private packetCount = 0;
-    readonly deviceDescription: JDRegisterHost;
-    readonly mcuTemperature: JDRegisterHost;
-    readonly resetIn: JDRegisterHost;
-    readonly uptime: JDRegisterHost;
+export default class ControlServiceHost extends ServiceHost {
+    readonly deviceDescription: RegisterHost<[string]>;
+    readonly mcuTemperature: RegisterHost<[number]>;
+    readonly resetIn: RegisterHost<[number]>;
+    readonly uptime: RegisterHost<[number]>;
     readonly startTime: number;
+    readonly statusLight: RegisterHost<[[number, number, number, number][]]>;
 
     constructor() {
         super(SRV_CTRL)
 
         this.startTime = Date.now();
-        this.deviceDescription = this.addRegister(ControlReg.DeviceDescription);
-        this.mcuTemperature = this.addRegister(ControlReg.McuTemperature, [25]);
-        this.resetIn = this.addRegister(ControlReg.ResetIn);
-        this.uptime = this.addRegister(ControlReg.Uptime);
+        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0]);
+        this.deviceDescription = this.addRegister<[string]>(ControlReg.DeviceDescription);
+        this.mcuTemperature = this.addRegister<[number]>(ControlReg.McuTemperature, [25]);
+        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn);
+        this.uptime = this.addRegister<[number]>(ControlReg.Uptime);
+        this.statusLight = this.addRegister<[[number, number, number, number][]]>(ControlReg.StatusLight, [[]]);
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));
-        this.addCommand(ControlCmd.Reset, this.reset.bind(this));
+        this.addCommand(ControlCmd.Reset, this.handleReset.bind(this));
         this.addCommand(ControlCmd.Noop, null);
     }
 
     async announce() {
-        if (this.restartCounter < 0xf)
-            this.restartCounter++
-        this.packetCount++;
         // restartCounter, flags, packetCount, serviceClass
         const pkt = Packet.jdpacked<[number, ControlAnnounceFlags, number, number[]]>(ControlCmd.Services, "u8 u8 u8 x[1] u32[]",
-            [this.restartCounter,
-            ControlAnnounceFlags.SupportsACK,
-            this.packetCount,
-            this.device.services().slice(1).map(srv => srv.serviceClass)])
+            [
+                this.device.restartCounter,
+                ControlAnnounceFlags.SupportsACK,
+                this.device.packetCount + 1,
+                this.device.services().slice(1).map(srv => srv.serviceClass)
+            ])
 
-        this.sendPacketAsync(pkt);
+        await this.sendPacketAsync(pkt);
 
-        // reset counter
-        this.packetCount = 0;
-
-        // update uptime
-        this.uptime.setValues([Date.now() - this.startTime]);
+        this.uptime.setValues([Date.now() - this.startTime], true);
     }
 
     async identify() {
         this.emit(IDENTIFY);
-        this.device.identify();
     }
 
-    async reset() {
-        this.emit(RESET);
-        this.restartCounter = 0;
-        this.packetCount = 0;
+    private handleReset() {
+        this.device.reset();
     }
 }

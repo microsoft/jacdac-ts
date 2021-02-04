@@ -1,9 +1,9 @@
-import JDServiceHost from "./servicehost";
+import ServiceHost from "./servicehost";
 import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
-import { assert, bufferEq, pick } from "./utils";
+import { bufferEq, isSet, pick } from "./utils";
 import { JDEventSource } from "./eventsource";
-import { CHANGE, CMD_GET_REG } from "./constants";
+import { CHANGE, CMD_GET_REG, REPORT_RECEIVE } from "./constants";
 import { isRegister } from "./spec";
 
 function defaultFieldPayload(specification: jdspec.PacketMember) {
@@ -18,14 +18,12 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
         case "u8":
         case "u16":
         case "u32": {
-            const unsigned = specification.type[0] === "u";
-            const n = Math.min(30, parseInt(specification.type.slice(1)));
             const min = pick(specification.typicalMin, specification.absoluteMin, undefined);
             const max = pick(specification.typicalMax, specification.absoluteMax, undefined);
             if (max !== undefined && min !== undefined)
-                r = 0;
-            else
                 r = (max + min) / 2;
+            else
+                r = 0;
             break;
         }
         case "bytes": {
@@ -39,6 +37,9 @@ function defaultFieldPayload(specification: jdspec.PacketMember) {
         }
     }
 
+    if (/^(u0|i1)\.\d+$/.test(specification.type))
+        r = 0;
+
     return r;
 }
 
@@ -48,68 +49,103 @@ function defaultPayload<T extends any[]>(specification: jdspec.PacketInfo): T {
     return rs as T;
 }
 
-export default class JDRegisterHost extends JDEventSource {
+export default class RegisterHost<TValues extends any[]> extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
+    readOnly: boolean;
+    errorRegister: RegisterHost<[number]>;
+    skipBoundaryCheck = false;
+    skipErrorInjection = false;
 
     constructor(
-        public readonly service: JDServiceHost,
+        public readonly service: ServiceHost,
         public readonly identifier: number,
         defaultValue?: any[]) {
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
-        this.data = jdpack(this.packFormat, defaultValue || defaultPayload(this.specification));
+        let v: any[] = defaultValue;
+        if (!v && !this.specification.optional)
+            v = defaultPayload(this.specification);
+        if (v !== undefined && !v.some(vi => vi === undefined)) {
+            this.data = jdpack(this.packFormat, v);
+        }
+
+        // don't check boundaries if there are none
+        this.skipBoundaryCheck = !this.specification?.fields.some(field => isSet(field.absoluteMin) || isSet(field.absoluteMax));
     }
 
     get packFormat() {
         return this.specification.packFormat;
     }
 
-    values<T extends any[]>(): T {
-        return jdunpack(this.data, this.packFormat) as T;
+    values(): TValues {
+        return jdunpack(this.data, this.packFormat) as TValues;
     }
 
-    setValues<T extends any[]>(values: T) {
+    setValues(values: TValues, skipChangeEvent?: boolean) {
+        if (this.readOnly)
+            return;
+
         // enforce boundaries
-        this.specification?.fields.forEach((field, fieldi) => {
-            if (field.isSimpleType) {
-                let value = values[fieldi] as number;
-                // clamp within bounds
-                const min = field.absoluteMin;
-                if (min !== undefined)
-                    value = Math.max(min, value);
-                const max = field.absoluteMax;
-                if (max !== undefined)
-                    value = Math.min(max, value);
-                // update
-                values[fieldi] = value;
-            }
-        })
+        if (!this.skipBoundaryCheck) {
+            this.specification?.fields.forEach((field, fieldi) => {
+                if (field.isSimpleType) {
+                    let value = values[fieldi] as number;
+                    // clamp within bounds
+                    const min = field.absoluteMin;
+                    if (min !== undefined)
+                        value = Math.max(min, value);
+                    const max = field.absoluteMax;
+                    if (max !== undefined)
+                        value = Math.min(max, value);
+                    // update
+                    values[fieldi] = value;
+                }
+            })
+        }
 
         const d = jdpack(this.packFormat, values);
         if (!bufferEq(this.data, d)) {
             this.data = d;
-            this.emit(CHANGE);
+            if (!skipChangeEvent)
+                this.emit(CHANGE);
         }
     }
 
     async sendGetAsync() {
-        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, this.data));
+        let d = this.data;
+        if (!d)
+            return;
+
+        const error = !this.skipErrorInjection && this.errorRegister?.values()[0];
+        if (error && !isNaN(error)) {
+            // apply error artifically
+            const vs = this.values() as number[];
+            for (let i = 0; i < vs.length; ++i) {
+                vs[i] += Math.random() * error;
+            }
+            d = jdpack(this.packFormat, vs);
+        }
+        await this.service.sendPacketAsync(Packet.from(this.identifier | CMD_GET_REG, d));
     }
 
     handlePacket(pkt: Packet): boolean {
         if (this.identifier !== pkt.registerIdentifier)
             return false;
 
-        if (pkt.isRegisterGet) { // get
-            this.service.sendPacketAsync(Packet.from(pkt.serviceCommand, this.data));
+        if (pkt.isRegisterGet) {
+            this.sendGetAsync();
         } else if (this.identifier >> 8 !== 0x1) { // set, non-const
+            let changed = false;
             const d = pkt.data;
             if (!bufferEq(this.data, d)) {
                 this.data = d;
-                this.emit(CHANGE);
+                changed = true;
             }
+            this.emit(REPORT_RECEIVE);
+            if (changed)
+                this.emit(CHANGE);
         }
         return true;
     }

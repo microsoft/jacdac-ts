@@ -10,7 +10,7 @@ cli.setApp("jacdac", "1.0.6")
 cli.enable("version")
 
 const options = cli.parse({
-    usb: ['u', 'listen to JACDAC over USB', true],
+    usb: ['u', 'listen to Jacdac over USB', true],
     packets: ['p', 'show/hide all packets', true],
     dtdl: [false, 'generate DTDL files', "file"],
     devices: ['d', 'regular expression filter for devices', 'string'],

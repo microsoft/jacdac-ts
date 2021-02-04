@@ -1,21 +1,19 @@
-import { createStyles, darken, IconButton, lighten, makeStyles, Theme } from "@material-ui/core"
+import { createStyles, darken, lighten, makeStyles, Theme } from "@material-ui/core"
 import { Button } from "gatsby-theme-material-ui"
 import React, { useContext, useEffect, useState } from "react"
 import AppContext from "./AppContext"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import ErrorIcon from '@material-ui/icons/Error';
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import CheckIcon from '@material-ui/icons/Check';
 import { delay } from "../../../src/jdom/utils";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import useAnalytics from "./hooks/useAnalytics";
 import useMounted from "./hooks/useMounted";
+import clsx from "clsx";
 
 const ACK_RESET_DELAY = 500
 const ERROR_RESET_DELAY = 2000
 
 const useStyles = makeStyles((theme: Theme) => {
-    const getColor = theme.palette.type === 'light' ? darken : lighten;
     const getBackgroundColor = theme.palette.type === 'light' ? lighten : darken;
     return createStyles({
         ack: {
@@ -45,7 +43,7 @@ export default function CmdButton(props: {
     trackProperties?: { [key: string]: any },
     ackResetDelay?: number
 }) {
-    const { onClick, children, icon, title, disabled, disableReset, autoRun,
+    const { onClick, className, children, icon, title, disabled, disableReset, autoRun,
         trackName, trackProperties, ackResetDelay, ...others } = props
     const { setError: setAppError } = useContext(AppContext)
     const classes = useStyles()
@@ -101,7 +99,8 @@ export default function CmdButton(props: {
     }
 
     const statusIcon = error ? <ErrorIcon /> : undefined;
-    const className = error ? classes.error : ack ? classes.ack : undefined;
+    const modeClassName = error ? classes.error : ack ? classes.ack : undefined;
+    const elClassName = clsx(className, modeClassName)
 
     // run once
     useEffect(() => {
@@ -111,7 +110,7 @@ export default function CmdButton(props: {
 
     if (!children && icon)
         return <IconButtonWithTooltip
-            className={className}
+            className={elClassName}
             onClick={handleClick}
             aria-label={title}
             title={title}
@@ -119,7 +118,7 @@ export default function CmdButton(props: {
             {...others}>{statusIcon || icon}</IconButtonWithTooltip>
     else
         return <Button
-            className={className}
+            className={elClassName}
             startIcon={icon}
             endIcon={statusIcon}
             onClick={handleClick}

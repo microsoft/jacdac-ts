@@ -11,6 +11,7 @@ import RegisterTrend from "./RegisterTrend";
 import IconButtonWithProgress from "./ui/IconButtonWithProgress"
 import useRegisterHost from "./hooks/useRegisterHost"
 import useReadingAuxilliaryValue from "./hooks/useReadingAuxilliaryValue";
+import { useRegisterUnpackedValue } from "../jacdac/useRegisterValue";
 
 export type RegisterInputVariant = "widget" | ""
 
@@ -22,9 +23,13 @@ export default function RegisterInput(props: {
     hideMissingValues?: boolean,
     showTrend?: boolean,
     showDataType?: boolean,
-    variant?: RegisterInputVariant
+    variant?: RegisterInputVariant,
+    off?: boolean,
+    toggleOff?: () => void
 }) {
-    const { register, showRegisterName, showDeviceName, showServiceName, hideMissingValues, showTrend, showDataType, variant } = props;
+    const { register, showRegisterName, showDeviceName, showServiceName,
+        hideMissingValues, showTrend, showDataType, variant,
+        off, toggleOff } = props;
     const { service, specification } = register;
     const { device } = service;
     const { fields } = register;
@@ -37,7 +42,8 @@ export default function RegisterInput(props: {
     const color = hasSet ? "secondary" : "primary"
     const minReading = useReadingAuxilliaryValue(register, SystemReg.MinReading)
     const maxReading = useReadingAuxilliaryValue(register, SystemReg.MaxReading)
-    const errorReading = useReadingAuxilliaryValue(register, SystemReg.ReadingError);
+    const readingError = useReadingAuxilliaryValue(register, SystemReg.ReadingError);
+    const resolution = useReadingAuxilliaryValue(register, SystemReg.ReadingResolution);
 
     useEffect(() => register.subscribe(REPORT_UPDATE, () => {
         const vs = register.unpackedValue
@@ -74,15 +80,17 @@ export default function RegisterInput(props: {
     if (hideMissingValues && !hasData)
         return null;
 
+    const serviceName = register.service.name.toLocaleLowerCase().replace(/_/g, ' ');
+    const registerName = specification.name.replace(/_/g, ' ');
     return <>
         {showDeviceName && <Typography component="span" key="devicenamename">
             <DeviceName device={device} />/
     </Typography>}
-        {showServiceName && specification && <Typography variant="caption" key="servicename">
-            {register.service.name.toLocaleLowerCase().replace(/_/g, ' ') + " "}
+        {showServiceName && specification && <Typography variant="caption" key="servicename" aria-label={serviceName}>
+            {serviceName}
         </Typography>}
-        {showRegisterName && specification && <Typography variant="caption" key="registername">
-            {specification.name.replace(/_/g, ' ')}
+        {showRegisterName && specification && serviceName !== registerName && <Typography variant="caption" key="registername" aria-label={registerName}>
+            {" " + registerName}
         </Typography>}
         {!hasData && <Box>
             <IconButtonWithProgress title="refresh" indeterminate={true} onClick={handleRefresh} />
@@ -99,7 +107,10 @@ export default function RegisterInput(props: {
             variant={variant}
             min={minReading}
             max={maxReading}
-            error={errorReading}
+            resolution={resolution}
+            error={readingError}
+            off={off}
+            toggleOff={toggleOff}
         />}
     </>
 }

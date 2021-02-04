@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef } from "react";
 import { PACKET_PROCESS, PACKET_SEND } from "../../../../src/jdom/constants";
 import { PacketMessage } from "../../../../src/jdom/iframebridgeclient";
 import Packet from "../../../../src/jdom/packet";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import useWindowEvent from "../hooks/useWindowEvent";
 import PaperBox from "../ui/PaperBox";
 import MakeCodeSnippetContext from "./MakeCodeSnippetContext";
@@ -32,7 +32,7 @@ export default function MakeCodeSimulator(props: { snippet: MakeCodeSnippetSourc
     const { snippet } = props;
     const { code, ghost, meta } = snippet;
     const { dependencies } = meta;
-    const { bus } = useContext<JDContextProps>(JACDACContext);
+    const { bus } = useContext<JDContextProps>(JacdacContext);
     const frameRef = useRef<HTMLIFrameElement>();
     const classes = useStyles();
 
@@ -55,7 +55,7 @@ export default function MakeCodeSimulator(props: { snippet: MakeCodeSnippetSourc
     return <PaperBox>
         <div className={classes.root}>
             <div className={classes.root2}>
-                <iframe ref={frameRef} className={classes.iframe} src={url} />
+                <iframe ref={frameRef} className={classes.iframe} src={url} aria-label="MakeCode rendering iframe to generate blocks images." />
             </div>
         </div>
     </PaperBox>

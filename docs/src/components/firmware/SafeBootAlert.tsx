@@ -1,7 +1,7 @@
 import { Box, Button, Switch, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import Alert from "../ui/Alert";
 import DbContext, { DbContextProps } from "../DbContext";
 // tslint:disable-next-line: match-default-export-name tslint:disable-next-line: no-submodule-imports
@@ -9,7 +9,7 @@ import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { useSnackbar } from "notistack";
 
 export default function SafeBootAlert() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const { db } = useContext<DbContextProps>(DbContext)
     const { enqueueSnackbar } = useSnackbar();
     const [safeBoot, setSafeBoot] = useState(bus.safeBoot);

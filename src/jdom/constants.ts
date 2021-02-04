@@ -77,6 +77,7 @@ export const STOP = 'stop'
 export const CHANGE = 'change'
 export const EVENT = 'event'
 export const RENDER = 'render'
+export const REFRESH = 'refresh'
 export const FIRMWARE_INFO = 'firmwareInfo'
 export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
 export const NAME_CHANGE = 'nameChange'
@@ -84,11 +85,13 @@ export const LATE = 'late'
 export const GET_ATTEMPT = 'getAttempt'
 export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
 export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
+export const READING_SENT = 'readingSent'
 
 export const DEVICE_HOST_ADDED = `deviceHostAdded`
 export const DEVICE_HOST_REMOVED = `deviceHostRemoved`
 
 export const IDENTIFY = "identify"
+export const IDENTIFY_DURATION = 2000
 export const RESET = "reset"
 
 export const DATA = 'data'
@@ -114,6 +117,7 @@ export const PACKET_RECEIVE = 'packetReceive'
 export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
 export const PACKET_EVENT = 'packetEvent'
 export const PACKET_REPORT = 'packetReport'
+export const PACKET_ANNOUCE = 'packetAnnounce'
 
 export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'

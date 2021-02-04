@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { SystemReg } from "../../../../src/jdom/constants";
+import { BaseReg, SystemReg } from "../../../../src/jdom/constants";
 import useChange from "../../jacdac/useChange";
 import RegisterInput from "../RegisterInput";
-import { isRegister } from "../../../../src/jdom/spec";
+import { isIntegerType, isRegister } from "../../../../src/jdom/spec";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { Grid } from "@material-ui/core";
+import { JDRegister } from "../../../../src/jdom/register";
 
 // filter out common registers
 const ignoreRegisters = [
@@ -22,7 +23,7 @@ const collapsedRegisters = [
 export default function DashboardServiceDetails(props: DashboardServiceProps) {
     const { service, expanded } = props;
     const specification = useChange(service, spec => spec.specification);
-    const registers = useMemo(() => {
+    const registers: JDRegister[] = useMemo(() => {
         const packets = specification?.packets;
         let ids = packets
             ?.filter(pkt => isRegister(pkt))
@@ -40,14 +41,12 @@ export default function DashboardServiceDetails(props: DashboardServiceProps) {
 
     return <>
         {registers.map(register => {
-            const showTrend = register.code === SystemReg.Reading;
-            const xs = showTrend ? 12 : true;
-            return <Grid key={register.id} item xs={xs}><RegisterInput
+            return <Grid key={register.id} item xs={true}><RegisterInput
                 register={register}
                 showServiceName={true}
                 showRegisterName={true}
                 hideMissingValues={false}
-                showTrend={showTrend}
+                showTrend={false}
             /></Grid>
         })}
     </>

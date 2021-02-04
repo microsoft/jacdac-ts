@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Menu, MenuItem, Typography } from '@material-ui/core';
 import { SRV_CTRL } from '../../../src/jdom/constants';
-import { serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
+import { isInfrastructure, serviceSpecificationFromClassIdentifier, serviceSpecifications } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
@@ -18,7 +18,7 @@ export default function AddServiceIconButton(props: {
     const [servicesAnchorEl, setServicesAnchorEl] = React.useState<null | HTMLElement>(null);
     const servicesMenuId = useId();
     const services = useMemo(() => serviceSpecifications()
-        .filter(srv => srv.classIdentifier !== SRV_CTRL && !/^_/.test(srv.shortId))
+        .filter(srv => !isInfrastructure(srv))
         .filter(srv => !serviceFilter || serviceFilter(srv))
         , [serviceFilter])
 

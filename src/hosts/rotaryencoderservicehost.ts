@@ -1,18 +1,18 @@
-import { ButtonEvent, RotaryEncoderReg, SRV_BUTTON, SRV_ROTARY_ENCODER } from "../jdom/constants";
-import JDSensorServiceHost from "./sensorservicehost";
-import JDRegisterHost from "../jdom/registerhost";
+import { RotaryEncoderReg, SRV_ROTARY_ENCODER } from "../jdom/constants";
+import SensorServiceHost from "./sensorservicehost";
+import RegisterHost from "../jdom/registerhost";
 
-export default class RotaryEncoderServiceHost extends JDSensorServiceHost {
-    readonly clicksPerTurn: JDRegisterHost;
+export default class RotaryEncoderServiceHost extends SensorServiceHost<[number]> {
+    readonly clicksPerTurn: RegisterHost<[number]>;
 
     constructor() {
-        super(SRV_ROTARY_ENCODER, { readingValue: 0, streamingInterval: 50 });
+        super(SRV_ROTARY_ENCODER, { readingValues: [0], streamingInterval: 50 });
 
-        this.clicksPerTurn = this.addRegister(RotaryEncoderReg.ClicksPerTurn, [12]);
+        this.clicksPerTurn = this.addRegister<[number]>(RotaryEncoderReg.ClicksPerTurn, [12]);
     }
 
     async rotate(clicks: number) {
-        const [position] = this.reading.values<[number]>();
-        this.reading.setValues<[number]>([position + (clicks >> 0)]);
+        const [position] = this.reading.values();
+        this.reading.setValues([position + (clicks >> 0)]);
     }
 }

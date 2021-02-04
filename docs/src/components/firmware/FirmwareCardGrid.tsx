@@ -5,11 +5,11 @@ import FirmwareCard from "./FirmwareCard";
 // tslint:disable-next-line: no-submodule-imports
 import useFirmwareRepos from "./useFirmwareRepos";
 import LocalFileFirmwareCard from "./LocalFileFirmwareCard";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import useChange from "../../jacdac/useChange";
 
 export default function FirmwareCardGrid() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const gridBreakpoints = useGridBreakpoints()
     const safeBoot = useChange(bus, b => b.safeBoot);
     const firmwareRepos = useFirmwareRepos(safeBoot)

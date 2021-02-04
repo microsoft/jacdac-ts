@@ -1,40 +1,74 @@
 
-import React from "react";
+import React, { } from "react";
 import { ServoReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import { useRegisterBoolValue, useRegisterIntValue } from "../../jacdac/useRegisterValue";
-import { SvgWidget } from "../widgets/SvgWidget";
+import { useRegisterBoolValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
+import { JDService } from "../../../../src/jacdac";
+import useThrottledValue from "../hooks/useThrottledValue";
+import { SG90_RESPONSE_SPEED } from "../../../../src/hosts/hosts";
+import { Grid } from "@material-ui/core";
+import ServoServiceHost from "../../../../src/hosts/servoservicehost";
+import RegisterInput from "../RegisterInput";
+import PowerButton from "../widgets/PowerButton";
+
+function useActualAngle(service: JDService) {
+    const [angle] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Angle));
+    // sec/60deg
+    const [responseSpeed] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.ResponseSpeed));
+    const rotationalSpeed = 60 / (responseSpeed || SG90_RESPONSE_SPEED);
+    const actualAngle = useThrottledValue(angle || 0, rotationalSpeed)
+
+    return actualAngle;
+}
 
 export default function DashboardServo(props: DashboardServiceProps) {
-    const { service } = props;
+    const { service, services, variant } = props;
 
-    const enabled = useRegisterBoolValue(service.register(ServoReg.Enabled))
-    const register = service.register(ServoReg.Pulse);
-    const value = useRegisterIntValue(register);
-    const host = useServiceHost(service);
+    const enabledRegister = service.register(ServoReg.Enabled);
+    const [enabled] = useRegisterUnpackedValue<[boolean]>(enabledRegister)
+    const off = !enabled;
+    const angleRegister = service.register(ServoReg.Angle);
+    const angle = useActualAngle(service)
+    const [offset] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Offset));
+
+    const host = useServiceHost<ServoServiceHost>(service);
     const color = host ? "secondary" : "primary";
-    const { background, controlBackground, active } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize()
+    const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
+    const widgetSize = useWidgetSize(variant, services.length)
 
-    const cx = 56.661;
-    const cy = 899.475;
+    const cx = 78;
+    const cy = 55;
 
-    const angle = enabled ? - (value - 2500) / (2000) * 180 : 0;
-    const transform = `translate(0 -752.688) rotate(${angle}, ${cx}, ${cy})`;
+    const a = enabled ? (angle + (offset || 0)) : 0;
+    const transform = `rotate(${- a}, ${cx}, ${cy})`;
+    const h = 111.406;
+    const w = 158.50195;
+    const pr = 16;
+    const pri = 8;
+    const text = enabled ? `${Math.round(a)}°` : 'off';
 
-    return <SvgWidget width={112.188} height={299.674} size={widgetSize}>
-        <g strokeLinecap="round" strokeLinejoin="round" transform="scale(0.8)">
-            <path id="path8212" fill={background} strokeWidth="6.6" d="M.378 44.61v255.064h112.188V44.61H.378z" />
-            <path id="crankbase" fill={controlBackground} strokeWidth="6.6" d="M56.57 88.047C25.328 88.047 0 113.373 0 144.615c.02 22.352 11.807 42.596 32.238 51.66.03 3.318.095 5.24.088 7.938 0 13.947 11.307 25.254 25.254 25.254 13.947 0 25.254-11.307 25.254-25.254-.006-2.986-.415-5.442-.32-8.746 19.487-9.45 30.606-29.195 30.625-50.852 0-31.24-25.33-56.568-56.57-56.568z" />
-            <path id="lowertip" fill={controlBackground} strokeWidth="2" d="M.476 260.78v38.894h53.82v-10.486a6.82 6.566 0 0 1-4.545-6.182 6.82 6.566 0 0 1 6.82-6.566 6.82 6.566 0 0 1 6.82 6.566 6.82 6.566 0 0 1-4.545 6.182v10.486h53.82V260.78H.475z" />
-            <path id="uppertip" fill={controlBackground} strokeWidth="2" d="M112.566 83.503V44.61h-53.82v10.487a6.82 6.566 0 0 1 4.544 6.18 6.82 6.566 0 0 1-6.818 6.568 6.82 6.566 0 0 1-6.82-6.567 6.82 6.566 0 0 1 4.546-6.18V44.61H.378v38.893h112.188z" />
-            <g id="crank" transform={transform}>
-                <path id="arm" fill={active} d="M47.767 880.88c-4.447 1.162-8.412 8.278-8.412 18.492s3.77 18.312 8.412 18.494c8.024.314 78.496 5.06 78.51-16.952.012-22.013-74.377-21.117-78.51-20.035z" />
-                <circle fill={controlBackground} id="path8216" cx="56.661" cy="899.475" r="8.972" fill="gray" strokeWidth="2" />
-            </g>
-        </g>
-    </SvgWidget>;
+    const toggleOff = () => enabledRegister.sendSetBoolAsync(off, true);
+
+    return <Grid container alignContent="center">
+        <Grid item xs={12}>
+            <SvgWidget tabIndex={0} title={`servo at angle ${angle}`}
+                width={w} height={h} size={widgetSize}>
+                <path fill={background} d="M158.502 10.687H0v89.75h158.502z" />
+                <path fill={controlBackground} d="M125.545 55.641c0-24.994-20.26-45.256-45.254-45.256-17.882.016-34.077 9.446-41.328 25.79-2.655.024-4.192.076-6.35.07-11.158 0-20.204 9.046-20.204 20.204 0 11.158 9.046 20.203 20.203 20.203 2.389-.005 4.354-.332 6.997-.256 7.56 15.59 23.356 24.485 40.682 24.5 24.992 0 45.254-20.264 45.254-45.256z" />
+                <path fill={enabled ? active : background} stroke={active} transform={transform} d="M93.782 55.623c-.032-3.809-.19-6.403-.352-7.023h-.002c-.93-3.558-6.621-6.73-14.793-6.73-8.17 0-14.649 3.016-14.795 6.73-.25 6.419-4.049 62.795 13.561 62.806 14.308.008 16.52-39.277 16.38-55.783zm-8.05.08a7.178 7.178 0 010 .012 7.178 7.178 0 01-7.179 7.176 7.178 7.178 0 01-7.177-7.176 7.178 7.178 0 017.177-7.178 7.178 7.178 0 017.178 7.166z" />
+                <text x={w / 2} y={30} textAnchor="middle" fill={textPrimary}>{text}</text>
+                <PowerButton r={pr} ri={pri} cx={w - pr - 2} cy={pr + 12}
+                    color={color}
+                    strokeWidth={1.5}
+                    off={off} onClick={host && toggleOff} />
+            </SvgWidget>
+        </Grid>
+        <Grid item xs={12}>
+            <RegisterInput register={angleRegister} />
+        </Grid>
+    </Grid>
 }

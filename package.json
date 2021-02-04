@@ -1,6 +1,6 @@
 {
   "name": "jacdac-ts",
-  "version": "1.7.12",
+  "version": "1.7.14",
   "description": "",
   "keywords": [],
   "main": "dist/jacdac.umd.js",
@@ -28,7 +28,7 @@
     "predist": "rm -rf dist",
     "dist": "node node_modules/rollup/bin/rollup -c rollup.config.ts",
     "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean && cd .. && node ./tools/prepare.js",
-    "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths",
+    "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths --no-uglify",
     "apidocs": "node node_modules/@microsoft/api-extractor/bin/api-extractor run --local && node node_modules/@microsoft/api-documenter/bin/api-documenter markdown --input-folder etc --output-folder built/apidocs",
     "watch": "node node_modules/rollup/bin/rollup -c rollup.config.ts -w",
     "test": "node node_modules/jest/bin/jest.js",
@@ -133,8 +133,8 @@
     ]
   },
   "devDependencies": {
-    "@microsoft/api-documenter": "^7.12.3",
-    "@microsoft/api-extractor": "^7.12.1",
+    "@microsoft/api-documenter": "^7.12.4",
+    "@microsoft/api-extractor": "^7.13.0",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "cli": "^1.0.1",
@@ -153,7 +153,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "semantic-release": "^17.3.1",
+    "semantic-release": "^17.3.2",
     "shelljs": "^0.8.3",
     "tslint": "^6",
     "tslint-microsoft-contrib": "^6",
@@ -161,7 +161,7 @@
     "webusb": "^2.2.0"
   },
   "dependencies": {
-    "@types/node": "^14.14.20",
+    "@types/node": "^14.14.21",
     "@types/w3c-web-usb": "^1.0.4",
     "fs-extra": "^9.0.1"
   }

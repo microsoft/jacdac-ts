@@ -1,9 +1,6 @@
-
-import { Collapse, Grid, MenuItem, TextField, Typography } from "@material-ui/core";
+import { Grid, MenuItem, TextField, Typography } from "@material-ui/core";
 import React, { ChangeEvent, useMemo, useState } from "react";
-import { LightReg, LightCmd } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import RegisterInput from "../RegisterInput";
 import { lightEncode } from "../../../../src/jdom/light";
 import ColorInput from "../ui/ColorInput";
 import SelectWithLabel from "../ui/SelectWithLabel";
@@ -16,8 +13,9 @@ import AddIcon from '@material-ui/icons/Add';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useServiceHost from "../hooks/useServiceHost";
-import LightServiceHost from "../../../../src/hosts/lightservicehost";
+import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
 import LightWidget from "../widgets/LightWidget";
+import { LedPixelCmd } from "../../../../src/jacdac";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */
@@ -54,13 +52,13 @@ const lightCommands = [
 ]
 
 function LightCommand(props: { service: JDService, expanded: boolean }) {
-    const { service, expanded } = props;
+    const { service } = props;
     const [sending, setSending] = useState(false);
 
-    const [command, setCommand] = useState(lightCommands[0]);
+    const [command, setCommand] = useState(lightCommands[1]);
     const [offset, setOffset] = useState("1");
     const [duration, setDuration] = useState("100");
-    const [colors, setColors] = useState(["#0000ff"]);
+    const [colors, setColors] = useState(["#0000ff", "#ff0000"]);
     const [mode, setMode] = useState(0);
 
     const { name, args, description, valueDescription } = command;
@@ -109,7 +107,7 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
         if (!encoded) return;
         try {
             setSending(true);
-            await service.sendCmdAsync(LightCmd.Run, encoded);
+            await service.sendCmdAsync(LedPixelCmd.Run, encoded);
         }
         finally {
             setSending(false)
@@ -144,55 +142,64 @@ function LightCommand(props: { service: JDService, expanded: boolean }) {
         setColors(cs);
     }
 
-    return <Grid container spacing={1}>
-        <Grid item key="descr" xs={12}>
-            <Typography variant="caption">{description}</Typography>
+    return <>
+        <Grid item>
+            <Grid container spacing={1} direction="row" alignItems="center" justify="flex-start">
+                <Grid item key="descr" xs={12}>
+                    <Typography variant="caption">{description}</Typography>
+                </Grid>
+                <Grid item key="select" xs={12}>
+                    <SelectWithLabel disabled={sending} fullWidth={true} label="command" value={name} onChange={handleCommandChange}>
+                        {lightCommands.map(cmd => <MenuItem key={cmd.name} value={cmd.name}>{cmd.name}</MenuItem>)}
+                    </SelectWithLabel>
+                </Grid>
+                <Grid item key="time" xs={6}>
+                    <TextField variant="outlined" label={"duration (milliseconds)"} type="number" value={duration} onChange={handleDurationChange} />
+                </Grid>
+                <Grid item key="mode" xs={6}>
+                    <SelectWithLabel fullWidth={true} label="update mode" value={mode + ""} onChange={handleModeChange}>
+                        <MenuItem value={0}>replace</MenuItem>
+                        <MenuItem value={1}>add</MenuItem>
+                        <MenuItem value={2}>substract</MenuItem>
+                        <MenuItem value={3}>multiply</MenuItem>
+                    </SelectWithLabel>
+                </Grid>
+            </Grid>
         </Grid>
-        <Grid item key="select" xs={expanded ? 3 : 5}>
-            <SelectWithLabel disabled={sending} fullWidth={true} label="command" value={name} onChange={handleCommandChange}>
-                {lightCommands.map(cmd => <MenuItem key={cmd.name} value={cmd.name}>{cmd.name}</MenuItem>)}
-            </SelectWithLabel>
+        <Grid item>
+            <Grid container spacing={1} direction="row"
+                alignItems="center" alignContent="flex-start"
+                justify="flex-start">
+                {(args === "K" || args === "PC") && <Grid item key="K">
+                    <TextField variant="outlined" type="number" helperText={valueDescription} value={offset} onChange={handleOffsetChange} />
+                </Grid>}
+                {(args === "C+" || args === "PC") && dcolors.map((c, i) => <Grid item xs key={i}>
+                    <ColorInput value={c} onChange={handleColorChange(i)} />
+                </Grid>)}
+                {args === "C+" && <Grid item xs key="minuscolor">
+                    <IconButtonWithTooltip disabled={colors.length < 2} title={"Remove color"} onClick={handleRemoveColor}>
+                        <RemoveIcon />
+                    </IconButtonWithTooltip>
+                    <IconButtonWithTooltip disabled={colors.length > 4} title={"Add color"} onClick={handleAddColor}>
+                        <AddIcon />
+                    </IconButtonWithTooltip>
+                </Grid>}
+                <Grid item xs key="run">
+                    <IconButtonWithTooltip disabled={!encoded} title={"Run command"} onClick={sendCommand}>
+                        <PlayArrowIcon />
+                    </IconButtonWithTooltip>
+                </Grid>
+            </Grid>
         </Grid>
-        <Grid item xs={2} key="time">
-            <TextField variant="outlined" label={"duration"} helperText="milliseconds" type="number" value={duration} onChange={handleDurationChange} />
-        </Grid>
-        <Grid item xs={2} key="mode">
-            <SelectWithLabel fullWidth={true} label="update mode" value={mode + ""} onChange={handleModeChange}>
-                <MenuItem value={0}>replace</MenuItem>
-                <MenuItem value={1}>add</MenuItem>
-                <MenuItem value={2}>substract</MenuItem>
-                <MenuItem value={3}>multiply</MenuItem>
-            </SelectWithLabel>
-        </Grid>
-        {(args === "K" || args === "PC") && <Grid item key="K">
-            <TextField variant="outlined" type="number" helperText={valueDescription} value={offset} onChange={handleOffsetChange} />
-        </Grid>}
-        {(args === "C+" || args === "PC") && dcolors.map((c, i) => <Grid item key={i}>
-            <ColorInput value={c} onChange={handleColorChange(i)} />
-        </Grid>)}
-        {args === "C+" && <Grid item key="minuscolor">
-            <IconButtonWithTooltip disabled={colors.length < 2} title={"Remove color"} onClick={handleRemoveColor}>
-                <RemoveIcon />
-            </IconButtonWithTooltip>
-            <IconButtonWithTooltip disabled={colors.length > 4} title={"Add color"} onClick={handleAddColor}>
-                <AddIcon />
-            </IconButtonWithTooltip>
-        </Grid>}
-        <Grid item key="run">
-            <IconButtonWithTooltip disabled={!encoded} title={"Run command"} onClick={sendCommand}>
-                <PlayArrowIcon />
-            </IconButtonWithTooltip>
-        </Grid>
-    </Grid>
+    </>
 }
 
-export default function DashboardLight(props: DashboardServiceProps) {
-    const { service, expanded } = props;
-    const host = useServiceHost<LightServiceHost>(service);
+export default function DashboardLEDPixel(props: DashboardServiceProps) {
+    const { service, services, expanded } = props;
+    const host = useServiceHost<LedPixelServiceHost>(service);
     return <>
-        {host && <LightWidget {...props} />}
-        <Collapse in={expanded}>
-            <LightCommand service={service} expanded={expanded} />
-        </Collapse>
+        {host && <LightWidget widgetCount={services.length} {...props} />}
+        {expanded &&
+            <LightCommand service={service} expanded={expanded} />}
     </>
 }

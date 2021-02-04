@@ -4,6 +4,7 @@ const { slash } = require(`gatsby-core-utils`)
 const { createFilePath } = require(`gatsby-source-filesystem`)
 const { serviceSpecifications } = require(`../dist/jacdac-jdom.cjs`)
 const { serviceSpecificationToDTDL, DTMIToRoute } = require(`../dist/jacdac-azure-iot.cjs`)
+const { IgnorePlugin } = require('webpack')
 
 async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
@@ -189,7 +190,7 @@ async function generateServicesJSON() {
   // JSON
   for (const srv of services) {
     const f = path.join(dir, "services", `x${srv.classIdentifier.toString(16)}.json`)
-    console.log(`json x${srv.classIdentifier.toString(16)} => ${f}`)
+    //console.log(`json x${srv.classIdentifier.toString(16)} => ${f}`)
     await fs.outputFile(f, JSON.stringify(srv, null, 2))
   }
 
@@ -200,7 +201,7 @@ async function generateServicesJSON() {
     for (const model of models) {
       const route = DTMIToRoute(model["@id"])
       const f = path.join(dir, route)
-      console.log(`dtml ${model["@id"]} => ${f}`)
+      //console.log(`dtml ${model["@id"]} => ${f}`)
       await fs.outputFile(f, JSON.stringify(model, null, 2))
     }
     await fs.outputFile('./public/dtmi/jacdac/services.json', JSON.stringify(models, null, 2))
@@ -238,13 +239,24 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
 }
 
 exports.onCreateWebpackConfig = ({ stage, actions, getConfig }) => {
+  const { setWebpackConfig } = actions
   if (stage.startsWith("develop")) {
-    actions.setWebpackConfig({
+    setWebpackConfig({
       resolve: {
         alias: {
           "react-dom": "@hot-loader/react-dom",
         },
       },
+    })
+  }
+  // make sure axe is not part of the final build
+  if (stage === 'build-javascript') {
+    setWebpackConfig({
+      plugins: [
+        new IgnorePlugin({
+          resourceRegExp: /^@axe-core\/react$/,
+        }),
+      ],
     })
   }
 

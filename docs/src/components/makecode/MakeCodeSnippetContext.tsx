@@ -26,8 +26,8 @@ MakeCodeSnippetContext.displayName = "MakeCode";
 export default MakeCodeSnippetContext;
 
 export function MakeCodeSnippetProvider(props: { children }) {
-    const { value: target, setValue: setTarget } = useLocalStorage("mkcd:editor", "microbit");
-    const { value: editor, setValue: setEditor } = useLocalStorage("mdcd:editor", "blocks");
+    const [target, setTarget] = useLocalStorage("mkcd:editor", "microbit");
+    const [editor, setEditor] = useLocalStorage("mdcd:editor", "blocks");
     const { children } = props;
 
     const useLocalhost = typeof window !== "undefined" && /localhostmakecode=1/.test(window.location.search);

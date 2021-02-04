@@ -1,5 +1,6 @@
 import { Box, CircularProgress, useTheme } from "@material-ui/core";
-import React from "react";
+import React, { AriaAttributes } from "react";
+import { useId } from "react-use-id-hook"
 
 export interface CircularProgressBoxProps {
     progress?: number;
@@ -8,18 +9,24 @@ export interface CircularProgressBoxProps {
     progressStyle?: React.CSSProperties;
 }
 
-export default function CircularProgressBox(props: { children: JSX.Element | JSX.Element[] } & CircularProgressBoxProps) {
-    const { progress, progressColor, progressStyle, progressSize, children } = props;
+export default function CircularProgressBox(props: {
+    children: JSX.Element | JSX.Element[]
+} & CircularProgressBoxProps & AriaAttributes) {
+    const { progress, progressColor, progressStyle, progressSize, children, ...others } = props;
     const hasProgress = progress !== undefined;
     const theme = useTheme();
+    const id = useId();
 
     return <Box position="relative" display="inline-flex">
-        <CircularProgress variant={hasProgress ? "determinate" : "indeterminate"}
+        <CircularProgress 
+            id={id}
+            variant={hasProgress ? "determinate" : "indeterminate"}
             disableShrink={!hasProgress}
             value={progress}
             size={progressSize || theme.spacing(3)}
             color={progressColor}
-            style={progressStyle} />
+            style={progressStyle}
+            {...others} />
         <Box
             top={0}
             left={0}

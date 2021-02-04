@@ -37,7 +37,7 @@ export abstract class JDNode extends JDEventSource {
     abstract get qualifiedName(): string;
 
     /**
-     * Gets the parent node in the JACDAC dom
+     * Gets the parent node in the Jacdac dom
      */
     abstract get parent(): JDNode;
 

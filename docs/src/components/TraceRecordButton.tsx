@@ -1,4 +1,4 @@
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JDContextProps } from '../../../src/react/Context';
 import { FiberManualRecord } from '@material-ui/icons';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";
@@ -8,14 +8,13 @@ import IconButtonWithProgress, { IconButtonWithProgressProps } from "./ui/IconBu
 export default function TraceRecordButton(props: { component?: string } & IconButtonWithProgressProps) {
     const { disabled, ...others } = props;
     const { recording, tracing, toggleRecording } = useContext(PacketsContext)
-    const { connectionState } = useContext<JDContextProps>(JACDACContext)
-    const connected = connectionState === BusState.Connected;
-
+    const title = recording ? "Stop recording" : "Record trace";
     return <IconButtonWithProgress
         {...others}
-        title={recording ? "Stop recording" : "Record trace"}
+        aria-label={title}
+        title={title}
         indeterminate={recording}
-        disabled={disabled || tracing || !connected}
+        disabled={disabled || tracing}
         onClick={toggleRecording}
         progressStyle={{ color: "#f66" }}>
         {!recording && <FiberManualRecord />}

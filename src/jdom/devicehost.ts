@@ -1,25 +1,29 @@
 import { JDBus } from "./bus";
-import JDServiceHost from "./servicehost";
+import ServiceHost from "./servicehost";
 import Packet from "./packet";
 import { shortDeviceId } from "./pretty";
-import { anyRandomUint32, delay, toHex } from "./utils";
+import { anyRandomUint32, isBufferEmpty, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
-import { CHANGE, CMD_EVENT_COUNTER_MASK, CMD_EVENT_COUNTER_POS, CMD_EVENT_MASK, IDENTIFY, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, SELF_ANNOUNCE } from "./constants";
+import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
 
-export default class JDDeviceHost extends JDEventSource {
+export default class DeviceHost extends JDEventSource {
     private _bus: JDBus;
-    private readonly _services: JDServiceHost[];
+    private readonly _services: ServiceHost[];
     public readonly deviceId: string;
     public readonly shortId: string;
     private _eventCounter: number = undefined;
     identifying: boolean;
+    public readonly controlService: ControlServiceHost;
+    private _restartCounter = 0;
+    private _resetTimeOut: any;
+    private _packetCount = 0;
 
-    constructor(services: JDServiceHost[], options?: {
+    constructor(services: ServiceHost[], options?: {
         deviceId?: string;
     }) {
         super();
-        this._services = [new ControlServiceHost(), ...services];
+        this._services = [this.controlService = new ControlServiceHost(), ...services];
         this.deviceId = options?.deviceId;
         if (!this.deviceId) {
             const devId = anyRandomUint32(8);
@@ -31,9 +35,11 @@ export default class JDDeviceHost extends JDEventSource {
             srv.device = this;
             srv.serviceIndex = i;
         });
-
         this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this);
         this.handlePacket = this.handlePacket.bind(this);
+
+        this.controlService.resetIn.on(REPORT_RECEIVE, this.handleResetIn.bind(this));
+        this.on(REFRESH, this.refreshRegisters.bind(this));
     }
 
     protected log(msg: any) {
@@ -56,12 +62,14 @@ export default class JDDeviceHost extends JDEventSource {
     private start() {
         if (!this._bus) return;
 
+        this._packetCount = 0;
         this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce);
         this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
         this.log(`start host`)
     }
 
     private stop() {
+        this.clearResetTimer();
         if (!this._bus) return;
 
         this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce);
@@ -71,11 +79,29 @@ export default class JDDeviceHost extends JDEventSource {
     }
 
     private handleSelfAnnounce() {
-        const ctrl = this._services[0] as ControlServiceHost;
-        ctrl.announce();
+        if (this._restartCounter < 0xf)
+            this._restartCounter++
+
+        // async
+        this.controlService.announce();
+        // also send status codes, for non-zero codes
+        this.services()
+            .filter(srv => !isBufferEmpty(srv.statusCode.data))
+            .forEach(srv => srv.statusCode.sendGetAsync());
+
+        // reset counter
+        this._packetCount = 0;
     }
 
-    services(): JDServiceHost[] {
+    get restartCounter() {
+        return this._restartCounter;
+    }
+
+    get packetCount() {
+        return this._packetCount;
+    }
+
+    services(): ServiceHost[] {
         return this._services.slice(0);
     }
 
@@ -102,19 +128,12 @@ export default class JDDeviceHost extends JDEventSource {
         return `host ${this.shortId}`;
     }
 
-    async identify() {
-        if (this.identifying) return;
-        this.identifying = true;
-        this.emit(IDENTIFY);
-        this.emit(CHANGE);
-        await delay(500);
-        this.identifying = false;
-        this.emit(CHANGE);
-    }
-
     async sendPacketAsync(pkt: Packet) {
         if (!this._bus)
             return Promise.resolve();
+
+        // qos counter
+        this._packetCount++;
 
         pkt.deviceIdentifier = this.deviceId;
         // compute crc and send
@@ -158,8 +177,7 @@ export default class JDDeviceHost extends JDEventSource {
             if (pkt.isCommand)
                 return // it's a command, and it's not for us
             if (pkt.serviceIndex == JD_SERVICE_INDEX_CRC_ACK) {
-                // TODO
-                //_gotAck(pkt)
+                console.log("todo got ack")
             }
 
             if (pkt.isEvent) {
@@ -182,7 +200,29 @@ export default class JDDeviceHost extends JDEventSource {
         }
     }
 
-    refreshRegisters() {
-        this._services.forEach(srv => srv.refreshRegisters());
+    private refreshRegisters() {
+        this._services.forEach(srv => srv.emit(REFRESH));
+    }
+
+    reset() {
+        this.clearResetTimer();
+        this._restartCounter = 0;
+        this._packetCount = 0;
+        this.emit(RESET);
+    }
+
+    private clearResetTimer() {
+        if (this._resetTimeOut) {
+            clearTimeout(this._resetTimeOut);
+            this._resetTimeOut = undefined;
+        }
+    }
+
+    private handleResetIn() {
+        const [t] = this.controlService.resetIn.values();
+        if (this._resetTimeOut)
+            clearTimeout(this._resetTimeOut);
+        if (t)
+            this._resetTimeOut = setTimeout(() => this.reset(), t);
     }
 }

@@ -1,21 +1,30 @@
 
-import { Button, ButtonGroup, createStyles, Grid, makeStyles } from "@material-ui/core";
-import React from "react";
-import { BuzzerCmd } from "../../../../src/jdom/constants";
+import { Button, ButtonGroup, createStyles, Grid, makeStyles, Slider } from "@material-ui/core";
+import React, { useRef } from "react";
+import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { jdpack } from "../../../../src/jdom/pack";
 import { initAudioContext } from "../../../../src/hosts/buzzerservicehost";
+import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import useServiceHost from "../hooks/useServiceHost";
 
 const useStyles = makeStyles(() => createStyles({
     btn: {
         minWidth: "1em",
-        padding: "2em 0.75em 2em 0.75em"
+        padding: "1em 0.75em 1em 0.75em"
     }
 }));
 
 export default function DashboardBuzzer(props: DashboardServiceProps) {
     const { service } = props;
     const classes = useStyles();
+    const gridRef = useRef<HTMLDivElement>();
+    const host = useServiceHost(service);
+    const color = host ? "secondary" : "primary";
+    const volumeRegister = service.register(BuzzerReg.Volume);
+    const [volume] = useRegisterUnpackedValue<[number]>(volumeRegister)
+    const keyboardProps = useKeyboardNavigationProps(gridRef.current)
 
     const notes = [
         { name: "C", frequency: 261.64 },
@@ -40,15 +49,29 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
             sendPlayTone(f)
     }
     const handlePlayTone = (f: number) => () => sendPlayTone(f)
+    const handleChange = async (ev: unknown, newValue: number | number[]) => {
+        volumeRegister.sendSetPackedAsync("u0.8", [newValue], true);
+    }
 
-    return <Grid container alignItems="center" alignContent="space-between">
+    return <Grid ref={gridRef} container alignItems="center" alignContent="space-between">
         {notes.map(note => <Grid key={note.frequency} item xs><Button
             className={classes.btn}
             size="small"
             variant="outlined"
             onPointerEnter={handlePointerEnter(note.frequency)}
-            onClick={handlePlayTone(note.frequency)}>{note.name}</Button>
+            onPointerDown={handlePlayTone(note.frequency)}
+            {...keyboardProps}
+        >{note.name}</Button>
+        </Grid>)}
+        <Grid item xs={12}>
+            <Slider
+                valueLabelDisplay="off"
+                min={0} max={1} step={0.05}
+                aria-label="volume"
+                value={volume}
+                color={color}
+                onChange={handleChange}  
+            />
         </Grid>
-        )}
     </Grid>
 }

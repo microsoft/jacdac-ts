@@ -1,4 +1,3 @@
-import { getNumber, NumberFormat } from "./buffer"
 import { fromHex } from "./utils"
 
 /*

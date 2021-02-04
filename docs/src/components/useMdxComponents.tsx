@@ -18,6 +18,7 @@ import TraceList from "./TraceList";
 import GithubRepositoryCard from "./GithubRepositoryCard";
 import GithubRepositoryList from "./GithubRespositoryList";
 import SpecificationUnitList from "./SpecificationUnitList";
+import StatusLEDAnimation from "./StatusLEDAnimation";
 
 export default function useMdxComponents() {
   const theme = useTheme();
@@ -51,7 +52,8 @@ export default function useMdxComponents() {
     TraceList: props => <TraceList {...props} />,
     GithubRepositoryCard: props => <GithubRepositoryCard {...props} />,
     GithubRepositoryList: props => <GithubRepositoryList {...props} />,
-    SpecificationUnitList: props => <SpecificationUnitList {...props} />
+    SpecificationUnitList: props => <SpecificationUnitList {...props} />,
+    StatusLEDAnimation: props => <StatusLEDAnimation {...props} />,
   };
 
   return mdxComponents;

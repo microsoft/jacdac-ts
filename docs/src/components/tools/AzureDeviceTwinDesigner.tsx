@@ -67,7 +67,7 @@ function validateTwinComponent(twin: DigitalTwinSpec, component: DigitalTwinComp
 
 export default function AzureDeviceTwinDesigner() {
     const variant = "outlined";
-    const { value: twin, setValue: setTwin } = useLocalStorage<DigitalTwinSpec>('jacdac:digitaltwin;1',
+    const [twin, setTwin] = useLocalStorage<DigitalTwinSpec>('jacdac:digitaltwin;1',
         {
             displayName: "mydesigner",
             components: []

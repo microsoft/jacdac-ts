@@ -1,53 +1,69 @@
-import { BaseReg, SystemCmd, SystemReg } from "../../jacdac-spec/dist/specconstants";
+import { BaseEvent, SystemCmd, SystemReg, SystemStatusCodes } from "../../jacdac-spec/dist/specconstants";
 import { NumberFormat, setNumber } from "./buffer";
-import JDDeviceHost from "./devicehost";
+import { CHANGE } from "./constants";
+import DeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
-import JDRegisterHost from "./registerhost";
+import RegisterHost from "./registerhost";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
 import { memcpy } from "./utils";
 
-export interface JDServiceHostOptions {
+export interface ServiceHostOptions {
+    valueValues?: any[];
+    intensityValues?: any[];
     variant?: number;
+    registerValues?: {
+        code: number,
+        values: any[]
+    }[]
 }
 
-export default class JDServiceHost extends JDEventSource {
+export default class ServiceHost extends JDEventSource {
     public serviceIndex: number = -1; // set by device
-    public device: JDDeviceHost;
+    public device: DeviceHost;
     public readonly specification: jdspec.ServiceSpec;
-    private readonly _registers: JDRegisterHost[] = [];
+    private readonly _registers: RegisterHost<any[]>[] = [];
     private readonly commands: { [identifier: number]: (pkt: Packet) => void } = {};
+    readonly statusCode: RegisterHost<[SystemStatusCodes, number]>;
 
-    constructor(public readonly serviceClass: number, options?: JDServiceHostOptions) {
+    // this is a hint for dashboard layout, higher means wider
+    public dashboardWeight?: number = undefined;
+
+    constructor(public readonly serviceClass: number, options?: ServiceHostOptions) {
         super();
-        const { variant } = options || {};
+        const { variant, valueValues, intensityValues, registerValues } = options || {};
 
         this.specification = serviceSpecificationFromClassIdentifier(this.serviceClass);
 
-        this.addRegister(BaseReg.StatusCode);
+        this.statusCode = this.addRegister<[SystemStatusCodes, number]>(SystemReg.StatusCode, [SystemStatusCodes.Ready, 0]);
+        if (valueValues)
+            this.addRegister(SystemReg.Value, valueValues);
+        if (intensityValues)
+            this.addRegister(SystemReg.Intensity, intensityValues);
         if (variant)
-            this.addRegister(SystemReg.Variant, [variant]);
+            this.addRegister<[number]>(SystemReg.Variant, [variant]);
+        // any extra
+        registerValues?.forEach(({ code, values }) => this.addRegister<any[]>(code, values));
+
+        // emit event when status code changes
+        this.statusCode.on(CHANGE, () => this.sendEvent(BaseEvent.StatusCodeChanged, this.statusCode.data));
     }
 
     get registers() {
         return this._registers.slice(0);
     }
 
-    register(identifier: number) {
-        return this._registers.find(reg => reg.identifier === identifier);
+    register<TValues extends any[] = any[]>(identifier: number): RegisterHost<TValues> {
+        return this._registers.find(reg => reg.identifier === identifier) as RegisterHost<TValues>;
     }
 
-    get statusCode() {
-        return this._registers.find(reg => reg.identifier === BaseReg.StatusCode);
-    }
-
-    protected addRegister(identifier: number, defaultValue?: any[]) {
-        let reg = this._registers.find(r => r.identifier === identifier);
+    protected addRegister<TValues extends any[] = any[]>(identifier: number, defaultValue?: TValues): RegisterHost<TValues> {
+        let reg = this._registers.find(r => r.identifier === identifier) as RegisterHost<TValues>;
         if (!reg) {
             // make sure this register is supported
             if (!this.specification.packets.find(pkt => isRegister(pkt) && pkt.identifier === identifier))
                 return undefined;
-            reg = new JDRegisterHost(this, identifier, defaultValue);
+            reg = new RegisterHost<TValues>(this, identifier, defaultValue);
             this._registers.push(reg);
         }
         return reg;
@@ -82,16 +98,11 @@ export default class JDServiceHost extends JDEventSource {
         await this.device.sendPacketAsync(pkt);
     }
 
-    protected async sendEvent(eventCode: number, data?: Uint8Array) {
-        const { bus } = this.device;
-        const pkt = Packet.from(this.device.createEventCmd(eventCode), data)
-        await this.sendPacketAsync(pkt)
-        const now = bus.timestamp
-        bus.delayedSend(pkt, now + 20)
-        bus.delayedSend(pkt, now + 100)
-    }
-
-    refreshRegisters() {
-        // noop by default, implemented in sensor mostly
+    async sendEvent(event: number, data?: Uint8Array) {
+        const payload = new Uint8Array(4 + (data ? data.length : 0))
+        setNumber(payload, NumberFormat.UInt32LE, 0, event);
+        if (data)
+            memcpy(payload, 4, data);
+        await this.sendPacketAsync(Packet.from(SystemCmd.Event, payload))
     }
 }

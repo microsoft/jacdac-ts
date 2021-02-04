@@ -1,7 +1,8 @@
 import { JDBus } from "./bus";
-import { PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
+import { debounce } from "./utils";
 
 export interface PacketMessage {
     channel: "jacdac";
@@ -19,10 +20,13 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     readonly bridgeId = "bridge" + Math.random();
     packetSent = 0;
     packetProcessed = 0;
-    constructor(readonly bus: JDBus) {
+    private _lastAspectRatio: number = 0;
+
+    constructor(readonly bus: JDBus, readonly frameId: string) {
         super(bus)
         this.postPacket = this.postPacket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
+        this.handleResize = debounce(this.handleResize.bind(this), 500);
         this.registerEvents();
     }
 
@@ -30,6 +34,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         console.log(`jdiframe: listening for packets`)
         this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket));
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
+        this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, this.handleResize));
 
         window.addEventListener("message", this.handleMessage, false);
         this.mount(() => window.removeEventListener("message", this.handleMessage, false))
@@ -56,12 +61,31 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private handleDriverMessage(msg: { type: string }) {
+        console.log("pxt message", msg)
         switch (msg.type) {
-            case "stop": // start again
+            case "run": // simulation is starting
                 this.bus.clear();
+                break;
+            case "stop": // start again
+                // pause bus?:
                 break;
         }
     }
+
+    private handleResize() {
+        const size = document.body.getBoundingClientRect()
+        const value = size.width / size.height;
+        if (!isNaN(value) && this._lastAspectRatio !== value) {
+            window.parent.postMessage({
+                type: "aspectratio",
+                value,
+                frameid: this.frameId,
+                sender: this.bridgeId
+            }, "*");
+            this._lastAspectRatio = value;
+        }
+    }
+
 
     private handleMessageJacdac(msg: PacketMessage) {
         const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);

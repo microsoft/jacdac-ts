@@ -1,9 +1,11 @@
-# JACDAC ![Build](https://github.com/microsoft/jacdac-ts/workflows/Build/badge.svg)
+# Jacdac TypeScript
 
-This repository contains a TypeScript/JavaScript client library for the [JACDAC](https://microsoft.github.io/jacdac) protocol.
+This repository contains a TypeScript/JavaScript client library for the [Jacdac](https://microsoft.github.io/jacdac) protocol,
+as well as the source of https://aka.ms/jacdac under `/docs`.
 
 * [User Documentation](https://aka.ms/jacdac/)
-* Issues are tracked on https://github.com/microsoft/jacdac
+* Discussions at https://github.com/microsoft/jacdac/discussions
+* Issues are tracked on https://github.com/microsoft/jacdac/issues
 
 The rest of this page is for developers of the jacdac-ts library.
 
@@ -76,9 +78,9 @@ gatsby serve
 nav to http://127.0.0.1:3001
 ```
 
-### JACDAC+MakeCode
+### Jacdac+MakeCode
 
-Open the multi editor to test MakeCode devices with the JACDAC view. You can select to run JACDAC and/or MakeCode on localhost/web from the drop downs.
+Open the multi editor to test MakeCode devices with the Jacdac view. You can select to run Jacdac and/or MakeCode on localhost/web from the drop downs.
 
 ```
 https://makecode.com/multi?jacdac=1&localhost=1

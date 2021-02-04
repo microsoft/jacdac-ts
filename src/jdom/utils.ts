@@ -315,6 +315,17 @@ export function decodeU32LE(buf: Uint8Array) {
     return res
 }
 
+export function isBufferEmpty(data: Uint8Array): boolean {
+    if (!data) return true;
+    const n = data.length;
+    for (let i = 0; i < data.length; ++i) {
+        if (data[i])
+            return false;
+    }
+    return true;
+}
+
+
 export function bufferToString(buf: Uint8Array) {
     return fromUTF8(uint8ArrayToString(buf))
 }
@@ -599,4 +610,8 @@ export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolea
             nays.push(v);
     }
     return [yays, nays];
+}
+
+export function range(end: number): number[] {
+    return Array(end).fill(0).map((_, i) => i);
 }

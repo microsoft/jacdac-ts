@@ -1,7 +1,8 @@
-import { timeStamp } from "console";
 import {
-    CHANGE, LightCmd, LightLightType,
-    LightReg, LightVariant, RENDER, SRV_LIGHT
+    CHANGE, LedPixelCmd,
+    LedPixelLightType,
+    LedPixelReg,
+    LedPixelVariant, RENDER, SRV_LED_PIXEL
 } from "../jdom/constants";
 import {
     LIGHT_MODE_ADD_RGB, LIGHT_MODE_LAST, LIGHT_MODE_MULTIPLY_RGB, LIGHT_MODE_REPLACE, LIGHT_MODE_SUBTRACT_RGB,
@@ -10,9 +11,9 @@ import {
     LIGHT_PROG_SET_ALL, LIGHT_PROG_SHOW
 } from "../jdom/light";
 import Packet from "../jdom/packet";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost, { JDServiceHostOptions } from "../jdom/servicehost";
-import { toHex } from "../jdom/utils";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
+import { isBufferEmpty, toHex } from "../jdom/utils";
 
 const PROG_EOF = 0
 const PROG_CMD = 1
@@ -72,15 +73,6 @@ function hsv(hue: number, sat: number, val: number): RGB {
     return rgb(r, g, b);
 }
 
-function is_empty(data: Uint8Array): boolean {
-    const n = data.length;
-    for (let i = 0; i < data.length; ++i) {
-        if (data[i])
-            return false;
-    }
-    return true;
-}
-
 function mulcol(c: number, m: number): number {
     let c2 = (c * m) >> 7;
     if (m < 128 && c == c2)
@@ -102,21 +94,16 @@ function SCALE0(c: number, i: number) {
     return ((((c) & 0xff) * (1 + (i & 0xff))) >> 8)
 }
 
-function now(): number {
-    return (performance.now() * 1000) >> 0;
-}
-function in_past(t: number) {
-    return t < now();
-}
-
-export default class LightServiceHost extends JDServiceHost {
-    readonly brightness: JDRegisterHost;
-    readonly actualBrightness: JDRegisterHost;
-    readonly lightType: JDRegisterHost;
-    readonly numPixels: JDRegisterHost;
-    readonly maxPower: JDRegisterHost;
-    readonly variant: JDRegisterHost;
-    readonly maxPixels: JDRegisterHost;
+export default class LedPixelServiceHost extends ServiceHost {
+    readonly brightness: RegisterHost<[number]>;
+    readonly actualBrightness: RegisterHost<[number]>;
+    readonly lightType: RegisterHost<[LedPixelLightType]>;
+    readonly numPixels: RegisterHost<[number]>;
+    readonly maxPower: RegisterHost<[number]>;
+    readonly variant: RegisterHost<[LedPixelVariant]>;
+    readonly maxPixels: RegisterHost<[number]>;
+    readonly numRepeats: RegisterHost<[number]>;
+    readonly numColumns: RegisterHost<[number]>;
 
     private pxbuffer: Uint8Array = new Uint8Array(0);
 
@@ -139,24 +126,31 @@ export default class LightServiceHost extends JDServiceHost {
 
     constructor(options?: {
         numPixels?: number,
+        numColumns?: number,
         maxPixels?: number,
         maxPower?: number
-    } & JDServiceHostOptions) {
-        super(SRV_LIGHT, options);
+    } & ServiceHostOptions) {
+        super(SRV_LED_PIXEL, options);
 
-        this.brightness = this.addRegister(LightReg.Brightness, [15]);
-        this.actualBrightness = this.addRegister(LightReg.ActualBrightness, [15]);
-        this.lightType = this.addRegister(LightReg.LightType, [LightLightType.WS2812B_GRB]);
-        this.numPixels = this.addRegister(LightReg.NumPixels, [options?.numPixels || 15]);
-        this.maxPower = this.addRegister(LightReg.MaxPower, [options?.maxPower || 200]);
-        this.maxPixels = this.addRegister(LightReg.MaxPixels, [options?.maxPixels || 300]);
-        this.variant = this.addRegister(LightReg.Variant, [LightVariant.Strip]);
+        const { numColumns, maxPower = 200, maxPixels = 300, numPixels = 15 } = options || {};
+
+
+        this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [15]);
+        this.actualBrightness = this.addRegister<[number]>(LedPixelReg.ActualBrightness, [15]);
+        this.lightType = this.addRegister<[LedPixelLightType]>(LedPixelReg.LightType, [LedPixelLightType.WS2812B_GRB]);
+        this.numPixels = this.addRegister<[number]>(LedPixelReg.NumPixels, [numPixels]);
+        this.maxPower = this.addRegister<[number]>(LedPixelReg.MaxPower, [maxPower]);
+        this.maxPixels = this.addRegister<[number]>(LedPixelReg.MaxPixels, [maxPixels]);
+        this.variant = this.addRegister<[LedPixelVariant]>(LedPixelReg.Variant, [LedPixelVariant.Strip]);
+        this.numRepeats = this.addRegister<[number]>(LedPixelReg.NumRepeats, [0]);
+        if (numColumns !== undefined)
+            this.numColumns = this.addRegister<[number]>(LedPixelReg.NumColumns, [numColumns]);
 
         this.brightness.on(CHANGE, () => this.intensity = this.requested_intensity);
         this.numPixels.on(CHANGE, this.allocRxBuffer.bind(this))
         this.maxPixels.on(CHANGE, this.allocRxBuffer.bind(this));
 
-        this.addCommand(LightCmd.Run, this.handle_run_cmd.bind(this));
+        this.addCommand(LedPixelCmd.Run, this.handleRun.bind(this));
 
         this.allocRxBuffer();
     }
@@ -169,27 +163,27 @@ export default class LightServiceHost extends JDServiceHost {
     }
 
     private get maxpower(): number {
-        const [r] = this.maxPower.values<[number]>();
+        const [r] = this.maxPower.values();
         return r;
     }
 
     private get maxpixels(): number {
-        const [r] = this.maxPixels.values<[number]>();
+        const [r] = this.maxPixels.values();
         return r;
     }
 
     private get numpixels(): number {
-        const [r] = this.numPixels.values<[number]>();
+        const [r] = this.numPixels.values();
         return r;
     }
 
     private get requested_intensity(): number {
-        const [r] = this.brightness.values<[number]>();
+        const [r] = this.brightness.values();
         return r;
     }
 
     private get intensity(): number {
-        const [r] = this.actualBrightness.values<[number]>();
+        const [r] = this.actualBrightness.values();
         return r;
     }
 
@@ -201,17 +195,13 @@ export default class LightServiceHost extends JDServiceHost {
         this.power_enable = value;
     }
 
-    render() {
-        const srv_t = this;
-    }
-
     is_enabled() {
         return this.numpixels > 0 && this.requested_intensity > 0;
     }
 
     private allocRxBuffer() {
         if (this.numpixels > this.maxpixels)
-            this.numPixels.setValues<[number]>([this.maxpixels]);
+            this.numPixels.setValues([this.maxpixels]);
         const n = this.numpixels * 3; // don't need to prealloc here
         if (n !== this.pxbuffer.length)
             this.pxbuffer = new Uint8Array(n);
@@ -581,7 +571,7 @@ export default class LightServiceHost extends JDServiceHost {
         if (!this.is_enabled()) return;
         if (this.dirty) {
             this.dirty = false;
-            if (is_empty(this.pxbuffer)) {
+            if (isBufferEmpty(this.pxbuffer)) {
                 this.jd_power_enable(false);
                 return;
             } else {
@@ -608,7 +598,7 @@ export default class LightServiceHost extends JDServiceHost {
         this.jd_power_enable(true);
     }
 
-    private handle_run_cmd(pkt: Packet) {
+    private handleRun(pkt: Packet) {
         console.log("run", { data: toHex(pkt.data) })
 
         this.prog_data = pkt.data;

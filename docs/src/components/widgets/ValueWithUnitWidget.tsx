@@ -1,50 +1,62 @@
 import React from "react";
-import { createStyles, makeStyles, Typography } from "@material-ui/core";
-
-const useStyles = makeStyles((theme) => createStyles({
-    gridContainer: {
-        display: "grid",
-        gridTemplateColumns: "4fr 1fr",
-        gridTemplateRows: "3.5fr 0.5fr",
-        gap: `${theme.spacing(0.5)} ${theme.spacing(0.5)}`,
-        gridTemplateAreas: `
-        "value upper-unit"
-        "value lower-unit"
-`
-    },
-    value: { gridArea: "value" },
-    upperUnit: { gridArea: "upper-unit" },
-    lowerUnit: { gridArea: "lower-unit" }
-}));
+import { Grid, Slider, Typography } from "@material-ui/core";
+import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
+import { CSSProperties } from "@material-ui/core/styles/withStyles";
 
 export default function ValueWithUnitWidget(props: {
-    value?: number;
+    value: number,
+    min?: number,
+    max?: number,
+    step?: number,
     label: string,
     secondaryLabel?: string,
+    tabIndex?: number,
     color?: "primary" | "secondary",
-    size?: string
+    size?: string,
+    onChange?: (event: unknown, newValue: number | number[]) => void
 }) {
-    const { value, secondaryLabel, label } = props;
-    const labelVariant = "body2";
-    const classes = useStyles();
-    const valueText = isNaN(value) ? "--" : value.toLocaleString();
-    const valueTextLength = valueText.replace(/[\.s]/g, '').length;
+    const { value, min, max, step, secondaryLabel, label, tabIndex, onChange } = props;
+    const labelVariant = "subtitle1";
+    const precision = step === undefined ? 1 : step < 1 ? Math.ceil(-Math.log10(step)) : 0;
+    const hasValue = !isNaN(value);
+    const valueText = hasValue ? roundWithPrecision(value, precision).toLocaleString() : "--"
+    const valueTextLength = isSet(min) && isSet(max) ? [min, max, min + (min + max) / 3]
+        .map(v => roundWithPrecision(v, precision).toLocaleString().replace(/[,\.]/, '').length)
+        .reduce((l, r) => Math.max(l, r), 0)
+        + precision : valueText.length;
 
-    const valueVariant = valueTextLength < 3 ? "h1"
-        : valueTextLength < 5 ? "h2"
-            : valueTextLength < 7 ? "h3"
-                : valueTextLength < 9 ? "h4"
+    //console.log({ min, max, step, precision })
+    const valueVariant = valueTextLength < 4 ? "h1"
+        : valueTextLength < 7 ? "h2"
+            : valueTextLength < 9 ? "h3"
+                : valueTextLength < 12 ? "h4"
                     : "h6";
+    const valueStyle: CSSProperties = {
+        minWidth: `${Math.max(2, valueTextLength - 1)}em`
+    }
 
-    return <div className={classes.gridContainer}>
-        <div className={classes.value}>
-            <Typography align="right" variant={valueVariant}>{valueText}</Typography>
-        </div>
-        {label && <div className={classes.upperUnit}>
-            <Typography variant={labelVariant}>{label}</Typography>
-        </div>}
-        {secondaryLabel && <div className={classes.lowerUnit}>
-            <Typography variant={labelVariant}>{secondaryLabel}</Typography>
-        </div>}
-    </div>;
+    return <Grid container direction="column" tabIndex={tabIndex} aria-label={`${valueText} ${label}`}>
+        <Grid item xs={12}>
+            <Grid container direction="row" alignContent="flex-end">
+                <Grid item>
+                    <Typography role="timer" align="right" variant={valueVariant}
+                        style={valueStyle}>{valueText}</Typography>
+                </Grid>
+                <Grid item>
+                    <Grid container direction="column" alignContent="space-between">
+                        <Grid item>
+                            <Typography variant={labelVariant}>{label}</Typography>
+                        </Grid>
+                        {secondaryLabel && <Grid item>
+                            <Typography variant={"caption"}>{secondaryLabel}</Typography>
+                        </Grid>}
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+        {onChange && value !== undefined && <Grid item xs={12}>
+            <Slider valueLabelDisplay="off" color="secondary"
+                min={min} max={max} step={step} value={value} onChange={onChange} />
+        </Grid>}
+    </Grid>;
 }
