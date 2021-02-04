@@ -1,1 +1,1 @@
-This is the documentation site for JACDAC.
+This is the documentation site for Jacdac.

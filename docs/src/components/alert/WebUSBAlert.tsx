@@ -11,7 +11,7 @@ function NoSsrAlert() {
     return <>
         {enabled && !supported &&
             <Alert closeable={true} severity="info">
-                Use a browser that supports <Link to="https://caniuse.com/#feat=webusb">WebUSB</Link> to connect to JACDAC devices.
+                Use a browser that supports <Link to="https://caniuse.com/#feat=webusb">WebUSB</Link> to connect to Jacdac devices.
             </Alert>}
     </>
 }

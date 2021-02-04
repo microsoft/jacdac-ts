@@ -10,7 +10,7 @@ import useChange from "../../jacdac/useChange";
 import { SRV_CONTROL, SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
 import DashboardServiceWidget from "../dashboard/DashboardServiceWidget";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import MakeCodeIcon from "../icons/MakeCodeIcon"
 import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 import Helmet from "react-helmet"
@@ -66,7 +66,7 @@ function Carousel() {
 }
 
 export default function Page() {
-    const { bus } = useContext<JDContextProps>(JACDACContext);
+    const { bus } = useContext<JDContextProps>(JacdacContext);
     const rawTheme = createMuiTheme({
         palette: {
             primary: {

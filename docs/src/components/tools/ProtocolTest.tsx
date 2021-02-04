@@ -2,7 +2,7 @@ import { Grid, Switch, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
 import { bufferEq, cryptoRandomUint32, delay, pick, toHex } from "../../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../../src/jdom/constants";
 import useChange from "../../jacdac/useChange"
 import { JDService } from "../../../../src/jdom/service";
@@ -172,7 +172,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
 }
 
 function ServiceProtocolTest(props: { service: JDService }) {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const { service } = props;
     const { device } = service;
 
@@ -224,7 +224,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
 }
 
 export default function ProtocolTest() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const [host, setHost] = useState(false);
     const services = useChange(bus, b => b.services({ serviceClass: SRV_PROTO_TEST }))
 

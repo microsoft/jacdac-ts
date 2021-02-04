@@ -4,17 +4,17 @@ order: 2
 
 # React
 
-JACDAC is compatible with React 16+ and hooks
+Jacdac is compatible with React 16+ and hooks
 
-## JACDACContext
+## JacdacContext
 
-The ``JACDACContext`` provides access to the bus, and connection/disconnection functionalies from your hooks or components.
+The ``JacdacContext`` provides access to the bus, and connection/disconnection functionalies from your hooks or components.
 
 ```tsx
-import { JACDACContext } from "jacdac-ts";
+import { JacdacContext } from "jacdac-ts";
 
 function myComponent() {
-    const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JACDACContext)
+    const { bus, connectionState, connectAsync, disconnectAsync } = useContext(JacdacContext)
 
     return <div>
             <span>{bus.devices().length} devices</span>
@@ -29,9 +29,9 @@ export default MyComponent;
 You can also use the react syntax to use this context.
 
 ```tsx
-<JACDACContext.Consumer>
+<JacdacContext.Consumer>
 {({bus, connectionState, connectAsync, disconnectAsync}) => ...}
-</JACDACContext.Consumer>
+</JacdacContext.Consumer>
 ```
 
 ## useChange
@@ -39,10 +39,10 @@ You can also use the react syntax to use this context.
 This hook subscribes to the ``CHANGE`` event of a [JDOM](/clients/web/jdom) node to automatically refresh the view.
 
 ```tsx
-import { JACDACContext, useChange } from "jacdac-ts";
+import { JacdacContext, useChange } from "jacdac-ts";
 
 const DeviceList = () => {
-    const { bus } = useContext(JACDACContext)
+    const { bus } = useContext(JacdacContext)
     // useChange will automatically re-render 
     // when bus emits a ``CHANGE`` event
     const devices = useChange(bus, n => n.devices(}))

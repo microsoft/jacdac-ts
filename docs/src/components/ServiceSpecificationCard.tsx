@@ -6,7 +6,7 @@ import { Button } from "gatsby-theme-material-ui";
 import Markdown from "./ui/Markdown"
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import { addHost, hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../src/react/Context";
 import KindIcon from "./KindIcon";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
 import { navigate } from "gatsby"
@@ -17,7 +17,7 @@ export default function ServiceSpecificationCard(props: {
     showReleaseStatus?: boolean,
     showServiceClass?: boolean
 }) {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const { serviceClass, specification, showReleaseStatus, showServiceClass } = props;
     let spec = specification;
     if (!spec && serviceClass !== undefined)

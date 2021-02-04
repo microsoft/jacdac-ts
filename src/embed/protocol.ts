@@ -1,4 +1,4 @@
-/** JACDAC IFrame Message protocol */
+/** Jacdac IFrame Message protocol */
 export interface IMessage {
     id?: string;
     source: 'jacdac',
@@ -69,4 +69,4 @@ export interface IFileLoadMessage extends IMessage {
         path: string;
     }
 }
-/** End JACDAC protocol */
+/** End Jacdac protocol */

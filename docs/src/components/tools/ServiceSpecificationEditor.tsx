@@ -96,7 +96,7 @@ TODO describe this register
                             label={"submit service"}
                             title={json && `Service: ${json.name}`}
                             head={json && servicePath}
-                            body={`This pull request adds a new service definition for JACDAC.`}
+                            body={`This pull request adds a new service definition for Jacdac.`}
                             commit={json && `added service files`}
                             files={servicePath && {
                                 [servicePath + ".md"]: debouncedSource

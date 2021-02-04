@@ -2,11 +2,11 @@ import { Typography } from "@material-ui/core";
 import React, { useContext } from "react";
 import { prettySize } from "../../../src/jdom/pretty";
 import { roundWithPrecision } from "../../../src/jdom/utils";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../src/react/Context";
 import useChange from "../jacdac/useChange";
 
 export default function PacketStats() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const { stats } = bus;
 
     const current = useChange(stats, s => s.current);

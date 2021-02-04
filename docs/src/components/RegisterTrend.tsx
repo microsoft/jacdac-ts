@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { REPORT_RECEIVE } from "../../../src/jdom/constants";
 import { JDRegister } from "../../../src/jdom/register";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../src/react/Context";
 import FieldDataSet from "./FieldDataSet"
 import Trend from "./Trend"
 import useChartPalette from "./useChartPalette";
@@ -18,7 +18,7 @@ export default function RegisterTrend(props: {
     mini?: boolean
 }) {
     const { register, mini, horizon, height } = props;
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const palette = useChartPalette()
     const dataSet = useRef(FieldDataSet.create(bus, [register], "output", palette, 100));
 

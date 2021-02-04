@@ -4,7 +4,7 @@ import { CHANGE, CONNECT, CONNECTING, PACKET_SEND } from "../../../../src/jdom/c
 import { inIFrame } from "../../../../src/jdom/iframeclient";
 import Packet from "../../../../src/jdom/packet";
 import { SMap } from "../../../../src/jdom/utils";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 
 export const READ = "read"
 export const MESSAGE_PACKET = "messagepacket"
@@ -229,7 +229,7 @@ export class MakeCodeEditorExtensionClient extends JDClient {
 
 
 export default function useMakeCodeEditorExtensionClient() {
-    const { bus } = useContext<JDContextProps>(JACDACContext);
+    const { bus } = useContext<JDContextProps>(JacdacContext);
     const [client, setClient] = useState<MakeCodeEditorExtensionClient>(undefined);
     useEffect(() => {
         console.log(`mkcd: new editor client`)

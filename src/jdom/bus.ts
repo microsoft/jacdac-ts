@@ -197,7 +197,7 @@ export class BusStatsMonitor extends JDEventSource {
 }
 
 /**
- * A JACDAC bus manager. This instance maintains the list of devices on the bus.
+ * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
     private _connectionState = BusState.Disconnected;
@@ -333,7 +333,7 @@ export class JDBus extends JDNode {
     }
 
     /**
-     * Gets a unique identifier for this node in the JACDAC DOM.
+     * Gets a unique identifier for this node in the Jacdac DOM.
      */
     get id(): string {
         return this.nodeKind;

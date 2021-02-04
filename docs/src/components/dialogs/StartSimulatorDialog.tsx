@@ -8,13 +8,13 @@ import JDDeviceHost from "../../../../src/jdom/devicehost";
 import Flags from "../../../../src/jdom/flags";
 import ServiceHost from "../../../../src/jdom/servicehost";
 import { delay } from "../../../../src/jdom/utils";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import KindIcon from "../KindIcon";
 import SelectWithLabel from "../ui/SelectWithLabel";
 
 export default function StartSimulatorDialog(props: { open: boolean, onClose: () => void }) {
     const { open, onClose } = props;
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const deviceHostDialogId = useId();
     const deviceHostLabelId = useId();
 

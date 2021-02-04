@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Button } from "gatsby-theme-material-ui";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../src/react/Context";
 import { BusState } from "../../../src/jdom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
@@ -16,7 +16,7 @@ export default function ConnectButton(props: {
     showAlways?: boolean
 }) {
     const { full, className, transparent, showAlways } = props
-    const { connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JACDACContext)
+    const { connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JacdacContext)
     const theme = useTheme()
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting
@@ -27,7 +27,7 @@ export default function ConnectButton(props: {
     const icon = <Badge color="primary" variant="dot" invisible={!showDisconnect}>
         <UsbIcon />
     </Badge>
-    const label = showDisconnect ? "disconnect from WebUSB" : "connect to a JACDAC device via WebUSB"
+    const label = showDisconnect ? "disconnect from WebUSB" : "connect to a Jacdac device via WebUSB"
     const title = showDisconnect ? "disconnect" : "connect";
 
     if (!showAlways && !hasWebUSB) {

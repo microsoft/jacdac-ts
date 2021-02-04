@@ -5,7 +5,7 @@ import Alert from "../ui/Alert";
 import React, { useContext } from "react";
 import { BusState } from "../../../../src/jdom/bus";
 import { serviceSpecificationFromClassIdentifier } from "../../../../src/jdom/spec";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import ConnectButton from "../../jacdac/ConnectButton";
 import { isWebUSBEnabled, isWebUSBSupported } from "../../../../src/jdom/usb"
 import { NoSsr } from '@material-ui/core';
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => createStyles({
 
 function NoSsrConnectAlert(props: { serviceClass?: number }) {
     const classes = useStyles()
-    const { bus, connectionState } = useContext<JDContextProps>(JACDACContext)
+    const { bus, connectionState } = useContext<JDContextProps>(JacdacContext)
     const { serviceClass } = props
     const devices = useChange(bus, b => b.devices({ serviceClass }))
     const spec = serviceSpecificationFromClassIdentifier(serviceClass)

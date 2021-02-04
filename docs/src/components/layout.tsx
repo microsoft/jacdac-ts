@@ -250,7 +250,7 @@ function MainAppBar(props: LayoutProps) {
     <Toolbar>
       <DrawerToolsButtonGroup className={clsx(classes.menuButton, drawerOpen && classes.hideMobile)} showToc={true} showCurrent={true} />
       {<Hidden implementation="css" smDown={true}>
-        <Typography component="h1" variant="h6">JACDAC {pageTitle && pageTitle !== "JACDAC" && `/ ${pageTitle}`}</Typography>
+        <Typography component="h1" variant="h6">Jacdac {pageTitle && pageTitle !== "Jacdac" && `/ ${pageTitle}`}</Typography>
       </Hidden>}
       <div className={classes.grow} />
       <PacketStats />
@@ -311,7 +311,7 @@ function LayoutWithContext(props: LayoutProps) {
       })}>
         <main className={classes.mainContent}>
           <div className={classes.drawerHeader} />
-          <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the JACDAC specification. Do not build devices using JACDAC.</Alert>
+          <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the Jacdac specification. Do not build devices using Jacdac.</Alert>
           <WebUSBAlert />
           {Flags.diagnostics && <WebDiagnostics />}
           <Typography className={'markdown'} component="span">

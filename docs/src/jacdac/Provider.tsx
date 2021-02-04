@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import JACDACContext from "../../../src/react/Context";
+import JacdacContext from "../../../src/react/Context";
 import { BusState, JDBus } from "../../../src/jdom/bus";
 import { createUSBBus } from "../../../src/jdom/usb";
 import { CONNECTION_STATE } from "../../../src/jdom/constants";
@@ -33,7 +33,7 @@ bus.setBackgroundFirmwareScans(true);
 if (typeof window !== "undefined")
     new IFrameBridgeClient(bus, args.frameId); // start bridge
 
-const JACDACProvider = ({ children }) => {
+const JacdacProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
 
@@ -52,10 +52,10 @@ const JACDACProvider = ({ children }) => {
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
-        <JACDACContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
+        <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
             {children}
-        </JACDACContext.Provider>
+        </JacdacContext.Provider>
     )
 }
 
-export default JACDACProvider;
+export default JacdacProvider;

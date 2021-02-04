@@ -2,7 +2,7 @@ import { CssBaseline, Theme, ThemeProvider } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 import React from "react";
 import { IdProvider } from "react-use-id-hook";
-import JACDACProvider from "../../jacdac/Provider";
+import JacdacProvider from "../../jacdac/Provider";
 import { AppProvider } from "../AppContext";
 import { DbProvider } from "../DbContext";
 import { PacketsProvider } from "../PacketsContext";
@@ -17,7 +17,7 @@ export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, c
             <SnackbarProvider maxSnack={maxSnack || 1} dense={true}>
                 <IdProvider>
                     <DbProvider>
-                        <JACDACProvider>
+                        <JacdacProvider>
                             <ServiceManagerProvider>
                                 <PacketsProvider>
                                     <AppProvider>
@@ -37,7 +37,7 @@ export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, c
                                     </AppProvider>
                                 </PacketsProvider>
                             </ServiceManagerProvider>
-                        </JACDACProvider>
+                        </JacdacProvider>
                     </DbProvider>
                 </IdProvider>
             </SnackbarProvider>

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import { FirmwareBlob, parseFirmwareFile } from "../../../../src/jdom/flashing";
 import useEffectAsync from "../useEffectAsync";
 import DbContext, { DbContextProps } from "../DbContext";
@@ -9,7 +9,7 @@ import { delay, unique } from "../../../../src/jdom/utils";
 import { fetchLatestRelease, fetchReleaseBinary } from "../github";
 
 export default function useFirmwareBlobs() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const { db } = useContext<DbContextProps>(DbContext)
     const firmwares = db?.firmwares;
     // run once, go through known firmware repoes and load version

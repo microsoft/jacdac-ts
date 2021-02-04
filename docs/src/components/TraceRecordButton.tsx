@@ -1,4 +1,4 @@
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JDContextProps } from '../../../src/react/Context';
 import { FiberManualRecord } from '@material-ui/icons';
 import React, { useContext } from "react";
 import PacketsContext from "./PacketsContext";

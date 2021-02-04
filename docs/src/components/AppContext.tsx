@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/jdom/bus";
 import { CONNECTION_STATE, ERROR } from "../../../src/jdom/constants";
 import { isCancelError } from "../../../src/jdom/utils";
-import JACDACContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../src/react/Context";
 import { JDDevice } from "../../../src/jacdac";
 import DeviceRenameDialog from "./dialogs/DeviceRenameDialog";
 import StartSimulatorDialog from "./dialogs/StartSimulatorDialog";
@@ -48,7 +48,7 @@ AppContext.displayName = "app";
 export default AppContext;
 
 export const AppProvider = ({ children }) => {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const [type, setType] = useState(DrawerType.None)
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, _setToolsMenu] = useState(false)
