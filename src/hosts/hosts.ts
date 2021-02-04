@@ -45,7 +45,7 @@ import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 import LEDServiceHost from "./ledservicehost";
 import { fromHex } from "../jdom/utils";
-import SoundPlayerServiceHost from "./soundplayerservicehost";
+import SoundPlayerServiceHost, { SoundPlayerSound } from "./soundplayerservicehost";
 import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 import SoundLevelServiceHost from "./soundlevelservicehost";
 
@@ -127,6 +127,19 @@ const CO2Options: AnalogSensorServiceHostOptions = {
 const tvocOptions: AnalogSensorServiceHostOptions = {
     readingValues: [500]
 }
+
+const microbitSounds: SoundPlayerSound[] = [
+    [0, "giggle"],
+    [0, "happy"],
+    [0, "hello"],
+    [0, "mysterious"],
+    [0, "sad"],
+    [0, "slide"],
+    [0, "soaring"],
+    [0, "spring"],
+    [0, "twinkle"],
+    [0, "yawn"],
+];
 
 const _hosts: {
     name: string,
@@ -612,18 +625,7 @@ const _hosts: {
         {
             name: "sound player (micro:bit v2 sounds)",
             serviceClasses: [SRV_SOUND_PLAYER],
-            services: () => [new SoundPlayerServiceHost([
-                [0, "giggle"],
-                [0, "happy"],
-                [0, "hello"],
-                [0, "mysterious"],
-                [0, "sad"],
-                [0, "slide"],
-                [0, "soaring"],
-                [0, "spring"],
-                [0, "twinkle"],
-                [0, "yawn"],
-            ])]
+            services: () => [new SoundPlayerServiceHost(microbitSounds)]
         },
         {
             name: "switch (slide)",
@@ -766,7 +768,7 @@ const _hosts: {
         },
         {
             name: "railway crossing (2 x lights, 2 x servos, 1 x buffer)",
-            serviceClasses: [SRV_TRAFFIC_LIGHT, SRV_SERVO],
+            serviceClasses: [SRV_TRAFFIC_LIGHT, SRV_SERVO, SRV_BUZZER],
             services: () => [
                 new TrafficLightServiceHost(),
                 new TrafficLightServiceHost(),
@@ -781,6 +783,22 @@ const _hosts: {
                 new BuzzerServiceHost()
             ]
         },
+        {
+            name: "micro:bit v2",
+            serviceClasses: [SRV_LEDMATRIX, SRV_BUTTON, SRV_ACCELEROMETER, SRV_SOUND_LEVEL, SRV_LIGHT_LEVEL, SRV_BUZZER, SRV_SOUND_PLAYER],
+            services: () => [
+                new LEDMatrixServiceHost(5, 5),
+                new ButtonServiceHost(),
+                new ButtonServiceHost(),
+                new SensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
+                    readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
+                }),
+                new SoundLevelServiceHost(),
+                new SensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.LEDMatrix }),
+                new BuzzerServiceHost(),
+                new SoundPlayerServiceHost(microbitSounds),
+            ]
+        }
     ];
 
 export default function hosts() {

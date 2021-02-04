@@ -5,11 +5,13 @@ import { OutPipe } from "../jdom/pipes";
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost from "../jdom/servicehost";
 
+export type SoundPlayerSound = [number, string];
+
 export default class SoundPlayerServiceHost extends ServiceHost {
     readonly volume: RegisterHost<[number]>;
     onPlay?: (volume: number, name: string) => void;
     constructor(
-        private readonly sounds: [number, string][]) {
+        private readonly sounds: SoundPlayerSound[]) {
         super(SRV_SOUND_PLAYER);
 
         this.volume = this.addRegister(SoundPlayerReg.Volume, [0.5]);
