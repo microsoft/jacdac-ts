@@ -7,7 +7,9 @@ import { roundWithPrecision } from "../../../../src/jdom/utils";
 export interface LedAnimationProps {
     monochrome?: boolean,
     cssProperty?: "border" | "background-color" | "color" | "fill" | "stroke",
-    step?: boolean
+    step?: boolean,
+    repeat?: number,
+    interval?: number
 }
 
 function interpolate(frames: LedAnimationFrame[], time: number) {
@@ -35,7 +37,7 @@ function interpolate(frames: LedAnimationFrame[], time: number) {
 }
 
 export default function useLedAnimationStyle(frames: LedAnimationFrame[], options?: LedAnimationProps) {
-    const { monochrome, cssProperty, step } = options || {};
+    const { monochrome, cssProperty, step, interval, repeat } = options || {};
     const className = useId();
     // generate a CSS animation for the curren frames
     const helmetStyle = useMemo(() => {
@@ -43,25 +45,30 @@ export default function useLedAnimationStyle(frames: LedAnimationFrame[], option
             return undefined;
         const DURATION = 3;
         const property = cssProperty || "background-color";
-        const total = frames.reduce((t, row) => t + row[DURATION], 0)
-        const totals = (total << 3) / 1000;
+        const nrepeat = repeat || 1;
+        const total8ms = frames.reduce((t, row) => t + row[DURATION], 0) * nrepeat;
+        const totals = (total8ms * 8) / 1000 + (interval || 0) / 1000;
 
+        console.log({ frames, total8ms, totals, nrepeat });
         let kf = `@keyframes ${className} {\n`;
         if (step) {
-            let t = 0;
-            frames.forEach(frame => {
-                const [hue, sat, value, duration] = frame;
-                const csscolor = hsvToCss(hue, sat, value, 0xff, monochrome)
-                const percent = t / total * 100;
-                kf += `  ${roundWithPrecision(percent, 5)}% { ${property}: ${csscolor}); }\n`            
-                t += duration;
-            })
+            let t8ms = 0;
+            for (let i = 0; i < nrepeat; ++i) {
+                frames.forEach(frame => {
+                    const [hue, sat, value, duration] = frame;
+                    const csscolor = hsvToCss(hue, sat, value, 0xff, monochrome)
+                    const percent = (t8ms * 8 / 1000) / totals * 100;
+                    kf += `  ${roundWithPrecision(percent, 5)}% { ${property}: ${csscolor}); }\n`
+                    t8ms += duration;
+                    console.log({ total8ms, totals, t8ms, duration, percent })
+                })
+            }
         } else {
             // 30fps
             const KEYFRAME_DURATION = 30 >> 3;
-            const nkframes = Math.ceil(total / KEYFRAME_DURATION);
+            const nkframes = Math.ceil(total8ms / KEYFRAME_DURATION);
             for (let kframei = 0; kframei < nkframes; ++kframei) {
-                const kt = kframei / (nkframes) * total;
+                const kt = kframei / (nkframes) * total8ms;
                 const { hue, saturation, value } = interpolate(frames, kt);
                 // generate new keyframe
                 const percent = Math.round(kframei / (nkframes - 1) * 100)
@@ -69,6 +76,7 @@ export default function useLedAnimationStyle(frames: LedAnimationFrame[], option
                 kf += `  ${roundWithPrecision(percent, 5)}% { ${property}: ${csscolor}); }\n`
             }
         }
+
         kf += `}\n`; // @keyframes
         // class
         kf += `.${className} {
@@ -79,7 +87,7 @@ animation-timing-function: linear;
 animation-iteration-count: infinite;
 }`;
         return kf;
-    }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty]);
+    }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty, interval, repeat]);
 
     console.log({ frames })
     console.log(helmetStyle)

@@ -12,8 +12,8 @@ const statusSaturation = 255
 const bootloaderFrames: LedAnimationFrame[] = [
     [statusHue, statusSaturation, 96, 524 / 8],
     [statusHue, statusSaturation, 96, 0.1],
-    [statusHue, statusSaturation, 56, 524 / 8],
-    [statusHue, statusSaturation, 56, 0.1],
+    [statusHue, statusSaturation, 72, 524 / 8],
+    [statusHue, statusSaturation, 72, 0.1],
 ];
 // 50ms every 150ms (50 on, 100 off) seven times (i.e. for 1 second)
 const identifyFrames: LedAnimationFrame[] = [
@@ -26,33 +26,34 @@ const identifyFrames: LedAnimationFrame[] = [
 // then goes into application that turns it on full for 200ms
 const startupFrames: LedAnimationFrame[] = [
     [statusHue, statusSaturation, 255, 270 / 8],
+    [statusHue, statusSaturation, 255, 0.1],
     [statusHue, statusSaturation, 6 / 100 * 0xff, 530 / 8],
-    [statusHue, statusSaturation, 200, 200 / 8],
     [statusHue, statusSaturation, 0, 0.1],
-    [statusHue, statusSaturation, 0, 2000 / 8],
+    [statusHue, statusSaturation, 255, 200 / 8],
+    [statusHue, statusSaturation, 255, 0.1],
     [statusHue, statusSaturation, 0, 0.1],
 ];
 // Synchronized fast blink 50us every 500ms
 const connectedFrames: LedAnimationFrame[] = [
     [statusHue, statusSaturation, 0, 500 / 8],
     [statusHue, statusSaturation, 0, 0.1],
-    [statusHue, statusSaturation, 128, 24 / 8],
-    [statusHue, statusSaturation, 128, 0.1],
+    [statusHue, statusSaturation, 96, 24 / 8],
+    [statusHue, statusSaturation, 96, 0.1],
     [statusHue, statusSaturation, 0, 0.1],
 ];
 //5ms every 250ms
 const disconnectedFrames: LedAnimationFrame[] = [
-    [statusHue, statusSaturation, 128, 24 / 8],
+    [statusHue, statusSaturation, 128, 40 / 8],
     [statusHue, statusSaturation, 128, 0.1],
-    [statusHue, statusSaturation, 0, 250 / 8],
-    [statusHue, statusSaturation, 0, 0.1],
+    [statusHue, statusSaturation, 16, 250 / 8],
+    [statusHue, statusSaturation, 16, 0.1],
 ];
 // fast blink 70ms on, 70ms off - 30 times (4.2 seconds) before a reboot
 const panicFrames: LedAnimationFrame[] = [
     [statusHue, statusSaturation, 128, 70 / 8],
     [statusHue, statusSaturation, 128, 0.1],
-    [statusHue, statusSaturation, 0, 70 / 8],
-    [statusHue, statusSaturation, 0, 0.1],
+    [statusHue, statusSaturation, 16, 70 / 8],
+    [statusHue, statusSaturation, 16, 0.1],
 ];
 
 export type LEDStatus = "startup" | "identify" | "connected" | "disconnected" | "panic" | "bootloader";
