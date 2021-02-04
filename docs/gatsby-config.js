@@ -1,8 +1,8 @@
 const maxImageWidth = 800
 module.exports = {
   siteMetadata: {
-    title: `JACDAC`,
-    description: `Documentation for the JACDAC protocol and libraries.`,
+    title: `Jacdac`,
+    description: `Documentation for the Jacdac protocol and libraries.`,
     author: `Microsoft`,
     siteUrl: `https://microsoft.github.io/jacdac-ts`
   },
@@ -225,8 +225,8 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `JACDAC: Joint Asynchronous Communications; Device Agnostic Control`,
-        short_name: `JACDAC`,
+        name: `Jacdac`,
+        short_name: `Jacdac`,
         start_url: `/`,
         background_color: `#663399`,
         theme_color: `#663399`,
