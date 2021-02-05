@@ -126,7 +126,7 @@ export default class DeviceHost extends JDEventSource {
             this._eventCounter = 0
         this._eventCounter = (this._eventCounter + 1) & CMD_EVENT_COUNTER_MASK
         if (evCode >> 8)
-            throw "invalid event code"
+            throw new Error("invalid event code")
         return CMD_EVENT_MASK | (this._eventCounter << CMD_EVENT_COUNTER_POS) | evCode
     }
 
