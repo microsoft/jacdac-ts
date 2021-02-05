@@ -18,7 +18,6 @@ export default class RandomNumberGeneratorServiceHost extends ServiceHost {
         if (typeof window !== "undefined")
             window.crypto.getRandomValues(data);
         const resp = Packet.from(RngCmd.Random, data);
-        resp.serviceIndex = this.serviceIndex;
-        await resp.sendReportAsync(pkt.device);
+        await this.sendPacketAsync(resp);
     }
 }
