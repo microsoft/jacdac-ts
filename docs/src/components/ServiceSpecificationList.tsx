@@ -1,10 +1,10 @@
-import { Grid } from "@material-ui/core";
+import { Grid, List, ListItem, ListItemText } from "@material-ui/core";
 import React, { useMemo } from "react";
-import { isInfrastructure, isSensor, serviceSpecifications } from "../../../src/jdom/spec";
+import { isInfrastructure, serviceSpecifications } from "../../../src/jdom/spec";
 import { arrayShuffle } from "../../../src/jdom/utils";
-import ServiceSpecificationCard from "./ServiceSpecificationCard"
 import useGridBreakpoints from "./useGridBreakpoints";
 import GridHeader from "./ui/GridHeader"
+import { Link } from "gatsby-theme-material-ui";
 
 export default function ServiceSpecificationList(props: {
     title?: string,
@@ -14,7 +14,6 @@ export default function ServiceSpecificationList(props: {
     status?: jdspec.StabilityStatus[]
 }) {
     const { title, count, shuffle, status, infrastructure } = props;
-    const gridBreakpoints = useGridBreakpoints();
     const specs = useMemo(() => {
         let r = serviceSpecifications();
         if (status !== undefined)
@@ -24,7 +23,7 @@ export default function ServiceSpecificationList(props: {
         if (shuffle)
             arrayShuffle(r)
         else
-            r.sort((l,r) => l.name.localeCompare(r.name))
+            r.sort((l, r) => l.name.localeCompare(r.name))
         if (count !== undefined)
             r = r.slice(0, count)
         return r;
@@ -35,8 +34,18 @@ export default function ServiceSpecificationList(props: {
 
     return <Grid container spacing={1}>
         {title && <GridHeader title={title} count={specs.length} />}
-        {specs.map(node => <Grid {...gridBreakpoints} item key={node.classIdentifier}>
-            <ServiceSpecificationCard serviceClass={node.classIdentifier} />
-        </Grid>)}
+        <Grid item>
+            <List>
+                {specs.map(node =>
+                    <ListItem key={node.shortId}>
+                        <Link to={`/services/${node.shortId}`} style={({ textDecoration: "none" })}>
+                            <ListItemText key={node.classIdentifier}
+                                primary={node.name}
+                                secondary={node.notes["short"]}
+                            />
+                        </Link>
+                    </ListItem>)}
+            </List>
+        </Grid>
     </Grid>
 }
