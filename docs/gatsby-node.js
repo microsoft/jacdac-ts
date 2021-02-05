@@ -28,6 +28,7 @@ async function createServicePages(graphql, actions, reporter) {
 
   // Create image post pages.
   const serviceTemplate = path.resolve(`src/templates/service.mdx`)
+  const servicePlaygroundTemplate = path.resolve(`src/templates/service-playground.mdx`)
   const serviceTestTemplate = path.resolve(`src/templates/service-test.mdx`)
   // We want to create a detailed page for each
   // Instagram post. Since the scraped Instagram data
@@ -35,11 +36,19 @@ async function createServicePages(graphql, actions, reporter) {
   // each page's path.
   result.data.allServicesJson.nodes.forEach(node => {
     const p = `/services/${node.shortId}/`;
+    const pplay = `${p}playground/`
     const ptest = `${p}test/`
     const r = `/services/0x${node.classIdentifier.toString(16)}`
     createPage({
       path: p,
       component: slash(serviceTemplate),
+      context: {
+        node
+      },
+    })
+    createPage({
+      path: pplay,
+      component: slash(servicePlaygroundTemplate),
       context: {
         node
       },

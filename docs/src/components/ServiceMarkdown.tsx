@@ -3,7 +3,7 @@ import IDChip from "./IDChip";
 import Markdown from "./ui/Markdown";
 import { Box, Container } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
-import { Link } from "gatsby-theme-material-ui";
+import { Button, Link } from "gatsby-theme-material-ui";
 
 export default function ServiceMarkdown(props: {
     service: jdspec.ServiceSpec
@@ -14,6 +14,10 @@ export default function ServiceMarkdown(props: {
     return <Container>
         <ServiceSpecificationStatusAlert specification={node} />
         <Markdown source={node.source} />
+
+        <div>
+            <Button variant="contained" to={`/services/${shortId}/playground/`}>Playground</Button>
+        </div>
 
         <h2> See Also</h2>
 
