@@ -165,7 +165,6 @@ export default class DeviceHost extends JDEventSource {
                 break;
             this._delayedPackets.shift();
             // do we wait?
-            console.log("delayed pkt", { pkt })
             try {
                 this.sendPacketAsync(pkt);
             } catch (e) {

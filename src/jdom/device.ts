@@ -80,6 +80,7 @@ export class JDDevice extends JDNode {
     private _ackAwaiting: AckAwaiter[];
     private _flashing = false;
     private _identifying: boolean;
+    private _eventCounter: number;
     readonly qos = new QualityOfService();
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
@@ -222,6 +223,14 @@ export class JDDevice extends JDNode {
             this._flashing = value;
             this.emit(CHANGE);
         }
+    }
+
+    get eventCounter() {
+        return this._eventCounter;
+    }
+
+    set eventCounter(v: number) {
+        this._eventCounter = v;
     }
 
     hasService(service_class: number): boolean {
