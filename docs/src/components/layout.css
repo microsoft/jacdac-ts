@@ -58,6 +58,9 @@ a:hover {
   color: #fff;
   text-decoration: underline;
 }
+.markdown pre {
+  background:hsla(0, 0%, 0%, 0.4)
+}
 abbr[title] {
   border-bottom: none;
   text-decoration: underline;

@@ -24,7 +24,7 @@ function DashboardServiceDevices(props: { serviceClass: number }) {
             device={device}
             showAvatar={true}
             showHeader={true}
-            />)}
+        />)}
     </Grid >
 }
 
@@ -69,8 +69,7 @@ export default function ServiceSpecification(props: {
                     {i > 0 && <span>, </span>}
                     <Link key={`extend${extend}`} to={`/services/${extend}/`}>{serviceSpecificationFromName(extend).name}</Link>
                 </Fragment>)}
-    .
-    </p>}
+    .</p>}
         <Markdown key="noteslong" source={node.notes.long || ""} />
         <DashboardServiceDevices serviceClass={classIdentifier} />
         <EnumSpecification key="enums" serviceClass={classIdentifier} />
