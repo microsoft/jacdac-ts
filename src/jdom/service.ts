@@ -230,6 +230,7 @@ export class JDService extends JDNode {
                     ev.processEvent(pkt);
             } else if (pkt.isCommand) {
                 // this is a report...
+                console.log("cmd report", { pkt })
             }
         }
     }

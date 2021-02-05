@@ -18,7 +18,7 @@ import {
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX, SRV_RNG
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -48,6 +48,7 @@ import { fromHex } from "../jdom/utils";
 import SoundPlayerServiceHost, { SoundPlayerSound } from "./soundplayerservicehost";
 import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 import SoundLevelServiceHost from "./soundlevelservicehost";
+import RandomNumberGeneratorServiceHost from "./randomnumbergeneratorservicehost";
 
 const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -503,6 +504,11 @@ const _hosts: {
                 readingValues: [80],
                 variant: HeartRateVariant.Finger
             })]
+        },
+        {
+            name: "RNG (random number generator)",
+            serviceClasses: [SRV_RNG],
+            services: () => [new RandomNumberGeneratorServiceHost()]
         },
         {
             name: "rain gauge",
