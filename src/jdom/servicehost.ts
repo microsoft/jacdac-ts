@@ -103,11 +103,15 @@ export default class ServiceHost extends JDEventSource {
     }
 
     async sendEvent(eventCode: number, data?: Uint8Array) {
-        const cmd = this.device.createEventCmd(eventCode);
+        const { device } = this;
+        const { bus } = device;
+
+        const cmd = device.createEventCmd(eventCode);
         const pkt = Packet.from(cmd, data || new Uint8Array(0))
+        pkt.serviceIndex = this.serviceIndex;
         await this.sendPacketAsync(pkt)
-        const now = this.device.bus.timestamp;
-     //   delayedSend(pkt, now + 20)
-      //  delayedSend(pkt, now + 100)
+        const now = bus.timestamp;
+        device.delayedSend(pkt, now + 20)
+        device.delayedSend(pkt, now + 100)
     }
 }
