@@ -17,7 +17,7 @@ function findDevice(devices: USBDevice[]) {
     return undefined
 }
 
-const usb = new USB({ devicesFound: async devices => findDevice(devices) })
+const usb = new USB({ devicesFound: async (devices: USBDevice[]) => findDevice(devices) })
 export async function requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice> {
     console.log(`requesting device...`)
     try {

@@ -11,9 +11,17 @@ export default function MembersInput(props: {
     setValues?: (values: any[]) => void,
     showDataType?: boolean,
     color?: "primary" | "secondary",
-    variant?: RegisterInputVariant
+    variant?: RegisterInputVariant,
+    min?: number[],
+    max?: number[],
+    resolution?: number[],
+    error?: number[],
+    off?: boolean,
+    toggleOff?: () => void
 }) {
-    const { serviceSpecification, serviceMemberSpecification, specifications, values, setValues, showDataType, color, variant } = props;
+    const { serviceSpecification, serviceMemberSpecification, specifications,
+        values, setValues, showDataType, color, variant,
+        min, max, resolution, error, off, toggleOff } = props;
     const setValue = (index: number) => (value: any) => {
         const c = values.slice(0)
         c[index] = value;
@@ -32,7 +40,14 @@ export default function MembersInput(props: {
                     value={value}
                     color={color}
                     setValue={values && setValues && setValue(fieldi)}
-                    variant={variant} />
+                    variant={variant}
+                    min={min?.[fieldi]}
+                    max={max?.[fieldi]}
+                    resolution={resolution?.[fieldi]}
+                    error={error?.[fieldi]}
+                    off={off}
+                    toggleOff={toggleOff}
+                />
             </Grid>;
         })}
     </Grid>

@@ -2,7 +2,7 @@
 import { createStyles, Grid, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
 import { AccelerometerReg } from "../../../../src/jdom/constants";
-import { DashboardServiceProps } from "./DashboardServiceView";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import clsx from 'clsx';
 import RegisterInput from "../RegisterInput";
@@ -95,22 +95,8 @@ export default function DashboardAccelerometer(props: DashboardServiceProps) {
     const register = service.register(AccelerometerReg.Forces);
     const forces = useRegisterUnpackedValue<[number, number, number]>(register);
 
-    return (<>
-        { forces && <Grid container justify="center" spacing={1}>
-            <Grid item>
-                <Cube forces={forces} />
-            </Grid>
-            <Grid item>
-                <Typography variant="caption">{forces.map(v => roundWithPrecision(v, 2)).join(", ")}</Typography>
-            </Grid>
-        </Grid>}
-        {expanded && <RegisterInput key={register.id}
-            register={register}
-            variant={"widget"}
-            showServiceName={expanded}
-            showRegisterName={true}
-            hideMissingValues={!expanded}
-            showTrend={expanded}
-        />}
-    </>)
+    if (!forces)
+        return null;
+
+    return <Cube forces={forces} />
 }

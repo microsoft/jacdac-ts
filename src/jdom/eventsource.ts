@@ -3,7 +3,7 @@ import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants";
 import { Observable, Observer } from "./observable";
 import Flags from "./flags";
 
-export type EventHandler = (...args) => void;
+export type EventHandler = (...args: any[]) => void;
 
 interface Listener {
     handler: EventHandler;
@@ -93,7 +93,7 @@ export class JDEventSource {
      * @param eventName 
      * @param args 
      */
-    emit(eventName: string, ...args): boolean {
+    emit(eventName: string, ...args: any[]): boolean {
         if (!eventName) return false;
 
         // track event stats

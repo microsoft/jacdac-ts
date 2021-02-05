@@ -2,19 +2,23 @@ import { JDDevice } from "./device";
 import Packet from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED } from "./constants";
+import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED, EVENT, CHANGE } from "./constants";
 import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator } from "./spec";
+import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator, isValueOrIntensity, isValue, isIntensity } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
-import { SystemReg } from "../../jacdac-spec/dist/specconstants";
+import { BaseEvent, BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { JDServiceClient } from "./serviceclient";
+import { InPipeReader } from "./pipes";
+import { jdunpack } from "./pack";
+import Flags from "./flags";
 
 export class JDService extends JDNode {
     private _registers: JDRegister[];
     private _events: JDEvent[];
     private _reports: Packet[] = [];
     private _specification: jdspec.ServiceSpec = null;
+    // packets received since last announce
     public registersUseAcks = false;
     private readonly _clients: JDServiceClient[] = [];
 
@@ -23,6 +27,13 @@ export class JDService extends JDNode {
         public readonly service_index: number
     ) {
         super()
+
+        const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged);
+        statusCodeChanged.on(CHANGE, () => {
+            // todo update status code with event payload
+            const { data } = statusCodeChanged;
+            console.log("status code changed", { data })
+        })
     }
 
     get id() {
@@ -73,10 +84,29 @@ export class JDService extends JDNode {
         return this._readingRegister;
     }
 
+    private _valueRegister: JDRegister;
+    get valueRegister(): JDRegister {
+        if (!this._valueRegister) {
+            const pkt = this.specification?.packets.find(pkt => isValue(pkt))
+            this._valueRegister = pkt && this.register(pkt.identifier)
+        }
+        return this._valueRegister;
+    }
+
+    private _intensityRegister: JDRegister;
+    get intensityRegister(): JDRegister {
+        if (!this._intensityRegister) {
+            const pkt = this.specification?.packets.find(pkt => isIntensity(pkt))
+            this._intensityRegister = pkt && this.register(pkt.identifier)
+        }
+        return this._intensityRegister;
+    }
+
     private _statusCodeRegister: JDRegister;
     get statusCodeRegister(): JDRegister {
         if (!this._statusCodeRegister) {
-            const pkt = this.specification?.packets.find(pkt => pkt.identifier === SystemReg.StatusCode)
+            const pkt = this.specification?.packets
+                .find(pkt => pkt.identifier === SystemReg.StatusCode)
             this._statusCodeRegister = pkt && this.register(pkt.identifier);
         }
         return this._statusCodeRegister;
@@ -107,33 +137,37 @@ export class JDService extends JDNode {
         return [...this.registers(), ... this.events];
     }
 
-    register(identifier: number): JDRegister {
+    register(registerCode: number): JDRegister {
+        if (registerCode === undefined)
+            return undefined;
         // cache known registers
         this.registers()
-        let register = this._registers.find(reg => reg.address === identifier);
+        let register = this._registers.find(reg => reg.code === registerCode);
         // we may not have a spec.
         if (!register) {
             const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === identifier)) {
-                this.log(`debug`, `attempting to access register 0x${identifier.toString(16)}`)
+            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === registerCode)) {
+                if (Flags.diagnostics)
+                    this.log(`warn`, `attempting to access register 0x${registerCode.toString(16)}`)
                 return undefined;
             }
-            this._registers.push(register = new JDRegister(this, identifier));
+            this._registers.push(register = new JDRegister(this, registerCode));
         }
         return register;
     }
 
-    event(identifier: number): JDEvent {
+    event(eventCode: number): JDEvent {
         if (!this._events)
             this._events = [];
-        let event = this._events.find(ev => ev.address === identifier);
+        let event = this._events.find(ev => ev.code === eventCode);
         if (!event) {
             const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === identifier)) {
-                this.log(`warn`, `attempting to access event 0x${identifier.toString(16)}`)
+            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === eventCode)) {
+                if (Flags.diagnostics)
+                    this.log(`warn`, `attempting to access event 0x${eventCode.toString(16)}`)
                 return undefined;
             }
-            this._events.push(event = new JDEvent(this, identifier));
+            this._events.push(event = new JDEvent(this, eventCode));
         }
         return event;
     }
@@ -195,6 +229,7 @@ export class JDService extends JDNode {
                     ev.processEvent(pkt);
             } else if (pkt.isCommand) {
                 // this is a report...
+                console.log("cmd report", { pkt })
             }
         }
     }
@@ -223,6 +258,19 @@ export class JDService extends JDNode {
             this._clients.splice(i, 1);
             this.emit(SERVICE_CLIENT_REMOVED, client);
         }
+    }
+
+    async receiveWithInPipe<TValues extends any[]>(cmd: number, packFormat: string) {
+        const inp = new InPipeReader(this.device.bus)
+        await this.sendPacketAsync(
+            inp.openCommand(cmd),
+            true)
+        const recv: TValues[] = [];
+        for (const buf of await inp.readData()) {
+            const values = jdunpack<TValues>(buf, packFormat);
+            recv.push(values);
+        }
+        return recv;
     }
 }
 

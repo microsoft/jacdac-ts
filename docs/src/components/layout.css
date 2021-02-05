@@ -55,6 +55,7 @@ a:hover {
 .markdown h5 a, 
 .markdown h6 a
 {
+  color: #fff;
   text-decoration: underline;
 }
 abbr[title] {
@@ -651,4 +652,23 @@ footer {
     color: black !important;
     background-color: white !important;
   }
+}
+
+.clickeable {
+  cursor: pointer;
+}
+.clickeable:hover {
+  outline: 0;
+  stroke: #ffc400;
+}
+.clickeable:focus {
+  outline: 0;
+  stroke: #000;
+}
+.dark .clickeable:focus {
+  stroke: #fff
+}
+.no-pointer-events {
+  pointer-events: none;
+  user-select: none;
 }

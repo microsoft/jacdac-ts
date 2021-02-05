@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import clsx from 'clsx';
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JDContextProps } from '../../../src/react/Context';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
@@ -11,7 +11,6 @@ import TreeView from '@material-ui/lab/TreeView';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import KindIcon from "./KindIcon"
 import { JDDevice } from '../../../src/jdom/device';
 import { JDEvent } from '../../../src/jdom/event';
 import { JDService } from '../../../src/jdom/service';
@@ -19,10 +18,10 @@ import { JDRegister } from '../../../src/jdom/register';
 import useChange from "../jacdac/useChange";
 import { isRegister, isEvent } from '../../../src/jdom/spec';
 import { useMediaQuery, useTheme } from '@material-ui/core';
-import { useRegisterHumanValue } from '../jacdac/useRegisterValue';
+import { useRegisterHumanValue, useRegisterStringValue } from '../jacdac/useRegisterValue';
 import useEventCount from '../jacdac/useEventCount';
 import DeviceActions from './DeviceActions';
-import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, GET_ATTEMPT } from '../../../src/jdom/constants';
+import { LOST, FOUND, SRV_CTRL, SRV_LOGGER, GET_ATTEMPT, BaseReg } from '../../../src/jdom/constants';
 import useEventRaised from '../jacdac/useEventRaised';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import { ellipseJoin } from '../../../src/jdom/utils';
@@ -45,20 +44,29 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
     const services = useChange(device, () => device.services().filter(srv => !serviceFilter || serviceFilter(srv)))
     const theme = useTheme()
     const showActions = useMediaQuery(theme.breakpoints.up('sm'))
+    const dropped = useChange(device.qos, qos => qos.dropped);
 
     const serviceNames = ellipseJoin(services
         .filter(service => service.serviceClass !== SRV_CTRL && service.serviceClass !== SRV_LOGGER)
         .map(service => service.name), 18)
     const readingRegister = services.find(srv => srv.readingRegister)?.readingRegister;
     const reading = useRegisterHumanValue(readingRegister);
-    const labelInfo = [reading, serviceNames].filter(r => !!r).join(', ');
+
+    const alert = lost ? `Lost device...`
+        : dropped > 2 ? `${dropped} lost`
+            : undefined;
+    const labelInfo = [
+        !!dropped && `${dropped} lost`
+        , reading
+        , serviceNames
+    ].filter(r => !!r).join(', ');
 
     const handleChecked = c => setChecked(id, c)
     return <StyledTreeItem
         nodeId={id}
         labelText={name}
         labelInfo={labelInfo}
-        alert={lost && "Lost device..."}
+        alert={alert}
         kind={kind}
         checked={checked?.indexOf(id) > -1}
         setChecked={checkboxes && checkboxes.indexOf("device") > -1 && setChecked && handleChecked}
@@ -80,7 +88,6 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
     const specification = service.specification;
     const showSpecificationAction = specification && !dashboard;
     const id = service.id
-    const name = service.name
     const open = checked?.indexOf(id) > -1;
     const packets = specification?.packets;
     const registers = packets?.filter(isRegister)
@@ -92,6 +99,8 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         .filter(ev => !eventFilter || eventFilter(ev))
     const readingRegister = service.readingRegister;
     const reading = useRegisterHumanValue(readingRegister)
+    const instanceName = useRegisterStringValue(service.register(BaseReg.InstanceName));
+    const name = service.name + (instanceName ? ` ${instanceName}` : '');
     const theme = useTheme()
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
     const { setDrawerType } = useContext(AppContext);
@@ -109,7 +118,7 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         kind={"service"}
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
-        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`} onClick={handleSpecClick}>
+        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`} aria-label={"Open specification"} onClick={handleSpecClick}>
             <LaunchIcon fontSize={"small"} />
         </Link>}
     >
@@ -214,7 +223,7 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
     const [expanded, setExpanded] = useState<string[]>(defaultExpanded || []);
     const [selected, setSelected] = useState<string[]>(defaultSelected || []);
     const [checked, setChecked] = useState<string[]>(defaultChecked || [])
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const devices = useChange(bus, () => bus.devices().filter(dev => !deviceFilter || deviceFilter(dev)))
 
     const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
@@ -249,17 +258,17 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
             onNodeToggle={handleToggle}
             onNodeSelect={handleSelect}
         >
-        {devices?.map(device => <DeviceTreeItem
-            key={device.id}
-            device={device}
-            checked={checked}
-            setChecked={handleChecked}
-            checkboxes={checkboxes}
-            expanded={expanded}
-            selected={selected}
-            dashboard={dashboard}
-            {...other}
-        />)}
-    </TreeView>
+            {devices?.map(device => <DeviceTreeItem
+                key={device.id}
+                device={device}
+                checked={checked}
+                setChecked={handleChecked}
+                checkboxes={checkboxes}
+                expanded={expanded}
+                selected={selected}
+                dashboard={dashboard}
+                {...other}
+            />)}
+        </TreeView>
     </>);
 }

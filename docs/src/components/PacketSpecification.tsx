@@ -31,28 +31,34 @@ function MemberType(props: { member: jdspec.PacketMember }) {
     const classes = useStyles();
     const helperText = prettyMemberUnit(member, true);
 
-    return <li className={classes.field}>
-        {member.name}: <code>{helperText}</code>
-        {member.startRepeats ? ", starts repeating" : ""}
-    </li>
+    return <>
+        <li className={classes.field}>
+            {member.name !== "_" && `${member.name}: `}<code>{helperText}</code>
+        </li>
+    </>
 }
 
 function MembersType(props: { members: jdspec.PacketMember[], title?: string }) {
     const { members, title } = props;
 
-    const member = members[0]
-    if (!members?.length || (members.length == 1
-        && member.name == "_"
-        && !isSet(member.typicalMin)
-        && !isSet(member.absoluteMin)
-    )
-    )
-        return <></>
+    let repeatIndex = members.findIndex(m => !!m.startRepeats);
+    if (repeatIndex < 0) repeatIndex = members.length;
+    const beforeRepeat = members.slice(0, repeatIndex)
+    const afterRepeat = members.slice(repeatIndex)
+
     return <>
         {!!title && <h4>{title}</h4>}
-        <ul>
-            {members.map((member, i) => <MemberType key={`member${member.name}`} member={member} />)}
-        </ul>
+        {!!beforeRepeat.length && <ul>
+            {beforeRepeat
+                .map((member, i) => <MemberType key={`member${member.name}`} member={member} />)}
+        </ul>}
+        {!!afterRepeat.length && <>
+            <h5>starts repeating</h5>
+            <ul>
+                {afterRepeat
+                    .map((member, i) => <MemberType key={`member${member.name}`} member={member} />)}
+            </ul>
+        </>}
     </>
 }
 

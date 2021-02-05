@@ -1,4 +1,5 @@
 import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer"
+import { clampToStorage, numberFormatToStorageType } from "./spec"
 import { bufferEq, bufferToString, stringToBuffer } from "./utils"
 
 /*
@@ -214,6 +215,9 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
     if (!buf || !fmt) return undefined;
 
+    // hot path for buffers
+    if (fmt === "b")
+        return [buf.slice(0)] as T;
     // hot path
     const nf = numberFormatOfType(fmt);
     if (nf !== null) {
@@ -227,6 +231,7 @@ export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
 }
 
 function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
+    //console.log({ fmt, data })
     let idx = 0
     const parser = new TokenParser(fmt)
     while (parser.parse()) {
@@ -240,7 +245,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 
         let dataItem = data[idx++]
 
-        if (c0 == ch_r) {
+        if (c0 == ch_r && dataItem) {
             const fmt0 = fmt.slice(parser.fp)
             for (const velt of (dataItem as any[][])) {
                 off = jdpackCore(trg, fmt0, velt, off)
@@ -259,25 +264,28 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
                     throw new Error(`expecting number, got ` + typeof v)
-                if (trg)
-                    setNumber(trg, parser.nfmt, off, (v * parser.div) | 0)
+                if (trg) {
+                    const st: jdspec.StorageType = numberFormatToStorageType(parser.nfmt);
+                    setNumber(trg, parser.nfmt, off, clampToStorage((Math.round(v * parser.div)), st))
+                }
                 off += parser.size
             } else {
                 let buf: Uint8Array
-                if (typeof v == "string") {
+                if (typeof v === "string") {
                     if (c0 == ch_z)
                         buf = stringToBuffer(v + "\u0000")
                     else if (c0 == ch_s)
                         buf = stringToBuffer(v)
                     else
                         throw new Error(`unexpected string`)
-                } else if (v && typeof v == "object" && v.length != null) {
+                } else if (v && typeof v === "object" && v.length != null) {
                     // assume buffer
                     if (c0 == ch_b)
                         buf = v
                     else
                         throw new Error(`unexpected buffer`)
                 } else {
+                    console.log({ parser, v })
                     throw new Error(`expecting string or buffer`)
                 }
 
@@ -297,7 +305,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     }
 
     if (data.length > idx)
-        throw new Error(`format too short`)
+        throw new Error(`format '${fmt}' too short`)
 
     return off
 }
@@ -305,6 +313,11 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
 export function jdpack<T extends any[]>(fmt: string, data: T) {
     if (!fmt || !data)
         return undefined;
+
+    // hot path for buffers
+    if (fmt === "b")
+        return (data[0] as Uint8Array)?.slice(0);
+
     // hot path
     const nf = numberFormatOfType(fmt);
     if (nf !== null) {
@@ -330,14 +343,15 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
 }
 
 
-/*
+
 import { toHex } from "./utils"
 export function jdpackTest() {
-    function testOne(fmt: string, data0: any[]) {
+    function testOne(fmt: string, data0: any[], maxError?: number) {
         function checksame(a: any, b: any) {
             function fail(msg: string): never {
+                const err = `jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(a)}; b=${JSON.stringify(b)})`;
                 debugger
-                throw new Error(`jdpack test error: ${msg} (at ${fmt}; a=${JSON.stringify(a)}; b=${JSON.stringify(b)})`)
+                throw new Error(err)
             }
 
             if (a === b)
@@ -353,6 +367,12 @@ export function jdpackTest() {
                     checksame(a[i], b[i])
                 return
             }
+            if (maxError !== undefined
+                && typeof a === 'number'
+                && typeof b === 'number'
+                && Math.abs((a as number) - (b as number)) < maxError)
+                return;
+
             fail("not the same")
         }
 
@@ -379,7 +399,14 @@ export function jdpackTest() {
     testOne("u16 u16[]", [42, [18]])
     testOne("u16 u16[]", [42, []])
     testOne("u16 z[]", [42, ["foo", "bar", "bz"]])
+
+    const err = 1e-4
+    testOne("u0.16", [0], err)
+    testOne("u0.16", [0.42], err)
+    testOne("u0.16", [1], err)
+    testOne("i1.15", [0], err)
+    testOne("i1.15", [1], err)
+    testOne("i1.15", [-1], err)
 }
 
 jdpackTest()
-*/

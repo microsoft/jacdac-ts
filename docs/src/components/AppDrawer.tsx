@@ -1,11 +1,11 @@
 import React, { useContext } from "react";
-import { Drawer, Typography, Divider, makeStyles, createStyles, useMediaQuery, useTheme } from "@material-ui/core";
+import { Drawer, Divider, makeStyles, createStyles } from "@material-ui/core";
 import { IconButton } from "gatsby-theme-material-ui";
 // tslint:disable-next-line: no-submodule-imports
 import PacketView from "./tools/PacketView";
 import Toc from "./Toc";
 import JDomTreeView from "./JDomTreeView";
-import { DRAWER_WIDTH, MOBILE_BREAKPOINT, MOBILE_DRAWER_WIDTH, TOC_DRAWER_WIDTH } from "./layout";
+import { DRAWER_WIDTH, MOBILE_BREAKPOINT, TOC_DRAWER_WIDTH } from "./layout";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import AppContext, { DrawerType } from "./AppContext";
@@ -15,6 +15,7 @@ import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
 import DrawerSearchResults from "./DrawerSearchResults";
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
+import PacketStats from "./PacketStats";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {
@@ -60,7 +61,6 @@ export default function AppDrawer(props: {
     pagePath: string
 }) {
     const { pagePath } = props;
-    const theme = useTheme()
     const classes = useStyles()
     const { drawerType, setDrawerType, searchQuery } = useContext(AppContext)
     const open = drawerType !== DrawerType.None
@@ -103,7 +103,7 @@ export default function AppDrawer(props: {
                 <DrawerToolsButtonGroup showConnect={true} />
             </>}
             {spec && <span className={classes.fluid} />}
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton aria-label="Collapse" onClick={handleDrawerClose}>
                 <ChevronLeftIcon />
             </IconButton>
         </div>

@@ -1,5 +1,4 @@
 import { JDService } from "./service";
-import { JDEventSource } from "./eventsource";
 import { JDDevice } from "./device";
 import { JDBus } from "./bus";
 import { JDClient } from "./client";

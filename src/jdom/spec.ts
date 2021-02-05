@@ -4,7 +4,7 @@ import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap, toHex } from "./utils";
-import { SystemReg, SensorReg } from "./constants";
+import { SystemReg, SensorReg, SRV_CONTROL, SRV_ROLE_MANAGER, SRV_SETTINGS, SRV_BOOTLOADER, SRV_LOGGER, SRV_POWER, SRV_PROTO_TEST } from "./constants";
 import makecodeServicesData from "../../jacdac-spec/services/makecode.json";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
@@ -68,7 +68,7 @@ export function identifierToUrlPath(id: string) {
 /**
  * Checks if classIdentifier is compatible with requiredClassIdentifier
 */
-export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): boolean {
+export function isInstanceOf(classIdentifier: number, requiredClassIdentifier: number): boolean {
     // garbage data
     if (classIdentifier === undefined)
         return false;
@@ -83,6 +83,16 @@ export function isInstanceOf(classIdentifier, requiredClassIdentifier: number): 
         const extendSpec = serviceSpecificationFromName(extend);
         return !!extendSpec && isInstanceOf(extendSpec.classIdentifier, requiredClassIdentifier)
     });
+}
+
+export function isInfrastructure(spec: jdspec.ServiceSpec) {
+    return spec &&
+        ([
+            SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER,
+            SRV_POWER, SRV_SETTINGS, SRV_BOOTLOADER,
+            SRV_PROTO_TEST
+        ].indexOf(spec.classIdentifier) > -1
+            || spec.shortId[0] === "_");
 }
 
 export function makeCodeServices(): jdspec.MakeCodeServiceInfo[] {
@@ -140,6 +150,14 @@ export function isReading(pkt: jdspec.PacketInfo) {
     return pkt && (pkt.kind == "ro" && pkt.identifier == SystemReg.Reading)
 }
 
+export function isIntensity(pkt: jdspec.PacketInfo) {
+    return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Intensity;
+}
+
+export function isValue(pkt: jdspec.PacketInfo) {
+    return pkt && pkt.kind == "rw" && pkt.identifier == SystemReg.Value;
+}
+
 export function isValueOrIntensity(pkt: jdspec.PacketInfo) {
     return pkt && (pkt.kind == "rw" && (pkt.identifier == SystemReg.Value || pkt.identifier == SystemReg.Intensity))
 }
@@ -183,6 +201,20 @@ export function numberFormatFromStorageType(tp: jdspec.StorageType) {
         case -8: return NumberFormat.Int64LE
         case 8: return NumberFormat.UInt64LE
         case 0: return null
+        default: return null
+    }
+}
+
+export function numberFormatToStorageType(nf: NumberFormat) {
+    switch (nf) {
+        case NumberFormat.Int8LE: return -1;
+        case NumberFormat.UInt8LE: return 1;
+        case NumberFormat.Int16LE: return -2;
+        case NumberFormat.UInt16LE: return 2;
+        case NumberFormat.Int32LE: return -4;
+        case NumberFormat.UInt32LE: return 4;
+        case NumberFormat.Int64LE: return -8;
+        case NumberFormat.UInt64LE: return 8;
         default: return null
     }
 }

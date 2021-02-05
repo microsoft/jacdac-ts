@@ -1,5 +1,6 @@
 import { Grid, Input, Mark, Slider, Typography } from '@material-ui/core';
 import React from 'react';
+import { useId } from "react-use-id-hook"
 
 export default function InputSlider(props: {
     value: number,
@@ -11,10 +12,12 @@ export default function InputSlider(props: {
     step?: number,
     label?: string,
     disabled?: boolean,
-    marks?: boolean | Mark[]
+    marks?: boolean | Mark[],
+    type?: string
 }) {
-    const { min, max, step, label, disabled, marks, color, onChange, value, valueLabelFormat } = props;
+    const { min, max, step, label, disabled, marks, color, onChange, value, valueLabelFormat, type } = props;
     const readOnly = !onChange;
+    const labelId = useId();
 
     const handleSliderChange = (event: any, newValue: number | number[]) => {
         onChange(newValue as number);
@@ -41,11 +44,13 @@ export default function InputSlider(props: {
             </Grid>}
             <Grid item xs>
                 <Slider
+                    aria-label={label}
+                    aria-labelledby={labelId}
                     color={color}
                     disabled={disabled}
                     valueLabelFormat={valueLabelFormat}
                     value={value}
-                    onChange={handleSliderChange}
+                    onChange={readOnly ? undefined : handleSliderChange}
                     valueLabelDisplay="auto"
                     marks={marks}
                     min={min}
@@ -55,12 +60,15 @@ export default function InputSlider(props: {
             </Grid>
             <Grid item>
                 <Input
+                    aria-label={label}
+                    aria-labelledby={labelId}
                     disabled={disabled}
                     value={value}
                     readOnly={readOnly}
                     margin="dense"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
+                    type={type}
                     inputProps={{
                         step: step,
                         min: min,

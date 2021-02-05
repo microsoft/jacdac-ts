@@ -1,8 +1,8 @@
 import { JDService } from "../../../../src/jdom/service";
-import JDServiceHost from "../../../../src/jdom/servicehost";
+import ServiceHost from "../../../../src/jdom/servicehost";
 import useDeviceHost from "./useDeviceHost";
 
-export default function useServiceHost<T extends JDServiceHost>(service: JDService) {
+export default function useServiceHost<T extends ServiceHost>(service: JDService) {
     const host = useDeviceHost(service.device);
     return host?.service(service?.service_index) as T;
 }

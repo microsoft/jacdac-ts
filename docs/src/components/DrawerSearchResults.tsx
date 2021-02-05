@@ -11,20 +11,19 @@ import TreeItem from '@material-ui/lab/TreeItem';
 import Alert from "./ui/Alert"
 
 import { useDrawerSearchResults } from "./useDrawerSearchResults";
-import { ListItemText } from "@material-ui/core";
+import { List, ListItem, ListItemText } from "@material-ui/core";
 
 export default function DrawerSearchResults() {
     const results = useDrawerSearchResults();
-    return <TreeView
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
-    >
-        {!results.length && <Alert severity="info">no results found</Alert>}
-        {results.map(result => <TreeItem
-            key={'search' + result.url}
-            nodeId={result.url.replace(/\/$/, '')}
-            label={<Link to={result.url}>
-                <ListItemText primary={result.title} />
-            </Link>} />)}
-    </TreeView>
+    return <List>
+        {!results.length && <ListItem><Alert severity="info">no results found</Alert></ListItem>}
+        {results.map(result => <Link key={'search' + result.url} to={result.url} aria-label={result.title}>
+            <ListItem>
+                <ListItemText
+                    primaryTypographyProps={({ color: "textPrimary" })}
+                    aria-label={result.title}
+                    primary={result.title} />
+            </ListItem>
+        </Link>)}
+    </List>
 }

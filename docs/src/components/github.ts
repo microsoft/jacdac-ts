@@ -1,7 +1,7 @@
 import useFetch from "./useFetch";
 
 const ROOT = "https://api.github.com/"
-export const GITHUB_API_KEY = "GITHUB"
+export const GITHUB_API_KEY = "githubtoken"
 export interface GithubRelease {
     url: string,
     html_url: string,

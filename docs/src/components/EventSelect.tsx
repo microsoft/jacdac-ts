@@ -12,7 +12,7 @@ import FormControl from '@material-ui/core/FormControl';
 // tslint:disable-next-line: no-submodule-imports
 import Select from '@material-ui/core/Select';
 import { JDEvent } from '../../../src/jdom/event';
-import JACDACContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
 import clsx from 'clsx';
 import { arrayConcatMany } from '../../../src/jdom/utils';
@@ -37,7 +37,7 @@ export default function EventSelect(props: {
     className?: string
 }) {
     const { eventId, onChange, label, filter, className } = props
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const classes = useStyles();
     const events: JDEvent[] = useChange(bus, () => arrayConcatMany(arrayConcatMany(
         bus.devices().map((device: JDDevice) => device.services()

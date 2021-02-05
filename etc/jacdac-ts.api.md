@@ -6,18 +6,18 @@
 
 // @public (undocumented)
 export enum AccelerometerEvent {
-    FaceDown = 6,
-    FaceUp = 5,
-    Force_2g = 12,
-    Force_3g = 8,
-    Force_6g = 9,
-    Force_8g = 10,
-    Freefall = 7,
-    Shake = 11,
-    TiltDown = 2,
-    TiltLeft = 3,
-    TiltRight = 4,
-    TiltUp = 1
+    FaceDown = 134,
+    FaceUp = 133,
+    Force_2g = 140,
+    Force_3g = 136,
+    Force_6g = 137,
+    Force_8g = 138,
+    Freefall = 135,
+    Shake = 139,
+    TiltDown = 130,
+    TiltLeft = 131,
+    TiltRight = 132,
+    TiltUp = 129
 }
 
 // @public (undocumented)
@@ -38,10 +38,68 @@ export function addCustomServiceSpecification(service: jdspec.ServiceSpec): void
 export function ALIGN(n: number): number;
 
 // @public (undocumented)
+export enum AnalogButtonEvent {
+    Active = 1,
+    Inactive = 2
+}
+
+// @public (undocumented)
+export enum AnalogButtonReg {
+    ActiveThreshold = 6,
+    InactiveThreshold = 5,
+    Pressure = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum AnalogButtonVariant {
+    // (undocumented)
+    Capacitive = 2,
+    // (undocumented)
+    Pressure = 1
+}
+
+// @public (undocumented)
 export const ANNOUNCE = "announce";
 
 // @public (undocumented)
 export function anyRandomUint32(length: number): Uint32Array;
+
+// @public (undocumented)
+export enum ArcadeGamepadButton {
+    // (undocumented)
+    A = 5,
+    // (undocumented)
+    B = 6,
+    // (undocumented)
+    Down = 4,
+    // (undocumented)
+    Exit = 10,
+    // (undocumented)
+    Left = 1,
+    // (undocumented)
+    Menu = 7,
+    // (undocumented)
+    Reset = 9,
+    // (undocumented)
+    Right = 3,
+    // (undocumented)
+    Select = 8,
+    // (undocumented)
+    Up = 2
+}
+
+// @public (undocumented)
+export enum ArcadeGamepadEvent {
+    Down = 1,
+    Up = 2
+}
+
+// @public (undocumented)
+export enum ArcadeGamepadReg {
+    AvailableButtons = 384,
+    Buttons = 257
+}
 
 // @public (undocumented)
 export type ArgType = number | boolean | string | Uint8Array;
@@ -54,6 +112,17 @@ export function arrayShuffle<T>(a: T[]): T[];
 
 // @public (undocumented)
 export function assert(cond: boolean, msg?: string): void;
+
+// @public (undocumented)
+export enum BarometerReg {
+    Pressure = 257,
+    PressureError = 262
+}
+
+// @public (undocumented)
+export enum BaseEvent {
+    StatusCodeChanged = 4
+}
 
 // @public (undocumented)
 export enum BaseReg {
@@ -88,7 +157,7 @@ export function bufferConcat(a: Uint8Array, b: Uint8Array): Uint8Array;
 export function bufferConcatMany(bufs: Uint8Array[]): Uint8Array;
 
 // @public (undocumented)
-export function bufferEq(a: Uint8Array, b: ArrayLike<number>): boolean;
+export function bufferEq(a: Uint8Array, b: ArrayLike<number>, offset?: number): boolean;
 
 // @public (undocumented)
 export function bufferToArray(data: Uint8Array, fmt: NumberFormat): number[];
@@ -132,10 +201,31 @@ export enum BusState {
 }
 
 // @public (undocumented)
+export interface BusStats {
+    // (undocumented)
+    acks: number;
+    // (undocumented)
+    announce: number;
+    // (undocumented)
+    bytes: number;
+    // (undocumented)
+    packets: number;
+}
+
+// @public (undocumented)
+export class BusStatsMonitor extends JDEventSource {
+    constructor(bus: JDBus);
+    // (undocumented)
+    readonly bus: JDBus;
+    // (undocumented)
+    get current(): BusStats;
+    }
+
+// @public (undocumented)
 export enum ButtonEvent {
-    Click = 3,
+    Click = 128,
     Down = 1,
-    LongClick = 4,
+    LongClick = 129,
     Up = 2
 }
 
@@ -159,6 +249,31 @@ export function calibrateAsync(service: JDService): Promise<void>;
 
 // @public (undocumented)
 export const CHANGE = "change";
+
+// @public (undocumented)
+export enum CharacterScreenReg {
+    Columns = 385,
+    Message = 2,
+    Rows = 384,
+    TextDirection = 130,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum CharacterScreenTextDirection {
+    // (undocumented)
+    LeftToRight = 1,
+    // (undocumented)
+    RightToLeft = 2
+}
+
+// @public (undocumented)
+export enum CharacterScreenVariant {
+    // (undocumented)
+    LCD = 1,
+    // (undocumented)
+    OLED = 2
+}
 
 // @public (undocumented)
 export function clampToStorage(v: number, tp: jdspec.StorageType): number;
@@ -191,8 +306,8 @@ export const CMD_SET_REG = 8192;
 export const CMD_TOP_MASK = 61440;
 
 // @public (undocumented)
-export enum CodalMessageBusCmd {
-    Send = 128
+export enum ColorReg {
+    Color = 257
 }
 
 // @public (undocumented)
@@ -253,6 +368,7 @@ export enum ControlReg {
     FirmwareVersion = 389,
     McuTemperature = 386,
     ResetIn = 128,
+    StatusLight = 129,
     Uptime = 390
 }
 
@@ -341,6 +457,12 @@ export const DEVICE_FIRMWARE_INFO = "firmwareInfo";
 export const DEVICE_FOUND = "deviceFound";
 
 // @public (undocumented)
+export const DEVICE_HOST_ADDED = "deviceHostAdded";
+
+// @public (undocumented)
+export const DEVICE_HOST_REMOVED = "deviceHostRemoved";
+
+// @public (undocumented)
 export const DEVICE_LOST = "deviceLost";
 
 // @public (undocumented)
@@ -351,6 +473,18 @@ export const DEVICE_NODE_NAME = "device";
 
 // @public (undocumented)
 export const DEVICE_RESTART = "deviceRestart";
+
+// @public (undocumented)
+export interface DeviceFilter {
+    // (undocumented)
+    announced?: boolean;
+    // (undocumented)
+    ignoreSelf?: boolean;
+    // (undocumented)
+    serviceClass?: number;
+    // (undocumented)
+    serviceName?: string;
+}
 
 // @public (undocumented)
 export function deviceServiceName(pkt: Packet): string;
@@ -372,6 +506,44 @@ export const DISCONNECT = "disconnect";
 
 // @public (undocumented)
 export const DISCONNECTING = "disconnecting";
+
+// @public (undocumented)
+export enum DistanceReg {
+    Distance = 257,
+    MaxRange = 261,
+    MinRange = 260,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum DistanceVariant {
+    // (undocumented)
+    Infrared = 2,
+    // (undocumented)
+    Laser = 4,
+    // (undocumented)
+    LiDAR = 3,
+    // (undocumented)
+    Ultrasonic = 1
+}
+
+// @public (undocumented)
+export enum ECO2Reg {
+    ConditioningPeriod = 384,
+    E_CO2 = 257,
+    E_CO2Error = 262,
+    MaxE_CO2 = 261,
+    MinE_CO2 = 260,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ECO2Variant {
+    // (undocumented)
+    NDIR = 2,
+    // (undocumented)
+    VOC = 1
+}
 
 // @public (undocumented)
 export function ellipseJoin(values: string[], maxChars: number, ellipse?: string): string;
@@ -486,50 +658,6 @@ export function fromHex(hex: string): Uint8Array;
 export function fromUTF8(binstr: string): string;
 
 // @public (undocumented)
-enum GamepadButton_2 {
-    // (undocumented)
-    A = 5,
-    // (undocumented)
-    B = 6,
-    // (undocumented)
-    Down = 4,
-    // (undocumented)
-    Exit = 10,
-    // (undocumented)
-    Left = 1,
-    // (undocumented)
-    Menu = 7,
-    // (undocumented)
-    MenuAlt = 8,
-    // (undocumented)
-    Reset = 9,
-    // (undocumented)
-    Right = 3,
-    // (undocumented)
-    Up = 2
-}
-
-export { GamepadButton_2 as GamepadButton }
-
-// @public (undocumented)
-export enum GamepadCmd {
-    Announce = 0
-}
-
-// @public (undocumented)
-enum GamepadEvent_2 {
-    Down = 1,
-    Up = 2
-}
-
-export { GamepadEvent_2 as GamepadEvent }
-
-// @public (undocumented)
-export enum GamepadReg {
-    Buttons = 257
-}
-
-// @public (undocumented)
 export function generateDeviceList(uf2: Uint8Array): string;
 
 // @public (undocumented)
@@ -542,10 +670,41 @@ export function getMLModelFormatName(model: Uint8Array): string;
 export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: number): number;
 
 // @public (undocumented)
+export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]>;
+
+// @public (undocumented)
+export enum GyroscopeReg {
+    MaxRate = 128,
+    RotationRates = 257,
+    RotationRatesError = 262
+}
+
+// @public (undocumented)
 export function hash(buf: Uint8Array, bits: number): number;
 
 // @public (undocumented)
 export function hasPipeReport(info: jdspec.PacketInfo): jdspec.PacketMember;
+
+// @public (undocumented)
+export enum HeartRateReg {
+    HeartRate = 257,
+    HeartRateError = 262,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum HeartRateVariant {
+    // (undocumented)
+    Chest = 2,
+    // (undocumented)
+    Finger = 1,
+    // (undocumented)
+    Pump = 4,
+    // (undocumented)
+    WebCam = 5,
+    // (undocumented)
+    Wrist = 3
+}
 
 // @public (undocumented)
 export function hexDump(d: ArrayLike<number>): string;
@@ -635,12 +794,87 @@ export const HF2_STATUS_INVALID_CMD = 1;
 export const HF2_STATUS_OK = 0;
 
 // @public (undocumented)
+export enum HidKeyboardAction {
+    // (undocumented)
+    Down = 2,
+    // (undocumented)
+    Press = 0,
+    // (undocumented)
+    Up = 1
+}
+
+// @public (undocumented)
+export enum HidKeyboardCmd {
+    Clear = 129,
+    Key = 128
+}
+
+// @public (undocumented)
+export enum HidKeyboardModifiers {
+    // (undocumented)
+    LeftAlt = 226,
+    // (undocumented)
+    LeftControl = 224,
+    // (undocumented)
+    LeftGUID = 227,
+    // (undocumented)
+    LeftShift = 225,
+    // (undocumented)
+    RightAlt = 230,
+    // (undocumented)
+    RightControl = 228,
+    // (undocumented)
+    RightGUID = 231,
+    // (undocumented)
+    RightShift = 229
+}
+
+// @public (undocumented)
+export enum HidMouseButton {
+    // (undocumented)
+    Left = 2,
+    // (undocumented)
+    Middle = 4,
+    // (undocumented)
+    Right = 1
+}
+
+// @public (undocumented)
+export enum HidMouseButtonEvent {
+    // (undocumented)
+    Click = 3,
+    // (undocumented)
+    DoubleClick = 4,
+    // (undocumented)
+    Down = 2,
+    // (undocumented)
+    Up = 1
+}
+
+// @public (undocumented)
+export enum HidMouseCmd {
+    Move = 129,
+    SetButton = 128,
+    Wheel = 130
+}
+
+// @public (undocumented)
+export function hsvToCss(hue: number, saturation: number, value: number, brightness: number, monochrome?: boolean): string;
+
+// @public (undocumented)
 export enum HumidityReg {
-    Humidity = 257
+    Humidity = 257,
+    HumidityError = 262
 }
 
 // @public (undocumented)
 export function identifierToUrlPath(id: string): string;
+
+// @public (undocumented)
+export const IDENTIFY = "identify";
+
+// @public (undocumented)
+export const IDENTIFY_DURATION = 2000;
 
 // @public (undocumented)
 export interface IDeviceNameSettings {
@@ -652,6 +886,12 @@ export interface IDeviceNameSettings {
 
 // @public (undocumented)
 export function idiv(a: number, b: number): number;
+
+// @public (undocumented)
+export enum IlluminanceReg {
+    Light = 257,
+    LightError = 262
+}
 
 // @public (undocumented)
 export function imageDeviceOf(spec: jdspec.DeviceSpec): string;
@@ -678,9 +918,9 @@ export enum IotHubCmd {
 
 // @public (undocumented)
 export enum IotHubEvent {
-    Connected = 1,
-    ConnectionError = 2,
-    DeviceboundStr = 3
+    Connected = 128,
+    ConnectionError = 129,
+    DeviceboundStr = 130
 }
 
 // @public
@@ -706,10 +946,7 @@ export function isAckError(e: Error): boolean;
 export function isActuator(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
-export function isBootloaderFlashing(devices: JDDevice[], flashing: (device: JDDevice) => boolean, candidate: JDDevice): boolean;
-
-// @public (undocumented)
-export function isBootloaderRelated(id1: string, id2: string): boolean;
+export function isBufferEmpty(data: Uint8Array): boolean;
 
 // @public (undocumented)
 export function isCancelError(e: Error): boolean;
@@ -723,11 +960,17 @@ export function isConstRegister(pkt: jdspec.PacketInfo): boolean;
 // @public (undocumented)
 export function isEvent(pkt: jdspec.PacketInfo): boolean;
 
+// @public (undocumented)
+export function isInfrastructure(spec: jdspec.ServiceSpec): boolean;
+
 // @public
-export function isInstanceOf(classIdentifier: any, requiredClassIdentifier: number): boolean;
+export function isInstanceOf(classIdentifier: number, requiredClassIdentifier: number): boolean;
 
 // @public (undocumented)
 export function isIntegerType(tp: string): boolean;
+
+// @public (undocumented)
+export function isIntensity(pkt: jdspec.PacketInfo): boolean;
 
 // @public (undocumented)
 export function isMLModelSupported(model: Uint8Array, formatRegValue: number): boolean;
@@ -752,6 +995,9 @@ export function isSensor(spec: jdspec.ServiceSpec): boolean;
 
 // @public (undocumented)
 export function isSet(v: any): boolean;
+
+// @public (undocumented)
+export function isValue(pkt: jdspec.PacketInfo): boolean;
 
 // @public (undocumented)
 export function isValueOrIntensity(pkt: jdspec.PacketInfo): boolean;
@@ -807,6 +1053,7 @@ export const JD_SERVICE_INDEX_PIPE = 62;
 // @public
 export class JDBus extends JDNode {
     constructor(transport: PacketTransport, options?: BusOptions);
+    addDeviceHost(deviceHost: DeviceHost): JDDevice;
     // (undocumented)
     get children(): JDNode[];
     // (undocumented)
@@ -819,10 +1066,10 @@ export class JDBus extends JDNode {
     get connecting(): boolean;
     get connectionState(): BusState;
     device(id: string): JDDevice;
-    devices(options?: {
-        serviceName?: string;
-        serviceClass?: number;
-    }): JDDevice[];
+    deviceHost(deviceId: string): DeviceHost;
+    // Warning: (ae-forgotten-export) The symbol "DeviceHost" needs to be exported by the entry point jacdac.d.ts
+    deviceHosts(): DeviceHost[];
+    devices(options?: DeviceFilter): JDDevice[];
     // (undocumented)
     get devicesFrozen(): boolean;
     // (undocumented)
@@ -863,6 +1110,7 @@ export class JDBus extends JDNode {
     processPacket(pkt: Packet): void;
     // (undocumented)
     get qualifiedName(): string;
+    removeDeviceHost(deviceHost: DeviceHost): void;
     // (undocumented)
     get safeBoot(): boolean;
     set safeBoot(enabled: boolean);
@@ -879,6 +1127,12 @@ export class JDBus extends JDNode {
     // (undocumented)
     setBackgroundFirmwareScans(enabled: boolean): void;
     // (undocumented)
+    start(): void;
+    // (undocumented)
+    readonly stats: BusStatsMonitor;
+    // (undocumented)
+    stop(): void;
+    // (undocumented)
     get timestamp(): number;
     // (undocumented)
     toString(): string;
@@ -893,6 +1147,8 @@ export class JDBus extends JDNode {
 export class JDClient extends JDEventSource {
     constructor();
     // (undocumented)
+    protected log(msg: any): void;
+    // (undocumented)
     mount(unsubscribe: () => void): () => void;
     // (undocumented)
     unmount(): void;
@@ -903,6 +1159,8 @@ export class JDDevice extends JDNode {
     constructor(bus: JDBus, deviceId: string);
     // (undocumented)
     get announced(): boolean;
+    // (undocumented)
+    get announceFlags(): ControlAnnounceFlags;
     // (undocumented)
     readonly bus: JDBus;
     // (undocumented)
@@ -929,6 +1187,8 @@ export class JDDevice extends JDNode {
     // (undocumented)
     identify(): Promise<void>;
     // (undocumented)
+    get identifying(): boolean;
+    // (undocumented)
     lastSeen: number;
     // (undocumented)
     lastServiceUpdate: number;
@@ -941,6 +1201,8 @@ export class JDDevice extends JDNode {
     // (undocumented)
     get nodeKind(): string;
     // (undocumented)
+    get packetCount(): number;
+    // (undocumented)
     get parent(): JDNode;
     get physical(): boolean;
     // (undocumented)
@@ -950,12 +1212,16 @@ export class JDDevice extends JDNode {
     // (undocumented)
     processPacket(pkt: Packet): void;
     // (undocumented)
+    readonly qos: QualityOfService;
+    // (undocumented)
     get qualifiedName(): string;
     get replay(): boolean;
     // (undocumented)
     reset(): Promise<void>;
     // (undocumented)
     resolveFirmwareIdentifier(): Promise<number>;
+    // (undocumented)
+    get restartCounter(): number;
     // (undocumented)
     sendCtrlCommand(cmd: number, payload?: Buffer): Promise<void>;
     // (undocumented)
@@ -973,9 +1239,8 @@ export class JDDevice extends JDNode {
         serviceIndex?: number;
         serviceName?: string;
         serviceClass?: number;
+        specification?: boolean;
     }): JDService[];
-    // (undocumented)
-    servicesData: Uint8Array;
     // (undocumented)
     get shortId(): string;
     get source(): string;
@@ -983,7 +1248,7 @@ export class JDDevice extends JDNode {
 
 // @public (undocumented)
 export class JDEvent extends JDServiceMemberNode {
-    constructor(service: JDService, address: number);
+    constructor(service: JDService, code: number);
     // (undocumented)
     get children(): JDNode[];
     // (undocumented)
@@ -1082,8 +1347,11 @@ export function jdpack<T extends any[]>(fmt: string, data: T): Uint8Array;
 export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T): boolean;
 
 // @public (undocumented)
+export function jdpackTest(): void;
+
+// @public (undocumented)
 export class JDRegister extends JDServiceMemberNode {
-    constructor(service: JDService, address: number);
+    constructor(service: JDService, code: number);
     // (undocumented)
     get boolValue(): boolean;
     // (undocumented)
@@ -1125,7 +1393,7 @@ export class JDRegister extends JDServiceMemberNode {
     // (undocumented)
     sendSetIntAsync(value: number, autoRefresh?: boolean): Promise<void>;
     // (undocumented)
-    sendSetPackedAsync<T extends any[]>(fmt: string, values: any[], autoRefresh?: boolean): Promise<void>;
+    sendSetPackedAsync(fmt: string, values: any[], autoRefresh?: boolean): Promise<void>;
     // (undocumented)
     sendSetStringAsync(value: string, autoRefresh?: boolean): Promise<void>;
     // (undocumented)
@@ -1140,19 +1408,25 @@ export class JDRegister extends JDServiceMemberNode {
 export class JDService extends JDNode {
     constructor(device: JDDevice, service_index: number);
     // (undocumented)
+    addClient(client: JDServiceClient): void;
+    // (undocumented)
     get children(): JDNode[];
+    // (undocumented)
+    get clients(): JDServiceClient[];
     // (undocumented)
     compareTo(b: JDService): number;
     // (undocumented)
     readonly device: JDDevice;
     // (undocumented)
-    event(identifier: number): JDEvent;
+    event(eventCode: number): JDEvent;
     // (undocumented)
     get events(): JDEvent[];
     // (undocumented)
     get friendlyName(): string;
     // (undocumented)
     get id(): string;
+    // (undocumented)
+    get intensityRegister(): JDRegister;
     // (undocumented)
     get name(): string;
     // (undocumented)
@@ -1166,17 +1440,21 @@ export class JDService extends JDNode {
     // (undocumented)
     get readingRegister(): JDRegister;
     // (undocumented)
-    register(identifier: number): JDRegister;
+    receiveWithInPipe<TValues extends any[]>(cmd: number, packFormat: string): Promise<TValues[]>;
+    // (undocumented)
+    register(registerCode: number): JDRegister;
     // (undocumented)
     registers(): JDRegister[];
     // (undocumented)
     registersUseAcks: boolean;
     // (undocumented)
+    removeClient(client: JDServiceClient): void;
+    // (undocumented)
     report(identifier: number): Packet;
     // (undocumented)
     get reports(): Packet[];
     // (undocumented)
-    sendCmdAsync(cmd: number, ack?: boolean): Promise<void>;
+    sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean): Promise<void>;
     // (undocumented)
     sendCmdAwaitResponseAsync(pkt: Packet, timeout?: number): Promise<Packet>;
     // (undocumented)
@@ -1188,6 +1466,8 @@ export class JDService extends JDNode {
     get specification(): jdspec.ServiceSpec;
     // (undocumented)
     get statusCodeRegister(): JDRegister;
+    // (undocumented)
+    get valueRegister(): JDRegister;
     }
 
 // @public (undocumented)
@@ -1205,9 +1485,9 @@ export class JDServiceClient extends JDClient {
 
 // @public (undocumented)
 export abstract class JDServiceMemberNode extends JDNode {
-    constructor(service: JDService, address: number, isPacket: (pkt: jdspec.PacketInfo) => boolean);
+    constructor(service: JDService, code: number, isPacket: (pkt: jdspec.PacketInfo) => boolean);
     // (undocumented)
-    readonly address: number;
+    readonly code: number;
     // (undocumented)
     get friendlyName(): string;
     // (undocumented)
@@ -1228,79 +1508,46 @@ export abstract class JDServiceMemberNode extends JDNode {
 export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T;
 
 // @public (undocumented)
+export enum JoystickReg {
+    Digital = 384,
+    Direction = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum JoystickVariant {
+    // (undocumented)
+    ArcadeBall = 2,
+    // (undocumented)
+    ArcadeStick = 3,
+    // (undocumented)
+    Thumb = 1
+}
+
+// @public (undocumented)
 export function jsonCopyFrom<T>(trg: T, src: T): void;
 
 // @public (undocumented)
 export function JSONTryParse(src: string): any;
 
 // @public (undocumented)
-export enum KeyboardAction {
-    // (undocumented)
-    Down = 2,
-    // (undocumented)
-    Press = 0,
-    // (undocumented)
-    Up = 1
-}
-
-// @public (undocumented)
-export enum KeyboardCmd {
-    Clear = 129,
-    Key = 128
-}
-
-// @public (undocumented)
-export enum KeyboardModifiers {
-    // (undocumented)
-    LeftAlt = 226,
-    // (undocumented)
-    LeftControl = 224,
-    // (undocumented)
-    LeftGUID = 227,
-    // (undocumented)
-    LeftShift = 225,
-    // (undocumented)
-    RightAlt = 230,
-    // (undocumented)
-    RightControl = 228,
-    // (undocumented)
-    RightGUID = 231,
-    // (undocumented)
-    RightShift = 229
-}
-
-// @public (undocumented)
 export const LATE = "late";
 
 // @public (undocumented)
-export enum LedMatrixControllerCmd {
-    Clear = 128
+export enum LEDMatrixReg {
+    Brightness = 1,
+    Columns = 386,
+    Leds = 2,
+    Rows = 385
 }
 
 // @public (undocumented)
-export enum LedMatrixControllerReg {
-    Brightness = 130,
-    Columns = 132,
-    Enabled = 129,
-    Leds = 128,
-    Rows = 131
-}
-
-// @public (undocumented)
-export enum LedMatrixDisplayReg {
-    Leds = 257
-}
-
-// @public (undocumented)
-export enum LightCmd {
+export enum LedPixelCmd {
     Run = 129
 }
 
 // @public (undocumented)
-export function lightEncode(format: string, args: (number | number[])[]): Uint8Array;
-
-// @public (undocumented)
-export enum LightLightType {
+export enum LedPixelLightType {
     // (undocumented)
     APA102 = 16,
     // (undocumented)
@@ -1310,12 +1557,129 @@ export enum LightLightType {
 }
 
 // @public (undocumented)
-export enum LightReg {
+export enum LedPixelReg {
     ActualBrightness = 384,
     Brightness = 1,
     LightType = 128,
+    MaxPixels = 385,
     MaxPower = 7,
-    NumPixels = 129
+    NumColumns = 131,
+    NumPixels = 129,
+    NumRepeats = 130,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum LedPixelVariant {
+    // (undocumented)
+    Jewel = 4,
+    // (undocumented)
+    Matrix = 5,
+    // (undocumented)
+    Ring = 2,
+    // (undocumented)
+    Stick = 3,
+    // (undocumented)
+    Strip = 1
+}
+
+// @public (undocumented)
+export enum LedReg {
+    Brightness = 1,
+    LedCount = 131,
+    LuminousIntensity = 133,
+    MaxPower = 7,
+    Steps = 130,
+    Variant = 263,
+    WaveLength = 132
+}
+
+// @public (undocumented)
+export enum LedVariant {
+    // (undocumented)
+    Bead = 4,
+    // (undocumented)
+    Power = 3,
+    // (undocumented)
+    SMD = 2,
+    // (undocumented)
+    ThroughHole = 1
+}
+
+// @public (undocumented)
+export const LIGHT_MODE_ADD_RGB = 1;
+
+// @public (undocumented)
+export const LIGHT_MODE_LAST = 3;
+
+// @public (undocumented)
+export const LIGHT_MODE_MULTIPLY_RGB = 3;
+
+// @public (undocumented)
+export const LIGHT_MODE_REPLACE = 0;
+
+// @public (undocumented)
+export const LIGHT_MODE_SUBTRACT_RGB = 2;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL1 = 193;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL1_SET = 207;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL2 = 194;
+
+// @public (undocumented)
+export const LIGHT_PROG_COL3 = 195;
+
+// @public (undocumented)
+export const LIGHT_PROG_COLN = 192;
+
+// @public (undocumented)
+export const LIGHT_PROG_FADE = 209;
+
+// @public (undocumented)
+export const LIGHT_PROG_FADE_HSV = 210;
+
+// @public (undocumented)
+export const LIGHT_PROG_MODE = 215;
+
+// @public (undocumented)
+export const LIGHT_PROG_MODE1 = 216;
+
+// @public (undocumented)
+export const LIGHT_PROG_RANGE = 214;
+
+// @public (undocumented)
+export const LIGHT_PROG_ROTATE_BACK = 212;
+
+// @public (undocumented)
+export const LIGHT_PROG_ROTATE_FWD = 211;
+
+// @public (undocumented)
+export const LIGHT_PROG_SET_ALL = 208;
+
+// @public (undocumented)
+export const LIGHT_PROG_SHOW = 213;
+
+// @public (undocumented)
+export function lightEncode(format: string, args: (number | number[])[]): Uint8Array;
+
+// @public (undocumented)
+export enum LightLevelReg {
+    LightLevel = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum LightLevelVariant {
+    // (undocumented)
+    Ambient = 3,
+    // (undocumented)
+    LEDMatrix = 2,
+    // (undocumented)
+    PhotoResistor = 1
 }
 
 // @public (undocumented)
@@ -1359,6 +1723,35 @@ export const LOST = "lost";
 
 // @public (undocumented)
 export function makeCodeServices(): jdspec.MakeCodeServiceInfo[];
+
+// @public (undocumented)
+export enum MatrixKeypadEvent {
+    Click = 128,
+    Down = 1,
+    LongClick = 129,
+    Up = 2
+}
+
+// @public (undocumented)
+export enum MatrixKeypadReg {
+    Columns = 385,
+    Labels = 386,
+    Pressed = 257,
+    Rows = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum MatrixKeypadVariant {
+    // (undocumented)
+    Elastomer = 3,
+    // (undocumented)
+    ElastomerLEDPixel = 4,
+    // (undocumented)
+    Keyboard = 2,
+    // (undocumented)
+    Membrane = 1
+}
 
 // @public (undocumented)
 export function memberValueToString(value: any, info: jdspec.PacketMember): string;
@@ -1435,57 +1828,34 @@ export enum ModelRunnerReg {
 }
 
 // @public (undocumented)
-export enum MonoLightReg {
-    Brightness = 1,
-    CurrentIteration = 128,
-    MaxIterations = 129,
-    MaxPower = 7,
-    MaxSteps = 384,
-    Steps = 130
+export enum MotionReg {
+    Angle = 385,
+    MaxDistance = 384,
+    Moving = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum MotionVariant {
+    // (undocumented)
+    PIR = 1
 }
 
 // @public (undocumented)
 export enum MotorReg {
     Duty = 2,
-    Enabled = 1
-}
-
-// @public (undocumented)
-export enum MouseButton {
-    // (undocumented)
-    Left = 2,
-    // (undocumented)
-    Middle = 4,
-    // (undocumented)
-    Right = 1
-}
-
-// @public (undocumented)
-export enum MouseButtonEvent {
-    // (undocumented)
-    Click = 3,
-    // (undocumented)
-    DoubleClick = 4,
-    // (undocumented)
-    Down = 2,
-    // (undocumented)
-    Up = 1
-}
-
-// @public (undocumented)
-export enum MouseCmd {
-    Move = 129,
-    SetButton = 128,
-    Wheel = 130
+    Enabled = 1,
+    LoadSpeed = 385,
+    LoadTorque = 384
 }
 
 // @public (undocumented)
 export enum MultitouchEvent {
-    LongPress = 4,
+    LongPress = 129,
     Release = 2,
-    SwipeNeg = 17,
-    SwipePos = 16,
-    Tap = 3,
+    SwipeNeg = 145,
+    SwipePos = 144,
+    Tap = 128,
     Touch = 1
 }
 
@@ -1554,6 +1924,9 @@ export enum NumberFormat {
 
 // @public (undocumented)
 export function numberFormatFromStorageType(tp: jdspec.StorageType): NumberFormat.Int8LE | NumberFormat.UInt8LE | NumberFormat.Int16LE | NumberFormat.UInt16LE | NumberFormat.Int32LE | NumberFormat.UInt32LE | NumberFormat.UInt64LE | NumberFormat.Int64LE;
+
+// @public (undocumented)
+export function numberFormatToStorageType(nf: NumberFormat): 1 | 2 | 4 | -4 | -2 | 8 | -1 | -8;
 
 // @public (undocumented)
 export interface Observable<T> {
@@ -1691,6 +2064,9 @@ export class Packet {
     // (undocumented)
     withFrameStripped(): Uint8Array;
 }
+
+// @public (undocumented)
+export const PACKET_ANNOUCE = "packetAnnounce";
 
 // @public (undocumented)
 export const PACKET_EVENT = "packetEvent";
@@ -1843,6 +2219,9 @@ export function parseTrace(contents: string): Trace;
 export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[];
 
 // @public (undocumented)
+export function pick(...values: number[]): number;
+
+// @public (undocumented)
 export const PIPE_CLOSE_MASK = 32;
 
 // @public (undocumented)
@@ -1866,6 +2245,20 @@ export interface PipeInfo {
     localPipe?: any;
     // (undocumented)
     pipeType?: string;
+}
+
+// @public (undocumented)
+export enum PotentiometerReg {
+    Position = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum PotentiometerVariant {
+    // (undocumented)
+    Rotary = 2,
+    // (undocumented)
+    Slider = 1
 }
 
 // @public (undocumented)
@@ -1983,7 +2376,32 @@ export enum ProtoTestReg {
 }
 
 // @public (undocumented)
+export enum PulseOximeterReg {
+    Oxygen = 257,
+    OxygenError = 262
+}
+
+// @public (undocumented)
+export class QualityOfService extends JDEventSource {
+    constructor();
+    get dropped(): number;
+    // (undocumented)
+    processAnnouncement(pkt: Packet): void;
+    // (undocumented)
+    processPacket(pkt: Packet): void;
+    }
+
+// @public (undocumented)
+export enum RainGaugeReg {
+    Precipitation = 257,
+    PrecipitationPrecision = 264
+}
+
+// @public (undocumented)
 export function randomUInt(max: number): number;
+
+// @public (undocumented)
+export function range(end: number): number[];
 
 // @public (undocumented)
 export function read16(buf: ArrayLike<number>, pos: number): number;
@@ -1996,6 +2414,55 @@ export function readBlobToText(blob: Blob): Promise<string>;
 
 // @public (undocumented)
 export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array>;
+
+// @public (undocumented)
+export const READING_SENT = "readingSent";
+
+// @public (undocumented)
+export enum RealTimeClockCmd {
+    SetTime = 128
+}
+
+// @public (undocumented)
+export enum RealTimeClockReg {
+    Error = 384,
+    LocalTime = 257,
+    Precision = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum RealTimeClockVariant {
+    // (undocumented)
+    Computer = 1,
+    // (undocumented)
+    Crystal = 2,
+    // (undocumented)
+    Cuckoo = 3
+}
+
+// @public (undocumented)
+export enum ReflectedLightEvent {
+    Dark = 2,
+    Light = 1
+}
+
+// @public (undocumented)
+export enum ReflectedLightReg {
+    Brightness = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ReflectedLightVariant {
+    // (undocumented)
+    InfraredAnalog = 2,
+    // (undocumented)
+    InfraredDigital = 1
+}
+
+// @public (undocumented)
+export const REFRESH = "refresh";
 
 // @public (undocumented)
 export const REGISTER_NODE_NAME = "register";
@@ -2036,6 +2503,29 @@ export enum RegisterType {
 }
 
 // @public (undocumented)
+export enum RelayEvent {
+    Off = 2,
+    On = 1
+}
+
+// @public (undocumented)
+export enum RelayReg {
+    Closed = 1,
+    MaxSwitchingCurrent = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum RelayVariant {
+    // (undocumented)
+    Electromechanical = 1,
+    // (undocumented)
+    Reed = 3,
+    // (undocumented)
+    SolidState = 2
+}
+
+// @public (undocumented)
 export class RemoteRequestedDevice {
     constructor(parent: RoleManagerClient, name: string);
     // (undocumented)
@@ -2045,17 +2535,22 @@ export class RemoteRequestedDevice {
     // (undocumented)
     isCandidate(ldev: JDDevice): boolean;
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    parent: RoleManagerClient;
+    readonly parent: RoleManagerClient;
     // (undocumented)
-    select(dev: JDDevice): void;
+    select(dev: JDDevice): Promise<void>;
     // (undocumented)
-    services: number[];
+    readonly services: number[];
+    // (undocumented)
+    toString(): string;
 }
 
 // @public (undocumented)
 export const REMOVE_LISTENER = "removeListener";
+
+// @public (undocumented)
+export const RENDER = "render";
 
 // @public (undocumented)
 export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void;
@@ -2070,6 +2565,9 @@ export const REPORT_RECEIVE = "reportReceive";
 export const REPORT_UPDATE = "reportUpdate";
 
 // @public (undocumented)
+export const RESET = "reset";
+
+// @public (undocumented)
 export function resolveMakecodeService(service: jdspec.ServiceSpec): jdspec.MakeCodeServiceInfo;
 
 // @public (undocumented)
@@ -2080,15 +2578,25 @@ export const RESTART = "restart";
 
 // @public (undocumented)
 export class RoleManagerClient extends JDServiceClient {
-    constructor(service: JDService);
+    constructor(service: JDService, options?: {
+        autoBind?: boolean;
+    });
+    // (undocumented)
+    bindDevices(): Promise<void>;
     // (undocumented)
     clearRoles(): Promise<void>;
     // (undocumented)
-    static create(bus: JDBus, print?: (s: string) => void): RoleManagerClient;
+    readonly options?: {
+        autoBind?: boolean;
+    };
     // (undocumented)
     remoteRequestedDevices: RemoteRequestedDevice[];
     // (undocumented)
+    scan(): Promise<void>;
+    // (undocumented)
     setRole(dev: JDDevice, name: string): Promise<void>;
+    // (undocumented)
+    toString(): string;
 }
 
 // @public (undocumented)
@@ -2102,7 +2610,7 @@ export enum RoleManagerCmd {
 
 // @public
 export enum RoleManagerEvent {
-    Change = 2
+    Change = 3
 }
 
 // @public (undocumented)
@@ -2208,10 +2716,31 @@ export enum SensorReg {
 }
 
 // @public (undocumented)
+export const SERVICE_CLIENT_ADDED = "serviceClientAdded";
+
+// @public (undocumented)
+export const SERVICE_CLIENT_REMOVED = "serviceClientRemoved";
+
+// @public (undocumented)
 export const SERVICE_NODE_NAME = "service";
 
 // @public (undocumented)
 export function serviceClass(name: string): number;
+
+// @public (undocumented)
+export interface ServiceHostOptions {
+    // (undocumented)
+    intensityValues?: any[];
+    // (undocumented)
+    registerValues?: {
+        code: number;
+        values: any[];
+    }[];
+    // (undocumented)
+    valueValues?: any[];
+    // (undocumented)
+    variant?: number;
+}
 
 // @public (undocumented)
 export function serviceMap(): SMap<jdspec.ServiceSpec>;
@@ -2233,8 +2762,22 @@ export function serviceSpecifications(): jdspec.ServiceSpec[];
 
 // @public (undocumented)
 export enum ServoReg {
+    Angle = 2,
     Enabled = 1,
-    Pulse = 2
+    MaxAngle = 261,
+    MinAngle = 260,
+    Offset = 129,
+    ResponseSpeed = 385,
+    StallTorque = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ServoVariant {
+    // (undocumented)
+    Linear = 2,
+    // (undocumented)
+    PositionalRotation = 1
 }
 
 // @public (undocumented)
@@ -2256,6 +2799,20 @@ export enum SettingsCmd {
     Set = 129
 }
 
+// @public
+export enum SettingsEvent {
+    Change = 3
+}
+
+// @public (undocumented)
+export enum SevenSegmentDisplayReg {
+    Brightness = 1,
+    DecimalPoint = 385,
+    DigitCount = 384,
+    Digits = 2,
+    DoubleDots = 128
+}
+
 // @public (undocumented)
 export function shortDeviceId(devid: string): string;
 
@@ -2274,18 +2831,78 @@ export function signal(): Signal;
 export function sizeOfNumberFormat(format: NumberFormat): 1 | 2 | 4 | 8 | 0;
 
 // @public (undocumented)
-export enum SliderReg {
-    Position = 257
-}
-
-// @public (undocumented)
 export interface SMap<T> {
     // (undocumented)
     [index: string]: T;
 }
 
 // @public (undocumented)
+export enum SoilMoistureReg {
+    Moisture = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum SoilMoistureVariant {
+    // (undocumented)
+    Capacitive = 2,
+    // (undocumented)
+    Resistive = 1
+}
+
+// @public (undocumented)
+export enum SoundLevelEvent {
+    Loud = 6,
+    Quiet = 5
+}
+
+// @public (undocumented)
+export enum SoundLevelReg {
+    LoudThreshold = 5,
+    QuietThreshold = 6,
+    SoundLevel = 257
+}
+
+// @public (undocumented)
+export enum SoundPlayerCmd {
+    ListSounds = 129,
+    Play = 128
+}
+
+// @public (undocumented)
+export enum SoundPlayerReg {
+    Volume = 1
+}
+
+// @public (undocumented)
+export enum SpeechSynthesisCmd {
+    Cancel = 129,
+    Speak = 128
+}
+
+// @public (undocumented)
+export enum SpeechSynthesisReg {
+    Enabled = 1,
+    Lang = 128,
+    Pitch = 130,
+    Rate = 131,
+    Volume = 129
+}
+
+// @public
+export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolean): [T[], T[]];
+
+// @public (undocumented)
 export const SRV_ACCELEROMETER = 521405449;
+
+// @public (undocumented)
+export const SRV_ANALOG_BUTTON = 409316809;
+
+// @public (undocumented)
+export const SRV_ARCADE_GAMEPAD = 501915758;
+
+// @public (undocumented)
+export const SRV_BAROMETER = 504462570;
 
 // @public (undocumented)
 export const SRV_BOOTLOADER = 536516936;
@@ -2297,7 +2914,10 @@ export const SRV_BUTTON = 343122531;
 export const SRV_BUZZER = 458731991;
 
 // @public (undocumented)
-export const SRV_CODAL_MESSAGE_BUS = 380468437;
+export const SRV_CHARACTER_SCREEN = 523748714;
+
+// @public (undocumented)
+export const SRV_COLOR = 372299111;
 
 // @public (undocumented)
 export const SRV_CONTROL = 0;
@@ -2306,28 +2926,52 @@ export const SRV_CONTROL = 0;
 export const SRV_CTRL = 0;
 
 // @public (undocumented)
-export const SRV_GAMEPAD = 501915758;
+export const SRV_DISTANCE = 337275786;
+
+// @public (undocumented)
+export const SRV_E_CO2 = 379362758;
+
+// @public (undocumented)
+export const SRV_GYROSCOPE = 505087730;
+
+// @public (undocumented)
+export const SRV_HEART_RATE = 376204740;
+
+// @public (undocumented)
+export const SRV_HID_KEYBOARD = 414210922;
+
+// @public (undocumented)
+export const SRV_HID_MOUSE = 411425820;
 
 // @public (undocumented)
 export const SRV_HUMIDITY = 382210232;
 
 // @public (undocumented)
+export const SRV_ILLUMINANCE = 510577394;
+
+// @public (undocumented)
 export const SRV_IOT_HUB = 434976332;
 
 // @public (undocumented)
-export const SRV_KEYBOARD = 414210922;
+export const SRV_JOYSTICK = 449517712;
 
 // @public (undocumented)
-export const SRV_LED_MATRIX_CONTROLLER = 490070931;
+export const SRV_LED = 506480888;
 
 // @public (undocumented)
-export const SRV_LED_MATRIX_DISPLAY = 286070091;
+export const SRV_LED_PIXEL = 309264608;
 
 // @public (undocumented)
-export const SRV_LIGHT = 309264608;
+export const SRV_LEDMATRIX = 286070091;
+
+// @public (undocumented)
+export const SRV_LIGHT_LEVEL = 400333340;
 
 // @public (undocumented)
 export const SRV_LOGGER = 316415946;
+
+// @public (undocumented)
+export const SRV_MATRIX_KEYPAD = 319172040;
 
 // @public (undocumented)
 export const SRV_MICROPHONE = 289254534;
@@ -2336,16 +2980,16 @@ export const SRV_MICROPHONE = 289254534;
 export const SRV_MODEL_RUNNER = 336566904;
 
 // @public (undocumented)
-export const SRV_MONO_LIGHT = 531985491;
+export const SRV_MOTION = 293185353;
 
 // @public (undocumented)
 export const SRV_MOTOR = 385895640;
 
 // @public (undocumented)
-export const SRV_MOUSE = 411425820;
+export const SRV_MULTITOUCH = 416636459;
 
 // @public (undocumented)
-export const SRV_MULTITOUCH = 416636459;
+export const SRV_POTENTIOMETER = 522667846;
 
 // @public (undocumented)
 export const SRV_POWER = 530893146;
@@ -2354,7 +2998,22 @@ export const SRV_POWER = 530893146;
 export const SRV_PROTO_TEST = 382158442;
 
 // @public
-export const SRV_ROLE_MANAGER = 295451345;
+export const SRV_PULSE_OXIMETER = 280710838;
+
+// @public (undocumented)
+export const SRV_RAIN_GAUGE = 326323349;
+
+// @public (undocumented)
+export const SRV_REAL_TIME_CLOCK = 445323816;
+
+// @public (undocumented)
+export const SRV_REFLECTED_LIGHT = 309087410;
+
+// @public (undocumented)
+export const SRV_RELAY = 406840918;
+
+// @public (undocumented)
+export const SRV_ROLE_MANAGER = 508264038;
 
 // @public (undocumented)
 export const SRV_ROTARY_ENCODER = 284830153;
@@ -2368,8 +3027,23 @@ export const SRV_SERVO = 318542083;
 // @public (undocumented)
 export const SRV_SETTINGS = 285727818;
 
+// @public (undocumented)
+export const SRV_SEVEN_SEGMENT_DISPLAY = 425810167;
+
+// @public (undocumented)
+export const SRV_SOIL_MOISTURE = 491430835;
+
+// @public (undocumented)
+export const SRV_SOUND_LEVEL = 346888797;
+
+// @public (undocumented)
+export const SRV_SOUND_PLAYER = 335795000;
+
 // @public
-export const SRV_SLIDER = 522667846;
+export const SRV_SPEECH_SYNTHESIS = 302307733;
+
+// @public (undocumented)
+export const SRV_SWITCH = 450008066;
 
 // @public (undocumented)
 export const SRV_TCP = 457422603;
@@ -2378,10 +3052,31 @@ export const SRV_TCP = 457422603;
 export const SRV_THERMOMETER = 337754823;
 
 // @public (undocumented)
+export const SRV_TRAFFIC_LIGHT = 365137307;
+
+// @public (undocumented)
+export const SRV_TVOC = 312849815;
+
+// @public (undocumented)
+export const SRV_UVINDEX = 527306128;
+
+// @public (undocumented)
 export const SRV_VIBRATION_MOTOR = 406832290;
 
 // @public (undocumented)
+export const SRV_WATER_LEVEL = 343630573;
+
+// @public (undocumented)
+export const SRV_WEIGHT_SCALE = 525160512;
+
+// @public (undocumented)
 export const SRV_WIFI = 413852154;
+
+// @public (undocumented)
+export const SRV_WIND_DIRECTION = 409725227;
+
+// @public (undocumented)
+export const SRV_WIND_SPEED = 458824639;
 
 // @public (undocumented)
 export function stableSortRegisters(registers: JDRegister[]): JDRegister[];
@@ -2411,6 +3106,39 @@ export function stringToBuffer(str: string): Uint8Array;
 export function stringToUint8Array(input: string): Uint8Array;
 
 // @public (undocumented)
+export enum SwitchEvent {
+    Off = 2,
+    On = 1
+}
+
+// @public (undocumented)
+export enum SwitchReg {
+    Active = 257,
+    AutoOffDelay = 384,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum SwitchVariant {
+    // (undocumented)
+    FootPedal = 8,
+    // (undocumented)
+    Magnetic = 7,
+    // (undocumented)
+    Proximity = 6,
+    // (undocumented)
+    PushButton = 3,
+    // (undocumented)
+    Slide = 1,
+    // (undocumented)
+    Tactile = 4,
+    // (undocumented)
+    Tilt = 2,
+    // (undocumented)
+    Toggle = 5
+}
+
+// @public (undocumented)
 export enum SystemCmd {
     Announce = 0,
     Calibrate = 2,
@@ -2421,7 +3149,23 @@ export enum SystemCmd {
 
 // @public (undocumented)
 export enum SystemEvent {
-    Change = 2
+    Active = 1,
+    Change = 3,
+    High = 6,
+    Inactive = 2,
+    Low = 5,
+    Neutral = 7,
+    StatusCodeChanged = 4
+}
+
+// @public (undocumented)
+export enum SystemReadingThreshold {
+    // (undocumented)
+    High = 3,
+    // (undocumented)
+    Low = 2,
+    // (undocumented)
+    Neutral = 1
 }
 
 // @public (undocumented)
@@ -2430,12 +3174,33 @@ export enum SystemReg {
     Intensity = 1,
     LowThreshold = 5,
     MaxPower = 7,
+    MaxReading = 261,
+    MinReading = 260,
     Reading = 257,
+    ReadingError = 262,
+    ReadingResolution = 264,
     StatusCode = 259,
     StreamingInterval = 4,
     StreamingPreferredInterval = 258,
     StreamingSamples = 3,
-    Value = 2
+    Value = 2,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum SystemStatusCodes {
+    // (undocumented)
+    Calibrating = 2,
+    // (undocumented)
+    CalibrationNeeded = 100,
+    // (undocumented)
+    Initializing = 1,
+    // (undocumented)
+    Ready = 0,
+    // (undocumented)
+    Sleeping = 3,
+    // (undocumented)
+    WaitingForInput = 4
 }
 
 // @public (undocumented)
@@ -2473,7 +3238,25 @@ export interface TFModelStats {
 
 // @public (undocumented)
 export enum ThermometerReg {
-    Temperature = 257
+    MaxTemperature = 261,
+    MinTemperature = 260,
+    Temperature = 257,
+    TemperatureError = 262,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ThermometerVariant {
+    // (undocumented)
+    Body = 3,
+    // (undocumented)
+    HeatProbe = 4,
+    // (undocumented)
+    Indoor = 2,
+    // (undocumented)
+    Outdoor = 1,
+    // (undocumented)
+    Thermocouple = 5
 }
 
 // @public (undocumented)
@@ -2511,6 +3294,13 @@ export interface TracePacketProps {
     key: string;
     // (undocumented)
     packet: Packet;
+}
+
+// @public (undocumented)
+export enum TrafficLightReg {
+    Green = 130,
+    Orange = 129,
+    Red = 128
 }
 
 // @public (undocumented)
@@ -2561,6 +3351,15 @@ export function tryParseMemberValue(text: string, info: jdspec.PacketMember): {
 };
 
 // @public (undocumented)
+export enum TVOCReg {
+    ConditioningPeriod = 384,
+    Max_TVOC = 261,
+    Min_TVOC = 260,
+    TVOC = 257,
+    TVOCError = 262
+}
+
+// @public (undocumented)
 export function uint8ArrayToString(input: ArrayLike<number>): string;
 
 // @public (undocumented)
@@ -2594,11 +3393,32 @@ export interface USBOptions {
 }
 
 // @public (undocumented)
-export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number): any[];
+export enum UVIndexReg {
+    UvIndex = 257,
+    UvIndexError = 262,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum UVIndexVariant {
+    // (undocumented)
+    UVA_UVB = 1,
+    // (undocumented)
+    Visible_IR = 2
+}
+
+// @public (undocumented)
+export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number): number[];
+
+// @public (undocumented)
+export enum VibrationMotorCmd {
+    Vibrate = 128
+}
 
 // @public (undocumented)
 export enum VibrationMotorReg {
-    Speed = 1
+    Enabled = 1,
+    Speed = 257
 }
 
 // @public (undocumented)
@@ -2609,6 +3429,50 @@ export function visitNodes(node: JDNode, vis: (node: JDNode) => void): void;
 
 // @public (undocumented)
 export function warn(msg: string, v?: any): void;
+
+// @public (undocumented)
+export enum WaterLevelReg {
+    Level = 257,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum WaterLevelVariant {
+    // (undocumented)
+    ContactPhotoElectric = 2,
+    // (undocumented)
+    NonContactPhotoElectric = 3,
+    // (undocumented)
+    Resistive = 1
+}
+
+// @public (undocumented)
+export enum WeightScaleCmd {
+    CalibrateGain = 129,
+    CalibrateZeroOffset = 128
+}
+
+// @public (undocumented)
+export enum WeightScaleReg {
+    Gain = 129,
+    MaxWeight = 261,
+    MinWeight = 260,
+    Variant = 263,
+    Weight = 257,
+    WeightError = 262,
+    WeightResolution = 264,
+    ZeroOffset = 128
+}
+
+// @public (undocumented)
+export enum WeightScaleVariant {
+    // (undocumented)
+    Body = 1,
+    // (undocumented)
+    Food = 2,
+    // (undocumented)
+    Jewelry = 3
+}
 
 // @public (undocumented)
 export enum WifiAPFlags {
@@ -2652,6 +3516,20 @@ export enum WifiEvent {
 // @public
 export enum WifiReg {
     Connected = 384
+}
+
+// @public (undocumented)
+export enum WindDirectionReg {
+    WindDirection = 257,
+    WindDirectionError = 262,
+    WindDirectionOffset = 384
+}
+
+// @public (undocumented)
+export enum WindSpeedReg {
+    MaxWindSpeed = 261,
+    WindSpeed = 257,
+    WindSpeedError = 262
 }
 
 // @public (undocumented)

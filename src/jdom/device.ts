@@ -1,10 +1,10 @@
 import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, SRV_CTRL, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags
+    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, ControlCmd, DEVICE_NODE_NAME, LOST,
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUCE
 } from "./constants"
-import { fromHex, read32, SMap, bufferEq, assert, setAckError, toHex } from "./utils"
+import { read32, SMap, bufferEq, assert, setAckError, delay } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
 import { JDBus } from "./bus";
 import { JDService } from "./service";
@@ -12,6 +12,7 @@ import { serviceClass, shortDeviceId } from "./pretty";
 import { JDNode } from "./node";
 import { isInstanceOf } from "./spec";
 import { FirmwareInfo } from "./flashing";
+import { JDEventSource } from "./eventsource";
 
 export interface PipeInfo {
     pipeType?: string;
@@ -23,6 +24,44 @@ interface AckAwaiter {
     retriesLeft: number
     okCb: () => void
     errCb: () => void
+}
+
+export class QualityOfService extends JDEventSource {
+    private _receivedPackets = 0;
+    private readonly _data: { received: number; total: number }[] =
+        Array(10).fill(0).map(_ => ({ received: 0, total: 0, }));
+    private _dataIndex = 0;
+
+    constructor() {
+        super();
+    }
+
+    /**
+     * Average packet dropped per announce period
+     */
+    get dropped(): number {
+        const r = this._data
+            .filter(e => !!e.total) // ignore total 0
+            .reduce((s, e) => s + (e.total - e.received), 0) / this._data.length || 0;
+        return r;
+    }
+
+    processAnnouncement(pkt: Packet) {
+        // collect metrics
+        const received = this._receivedPackets;
+        const total = pkt.data[2];
+
+        this._data[this._dataIndex] = { received, total }
+        this._dataIndex = (this._dataIndex + 1) % this._data.length;
+
+        // reset counter
+        this._receivedPackets = 0;
+        this.emit(CHANGE);
+    }
+
+    processPacket(pkt: Packet) {
+        this._receivedPackets++;
+    }
 }
 
 export class JDDevice extends JDNode {
@@ -40,11 +79,14 @@ export class JDDevice extends JDNode {
     private _firmwareInfo: FirmwareInfo;
     private _ackAwaiting: AckAwaiter[];
     private _flashing = false;
+    private _identifying: boolean;
+    readonly qos = new QualityOfService();
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
         super();
         this.connected = true;
         this._lost = false;
+        this._identifying = false;
     }
 
     get id() {
@@ -110,12 +152,12 @@ export class JDDevice extends JDNode {
         return this._servicesData?.[0] || 0;
     }
 
-    get packetCount(): number {
-        return this._servicesData?.[2] || 0;
-    }
-
     get announceFlags(): ControlAnnounceFlags {
         return this._servicesData?.[1] || 0;
+    }
+
+    get packetCount(): number {
+        return this._servicesData?.[2] || 0;
     }
 
     get shortId() {
@@ -247,7 +289,7 @@ export class JDDevice extends JDNode {
     }
 
 
-    services(options?: { serviceIndex?: number, serviceName?: string, serviceClass?: number }): JDService[] {
+    services(options?: { serviceIndex?: number, serviceName?: string, serviceClass?: number, specification?: boolean }): JDService[] {
         if (!this.announced) return [];
 
         if (options?.serviceIndex >= 0)
@@ -262,6 +304,10 @@ export class JDDevice extends JDNode {
         this.initServices();
         let r = this._services.slice();
         if (sc > -1) r = r.filter(s => s.serviceClass == sc)
+
+        if (options?.specification)
+            r = r.filter(s => !!s.specification)
+
         return r;
     }
 
@@ -276,6 +322,8 @@ export class JDDevice extends JDNode {
     }
 
     processAnnouncement(pkt: Packet) {
+        this.qos.processAnnouncement(pkt);
+
         let changed = false;
         const w0 = this._servicesData ? getNumber(this._servicesData, NumberFormat.UInt32LE, 0) : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
@@ -286,16 +334,24 @@ export class JDDevice extends JDNode {
             changed = true;
         }
 
-        if (!bufferEq(pkt.data, this._servicesData, 4)) {
-            this._source = pkt.sender || this._source; // remember who's sending those packets
-            this._replay = !!pkt.replay;
-            this._servicesData = pkt.data
+        // compare service data
+        const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4);
+        this._servicesData = pkt.data;
+        this._source = pkt.sender || this._source; // remember who's sending those packets
+        this._replay = !!pkt.replay;
+
+        // notify that services got updated
+        if (servicesChanged) {
             this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this);
             this.emit(ANNOUNCE)
             changed = true;
         }
 
+        // notify that we've received an announce packet
+        this.emit(PACKET_ANNOUCE);
+
+        // notify of any changes
         if (changed) {
             this.bus.emit(DEVICE_CHANGE, this);
             this.bus.emit(CHANGE);
@@ -303,6 +359,7 @@ export class JDDevice extends JDNode {
     }
 
     processPacket(pkt: Packet) {
+        this.qos.processPacket(pkt);
         this.lost = false
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport)
@@ -321,9 +378,27 @@ export class JDDevice extends JDNode {
         this.emit(CHANGE)
     }
 
-    identify() {
-        return this.service(0)
-            ?.sendCmdAsync(ControlCmd.Identify, undefined, true)
+    async identify() {
+        if (this._identifying) return;
+
+        try {
+            this._identifying = true;
+            this.emit(CHANGE);
+
+            const ctrl = this.service(0);
+            await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, true)
+
+            // wait half second
+            await delay(IDENTIFY_DURATION);
+        }
+        finally {
+            this._identifying = false;
+            this.emit(CHANGE);
+        }
+    }
+
+    get identifying() {
+        return this._identifying;
     }
 
     reset() {

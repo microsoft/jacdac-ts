@@ -2,11 +2,11 @@ import Packet from "./packet";
 import {
     CMD_SET_REG, REPORT_RECEIVE, REPORT_UPDATE, CHANGE, CMD_GET_REG,
     REGISTER_NODE_NAME, REGISTER_REFRESH_TIMEOUT, REGISTER_REFRESH_RETRY_1,
-    REGISTER_REFRESH_RETRY_0, ControlCmd, GET_ATTEMPT
+    REGISTER_REFRESH_RETRY_0, GET_ATTEMPT
 } from "./constants";
 import { JDService } from "./service";
 import { intOfBuffer } from "./buffer";
-import { bufferEq, toHex, fromUTF8, uint8ArrayToString, toUTF8, stringToUint8Array, delay } from "./utils";
+import { bufferEq, toHex, fromUTF8, uint8ArrayToString, delay } from "./utils";
 import { DecodedPacket } from "./pretty";
 import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
@@ -24,8 +24,8 @@ export class JDRegister extends JDServiceMemberNode {
 
     constructor(
         service: JDService,
-        address: number) {
-        super(service, address, isRegister)
+        code: number) {
+        super(service, code, isRegister)
     }
 
     get nodeKind() {
@@ -56,7 +56,7 @@ export class JDRegister extends JDServiceMemberNode {
 
     // send a message to set the register value
     sendSetAsync(data: Uint8Array, autoRefresh?: boolean): Promise<void> {
-        const cmd = CMD_SET_REG | this.address;
+        const cmd = CMD_SET_REG | this.code;
         const pkt = Packet.from(cmd, data)
         this._lastSetTimestamp = this.service.device.bus.timestamp;
         let p = this.service.sendPacketAsync(pkt, this.service.registersUseAcks)
@@ -72,12 +72,12 @@ export class JDRegister extends JDServiceMemberNode {
 
         this._lastGetTimestamp = this.service.device.bus.timestamp;
         this._lastGetAttempts++;
-        const cmd = CMD_GET_REG | this.address;
+        const cmd = CMD_GET_REG | this.code;
         return this.service.sendCmdAsync(cmd, undefined, this.service.registersUseAcks)
             .then(() => { this.emit(GET_ATTEMPT) });
     }
 
-    sendSetPackedAsync<T extends any[]>(fmt: string, values: any[], autoRefresh?: boolean): Promise<void> {
+    sendSetPackedAsync(fmt: string, values: any[], autoRefresh?: boolean): Promise<void> {
         return this.sendSetAsync(jdpack(fmt, values), autoRefresh)
     }
 
@@ -190,7 +190,7 @@ export class JDRegister extends JDServiceMemberNode {
 
     compareTo(b: JDRegister) {
         const a = this;
-        return a.address - b.address ||
+        return a.code - b.code ||
             a.service.compareTo(b.service);
     }
 }

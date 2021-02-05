@@ -1,15 +1,27 @@
 import { JDDevice } from "./device"
 import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_INDEX_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE } from "./constants"
 import Packet from "./packet"
-import { JDBus } from "./bus"
-import { randomUInt, signal, fromHex, throwError, warn } from "./utils"
+import { BusState, JDBus } from "./bus"
+import { randomUInt, signal, fromHex, throwError, warn, toHex } from "./utils"
 import { JDClient } from "./client"
 import { jdpack } from "./pack"
 
 export class OutPipe {
-    private count = 0
+    private _count = 0;
 
-    constructor(private device: JDDevice, private port: number) {
+    constructor(private device: JDDevice, private port: number, readonly hosted?: boolean) {
+    }
+
+    static from(bus: JDBus, pkt: Packet, hosted?: boolean) {
+        bus.enableAnnounce(); // ned self device
+        const [idbuf, port] = pkt.jdunpack<[Buffer, number]>("b[8] u16");
+        const id = toHex(idbuf);
+        const dev = bus.device(id);
+        return new OutPipe(dev, port, hosted);
+    }
+
+    get count() {
+        return this._count;
     }
 
     get isOpen() {
@@ -24,19 +36,37 @@ export class OutPipe {
         return this.sendData(buf, PIPE_METADATA_MASK)
     }
 
+    async respondForEach<T>(items: ArrayLike<T>, converter: (item: T) => Uint8Array) {
+        try {
+            const n = items.length;
+            for (let i = 0; i < n; ++i) {
+                const item = items[i];
+                const data = converter(item);
+                await this.send(data);
+            }
+        } finally {
+            await this.close();
+        }
+    }
+
     private async sendData(buf: Uint8Array, flags: number) {
         if (!this.device) {
             warn("sending data over closed pipe")
             return
         }
-        const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this.count & PIPE_COUNTER_MASK)
+        const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this._count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
         pkt.serviceIndex = JD_SERVICE_INDEX_PIPE
-        await this.device.sendPktWithAck(pkt)
-            .then(() => { }, err => {
-                this.free()
-            })
-        this.count++
+        const p  = this.device.sendPktWithAck(pkt)
+            .then(
+                () => { },
+                err => {
+                    console.log(err)
+                    this.free()
+                })
+        if (this.hosted)
+            this.device.bus.processPacket(pkt);
+        this._count++
     }
 
     private free() {
@@ -62,6 +92,14 @@ export class InPipe extends JDClient {
         this.allocPort()
         this.bus.enableAnnounce()
         this.mount(this.bus.selfDevice.subscribe(PACKET_RECEIVE, this._handlePacket))
+    }
+
+    get port() {
+        return this._port;
+    }
+
+    get count() {
+        return this._count;
     }
 
     get isOpen() {

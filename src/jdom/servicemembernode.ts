@@ -6,18 +6,18 @@ export abstract class JDServiceMemberNode extends JDNode {
 
     constructor(
         public readonly service: JDService,
-        public readonly address: number,
+        public readonly code: number,
         private readonly isPacket: (pkt: jdspec.PacketInfo) => boolean) {
         super()
         this._specification = null;
     }
 
     get id() {
-        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_index.toString(16)}:${this.address.toString(16)}`
+        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.service_index.toString(16)}:${this.code.toString(16)}`
     }
 
     get name() {
-        return this.specification?.name || this.address.toString(16);
+        return this.specification?.name || this.code.toString(16);
     }
 
     get qualifiedName() {
@@ -26,7 +26,7 @@ export abstract class JDServiceMemberNode extends JDNode {
 
     get specification() {
         if (this._specification === null) // lookup once
-            this._specification = this.service.specification?.packets.find(packet => this.isPacket(packet) && packet.identifier === this.address)
+            this._specification = this.service.specification?.packets.find(packet => this.isPacket(packet) && packet.identifier === this.code)
         return this._specification;
     }
 

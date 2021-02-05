@@ -51,7 +51,7 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
 }
 
 export default function DeviceDesigner() {
-    const { value: device, setValue: setDevice } = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
+    const [device, setDevice] = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
             id: "my-device",
             name: "My device",
@@ -234,7 +234,7 @@ export default function DeviceDesigner() {
                     </MenuItem>)}
                 </Menu>
                 <Typography variant="caption" component="div">
-                    Firmware identifiers uniquely identify your module on the JACDAC bus.
+                    Firmware identifiers uniquely identify your module on the Jacdac bus.
                     Each revision of your firmware may have a different identifier.
                 </Typography>
             </PaperBox>
@@ -306,7 +306,7 @@ export default function DeviceDesigner() {
                     label={"submit module"}
                     title={`Module: ${device.name}`}
                     head={device.id}
-                    body={`This pull request adds a new module for JACDAC.`}
+                    body={`This pull request adds a new module for Jacdac.`}
                     commit={`added ${device.name} files`}
                     files={modulePath && {
                         [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),

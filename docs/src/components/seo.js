@@ -32,7 +32,6 @@ function SEO({ lang, meta, description, title }) {
         lang,
       }}
       title={metaTitle}
-      titleTemplate={`%s | ${metaTitle}`}
       meta={[
         {
           name: `description`,

@@ -10,7 +10,7 @@ import { IconButton, Link } from 'gatsby-theme-material-ui';
 import GetAppIcon from '@material-ui/icons/GetApp';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import LaunchIcon from '@material-ui/icons/Launch';
-import { Tooltip } from '@material-ui/core';
+import Tooltip from './ui/Tooltip';
 import MakeCodeSnippet from './makecode/MakeCodeSnippet';
 import TraceSnippet from './TraceSnippet';
 

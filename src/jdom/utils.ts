@@ -315,6 +315,17 @@ export function decodeU32LE(buf: Uint8Array) {
     return res
 }
 
+export function isBufferEmpty(data: Uint8Array): boolean {
+    if (!data) return true;
+    const n = data.length;
+    for (let i = 0; i < data.length; ++i) {
+        if (data[i])
+            return false;
+    }
+    return true;
+}
+
+
 export function bufferToString(buf: Uint8Array) {
     return fromUTF8(uint8ArrayToString(buf))
 }
@@ -519,6 +530,11 @@ export function roundWithPrecision(x: number, digits: number): number {
     return r;
 }
 
+export function randomRange(min: number, max: number) {
+    return Math.round(Math.random() * (max - min) + min);
+}
+
+
 export function unique(values: string[]): string[] {
     return Array.from(new Set(values).keys());
 }
@@ -571,9 +587,36 @@ export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]> {
 
     const r: SMap<T[]> = {}
     list.forEach((item) => {
-         const k = key(item);
-         const a = r[k] || (r[k] = []);
-         a.push(item);
+        const k = key(item);
+        const a = r[k] || (r[k] = []);
+        a.push(item);
     });
     return r;
+}
+
+export function pick(...values: number[]) {
+    return values?.find(x => x !== undefined);
+}
+
+/**
+ * Applies filters and returns array of [yays, nays]
+ * @param values 
+ * @param condition 
+ */
+export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolean): [T[], T[]] {
+    let yays: T[] = [];
+    let nays: T[] = [];
+    const n = values.length
+    for (let i = 0; i < n; ++i) {
+        const v = values[i];
+        if (condition(v))
+            yays.push(v)
+        else
+            nays.push(v);
+    }
+    return [yays, nays];
+}
+
+export function range(end: number): number[] {
+    return Array(end).fill(0).map((_, i) => i);
 }

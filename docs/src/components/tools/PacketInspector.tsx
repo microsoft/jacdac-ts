@@ -58,7 +58,9 @@ export default function PacketInspector() {
         </>}
         {info && <><h3>Specification</h3>
             <ServiceSpecificationCard
-                serviceClass={packet.serviceClass} />
+                showServiceClass={true}
+                serviceClass={packet.serviceClass}
+                showReleaseStatus={true} />
             <PacketSpecification
                 serviceClass={packet.serviceClass}
                 packetInfo={info}

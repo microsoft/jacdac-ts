@@ -8,7 +8,7 @@ export interface DarkModeContextProps {
 }
 
 const DarkModeContext = createContext<DarkModeContextProps>({
-  darkMode: 'light',
+  darkMode: 'dark',
   toggleDarkMode: (mode?: PaletteType) => { },
   darkModeMounted: false,
 });

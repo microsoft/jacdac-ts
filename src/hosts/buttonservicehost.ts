@@ -1,39 +1,54 @@
-import { ButtonEvent, SRV_BUTTON } from "../jdom/constants";
-import JDSensorServiceHost from "./sensorservicehost";
-import { delay } from "../jdom/utils";
+import { ButtonEvent, REFRESH, SRV_BUTTON } from "../jdom/constants";
+import SensorServiceHost from "./sensorservicehost";
 
-export default class ButtonServiceHost extends JDSensorServiceHost {
-    constructor() {
-        super(SRV_BUTTON, "u8", [false], 50);
+const LONG_CLICK_DELAY = 500
+const CLICK_DELAY = 100
+const HOLD_DELAY = 1500
+
+export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
+    private _downTime: number;
+    private _held: boolean;
+
+    constructor(instanceName?: string) {
+        super(SRV_BUTTON, { instanceName, readingValues: [false], streamingInterval: 50 });
+        this._downTime = undefined;
+        this._held = false;
+
+        this.on(REFRESH, this.handleRefresh.bind(this));
+    }
+
+    private async handleRefresh() {
+        const [v] = this.reading.values();
+        if (v && !this._held && this.device.bus.timestamp - this._downTime > HOLD_DELAY) {
+            this._held = true;
+            await this.sendEvent(ButtonEvent.Hold);
+        }
     }
 
     async down() {
-        const [v] = this.reading.values<[number]>();
-        if (!v) {
-            this.reading.setValues([true]);
-            await this.sendEvent(ButtonEvent.Down);
-        }
+        const [v] = this.reading.values();
+        if (v) return;
+        this._downTime = this.device.bus.timestamp;
+        this._held = false;
+        this.reading.setValues([true]);
+        await this.sendEvent(ButtonEvent.Down);
     }
 
     async up() {
-        const [v] = this.reading.values<[number]>();
-        if (v) {
-            this.reading.setValues([false]);
-            await this.sendEvent(ButtonEvent.Up);
+        const [v] = this.reading.values();
+        if (!v) return;
+        const upTime = this.device.bus.timestamp;
+        this.reading.setValues([false]);
+        await this.sendEvent(ButtonEvent.Up);
+
+        // generate clicks
+        if (this._downTime !== undefined) {
+            const dt = upTime - this._downTime;
+            this._downTime = undefined;
+            if (dt > LONG_CLICK_DELAY)
+                await this.sendEvent(ButtonEvent.LongClick);
+            else if (dt > CLICK_DELAY)
+                await this.sendEvent(ButtonEvent.Click);
         }
-    }
-
-    async click() {
-        this.down(); // async event
-        await delay(100);
-        this.up(); // async event
-        this.sendEvent(ButtonEvent.Click);
-    }
-
-    async longClick() {
-        this.down(); // async event
-        await delay(500);
-        this.up(); // async event
-        this.sendEvent(ButtonEvent.LongClick);
     }
 }

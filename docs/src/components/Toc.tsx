@@ -1,10 +1,9 @@
-import React, { useContext, useMemo } from "react"
-import { makeStyles, createStyles, Theme, Collapse, List, ListItem, Typography, useTheme, Box } from '@material-ui/core';
+import React, { useMemo } from "react"
+import { makeStyles, createStyles, Theme, List, ListItem, Typography, useTheme, Box } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
-import { identifierToUrlPath } from "../../../src/jdom/spec";
 
 interface TocNode {
   name: string;
@@ -166,6 +165,7 @@ export default function Toc(props: { pagePath: string }) {
       })
       .forEach(node => toc.push(node))
 
+    /*
     data.allServicesJson.nodes.map(node => {
       return {
         name: node.name,
@@ -179,6 +179,7 @@ export default function Toc(props: { pagePath: string }) {
         path: `/devices/${identifierToUrlPath(node.id)}/`
       }
     }).forEach(node => toc.push(node));
+    */
 
     const { tree } = treeifyToc(toc)
     return tree;

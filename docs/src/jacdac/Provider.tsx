@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import JACDACContext from "../../../src/react/Context";
+import JacdacContext from "../../../src/react/Context";
 import { BusState, JDBus } from "../../../src/jdom/bus";
 import { createUSBBus } from "../../../src/jdom/usb";
 import { CONNECTION_STATE } from "../../../src/jdom/constants";
 import IFrameBridgeClient from "../../../src/jdom/iframebridgeclient"
-import { inIFrame } from "../../../src/jdom/iframeclient";
 import Flags from "../../../src/jdom/flags"
 
 function sniffQueryArguments() {
@@ -18,7 +17,8 @@ function sniffQueryArguments() {
     return {
         diagnostics: params.get(`dbg`) === "1",
         webUSB: params.get(`webusb`) !== "0",
-        parentOrigin: params.get('parentOrigin')
+        parentOrigin: params.get('parentOrigin'),
+        frameId: window.location.hash?.slice(1)
     }
 }
 
@@ -31,9 +31,9 @@ bus.setBackgroundFirmwareScans(true);
 // tslint:disable-next-line: no-unused-expression
 // always start bridge
 if (typeof window !== "undefined")
-    new IFrameBridgeClient(bus); // start bridge
+    new IFrameBridgeClient(bus, args.frameId); // start bridge
 
-const JACDACProvider = ({ children }) => {
+const JacdacProvider = ({ children }) => {
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
 
@@ -52,10 +52,10 @@ const JACDACProvider = ({ children }) => {
     const connectAsync = () => bus.connectAsync();
     const disconnectAsync = () => bus.disconnectAsync();
     return (
-        <JACDACContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
+        <JacdacContext.Provider value={{ bus, connectionState, connectAsync, disconnectAsync }}>
             {children}
-        </JACDACContext.Provider>
+        </JacdacContext.Provider>
     )
 }
 
-export default JACDACProvider;
+export default JacdacProvider;

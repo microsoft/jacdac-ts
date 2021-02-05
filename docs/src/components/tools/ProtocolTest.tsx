@@ -1,8 +1,8 @@
 import { Grid, Switch, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
-import { bufferEq, cryptoRandomUint32, delay, toHex } from "../../../../src/jdom/utils";
+import { bufferEq, cryptoRandomUint32, delay, pick, randomRange, toHex } from "../../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import JACDACContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../../src/jdom/constants";
 import useChange from "../../jacdac/useChange"
 import { JDService } from "../../../../src/jdom/service";
@@ -16,20 +16,10 @@ import useEffectAsync from "../useEffectAsync";
 import TestCard from "../TestCard";
 import Packet from "../../../../src/jdom/packet";
 import { JDEvent } from "../../../../src/jdom/event";
-import { InPipeReader } from "../../../../src/jdom/pipes";
 import { AlertTitle } from "@material-ui/lab";
 import Alert from "../ui/Alert";
-import Flags from "../../../../src/jdom/flags"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import ProtocolTestServiceHost from "../../../../src/jdom/protocoltestservicehost"
-
-function pick(...values: number[]) {
-    return values.find(x => x !== undefined);
-}
-
-function randomRange(min: number, max: number) {
-    return Math.round(Math.random() * (max - min) + min);
-}
 
 function randomFieldPayload(field: JDField) {
     const { specification } = field;
@@ -89,8 +79,6 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
     const name = specification.name.replace(/^rw_/, "")
 
     const rxValue = (r: JDRegister) => jdunpack(r.data, specification.packFormat)
-    const rwValue = useChange(rw, rxValue);
-    const roValue = useChange(ro, rxValue);
 
     // event code and command code are the same as rw register
     useEffectAsync(async () => {
@@ -148,7 +136,7 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
         const data = jdpack(packFormat, payload);
         log({ data: toHex(data) })
         // send over cmd packet
-        await rw.service.sendPacketAsync(Packet.from(rw.address, data))
+        await rw.service.sendPacketAsync(Packet.from(rw.code, data))
         // read packet
         await rw.sendGetAsync();
         // wait for response
@@ -176,7 +164,6 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
 }
 
 function ServiceProtocolTest(props: { service: JDService }) {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
     const { service } = props;
     const { device } = service;
 
@@ -185,7 +172,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
         .map(rw => {
             const roname = rw.name.replace(/^rw_/, "ro_");
             const ro = regs.find(r => r.specification.kind === "ro" && r.specification.name === roname)
-            const ev = service.event(rw.address);
+            const ev = service.event(rw.code);
             return { rw, ro, ev }
         });
 
@@ -204,20 +191,11 @@ function ServiceProtocolTest(props: { service: JDService }) {
         if (!bufferEq(data, rw.data))
             throw new Error(`rw write failed, expected ${toHex(data)}, got ${toHex(rw.data)}`);
         // read packet back
-        const inp = new InPipeReader(bus)
-        await service.sendPacketAsync(
-            inp.openCommand(ProtoTestCmd.CReportPipe),
-            true)
-        log(`pipe connected`)
-        let recv: number[] = [];
-        for (const buf of await inp.readData()) {
-            const [byte] = jdunpack<[number]>(buf, "u8");
-            recv.push(byte);
-        }
-        const recvu = new Uint8Array(recv);
+        const recv = await service.receiveWithInPipe<[number]>(ProtoTestCmd.CReportPipe, "u8")
+        const recvu = new Uint8Array(recv.map(buf => buf[0]));
         log(`received ${toHex(recvu)}`)
         if (!bufferEq(data, recvu))
-            throw new Error(`expected ${toHex(data)}, got ${toHex(recv)}`)
+            throw new Error(`expected ${toHex(data)}, got ${toHex(recv.map(buf => buf[0]))}`)
     }
 
     return <Grid container spacing={1}>
@@ -237,7 +215,7 @@ function ServiceProtocolTest(props: { service: JDService }) {
 }
 
 export default function ProtocolTest() {
-    const { bus } = useContext<JDContextProps>(JACDACContext)
+    const { bus } = useContext<JDContextProps>(JacdacContext)
     const [host, setHost] = useState(false);
     const services = useChange(bus, b => b.services({ serviceClass: SRV_PROTO_TEST }))
 
@@ -254,18 +232,18 @@ export default function ProtocolTest() {
     }, [host]);
 
     return <Grid container direction="row" spacing={2}>
-        {Flags.diagnostics && <Grid item xs={12}>
-            <Alert severity="info">
-                <AlertTitle>Developer zone</AlertTitle>
-                <Switch checked={host} onChange={toggleHost} />
-                <label>Add virtual device</label>
-            </Alert>
-        </Grid>}
         <Grid key="connect" item xs={12}>
             <ConnectAlert serviceClass={SRV_PROTO_TEST} />
         </Grid>
         {services?.map(service => <Grid key={service.id} item xs={12}>
             <ServiceProtocolTest service={service} />
         </Grid>)}
+        <Grid item xs={12}>
+            <Alert severity="info">
+                <AlertTitle>Developer zone</AlertTitle>
+                <Switch checked={host} onChange={toggleHost} />
+                <label>Add simulator</label>
+            </Alert>
+        </Grid>
     </Grid>
 }

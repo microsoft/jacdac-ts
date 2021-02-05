@@ -1,8 +1,24 @@
-import React from "react";
+import React, { ReactNode } from "react";
 
-export function SvgWidget(props: { width: number, size?: string, children: JSX.Element | JSX.Element[] }) {
-    const { width, size, children } = props;
-    return <svg viewBox={`0 0 ${width} ${width}`} style={size && { width: size, height: size }}>
+export default function SvgWidget(props: {
+    width: number,
+    height?: number,
+    size: string,
+    role?: string,
+    title?: string,
+    viewBox?: string,
+    tabIndex?: number,
+    children: ReactNode
+}) {
+    const { width, height, size, children, role, title, viewBox, tabIndex } = props;
+    const h = height || width;
+    return <svg
+        xmlns="http://www.w3.org/2000/svg"
+        tabIndex={tabIndex}
+        viewBox={viewBox || `0 0 ${width} ${h}`}
+        style={size ? { height: size, maxWidth: "100%" } : undefined}
+        aria-label={title}
+        role={role || "group"}>
         {children}
     </svg>
 }

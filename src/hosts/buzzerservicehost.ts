@@ -1,21 +1,33 @@
 import { BuzzerCmd, BuzzerReg, CHANGE, SRV_BUZZER } from "../jdom/constants";
 import { jdunpack } from "../jdom/pack";
 import Packet from "../jdom/packet";
-import JDRegisterHost from "../jdom/registerhost";
-import JDServiceHost from "../jdom/servicehost";
+import RegisterHost from "../jdom/registerhost";
+import ServiceHost from "../jdom/servicehost";
 
 let ctx: AudioContext;
 let volumeNode: GainNode;
-let volume: number = 20;
+let volume: number = 0.2;
 
-function init() {
+export function initAudioContext() {
     if (ctx === undefined) {
         try {
-            ctx = typeof window !== undefined && new window.AudioContext();
+            const context = typeof window !== undefined && new window.AudioContext();
+            // play silence sound within onlick to unlock it
+            const buffer = context.createBuffer(1, 1, 22050);
+            const source = context.createBufferSource();
+            source.buffer = buffer;
+            source.connect(context.destination);
+            source.start();
+            ctx = context;
+            console.log(`audio context created`)
+
+            volumeNode = ctx.createGain();
+            volumeNode.connect(ctx.destination);
+            volumeNode.gain.value = volume;
         }
         catch (e) {
+            console.log(e);
             ctx = null;
-            return undefined;
         }
     }
 }
@@ -24,7 +36,7 @@ async function setVolume(vol: number) {
     volume = vol;
     if (ctx && volumeNode) {
         try {
-            volumeNode.gain.value = volume / (0xff * 3);
+            volumeNode.gain.value = volume;
         }
         catch (e) {
             console.log(e)
@@ -33,12 +45,9 @@ async function setVolume(vol: number) {
 }
 
 async function playTone(frequency: number, duration: number) {
-    init();
+    initAudioContext();
     if (ctx) {
         try {
-            volumeNode = ctx.createGain();
-            volumeNode.connect(ctx.destination);
-            volumeNode.gain.value = volume / (0xff * 3);
             const tone = ctx.createOscillator();
             tone.type = "sawtooth";
             tone.connect(volumeNode);
@@ -52,26 +61,27 @@ async function playTone(frequency: number, duration: number) {
     }
 }
 
-export default class BuzzerServiceHost extends JDServiceHost {
-    readonly volume: JDRegisterHost;
+export default class BuzzerServiceHost extends ServiceHost {
+    readonly volume: RegisterHost<[number]>;
     constructor() {
         super(SRV_BUZZER);
 
-        this.volume = this.addRegister(BuzzerReg.Volume, "u8", [20]);
+        this.dashboardWeight = 2;
+
+        this.volume = this.addRegister<[number]>(BuzzerReg.Volume, [0.2]);
         this.volume.on(CHANGE, this.handleVolumeChange.bind(this))
         this.addCommand(BuzzerCmd.PlayTone, this.handlePlayTone.bind(this));
     }
 
     private handleVolumeChange() {
-        const [v] = this.volume.values<[number]>();
-
+        const [v] = this.volume.values();
         setVolume(v) // don't be too loud
     }
 
     private handlePlayTone(pkt: Packet) {
         const [period, duty, duration] = jdunpack<[number, number, number]>(pkt.data, "u16 u16 u16")
 
-        const [v] = this.volume.values<[number]>();
+        const [v] = this.volume.values();
         const frequency = 1000000 / period;
 
         playTone(frequency, duration);

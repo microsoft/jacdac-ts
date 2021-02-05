@@ -1,5 +1,5 @@
 /***
- * JACDAC service/device specification to DTDL
+ * Jacdac service/device specification to DTDL
  * 
  *  DTDL specification: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md.
  */

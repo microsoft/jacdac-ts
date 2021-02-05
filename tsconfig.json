@@ -14,6 +14,7 @@
     "emitDecoratorMetadata": true,
     "preserveConstEnums": true,
     "noImplicitThis": true,
+    "noImplicitAny": true,
     "declarationDir": "dist/types",
     "resolveJsonModule": true,
     "outDir": "dist/lib",
@@ -25,5 +26,5 @@
   "include": [
     "src",
     "jacdac-spec/dist/specconstants.ts"
-  ]
+, "docs/src/components/jacdac/Context.tsx"  ]
 }
