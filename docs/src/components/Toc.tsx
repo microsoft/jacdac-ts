@@ -134,11 +134,11 @@ export default function Toc(props: { pagePath: string }) {
     }, {
       name: "Services",
       path: "/services/",
-      order: 2
+      order: 0.6
     }, {
       name: "Devices",
       path: "/devices/",
-      order: 3
+      order: 0.7
     }, {
       name: "Tools",
       path: "/tools/",
