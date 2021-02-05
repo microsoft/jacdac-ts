@@ -9,9 +9,9 @@
 export const CMD_GET_REG = 0x1000
 export const CMD_SET_REG = 0x2000
 
-export const CMD_EVENT_FLAG = 0x8000
+export const CMD_EVENT_MASK = 0x8000
 export const CMD_EVENT_CODE_MASK = 0x00ff
-export const CMD_EVENT_COUNTER_SHIFT = 8
+export const CMD_EVENT_COUNTER_POS = 8
 export const CMD_EVENT_COUNTER_MASK = 0x7f
 
 export const CMD_TOP_MASK = 0xf000

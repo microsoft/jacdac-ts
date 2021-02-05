@@ -17,10 +17,10 @@ import {
     CMD_GET_REG,
     JD_SERVICE_INDEX_CTRL,
     CMD_REG_MASK,
-    CMD_EVENT_FLAG,
     CMD_EVENT_CODE_MASK,
-    CMD_EVENT_COUNTER_SHIFT,
-    CMD_EVENT_COUNTER_MASK
+    CMD_EVENT_COUNTER_MASK,
+    CMD_EVENT_MASK,
+    CMD_EVENT_COUNTER_POS
 } from "./constants";
 import { JDDevice } from "./device";
 import { NumberFormat, getNumber } from "./buffer";
@@ -177,7 +177,7 @@ export class Packet {
     }
 
     get isEvent() {
-        return (this.serviceCommand & CMD_EVENT_FLAG) !== 0;
+        return (this.serviceCommand & CMD_EVENT_MASK) !== 0;
     }
 
     get eventCode() {
@@ -185,7 +185,7 @@ export class Packet {
     }
 
     get eventCounter() {
-        return this.isEvent ? (this.serviceCommand >> CMD_EVENT_COUNTER_SHIFT) & CMD_EVENT_COUNTER_MASK : undefined;
+        return this.isEvent ? (this.serviceCommand >> CMD_EVENT_COUNTER_POS) & CMD_EVENT_COUNTER_MASK : undefined;
     }
 
     get isCRCAck() {
