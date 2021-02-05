@@ -9,6 +9,11 @@
 export const CMD_GET_REG = 0x1000
 export const CMD_SET_REG = 0x2000
 
+export const CMD_EVENT_MASK = 0x8000
+export const CMD_EVENT_CODE_MASK = 0x00ff
+export const CMD_EVENT_COUNTER_POS = 8
+export const CMD_EVENT_COUNTER_MASK = 0x7f
+
 export const CMD_TOP_MASK = 0xf000
 export const CMD_REG_MASK = 0x0fff
 
@@ -20,8 +25,6 @@ export const ACK_MAX_DELAY = 120
 // Commands 0xf00-0xfff - reserved for implementation
 // enumeration data for CTRL, ad-data for other services
 export const CMD_ADVERTISEMENT_DATA = 0x00
-// event from sensor or on broadcast service
-export const CMD_EVENT = 0x01
 
 export const PIPE_PORT_SHIFT = 7
 export const PIPE_COUNTER_MASK = 0x001f
@@ -112,7 +115,7 @@ export const PACKET_RECEIVE = 'packetReceive'
 export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
 export const PACKET_EVENT = 'packetEvent'
 export const PACKET_REPORT = 'packetReport'
-export const PACKET_ANNOUCE = 'packetAnnounce'
+export const PACKET_ANNOUNCE = 'packetAnnounce'
 
 export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'

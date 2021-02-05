@@ -5,7 +5,7 @@ import { shortDeviceId } from "./pretty";
 import { anyRandomUint32, isBufferEmpty, toHex } from "./utils";
 import ControlServiceHost from "./controlservicehost";
 import { JDEventSource } from "./eventsource";
-import { JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
+import { CMD_EVENT_COUNTER_MASK, CMD_EVENT_COUNTER_POS, CMD_EVENT_MASK, JD_SERVICE_INDEX_CRC_ACK, PACKET_PROCESS, PACKET_SEND, REFRESH, REPORT_RECEIVE, RESET, SELF_ANNOUNCE } from "./constants";
 
 export default class DeviceHost extends JDEventSource {
     private _bus: JDBus;
@@ -16,6 +16,11 @@ export default class DeviceHost extends JDEventSource {
     private _restartCounter = 0;
     private _resetTimeOut: any;
     private _packetCount = 0;
+    private _eventCounter: number = undefined;
+    private _delayedPackets: {
+        timestamp: number,
+        pkt: Packet
+    }[];
 
     constructor(services: ServiceHost[], options?: {
         deviceId?: string;
@@ -67,6 +72,7 @@ export default class DeviceHost extends JDEventSource {
     }
 
     private stop() {
+        this._delayedPackets = undefined;
         this.clearResetTimer();
         if (!this._bus) return;
 
@@ -111,6 +117,19 @@ export default class DeviceHost extends JDEventSource {
         return `host ${this.shortId}`;
     }
 
+    get eventCounter() {
+        return this._eventCounter;
+    }
+
+    createEventCmd(evCode: number) {
+        if (!this._eventCounter)
+            this._eventCounter = 0
+        this._eventCounter = (this._eventCounter + 1) & CMD_EVENT_COUNTER_MASK
+        if (evCode >> 8)
+            throw new Error("invalid event code")
+        return CMD_EVENT_MASK | (this._eventCounter << CMD_EVENT_COUNTER_POS) | evCode
+    }
+
     async sendPacketAsync(pkt: Packet) {
         if (!this._bus)
             return Promise.resolve();
@@ -125,6 +144,40 @@ export default class DeviceHost extends JDEventSource {
         this.bus.processPacket(pkt);
         // return priomise
         return p;
+    }
+
+    delayedSend(pkt: Packet, timestamp: number) {
+        if (!this._delayedPackets) {
+            this._delayedPackets = [];
+            // start processing loop
+            setTimeout(this.processDelayedPackets.bind(this), 10);
+        }
+        const dp = { timestamp, pkt }
+        this._delayedPackets.push(dp);
+        this._delayedPackets.sort((l, r) => -l.timestamp + r.timestamp);
+    }
+
+    private processDelayedPackets() {
+        // consume packets that are ready
+        while (this._delayedPackets?.length) {
+            const { timestamp, pkt } = this._delayedPackets[0]
+            if (timestamp > this.bus.timestamp)
+                break;
+            this._delayedPackets.shift();
+            // do we wait?
+            try {
+                this.sendPacketAsync(pkt);
+            } catch (e) {
+                // something went wrong, clear queue
+                this._delayedPackets = undefined;
+                throw e;
+            }
+        }
+        // keep waiting or stop
+        if (!this._delayedPackets?.length)
+            this._delayedPackets = undefined; // we're done
+        else
+            setTimeout(this.processDelayedPackets.bind(this), 10);
     }
 
     private handlePacket(pkt: Packet) {

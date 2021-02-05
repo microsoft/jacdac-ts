@@ -4,7 +4,7 @@ import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
-    CMD_EVENT, DEVICE_ANNOUNCE,
+    DEVICE_ANNOUNCE,
     PACKET_SEND,
     ERROR,
     CONNECTING,
@@ -786,10 +786,10 @@ export class JDBus extends JDNode {
             this.emit(PACKET_RECEIVE_ANNOUNCE, pkt)
         } else {
             this.emit(PACKET_RECEIVE, pkt)
-            if (pkt.isReport)
-                this.emit(PACKET_REPORT, pkt)
-            if (pkt.isCommand && pkt.serviceCommand === CMD_EVENT)
+            if (pkt.isEvent)
                 this.emit(PACKET_EVENT, pkt);
+            else if (pkt.isReport)
+                this.emit(PACKET_REPORT, pkt)
         }
     }
 

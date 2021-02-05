@@ -1,8 +1,8 @@
 import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
-    PACKET_RECEIVE, PACKET_REPORT, CMD_EVENT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUCE
+    PACKET_RECEIVE, PACKET_REPORT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, ControlCmd, DEVICE_NODE_NAME, LOST,
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUNCE
 } from "./constants"
 import { read32, SMap, bufferEq, assert, setAckError, delay } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -80,6 +80,7 @@ export class JDDevice extends JDNode {
     private _ackAwaiting: AckAwaiter[];
     private _flashing = false;
     private _identifying: boolean;
+    private _eventCounter: number;
     readonly qos = new QualityOfService();
 
     constructor(public readonly bus: JDBus, public readonly deviceId: string) {
@@ -224,6 +225,14 @@ export class JDDevice extends JDNode {
         }
     }
 
+    get eventCounter() {
+        return this._eventCounter;
+    }
+
+    set eventCounter(v: number) {
+        this._eventCounter = v;
+    }
+
     hasService(service_class: number): boolean {
         if (!this.announced) return false;
         if (service_class === 0) return true;
@@ -349,7 +358,7 @@ export class JDDevice extends JDNode {
         }
 
         // notify that we've received an announce packet
-        this.emit(PACKET_ANNOUCE);
+        this.emit(PACKET_ANNOUNCE);
 
         // notify of any changes
         if (changed) {
@@ -364,7 +373,7 @@ export class JDDevice extends JDNode {
         this.emit(PACKET_RECEIVE, pkt)
         if (pkt.isReport)
             this.emit(PACKET_REPORT, pkt)
-        else if (pkt.serviceCommand == CMD_EVENT)
+        else if (pkt.isEvent)
             this.emit(PACKET_EVENT, pkt)
 
         const service = this.service(pkt.serviceIndex)
