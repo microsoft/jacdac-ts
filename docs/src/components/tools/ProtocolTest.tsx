@@ -1,6 +1,6 @@
 import { Grid, Switch, Typography } from "@material-ui/core";
 import React, { useContext, useEffect, useState } from "react";
-import { bufferEq, cryptoRandomUint32, delay, pick, toHex } from "../../../../src/jdom/utils";
+import { bufferEq, cryptoRandomUint32, delay, pick, randomRange, toHex } from "../../../../src/jdom/utils";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
 import { ProtoTestCmd, ProtoTestReg, SRV_PROTO_TEST } from "../../../../src/jdom/constants";
@@ -16,16 +16,10 @@ import useEffectAsync from "../useEffectAsync";
 import TestCard from "../TestCard";
 import Packet from "../../../../src/jdom/packet";
 import { JDEvent } from "../../../../src/jdom/event";
-import { InPipeReader } from "../../../../src/jdom/pipes";
 import { AlertTitle } from "@material-ui/lab";
 import Alert from "../ui/Alert";
-import Flags from "../../../../src/jdom/flags"
 import JDDeviceHost from "../../../../src/jdom/devicehost";
 import ProtocolTestServiceHost from "../../../../src/jdom/protocoltestservicehost"
-
-function randomRange(min: number, max: number) {
-    return Math.round(Math.random() * (max - min) + min);
-}
 
 function randomFieldPayload(field: JDField) {
     const { specification } = field;
@@ -85,8 +79,6 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
     const name = specification.name.replace(/^rw_/, "")
 
     const rxValue = (r: JDRegister) => jdunpack(r.data, specification.packFormat)
-    const rwValue = useChange(rw, rxValue);
-    const roValue = useChange(ro, rxValue);
 
     // event code and command code are the same as rw register
     useEffectAsync(async () => {
@@ -172,7 +164,6 @@ function RegisterProtocolTest(props: { rw: JDRegister, ro: JDRegister, ev: JDEve
 }
 
 function ServiceProtocolTest(props: { service: JDService }) {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
     const { service } = props;
     const { device } = service;
 

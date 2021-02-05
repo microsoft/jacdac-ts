@@ -12,7 +12,9 @@ import useMounted from "../hooks/useMounted";
 export default function DashboardRandomNumberGenerator(props: DashboardServiceProps) {
     const { service } = props;
     const [rnd, setRnd] = useState<Uint8Array>(undefined);
-    const n = 32;
+
+    const n = 8;
+
     const mounted = useMounted();
 
     const handleRefresh = async () => {

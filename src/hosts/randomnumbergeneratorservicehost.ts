@@ -1,6 +1,7 @@
 import { RngCmd, RngReg, RngVariant, SRV_RNG } from "../jdom/constants";
 import Packet from "../jdom/packet";
 import ServiceHost from "../jdom/servicehost";
+import { delay, randomRange } from "../jdom/utils";
 
 export default class RandomNumberGeneratorServiceHost extends ServiceHost {
     constructor() {
@@ -13,6 +14,11 @@ export default class RandomNumberGeneratorServiceHost extends ServiceHost {
 
     private async handleRandom(pkt: Packet) {
         const [length] = pkt.jdunpack<[number]>("u8");
+
+        // simulate delay
+        await delay(randomRange(1, 30));
+
+        // respond
         const data = new Uint8Array(length);
         console.log("rnd", { data })
         if (typeof window !== "undefined")

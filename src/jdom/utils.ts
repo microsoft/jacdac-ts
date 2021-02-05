@@ -530,6 +530,11 @@ export function roundWithPrecision(x: number, digits: number): number {
     return r;
 }
 
+export function randomRange(min: number, max: number) {
+    return Math.round(Math.random() * (max - min) + min);
+}
+
+
 export function unique(values: string[]): string[] {
     return Array.from(new Set(values).keys());
 }
