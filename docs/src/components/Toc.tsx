@@ -1,9 +1,10 @@
-import React, { useMemo } from "react"
-import { makeStyles, createStyles, Theme, List, ListItem, Typography, useTheme, Box } from '@material-ui/core';
+import React, { useContext, useMemo } from "react"
+import { makeStyles, createStyles, Theme, List, ListItem, Typography, useTheme, Box, useMediaQuery } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
 import { useStaticQuery, graphql } from "gatsby"
+import AppContext, { DrawerType } from "./AppContext"
 
 interface TocNode {
   name: string;
@@ -67,8 +68,10 @@ function treeifyToc(toc: TocNode[]) {
 
 export default function Toc(props: { pagePath: string }) {
   const { pagePath } = props;
-  const classes = useStyles();
+  const { setDrawerType } = useContext(AppContext)
   const theme = useTheme();
+  const classes = useStyles();
+  const mobile = useMediaQuery(theme.breakpoints.down("lg"));
   const data = useStaticQuery(graphql`
   query {
     site {
@@ -116,6 +119,11 @@ export default function Toc(props: { pagePath: string }) {
     }
   }
 `)
+
+  const handleClick = () => {
+    if (!mobile)
+      setDrawerType(DrawerType.None)
+  }
 
   const tree = useMemo(() => {
     // convert pages into tree
@@ -195,7 +203,7 @@ export default function Toc(props: { pagePath: string }) {
       <ListItem button
         selected={selected}
         key={'tocitem' + path}>
-        <Link style={({ color: theme.palette.text.primary })} to={path}>
+        <Link style={({ color: theme.palette.text.primary })} onClick={handleClick} to={path}>
           <ListItemText
             primary={<Typography variant={sub ? "button" : "caption"}>{name}</Typography>} />
         </Link>
