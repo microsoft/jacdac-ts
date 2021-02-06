@@ -13,6 +13,14 @@ export default function ServiceMarkdown(props: {
     const { service: node } = props;
     const { shortId, name, classIdentifier } = node;
 
+    /*
+    <h2 key="spech2">Exports</h2>
+    <ServiceSpecificationSource key="source"
+        classIdentifier={classIdentifier}
+        showSpecification={false}
+    />
+    */
+
     return <>
         <ServiceSpecificationStatusAlert specification={node} />
         <Markdown source={node.source} />
@@ -23,12 +31,6 @@ export default function ServiceMarkdown(props: {
 
         <h2>Registered Devices</h2>
         <DeviceSpecificationList requiredServiceClasses={[classIdentifier]} />
-
-        <h2 key="spech2">Exports</h2>
-        <ServiceSpecificationSource key="source"
-            classIdentifier={classIdentifier}
-            showSpecification={false}
-        />
 
         <h2> See Also</h2>
         <ul>
