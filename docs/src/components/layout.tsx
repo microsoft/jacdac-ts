@@ -182,7 +182,7 @@ function LayoutWithDarkMode(props: LayoutProps) {
   const themeDef: ThemeOptions = {
     palette: {
       primary: {
-        main: '#2e7d32',
+        main: '#56d364',
       },
       secondary: {
         main: '#ffc400',
