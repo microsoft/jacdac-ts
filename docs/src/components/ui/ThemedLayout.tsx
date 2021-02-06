@@ -26,7 +26,6 @@ export default function ThemedLayout(props: { theme: Theme, maxSnack?: number, c
                                             <Helmet>
                                                 <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
                                                 <link rel="preconnect" href="https://raw.githubusercontent.com" crossOrigin="anonymous" />
-                                                <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="anonymous" />
                                                 <meta
                                                     name="viewport"
                                                     content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
