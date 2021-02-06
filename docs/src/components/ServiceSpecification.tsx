@@ -94,17 +94,6 @@ export default function ServiceSpecification(props: {
                     />)}
             </Fragment>)
         }
-        {showDevices && <Fragment key="devices">
-            <h2>Registered Devices</h2>
-            <DeviceSpecificationList requiredServiceClasses={[node.classIdentifier]} />
-        </Fragment>}
-        {showSource && <Fragment key="specs">
-            <h2 key="spech2">Exports</h2>
-            <ServiceSpecificationSource key="source"
-                classIdentifier={node.classIdentifier}
-                showSpecification={false}
-            />
-        </Fragment>}
     </Fragment>
     )
 }
