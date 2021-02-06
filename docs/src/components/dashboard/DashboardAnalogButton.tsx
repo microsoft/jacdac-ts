@@ -73,7 +73,7 @@ export default function DashboardAnalogButton(props: DashboardServiceProps) {
     const d = describeArc(cx, cy, rp, 0, a)
 
     return <SvgWidget width={w} size={widgetSize}>
-        <circle cx={cx} cy={cy} r={ro} fill={background} />
+        <rect x={0} y={0} rx={2} ry={2} width={w} height={w} fill={background} />
         {pressure && <path d={d} stroke={active} strokeLinecap={"round"} strokeWidth={ps} />}
         <circle cx={cx} cy={mo} r={mo / 3} 
             aria-label={`active threshold ${activeThreshold}`}
