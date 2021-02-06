@@ -294,6 +294,8 @@ function LayoutWithContext(props: LayoutProps) {
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
+  const container = !/^\/(tools|dashboard)/.test(path)
+  console.log({ path })
 
   return (
     <div className={clsx(darkMode, classes.root)}>
@@ -312,10 +314,9 @@ function LayoutWithContext(props: LayoutProps) {
         <main className={classes.mainContent}>
           <div className={classes.drawerHeader} />
           <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the Jacdac specification. Do not build devices using Jacdac.</Alert>
-          <WebUSBAlert />
           {Flags.diagnostics && <WebDiagnostics />}
           <Typography className={'markdown'} component="span">
-            {element}
+            {container ? <Container>{element}</Container> : element}
           </Typography>
         </main>
         <Footer />
