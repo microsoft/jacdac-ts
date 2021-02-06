@@ -1,6 +1,6 @@
 # Jacdac TypeScript
 
-This repository contains a TypeScript/JavaScript client library for the [Jacdac](https://microsoft.github.io/jacdac) protocol,
+This repository contains a TypeScript/JavaScript client library for the [Jacdac](https://aka.ms/jacdac) protocol,
 as well as the source of https://aka.ms/jacdac under `/docs`.
 
 * [User Documentation](https://aka.ms/jacdac/)
