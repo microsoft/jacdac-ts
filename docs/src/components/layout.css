@@ -61,6 +61,7 @@ a:hover {
 .markdown pre {
   background:hsla(0, 0%, 0%, 0.4);
   padding: 1rem;
+  white-space: pre-wrap;
 }
 abbr[title] {
   border-bottom: none;
