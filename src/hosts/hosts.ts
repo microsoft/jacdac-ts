@@ -141,6 +141,12 @@ const microbitSounds: SoundPlayerSound[] = [
     [0, "twinkle"],
     [0, "yawn"],
 ];
+const touchButton: AnalogSensorServiceHostOptions = {
+    lowThreshold: 0.3,
+    highThreshold: 0.8,
+    readingValues: [0],
+    variant: AnalogButtonVariant.Capacitive
+}
 
 const _hosts: {
     name: string,
@@ -224,12 +230,12 @@ const _hosts: {
         {
             name: "capacitive button",
             serviceClasses: [SRV_ANALOG_BUTTON],
-            services: () => [new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, {
-                lowThreshold: 0.3,
-                highThreshold: 0.8,
-                readingValues: [0],
-                variant: AnalogButtonVariant.Capacitive
-            })]
+            services: () => [new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, touchButton)]
+        },
+        {
+            name: "capacitive button (12x)",
+            serviceClasses: [SRV_ANALOG_BUTTON],
+            services: () => Array(12).fill(0).map((_, i) => new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, { ...touchButton, ...{ instanceName: `C${i}` } }))
         },
         {
             name: "character screen (LDC, 16x2)",
