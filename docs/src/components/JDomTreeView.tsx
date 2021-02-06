@@ -86,7 +86,7 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
 function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps & JDomTreeViewProps) {
     const { service, checked, setChecked, checkboxes, dashboard, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
-    const showSpecificationAction = specification && !dashboard;
+    const showSpecificationAction = false;
     const id = service.id
     const open = checked?.indexOf(id) > -1;
     const packets = specification?.packets;
