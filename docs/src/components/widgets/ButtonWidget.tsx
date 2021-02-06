@@ -24,8 +24,13 @@ export default function ButtonWidget(props: {
     const cy = r;
     const ro = r;
     const ri = r - mo;
+    const rn = 8;
     return <SvgWidget width={w} size={size}>
-        <circle cx={cx} cy={cy} r={ro} fill={background} />
+        <rect x={0} y={0} rx={2} ry={2} width={w} height={w} fill={background} />
+        <circle cx={rn} cy={rn} r={rn >> 1} fill={controlBackground} />
+        <circle cx={w - rn} cy={rn} r={rn >> 1} fill={controlBackground} />
+        <circle cx={w - rn} cy={w - rn} r={rn >> 1} fill={controlBackground} />
+        <circle cx={rn} cy={w - rn} r={rn >> 1} fill={controlBackground} />
         <circle cx={cx} cy={cy} r={ri}
             aria-live="polite"
             fill={checked ? active : controlBackground}
