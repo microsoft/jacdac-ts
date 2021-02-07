@@ -10,7 +10,7 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
-export default function DashboardButton(props: DashboardServiceProps) {
+export default function DashboardMotion(props: DashboardServiceProps) {
   const { service, services, variant } = props;
   const movingRegister = service.register(MotionReg.Moving);
   const [moving] = useRegisterUnpackedValue<[boolean]>(movingRegister);
