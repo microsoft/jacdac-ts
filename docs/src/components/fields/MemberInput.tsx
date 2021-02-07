@@ -42,7 +42,7 @@ export default function MemberInput(props: {
     const label = name
     const isWidget = variant === "widget"
     const widgetSize = useWidgetSize();
-    const unitIcon = useUnitIcon(specification.unit)
+    const unitIcon = useUnitIcon(specification.unit, { "aria-label": label })
 
     const minValue = pick(min, typicalMin, absoluteMin, /^u/.test(type) ? 0 : undefined)
     const maxValue = pick(max, typicalMax, absoluteMax)
