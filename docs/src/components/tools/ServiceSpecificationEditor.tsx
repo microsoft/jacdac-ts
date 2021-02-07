@@ -78,7 +78,7 @@ TODO describe this register
     const handlePreview = () => setPreview(json)
     const editorRef = useRef(null);
 
-    useEditable(editorRef, setSource);
+    useEditable(editorRef, setSource, { indentation: 4 });
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
