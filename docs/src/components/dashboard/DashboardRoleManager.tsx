@@ -1,26 +1,28 @@
 
-import { Grid, Switch, Typography } from "@material-ui/core";
-import React, { useState } from "react";
-import { SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
-import { RoleManagerClient } from "../../../../src/jdom/rolemanagerclient";
-import useServiceClient from "../useServiceClient"
-import RemoteRequestDeviceView from "../RemoteRequestDeviceView";
-import { addServiceComponent, DashboardServiceProps } from "./DashboardServiceWidget";
+import { Grid, Switch } from "@material-ui/core";
+import React from "react";
+import { RoleManagerReg } from "../../../../src/jdom/constants";
+import { DashboardServiceProps } from "./DashboardServiceWidget";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import { useId } from "react-use-id-hook";
 
 export default function DashboardRoleManager(props: DashboardServiceProps) {
-    const { service, expanded } = props;
-    const [autoBind, setAutoBind] = useState(false);
-    const roleManagerClient = useServiceClient(service, srv => new RoleManagerClient(srv, { autoBind }), [autoBind]);
-    const handleAutoBind = () => setAutoBind(!autoBind);
+    const { service } = props;
+    const autoBindRegister = service.register(RoleManagerReg.AutoBind);
+    const [autoBind] = useRegisterUnpackedValue<[boolean]>(autoBindRegister);
+    const [allRolesAllocated] = useRegisterUnpackedValue<[boolean]>(service.register(RoleManagerReg.AllRolesAllocated))
+    const handleAutoBind = () => autoBindRegister.sendSetBoolAsync(!autoBind, true);
+    const autoBindLabel = useId();
+    const allRolesLabel = useId();
 
     return <>
         <Grid item xs={12}>
-            <Switch value={autoBind} onChange={handleAutoBind} />
-            <Typography component="span" variant="caption">assign roles automatically</Typography>
+            <Switch aria-labelledby={allRolesLabel} value={allRolesAllocated} disabled={true} />
+            <label id={allRolesLabel}>all roles allocated</label>
         </Grid>
-        {expanded && roleManagerClient?.remoteRequestedDevices
-            .map(rdev => <Grid key={rdev.name} item>
-                <RemoteRequestDeviceView rdev={rdev} client={roleManagerClient} />
-            </Grid>)}
+        <Grid item xs={12}>
+            <Switch aria-labelledby={autoBindLabel} value={autoBind} onChange={handleAutoBind} />
+            <label id={autoBindLabel}>assign roles automatically</label>
+        </Grid>
     </>
 }
