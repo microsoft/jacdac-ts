@@ -17,11 +17,13 @@ export default class CharacterScreenServiceHost extends ServiceHost {
         textDirection?: CharacterScreenTextDirection
     }) {
         super(SRV_CHARACTER_SCREEN);
-        const { message, rows, columns, variant, textDirection } = options || {};
+        const { message, rows = 2, columns = 16, variant, textDirection } = options || {};
+
+        this.dashboardWeight = columns > 4 ? 2 : 1;
 
         this.message = this.addRegister<[string]>(CharacterScreenReg.Message, [message || ""]);
-        this.rows = this.addRegister<[number]>(CharacterScreenReg.Rows, [rows || 2]);
-        this.columns = this.addRegister<[number]>(CharacterScreenReg.Columns, [columns || 16]);
+        this.rows = this.addRegister<[number]>(CharacterScreenReg.Rows, [rows]);
+        this.columns = this.addRegister<[number]>(CharacterScreenReg.Columns, [columns]);
         this.variant = this.addRegister<[CharacterScreenVariant]>(CharacterScreenReg.Variant, [variant || CharacterScreenVariant.LCD]);
         this.message = this.addRegister<[string]>(CharacterScreenReg.Message, [""]);
         this.textDirection = this.addRegister<[CharacterScreenTextDirection]>(CharacterScreenReg.TextDirection, [textDirection || CharacterScreenTextDirection.LeftToRight])

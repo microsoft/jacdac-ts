@@ -49,7 +49,9 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
             },
         },
         expanded: {},
-        selected: {},
+        selected: {
+            color: theme.palette.background.default
+        },
         label: {
             fontWeight: 'inherit',
             color: 'inherit',
