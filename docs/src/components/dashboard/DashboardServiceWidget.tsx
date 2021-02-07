@@ -57,41 +57,111 @@ export interface DashboardServiceProps {
 }
 export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>;
 
-const serviceViews: { [serviceClass: number]: DashboardServiceComponent } = {
-    [SRV_ROLE_MANAGER]: DashboardRoleManager,
-    [SRV_BUZZER]: DashboardBuzzer,
-    [SRV_LED_PIXEL]: DashboardLEDPixel,
-    [SRV_ACCELEROMETER]: DashboardAccelerometer,
-    [SRV_ROTARY_ENCODER]: DashboardRotaryEncoder,
-    [SRV_BUTTON]: DashboardButton,
-    [SRV_SERVO]: DashboardServo,
-    [SRV_SWITCH]: DashboardSwitch,
-    [SRV_TRAFFIC_LIGHT]: DashboardTrafficLight,
-    [SRV_CHARACTER_SCREEN]: DashboardCharacterScreen,
-    [SRV_RAIN_GAUGE]: DashbaordRainGauge,
-    [SRV_LEDMATRIX]: DashboardLEDMatrix,
-    [SRV_ARCADE_GAMEPAD]: DashboardArcadeGamepad,
-    [SRV_WIND_DIRECTION]: DashboardWindDirection,
-    [SRV_MATRIX_KEYPAD]: DashboardMatrixKeypad,
-    [SRV_REFLECTED_LIGHT]: DashboardReflectedLight,
-    [SRV_POWER]: DashboardPower,
-    [SRV_SPEECH_SYNTHESIS]: DashboardSpeechSynthesis,
-    [SRV_SOIL_MOISTURE]: DashboardSoilMoisture,
-    [SRV_REAL_TIME_CLOCK]: DashboardRealTimeClock,
-    [SRV_LED]: DashboardLED,
-    [SRV_JOYSTICK]: DashboardJoystick,
-    [SRV_SEVEN_SEGMENT_DISPLAY]: DashboardSevenSegmentDisplay,
-    [SRV_MOTION]: DashboardMotion,
-    [SRV_WATER_LEVEL]: DashbaordWaterLevel,
-    [SRV_COLOR]: DashboardColor,
-    [SRV_SOUND_PLAYER]: DashboardSoundPlayer,
-    [SRV_ANALOG_BUTTON]: DashboardAnalogButton,
-    [SRV_SOUND_LEVEL]: DashboardSoundLevel,
-    [SRV_RNG]: DashboardRandomNumberGenerator,
+const serviceViews: {
+    [serviceClass: number]: {
+        component: DashboardServiceComponent;
+        weight?: (service: JDService) => number;
+    }
+} = {
+    [SRV_ROLE_MANAGER]: {
+        component: DashboardRoleManager,
+    },
+    [SRV_BUZZER]: {
+        component: DashboardBuzzer,
+        weight: () => 2
+    },
+    [SRV_LED_PIXEL]: {
+        component: DashboardLEDPixel,
+    },
+    [SRV_ACCELEROMETER]: {
+        component: DashboardAccelerometer,
+    },
+    [SRV_ROTARY_ENCODER]: {
+        component: DashboardRotaryEncoder,
+    },
+    [SRV_BUTTON]: {
+        component: DashboardButton,
+    },
+    [SRV_SERVO]: {
+        component: DashboardServo,
+    },
+    [SRV_SWITCH]: {
+        component: DashboardSwitch,
+    },
+    [SRV_TRAFFIC_LIGHT]: {
+        component: DashboardTrafficLight,
+    },
+    [SRV_CHARACTER_SCREEN]: {
+        component: DashboardCharacterScreen,
+        weight: (srv) => 3
+    },
+    [SRV_RAIN_GAUGE]: {
+        component: DashbaordRainGauge,
+    },
+    [SRV_LEDMATRIX]: {
+        component: DashboardLEDMatrix,
+        weight: (srv) => 3
+    },
+    [SRV_ARCADE_GAMEPAD]: {
+        component: DashboardArcadeGamepad,
+        weight: (srv) => 3
+    },
+    [SRV_WIND_DIRECTION]: {
+        component: DashboardWindDirection,
+    },
+    [SRV_MATRIX_KEYPAD]: {
+        component: DashboardMatrixKeypad,
+    },
+    [SRV_REFLECTED_LIGHT]: {
+        component: DashboardReflectedLight,
+    },
+    [SRV_POWER]: {
+        component: DashboardPower,
+    },
+    [SRV_SPEECH_SYNTHESIS]: {
+        component: DashboardSpeechSynthesis,
+    },
+    [SRV_SOIL_MOISTURE]: {
+        component: DashboardSoilMoisture,
+    },
+    [SRV_REAL_TIME_CLOCK]: {
+        component: DashboardRealTimeClock,
+    },
+    [SRV_LED]: {
+        component: DashboardLED,
+    },
+    [SRV_JOYSTICK]: {
+        component: DashboardJoystick,
+    },
+    [SRV_SEVEN_SEGMENT_DISPLAY]: {
+        component: DashboardSevenSegmentDisplay,
+    },
+    [SRV_MOTION]: {
+        component: DashboardMotion,
+    },
+    [SRV_WATER_LEVEL]: {
+        component: DashbaordWaterLevel,
+    },
+    [SRV_COLOR]: {
+        component: DashboardColor,
+    },
+    [SRV_SOUND_PLAYER]: {
+        component: DashboardSoundPlayer,
+        weight: (srv) => 2
+    },
+    [SRV_ANALOG_BUTTON]: {
+        component: DashboardAnalogButton,
+    },
+    [SRV_SOUND_LEVEL]: {
+        component: DashboardSoundLevel,
+    },
+    [SRV_RNG]: {
+        component: DashboardRandomNumberGenerator,
+    },
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
-    serviceViews[serviceClass] = component;
+    serviceViews[serviceClass] = { component };
 }
 
 const collapsedRegisters = [
@@ -169,6 +239,12 @@ function DefaultWidget(props: DashboardServiceProps) {
 export default function DashboardServiceWidget(props: React.Attributes & DashboardServiceProps): JSX.Element {
     const { service } = props;
     const { specification } = service;
-    const component: DashboardServiceComponent = serviceViews[specification.classIdentifier] || DefaultWidget;
+    const component = serviceViews[specification.classIdentifier]?.component || DefaultWidget;
     return createElement(component, props);
+}
+
+
+export function dashboardServiceWeight(service: JDService) {
+    const view = serviceViews[service.serviceClass];
+    return view?.weight?.(service);
 }

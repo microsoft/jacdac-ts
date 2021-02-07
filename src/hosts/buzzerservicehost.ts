@@ -66,8 +66,6 @@ export default class BuzzerServiceHost extends ServiceHost {
     constructor() {
         super(SRV_BUZZER);
 
-        this.dashboardWeight = 2;
-
         this.volume = this.addRegister<[number]>(BuzzerReg.Volume, [0.2]);
         this.volume.on(CHANGE, this.handleVolumeChange.bind(this))
         this.addCommand(BuzzerCmd.PlayTone, this.handlePlayTone.bind(this));

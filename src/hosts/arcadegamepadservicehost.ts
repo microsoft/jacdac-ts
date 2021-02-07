@@ -24,7 +24,6 @@ export default class ArcadeGamepadServiceHost
             readingValues: [[]]
         })
 
-        this.dashboardWeight = 3;
         this.availableButtons = this.addRegister<[([ArcadeGamepadButton])[]]>(ArcadeGamepadReg.AvailableButtons, [(availableButtons || defaultButtons).map(v => [v])]);
     }
 

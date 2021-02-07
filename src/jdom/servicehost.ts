@@ -28,9 +28,6 @@ export default class ServiceHost extends JDEventSource {
     readonly statusCode: RegisterHost<[SystemStatusCodes, number]>;
     readonly instanceName: RegisterHost<[string]>;
 
-    // this is a hint for dashboard layout, higher means wider
-    public dashboardWeight?: number = undefined;
-
     constructor(public readonly serviceClass: number, options?: ServiceHostOptions) {
         super();
         const { instanceName, variant, valueValues, intensityValues, registerValues } = options || {};
