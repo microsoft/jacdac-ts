@@ -24,7 +24,7 @@ export class JDService extends JDNode {
 
     constructor(
         public readonly device: JDDevice,
-        public readonly service_index: number
+        public readonly serviceIndex: number
     ) {
         super()
 
@@ -37,7 +37,7 @@ export class JDService extends JDNode {
     }
 
     get id() {
-        return `${this.nodeKind}:${this.device.deviceId}:${this.service_index.toString(16)}`
+        return `${this.nodeKind}:${this.device.deviceId}:${this.serviceIndex.toString(16)}`
     }
 
     get nodeKind() {
@@ -45,7 +45,7 @@ export class JDService extends JDNode {
     }
 
     get serviceClass() {
-        return this.device.serviceClassAt(this.service_index);
+        return this.device.serviceClassAt(this.serviceIndex);
     }
 
     get name() {
@@ -55,12 +55,12 @@ export class JDService extends JDNode {
     get friendlyName() {
         const parts = [this.device.friendlyName]
         if (this.device.services({ serviceClass: this.serviceClass }).length > 1)
-            parts.push(`[${this.service_index.toString(16)}]`)
+            parts.push(`[${this.serviceIndex.toString(16)}]`)
         return parts.join('.')
     }
 
     get qualifiedName() {
-        return `${this.device.qualifiedName}[${this.service_index.toString(16)}]`
+        return `${this.device.qualifiedName}[${this.serviceIndex.toString(16)}]`
     }
 
     get parent(): JDNode {
@@ -174,7 +174,7 @@ export class JDService extends JDNode {
 
     sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device;
-        pkt.serviceIndex = this.service_index;
+        pkt.serviceIndex = this.serviceIndex;
         if (ack !== undefined)
             pkt.requiresAck = !!ack
         this.emit(PACKET_SEND, pkt)
@@ -238,7 +238,7 @@ export class JDService extends JDNode {
         const a = this;
         return a.serviceClass - b.serviceClass ||
             strcmp(a.device.deviceId, b.device.deviceId) ||
-            a.service_index - b.service_index;
+            a.serviceIndex - b.serviceIndex;
     }
 
     get clients(): JDServiceClient[] {
