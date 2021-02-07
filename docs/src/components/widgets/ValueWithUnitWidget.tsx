@@ -42,13 +42,10 @@ export default function ValueWithUnitWidget(props: {
             <Grid container direction="row" alignContent="flex-end">
                 <Grid item>
                     <Typography role="timer" align="right" variant={valueVariant}
-                        style={valueStyle}>{valueText}</Typography>
+                        style={valueStyle}>{icon}{valueText}</Typography>
                 </Grid>
                 <Grid item>
                     <Grid container direction="column" alignContent="space-between">
-                        {icon && <Grid item>
-                            {icon}
-                        </Grid>}
                         <Grid item>
                             <Typography variant={labelVariant}>{label}</Typography>
                         </Grid>
