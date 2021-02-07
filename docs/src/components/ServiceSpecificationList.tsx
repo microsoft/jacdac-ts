@@ -2,7 +2,6 @@ import { Grid, List, ListItem, ListItemText } from "@material-ui/core";
 import React, { useMemo } from "react";
 import { isInfrastructure, serviceSpecifications } from "../../../src/jdom/spec";
 import { arrayShuffle } from "../../../src/jdom/utils";
-import useGridBreakpoints from "./useGridBreakpoints";
 import GridHeader from "./ui/GridHeader"
 import { Link } from "gatsby-theme-material-ui";
 
