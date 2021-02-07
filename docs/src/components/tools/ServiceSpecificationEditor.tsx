@@ -82,7 +82,7 @@ TODO describe this register
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}
+                <pre spellCheck={false} style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}
                     ref={editorRef}>{source}</pre>
                 <Grid container spacing={1}>
                     <Grid item>
