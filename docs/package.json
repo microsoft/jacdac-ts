@@ -60,6 +60,7 @@
     "react-window": "^1.8.6",
     "slug": "^4.0.0",
     "use-debounce": "^5.2.0",
+    "use-editable": "^1.2.0",
     "use-sound": "^2.0.1"
   },
   "keywords": [

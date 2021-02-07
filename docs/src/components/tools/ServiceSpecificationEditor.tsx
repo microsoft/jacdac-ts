@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme, Button, Box } from '@material-ui/core';
 import { parseServiceSpecificationMarkdownToJSON } from '../../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../../src/jdom/spec';
@@ -11,6 +11,7 @@ import PaperBox from '../ui/PaperBox'
 import Alert from '../ui/Alert';
 import GithubPullRequestButton from '../GithubPullRequestButton';
 import ServiceSpecification from '../ServiceSpecification';
+import { useEditable } from "use-editable"
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -75,21 +76,14 @@ TODO describe this register
     }
     const servicePath = json && `services/${(json.camelName || json.shortId || `0x${json.classIdentifier.toString(16)}`).toLowerCase()}`
     const handlePreview = () => setPreview(json)
+    const editorRef = useRef(null);
+
+    useEditable(editorRef, setSource);
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <TextField
-                    fullWidth={true}
-                    className={classes.editor}
-                    onChange={handleSourceChange}
-                    defaultValue={source || ""}
-                    multiline={true}
-                    rows={42}
-                    spellCheck={false}
-                    inputProps={{
-                        fontFamily: 'monospace'
-                    }}
-                />
+                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}
+                    ref={editorRef}>{source}</pre>
                 <Grid container spacing={1}>
                     <Grid item>
                         <GithubPullRequestButton

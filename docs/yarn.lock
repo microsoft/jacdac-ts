@@ -13367,7 +13367,7 @@
     "@babel/runtime" "^7.0.0"
     "memoize-one" ">=3.1.1 <6"
 
-"react@^16.14.0":
+"react@^16.14.0", "react@>= 16.8.0":
   "integrity" "sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g=="
   "resolved" "https://registry.npmjs.org/react/-/react-16.14.0.tgz"
   "version" "16.14.0"
@@ -16447,6 +16447,11 @@
   "integrity" "sha512-lW4tbPsTnvPKYqOYXp5xZ7SP7No/ARLqqQqoyRKuSzP0HxR9arhSAhznXUZFoNPWDRij8fog+N6sYbjb8c3kzw=="
   "resolved" "https://registry.npmjs.org/use-debounce/-/use-debounce-5.2.0.tgz"
   "version" "5.2.0"
+
+"use-editable@^1.2.0":
+  "integrity" "sha512-lGWRqtSkXhlNBXJJuiQq7gzaq7UO7ErlM33zOIRZ45lTCtPu7ZpnPQx6bNZOVtjKvlLt+UuYYHG3nCuDtpUmYA=="
+  "resolved" "https://registry.npmjs.org/use-editable/-/use-editable-1.2.0.tgz"
+  "version" "1.2.0"
 
 "use-sound@^2.0.1":
   "integrity" "sha512-wNwnyIOe8QPDQgWRZd3PqVEJ9BpLO+VJX+EpQSb6EvvjblHhnYMD7WIOTQ4hgloC2jC7Az6FhclHilC441De7A=="
