@@ -1,17 +1,15 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Paper, createStyles, makeStyles, Theme, Grid, TextareaAutosize, TextField, useTheme, Button, Box } from '@material-ui/core';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { Paper, createStyles, makeStyles, Theme, Grid, useTheme, Button } from '@material-ui/core';
 import { parseServiceSpecificationMarkdownToJSON } from '../../../../jacdac-spec/spectool/jdspec'
 import { clearCustomServiceSpecifications, addCustomServiceSpecification, serviceMap } from '../../../../src/jdom/spec';
 import RandomGenerator from '../RandomGenerator';
 import AppContext, { DrawerType } from '../AppContext';
-import ServiceSpecificationSource from '../ServiceSpecificationSource';
 import useLocalStorage from '../useLocalStorage';
 import { useDebounce } from 'use-debounce';
-import PaperBox from '../ui/PaperBox'
 import Alert from '../ui/Alert';
 import GithubPullRequestButton from '../GithubPullRequestButton';
 import ServiceSpecification from '../ServiceSpecification';
-import { useEditable } from "use-editable"
+import HighlightTextField from "../ui/HighlightTextField"
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     root: {
@@ -55,7 +53,6 @@ TODO describe this register
     const [source, setSource] = useState(storedSource);
     const [debouncedSource] = useDebounce(source, 1000)
     const [preview, setPreview] = useState<jdspec.ServiceSpec>(undefined)
-    const theme = useTheme();
     const json = useMemo(() => parseServiceSpecificationMarkdownToJSON(debouncedSource, serviceMap()), [debouncedSource]);
     const annotations = useMemo(() => json?.errors?.map(error => ({
         row: error.line,
@@ -71,34 +68,34 @@ TODO describe this register
             clearCustomServiceSpecifications();
     }, [debouncedSource])
     const drawerOpen = drawerType != DrawerType.None
-    const handleSourceChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setSource(ev.target.value)
-    }
     const servicePath = json && `services/${(json.camelName || json.shortId || `0x${json.classIdentifier.toString(16)}`).toLowerCase()}`
     const handlePreview = () => setPreview(json)
-    const editorRef = useRef(null);
 
-    useEditable(editorRef, setSource, { indentation: 4 });
     return (
         <Grid spacing={2} className={classes.root} container>
             <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <pre spellCheck={false} style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}
-                    ref={editorRef}>{source}</pre>
-                <Grid container spacing={1}>
-                    <Grid item>
-                        <GithubPullRequestButton
-                            label={"submit service"}
-                            title={json && `Service: ${json.name}`}
-                            head={json && servicePath}
-                            body={`This pull request adds a new service definition for Jacdac.`}
-                            commit={json && `added service files`}
-                            files={servicePath && {
-                                [servicePath + ".md"]: debouncedSource
-                            }}
-                        />
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <HighlightTextField code={source} language="markdown" onChange={setSource} />
                     </Grid>
                     <Grid item>
-                        <Button title={"preview"} onClick={handlePreview} variant="outlined" disabled={!json || !!json.errors}>Preview</Button>
+                        <Grid container spacing={1}>
+                            <Grid item>
+                                <GithubPullRequestButton
+                                    label={"submit service"}
+                                    title={json && `Service: ${json.name}`}
+                                    head={json && servicePath}
+                                    body={`This pull request adds a new service definition for Jacdac.`}
+                                    commit={json && `added service files`}
+                                    files={servicePath && {
+                                        [servicePath + ".md"]: debouncedSource
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <Button title={"preview"} onClick={handlePreview} variant="outlined" disabled={!json || !!json.errors}>Preview</Button>
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Grid>
