@@ -10,6 +10,7 @@ import ButtonWidget from "../widgets/ButtonWidget";
 import GaugeWidget from "../widgets/GaugeWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import ValueWithUnitWidget from "../widgets/ValueWithUnitWidget";
+import useUnitIcon from "../hooks/useUnitIcon";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
@@ -41,6 +42,7 @@ export default function MemberInput(props: {
     const label = name
     const isWidget = variant === "widget"
     const widgetSize = useWidgetSize();
+    const unitIcon = useUnitIcon(specification.unit)
 
     const minValue = pick(min, typicalMin, absoluteMin, /^u/.test(type) ? 0 : undefined)
     const maxValue = pick(max, typicalMax, absoluteMax)
@@ -182,6 +184,7 @@ export default function MemberInput(props: {
                 value={value}
                 min={minValue}
                 max={maxValue}
+                icon={unitIcon}
                 step={step}
                 secondaryLabel={errorValue}
                 color={color}
