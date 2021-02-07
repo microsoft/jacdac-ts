@@ -20,8 +20,8 @@ export default function RoleManagerService(props: {
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
-            {client?.remoteRequestedDevices.map(rdev => <RemoteRequestDeviceView
-                key={rdev.role} rdev={rdev} client={client} />)}
+            {client?.requestRoles.map(rdev => <RemoteRequestDeviceView
+                key={rdev.role} role={rdev} client={client} />)}
         </CardContent>
         <CardActions>
             {clearRoles && client && <CmdButton trackName="rolemgr.clearroles" size="small"

@@ -1,27 +1,27 @@
 import React, { useState } from "react"
 import { Box, MenuItem } from "@material-ui/core"
 import DeviceName from "./DeviceName"
-import { RoleManagerClient, RemoteRequestedDevice } from "../../../src/jdom/rolemanagerclient"
+import { RoleManagerClient, RequestedRole } from "../../../src/jdom/rolemanagerclient"
 import { serviceName } from "../../../src/jdom/pretty"
 import { Alert, AlertTitle } from "@material-ui/lab"
 import SelectWithLabel from "./ui/SelectWithLabel"
 
-export default function RemoteRequestDeviceView(props: {
-    rdev: RemoteRequestedDevice,
+export default function RequestedRoleView(props: {
+    requestedRole: RequestedRole,
     client: RoleManagerClient
 }) {
-    const { rdev, client } = props
+    const { requestedRole, client } = props
     const [working, setWorking] = useState(false)
-    const { role } = rdev;
+    const { role } = requestedRole;
 
     const handleChange = async (ev: React.ChangeEvent<{ value: unknown }>) => {
         const value: string = ev.target.value as string;
-        const dev = rdev.candidates.find(c => c.id == value)
-        if (dev && client) {
+        const srv = requestedRole.candidates.find(c => c.id == value)
+        if (srv && client) {
             try {
                 setWorking(true)
-                await client.setRole(dev, role)
-                await dev.identify()
+                await client.setRole(srv, role)
+                await srv.device.identify()
             }
             finally {
                 setWorking(false)
@@ -29,12 +29,12 @@ export default function RemoteRequestDeviceView(props: {
         }
     }
 
-    const noCandidates = !rdev.candidates?.length;
+    const noCandidates = !requestedRole.candidates?.length;
     const disabled = working;
-    const value = rdev.boundTo?.id || ""
+    const value = requestedRole.bound?.id || ""
     const error = !value && "select a device"
 
-    const serviceNames = rdev.services.map(serviceClass => serviceName(serviceClass)).join(', ')
+    const serviceNames = requestedRole.services.map(serviceClass => serviceName(serviceClass)).join(', ')
     return <Box mb={2}>
         {!noCandidates && <SelectWithLabel
             fullWidth={true}
@@ -43,7 +43,7 @@ export default function RemoteRequestDeviceView(props: {
             value={value}
             onChange={handleChange}
             error={error}>
-            {rdev.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
+            {requestedRole.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
                 <DeviceName device={candidate} />
             </MenuItem>)}
         </SelectWithLabel>}
