@@ -294,7 +294,7 @@ function LayoutWithContext(props: LayoutProps) {
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-  const container = !/^\/(tools|dashboard|services|devices)/.test(path)
+  const container = !/^\/(tools\/|dashboard)/.test(path)
   console.log({ path })
 
   return (
