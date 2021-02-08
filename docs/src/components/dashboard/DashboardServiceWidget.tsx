@@ -2,6 +2,7 @@ import React, { createElement, FunctionComponent, useMemo } from "react";
 import {
     SRV_ACCELEROMETER, SRV_ANALOG_BUTTON, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_COLOR,
+    SRV_COMPASS,
     SRV_JOYSTICK,
     SRV_LED,
     SRV_LEDMATRIX,
@@ -47,6 +48,7 @@ import DashboardSoundPlayer from "./DashboardSoundPlayer";
 import DashboardAnalogButton from "./DashboardAnalogButton";
 import DashboardSoundLevel from "./DashboardSoundLevel";
 import DashboardRandomNumberGenerator from "./DashboardRandomNumberGenerator";
+import DashboardCompass from "./DashboardCompass";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -158,6 +160,9 @@ const serviceViews: {
     [SRV_RNG]: {
         component: DashboardRandomNumberGenerator,
     },
+    [SRV_COMPASS]: {
+        component: DashboardCompass,
+    }
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
