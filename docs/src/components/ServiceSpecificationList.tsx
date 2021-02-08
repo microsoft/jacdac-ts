@@ -1,9 +1,33 @@
-import { Grid, List, ListItem, ListItemText } from "@material-ui/core";
+import { Chip, createStyles, Grid, List, ListItem, ListItemText, makeStyles, Theme, Typography } from "@material-ui/core";
 import React, { useMemo } from "react";
-import { isInfrastructure, serviceSpecifications } from "../../../src/jdom/spec";
+import { isInfrastructure, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
 import { arrayShuffle } from "../../../src/jdom/utils";
 import GridHeader from "./ui/GridHeader"
 import { Link } from "gatsby-theme-material-ui";
+import { JDService } from "../../../src/jdom/service";
+import MakeCodeIcon from "./icons/MakeCodeIcon"
+import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
+import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts"
+import KindIcon from "./KindIcon"
+import ChipList from "./ui/ChipList"
+
+function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
+    const { service } = props;
+    const { shortId, classIdentifier, name, notes } = service;
+    const makecode = resolveMakecodeServiceFromClassIdentifier(classIdentifier);
+    const simulator = hostDefinitionFromServiceClass(classIdentifier);
+
+    return <Link to={`/services/${shortId}`} style={({ textDecoration: "none" })}>
+        <ListItemText key={classIdentifier}
+            primary={name}
+            secondary={<ChipList>
+                <p>{notes["short"]}</p>
+                    {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
+                    {makecode && <Chip icon={<MakeCodeIcon />} size="small" label="MakeCode" />}
+            </ChipList>}
+        />
+    </Link>;
+}
 
 export default function ServiceSpecificationList(props: {
     services: jdspec.ServiceSpec[],
@@ -38,12 +62,7 @@ export default function ServiceSpecificationList(props: {
             <List>
                 {specs.map(node =>
                     <ListItem button key={node.shortId}>
-                        <Link to={`/services/${node.shortId}`} style={({ textDecoration: "none" })}>
-                            <ListItemText key={node.classIdentifier}
-                                primary={node.name}
-                                secondary={node.notes["short"]}
-                            />
-                        </Link>
+                        <ServiceSpecificatinListItem service={node} />
                     </ListItem>)}
             </List>
         </Grid>
