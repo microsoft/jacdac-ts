@@ -27,6 +27,7 @@ export default function useMdxComponents() {
     Link: (props: any) => <Link color="textPrimary" {...props} />,
     a: (props: { href: string }) => {
       const { href, ...others } = props;
+      console.log("a", { href, others })
       return /^(\/|\.)/.test(href) ? <Link color="textPrimary" to={href} {...others} />
         : <Link color="textPrimary" {...props} />
     },
