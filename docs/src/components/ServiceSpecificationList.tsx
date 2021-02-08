@@ -13,7 +13,7 @@ import ChipList from "./ui/ChipList"
 
 function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
     const { service } = props;
-    const { shortId, classIdentifier, name, notes } = service;
+    const { shortId, classIdentifier, name, notes, tags } = service;
     const makecode = resolveMakecodeServiceFromClassIdentifier(classIdentifier);
     const simulator = hostDefinitionFromServiceClass(classIdentifier);
 
@@ -22,8 +22,9 @@ function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
             primary={name}
             secondary={<ChipList>
                 <p>{notes["short"]}</p>
-                    {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
-                    {makecode && <Chip icon={<MakeCodeIcon />} size="small" label="MakeCode" />}
+                {tags?.map(tag => <Chip key={tag} size="small" label={tag} />)}
+                {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
+                {makecode && <Chip icon={<MakeCodeIcon />} size="small" label="MakeCode" />}
             </ChipList>}
         />
     </Link>;
