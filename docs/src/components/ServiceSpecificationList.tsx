@@ -6,15 +6,16 @@ import GridHeader from "./ui/GridHeader"
 import { Link } from "gatsby-theme-material-ui";
 
 export default function ServiceSpecificationList(props: {
+    services: jdspec.ServiceSpec[],
     title?: string,
     count?: number,
     shuffle?: boolean,
     infrastructure?: boolean,
     status?: jdspec.StabilityStatus[]
 }) {
-    const { title, count, shuffle, status, infrastructure } = props;
+    const { services, title, count, shuffle, status, infrastructure } = props;
     const specs = useMemo(() => {
-        let r = serviceSpecifications();
+        let r = services;
         if (status !== undefined)
             r = r.filter(spec => status.indexOf(spec.status) > -1);
         if (infrastructure !== undefined)
@@ -26,7 +27,7 @@ export default function ServiceSpecificationList(props: {
         if (count !== undefined)
             r = r.slice(0, count)
         return r;
-    }, [count, shuffle, status, infrastructure])
+    }, [services, count, shuffle, status, infrastructure])
 
     if (!specs?.length)
         return null;
