@@ -37,7 +37,7 @@ export default function ServiceSpecificationList(props: {
         <Grid item>
             <List>
                 {specs.map(node =>
-                    <ListItem key={node.shortId}>
+                    <ListItem button key={node.shortId}>
                         <Link to={`/services/${node.shortId}`} style={({ textDecoration: "none" })}>
                             <ListItemText key={node.classIdentifier}
                                 primary={node.name}
