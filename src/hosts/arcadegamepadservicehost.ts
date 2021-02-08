@@ -2,7 +2,7 @@ import { ArcadeGamepadButton, ArcadeGamepadReg, SRV_ARCADE_GAMEPAD } from "../jd
 import RegisterHost from "../jdom/registerhost";
 import SensorServiceHost from "./sensorservicehost";
 
-const defaultButtons = [
+export const defaultButtons = [
     ArcadeGamepadButton.Left,
     ArcadeGamepadButton.Right,
     ArcadeGamepadButton.Down,
@@ -11,9 +11,20 @@ const defaultButtons = [
     ArcadeGamepadButton.B,
     ArcadeGamepadButton.Menu,
     ArcadeGamepadButton.Select,
-    ArcadeGamepadButton.Reset,
     ArcadeGamepadButton.Exit,
 ]
+
+// https://w3c.github.io/gamepad/#remapping
+const standardGamepadMapping: { [btn: number]: number } = {
+    [ArcadeGamepadButton.Left]: 14,
+    [ArcadeGamepadButton.Right]: 15,
+    [ArcadeGamepadButton.Up]: 12,
+    [ArcadeGamepadButton.Down]: 13,
+    [ArcadeGamepadButton.A]: 0,
+    [ArcadeGamepadButton.B]: 1,
+    [ArcadeGamepadButton.Select]: 8,
+    [ArcadeGamepadButton.Menu]: 9,
+}
 
 export default class ArcadeGamepadServiceHost
     extends SensorServiceHost<[([ArcadeGamepadButton, number])[]]> {
@@ -46,5 +57,25 @@ export default class ArcadeGamepadServiceHost
             values.splice(valuei, 1)
             this.reading.setValues([values]);
         }
+    }
+
+    /**
+     * Read the state of a browser gamepad and apply it to the sensor
+     * @param gamepad 
+     */
+    update(gamepad: Gamepad) {
+        const { buttons } = gamepad;
+        const [arcadeButtons] = this.availableButtons.values()
+        const values: [ArcadeGamepadButton, number][] = [];
+
+        for (const [arcadeButton] of arcadeButtons) {
+            const mapped = standardGamepadMapping[arcadeButton];
+            if (mapped !== undefined) {
+                const down = buttons[mapped].pressed ? 1 : 0;
+                values.push([arcadeButton, down]);
+            }
+        }
+
+        this.reading.setValues([values]);
     }
 }

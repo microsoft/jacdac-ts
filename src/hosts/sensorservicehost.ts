@@ -24,7 +24,7 @@ export default class SensorServiceHost<TReading extends any[]> extends ServiceHo
 
         this.reading = this.addRegister<TReading>(SystemReg.Reading, readingValues);
         this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
-        this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, streamingInterval ? [streamingInterval] : undefined);
+        this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, [streamingInterval || 50]);
         if (streamingInterval !== undefined)
             this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [streamingInterval]);
 
