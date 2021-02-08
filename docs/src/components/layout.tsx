@@ -188,7 +188,7 @@ function LayoutWithDarkMode(props: LayoutProps) {
         main: '#ffc400',
       },
       contrastThreshold: 5.1,
-      type: darkMode
+      type: 'dark'
     }
   }
   // accessibility
@@ -203,8 +203,8 @@ function LayoutWithDarkMode(props: LayoutProps) {
   const theme = responsiveFontSizes(rawTheme);
   const mdxComponents = useMdxComponents()
 
-  if (!darkModeMounted)
-    return <div />
+ // if (!darkModeMounted)
+  //  return <div />
 
   return <ThemedLayout theme={theme}>
     <MDXProvider components={mdxComponents}>

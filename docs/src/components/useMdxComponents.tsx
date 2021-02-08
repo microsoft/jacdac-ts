@@ -25,12 +25,7 @@ export default function useMdxComponents() {
   const theme = useTheme();
   const mdxComponents: any = {
     Link: (props: any) => <Link color="textPrimary" {...props} />,
-    a: (props: { href: string }) => {
-      const { href, ...others } = props;
-      console.log("a", { href, others })
-      return /^(\/|\.)/.test(href) ? <Link color="textPrimary" to={href} {...others} />
-        : <Link color="textPrimary" {...props} />
-    },
+    a: (props: { href: string }) => <Link color="textPrimary" {...props} />,
     pre: props => <Box mb={theme.spacing(0.5)}><Paper>
       <div {...props} />
     </Paper></Box>,
