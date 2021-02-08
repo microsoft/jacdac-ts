@@ -19,12 +19,17 @@ import GithubRepositoryCard from "./GithubRepositoryCard";
 import GithubRepositoryList from "./GithubRespositoryList";
 import SpecificationUnitList from "./SpecificationUnitList";
 import StatusLEDAnimation from "./StatusLEDAnimation";
+import ServiceCatalog from "./ServiceCatalog";
 
 export default function useMdxComponents() {
   const theme = useTheme();
   const mdxComponents: any = {
     Link: (props: any) => <Link color="textPrimary" {...props} />,
-    a: (props: any) => <Link color="textPrimary" {...props} />,
+    a: (props: { href: string }) => {
+      const { href, ...others } = props;
+      return /^(\/|\.)/.test(href) ? <Link color="textPrimary" to={href} {...others} />
+        : <Link color="textPrimary" {...props} />
+    },
     pre: props => <Box mb={theme.spacing(0.5)}><Paper>
       <div {...props} />
     </Paper></Box>,
@@ -42,7 +47,7 @@ export default function useMdxComponents() {
     ServiceList: props => <ServiceList {...props} />,
     DeviceSpecificationList: props => <DeviceSpecificationList {...props} />,
     FilteredDeviceSpecificationList: props => <FilteredDeviceSpecificationList {...props} />,
-    ServiceSpecificationList: props => <ServiceSpecificationList {...props} />,
+    ServiceCatalog: props => <ServiceCatalog {...props} />,
     PacketsPreview: props => <PacketsPreview {...props} />,
     UpdateDeviceList: props => <UpdateDeviceList {...props} />,
     FlashButton: props => <FlashButton {...props} />,

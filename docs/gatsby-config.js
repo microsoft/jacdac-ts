@@ -105,6 +105,7 @@ module.exports = {
             }
           },
           'gatsby-remark-static-images',
+          'gatsby-remark-check-links',
         ]
       },
     },
@@ -126,7 +127,8 @@ module.exports = {
               linkImagesToOriginal: false
             }
           },
-          'gatsby-remark-static-images'
+          'gatsby-remark-static-images',
+          'gatsby-remark-check-links',
         ],
       },
     },
