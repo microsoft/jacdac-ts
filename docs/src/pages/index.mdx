@@ -14,18 +14,6 @@ with applications to rapid prototyping, making, and physical computing.
 * standardized service abstraction
 * full stack from 8bit MCU to web development
 
-## Protocol overview
-
-Jacdac devices communicate using *packets* over a *bus*, where each *device* can advertise itself 
-and the set of *services* it provides. 
-A *service* provides *registers*, *events* and *commands* to communicate with other devices.
-Jacdac packets are sent serially among physical devices on the Jacdac bus
-and may also be sent over WebUSB/WebBLE, 
-providing connectivity to web-based tooling and services running in the web browser
-(see the connect icon at the top of this page).
-
-* Learn more about the [protocol specification](/reference/protocol)
-
 ## Services specifications
 
 Jacdac services are specified to abstract the hardware device from the software implementation.
@@ -45,9 +33,18 @@ firmware onto devices.
 * Browse the [device catalog](/devices)
 * Learn more about [device definitions](/reference/specification/device-definition)
 
-## Reference documentation
 
-See the [overview of reference documentation](/reference/), including the Jacdac protocol specification.
+## Protocol overview
+
+Jacdac devices communicate using *packets* over a *bus*, where each *device* can advertise itself 
+and the set of *services* it provides. 
+A *service* provides *registers*, *events* and *commands* to communicate with other devices.
+Jacdac packets are sent serially among physical devices on the Jacdac bus
+and may also be sent over WebUSB/WebBLE, 
+providing connectivity to web-based tooling and services running in the web browser
+(see the connect icon at the top of this page).
+
+* Learn more about the [protocol specification](/reference/protocol)
 
 ## Community
 
@@ -55,11 +52,6 @@ Jacdac is open source and most of the commmunication happens through our GitHub 
 
 * [start a discussion](https://github.com/microsoft/jacdac/discussions).
 * [file an issue](https://github.com/microsoft/jacdac/issues).
-
-## Jacdac Github repos
-
-Jacdac is an Open Source living standard. 
-Checkout our [GitHub Repositories](/github) for the piece you want.
 
 ## Microsoft Open Source Code of Conduct
 
