@@ -27,8 +27,9 @@ export default class GamepadHostManager extends JDClient {
         if (typeof window !== "undefined"
             && window.navigator
             && window.navigator.getGamepads) {
-            new GamepadHostManager(bus);
+            return new GamepadHostManager(bus);
         }
+        return undefined;
     }
 
     constructor(readonly bus: JDBus) {
