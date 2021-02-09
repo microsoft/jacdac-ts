@@ -7,7 +7,7 @@ import { SRV_ROLE_MANAGER, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNC
 import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array, debounceAsync } from "./utils";
 import Packet from "./packet";
 import { jdpack, jdunpack } from "./pack";
-import { SystemEvent } from "../../jacdac-spec/dist/specconstants";
+import { RoleManagerEvent, SystemEvent } from "../../jacdac-spec/dist/specconstants";
 
 const SCAN_DEBOUNCE = 2000
 
@@ -59,7 +59,8 @@ export class RoleManagerClient extends JDServiceClient {
         this.mount(this.bus.subscribe(DEVICE_CHANGE, debounceAsync(async () => {
             this.recomputeCandidates();
         }, SCAN_DEBOUNCE)));
-        this.mount(this.service.event(SystemEvent.Change).subscribe(EVENT, dscan));
+        const changeEvent = this.service.event(RoleManagerEvent.Change);
+        this.mount(changeEvent.subscribe(EVENT, dscan));
         dscan();
     }
 
@@ -87,7 +88,8 @@ export class RoleManagerClient extends JDServiceClient {
             const rdevs: RequestedRole[] = []
 
             for (const buf of await inp.readData()) {
-                const [devidbuf, serviceClass, serviceIdx, role] = jdunpack<[Uint8Array, number, number, string]>(buf, "b[8] u32 u8 s")
+                const [devidbuf, serviceClass, serviceIdx, role]
+                    = jdunpack<[Uint8Array, number, number, string]>(buf, "b[8] u32 u8 s")
                 const devid = toHex(devidbuf);
                 console.log({ devidbuf, role, serviceClass })
                 const r = addRequested(rdevs, role, serviceClass)

@@ -62,7 +62,7 @@ function RequestedRoleView(props: {
             <AlertTitle>No compatible device for "{role}"</AlertTitle>
             {hostDefinition
                 ? <>Please connect a device with a <b>{serviceName(requestedRole.serviceClass)}</b> service
-                or <Button onClick={handleStartClick}>start</Button> a simulator.</>
+                or <Button variant="outlined" aria-label="start a simulator" onClick={handleStartClick}>start</Button> a simulator.</>
                 : <>Please connect a device with a <b>{serviceName(requestedRole.serviceClass)}</b> service.</>}
         </Alert>}
     </Grid>
@@ -81,7 +81,7 @@ export default function RoleManagerService(props: {
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
-            <Grid container>
+            <Grid container spacing={1}>
                 {requestedRoles?.map(rdev => <RequestedRoleView
                     key={rdev.name} requestedRole={rdev} client={client} />)}
             </Grid>

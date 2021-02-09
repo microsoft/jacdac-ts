@@ -31,10 +31,6 @@ export class MakeCodeEditorExtensionClient extends JDClient {
     private _connected = false;
     private _visible = false;
 
-    private log(msg: string) {
-        console.log(`mkcd ${this.extensionId}: ${msg}`)
-    }
-
     constructor() {
         super();
         this.handleMessage = this.handleMessage.bind(this);
@@ -132,9 +128,9 @@ export class MakeCodeEditorExtensionClient extends JDClient {
             }
         }
         else {
-            const { action, resolve, reject } = this.pendingCommands[msg.id];
-            // continue async ops
+            const { action, resolve, reject } = this.pendingCommands[msg.id] || {};
             delete this.pendingCommands[msg.id];
+
             if (msg.success && resolve)
                 resolve(msg.resp);
             else if (!msg.success && reject)
