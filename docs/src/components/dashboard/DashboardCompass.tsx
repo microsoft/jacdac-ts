@@ -36,8 +36,8 @@ export default function DashboardCompass(props: DashboardServiceProps) {
     const cx = w >> 1
     const cy = h >> 1
     const sp = 1;
-    const pr = 6;
-    const pri = 4;
+    const pr = 5;
+    const pri = 3;
 
     const handleChange = async (ev: unknown, newValue: number | number[]) => {
         await host?.reading.setValues([newValue as number])
@@ -52,14 +52,14 @@ export default function DashboardCompass(props: DashboardServiceProps) {
                 <circle cx={w >> 1} cy={h >> 1} r={r} fill={controlBackground}
                     stroke={background} strokeWidth={sw} />
                 <g transform={`rotate(${off ? 0 : heading}, ${w >> 1}, ${h >> 1})`}>
-                    <path d={`M ${cx - mw} ${cy + sp / 2} l ${mw} ${r} l ${mw} ${-r} z`} 
+                    <path d={`M ${cx - mw} ${cy + sp / 2} l ${mw} ${r} l ${mw} ${-r} z`}
                         fill={background} stroke={background} strokeWidth={sp} />
-                    <path d={`M ${cx - mw} ${cy - sp / 2} l ${mw} ${-r} l ${mw} ${r} z`} 
-                        stroke={background} fill={active} strokeWidth={sp} />
+                    <path d={`M ${cx - mw} ${cy - sp / 2} l ${mw} ${-r} l ${mw} ${r} z`}
+                        stroke={background} fill={off ? controlBackground : active} strokeWidth={sp} />
                 </g>
-                <PowerButton r={pr} ri={pri} cx={cx} cy={cy}
+                <PowerButton r={pr} ri={pri} cx={w - pr - 1} cy={h - pr - 1}
                     color={color}
-                    strokeWidth={1.5}
+                    strokeWidth={1}
                     off={off} onClick={host && toggleOff} />
             </SvgWidget >
         </Grid>

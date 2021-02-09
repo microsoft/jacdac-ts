@@ -1,6 +1,6 @@
 import Packet from "./packet";
 import { JDDevice } from "./device";
-import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
+import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex, crc } from "./utils";
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -45,7 +45,8 @@ import {
     REGISTER_POLL_FIRST_REPORT_INTERVAL,
     DEVICE_HOST_ADDED,
     DEVICE_HOST_REMOVED,
-    REFRESH
+    REFRESH,
+    PACKET_INVALID_CRC
 } from "./constants";
 import { serviceClass } from "./pretty";
 import { JDNode, Log, LogLevel } from "./node";
@@ -56,6 +57,7 @@ import { ControlReg, LoggerPriority, LoggerReg, SensorReg, SRV_CONTROL, SRV_LOGG
 import DeviceHost from "./devicehost";
 import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost";
 import { JDEventSource } from "./eventsource";
+import Flags from "./flags";
 
 export interface IDeviceNameSettings {
     resolve(device: JDDevice): string;
@@ -744,11 +746,25 @@ export class JDBus extends JDNode {
         this.emit(CHANGE)
     }
 
+    checkCRC(pkt: Packet): boolean {
+        if (pkt.crc !== pkt.computeCRC()) {
+            console.error(`invalid packet crc`, { crc: pkt.crc, sender: pkt.sender, buffer: toHex(pkt.toBuffer()), pkt })
+            console.trace();
+            this.emit(PACKET_INVALID_CRC, pkt);
+            this.emit(ERROR, "invalid packet crc");
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Ingests and process a packet received from the bus.
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
+        if (!this.checkCRC(pkt))
+            return;
+
         if (!pkt.isMultiCommand && !pkt.device) {
             pkt.device = this.device(pkt.deviceIdentifier)
             // check if devices are frozen

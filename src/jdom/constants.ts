@@ -116,6 +116,7 @@ export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
 export const PACKET_EVENT = 'packetEvent'
 export const PACKET_REPORT = 'packetReport'
 export const PACKET_ANNOUNCE = 'packetAnnounce'
+export const PACKET_INVALID_CRC = 'packetInvalidCrc';
 
 export const REPORT_RECEIVE = 'reportReceive'
 export const REPORT_UPDATE = 'reportUpdate'

@@ -61,11 +61,13 @@ export class Packet {
         const sz = (buf.length + 3) & ~3
         const data = new Uint8Array(sz)
         data.set(buf)
-        data[2] = sz - 12
+        data[12] = sz - 12
 
-        const chk = crc(data.slice(2))
-        data[0] = chk & 0xff
-        data[1] = (chk >> 8) & 0xff
+        const crcBuf = data.slice(2);
+        const chk = crc(crcBuf)
+        write16(data, 0, chk);
+
+        //console.log("patched crc", { crc: chk, size: data[12], buffer: toHex(crcBuf) })
 
         return data;
     }
@@ -80,7 +82,9 @@ export class Packet {
         p._data = data.slice(JD_SERIAL_HEADER_SIZE, JD_SERIAL_HEADER_SIZE + p.size);
         if (timestamp !== undefined)
             p.timestamp = timestamp;
-        return p
+        //if (p.crc !== p.computeCRC())
+        //    console.error("pkt crc", { crc: p.crc, computed: p.computeCRC(), size: p.size, buffer: toHex(p.toBuffer().slice(2)) })
+        return p;
     }
 
     static from(service_command: number, data: Uint8Array) {
@@ -97,6 +101,10 @@ export class Packet {
 
     toBuffer() {
         return bufferConcat(this._header, this._data)
+    }
+
+    computeCRC() {
+        return crc(bufferConcat(this._header.slice(2), this._data));
     }
 
     get header() {
@@ -333,7 +341,7 @@ export class Packet {
 
     sendCoreAsync(bus: JDBus) {
         this._header[2] = this.size + 4
-        write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)))
+        write16(this._header, 0, this.computeCRC())
         return bus.sendPacketAsync(this)
     }
 
@@ -415,7 +423,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
         const computed = crc(frame.slice(2, size + 12))
         const actual = read16(frame, 0)
         if (actual != computed)
-            console.log(`crc mismatch; sz=${size} got:${actual}, exp:${computed}`)
+            console.error(`crc mismatch; sz=${size} got:${actual}, exp:${computed}`)
 
         const res: Packet[] = []
         if (frame.length != 12 + frame[2])

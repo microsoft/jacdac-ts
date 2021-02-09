@@ -2,7 +2,7 @@ import { JDBus } from "./bus";
 import { DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
-import { debounce } from "./utils";
+import { debounce, toHex } from "./utils";
 
 export interface PacketMessage {
     channel: "jacdac";
@@ -95,7 +95,12 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             return;
         this.packetProcessed++;
         // we're adding a little trace to avoid resending our own packets
-        pkt.sender = msg.sender;
+        pkt.sender = this.bridgeId;
+
+        // check CRC, and bail out if needed.
+        if (!this.bus.checkCRC(pkt))
+            return;
+
         // send to native bus
         this.bus.sendPacketAsync(pkt);
         // send to javascript bus

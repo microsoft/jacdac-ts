@@ -13,7 +13,7 @@ export default function SelectWithLabel(props: {
     fullWidth?: boolean,
     onChange?: (ev: ChangeEvent<{ name?: string; value: unknown; }>) => void,
     helperText?: string,
-    children?: JSX.Element | JSX.Element[]
+    children?: any
 }) {
     const { label, fullWidth, required, disabled, value, error,
         placeholder, onChange, children, helperText, type } = props;
@@ -32,7 +32,7 @@ export default function SelectWithLabel(props: {
             placeholder={placeholder}
             type={type}
             labelId={labelId}
-            aria-describedby={hasDescr && descrId}
+            aria-describedby={hasDescr ? descrId : undefined}
             onChange={onChange}>
             {children}
         </Select>
