@@ -5,10 +5,9 @@ import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
-import { useId } from "react-use-id-hook"
 import { Grid, Slider } from "@material-ui/core";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
-import { CompassReg } from "../../../../src/jdom/constants";
+import { CompassReg, SystemStatusCodes } from "../../../../src/jdom/constants";
 import PowerButton from "../widgets/PowerButton";
 
 export default function DashboardCompass(props: DashboardServiceProps) {
@@ -18,15 +17,18 @@ export default function DashboardCompass(props: DashboardServiceProps) {
     const enabledRegister = service.register(CompassReg.Enabled);
     const [heading] = useRegisterUnpackedValue<[number]>(headingRegister)
     const [enabled] = useRegisterUnpackedValue<[boolean]>(enabledRegister)
+    const [status,] = useRegisterUnpackedValue<[SystemStatusCodes, number]>(service.statusCodeRegister);
     const off = !enabled;
 
     const host = useServiceHost<SensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
-    const { background, controlBackground, active } = useWidgetTheme(color)
+    const { background, controlBackground, active, textProps } = useWidgetTheme(color)
     const widgetSize = useWidgetSize(variant, services.length)
 
     if (heading === undefined)
         return null;
+
+    const calibrating = status === SystemStatusCodes.Calibrating;
 
     const w = 64
     const h = 64
@@ -49,7 +51,7 @@ export default function DashboardCompass(props: DashboardServiceProps) {
     return <Grid container direction="column">
         <Grid item xs={12}>
             <SvgWidget width={w} height={h} size={widgetSize}>
-                <circle cx={w >> 1} cy={h >> 1} r={r} fill={controlBackground}
+                <circle cx={cx} cy={cy} r={r} fill={controlBackground}
                     stroke={background} strokeWidth={sw} />
                 <g transform={`rotate(${off ? 0 : heading}, ${w >> 1}, ${h >> 1})`}>
                     <path d={`M ${cx - mw} ${cy + sp / 2} l ${mw} ${r} l ${mw} ${-r} z`}
@@ -57,6 +59,8 @@ export default function DashboardCompass(props: DashboardServiceProps) {
                     <path d={`M ${cx - mw} ${cy - sp / 2} l ${mw} ${-r} l ${mw} ${r} z`}
                         stroke={background} fill={off ? controlBackground : active} strokeWidth={sp} />
                 </g>
+                {calibrating && <circle cx={cx} cy={cy} r={r} opacity={0.9} fill={background} />}
+                {calibrating && <text x={cx} y={cy} fontSize={8} {...textProps}>calibrating</text>}
                 <PowerButton r={pr} ri={pri} cx={w - pr - 1} cy={h - pr - 1}
                     color={color}
                     strokeWidth={1}

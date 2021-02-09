@@ -118,9 +118,9 @@ function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps
         kind={"service"}
         checked={open}
         setChecked={checkboxes?.indexOf("service") > -1 && setChecked && handleChecked}
-        actions={showSpecificationAction && <Link color="inherit" to={`/services/${specification.shortId}/`} aria-label={"Open specification"} onClick={handleSpecClick}>
+        actions={showSpecificationAction ? <Link color="inherit" to={`/services/${specification.shortId}/`} aria-label={"Open specification"} onClick={handleSpecClick}>
             <LaunchIcon fontSize={"small"} />
-        </Link>}
+        </Link> : undefined}
     >
         {registers?.map(register => <RegisterTreeItem
             key={register.id}

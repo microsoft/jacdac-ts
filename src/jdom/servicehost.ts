@@ -1,13 +1,13 @@
 import { BaseEvent, SystemCmd, SystemReg, SystemStatusCodes } from "../../jacdac-spec/dist/specconstants";
-import { NumberFormat, setNumber } from "./buffer";
 import { CHANGE } from "./constants";
 import DeviceHost from "./devicehost";
 import { JDEventSource } from "./eventsource";
 import Packet from "./packet";
 import RegisterHost from "./registerhost";
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec";
-import { memcpy } from "./utils";
+import { delay } from "./utils";
 
+const CALIBRATION_DELAY = 5000;
 export interface ServiceHostOptions {
     instanceName?: string;
     valueValues?: any[];
@@ -48,6 +48,13 @@ export default class ServiceHost extends JDEventSource {
 
         // emit event when status code changes
         this.statusCode.on(CHANGE, () => this.sendEvent(BaseEvent.StatusCodeChanged, this.statusCode.data));
+
+        // if the device has a calibrate command, regiser handler
+        // and put device in calibrationneeded state
+        if (this.specification.packets.find(pkt => pkt.kind === "command" && pkt.identifier === SystemCmd.Calibrate)) {
+            this.addCommand(SystemCmd.Calibrate, this.handleCalibrate.bind(this));
+            this.statusCode.setValues([SystemStatusCodes.CalibrationNeeded, 0], true);
+        }
     }
 
     get registers() {
@@ -102,6 +109,8 @@ export default class ServiceHost extends JDEventSource {
     async sendEvent(eventCode: number, data?: Uint8Array) {
         const { device } = this;
         const { bus } = device;
+        if (!bus)
+            return;
 
         const now = bus.timestamp;
         const cmd = device.createEventCmd(eventCode);
@@ -109,5 +118,21 @@ export default class ServiceHost extends JDEventSource {
         await this.sendPacketAsync(pkt)
         device.delayedSend(pkt, now + 20)
         device.delayedSend(pkt, now + 100)
+    }
+
+    private async handleCalibrate() {
+        const [status] = this.statusCode.values();
+        if (status !== SystemStatusCodes.Ready)
+            return;
+        this.calibrate();
+    }
+
+    async calibrate() {
+        // notify that calibration started
+        this.statusCode.setValues([SystemStatusCodes.Calibrating, 0]);
+        // wait 5 seconds
+        await delay(CALIBRATION_DELAY);
+        // finish calibraion
+        this.statusCode.setValues([SystemStatusCodes.Ready, 0]);
     }
 }

@@ -18,7 +18,7 @@ export default class AnalogSensorServiceHost extends SensorServiceHost<[number]>
     readonly highThreshold: RegisterHost<[number]>;
     readonly levelDetector: LevelDetector;
 
-    constructor(serviceClass: number, options: AnalogSensorServiceHostOptions) {
+    constructor(serviceClass: number, options?: AnalogSensorServiceHostOptions) {
         super(serviceClass, options)
         const { minReading, maxReading, readingError,
             lowThreshold, highThreshold, readingResolution } = options || {};

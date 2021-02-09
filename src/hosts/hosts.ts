@@ -49,6 +49,7 @@ import SoundPlayerServiceHost, { SoundPlayerSound } from "./soundplayerserviceho
 import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 import SoundLevelServiceHost from "./soundlevelservicehost";
 import RandomNumberGeneratorServiceHost from "./randomnumbergeneratorservicehost";
+import CompassServiceHost from "./compassservicehost";
 
 const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -105,10 +106,6 @@ const microServo360Options = {
     variant: ServoVariant.PositionalRotation,
     minAngle: -180,
     maxAngle: 180
-}
-const compassOptions: AnalogSensorServiceHostOptions = {
-    readingValues: [0],
-    readingError: 2
 }
 const windDirectionOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
@@ -267,7 +264,7 @@ const _hosts: {
         {
             name: "compass",
             serviceClasses: [SRV_COMPASS],
-            services: () => [new AnalogSensorServiceHost(SRV_COMPASS, compassOptions)]
+            services: () => [new CompassServiceHost()]
         },
         {
             name: "distance (sonar)",

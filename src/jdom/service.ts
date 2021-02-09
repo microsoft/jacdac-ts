@@ -33,6 +33,9 @@ export class JDService extends JDNode {
             // todo update status code with event payload
             const { data } = statusCodeChanged;
             console.log("status code changed", { data })
+            // request data
+            const statusCode = this.register(BaseReg.StatusCode);
+            statusCode?.sendGetAsync();
         })
     }
 
