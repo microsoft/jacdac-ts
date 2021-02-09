@@ -49,7 +49,7 @@ export class RequestedRole {
 
 export class RoleManagerClient extends JDServiceClient {
     private scanning = false;
-    public requestRoles: RequestedRole[] = []
+    public requestedRoles: RequestedRole[] = []
 
     constructor(service: JDService) {
         super(service)
@@ -83,7 +83,7 @@ export class RoleManagerClient extends JDServiceClient {
                 true)
 
             const localDevs = this.bus.devices();
-            const ordevs = this.requestRoles.slice(0);
+            const ordevs = this.requestedRoles.slice(0);
             const rdevs: RequestedRole[] = []
 
             for (const buf of await inp.readData()) {
@@ -105,10 +105,10 @@ export class RoleManagerClient extends JDServiceClient {
                     (dev, i) => (dev.name !== ordevs[i].name) || (dev.bound !== ordevs[i].bound)
                 )
             ) {
-                this.requestRoles = rdevs;
+                this.requestedRoles = rdevs;
                 this.recomputeCandidates();
-                console.log(`rdp changed`, this.requestRoles)
-                this.emit(CHANGE, this.requestRoles)
+                console.log(`rdp changed`, this.requestedRoles)
+                this.emit(CHANGE, this.requestedRoles)
             }
 
             console.log(`rdp done`)
@@ -122,7 +122,7 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private recomputeCandidates() {
-        this.requestRoles.forEach(rdev => rdev.computeCandidates());
+        this.requestedRoles.forEach(rdev => rdev.computeCandidates());
     }
 
     async clearRoles() {
@@ -137,6 +137,6 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     toString() {
-        return this.requestRoles.map(rdp => rdp.toString()).join('\n')
+        return this.requestedRoles.map(rdp => rdp.toString()).join('\n')
     }
 }
