@@ -55,14 +55,33 @@ a:hover {
 .markdown h5 a, 
 .markdown h6 a
 {
-  color: #fff;
+  color: #000;
   text-decoration: underline;
 }
+
+.dark .markdown p a,
+.dark .markdown li a,
+.dark .markdown h2 a,
+.dark .markdown h3 a,
+.dark .markdown h4 a,
+.dark .markdown h5 a, 
+.dark .markdown h6 a
+{
+  color: #fff;
+}
+
 .markdown pre {
   background:hsla(0, 0%, 0%, 0.4);
   padding: 1rem;
+  background:#eee;
+  border: solid 1px #999;
   white-space: pre-wrap;
 }
+.dark .markdown pre {
+  background:hsla(0, 0%, 0%, 0.4);
+  border: none;
+}
+
 abbr[title] {
   border-bottom: none;
   text-decoration: underline;

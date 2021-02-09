@@ -31,7 +31,7 @@ export default function MakeCodeEditorExtensionPage() {
             secondary: {
                 main: '#ffc400',
             },
-        }
+        },
     })
     const classes = useStyles();
     const theme = responsiveFontSizes(rawTheme);

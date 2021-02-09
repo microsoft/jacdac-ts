@@ -144,16 +144,6 @@ export default function ToolsDrawer() {
     if (!toolsMenu)
         return <></>
 
-    /* dark mode
-    <Divider />
-    {!isHosted &&
-        <ListItem button={true} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
-            <ListItemIcon><SettingsBrightnessIcon /></ListItemIcon>
-            <ListItemText>{darkMode === 'light' ? "Dark Mode" : "Light mode"}</ListItemText>
-        </ListItem>}
-*/
-
-
     return <Drawer
         className={classes.drawer}
         variant="persistent"
@@ -171,6 +161,11 @@ export default function ToolsDrawer() {
         <List>
             {links.map((link, i) => link.text ? <ToolsListItem key={link.text} {...link} onClick={handleClick(link)} />
                 : <Divider key={`div${i}`} />)}
+            <Divider />
+            <ListItem button={true} onClick={handleDarkMode} aria-label="Toggle Dark Mode">
+                <ListItemIcon><SettingsBrightnessIcon /></ListItemIcon>
+                <ListItemText>{darkMode === 'light' ? "Dark Mode" : "Light mode"}</ListItemText>
+            </ListItem>
         </List>
     </Drawer>
 }
