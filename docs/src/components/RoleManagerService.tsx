@@ -6,7 +6,7 @@ import { RoleManagerClient } from "../../../src/jdom/rolemanagerclient"
 import CmdButton from "./CmdButton"
 import DeviceCardHeader from "./DeviceCardHeader"
 import useServiceClient from "./useServiceClient"
-import RemoteRequestDeviceView from "./RemoteRequestDeviceView"
+import RequestedRoleView from "./RequestedRoleView"
 
 export default function RoleManagerService(props: {
     service: JDService,
@@ -14,14 +14,14 @@ export default function RoleManagerService(props: {
 }) {
     const { service, clearRoles } = props
     const client = useServiceClient(service, srv => new RoleManagerClient(srv));
-    useChange(client)
+    const requestRoles = useChange(client, c => c?.requestRoles);
 
     const handleClearRoles = async () => await client?.clearRoles()
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
-            {client?.requestRoles.map(rdev => <RemoteRequestDeviceView
-                key={rdev.role} role={rdev} client={client} />)}
+            {requestRoles?.map(rdev => <RequestedRoleView
+                key={rdev.name} requestedRole={rdev} client={client} />)}
         </CardContent>
         <CardActions>
             {clearRoles && client && <CmdButton trackName="rolemgr.clearroles" size="small"

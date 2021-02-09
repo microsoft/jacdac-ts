@@ -12,7 +12,7 @@ export default function RequestedRoleView(props: {
 }) {
     const { requestedRole, client } = props
     const [working, setWorking] = useState(false)
-    const { role } = requestedRole;
+    const { name: role } = requestedRole;
 
     const handleChange = async (ev: React.ChangeEvent<{ value: unknown }>) => {
         const value: string = ev.target.value as string;
@@ -34,7 +34,6 @@ export default function RequestedRoleView(props: {
     const value = requestedRole.bound?.id || ""
     const error = !value && "select a device"
 
-    const serviceNames = requestedRole.services.map(serviceClass => serviceName(serviceClass)).join(', ')
     return <Box mb={2}>
         {!noCandidates && <SelectWithLabel
             fullWidth={true}
@@ -44,12 +43,12 @@ export default function RequestedRoleView(props: {
             onChange={handleChange}
             error={error}>
             {requestedRole.candidates?.map(candidate => <MenuItem key={candidate.nodeId} value={candidate.id}>
-                <DeviceName device={candidate} />
+                <DeviceName device={candidate.device} />[{candidate.serviceIndex}]
             </MenuItem>)}
         </SelectWithLabel>}
         {noCandidates && <Alert severity="warning">
             <AlertTitle>No compatible device for "{role}"</AlertTitle>
-            Please connect a device with <b>{serviceNames}</b> services.
+            Please connect a device with a <b>{serviceName(requestedRole.serviceClass)}</b> service.
         </Alert>}
     </Box>
 }

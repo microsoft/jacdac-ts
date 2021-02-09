@@ -17,7 +17,7 @@ export class RequestedRole {
 
     constructor(
         readonly parent: RoleManagerClient,
-        readonly role: string,
+        readonly name: string,
         readonly serviceClass: number
     ) { }
 
@@ -34,12 +34,12 @@ export class RequestedRole {
             return // already set
         if (this.bound)
             await this.parent.setRole(this.bound, "")
-        await this.parent.setRole(service, this.role)
+        await this.parent.setRole(service, this.name)
         this.bound = service;
     }
 
     toString() {
-        let info = `${this.role}:${this.serviceClass.toString(16)}`
+        let info = `${this.name}:${this.serviceClass.toString(16)}`
         if (this.bound)
             info += ` -> ${this.bound}`;
         info += ", " + this.candidates.map(c => c.toString()).join();
@@ -69,7 +69,7 @@ export class RoleManagerClient extends JDServiceClient {
             return;
 
         const addRequested = (devs: RequestedRole[], role: string, serviceClass: number) => {
-            let r = devs.find(d => d.role == role)
+            let r = devs.find(d => d.name == role)
             if (!r) devs.push(r = new RequestedRole(this, role, serviceClass))
             return r
         }
@@ -98,11 +98,11 @@ export class RoleManagerClient extends JDServiceClient {
                     r.bound = srv;
             }
 
-            rdevs.sort((a, b) => strcmp(a.role, b.role))
+            rdevs.sort((a, b) => strcmp(a.name, b.name))
 
             if (rdevs.length !== ordevs.length
                 || rdevs.some(
-                    (dev, i) => (dev.role !== ordevs[i].role) || (dev.bound !== ordevs[i].bound)
+                    (dev, i) => (dev.name !== ordevs[i].name) || (dev.bound !== ordevs[i].bound)
                 )
             ) {
                 this.requestRoles = rdevs;

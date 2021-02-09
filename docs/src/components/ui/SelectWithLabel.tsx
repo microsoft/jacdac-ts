@@ -32,7 +32,7 @@ export default function SelectWithLabel(props: {
             placeholder={placeholder}
             type={type}
             labelId={labelId}
-            aria-describedby={hasDescr && descrId}
+            aria-describedby={hasDescr ? descrId : undefined}
             onChange={onChange}>
             {children}
         </Select>
