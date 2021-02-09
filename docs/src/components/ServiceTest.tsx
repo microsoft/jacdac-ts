@@ -9,6 +9,7 @@ import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, 
 import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
 import { JDService } from '../../../src/jdom/service';
+import { SRV_BUTTON } from '../../../src/jacdac';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -28,6 +29,41 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
+interface ServiceTest {
+    id: string;
+    label: string;
+    description: string;
+    test?: (service: JDService, onResult: (error: string) => void) => () => void;
+}
+
+function resolveTestsForService(serviceClass: number): ServiceTest[] {
+    if (serviceClass === SRV_BUTTON) {
+        return [
+            {
+                id: "setup",
+                label: "Prepare the button",
+                description: "Make sure the button is up and ready to be used.",
+            },
+            {
+                id: "downUp",
+                label: "Press down and up",
+                description: "Press the button and release it immediately."
+            },
+            {
+                id: "click",
+                label: "Click the button",
+                description: "Press the button down for 500ms and less than 1500ms and release it."
+            },
+            {
+                id: "click",
+                label: "Hold the button",
+                description: "Press the button down at least 1500ms and release it."
+            },
+        ]
+    }
+    return [];
+}
+
 export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) {
     const { serviceSpec } = props
     const { classIdentifier: serviceClass } = serviceSpec
@@ -35,12 +71,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const classes = useStyles();
     const [selectedService, setSelectedService] = useState<JDService>(undefined);
     const [activeStep, setActiveStep] = useState(0);
-    const tests = [
-        {
-            label: "this is a test",
-            description: "this is the description"
-        }
-    ]
+    const tests = resolveTestsForService(serviceClass);
     const stepLength = tests.length + 1;
     const gridBreakpoints = useGridBreakpoints()
     const services = useChange(bus, n =>
@@ -67,7 +98,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
             <h2>Compliance tests for <Link to={`/services/0x${serviceSpec.shortId}`}>{serviceSpec.shortName || serviceSpec.name}</Link>  service</h2>
             <Stepper activeStep={activeStep} orientation="vertical">
                 <Step key="device">
-                    <StepLabel>Select a service</StepLabel>
+                    <StepLabel>Select a service to test</StepLabel>
                     <StepContent>
                         {!!services.length && <Grid container spacing={2}>
                             {services.map(service => <Grid item {...gridBreakpoints}>
@@ -87,9 +118,9 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                             </ul></Alert>}
                     </StepContent>
                 </Step>
-                {tests.map(({ label, description }) => (
-                    <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
+                {tests.map(({ id, label, description }) => (
+                    <Step key={id}>
+                        <StepLabel>Test {id}: {label}</StepLabel>
                         <StepContent>
                             <Markdown source={description} />
                             <div className={classes.actionsContainer}>
