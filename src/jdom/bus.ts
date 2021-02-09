@@ -762,7 +762,8 @@ export class JDBus extends JDNode {
      * @param pkt a jacdac packet
      */
     processPacket(pkt: Packet) {
-        this.checkCRC(pkt);
+        if (!this.checkCRC(pkt))
+            return;
 
         if (!pkt.isMultiCommand && !pkt.device) {
             pkt.device = this.device(pkt.deviceIdentifier)

@@ -98,10 +98,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         pkt.sender = this.bridgeId;
 
         // check CRC, and bail out if needed.
-        if (!this.bus.checkCRC(pkt)) {
-            console.error({ data: toHex(msg.data) })
+        if (!this.bus.checkCRC(pkt))
             return;
-        }
 
         // send to native bus
         this.bus.sendPacketAsync(pkt);
