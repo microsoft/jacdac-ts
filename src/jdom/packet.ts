@@ -99,6 +99,10 @@ export class Packet {
         return bufferConcat(this._header, this._data)
     }
 
+    computeCRC() {
+        return crc(bufferConcat(this._header.slice(2), this._data));
+    }
+
     get header() {
         return this._header.slice(0)
     }
@@ -333,7 +337,7 @@ export class Packet {
 
     sendCoreAsync(bus: JDBus) {
         this._header[2] = this.size + 4
-        write16(this._header, 0, crc(bufferConcat(this._header.slice(2), this._data)))
+        write16(this._header, 0, this.computeCRC())
         return bus.sendPacketAsync(this)
     }
 
@@ -415,7 +419,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
         const computed = crc(frame.slice(2, size + 12))
         const actual = read16(frame, 0)
         if (actual != computed)
-            console.log(`crc mismatch; sz=${size} got:${actual}, exp:${computed}`)
+            console.error(`crc mismatch; sz=${size} got:${actual}, exp:${computed}`)
 
         const res: Packet[] = []
         if (frame.length != 12 + frame[2])
