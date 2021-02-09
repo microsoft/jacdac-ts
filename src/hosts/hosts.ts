@@ -44,7 +44,7 @@ import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
 import SwitchServiceHost from "./switchservicehost";
 import TrafficLightServiceHost from "./trafficlightservicehost";
 import LEDServiceHost from "./ledservicehost";
-import { fromHex } from "../jdom/utils";
+import { fromHex, uniqueName } from "../jdom/utils";
 import SoundPlayerServiceHost, { SoundPlayerSound } from "./soundplayerservicehost";
 import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
 import SoundLevelServiceHost from "./soundlevelservicehost";
@@ -830,7 +830,7 @@ export function addHost(bus: JDBus, services: ServiceHost[], name?: string) {
     const d = new DeviceHost(services);
     const device = bus.addDeviceHost(d);
     if (name)
-        device.name = name;
+        device.name = uniqueName(bus.devices().map(dev => dev.name), name);
     return d;
 }
 
