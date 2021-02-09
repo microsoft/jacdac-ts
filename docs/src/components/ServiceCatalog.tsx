@@ -4,12 +4,13 @@ import ServiceSpecificationList from "./ServiceSpecificationList";
 import { useDebounce } from 'use-debounce';
 import SearchIcon from '@material-ui/icons/Search';
 import ChipList from "./ui/ChipList";
-import { resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
+import { deviceSpecificationsForService, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
 import { arrayConcatMany, unique } from "../../../src/jdom/utils";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jacdac";
 import KindIcon from "./KindIcon";
 import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
+import JacdacIcon from "./icons/JacdacIcon";
 
 export default function ServiceCatalog() {
     const [query, setQuery] = useState("");
@@ -17,6 +18,7 @@ export default function ServiceCatalog() {
     const [tags, setTags] = useState<string[]>([]);
     const [makeCode, setMakeCode] = useState(false);
     const [simulator, setSimulator] = useState(false);
+    const [devices, setDevices] = useState(false);
 
     const allTags = useMemo(() => unique(arrayConcatMany(serviceSpecifications().map(srv => srv.tags))), [])
     console.log({ allTags })
@@ -34,8 +36,10 @@ export default function ServiceCatalog() {
             r = r.filter(srv => !!resolveMakecodeServiceFromClassIdentifier(srv.classIdentifier))
         if (simulator)
             r = r.filter(srv => !!hostDefinitionFromServiceClass(srv.classIdentifier))
+        if (devices)
+            r = r.filter(srv => !!deviceSpecificationsForService(srv.classIdentifier)?.length)
         return r;
-    }, [dquery, tags, makeCode, simulator]);
+    }, [dquery, tags, makeCode, simulator, devices]);
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(event.target.value)
     }
@@ -48,6 +52,7 @@ export default function ServiceCatalog() {
     }
     const handleMakeCodeClick = () => setMakeCode(!makeCode);
     const handleSimulatorClick = () => setSimulator(!simulator);
+    const handleDevicesClick = () => setDevices(!devices);
 
     return <Grid container spacing={1}>
         <Grid item xs={12}>
@@ -77,6 +82,8 @@ export default function ServiceCatalog() {
                 <Divider orientation="vertical" flexItem />
                 <Chip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} variant={simulator ? "default" : "outlined"}
                     color={simulator ? "secondary" : undefined} onClick={handleSimulatorClick} />
+                <Chip label="Devices" icon={<JacdacIcon />} variant={simulator ? "default" : "outlined"}
+                    color={simulator ? "secondary" : undefined} onClick={handleDevicesClick} />
                 <Chip label="MakeCode" icon={<MakeCodeIcon />} variant={makeCode ? "default" : "outlined"}
                     color={makeCode ? "secondary" : undefined} onClick={handleMakeCodeClick} />
             </ChipList>

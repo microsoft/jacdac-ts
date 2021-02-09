@@ -1,21 +1,22 @@
-import { Chip, createStyles, Grid, List, ListItem, ListItemText, makeStyles, Theme, Typography } from "@material-ui/core";
+import { Chip, Grid, List, ListItem, ListItemText } from "@material-ui/core";
 import React, { useMemo } from "react";
-import { isInfrastructure, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
+import { deviceSpecificationsForService, isInfrastructure, resolveMakecodeServiceFromClassIdentifier } from "../../../src/jdom/spec";
 import { arrayShuffle } from "../../../src/jdom/utils";
 import GridHeader from "./ui/GridHeader"
 import { Link } from "gatsby-theme-material-ui";
-import { JDService } from "../../../src/jdom/service";
 import MakeCodeIcon from "./icons/MakeCodeIcon"
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
 import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts"
 import KindIcon from "./KindIcon"
 import ChipList from "./ui/ChipList"
+import JacdacIcon from "./icons/JacdacIcon";
 
 function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
     const { service } = props;
     const { shortId, classIdentifier, name, notes, tags } = service;
     const makecode = resolveMakecodeServiceFromClassIdentifier(classIdentifier);
     const simulator = hostDefinitionFromServiceClass(classIdentifier);
+    const device = !!deviceSpecificationsForService(classIdentifier)?.length;
 
     return <Link to={`/services/${shortId}`} style={({ textDecoration: "none" })}>
         <ListItemText key={classIdentifier}
@@ -24,6 +25,7 @@ function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
                 <p>{notes["short"]}</p>
                 {tags?.map(tag => <Chip key={tag} size="small" label={tag} />)}
                 {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
+                {device && <Chip icon={<JacdacIcon />} size="small" label="devices" />}
                 {makecode && <Chip icon={<MakeCodeIcon />} size="small" label="MakeCode" />}
             </ChipList>}
         />
