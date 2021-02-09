@@ -1,14 +1,17 @@
 import React, { } from "react";
+import IDChip from "./IDChip";
+import Markdown from "./ui/Markdown";
+import { Box, Container } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import { Button, Link } from "gatsby-theme-material-ui";
 import DeviceSpecificationList from "./DeviceSpecificationList";
-import ReactMarkdown from "react-markdown"
+import ServiceSpecificationSource from "./ServiceSpecificationSource";
 
 export default function ServiceMarkdown(props: {
     service: jdspec.ServiceSpec
 }) {
     const { service: node } = props;
-    const { shortId, classIdentifier } = node;
+    const { shortId, name, classIdentifier } = node;
 
     /*
     <h2 key="spech2">Exports</h2>
@@ -20,7 +23,7 @@ export default function ServiceMarkdown(props: {
 
     return <>
         <ServiceSpecificationStatusAlert specification={node} />
-        <ReactMarkdown source={node.source} />
+        <Markdown source={node.source} />
 
         <div>
             <Button variant="contained" to={`/services/${shortId}/playground/`}>Playground</Button>

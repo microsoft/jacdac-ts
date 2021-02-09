@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { prettyDuration } from "../../../src/jdom/pretty";
 import Trace from "../../../src/jdom/trace";
 import AppContext, { DrawerType } from "./AppContext";
+import Markdown from "./ui/Markdown"
 import PacketsContext from "./PacketsContext";
 
 export default function TraceCard(props: { name: string, trace: Trace }) {
@@ -23,7 +24,7 @@ export default function TraceCard(props: { name: string, trace: Trace }) {
             subheader={`${prettyDuration(duration)}, ${length} packets`}
         />
         <CardContent>
-            {description && <ReactMarkdown source={description} />}
+            {description && <Markdown source={description} />}
         </CardContent>
         <CardActions>
             <Button onClick={handleClick} variant="outlined">import</Button>

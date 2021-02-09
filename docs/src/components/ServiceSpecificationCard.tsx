@@ -3,7 +3,7 @@ import { Card, CardActions, CardContent, CardHeader, CardMedia, Chip, createStyl
 import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 import IDChip from "./IDChip";
 import { Button } from "gatsby-theme-material-ui";
-import ReactMarkdown from "react-markdown"
+import Markdown from "./ui/Markdown"
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import { addHost, hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
 import JacdacContext, { JDContextProps } from "../../../src/react/Context";
@@ -46,7 +46,7 @@ export default function ServiceSpecificationCard(props: {
         <CardContent>
             {spec?.notes["short"] &&
                 <Typography variant="body2" component="div">
-                    <ReactMarkdown source={spec?.notes["short"].split(".", 1)[0] + "."} />
+                    <Markdown source={spec?.notes["short"].split(".", 1)[0] + "."} />
                 </Typography>
             }
             {showReleaseStatus && <ServiceSpecificationStatusAlert specification={spec} />}

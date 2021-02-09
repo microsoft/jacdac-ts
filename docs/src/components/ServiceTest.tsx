@@ -7,7 +7,7 @@ import StepContent from '@material-ui/core/StepContent';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import ReactMarkdown from "react-markdown"
+import Markdown from "./ui/Markdown"
 import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JDContextProps } from '../../../src/react/Context';
@@ -93,7 +93,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                     <Step key={label}>
                         <StepLabel>{label}</StepLabel>
                         <StepContent>
-                            <ReactMarkdown source={description} />
+                            <Markdown source={description} />
                             <div className={classes.actionsContainer}>
                                 <div>
                                     <Button
