@@ -18,7 +18,7 @@ import {
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX, SRV_RNG, SRV_COMPASS
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -696,13 +696,13 @@ const _hosts: {
         {
             name: "thermocouple",
             serviceClasses: [SRV_THERMOMETER],
-            services: () => [new AnalogSensorServiceHost(SRV_THERMOMETER, {
+            services: () => [new AnalogSensorServiceHost(SRV_THERMOCOUPLE, {
                 readingValues: [550],
                 streamingInterval: 1000,
                 minReading: 0,
                 maxReading: 1100,
                 readingError: 2.2,
-                variant: ThermometerVariant.Thermocouple
+                variant: ThermocoupleVariant.TypeB
             })]
         },
         {
