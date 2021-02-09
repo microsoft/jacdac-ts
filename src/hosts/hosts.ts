@@ -695,7 +695,7 @@ const _hosts: {
         },
         {
             name: "thermocouple",
-            serviceClasses: [SRV_THERMOMETER],
+            serviceClasses: [SRV_THERMOCOUPLE],
             services: () => [new AnalogSensorServiceHost(SRV_THERMOCOUPLE, {
                 readingValues: [550],
                 streamingInterval: 1000,
