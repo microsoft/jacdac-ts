@@ -1,4 +1,4 @@
-import { Box, Chip, Divider, Grid, InputAdornment, TextField } from "@material-ui/core";
+import { Chip, Divider, Grid, InputAdornment, TextField } from "@material-ui/core";
 import React, { useMemo, useState } from "react";
 import ServiceSpecificationList from "./ServiceSpecificationList";
 import { useDebounce } from 'use-debounce';
@@ -11,6 +11,17 @@ import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jacdac";
 import KindIcon from "./KindIcon";
 import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
 import JacdacIcon from "./icons/JacdacIcon";
+
+function FilterChip(props: { label: string, value: boolean, icon?: JSX.Element, onClick: () => void }) {
+    const { label, value, icon, onClick } = props;
+    const descr = value ? `Disable ${label} filter` : `Filter by ${label} support`;
+    return <Chip
+        label={label}
+        aria-label={descr}
+        title={descr}
+        icon={icon} variant={value ? "default" : "outlined"}
+        color={value ? "secondary" : undefined} onClick={onClick} />
+}
 
 export default function ServiceCatalog() {
     const [query, setQuery] = useState("");
@@ -76,16 +87,12 @@ export default function ServiceCatalog() {
         </Grid>
         <Grid item xs={12}>
             <ChipList>
-                {allTags.map(tag => <Chip key={tag} label={tag} onClick={handleTagClick(tag)}
-                    variant={tags.indexOf(tag) > -1 ? "default" : "outlined"}
-                    color={tags.indexOf(tag) > -1 ? "primary" : undefined} />)}
+                {allTags.map(tag => <FilterChip key={tag} label={tag} onClick={handleTagClick(tag)}
+                    value={tags.indexOf(tag) > -1} />)}
                 <Divider orientation="vertical" flexItem />
-                <Chip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} variant={simulator ? "default" : "outlined"}
-                    color={simulator ? "secondary" : undefined} onClick={handleSimulatorClick} />
-                <Chip label="Devices" icon={<JacdacIcon />} variant={simulator ? "default" : "outlined"}
-                    color={simulator ? "secondary" : undefined} onClick={handleDevicesClick} />
-                <Chip label="MakeCode" icon={<MakeCodeIcon />} variant={makeCode ? "default" : "outlined"}
-                    color={makeCode ? "secondary" : undefined} onClick={handleMakeCodeClick} />
+                <FilterChip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} value={simulator} onClick={handleSimulatorClick} />
+                <FilterChip label="Devices" icon={<JacdacIcon />} value={devices} onClick={handleDevicesClick} />
+                <FilterChip label="MakeCode" icon={<MakeCodeIcon />} value={makeCode} onClick={handleMakeCodeClick} />
             </ChipList>
         </Grid>
         {!services.length && <Grid item>There are no services matching this request.</Grid>}
