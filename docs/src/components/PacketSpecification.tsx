@@ -1,17 +1,16 @@
-import { isRegister, isEvent, isCommand, tryParseMemberValue, serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
+import { isRegister, isEvent, isCommand } from "../../../src/jdom/spec"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
 import React, { useState } from "react";
 // tslint:disable-next-line: no-submodule-imports
 import Chip from '@material-ui/core/Chip';
 import DeviceList from "./DeviceList";
-import { makeStyles, createStyles, TextField } from "@material-ui/core";
+import { makeStyles, createStyles } from "@material-ui/core";
 import IDChip from "./IDChip";
 import KindChip from "./KindChip";
 import PacketMembersChip from "./PacketMembersChip";
-import Markdown from "./ui/Markdown";
-import { prettyMemberUnit, prettyUnit } from "../../../src/jdom/pretty";
-import { isSet } from "../../../src/jdom/utils";
+import ReactMarkdown from "react-markdown"
+import { prettyMemberUnit } from "../../../src/jdom/pretty";
 
 const useStyles = makeStyles((theme) => createStyles({
     root: {
@@ -50,13 +49,13 @@ function MembersType(props: { members: jdspec.PacketMember[], title?: string }) 
         {!!title && <h4>{title}</h4>}
         {!!beforeRepeat.length && <ul>
             {beforeRepeat
-                .map((member, i) => <MemberType key={`member${member.name}`} member={member} />)}
+                .map((member) => <MemberType key={`member${member.name}`} member={member} />)}
         </ul>}
         {!!afterRepeat.length && <>
             <h5>starts repeating</h5>
             <ul>
                 {afterRepeat
-                    .map((member, i) => <MemberType key={`member${member.name}`} member={member} />)}
+                    .map((member) => <MemberType key={`member${member.name}`} member={member} />)}
             </ul>
         </>}
     </>
@@ -70,7 +69,7 @@ export default function PacketSpecification(props: {
     showDevices?: boolean
 }) {
     const { serviceClass, packetInfo, reportInfo, pipeReportInfo, showDevices } = props;
-    const [args, setArgs] = useState<any[]>([])
+    const [] = useState<any[]>([])
     const classes = useStyles();
     if (!packetInfo)
         return <Alert severity="error">{`Unknown member ${serviceClass.toString(16)}:${packetInfo.identifier}`}</Alert>
@@ -85,7 +84,7 @@ export default function PacketSpecification(props: {
             {packetInfo.optional && <Chip className={classes.chip} size="small" label="optional" />}
             {packetInfo.derived && <Chip className={classes.chip} size="small" label="derived" />}
         </h3>
-        <Markdown source={packetInfo.description} />
+        <ReactMarkdown source={packetInfo.description} />
         {!!fields.length && <MembersType members={fields} title={isCmd && "Arguments"} />}
         {!!reportInfo && <MembersType members={reportInfo.fields} title="Report" />}
         {!!pipeReportInfo && <MembersType members={pipeReportInfo.fields} title="Pipe report" />}

@@ -3,7 +3,7 @@ import { createStyles, GridList, GridListTile, GridListTileBar, makeStyles, Them
 import { deviceSpecifications, identifierToUrlPath, imageDeviceOf } from '../../../src/jdom/spec';
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import InfoIcon from '@material-ui/icons/Info';
-import Markdown from "./ui/Markdown"
+import ReactMarkdown from "react-markdown"
 import { IconButton } from "gatsby-theme-material-ui";
 import { arrayShuffle } from '../../../src/jdom/utils';
 import { MEDIUM_BREAKPOINT, MOBILE_BREAKPOINT } from './layout';
@@ -59,7 +59,7 @@ export default function DeviceSpecificationList(props: {
             <img src={imageDeviceOf(spec)} alt={spec.name} />
             <GridListTileBar
                 title={spec.name}
-                subtitle={<Markdown className={classes.ellipsis} source={spec.description.split('.', 1)[0]} />}
+                subtitle={<ReactMarkdown className={classes.ellipsis} source={spec.description.split('.', 1)[0]} />}
                 actionIcon={<>
                     <IconButton to={`/devices/${identifierToUrlPath(spec.id)}`} aria-label={`info about ${spec.name}`} className={classes.icon}>
                         <InfoIcon />

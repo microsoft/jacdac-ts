@@ -5,10 +5,10 @@ import { identifierToUrlPath, imageDeviceOf, serviceSpecificationFromClassIdenti
 import ServiceSpecificationCard from "./ServiceSpecificationCard";
 import { Grid, Typography } from "@material-ui/core";
 import useGridBreakpoints from "./useGridBreakpoints";
-import Markdown from "./ui/Markdown";
 import DeviceSpecificationSource from "./DeviceSpecificationSource";
 import FirmwareCard from "./firmware/FirmwareCard"
 import { escapeDeviceIdentifier } from "../../../jacdac-spec/spectool/jdspec"
+import ReactMarkdown from "react-markdown"
 
 export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, showSource?: string }) {
     const { device, showSource } = props;
@@ -20,7 +20,7 @@ export default function DeviceSpecification(props: { device: jdspec.DeviceSpec, 
         </h2>
         <Typography variant="subtitle1">by <Link to={`/devices/${identifierToUrlPath(escapeDeviceIdentifier(device.company))}`}>{device.company}</Link></Typography>
         {<img alt="image of the device" src={imageDeviceOf(device)} />}
-        {device.description && <Markdown source={device.description} />}
+        {device.description && <ReactMarkdown source={device.description} />}
         {device.repo && <FirmwareCard slug={device.repo} />}
         {!!device.firmwares.length && <><h3>Firmware identifiers</h3>
             <ul>

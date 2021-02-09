@@ -1,18 +1,16 @@
-import React, { Fragment, useContext, useEffect } from "react";
+import React, { Fragment, useContext } from "react";
 import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf, deviceSpecificationsForService } from "../../../src/jdom/spec"
+import { serviceSpecificationFromName, isRegister, isEvent, isCommand, isPipeReport, isReportOf, isPipeReportOf } from "../../../src/jdom/spec"
 import PacketSpecification from "../components/PacketSpecification"
 import IDChip from "./IDChip";
-import ServiceSpecificationSource from "./ServiceSpecificationSource"
-import Markdown from "./ui/Markdown";
 import EnumSpecification from "./EnumSpecification";
 import { Box, Grid } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
-import DeviceSpecificationList from "./DeviceSpecificationList"
 import useDeviceHostFromServiceClass from "./hooks/useDeviceHostFromServiceClass";
 import JacdacContext, { JDContextProps } from "../../../src/react/Context";
 import useChange from "../jacdac/useChange";
 import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
+import ReactMarkdown from "react-markdown";
 
 function DashboardServiceDevices(props: { serviceClass: number }) {
     const { serviceClass } = props;
@@ -34,7 +32,7 @@ export default function ServiceSpecification(props: {
     showDevices?: boolean,
     showDerived?: boolean
 }) {
-    const { service: node, showSource, showDevices, showDerived } = props;
+    const { service: node, showDerived } = props;
     const { shortId, name, classIdentifier } = node;
     const packets = node.packets.filter(pkt => showDerived || !pkt.derived);
     const registers = packets.filter(isRegister)
@@ -61,7 +59,7 @@ export default function ServiceSpecification(props: {
             </Box>
         </h1>
         <ServiceSpecificationStatusAlert specification={node} />
-        <Markdown key="notesshort" source={node.notes.short} />
+        <ReactMarkdown key="notesshort" source={node.notes.short} />
         {!!node.extends?.length &&
             <p key="extends">
                 <span>Extends </span>
@@ -70,7 +68,7 @@ export default function ServiceSpecification(props: {
                     <Link key={`extend${extend}`} to={`/services/${extend}/`}>{serviceSpecificationFromName(extend).name}</Link>
                 </Fragment>)}
     .</p>}
-        <Markdown key="noteslong" source={node.notes.long || ""} />
+        <ReactMarkdown key="noteslong" source={node.notes.long || ""} />
         <DashboardServiceDevices serviceClass={classIdentifier} />
         <EnumSpecification key="enums" serviceClass={classIdentifier} />
         {[
@@ -81,10 +79,10 @@ export default function ServiceSpecification(props: {
         ].filter(group => group.packets.length)
             .map(group => <Fragment key={`group${group.name}`}>
                 <h2>{group.name}</h2>
-                {group.note && <Markdown key={`node${group.name}`} source={group.note} />}
+                {group.note && <ReactMarkdown key={`node${group.name}`} source={group.note} />}
                 {group.packets
                     .sort((l, r) => (l.derived ? 1 : -1) - (r.derived ? 1 : -1))
-                    .map((pkt, i) => <PacketSpecification
+                    .map((pkt) => <PacketSpecification
                         key={`pkt${pkt.name}`}
                         serviceClass={node.classIdentifier}
                         packetInfo={pkt}
