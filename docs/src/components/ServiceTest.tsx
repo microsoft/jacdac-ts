@@ -1,21 +1,14 @@
-import React, { useContext } from 'react';
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
-import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
-import StepLabel from '@material-ui/core/StepLabel';
-import StepContent from '@material-ui/core/StepContent';
-import Button from '@material-ui/core/Button';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import React, { useContext, useState } from 'react';
 import Markdown from "./ui/Markdown"
 import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JDContextProps } from '../../../src/react/Context';
 import useChange from '../jacdac/useChange';
-import { Grid, Card, CardHeader, CardActions } from '@material-ui/core';
+import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
-import DeviceName from "./DeviceName"
+import DeviceCardHeader from "./DeviceCardHeader"
+import { JDService } from '../../../src/jdom/service';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -40,7 +33,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const { classIdentifier: serviceClass } = serviceSpec
     const { bus } = useContext<JDContextProps>(JacdacContext)
     const classes = useStyles();
-    const [activeStep, setActiveStep] = React.useState(0);
+    const [selectedService, setSelectedService] = useState<JDService>(undefined);
+    const [activeStep, setActiveStep] = useState(0);
     const tests = [
         {
             label: "this is a test",
@@ -54,7 +48,10 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
             .map(dev => dev.services({ serviceClass }))
             .reduce((l, r) => l.concat(r), [])
     )
-
+    const handleSelect = (service: JDService) => () => {
+        setSelectedService(service);
+        setActiveStep(1);
+    }
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
@@ -73,12 +70,13 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                     <StepLabel>Select a service</StepLabel>
                     <StepContent>
                         {!!services.length && <Grid container spacing={2}>
-                            {services.map(service => <Grid item {...gridBreakpoints}><Card key={`srv${service.serviceClass}`}>
-                                <CardHeader><DeviceName device={service.device} /></CardHeader>
-                                <CardActions>
-                                    <Button variant="contained" color="primary">Select</Button>
-                                </CardActions>
-                            </Card>
+                            {services.map(service => <Grid item {...gridBreakpoints}>
+                                <Card key={service.id}>
+                                    <DeviceCardHeader device={service.device} />
+                                    <CardActions>
+                                        <Button variant="contained" color="primary" onClick={handleSelect(service)}>Select</Button>
+                                    </CardActions>
+                                </Card>
                             </Grid>)}
                         </Grid>}
                         {!services.length && <Alert severity="info">Not seeing your device? Try some of the following.
