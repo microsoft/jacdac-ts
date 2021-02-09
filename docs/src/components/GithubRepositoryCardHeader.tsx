@@ -28,7 +28,7 @@ export default function GithubRepositoryCardHeader(props: {
         </> : <><Link href={`https://github.com/${slug}`} target={target}>
             <Typography component="span" variant="h6">{slug}</Typography>
         </Link>
-            <Typography variant="caption">Unable to find repository</Typography>
+            {!repoLoading && <Typography variant="caption">Unable to find repository</Typography>}
         </>;
 
     return <CardHeader

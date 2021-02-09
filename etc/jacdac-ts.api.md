@@ -1406,7 +1406,7 @@ export class JDRegister extends JDServiceMemberNode {
 
 // @public (undocumented)
 export class JDService extends JDNode {
-    constructor(device: JDDevice, service_index: number);
+    constructor(device: JDDevice, serviceIndex: number);
     // (undocumented)
     addClient(client: JDServiceClient): void;
     // (undocumented)
@@ -1460,7 +1460,7 @@ export class JDService extends JDNode {
     // (undocumented)
     sendPacketAsync(pkt: Packet, ack?: boolean): Promise<void>;
     // (undocumented)
-    readonly service_index: number;
+    readonly serviceIndex: number;
     // (undocumented)
     get serviceClass(): number;
     get specification(): jdspec.ServiceSpec;

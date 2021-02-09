@@ -2,12 +2,14 @@ import React from "react";
 import { Grid, Slider, Typography } from "@material-ui/core";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
+import useUnitIcons from "../hooks/useUnitIcon";
 
 export default function ValueWithUnitWidget(props: {
     value: number,
     min?: number,
     max?: number,
     step?: number,
+    icon?: JSX.Element,
     label: string,
     secondaryLabel?: string,
     tabIndex?: number,
@@ -15,7 +17,7 @@ export default function ValueWithUnitWidget(props: {
     size?: string,
     onChange?: (event: unknown, newValue: number | number[]) => void
 }) {
-    const { value, min, max, step, secondaryLabel, label, tabIndex, onChange } = props;
+    const { value, min, max, step, secondaryLabel, icon, label, tabIndex, onChange } = props;
     const labelVariant = "subtitle1";
     const precision = step === undefined ? 1 : step < 1 ? Math.ceil(-Math.log10(step)) : 0;
     const hasValue = !isNaN(value);
@@ -40,7 +42,7 @@ export default function ValueWithUnitWidget(props: {
             <Grid container direction="row" alignContent="flex-end">
                 <Grid item>
                     <Typography role="timer" align="right" variant={valueVariant}
-                        style={valueStyle}>{valueText}</Typography>
+                        style={valueStyle}>{icon}{valueText}</Typography>
                 </Grid>
                 <Grid item>
                     <Grid container direction="column" alignContent="space-between">

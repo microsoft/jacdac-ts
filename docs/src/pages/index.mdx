@@ -2,7 +2,7 @@
 path: /
 ---
 
-# Jacdac
+# Jacdac - USB for low-cost microcontrollers
 
 **Jacdac** is a plug-and-play hardware/software stack 
 for **microcontrollers** and their peripherals (sensors/actuators), 
@@ -14,19 +14,6 @@ with applications to rapid prototyping, making, and physical computing.
 * standardized service abstraction
 * full stack from 8bit MCU to web development
 
-## Protocol overview
-
-Jacdac devices communicate over a *bus*, where each *device* can advertise itself 
-and the set of services it provides. 
-A *service* encapsulates the process of communicating with a Jacdac device via packets.
-A *packet* includes a device identifier and data payload. 
-Jacdac packets are sent serially among physical devices on the Jacdac bus
-and may also be sent over WebUSB, 
-providing connectivity to web-based tooling and services running in the web browser
-(see the connect icon at the top of this page).
-
-* Learn more about the [protocol specification](/reference/protocol)
-
 ## Services specifications
 
 Jacdac services are specified to abstract the hardware device from the software implementation.
@@ -34,7 +21,7 @@ The services are comprised of registers, commands and events, along with precise
 for each packet.
 
 * Browse the [service catalog](/services)
-* Learn more about [service specifications](/reference/sepcification/service-specification)
+* Learn more about [service specifications](/reference/specification/service-specification)
 
 ## Device catalog & Firmware Updates
 
@@ -46,28 +33,24 @@ firmware onto devices.
 * Browse the [device catalog](/devices)
 * Learn more about [device definitions](/reference/specification/device-definition)
 
-## Reference documentation
 
-See the [overview of reference documentation](/reference/), including the Jacdac protocol specification.
+## Protocol overview
+
+Jacdac devices communicate using *packets* over a *bus*, where each *device* can advertise itself 
+and the set of *services* it provides. 
+A *service* provides *registers*, *events* and *commands* to communicate with other devices.
+Jacdac packets are sent serially among physical devices on the Jacdac bus
+and may also be sent over WebUSB/WebBLE, 
+providing connectivity to web-based tooling and services running in the web browser
+(see the connect icon at the top of this page).
+
+* Learn more about the [protocol specification](/reference/protocol)
 
 ## Community
 
-Jacdac is open source and most of the commmunication happens through our GitHub project.
+Jacdac is open source and 
+most of the commmunication happens through our GitHub project.
 
 * [start a discussion](https://github.com/microsoft/jacdac/discussions).
 * [file an issue](https://github.com/microsoft/jacdac/issues).
-
-## Jacdac Github repos
-
-Jacdac is an Open Source living standard. 
-Checkout our [GitHub Repositories](/github) for the piece you want.
-
-## Microsoft Open Source Code of Conduct
-
-This project is hosted at https://github.com/microsoft/jacdac-ts. This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-
-Resources:
-
-- [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)
-- [Microsoft Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
-- Contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with questions or concerns
+* [GitHub repositories](/github)

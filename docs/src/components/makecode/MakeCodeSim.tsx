@@ -15,6 +15,7 @@ import MakeCodeIcon from "../icons/MakeCodeIcon"
 import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 import Helmet from "react-helmet"
 import Flags from "../../../../src/jdom/flags";
+import DarkModeContext from "../ui/DarkModeContext";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -67,6 +68,7 @@ function Carousel() {
 
 export default function Page() {
     const { bus } = useContext<JDContextProps>(JacdacContext);
+    const { toggleDarkMode } = useContext(DarkModeContext);
     const rawTheme = createMuiTheme({
         palette: {
             primary: {
@@ -80,6 +82,7 @@ export default function Page() {
         },
     })
     const theme = responsiveFontSizes(rawTheme);
+    useEffect(() => toggleDarkMode('dark'), []); // always dark mode
     useEffect(() => {
         if (!Flags.diagnostics) return;
         const hostDefinitions = hosts();

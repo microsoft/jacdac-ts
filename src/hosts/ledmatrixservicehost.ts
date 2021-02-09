@@ -28,8 +28,6 @@ export default class LEDMatrixServiceHost extends ServiceHost {
             intensityValues: [0xff >> 1]
         })
 
-        this.dashboardWeight = 3;
-
         this.leds = this.addRegister(LEDMatrixReg.Leds, [new Uint8Array(0)])
         this.rows = this.addRegister(LEDMatrixReg.Rows, [rows]);
         this.columns = this.addRegister(LEDMatrixReg.Columns, [columns]);

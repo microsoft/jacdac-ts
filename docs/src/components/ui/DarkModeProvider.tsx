@@ -4,7 +4,7 @@ import DarkModeContext from './DarkModeContext'
 
 const DarkModeProvider = ({ children }) => {
   const KEY = 'darkMode'
-  const [darkMode, setDarkMode] = useState<PaletteType>('dark');
+  const [darkMode, setDarkMode] = useState<PaletteType>("light");
   const [darkModeMounted, setMounted] = useState(false);
 
   const setMode = (mode: PaletteType) => {
@@ -22,7 +22,6 @@ const DarkModeProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    /*
     const localTheme = typeof window !== "undefined" && window.localStorage.getItem(KEY) as PaletteType;
     if (localTheme) {
       setDarkMode(localTheme || 'light');
@@ -31,9 +30,6 @@ const DarkModeProvider = ({ children }) => {
     } else {
       setDarkMode('light')
     }
-    */
-   // always dark for now
-    setDarkMode('dark')
     setMounted(true);
   }, []);
 

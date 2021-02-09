@@ -15,7 +15,7 @@ import useChange from '../jacdac/useChange';
 import { Grid, Card, CardHeader, CardActions } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
-
+import DeviceName from "./DeviceName"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

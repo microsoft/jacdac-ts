@@ -28,7 +28,6 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     if (rows === undefined || columns === undefined)
         return null;
 
-    const enabled = !!leds && brightness > 0;
     // compute size
     const minOpacity = 0.3;
     const pw = 8;
@@ -51,8 +50,8 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
     const render = () => {
         const boxEls: JSX.Element[] = [];
         const ledEls: JSX.Element[] = [];
-        const onFill = enabled ? active : "transparent";
-        const onStroke = enabled ? undefined : active;
+        const onFill = active;
+        const onStroke = undefined;
         const offFill = controlBackground;
         const offStroke = "transparent";
         const ledProps: SVGProps<SVGRectElement> = {

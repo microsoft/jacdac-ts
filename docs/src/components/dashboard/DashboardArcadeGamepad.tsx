@@ -10,6 +10,13 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import ArcadeGamepadServiceHost from "../../../../src/hosts/arcadegamepadservicehost";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 
+const buttonLabels = {
+    [ArcadeGamepadButton.Left]: "🡄",
+    [ArcadeGamepadButton.Up]: "🡅",
+    [ArcadeGamepadButton.Down]: "🡇",
+    [ArcadeGamepadButton.Right]: "🡆",
+}
+
 function ArcadeButton(props: {
     cx: number,
     cy: number,
@@ -25,7 +32,7 @@ function ArcadeButton(props: {
     const { textProps, active, background, controlBackground } = useWidgetTheme(color);
     const checked = (pressure || 0) > 0;
     const title = ArcadeGamepadButton[button]
-    const label = title[0]
+    const label = buttonLabels[button] || title[0]
 
     const handleDown = () => {
         host?.down(button, 0.7);
@@ -82,11 +89,12 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
         [ArcadeGamepadButton.Right]: { cx: cw * 4.5, cy: 2 * ch, small: false },
         [ArcadeGamepadButton.Down]: { cx: cw * 3, cy: 3 * ch, small: false },
 
-        [ArcadeGamepadButton.A]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
-        [ArcadeGamepadButton.B]: { cx: cw * 9.5, cy: ch * 2.75, small: false },
+        [ArcadeGamepadButton.A]: { cx: cw * 9.5, cy: ch * 2.75, small: false },
+        [ArcadeGamepadButton.B]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
 
-        [ArcadeGamepadButton.Menu]: { cx: cw * 6, cy: scy, small: true },
-        [ArcadeGamepadButton.Select]: { cx: cw * 7, cy: scy, small: true },
+        [ArcadeGamepadButton.Menu]: { cx: cw * 7, cy: scy, small: true },
+        [ArcadeGamepadButton.Select]: { cx: cw * 6, cy: scy, small: true },
+
         [ArcadeGamepadButton.Exit]: { cx: cw * 8, cy: scy, small: true },
         [ArcadeGamepadButton.Reset]: { cx: cw * 9, cy: scy, small: true },
     }

@@ -2,7 +2,7 @@ const maxImageWidth = 800
 module.exports = {
   siteMetadata: {
     title: `Jacdac`,
-    description: `Documentation for the Jacdac protocol and libraries.`,
+    description: `USB for low-cost microcontrollers.`,
     author: `Microsoft`,
     siteUrl: `https://microsoft.github.io/jacdac-ts`
   },
@@ -105,6 +105,7 @@ module.exports = {
             }
           },
           'gatsby-remark-static-images',
+          'gatsby-remark-check-links',
         ]
       },
     },
@@ -126,7 +127,8 @@ module.exports = {
               linkImagesToOriginal: false
             }
           },
-          'gatsby-remark-static-images'
+          'gatsby-remark-static-images',
+          'gatsby-remark-check-links',
         ],
       },
     },

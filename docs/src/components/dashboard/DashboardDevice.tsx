@@ -40,7 +40,7 @@ export default function DashboardDevice(props: {
 
     const ServiceWidgets = () =>
         <Grid container spacing={2} justify="center" alignItems="flex-end" alignContent="space-between">
-            {services?.map(service => <Grid key={"widget" + service.service_index} item>
+            {services?.map(service => <Grid key={"widget" + service.serviceIndex} item>
                 <DashboardServiceWidget service={service} expanded={expanded} services={services} variant={variant} />
             </Grid>)}
         </Grid>
@@ -75,7 +75,7 @@ export default function DashboardDevice(props: {
             <CardContent>
                 <ServiceWidgets />
                 {expanded && <Grid container direction="column" spacing={1} alignContent="stretch">
-                    {services?.map(service => <DashboardServiceDetails key={"details" + service.service_index} service={service} expanded={expanded} />)}
+                    {services?.map(service => <DashboardServiceDetails key={"details" + service.serviceIndex} service={service} expanded={expanded} />)}
                 </Grid>}
             </CardContent>
         </Card>

@@ -179,26 +179,19 @@ function LayoutWithDarkMode(props: LayoutProps) {
   const { pageContext } = pageProps;
   const fullScreen = !!pageContext?.frontmatter?.fullScreen;
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
+  const isDark = darkMode === 'dark'
   const themeDef: ThemeOptions = {
     palette: {
       primary: {
-        main: '#56d364',
+        main: isDark ? '#56d364' : '#2e7d32',
       },
       secondary: {
         main: '#ffc400',
       },
-      contrastThreshold: 5.1,
+      contrastThreshold: isDark ? 5.1 : 3.1,
       type: darkMode
     }
   }
-  // accessibility
-  if (darkMode === 'dark') {
-    //    themeDef.palette.contrastThreshold = 5;
-    //    themeDef.palette.background = {
-    //     default: '#1a1a1a',
-    //    paper: '#2a2a2a'
-    // };
-  };
   const rawTheme = createMuiTheme(themeDef)
   const theme = responsiveFontSizes(rawTheme);
   const mdxComponents = useMdxComponents()
@@ -294,7 +287,7 @@ function LayoutWithContext(props: LayoutProps) {
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-  const container = !/^\/(tools|dashboard)/.test(path)
+  const container = !/^\/(tools\/|dashboard)/.test(path)
   console.log({ path })
 
   return (

@@ -66,7 +66,7 @@ export default function DashboardWindDirection(props: DashboardServiceProps) {
         {host && <Grid item>
             <Slider
                 color={color}
-                valueLabelDisplay="off"
+                valueLabelDisplay="auto"
                 min={0} max={360} step={5} value={direction}
                 onChange={handleChange}
             />

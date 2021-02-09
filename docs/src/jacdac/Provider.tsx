@@ -5,6 +5,7 @@ import { createUSBBus } from "../../../src/jdom/usb";
 import { CONNECTION_STATE } from "../../../src/jdom/constants";
 import IFrameBridgeClient from "../../../src/jdom/iframebridgeclient"
 import Flags from "../../../src/jdom/flags"
+import GamepadHostManager from "../../../src/hosts/gamepadhostmanager"
 
 function sniffQueryArguments() {
     if (typeof window === "undefined" || typeof URLSearchParams === "undefined")
@@ -28,6 +29,8 @@ Flags.webUSB = args.webUSB;
 const bus = Flags.webUSB ? createUSBBus(undefined, { parentOrigin: args.parentOrigin })
     : new JDBus(undefined);
 bus.setBackgroundFirmwareScans(true);
+GamepadHostManager.start(bus);
+
 // tslint:disable-next-line: no-unused-expression
 // always start bridge
 if (typeof window !== "undefined")

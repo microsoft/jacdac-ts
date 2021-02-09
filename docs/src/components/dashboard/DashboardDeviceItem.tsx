@@ -4,8 +4,8 @@ import { JDDevice } from "../../../../src/jdom/device";
 import DashboardDevice from "./DashboardDevice";
 import { GridBreakpoints } from "../useGridBreakpoints";
 import { DashboardDeviceProps } from "./Dashboard";
-import useServiceHost from "../hooks/useServiceHost";
 import useChange from "../../jacdac/useChange";
+import { dashboardServiceWeight } from "./DashboardServiceWidget";
 
 export default function DashboardDeviceItem(props: {
     device: JDDevice,
@@ -17,8 +17,7 @@ export default function DashboardDeviceItem(props: {
     const breakpoints: GridBreakpoints = useChange(device, () => {
         const breakpointWeight = device.services()
             .map(srv => {
-                const host = useServiceHost(srv);
-                return host?.dashboardWeight
+                return dashboardServiceWeight(srv)
                     || (srv.readingRegister || srv.valueRegister || srv.intensityRegister ? 1 : 0)
             })
             .reduce((c: number, v) => c + v, 0);
