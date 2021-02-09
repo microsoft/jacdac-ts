@@ -7,9 +7,7 @@
 
 import React, { useContext } from "react"
 import clsx from 'clsx';
-import { makeStyles, Container, Hidden, Box } from '@material-ui/core';
-// tslint:disable-next-line: no-submodule-imports
-import { Link } from 'gatsby-theme-material-ui';
+import { makeStyles, Container, Hidden, Box, useMediaQuery } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 // tslint:disable-next-line: no-submodule-imports
 import AppBar from '@material-ui/core/AppBar';
@@ -287,8 +285,9 @@ function LayoutWithContext(props: LayoutProps) {
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
   const drawerOpen = drawerType !== DrawerType.None
-  const container = !/^\/(tools\/|dashboard)/.test(path)
-  console.log({ path })
+  const theme = useTheme();
+  const medium = useMediaQuery(theme.breakpoints.down(MEDIUM_BREAKPOINT));
+  const container = !medium && !/^\/(tools\/|dashboard)/.test(path)
 
   return (
     <div className={clsx(darkMode, classes.root)}>
