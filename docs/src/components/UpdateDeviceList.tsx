@@ -61,7 +61,7 @@ export default function UpdateDeviceList() {
     const [scanning, setScanning] = useState(false)
     const gridBreakpoints = useGridBreakpoints()
     const safeBoot = useChange(bus, b => b.safeBoot);
-    const devices = useDevices({ announced: true, ignoreSelf: true }, [safeBoot])
+    const devices = useDevices({ announced: true, ignoreSelf: true, ignoreSimulators: true }, [safeBoot])
         .filter(dev => safeBoot || !dev.hasService(SRV_BOOTLOADER));
     const isFlashing = devices.some(dev => dev.flashing);
     const blobs = useFirmwareBlobs();

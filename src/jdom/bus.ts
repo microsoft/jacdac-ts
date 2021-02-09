@@ -113,8 +113,8 @@ export interface DeviceFilter {
     serviceClass?: number;
     ignoreSelf?: boolean;
     announced?: boolean;
+    ignoreSimulators?: boolean;
 }
-
 export interface BusStats {
     packets: number;
     announce: number;
@@ -562,14 +562,19 @@ export class JDBus extends JDNode {
     devices(options?: DeviceFilter) {
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
-        let sc = options?.serviceClass > -1 ? options?.serviceClass : serviceClass(options?.serviceName);
+        const sc = options?.serviceClass > -1
+            ? options?.serviceClass
+            : serviceClass(options?.serviceName);
+
         let r = this._devices.slice(0)
         if (sc > -1)
-            r = this._devices.filter(s => s.hasService(sc));
+            r = r.filter(s => s.hasService(sc));
         if (options?.ignoreSelf)
-            r = this._devices.filter(s => s.deviceId !== this.selfDeviceId);
+            r = r.filter(s => s.deviceId !== this.selfDeviceId);
         if (options?.announced)
-            r = this._devices.filter(s => s.announced);
+            r = r.filter(s => s.announced);
+        if (options?.ignoreSimulators)
+            r = r.filter(r => !this.deviceHost(r.deviceId));
         return r;
     }
 
