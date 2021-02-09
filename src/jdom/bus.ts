@@ -748,7 +748,7 @@ export class JDBus extends JDNode {
 
     checkCRC(pkt: Packet): boolean {
         if (pkt.crc !== pkt.computeCRC()) {
-            console.error(`invalid packet crc`, { sender: pkt.sender, buffer: toHex(pkt.toBuffer()), pkt })
+            console.error(`invalid packet crc`, { crc: pkt.crc, sender: pkt.sender, buffer: toHex(pkt.toBuffer()), pkt })
             console.trace();
             this.emit(PACKET_INVALID_CRC, pkt);
             this.emit(ERROR, "invalid packet crc");

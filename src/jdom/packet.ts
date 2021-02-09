@@ -63,9 +63,10 @@ export class Packet {
         data.set(buf)
         data[2] = sz - 12
 
-        const chk = crc(data.slice(2))
-        data[0] = chk & 0xff
-        data[1] = (chk >> 8) & 0xff
+        const chk = crc(data.slice(2, JD_SERIAL_HEADER_SIZE + data[2]))
+        write16(data, 0, chk);
+
+        console.log("patched crc", { crc: chk })
 
         return data;
     }
@@ -80,7 +81,9 @@ export class Packet {
         p._data = data.slice(JD_SERIAL_HEADER_SIZE, JD_SERIAL_HEADER_SIZE + p.size);
         if (timestamp !== undefined)
             p.timestamp = timestamp;
-        return p
+        if (p.crc !== p.computeCRC())
+            console.error("pkt crc", { crc: p.crc, computed: p.computeCRC() })
+        return p;
     }
 
     static from(service_command: number, data: Uint8Array) {
