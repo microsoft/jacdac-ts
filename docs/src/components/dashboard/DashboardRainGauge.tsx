@@ -32,7 +32,9 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const a = useThrottledValue(tiltAngle, 45)
     const l = useThrottledValue(level !== undefined ? level : 0.5, 1);
     const clickeable = !!host;
-    const handleClick = async () => {
+    const handleClick = async (event: React.PointerEvent<SVGRectElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
         await host?.rain(0.25);
         await precipitationRegister.refresh();
     }
@@ -78,6 +80,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
                 fill={active}
                 aria-label={"water"}
                 clipPath={`url(#${clipId})`}
+                pointerEvents="none"
                 style={{ userSelect: "none" }}
             />
         </g>

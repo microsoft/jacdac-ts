@@ -3,8 +3,8 @@ import useFireKey from "./useFireKey";
 
 export default function useSvgButtonProps<T extends SVGElement>(
     label: string,
-    onDown?: () => void,
-    onUp?: () => void
+    onDown?: (event: React.PointerEvent<T>) => void,
+    onUp?: (event: React.PointerEvent<T>) => void
 ): SVGProps<T> {
 
     const disabled = !onDown && !onUp;
