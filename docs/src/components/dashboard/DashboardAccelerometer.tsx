@@ -8,12 +8,37 @@ import useServiceHost from "../hooks/useServiceHost";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { JDRegister } from "../../../../src/jdom/register";
 import { Mesh } from "three";
-import { Grid, Slider } from "@material-ui/core";
+import { Grid, Slider, Mark } from "@material-ui/core";
 import { roundWithPrecision } from "../../../../src/jacdac";
-import { Plane } from "@react-three/drei";
+import { Line, Plane, OrbitControls } from "@react-three/drei";
 
 function lerp(v0: number, v1: number, t: number) {
     return v0 * (1 - t) + v1 * t
+}
+
+function Axis(props: {}) {
+    const lineProps = {
+        lineWidth: 4,                 // In pixels (default)
+        dashed: false                // Default
+    };
+    const c = 1;
+    return <>
+        <Line
+            points={[[0, 0, 0], [c, 0, 0]]}       // Array of points
+            color="blue"
+            {...lineProps}
+        />
+        <Line
+            points={[[0, 0, 0], [0, c, 0]]}       // Array of points
+            color="red"
+            {...lineProps}
+        />
+        <Line
+            points={[[0, 0, 0], [0, 0, c]]}       // Array of points
+            color="black"
+            {...lineProps}
+        />
+    </>
 }
 
 function Cube(props: { color: string, register: JDRegister }) {
@@ -47,7 +72,9 @@ function CanvasWidget(props: { color: string, register: JDRegister }) {
         <hemisphereLight intensity={0.35} />
         <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
         <Plane receiveShadow={true} castShadow={true} args={[5, 5]} position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} />
+        <Axis />
         <Cube {...props} />
+        <OrbitControls />
     </Canvas>
 }
 
@@ -73,23 +100,40 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
     if (!forces?.length)
         return null;
     const [x, y] = forces;
+    const min = -2
+    const max = 2
     const step = 0.1
+    const marks: Mark[] = [
+        {
+            value: 0,
+        },
+        {
+            value: -1,
+        },
+        {
+            value: 1,
+        }
+    ]
     return <>
         <Grid item>
             <Slider
                 valueLabelDisplay="auto"
                 valueLabelFormat={valueDisplay}
-                aria-label="x" orientation="vertical" min={-1} max={1} step={step}
+                aria-label="x" orientation="vertical" min={min} max={max} step={step}
                 value={x}
-                onChange={handleChangeX} />
+                onChange={handleChangeX}
+                marks={marks}
+            />
         </Grid>
         <Grid item>
             <Slider
                 valueLabelDisplay="auto"
                 valueLabelFormat={valueDisplay}
-                aria-label="y" orientation="vertical" min={-1} max={1} step={step}
+                aria-label="y" orientation="vertical" min={min} max={max} step={step}
                 value={y}
-                onChange={handleChangeY} />
+                onChange={handleChangeY}
+                marks={marks}
+            />
         </Grid>
     </>
 }
