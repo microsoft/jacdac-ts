@@ -1,13 +1,12 @@
-import { JDDevice } from "./device";
-import { JDBus } from "./bus";
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { SRV_ROLE_MANAGER, RoleManagerCmd, SELF_ANNOUNCE, CHANGE, DEVICE_ANNOUNCE, ERROR, EVENT, DEVICE_CHANGE } from "./constants";
-import { toHex, uint8ArrayToString, fromUTF8, strcmp, fromHex, bufferConcat, stringToUint8Array, debounceAsync } from "./utils";
+import { RoleManagerCmd, CHANGE, ERROR, EVENT, DEVICE_CHANGE } from "./constants";
+import { toHex, strcmp, fromHex, debounceAsync, groupBy, arrayConcatMany } from "./utils";
 import Packet from "./packet";
 import { jdpack, jdunpack } from "./pack";
-import { RoleManagerEvent, SystemEvent } from "../../jacdac-spec/dist/specconstants";
+import { RoleManagerEvent } from "../../jacdac-spec/dist/specconstants";
+import { addHost, hostDefinitionFromServiceClass } from "../hosts/hosts";
 
 const SCAN_DEBOUNCE = 2000
 
@@ -36,6 +35,11 @@ export class RequestedRole {
             await this.parent.setRole(this.bound, "")
         await this.parent.setRole(service, this.name)
         this.bound = service;
+    }
+
+    get parentName(): string {
+        const parts = this.name.split(/\//g);
+        return parts.length > 1 ? parts.slice(0, parts.length - 1).join("/") : undefined;
     }
 
     toString() {
@@ -140,5 +144,29 @@ export class RoleManagerClient extends JDServiceClient {
 
     toString() {
         return this.requestedRoles.map(rdp => rdp.toString()).join('\n')
+    }
+
+    startSimulators() {
+        // collect roles that need to be bound
+        const todos = groupBy(this.requestedRoles.filter(role => !role.bound)
+            .map(role => ({
+                role, hostDefinition: hostDefinitionFromServiceClass(role.serviceClass)
+            }))
+            .filter(todo => !!todo.hostDefinition),
+            todo => todo.role.parentName || "");
+
+        // spawn devices with group of devices
+        Object.keys(todos).forEach(parentName => {
+            const todo = todos[parentName];
+            // no parent, spawn individual services
+            if (!parentName) {
+                todo.forEach(t => addHost(this.bus, t.hostDefinition.services(), t.hostDefinition.name));
+            } else { // spawn all services into 1
+                addHost(this.bus, arrayConcatMany(todo.map(t => t.hostDefinition.services())), parentName)
+            }
+        })
+        this.requestedRoles.filter(role => !role.bound)
+            .map(role => hostDefinitionFromServiceClass(role.serviceClass))
+            .filter(hostDefinition => !!hostDefinition)
     }
 }

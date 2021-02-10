@@ -83,12 +83,7 @@ export default function RoleManagerService(props: {
     const requestedRoles = useChange(client, c => c?.requestedRoles);
 
     const handleClearRoles = async () => await client?.clearRoles()
-    const handleStartSimulators = async () => {
-        requestedRoles.filter(role => !role.bound)
-            .map(role => hostDefinitionFromServiceClass(role.serviceClass))
-            .filter(hostDefinition => !!hostDefinition)
-            .forEach(hostDefinition => addHost(bus, hostDefinition.services(), hostDefinition.name));
-    }
+    const handleStartSimulators = async () => client.startSimulators();
 
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />

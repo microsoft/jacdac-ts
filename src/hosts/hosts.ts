@@ -832,5 +832,5 @@ export function addHost(bus: JDBus, services: ServiceHost[], name?: string) {
 }
 
 export function hostDefinitionFromServiceClass(serviceClass: number) {
-    return _hosts.find(host => host.serviceClasses[0] === serviceClass);
+    return _hosts.find(host => host.serviceClasses.length === 1 && host.serviceClasses[0] === serviceClass);
 }
