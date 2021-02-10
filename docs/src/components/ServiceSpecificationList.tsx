@@ -1,4 +1,4 @@
-import { Chip, Grid, List, ListItem, ListItemText } from "@material-ui/core";
+import { Chip, Grid, List, ListItem, ListItemText, Typography } from "@material-ui/core";
 import React, { useMemo } from "react";
 import { deviceSpecificationsForService, isInfrastructure, resolveMakecodeServiceFromClassIdentifier } from "../../../src/jdom/spec";
 import { arrayShuffle } from "../../../src/jdom/utils";
@@ -21,13 +21,15 @@ function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
     return <Link to={`/services/${shortId}`} style={({ textDecoration: "none" })}>
         <ListItemText key={classIdentifier}
             primary={name}
-            secondary={<ChipList>
-                <p>{notes["short"]}</p>
-                {tags?.map(tag => <Chip key={tag} size="small" label={tag} />)}
-                {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
-                {device && <Chip icon={<JacdacIcon />} size="small" label="devices" />}
-                {makecode && <Chip icon={<MakeCodeIcon />} size="small" label="MakeCode" />}
-            </ChipList>}
+            secondary={(
+                <ChipList>
+                    <span>{notes["short"]}</span>
+                    {tags?.map(tag => <Chip key={tag} size="small" label={tag} />)}
+                    {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
+                    {device && <Chip icon={<JacdacIcon />} size="small" label="devices" />}
+                    {makecode && <Chip icon={<MakeCodeIcon />} size="small" label="MakeCode" />}
+                </ChipList>
+            )}
         />
     </Link>;
 }

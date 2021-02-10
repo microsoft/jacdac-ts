@@ -22,7 +22,7 @@ export default function ChipList(props: {
     if (!children?.length)
       return null;
 
-    return <div className={classes.root}>
+    return <span className={classes.root}>
         {children}
-    </div>
+    </span>
 }
