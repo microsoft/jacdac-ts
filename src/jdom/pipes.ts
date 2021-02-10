@@ -57,7 +57,7 @@ export class OutPipe {
         const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this._count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
         pkt.serviceIndex = JD_SERVICE_INDEX_PIPE
-        const p  = this.device.sendPktWithAck(pkt)
+        const p = this.device.sendPktWithAck(pkt)
             .then(
                 () => { },
                 err => {
@@ -172,7 +172,7 @@ export class InPipeReader extends InPipe {
 
     async readAll(timeout = 500) {
         const res = await this.bus.withTimeout(timeout, this.done.signalled)
-        if(!res)
+        if (!res)
             throw new Error("Timeout reading pipe: " + timeout + "ms")
         return {
             meta: this.meta,
