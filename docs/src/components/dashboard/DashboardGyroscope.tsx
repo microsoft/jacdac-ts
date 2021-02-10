@@ -8,7 +8,7 @@ import useServiceHost from "../hooks/useServiceHost";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { JDRegister } from "../../../../src/jdom/register";
 import { Mesh } from "three";
-import { Grid, Slider } from "@material-ui/core";
+import { Grid, Mark, Slider } from "@material-ui/core";
 import { roundWithPrecision } from "../../../../src/jacdac";
 import { Plane } from "@react-three/drei";
 
@@ -42,7 +42,7 @@ function CanvasWidget(props: { color: string, register: JDRegister }) {
     return <Canvas shadowMap camera={{ position: [1, 0.5, 2], fov: 50 }}>
         <hemisphereLight intensity={0.35} />
         <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
-        <Plane receiveShadow={true} castShadow={true} args={[5, 5]} position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} />        <Axis />
+        <Plane receiveShadow={true} castShadow={true} args={[5, 5]} position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} />
         <Cube {...props} />
     </Canvas>
 }
@@ -57,7 +57,7 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
         register.sendGetAsync()
     }
     const handleChangeY = (event: unknown, newValue: number | number[]) => {
-        const [x,, z] = host.reading.values();
+        const [x, , z] = host.reading.values();
         const n = newValue as any as number;
         host.reading.setValues([x, n, z]);
         register.sendGetAsync()
@@ -74,6 +74,11 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
         return null;
     const [x, y, z] = rates;
     const step = 1
+    const marks: Mark[] = [
+        {
+            value: 0,
+        },
+    ]
     return <>
         <Grid item>
             <Slider
@@ -81,6 +86,7 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
                 valueLabelFormat={valueDisplay}
                 aria-label="x rotation rate slider" orientation="vertical" min={-180} max={180} step={step}
                 value={x}
+                marks={marks}
                 onChange={handleChangeX} />
         </Grid>
         <Grid item>
@@ -89,6 +95,7 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
                 valueLabelFormat={valueDisplay}
                 aria-label="y rotation rate slider" orientation="vertical" min={-180} max={180} step={step}
                 value={y}
+                marks={marks}
                 onChange={handleChangeY} />
         </Grid>
         <Grid item>
@@ -97,6 +104,7 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
                 valueLabelFormat={valueDisplay}
                 aria-label="z rotation rate slider" orientation="vertical" min={-180} max={180} step={step}
                 value={z}
+                marks={marks}
                 onChange={handleChangeZ} />
         </Grid>
     </>
