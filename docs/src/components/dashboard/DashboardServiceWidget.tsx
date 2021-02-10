@@ -3,6 +3,7 @@ import {
     SRV_ACCELEROMETER, SRV_ANALOG_BUTTON, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_COLOR,
     SRV_COMPASS,
+    SRV_GYROSCOPE,
     SRV_JOYSTICK,
     SRV_LED,
     SRV_LEDMATRIX,
@@ -49,6 +50,7 @@ import DashboardAnalogButton from "./DashboardAnalogButton";
 import DashboardSoundLevel from "./DashboardSoundLevel";
 import DashboardRandomNumberGenerator from "./DashboardRandomNumberGenerator";
 import DashboardCompass from "./DashboardCompass";
+import DashboardGyroscope from "./DashboardGyroscope";
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -163,6 +165,10 @@ const serviceViews: {
     },
     [SRV_COMPASS]: {
         component: DashboardCompass,
+    },
+    [SRV_GYROSCOPE]: {
+        component: DashboardGyroscope,
+        weight: () => 2,
     }
 }
 
