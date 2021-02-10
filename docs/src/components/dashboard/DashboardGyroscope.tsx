@@ -10,7 +10,33 @@ import { JDRegister } from "../../../../src/jdom/register";
 import { Mesh } from "three";
 import { Grid, Slider } from "@material-ui/core";
 import { roundWithPrecision } from "../../../../src/jacdac";
-import { Plane } from "@react-three/drei";
+import { Line, Plane } from "@react-three/drei";
+
+function Axis(props: {}) {
+    const lineProps = {
+        color: "black",                  // Default
+        lineWidth: 1,                 // In pixels (default)
+        dashed: false                // Default
+    };
+    const c = 1;
+    return <>
+        <Line
+            points={[[0, 0, 0], [c, 0, 0]]}       // Array of points
+            color="blue"
+            {...lineProps}
+        />
+        <Line
+            points={[[0, 0, 0], [0, c, 0]]}       // Array of points
+            color="red"
+            {...lineProps}
+        />
+        <Line
+            points={[[0, 0, 0], [0, 0, c]]}       // Array of points
+            color="black"
+            {...lineProps}
+        />
+    </>
+}
 
 function Cube(props: { color: string, register: JDRegister }) {
     const { color, register } = props;
@@ -43,6 +69,7 @@ function CanvasWidget(props: { color: string, register: JDRegister }) {
         <hemisphereLight intensity={0.35} />
         <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
         <Plane receiveShadow={true} castShadow={true} args={[5, 5]} position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} />
+        <Axis />
         <Cube {...props} />
     </Canvas>
 }
