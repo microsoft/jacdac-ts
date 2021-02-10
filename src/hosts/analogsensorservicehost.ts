@@ -1,4 +1,4 @@
-import { ServiceHostOptions, SystemReg, READING_SENT } from "../jacdac";
+import { SystemReg, READING_SENT } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
 import { LevelDetector } from "./leveldetector";
 import SensorServiceHost, { SensorServiceOptions } from "./sensorservicehost";
@@ -18,7 +18,7 @@ export default class AnalogSensorServiceHost extends SensorServiceHost<[number]>
 
     constructor(serviceClass: number, options?: AnalogSensorServiceHostOptions) {
         super(serviceClass, options)
-        const { minReading, maxReading, readingError,
+        const { minReading, maxReading,
             lowThreshold, highThreshold, readingResolution } = options || {};
         if (minReading !== undefined)
             this.addRegister<[number]>(SystemReg.MinReading, [minReading]);
