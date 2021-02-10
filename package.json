@@ -160,6 +160,7 @@
   "dependencies": {
     "@types/node": "^14.14.25",
     "@types/w3c-web-usb": "^1.0.4",
-    "fs-extra": "^9.1.0"
+    "fs-extra": "^9.1.0",
+    "regenerator-runtime": "^0.13.7"
   }
 }
