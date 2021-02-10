@@ -404,14 +404,14 @@ export function throttle(handler: () => void, delay: number): () => void {
 }
 
 export interface Signal {
-    signalled: Promise<void>
+    signalled: Promise<boolean>
     signal: () => void
 }
 export function signal(): Signal {
-    let resolve: () => void
+    let resolve: (v: any) => void
     return {
         signalled: new Promise(r => { resolve = r }),
-        signal: () => resolve()
+        signal: () => resolve(true)
     }
 }
 

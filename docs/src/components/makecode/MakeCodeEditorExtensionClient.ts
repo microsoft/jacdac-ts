@@ -237,11 +237,11 @@ export default function useMakeCodeEditorExtensionClient() {
         c.on([HIDDEN, SHOWN], () => bus.clear());
         c.on(MESSAGE_PACKET, (msg) => {
             if (msg.channel === "jacdac" && msg.source !== SENDER) {
-                const pkt = Packet.fromBinary(msg.data, bus.timestamp);
-                if (!pkt)
-                    return;
-                pkt.sender = msg.source || "makecode";
-                bus.processPacket(pkt);
+                const pkts = Packet.fromFrame(msg.data, bus.timestamp);
+                for (const pkt of pkts) {
+                    pkt.sender = msg.source || "makecode";
+                    bus.processPacket(pkt);
+                }
             }
         })
         setClient(c);

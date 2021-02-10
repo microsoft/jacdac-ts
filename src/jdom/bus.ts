@@ -1,6 +1,6 @@
 import Packet from "./packet";
 import { JDDevice } from "./device";
-import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex, crc } from "./utils";
+import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -751,17 +751,6 @@ export class JDBus extends JDNode {
         this.emit(CHANGE)
     }
 
-    checkCRC(pkt: Packet): boolean {
-        if (pkt.crc !== pkt.computeCRC()) {
-            console.error(`invalid packet crc`, { crc: pkt.crc, sender: pkt.sender, buffer: toHex(pkt.toBuffer()), pkt })
-            console.trace();
-            this.emit(PACKET_INVALID_CRC, pkt);
-            this.emit(ERROR, "invalid packet crc");
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Ingests and process a packet received from the bus.
      * @param pkt a jacdac packet
@@ -784,7 +773,6 @@ export class JDBus extends JDNode {
                     ack.serviceIndex = JD_SERVICE_INDEX_CRC_ACK
                     ack.deviceIdentifier = this.selfDeviceId
                     ack.sendReportAsync(this.selfDevice)
-                    console.log('send self ack')
                 }
             }
             pkt.device.processPacket(pkt);
