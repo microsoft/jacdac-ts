@@ -88,23 +88,21 @@ export default class IFrameBridgeClient extends JDIFrameClient {
 
 
     private handleMessageJacdac(msg: PacketMessage) {
-        const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
-        if (!pkt)
+        if (msg.sender === this.bridgeId)  // returning packet
             return;
-        if (pkt.sender === this.bridgeId)  // returning packet
+        const pkts = Packet.fromFrame(msg.data, this.bus.timestamp);
+        if (!pkts.length)
             return;
-        this.packetProcessed++;
-        // we're adding a little trace to avoid resending our own packets
-        pkt.sender = this.bridgeId;
+        this.packetProcessed += pkts.length;
 
-        // check CRC, and bail out if needed.
-        if (!this.bus.checkCRC(pkt))
-            return;
-
-        // send to native bus
-        this.bus.sendPacketAsync(pkt);
-        // send to javascript bus
-        this.bus.processPacket(pkt);
+        for (const pkt of pkts) {
+            // we're adding a little trace to avoid resending our own packets
+            pkt.sender = this.bridgeId;
+            // send to native bus
+            this.bus.sendPacketAsync(pkt);
+            // send to javascript bus
+            this.bus.processPacket(pkt);
+        }
     }
 
     private postPacket(pkt: Packet) {

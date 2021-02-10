@@ -1,6 +1,6 @@
 import Packet from "./packet";
 import { JDDevice } from "./device";
-import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex, crc } from "./utils";
+import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -749,17 +749,6 @@ export class JDBus extends JDNode {
         this.emit(DEVICE_DISCONNECT, dev);
         this.emit(DEVICE_CHANGE, dev)
         this.emit(CHANGE)
-    }
-
-    checkCRC(pkt: Packet): boolean {
-        if (pkt.crc !== pkt.computeCRC()) {
-            console.error(`invalid packet crc`, { crc: pkt.crc, sender: pkt.sender, buffer: toHex(pkt.toBuffer()), pkt })
-            console.trace();
-            this.emit(PACKET_INVALID_CRC, pkt);
-            this.emit(ERROR, "invalid packet crc");
-            return false;
-        }
-        return true;
     }
 
     /**
