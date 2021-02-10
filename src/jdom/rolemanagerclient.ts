@@ -1,11 +1,10 @@
 import { InPipeReader } from "./pipes";
 import { JDService } from "./service";
 import { JDServiceClient } from "./serviceclient";
-import { RoleManagerCmd, CHANGE, ERROR, EVENT, DEVICE_CHANGE } from "./constants";
+import { RoleManagerCmd, CHANGE, ERROR, EVENT, DEVICE_CHANGE, RoleManagerEvent } from "./constants";
 import { toHex, strcmp, fromHex, debounceAsync, groupBy, arrayConcatMany } from "./utils";
 import Packet from "./packet";
 import { jdpack, jdunpack } from "./pack";
-import { RoleManagerEvent } from "../../jacdac-spec/dist/specconstants";
 import { addHost, hostDefinitionFromServiceClass } from "../hosts/hosts";
 
 const SCAN_DEBOUNCE = 2000

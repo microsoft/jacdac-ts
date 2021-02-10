@@ -1,5 +1,6 @@
-import { SRV_PROTO_TEST, CHANGE, ProtoTestReg, ProtoTestCmd, ProtoTestEvent, Packet } from "../jacdac";
+import { SRV_PROTO_TEST, CHANGE, ProtoTestReg, ProtoTestCmd, ProtoTestEvent } from "../jdom/constants";
 import { jdpack, jdunpack } from "./pack";
+import Packet from "./packet";
 import { OutPipe } from "./pipes";
 import RegisterHost from "./registerhost";
 import ServiceHost from "./servicehost";

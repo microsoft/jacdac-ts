@@ -9,11 +9,12 @@ const pkg = require('./package.json')
 
 export default [
   { libraryName: 'jacdac-jdom', dir: 'jdom' },
+  { libraryName: 'jacdac-hosts', dir: 'hosts' },
   { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-jdom", "webusb"] },
   { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-jdom"] },
   { libraryName: 'jacdac-azure-iot', dir: 'azure-iot', external: ["jacdac-azure-iot"] },
-  { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "webusb", "jacdac-node", "jacdac-embed", "jacdac-azure-iot"] },
-  { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-node", "jacdac-azure-iot", "webusb"], watch: "src/**" },
+  { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "webusb", "jacdac-hosts", "jacdac-node", "jacdac-embed", "jacdac-azure-iot"] },
+  { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-hosts", "jacdac-node", "jacdac-azure-iot", "webusb"], watch: "src/**" },
 ].map(({ libraryName, dir, external, watch }) => {
   return {
     input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
