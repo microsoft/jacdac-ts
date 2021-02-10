@@ -70,7 +70,7 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
     }
     const valueDisplay = (v: number) => roundWithPrecision(v, 1)
 
-    if (!forces)
+    if (!forces?.length)
         return null;
     const [x, y] = forces;
     const step = 0.1

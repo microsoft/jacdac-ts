@@ -70,7 +70,7 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
     }
     const valueDisplay = (v: number) => `${roundWithPrecision(v, 1)}°/s`
 
-    if (!rates)
+    if (!rates?.length)
         return null;
     const [x, y, z] = rates;
     const step = 1
