@@ -9,7 +9,7 @@ export default class CompassServiceHost extends AnalogSensorServiceHost {
             readingValues: [0],
             minReading: 0,
             maxReading: 360,
-            readingError: 1
+            readingError: [1]
         })
 
         this.enabled = this.addRegister(CompassReg.Enabled, [false]);

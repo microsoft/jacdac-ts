@@ -5,11 +5,13 @@ import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
 
 export interface SensorServiceOptions<TReading extends any[]> extends ServiceHostOptions {
     readingValues?: TReading,
+    readingError?: TReading,
     streamingInterval?: number,
 };
 
 export default class SensorServiceHost<TReading extends any[]> extends ServiceHost {
     readonly reading: RegisterHost<TReading>;
+    readonly readingError: RegisterHost<TReading>;
     readonly streamingSamples: RegisterHost<[number]>;
     readonly streamingInterval: RegisterHost<[number]>;
 
@@ -20,13 +22,17 @@ export default class SensorServiceHost<TReading extends any[]> extends ServiceHo
         options?: SensorServiceOptions<TReading>
     ) {
         super(serviceClass, options);
-        const { readingValues, streamingInterval } = options || {};
+        const { readingValues, streamingInterval, readingError } = options || {};
 
         this.reading = this.addRegister<TReading>(SystemReg.Reading, readingValues);
         this.streamingSamples = this.addRegister<[number]>(SensorReg.StreamingSamples);
         this.streamingInterval = this.addRegister<[number]>(SensorReg.StreamingInterval, [streamingInterval || 50]);
         if (streamingInterval !== undefined)
             this.addRegister<[number]>(SensorReg.StreamingPreferredInterval, [streamingInterval]);
+        if (readingError !== undefined) {
+            this.readingError = this.addRegister<TReading>(SystemReg.ReadingError, readingError);
+            this.reading.errorRegister = this.readingError;
+        }
 
         this.on(REFRESH, this.refreshRegisters.bind(this));
     }

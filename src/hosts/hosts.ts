@@ -18,7 +18,7 @@ import {
     SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -56,7 +56,7 @@ const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     streamingInterval: 1000,
     minReading: -5,
     maxReading: 50,
-    readingError: 0.25,
+    readingError: [0.25],
     variant: ThermometerVariant.Indoor
 }
 const outdoorThermometerOptions: AnalogSensorServiceHostOptions = {
@@ -64,7 +64,7 @@ const outdoorThermometerOptions: AnalogSensorServiceHostOptions = {
     streamingInterval: 1000,
     minReading: -40,
     maxReading: 120,
-    readingError: 0.25,
+    readingError: [0.25],
     variant: ThermometerVariant.Outdoor
 }
 const medicalThermometerOptions: AnalogSensorServiceHostOptions = {
@@ -72,7 +72,7 @@ const medicalThermometerOptions: AnalogSensorServiceHostOptions = {
     streamingInterval: 1000,
     minReading: 35,
     maxReading: 42,
-    readingError: 0.5,
+    readingError: [0.5],
     variant: ThermometerVariant.Body
 }
 const barometerOptions: AnalogSensorServiceHostOptions = {
@@ -109,11 +109,11 @@ const microServo360Options = {
 }
 const windDirectionOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
-    readingError: 5
+    readingError: [5]
 }
 const windSpeedOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
-    readingError: 0.5,
+    readingError: [0.5],
     registerValues: [
         { code: WindSpeedReg.MaxWindSpeed, values: [55] }
     ]
@@ -291,6 +291,13 @@ const _hosts: {
                 new HumidityServiceHost(),
                 new AnalogSensorServiceHost(SRV_THERMOMETER, indoorThermometerOptions)
             ]
+        },
+        {
+            name: "gyroscope",
+            serviceClasses: [SRV_GYROSCOPE],
+            services: () => [new SensorServiceHost<[number, number, number]>(SRV_GYROSCOPE, {
+                readingValues: [0, 0, 0],
+            })]
         },
         {
             name: "heart rate",
@@ -698,7 +705,7 @@ const _hosts: {
                 streamingInterval: 1000,
                 minReading: 0,
                 maxReading: 1100,
-                readingError: 2.2,
+                readingError: [2.2],
                 variant: ThermocoupleVariant.TypeB
             })]
         },

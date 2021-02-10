@@ -53,7 +53,7 @@ export default class RegisterHost<TValues extends any[]> extends JDEventSource {
     data: Uint8Array;
     readonly specification: jdspec.PacketInfo;
     readOnly: boolean;
-    errorRegister: RegisterHost<[number]>;
+    errorRegister: RegisterHost<TValues>;
     skipBoundaryCheck = false;
     skipErrorInjection = false;
 
