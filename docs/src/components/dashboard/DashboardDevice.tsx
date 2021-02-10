@@ -61,11 +61,7 @@ export default function DashboardDevice(props: {
                         </IconButtonWithTooltip>}
                     </DeviceActions>
                 }
-                title={
-                    <Collapse in={expanded}>
-                        <DeviceName expanded={expanded} showShortId={false} device={device} />
-                    </Collapse>
-                }
+                title={<DeviceName showShortId={false} device={device} />}
                 subheader={<>
                     {!mobile && specification && <Typography variant="caption" gutterBottom>
                         {specification.name}

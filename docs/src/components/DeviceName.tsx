@@ -14,7 +14,7 @@ export default function DeviceName(props: {
     const { shortId } = device
 
     return <span>
-        {name || shortId}
+        {name || (showShortId && shortId)}
         {showShortId && name && name !== shortId &&
             <Typography component="span" variant="body2"> {shortId}</Typography>}
         {serviceIndex !== undefined && `[${serviceIndex}]`}
