@@ -10,6 +10,7 @@ import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts"
 import KindIcon from "./KindIcon"
 import ChipList from "./ui/ChipList"
 import JacdacIcon from "./icons/JacdacIcon";
+import Markdown from "./ui/Markdown";
 
 function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
     const { service } = props;
@@ -23,7 +24,7 @@ function ServiceSpecificatinListItem(props: { service: jdspec.ServiceSpec }) {
             primary={name}
             secondary={(
                 <ChipList>
-                    <span>{notes["short"]}</span>
+                    <Markdown source={notes["short"]} />
                     {tags?.map(tag => <Chip key={tag} size="small" label={tag} />)}
                     {simulator && <Chip icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} size="small" label="simulator" />}
                     {device && <Chip icon={<JacdacIcon />} size="small" label="devices" />}
