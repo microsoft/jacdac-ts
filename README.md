@@ -34,6 +34,8 @@ git pull
 * install dependencies
 ```
 npm install
+cd docs
+npm install
 ```
 
 ### VS Code
