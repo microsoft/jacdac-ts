@@ -53,7 +53,7 @@ export class RequestedRole {
 
 export class RoleManagerClient extends JDServiceClient {
     private scanning = false;
-    public requestedRoles: RequestedRole[] = []
+    public requestedRoles: RequestedRole[] = undefined;
 
     constructor(service: JDService) {
         super(service)
@@ -88,7 +88,7 @@ export class RoleManagerClient extends JDServiceClient {
                 true)
 
             const localDevs = this.bus.devices();
-            const ordevs = this.requestedRoles.slice(0);
+            const ordevs = this.requestedRoles?.slice(0) || [];
             const rdevs: RequestedRole[] = []
 
             for (const buf of await inp.readData()) {
@@ -128,7 +128,7 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private recomputeCandidates() {
-        this.requestedRoles.forEach(rdev => rdev.computeCandidates());
+        this.requestedRoles?.forEach(rdev => rdev.computeCandidates());
     }
 
     async clearRoles() {
@@ -143,10 +143,12 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     toString() {
-        return this.requestedRoles.map(rdp => rdp.toString()).join('\n')
+        return (this.requestedRoles || []).map(rdp => rdp.toString()).join('\n')
     }
 
     startSimulators() {
+        if (!this.requestedRoles) return;
+
         // collect roles that need to be bound
         const todos = groupBy(this.requestedRoles.filter(role => !role.bound)
             .map(role => ({

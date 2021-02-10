@@ -88,7 +88,7 @@ export default function RoleManagerService(props: {
     return <Card>
         <DeviceCardHeader device={service.device} showMedia={true} />
         <CardContent>
-            {!requestedRoles && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
+            {!requestedRoles?.length && <CircularProgress disableShrink variant="indeterminate" size="1rem" />}
             <Grid container spacing={1}>
                 {requestedRoles?.map(rdev => <RequestedRoleView
                     key={rdev.name} requestedRole={rdev} client={client} />)}
