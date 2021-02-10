@@ -309,7 +309,10 @@ export class Packet {
 
     sendCoreAsync(bus: JDBus) {
         this._header[2] = this.size + 4
-        write16(this._header, 0, this.computeCRC())
+        // Here we're sending this packet as the only one in a frame, therefore we need to compute CRC
+        // There's no crc computation function on Packet, since it should be typically only applied to full frames.
+        // The crc field reads the CRC from the frame (which is useful eg for acks).
+        write16(this._header, 0, crc(this.toBuffer().slice(2)))
         return bus.sendPacketAsync(this)
     }
 
