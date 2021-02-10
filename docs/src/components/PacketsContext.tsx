@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import Packet from "../../../src/jdom/packet";
-import JacdacContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import { CHANGE, PROGRESS } from "../../../src/jdom/constants";
 import Trace from "../../../src/jdom/trace";
 import TracePlayer from "../../../src/jdom/traceplayer";
@@ -58,7 +58,7 @@ PacketsContext.displayName = "packets";
 export default PacketsContext;
 
 export const PacketsProvider = ({ children }) => {
-    const { bus, disconnectAsync } = useContext<JDContextProps>(JacdacContext)
+    const { bus, disconnectAsync } = useContext<JacdacContextProps>(JacdacContext)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")
 
     const recorder = useRef<TraceRecorder>(undefined);

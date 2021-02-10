@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import JacdacContext from "../../../src/react/Context";
+import JacdacContext from "./Context";
 import { BusState, JDBus } from "../../../src/jdom/bus";
 import { createUSBBus } from "../../../src/jdom/usb";
 import { CONNECTION_STATE } from "../../../src/jdom/constants";

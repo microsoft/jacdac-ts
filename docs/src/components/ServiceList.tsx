@@ -3,7 +3,7 @@ import React, { useContext } from 'react';
 import { Grid, makeStyles, Theme, createStyles, CardContent, Card, CardActions, Switch, Box } from '@material-ui/core';
 import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
-import JacdacContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useGridBreakpoints from './useGridBreakpoints';
 import DeviceCardHeader from './DeviceCardHeader';
 import { JDService } from '../../../src/jdom/service';
@@ -47,7 +47,7 @@ export default function ServiceList(props: {
     alertMissing?: string
 }) {
     const { serviceClass, selected, toggleSelected, content, actions, alertMissing } = props
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const services = useChange(bus, n => n.services({ serviceClass }))
     const gridBreakpoints = useGridBreakpoints(services?.length)
 

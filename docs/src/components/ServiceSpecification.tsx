@@ -10,13 +10,13 @@ import { Box, Grid } from "@material-ui/core";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import DeviceSpecificationList from "./DeviceSpecificationList"
 import useDeviceHostFromServiceClass from "./hooks/useDeviceHostFromServiceClass";
-import JacdacContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useChange from "../jacdac/useChange";
 import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
 
 function DashboardServiceDevices(props: { serviceClass: number }) {
     const { serviceClass } = props;
-    const { bus } = useContext<JDContextProps>(JacdacContext);
+    const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const devices = useChange(bus, b => b.devices({ serviceClass }));
     return <Grid container spacing={2}>
         {devices.map(device => <DashbardDeviceItem

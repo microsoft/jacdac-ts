@@ -3,7 +3,7 @@ import { Grid, makeStyles, Theme, createStyles } from '@material-ui/core';
 import DeviceCard from './DeviceCard';
 import ServiceCard from './ServiceCard';
 import useChange from '../jacdac/useChange';
-import JacdacContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useGridBreakpoints from './useGridBreakpoints';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -28,7 +28,7 @@ export default function DeviceList(props: {
         showServiceName, showMemberName, showFirmware, showTemperature,
         showServiceButtons,
         eventIdentifiers, commandIdentifier } = props
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const devices = useChange(bus, n => n.devices({ serviceClass }))
     const services = useChange(bus, n => n.services({ serviceClass }))
     const classes = useStyles()

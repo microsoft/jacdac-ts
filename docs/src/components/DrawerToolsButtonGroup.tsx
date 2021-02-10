@@ -9,12 +9,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
 import ConnectButton from "../jacdac/ConnectButton";
-import JacdacContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import { DEVICE_CHANGE } from "../../../src/jdom/constants";
 import WebUSBSupported from "./WebUSBSupported";
 
 export default function DrawerToolsButtonGroup(props: { className?: string, showToc?: boolean, showCurrent?: boolean, showConnect?: boolean }) {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const { className, showToc, showCurrent, showConnect } = props;
     const { drawerType, setDrawerType } = useContext(AppContext)
 

@@ -7,7 +7,7 @@ import { splitFilter, strcmp } from "../../../../src/jdom/utils";
 import Alert from "../ui/Alert";
 import useDevices from "../hooks/useDevices";
 import { MOBILE_BREAKPOINT } from "../layout";
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import ConnectButton from "../../jacdac/ConnectButton";
 import AppContext from "../AppContext";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
@@ -33,7 +33,7 @@ export interface DashboardDeviceProps {
 
 export default function Dashboard(props: DashboardDeviceProps) {
     const { ...other } = props;
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const { toggleShowDeviceHostsDialog } = useContext(AppContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
         .sort(deviceSort);

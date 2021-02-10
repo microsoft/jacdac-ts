@@ -1,13 +1,13 @@
 import React, { createContext } from "react";
-import { JDBus, BusState } from "../jdom/bus";
-export interface JDContextProps {
+import { JDBus, BusState } from "../../../src/jdom/bus";
+export interface JacdacContextProps {
     bus: JDBus,
     connectionState: BusState,
     connectAsync: () => Promise<void>,
     disconnectAsync: () => Promise<void>
 }
 
-const JacdacContext = createContext<JDContextProps>({
+const JacdacContext = createContext<JacdacContextProps>({
     bus: undefined,
     connectionState: BusState.Disconnected,
     connectAsync: undefined,

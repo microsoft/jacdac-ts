@@ -2,7 +2,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, Paper
 import React, { useContext, useState } from "react"
 import { NEW_LISTENER, REMOVE_LISTENER } from "../../../src/jdom/constants";
 import { JDNode, visitNodes } from "../../../src/jdom/node";
-import JacdacContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import PaperBox from "./ui/PaperBox";
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -46,7 +46,7 @@ function NodeCallRow(props: { node: JDNode }) {
 }
 
 function NodeCalls() {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const nodes: JDNode[] = [];
     visitNodes(bus, n => nodes.push(n))
 
@@ -106,7 +106,7 @@ function NodeListenerRow(props: { node: JDNode }) {
 }
 
 function NodeListeners() {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const nodes: JDNode[] = [];
     visitNodes(bus, n => nodes.push(n))
 

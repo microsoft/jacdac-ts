@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import { Grid, Button, TextField, InputAdornment, createStyles, Switch, Card, CardActions } from '@material-ui/core';
-import JacdacContext, { JDContextProps } from '../../../../src/react/Context';
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
@@ -77,7 +77,7 @@ function createDataSet(bus: JDBus,
 
 export default function Collector(props: {}) {
     const { } = props;
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const classes = useStyles();
     const { fileStorage } = useContext(ServiceManagerContext)
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])

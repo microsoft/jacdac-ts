@@ -10,7 +10,7 @@ import SelectWithLabel from "./ui/SelectWithLabel"
 import DeviceName from "./DeviceName"
 import { serviceName } from "../../../src/jdom/pretty"
 import { addHost, hostDefinitionFromServiceClass } from "../../../src/hosts/hosts"
-import JacdacContext, { JDContextProps } from "../../../src/react/Context"
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 
 const START_SIMULATOR = "__start_simulator"
 const NO_CANDIDATES = "__no_candidates"
@@ -20,7 +20,7 @@ function RequestedRoleView(props: {
     client: RoleManagerClient
 }) {
     const { requestedRole, client } = props
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const [working, setWorking] = useState(false)
     const { name: role, serviceClass } = requestedRole;
 
@@ -77,7 +77,7 @@ export default function RoleManagerService(props: {
     service: JDService,
     clearRoles?: boolean
 }) {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const { service, clearRoles } = props
     const client = useServiceClient(service, srv => new RoleManagerClient(srv));
     const requestedRoles = useChange(client, c => c?.requestedRoles);

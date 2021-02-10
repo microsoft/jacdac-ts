@@ -5,7 +5,7 @@ import { IThemeMessage } from "../../../src/embed/protocol";
 import { ModelStore, HostedModelStore } from "../../../src/embed/modelstore";
 import { IFrameTransport } from "../../../src/embed/transport";
 import DarkModeContext from "./ui/DarkModeContext";
-import JacdacContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import { JDDevice } from "../../../src/jdom/device";
 import { IDeviceNameSettings, JDBus } from "../../../src/jdom/bus"
 import { inIFrame } from "../../../src/jdom/iframeclient";
@@ -66,7 +66,7 @@ ServiceManagerContext.displayName = "Services";
 
 export const ServiceManagerProvider = ({ children }) => {
     const { toggleDarkMode } = useContext(DarkModeContext)
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const props = useRef<ServiceManagerContextProps>(createProps())
 
     const handleMessage = (ev: MessageEvent<any>) => {

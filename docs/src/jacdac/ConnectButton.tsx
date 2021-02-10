@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Button } from "gatsby-theme-material-ui";
-import JacdacContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import { BusState } from "../../../src/jdom/bus";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import UsbIcon from '@material-ui/icons/Usb';
@@ -16,7 +16,7 @@ export default function ConnectButton(props: {
     showAlways?: boolean
 }) {
     const { full, className, transparent, showAlways } = props
-    const { connectionState, connectAsync, disconnectAsync } = useContext<JDContextProps>(JacdacContext)
+    const { connectionState, connectAsync, disconnectAsync } = useContext<JacdacContextProps>(JacdacContext)
     const theme = useTheme()
     const showDisconnect = connectionState == BusState.Connected || connectionState == BusState.Disconnecting;
     const inProgress = connectionState == BusState.Connecting || connectionState == BusState.Disconnecting

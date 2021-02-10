@@ -12,7 +12,7 @@ export default [
   { libraryName: 'jacdac-node', dir: 'node', external: ["jacdac-jdom", "webusb"] },
   { libraryName: 'jacdac-embed', dir: 'embed', external: ["jacdac-jdom"] },
   { libraryName: 'jacdac-azure-iot', dir: 'azure-iot', external: ["jacdac-azure-iot"] },
-  { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "react", "webusb", "jacdac-node", "jacdac-embed", "jacdac-azure-iot"] },
+  { libraryName: 'jacdac', dir: '', external: ["jacdac-jdom", "webusb", "jacdac-node", "jacdac-embed", "jacdac-azure-iot"] },
   { libraryName: 'jacdac-cli', dir: 'cli', external: ["jacdac-jdom", "jacdac-node", "jacdac-azure-iot", "webusb"], watch: "src/**" },
 ].map(({ libraryName, dir, external, watch }) => {
   return {

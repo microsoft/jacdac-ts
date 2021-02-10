@@ -1,9 +1,9 @@
 import { useContext, useEffect } from "react";
 import { addHost, hostDefinitionFromServiceClass } from "../../../../src/hosts/hosts";
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 
 export default function useDeviceHostFromServiceClass(serviceClass: number): void {
-    const { bus } = useContext<JDContextProps>(JacdacContext);
+    const { bus } = useContext<JacdacContextProps>(JacdacContext);
 
     // run once
     useEffect(() => {

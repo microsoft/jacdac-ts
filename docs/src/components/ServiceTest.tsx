@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import Markdown from "./ui/Markdown"
 import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
-import JacdacContext, { JDContextProps } from '../../../src/react/Context';
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useChange from '../jacdac/useChange';
 import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
@@ -67,7 +67,7 @@ function resolveTestsForService(serviceClass: number): ServiceTest[] {
 export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) {
     const { serviceSpec } = props
     const { classIdentifier: serviceClass } = serviceSpec
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const classes = useStyles();
     const [selectedService, setSelectedService] = useState<JDService>(undefined);
     const [activeStep, setActiveStep] = useState(0);

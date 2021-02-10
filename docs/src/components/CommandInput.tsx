@@ -7,7 +7,7 @@ import { hasPipeReport, isReportOf } from "../../../src/jdom/spec"
 import { packArguments } from "../../../src/jdom/command"
 import { DecodedPacket, printPacket, serviceName } from "../../../src/jdom/pretty"
 import Packet from "../../../src/jdom/packet";
-import JacdacContext, { JDContextProps } from "../../../src/react/Context"
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import CmdButton from "./CmdButton";
 
 export default function CommandInput(props: {
@@ -18,7 +18,7 @@ export default function CommandInput(props: {
     setReports?: (reports: DecodedPacket[]) => void
 }) {
     const { service, command, showDeviceName, args, setReports } = props;
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
 
     const { specification } = service;
     const requiredArgLength = command.fields.length - (hasPipeReport(command) ? 1 : 0);

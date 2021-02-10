@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import JacdacIcon from "../icons/JacdacIcon";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useDeviceCount from "../hooks/useDeviceCount"
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import { DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../../../../src/jdom/constants";
 import { JDDevice } from "../../../../src/jdom/device";
 

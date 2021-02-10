@@ -2,11 +2,11 @@ import { Paper } from "@material-ui/core";
 import React, { useContext } from "react"
 import { serviceName } from "../../../src/jdom/pretty";
 import { SensorAggregatorConfig, SensorAggregatorInputConfig } from "../../../src/jdom/sensoraggregatorclient"
-import JacdacContext, { JDContextProps } from "../../../src/react/Context"
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import DeviceName from "./DeviceName";
 
 function SensorAggregatorInputConfigView(props: { input: SensorAggregatorInputConfig }) {
-    const { bus } = useContext<JDContextProps>(JacdacContext);
+    const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const { input } = props;
     const { serviceClass, deviceId, serviceIndex } = input;
 

@@ -1,4 +1,4 @@
-import JacdacContext, { JDContextProps } from "../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 
 import React, { useContext } from "react";
 import { List } from "@material-ui/core";

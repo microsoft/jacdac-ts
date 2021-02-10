@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react"
 import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Collapse, Grid, Switch, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 import useDbValue from "../useDbValue";
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import useChange from "../../jacdac/useChange";
 import useGridBreakpoints from "../useGridBreakpoints";
 import { JDRegister } from "../../../../src/jdom/register";
@@ -728,7 +728,7 @@ function Acquisition(props: {
 
 export default function EdgeImpulse(props: {}) {
     const { value: apiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
-    const { bus } = useContext<JDContextProps>(JacdacContext);
+    const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const [model, setModel] = useState<Uint8Array>(undefined)
     const [registerIdsChecked, setRegisterIdsChecked] = useState<string[]>([])
     const [aggregatorId, setAggregatorId] = useState<string>("")

@@ -7,14 +7,14 @@ import useWidgetTheme from "../widgets/useWidgetTheme";
 import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useAnimationFrame from "../hooks/useAnimationFrame";
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import { Grid, Slider } from "@material-ui/core";
 import LEDServiceHost, { LedAnimation, LedAnimationStepsType } from "../../../../src/hosts/ledservicehost";
 import { LedReg } from "../../../../src/jdom/constants";
 import { hsvToCss } from "../../../../src/jacdac";
 
 export default function DashboardLED(props: DashboardServiceProps) {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const { service, services, variant } = props;
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<LEDServiceHost>(service);

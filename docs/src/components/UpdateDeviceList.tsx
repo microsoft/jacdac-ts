@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from "react"
 import { DEVICE_CHANGE, FIRMWARE_BLOBS_CHANGE, SRV_BOOTLOADER } from "../../../src/jdom/constants"
 import { JDDevice } from "../../../src/jdom/device"
 import { scanFirmwares, flashFirmwareBlob, updateApplicable } from "../../../src/jdom/flashing"
-import JacdacContext, { JDContextProps } from "../../../src/react/Context"
+import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import CircularProgressWithLabel from "./ui/CircularProgressWithLabel"
 import DeviceCard from "./DeviceCard"
 import useGridBreakpoints from "./useGridBreakpoints"
@@ -18,7 +18,7 @@ import ConnectAlert from "./alert/ConnectAlert"
 function UpdateDeviceCard(props: {
     device: JDDevice
 }) {
-    const { bus } = useContext<JDContextProps>(JacdacContext)
+    const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const { device } = props
     const { setError } = useContext(AppContext)
     const [progress, setProgress] = useState(0)
@@ -57,7 +57,7 @@ function UpdateDeviceCard(props: {
 }
 
 export default function UpdateDeviceList() {
-    const { bus, connectionState } = useContext<JDContextProps>(JacdacContext)
+    const { bus, connectionState } = useContext<JacdacContextProps>(JacdacContext)
     const [scanning, setScanning] = useState(false)
     const gridBreakpoints = useGridBreakpoints()
     const safeBoot = useChange(bus, b => b.safeBoot);

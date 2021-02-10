@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context";
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import useChange from "../../jacdac/useChange";
 
 /**
@@ -9,7 +9,7 @@ import useChange from "../../jacdac/useChange";
  * @param factory 
  */
 export default function useDeviceHost(device: JDDevice) {
-    const { bus } = useContext<JDContextProps>(JacdacContext);
+    const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const host = useChange(bus, b => device && b.deviceHost(device.deviceId));
     return host;
 }

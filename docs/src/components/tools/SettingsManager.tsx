@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { Grid } from "@material-ui/core"
-import JacdacContext, { JDContextProps } from "../../../../src/react/Context"
+import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import { SRV_SETTINGS } from "../../../../src/jdom/constants"
 import useChange from "../../jacdac/useChange"
 import { BusState } from "../../../../src/jdom/bus"
@@ -9,7 +9,7 @@ import Alert from "../ui/Alert"
 import SettingsCard from "../SettingsCard"
 
 export default function SettingsManager() {
-    const { bus, connectionState } = useContext<JDContextProps>(JacdacContext)
+    const { bus, connectionState } = useContext<JacdacContextProps>(JacdacContext)
 
     const services = useChange(bus, b => b.services({ serviceClass: SRV_SETTINGS }));
 

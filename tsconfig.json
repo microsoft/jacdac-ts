@@ -2,10 +2,14 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "es2017",
-    "module":"es2015",
-    "lib": ["es2015", "es2016", "es2017", "dom"],
+    "module": "es2015",
+    "lib": [
+      "es2015",
+      "es2016",
+      "es2017",
+      "dom"
+    ],
     "strict": false,
-    "jsx": "react",
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -26,5 +30,5 @@
   "include": [
     "src",
     "jacdac-spec/dist/specconstants.ts"
-, "docs/src/components/jacdac/Context.tsx"  ]
+  ]
 }
