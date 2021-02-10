@@ -55,7 +55,7 @@ function RequestedRoleView(props: {
     const error = !value && "select a device"
     const hostDefinition = hostDefinitionFromServiceClass(serviceClass)
 
-    return <Grid item>
+    return <Grid item xs={12} sm={6} md={4} xl={3}>
         <SelectWithLabel
             fullWidth={true}
             disabled={disabled}
