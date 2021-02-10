@@ -2,17 +2,17 @@
 path: /
 ---
 
-# Jacdac - Plug-n-Play for microcontrollers
+# Jacdac: plug-and-play for microcontrollers
 
-**Jacdac** is a plug-and-play hardware/software stack 
+**Jacdac** is a bus-based plug-and-play hardware/software stack 
 for **microcontrollers** and their peripherals (sensors/actuators), 
 with applications to rapid prototyping, making, and physical computing. 
+Jacdac includes:
 
-* novel 3-wire cable and connector
-* bus topology
+* a novel 3-wire cable and PCB edge connector
 * device discovery and service advertisement
 * standardized service abstraction
-* full stack from 8bit MCU to web development
+* full stack from 8-bit MCU to web development
 
 ## Services specifications
 
@@ -33,7 +33,6 @@ firmware onto devices.
 * Browse the [device catalog](/devices)
 * Learn more about [device definitions](/reference/specification/device-definition)
 
-
 ## Protocol overview
 
 Jacdac devices communicate using *packets* over a *bus*, where each *device* can advertise itself 
@@ -45,6 +44,13 @@ providing connectivity to web-based tooling and services running in the web brow
 (see the connect icon at the top of this page).
 
 * Learn more about the [protocol specification](/reference/protocol)
+
+## Web-friendly tooling
+
+We've implemented Jacdac over **WebUSB**, which allows the Jacdac bus to reach into
+the web browser sandbox. This web page features a [dashboard](/dashboard) for displaying
+both physical and virtual Jacdac devices, as well as a set of [tools](/tools) for
+working with Jacdac devices. 
 
 ## Community
 
