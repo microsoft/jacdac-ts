@@ -77,6 +77,7 @@ const serviceViews: {
     },
     [SRV_ACCELEROMETER]: {
         component: DashboardAccelerometer,
+        weight: () => 2,
     },
     [SRV_ROTARY_ENCODER]: {
         component: DashboardRotaryEncoder,

@@ -1,102 +1,61 @@
-
-import { createStyles, Grid, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
 import { AccelerometerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import clsx from 'clsx';
-import RegisterInput from "../RegisterInput";
-import { roundWithPrecision } from "../../../../src/jdom/utils";
+import { Canvas, useFrame } from "react-three-fiber"
+import { Physics, usePlane, useBox } from '@react-three/cannon'
+import { OrbitControls, Plane, RoundedBox, Sky, ContactShadows } from "@react-three/drei"
+import useWidgetTheme from "../widgets/useWidgetTheme";
+import useServiceHost from "../hooks/useServiceHost";
+import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 
-const WRAP = 2
-const MARGIN = 0.25
-const CUBE = WRAP - MARGIN * 2;
-const SIDE = CUBE / 2;
-const UNIT = "vh";
-const useStyles = makeStyles((theme) => {
-    return createStyles({
-        wrap: {
-            width: theme.spacing(WRAP) + UNIT,
-            height: theme.spacing(WRAP) + UNIT,
-        },
-        cube: {
-            width: theme.spacing(CUBE) + UNIT,
-            height: theme.spacing(CUBE) + UNIT,
-            top: theme.spacing(MARGIN) + UNIT,
-            transformStyle: "preserve-3d",
-            transform: "rotateX(0deg) rotateY(0deg) rotateZ(0deg)",
-            margin: "auto",
-            position: "relative",
-            transition: "all 0.05s ease-in-out"
-        },
-        face: {
-            position: "absolute",
-            transition: "all 0.05s ease-in-out",
-            width: theme.spacing(CUBE) + UNIT,
-            height: theme.spacing(CUBE) + UNIT,
-            float: "left",
-            overflow: "hidden",
-            opacity: "1"
-        },
-        side1: {
-            transform: `rotatex(90deg) translateX(0px) translateY(0px) translateZ(${theme.spacing(SIDE)}${UNIT})`,
-            backgroundColor: "#FFF"
-        },
-        side2: {
-            transform: `rotateY(-90deg) translateX(0px) translateY(0px) translateZ(${theme.spacing(SIDE)}${UNIT})`,
-            backgroundColor: "#ffaf1c"
-        },
-        side3: {
-            transform: `translateX(0px) translateY(0px) translateZ(${theme.spacing(SIDE)}${UNIT})`,
-            backgroundColor: "#58d568"
-        },
-        side4: {
-            transform: `rotateY(90deg) translateX(0px) translateY(0px) translateZ(${theme.spacing(SIDE)}${UNIT})`,
-            backgroundColor: "#ed3030"
-        },
-        side5: {
-            transform: `rotateY(180deg) translateX(0px) translateY(0px) translateZ(${theme.spacing(SIDE)}${UNIT})`,
-            backgroundColor: "#1c5ffe"
-        },
-        side6: {
-            transform: `rotateX(-90deg) translateX(0px) translateY(0px) translateZ(${theme.spacing(SIDE)}${UNIT})`,
-            backgroundColor: "#f2f215"
-        }
-    })
-});
-
-
-function Cube(props: { forces: number[] }) {
-    const { forces } = props;
-    const [x, y, z] = forces;
-    const classes = useStyles();
-    let roll = Math.atan2(-y, z);
-    if (roll < 0)
-        roll += 2 * Math.PI;
-    let pitch = Math.atan(x / (y * y + z * z));
-    const yaw = 0;
-    return <div className={classes.wrap}>
-        <div className={classes.cube}
-            style={{
-                transform: `rotateX(${roll}rad) rotateY(${yaw}rad) rotateZ(${pitch}rad) translateX(0) translateY(0) translateZ(0)`
-            }}>
-            <div className={clsx(classes.face, classes.side1)}></div>
-            <div className={clsx(classes.face, classes.side2)}></div>
-            <div className={clsx(classes.face, classes.side3)}></div>
-            <div className={clsx(classes.face, classes.side4)}></div>
-            <div className={clsx(classes.face, classes.side5)}></div>
-            <div className={clsx(classes.face, classes.side6)}></div>
-        </div>
-    </div>;
+/*
+function Plane(props) {
+    const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], ...props }))
+    return (
+        <mesh ref={ref} receiveShadow>
+            <planeBufferGeometry attach="geometry" args={[1009, 1000]} />
+            <shadowMaterial attach="material" color="#171717" />
+        </mesh>
+    )
 }
 
+function Cube(props: { color: string, rotateX: number, rotateY: number, rotateZ: number }) {
+    const { color, rotateX } = props;
+    const [ref, api] = useBox(() => ({ mass: 1, position: [0, 5, 0], rotation: [0.4, 0.2, 0.5], ...props }))
+    // useFrame(({ clock }) => api.rotation.set(Math.sin(clock.getElapsedTime()) * 5, 0, 0))
+    return (
+        <mesh receiveShadow castShadow ref={ref} rotation-x={rotateX} rotation-y={rotateY} rotate-y={rotateY}>
+            <boxBufferGeometry attach="geometry" />
+            <meshLambertMaterial attach="material" color={color} />
+        </mesh>
+    )
+}
+*/
+
 export default function DashboardAccelerometer(props: DashboardServiceProps) {
-    const { service, expanded } = props;
+    const { service } = props;
     const register = service.register(AccelerometerReg.Forces);
     const forces = useRegisterUnpackedValue<[number, number, number]>(register);
+    const host = useServiceHost<SensorServiceHost<[number, number, number]>>(service);
+    const color = host ? "secondary" : "primary"
+    const { active } = useWidgetTheme(color)
 
     if (!forces)
         return null;
 
-    return <Cube forces={forces} />
+    const [x, y, z] = forces;
+    const roll = Math.atan2(-y, z);
+    const pitch = Math.atan(x / (y * y + z * z));
+
+    return <div style={({ height: "20vh", background: "#ccc" })}>
+        <Canvas shadowMap camera={{ position: [-1, 2, 2], fov: 50 }}>
+            <hemisphereLight intensity={0.35} />
+            <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
+            <mesh receiveShadow castShadow rotation-x={roll} rotation-z={pitch}>
+                <boxBufferGeometry attach="geometry" />
+                <meshLambertMaterial attach="material" color={active} />
+            </mesh>
+        </Canvas>
+    </div>
 }
