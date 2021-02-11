@@ -94,7 +94,7 @@ export default function ServiceCatalog() {
             <ChipList>
                 {allTags.map(tag => <FilterChip key={tag} label={tag} onClick={handleTagClick(tag)}
                     value={tags.indexOf(tag) > -1} />)}
-                <FilterChip label="Sensors" icon={<SpeedIcon />} value={simulator} onClick={handleSensorsClick} />
+                <FilterChip label="Sensors" icon={<SpeedIcon />} value={sensors} onClick={handleSensorsClick} />
                 <Divider orientation="vertical" flexItem />
                 <FilterChip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} value={simulator} onClick={handleSimulatorClick} />
                 <FilterChip label="Devices" icon={<JacdacIcon />} value={devices} onClick={handleDevicesClick} />
