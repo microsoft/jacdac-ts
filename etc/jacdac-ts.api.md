@@ -114,6 +114,47 @@ export function arrayShuffle<T>(a: T[]): T[];
 export function assert(cond: boolean, msg?: string): void;
 
 // @public (undocumented)
+export enum BarcodeReaderEvent {
+    Detect = 1
+}
+
+// @public (undocumented)
+export enum BarcodeReaderFormat {
+    // (undocumented)
+    Aztec = 1,
+    // (undocumented)
+    Codabar = 5,
+    // (undocumented)
+    Code128 = 2,
+    // (undocumented)
+    Code39 = 3,
+    // (undocumented)
+    Code93 = 4,
+    // (undocumented)
+    DataMatrix = 6,
+    // (undocumented)
+    Ean13 = 8,
+    // (undocumented)
+    Ean8 = 9,
+    // (undocumented)
+    ITF = 10,
+    // (undocumented)
+    Pdf417 = 11,
+    // (undocumented)
+    QrCode = 12,
+    // (undocumented)
+    UpcA = 13,
+    // (undocumented)
+    UpcE = 14
+}
+
+// @public (undocumented)
+export enum BarcodeReaderReg {
+    Enabled = 1,
+    Formats = 384
+}
+
+// @public (undocumented)
 export enum BarometerReg {
     Pressure = 257,
     PressureError = 262
@@ -126,6 +167,7 @@ export enum BaseEvent {
 
 // @public (undocumented)
 export enum BaseReg {
+    InstanceName = 265,
     StatusCode = 259
 }
 
@@ -225,6 +267,7 @@ export class BusStatsMonitor extends JDEventSource {
 export enum ButtonEvent {
     Click = 128,
     Down = 1,
+    Hold = 130,
     LongClick = 129,
     Up = 2
 }
@@ -291,7 +334,16 @@ export const CLOSE = "close";
 export const CMD_ADVERTISEMENT_DATA = 0;
 
 // @public (undocumented)
-export const CMD_EVENT = 1;
+export const CMD_EVENT_CODE_MASK = 255;
+
+// @public (undocumented)
+export const CMD_EVENT_COUNTER_MASK = 127;
+
+// @public (undocumented)
+export const CMD_EVENT_COUNTER_POS = 8;
+
+// @public (undocumented)
+export const CMD_EVENT_MASK = 32768;
 
 // @public (undocumented)
 export const CMD_GET_REG = 4096;
@@ -315,6 +367,18 @@ export const COMMAND_NODE_NAME = "command";
 
 // @public (undocumented)
 export function commandName(n: number, serviceClass?: number): string;
+
+// @public (undocumented)
+export enum CompassCmd {
+    Calibrate = 2
+}
+
+// @public (undocumented)
+export enum CompassReg {
+    Enabled = 1,
+    Heading = 257,
+    HeadingError = 262
+}
 
 // @public (undocumented)
 export type CompiledPacketFilter = (pkt: Packet) => boolean;
@@ -480,6 +544,8 @@ export interface DeviceFilter {
     announced?: boolean;
     // (undocumented)
     ignoreSelf?: boolean;
+    // (undocumented)
+    ignoreSimulators?: boolean;
     // (undocumented)
     serviceClass?: number;
     // (undocumented)
@@ -1172,6 +1238,9 @@ export class JDDevice extends JDNode {
     // (undocumented)
     disconnect(): void;
     // (undocumented)
+    get eventCounter(): number;
+    set eventCounter(v: number);
+    // (undocumented)
     get firmwareIdentifier(): number;
     // (undocumented)
     get firmwareInfo(): FirmwareInfo;
@@ -1460,9 +1529,9 @@ export class JDService extends JDNode {
     // (undocumented)
     sendPacketAsync(pkt: Packet, ack?: boolean): Promise<void>;
     // (undocumented)
-    readonly serviceIndex: number;
-    // (undocumented)
     get serviceClass(): number;
+    // (undocumented)
+    readonly serviceIndex: number;
     get specification(): jdspec.ServiceSpec;
     // (undocumented)
     get statusCodeRegister(): JDRegister;
@@ -1586,12 +1655,12 @@ export enum LedPixelVariant {
 // @public (undocumented)
 export enum LedReg {
     Brightness = 1,
-    LedCount = 131,
-    LuminousIntensity = 133,
+    LedCount = 384,
+    LuminousIntensity = 386,
     MaxPower = 7,
     Steps = 130,
     Variant = 263,
-    WaveLength = 132
+    WaveLength = 385
 }
 
 // @public (undocumented)
@@ -1722,6 +1791,17 @@ export type LogLevel = 'error' | 'warn' | 'log' | 'info' | 'debug';
 export const LOST = "lost";
 
 // @public (undocumented)
+export enum MagnetoCmd {
+    Calibrate = 2
+}
+
+// @public (undocumented)
+export enum MagnetoReg {
+    Forces = 257,
+    ForcesError = 262
+}
+
+// @public (undocumented)
 export function makeCodeServices(): jdspec.MakeCodeServiceInfo[];
 
 // @public (undocumented)
@@ -1779,6 +1859,17 @@ export enum MicrophoneCmd {
 // @public (undocumented)
 export enum MicrophoneReg {
     SamplingPeriod = 128
+}
+
+// @public (undocumented)
+export enum MIDIOutputCmd {
+    Clear = 128,
+    Send = 129
+}
+
+// @public (undocumented)
+export enum MIDIOutputReg {
+    Enabled = 1
 }
 
 // @public (undocumented)
@@ -1968,6 +2059,10 @@ export class Packet {
     get deviceIdentifier(): string;
     set deviceIdentifier(id: string);
     // (undocumented)
+    get eventCode(): number;
+    // (undocumented)
+    get eventCounter(): number;
+    // (undocumented)
     get frameFlags(): number;
     // (undocumented)
     get friendlyCommandName(): string;
@@ -1978,7 +2073,7 @@ export class Packet {
     // (undocumented)
     static from(service_command: number, data: Uint8Array): Packet;
     // (undocumented)
-    static fromBinary(buf: Uint8Array, timestamp?: number): Packet;
+    static fromBinary(data: Uint8Array, timestamp?: number): Packet;
     // (undocumented)
     static fromFrame(frame: Uint8Array, timestamp: number): Packet[];
     // (undocumented)
@@ -2018,8 +2113,6 @@ export class Packet {
     get meta(): any;
     // (undocumented)
     static onlyHeader(service_command: number): Packet;
-    // (undocumented)
-    static patchBinary(buf: Uint8Array): Uint8Array;
     // (undocumented)
     get pipeCount(): number;
     // (undocumented)
@@ -2066,10 +2159,13 @@ export class Packet {
 }
 
 // @public (undocumented)
-export const PACKET_ANNOUCE = "packetAnnounce";
+export const PACKET_ANNOUNCE = "packetAnnounce";
 
 // @public (undocumented)
 export const PACKET_EVENT = "packetEvent";
+
+// @public (undocumented)
+export const PACKET_INVALID_CRC = "packetInvalidCrc";
 
 // @public (undocumented)
 export const PACKET_KIND_ANNOUNCE = "announce";
@@ -2398,6 +2494,9 @@ export enum RainGaugeReg {
 }
 
 // @public (undocumented)
+export function randomRange(min: number, max: number): number;
+
+// @public (undocumented)
 export function randomUInt(max: number): number;
 
 // @public (undocumented)
@@ -2526,27 +2625,6 @@ export enum RelayVariant {
 }
 
 // @public (undocumented)
-export class RemoteRequestedDevice {
-    constructor(parent: RoleManagerClient, name: string);
-    // (undocumented)
-    boundTo: JDDevice;
-    // (undocumented)
-    candidates: JDDevice[];
-    // (undocumented)
-    isCandidate(ldev: JDDevice): boolean;
-    // (undocumented)
-    readonly name: string;
-    // (undocumented)
-    readonly parent: RoleManagerClient;
-    // (undocumented)
-    select(dev: JDDevice): Promise<void>;
-    // (undocumented)
-    readonly services: number[];
-    // (undocumented)
-    toString(): string;
-}
-
-// @public (undocumented)
 export const REMOVE_LISTENER = "removeListener";
 
 // @public (undocumented)
@@ -2565,6 +2643,29 @@ export const REPORT_RECEIVE = "reportReceive";
 export const REPORT_UPDATE = "reportUpdate";
 
 // @public (undocumented)
+export class RequestedRole {
+    constructor(parent: RoleManagerClient, name: string, serviceClass: number);
+    // (undocumented)
+    bound: JDService;
+    // (undocumented)
+    candidates: JDService[];
+    // (undocumented)
+    computeCandidates(): void;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly parent: RoleManagerClient;
+    // (undocumented)
+    get parentName(): string;
+    // (undocumented)
+    select(service: JDService): Promise<void>;
+    // (undocumented)
+    readonly serviceClass: number;
+    // (undocumented)
+    toString(): string;
+}
+
+// @public (undocumented)
 export const RESET = "reset";
 
 // @public (undocumented)
@@ -2577,24 +2678,38 @@ export function resolveMakecodeServiceFromClassIdentifier(serviceClass: number):
 export const RESTART = "restart";
 
 // @public (undocumented)
-export class RoleManagerClient extends JDServiceClient {
-    constructor(service: JDService, options?: {
-        autoBind?: boolean;
-    });
+export enum RngCmd {
+    Random = 128
+}
+
+// @public (undocumented)
+export enum RngReg {
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum RngVariant {
     // (undocumented)
-    bindDevices(): Promise<void>;
+    ADCNoise = 2,
+    // (undocumented)
+    Quantum = 1,
+    // (undocumented)
+    WebCrypto = 3
+}
+
+// @public (undocumented)
+export class RoleManagerClient extends JDServiceClient {
+    constructor(service: JDService);
     // (undocumented)
     clearRoles(): Promise<void>;
     // (undocumented)
-    readonly options?: {
-        autoBind?: boolean;
-    };
-    // (undocumented)
-    remoteRequestedDevices: RemoteRequestedDevice[];
+    requestedRoles: RequestedRole[];
     // (undocumented)
     scan(): Promise<void>;
     // (undocumented)
-    setRole(dev: JDDevice, name: string): Promise<void>;
+    setRole(service: JDService, role: string): Promise<void>;
+    // (undocumented)
+    startSimulators(): void;
     // (undocumented)
     toString(): string;
 }
@@ -2615,7 +2730,8 @@ export enum RoleManagerEvent {
 
 // @public (undocumented)
 export enum RoleManagerReg {
-    AllRolesAllocated = 385
+    AllRolesAllocated = 385,
+    AutoBind = 128
 }
 
 // @public (undocumented)
@@ -2730,6 +2846,8 @@ export function serviceClass(name: string): number;
 // @public (undocumented)
 export interface ServiceHostOptions {
     // (undocumented)
+    instanceName?: string;
+    // (undocumented)
     intensityValues?: any[];
     // (undocumented)
     registerValues?: {
@@ -2821,7 +2939,7 @@ export interface Signal {
     // (undocumented)
     signal: () => void;
     // (undocumented)
-    signalled: Promise<void>;
+    signalled: Promise<boolean>;
 }
 
 // @public (undocumented)
@@ -2902,6 +3020,9 @@ export const SRV_ANALOG_BUTTON = 409316809;
 export const SRV_ARCADE_GAMEPAD = 501915758;
 
 // @public (undocumented)
+export const SRV_BARCODE_READER = 477339244;
+
+// @public (undocumented)
 export const SRV_BAROMETER = 504462570;
 
 // @public (undocumented)
@@ -2918,6 +3039,9 @@ export const SRV_CHARACTER_SCREEN = 523748714;
 
 // @public (undocumented)
 export const SRV_COLOR = 372299111;
+
+// @public (undocumented)
+export const SRV_COMPASS = 364362175;
 
 // @public (undocumented)
 export const SRV_CONTROL = 0;
@@ -2971,6 +3095,12 @@ export const SRV_LIGHT_LEVEL = 400333340;
 export const SRV_LOGGER = 316415946;
 
 // @public (undocumented)
+export const SRV_M_IDIOUTPUT = 444894423;
+
+// @public (undocumented)
+export const SRV_MAGNETO = 318935176;
+
+// @public (undocumented)
 export const SRV_MATRIX_KEYPAD = 319172040;
 
 // @public (undocumented)
@@ -3013,6 +3143,9 @@ export const SRV_REFLECTED_LIGHT = 309087410;
 export const SRV_RELAY = 406840918;
 
 // @public (undocumented)
+export const SRV_RNG = 394916002;
+
+// @public (undocumented)
 export const SRV_ROLE_MANAGER = 508264038;
 
 // @public (undocumented)
@@ -3049,6 +3182,9 @@ export const SRV_SWITCH = 450008066;
 export const SRV_TCP = 457422603;
 
 // @public
+export const SRV_THERMOCOUPLE = 339394657;
+
+// @public (undocumented)
 export const SRV_THERMOMETER = 337754823;
 
 // @public (undocumented)
@@ -3171,6 +3307,7 @@ export enum SystemReadingThreshold {
 // @public (undocumented)
 export enum SystemReg {
     HighThreshold = 6,
+    InstanceName = 265,
     Intensity = 1,
     LowThreshold = 5,
     MaxPower = 7,
@@ -3237,6 +3374,35 @@ export interface TFModelStats {
 }
 
 // @public (undocumented)
+export enum ThermocoupleReg {
+    MaxTemperature = 261,
+    MinTemperature = 260,
+    Temperature = 257,
+    TemperatureError = 262,
+    Variant = 263
+}
+
+// @public (undocumented)
+export enum ThermocoupleVariant {
+    // (undocumented)
+    TypeB = 8,
+    // (undocumented)
+    TypeE = 4,
+    // (undocumented)
+    TypeJ = 2,
+    // (undocumented)
+    TypeK = 1,
+    // (undocumented)
+    TypeN = 5,
+    // (undocumented)
+    TypeR = 7,
+    // (undocumented)
+    TypeS = 6,
+    // (undocumented)
+    TypeT = 3
+}
+
+// @public (undocumented)
 export enum ThermometerReg {
     MaxTemperature = 261,
     MinTemperature = 260,
@@ -3250,13 +3416,9 @@ export enum ThermometerVariant {
     // (undocumented)
     Body = 3,
     // (undocumented)
-    HeatProbe = 4,
-    // (undocumented)
     Indoor = 2,
     // (undocumented)
-    Outdoor = 1,
-    // (undocumented)
-    Thermocouple = 5
+    Outdoor = 1
 }
 
 // @public (undocumented)
