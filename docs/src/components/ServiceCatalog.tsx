@@ -23,7 +23,7 @@ interface ServiceFilter {
 }
 
 function FilterChip(props: { label: string, value: boolean, icon?: JSX.Element, onClick: () => void }) {
-    const { label, value, icon, onClick, filter } = props;
+    const { label, value, icon, onClick } = props;
     const descr = value ? `Disable ${label} filter` : `Filter by ${label} support`;
     return <Chip
         label={label}
