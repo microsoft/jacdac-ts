@@ -6,7 +6,7 @@ import {
     SRV_GYROSCOPE,
     SRV_JOYSTICK,
     SRV_LED,
-    SRV_LEDMATRIX,
+    SRV_LED_MATRIX,
     SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE,
     SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_RNG, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SEVEN_SEGMENT_DISPLAY, SRV_SOIL_MOISTURE,
@@ -103,7 +103,7 @@ const serviceViews: {
     [SRV_RAIN_GAUGE]: {
         component: DashbaordRainGauge,
     },
-    [SRV_LEDMATRIX]: {
+    [SRV_LED_MATRIX]: {
         component: DashboardLEDMatrix,
         weight: (srv) => 3
     },

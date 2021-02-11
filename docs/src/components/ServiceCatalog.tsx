@@ -13,8 +13,17 @@ import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
 import JacdacIcon from "./icons/JacdacIcon";
 import SpeedIcon from '@material-ui/icons/Speed';
 
+interface ServiceFilter {
+    query: string;
+    tags: string[];
+    sensors?: boolean;
+    makeCode?: boolean;
+    simulators?: boolean;
+    devices?: boolean;
+}
+
 function FilterChip(props: { label: string, value: boolean, icon?: JSX.Element, onClick: () => void }) {
-    const { label, value, icon, onClick } = props;
+    const { label, value, icon, onClick, filter } = props;
     const descr = value ? `Disable ${label} filter` : `Filter by ${label} support`;
     return <Chip
         label={label}
@@ -25,18 +34,15 @@ function FilterChip(props: { label: string, value: boolean, icon?: JSX.Element, 
 }
 
 export default function ServiceCatalog() {
-    const [query, setQuery] = useState("");
-    const [dquery] = useDebounce(query, 500);
-    const [tags, setTags] = useState<string[]>([]);
-    const [sensors, setSensors] = useState(false);
-    const [makeCode, setMakeCode] = useState(false);
-    const [simulator, setSimulator] = useState(false);
-    const [devices, setDevices] = useState(false);
-
+    const [filter, setFilter] = useState<ServiceFilter>({
+        query: "",
+        tags: []
+    })
+    const [deboundedFilter] = useDebounce(filter, 200);
+    const { query, tags, makeCode, simulators, devices, sensors } = filter;
     const allTags = useMemo(() => unique(arrayConcatMany(serviceSpecifications().map(srv => srv.tags))), [])
-    console.log({ allTags })
     const services = useMemo(() => {
-        const m = dquery.toLowerCase();
+        const m = query.toLowerCase();
         let r = serviceSpecifications();
         if (m) {
             const filter = (s: string) => s?.toLowerCase().indexOf(m) > -1;
@@ -47,28 +53,31 @@ export default function ServiceCatalog() {
         }
         if (makeCode)
             r = r.filter(srv => !!resolveMakecodeServiceFromClassIdentifier(srv.classIdentifier))
-        if (simulator)
+        if (simulators)
             r = r.filter(srv => !!hostDefinitionFromServiceClass(srv.classIdentifier))
         if (devices)
             r = r.filter(srv => !!deviceSpecificationsForService(srv.classIdentifier)?.length)
         if (sensors)
             r = r.filter(srv => isSensor(srv));
         return r;
-    }, [dquery, tags, makeCode, simulator, devices, sensors]);
+    }, [deboundedFilter]);
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setQuery(event.target.value)
+        setFilter({
+            ...filter,
+            query: event.target.value,
+        })
     }
     const handleTagClick = (tag: string) => () => {
         const i = tags.indexOf(tag);
         if (i < 0)
-            setTags([...tags, tag]);
+            setFilter({ ...filter, tags: [...tags, tag] });
         else
-            setTags([...tags.slice(0, i), ...tags.slice(i + 1)])
+            setFilter({ ...filter, tags: [...tags.slice(0, i), ...tags.slice(i + 1)] })
     }
-    const handleMakeCodeClick = () => setMakeCode(!makeCode);
-    const handleSimulatorClick = () => setSimulator(!simulator);
-    const handleDevicesClick = () => setDevices(!devices);
-    const handleSensorsClick = () => setSensors(!sensors);
+    const handleMakeCodeClick = () => setFilter({ ...filter, makeCode: !makeCode });
+    const handleSimulatorClick = () => setFilter({ ...filter, simulators: !simulators });
+    const handleDevicesClick = () => setFilter({ ...filter, devices: !devices });
+    const handleSensorsClick = () => setFilter({ ...filter, sensors: !sensors });
 
     return <Grid container spacing={1}>
         <Grid item xs={12}>
@@ -96,8 +105,8 @@ export default function ServiceCatalog() {
                     value={tags.indexOf(tag) > -1} />)}
                 <FilterChip label="Sensors" icon={<SpeedIcon />} value={sensors} onClick={handleSensorsClick} />
                 <Divider orientation="vertical" flexItem />
-                <FilterChip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} value={simulator} onClick={handleSimulatorClick} />
-                <FilterChip label="Devices" icon={<JacdacIcon />} value={devices} onClick={handleDevicesClick} />
+                <FilterChip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} value={simulators} onClick={handleSimulatorClick} />
+                <FilterChip label="Devices" icon={<JacdacIcon />} onClick={handleDevicesClick} value={devices} />
                 <FilterChip label="MakeCode" icon={<MakeCodeIcon />} value={makeCode} onClick={handleMakeCodeClick} />
             </ChipList>
         </Grid>
