@@ -4,13 +4,14 @@ import ServiceSpecificationList from "./ServiceSpecificationList";
 import { useDebounce } from 'use-debounce';
 import SearchIcon from '@material-ui/icons/Search';
 import ChipList from "./ui/ChipList";
-import { deviceSpecificationsForService, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
+import { deviceSpecificationsForService, isSensor, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
 import { arrayConcatMany, unique } from "../../../src/jdom/utils";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jacdac";
 import KindIcon from "./KindIcon";
 import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
 import JacdacIcon from "./icons/JacdacIcon";
+import SpeedIcon from '@material-ui/icons/Speed';
 
 function FilterChip(props: { label: string, value: boolean, icon?: JSX.Element, onClick: () => void }) {
     const { label, value, icon, onClick } = props;
@@ -27,6 +28,7 @@ export default function ServiceCatalog() {
     const [query, setQuery] = useState("");
     const [dquery] = useDebounce(query, 500);
     const [tags, setTags] = useState<string[]>([]);
+    const [sensors, setSensors] = useState(false);
     const [makeCode, setMakeCode] = useState(false);
     const [simulator, setSimulator] = useState(false);
     const [devices, setDevices] = useState(false);
@@ -49,8 +51,10 @@ export default function ServiceCatalog() {
             r = r.filter(srv => !!hostDefinitionFromServiceClass(srv.classIdentifier))
         if (devices)
             r = r.filter(srv => !!deviceSpecificationsForService(srv.classIdentifier)?.length)
+        if (sensors)
+            r = r.filter(srv => isSensor(srv));
         return r;
-    }, [dquery, tags, makeCode, simulator, devices]);
+    }, [dquery, tags, makeCode, simulator, devices, sensors]);
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(event.target.value)
     }
@@ -64,6 +68,7 @@ export default function ServiceCatalog() {
     const handleMakeCodeClick = () => setMakeCode(!makeCode);
     const handleSimulatorClick = () => setSimulator(!simulator);
     const handleDevicesClick = () => setDevices(!devices);
+    const handleSensorsClick = () => setSensors(!sensors);
 
     return <Grid container spacing={1}>
         <Grid item xs={12}>
@@ -89,6 +94,7 @@ export default function ServiceCatalog() {
             <ChipList>
                 {allTags.map(tag => <FilterChip key={tag} label={tag} onClick={handleTagClick(tag)}
                     value={tags.indexOf(tag) > -1} />)}
+                <FilterChip label="Sensors" icon={<SpeedIcon />} value={simulator} onClick={handleSensorsClick} />
                 <Divider orientation="vertical" flexItem />
                 <FilterChip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} value={simulator} onClick={handleSimulatorClick} />
                 <FilterChip label="Devices" icon={<JacdacIcon />} value={devices} onClick={handleDevicesClick} />
