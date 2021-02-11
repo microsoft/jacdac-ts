@@ -15,10 +15,10 @@ import {
     SwitchVariant, ThermometerVariant, WindSpeedReg, ECO2Variant, SRV_SPEECH_SYNTHESIS, SRV_SOIL_MOISTURE,
     JoystickVariant,
     SRV_REAL_TIME_CLOCK, SRV_ILLUMINANCE, SRV_LIGHT_LEVEL, LightLevelVariant,
-    SRV_UVINDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
+    SRV_UV_INDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LEDMATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -369,17 +369,17 @@ const _hosts: {
         },
         {
             name: "LED matrix (5x5 micro:bit)",
-            serviceClasses: [SRV_LEDMATRIX],
+            serviceClasses: [SRV_LED_MATRIX],
             services: () => [new LEDMatrixServiceHost(5, 5)]
         },
         {
             name: "LED matrix (8x8)",
-            serviceClasses: [SRV_LEDMATRIX],
+            serviceClasses: [SRV_LED_MATRIX],
             services: () => [new LEDMatrixServiceHost(8, 8)]
         },
         {
             name: "LED matrix (11x7)",
-            serviceClasses: [SRV_LEDMATRIX],
+            serviceClasses: [SRV_LED_MATRIX],
             services: () => [new LEDMatrixServiceHost(11, 7)]
         },
         {
@@ -716,8 +716,8 @@ const _hosts: {
         },
         {
             name: "UV index",
-            serviceClasses: [SRV_UVINDEX],
-            services: () => [new AnalogSensorServiceHost(SRV_UVINDEX, { readingValues: [5] })]
+            serviceClasses: [SRV_UV_INDEX],
+            services: () => [new AnalogSensorServiceHost(SRV_UV_INDEX, { readingValues: [5] })]
         },
         {
             name: "water level",
@@ -810,7 +810,7 @@ const _hosts: {
         },
         {
             name: "micro:bit v2",
-            serviceClasses: [SRV_LEDMATRIX, SRV_BUTTON, SRV_ACCELEROMETER, SRV_SOUND_LEVEL, SRV_LIGHT_LEVEL, SRV_BUZZER, SRV_SOUND_PLAYER],
+            serviceClasses: [SRV_LED_MATRIX, SRV_BUTTON, SRV_ACCELEROMETER, SRV_SOUND_LEVEL, SRV_LIGHT_LEVEL, SRV_BUZZER, SRV_SOUND_PLAYER],
             services: () => [
                 new LEDMatrixServiceHost(5, 5),
                 new ButtonServiceHost("A"),

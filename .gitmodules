@@ -1,3 +1,6 @@
 [submodule "jacdac-spec"]
 	path = jacdac-spec
 	url = https://github.com/microsoft/jacdac
+[submodule "pxt-jacdac"]
+	path = pxt-jacdac
+	url = https://github.com/microsoft/pxt-jacdac
