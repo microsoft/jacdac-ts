@@ -5,7 +5,7 @@ import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
 import { fromHex, SMap, toHex } from "./utils";
 import { SystemReg, SensorReg, SRV_CONTROL, SRV_ROLE_MANAGER, SRV_SETTINGS, SRV_BOOTLOADER, SRV_LOGGER, SRV_POWER, SRV_PROTO_TEST } from "./constants";
-import makecodeServicesData from "../../jacdac-spec/services/makecode.json";
+import makecodeServicesData from "../../jacdac-spec/dist/services-makecode.json";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
