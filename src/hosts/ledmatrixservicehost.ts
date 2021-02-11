@@ -1,4 +1,4 @@
-import { CHANGE, LEDMatrixReg, SensorReg, SRV_LEDMATRIX } from "../jdom/constants";
+import { CHANGE, LedMatrixReg, SensorReg, SRV_LED_MATRIX } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost from "../jdom/servicehost";
 
@@ -24,14 +24,14 @@ export default class LEDMatrixServiceHost extends ServiceHost {
     readonly brightness: RegisterHost<[number]>;
 
     constructor(columns: number, rows: number) {
-        super(SRV_LEDMATRIX, {
+        super(SRV_LED_MATRIX, {
             intensityValues: [0xff >> 1]
         })
 
-        this.leds = this.addRegister(LEDMatrixReg.Leds, [new Uint8Array(0)])
-        this.rows = this.addRegister(LEDMatrixReg.Rows, [rows]);
-        this.columns = this.addRegister(LEDMatrixReg.Columns, [columns]);
-        this.brightness = this.addRegister(LEDMatrixReg.Brightness, [128]);
+        this.leds = this.addRegister(LedMatrixReg.Leds, [new Uint8Array(0)])
+        this.rows = this.addRegister(LedMatrixReg.Rows, [rows]);
+        this.columns = this.addRegister(LedMatrixReg.Columns, [columns]);
+        this.brightness = this.addRegister(LedMatrixReg.Brightness, [128]);
 
         this.rows.skipBoundaryCheck = true;
         this.rows.skipErrorInjection = true;
