@@ -42,9 +42,9 @@
     "docsbuild": "cd docs && node node_modules/gatsby/cli.js build",
     "docsserve": "cd docs && node node_modules/gatsby/cli.js serve",
     "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0",
-    "buildspecs": "cd jacdac-spec/spectool && sh build.sh",
+    "buildspecs": "cd jacdac-spec/spectool && sh build.sh && cd ../.. && cp -r jacdac-spec/services/generated/makecode/* pxt-jacdac",
     "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm=on",
-    "buildpxt": "npm run buildspecs && cp -r jacdac-spec/services/generated/makecode/* pxt-jacdac"
+    "buildpxt": "cd pxt-jacdac && sh mk.sh"
   },
   "release": {
     "branch": "main",

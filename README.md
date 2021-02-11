@@ -95,13 +95,19 @@ nav to http://127.0.0.1:3001
 
 ### Jacdac+MakeCode
 
+### Local build
+
+Run this command to rebuild the makecode packages
+
+```
+yarn buildpxt
+```
+
 #### Local debugging
 
 Open the multi editor to test MakeCode devices with the Jacdac view. You can select to run Jacdac and/or MakeCode on localhost/web from the drop downs.
 
-```
 https://makecode.com/multi?jacdac=1&localhost=1&beta=1
-```
 
 ### Adding a new MakeCode client
 
