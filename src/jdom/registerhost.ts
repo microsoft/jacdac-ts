@@ -60,7 +60,7 @@ export default class RegisterHost<TValues extends any[]> extends JDEventSource {
     constructor(
         public readonly service: ServiceHost,
         public readonly identifier: number,
-        defaultValue?: any[]) {
+        defaultValue?: TValues) {
         super();
         const serviceSpecification = this.service.specification;
         this.specification = serviceSpecification.packets.find(pkt => isRegister(pkt) && pkt.identifier === this.identifier);
