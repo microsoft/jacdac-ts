@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useContext, useEffect } from "react"
 import { createMuiTheme, createStyles, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import MakeCodeEditorExtension from "../../components/makecode/MakeCodeEditorExtension"
@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core';
 import PaperBox from "../../components/ui/PaperBox";
 import Flags from "../../../../src/jdom/flags";
 import RoleManager from "../../components/tools/RoleManager";
+import DarkModeContext from "../ui/DarkModeContext";
 
 const useStyles = makeStyles((theme) => createStyles({
     content: {
@@ -23,6 +24,7 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 export default function MakeCodeEditorExtensionPage() {
+    const { toggleDarkMode } = useContext(DarkModeContext)
     const rawTheme = createMuiTheme({
         palette: {
             primary: {
@@ -31,12 +33,15 @@ export default function MakeCodeEditorExtensionPage() {
             secondary: {
                 main: '#ffc400',
             },
+            contrastThreshold: 5.1,
+            type: 'dark'
         },
     })
     const classes = useStyles();
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => {
         Flags.webUSB = false;
+        toggleDarkMode('dark');
     }, [])
     return <ThemedLayout theme={theme}>
         <div className={classes.content}>
