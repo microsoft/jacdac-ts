@@ -22,7 +22,7 @@ yarn docs
 ```
 * click on the generated URL in the terminal output and voila!
 
-### Setup
+### Local Setup
 
 * clone this repository and pull all submodules
 ```
