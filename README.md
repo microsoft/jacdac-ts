@@ -95,11 +95,17 @@ nav to http://127.0.0.1:3001
 
 ### Jacdac+MakeCode
 
+#### Local debugging
+
 Open the multi editor to test MakeCode devices with the Jacdac view. You can select to run Jacdac and/or MakeCode on localhost/web from the drop downs.
 
 ```
 https://makecode.com/multi?jacdac=1&localhost=1&beta=1
 ```
+
+### Adding a new MakeCode client
+
+Create a new issue in https://github.com/microsoft/jacdac and select the ``MakeCode client`` template.
 
 ### HTML tools
 
