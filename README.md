@@ -18,7 +18,7 @@ Edit this project directly from your browser using GitHub Codespaces. If you hav
 * open project in a new codespace
 * launch the docs server
 ```
-npm run docs
+yarn docs
 ```
 * click on the generated URL in the terminal output and voila!
 
@@ -31,16 +31,20 @@ git submodule update --init --recursive
 git pull
 ```
 * install node.js
+* install yarn
+```
+npm install -g yarn
+```
 * install dependencies
 ```
-npm install
-cd docs
-npm install
+yarn install
+yarn installdocs
 ```
 
 ### VS Code
 
-You are welcome to use any editor you want!!!
+You are welcome to use any editor you want! Visual Studio Code
+provides seamless support for git sub-modules and is our preferred editor.
 
 * open [Visual Studio Code](https://code.visualstudio.com/)
 ```
@@ -49,6 +53,15 @@ code .
 * in the Git view, click on the ``jacdac`` branch and select ``main`` so that changes are automatically synched
 * install MDX support in VS Code https://marketplace.visualstudio.com/items?itemName=silvenon.mdx
 
+### Specs build
+
+To regenerate the service definition JSON files from the ``.md`` files in jacdac-spec,
+run
+
+```
+yarn buildspecs
+```
+
 ### Docs build
 
 Launch the gatsbdy develop mode and navigate to http://localhost:8000 . This build does not require to load dist as the library is compiled directly into the web site.
@@ -56,13 +69,13 @@ Launch the gatsbdy develop mode and navigate to http://localhost:8000 . This bui
 * install the docs packages
 
 ```
-npm run installdocs
+yarn installdocs
 ```
 
 * run the docs web site locally
 
 ```
-npm run docs
+yarn docs
 ```
 
 * browse to the local server
@@ -85,7 +98,7 @@ nav to http://127.0.0.1:3001
 Open the multi editor to test MakeCode devices with the Jacdac view. You can select to run Jacdac and/or MakeCode on localhost/web from the drop downs.
 
 ```
-https://makecode.com/multi?jacdac=1&localhost=1
+https://makecode.com/multi?jacdac=1&localhost=1&beta=1
 ```
 
 ### HTML tools
@@ -93,7 +106,7 @@ https://makecode.com/multi?jacdac=1&localhost=1
 You can do ``npm run watch`` to watch/build bundles. Bundles are placed under the ``dist`` folder.
 
 ```
-npm run watch
+yarn watch
 ```
 
 On another terminal, launch a small web server and 
@@ -101,7 +114,7 @@ try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/st
 to also run ``npm run watch`` on the side.
 
 ```
-npm run tools
+yarn tools
 ```
 
 * console http://localhost:8080/docs/static/tools/js/console.html
