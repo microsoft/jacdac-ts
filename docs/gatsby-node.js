@@ -60,7 +60,7 @@ async function createServicePages(graphql, actions, reporter) {
         node
       },
     })
-    console.log(`service redirect`, { from: r, to: p })
+    //console.log(`service redirect`, { from: r, to: p })
     createRedirect({
       fromPath: r,
       toPath: p
@@ -109,8 +109,8 @@ async function createDevicePages(graphql, actions, reporter) {
       node.firmwares.forEach(fw => {
         const fp = `/firmwares/0x${fw.toString(16)}`;
         const dp = `/devices/0x${fw.toString(16)}`;
-        console.log(`firmware redirect`, { from: fp, to: p })
-        console.log(`device redirect`, { from: dp, to: p })
+        //console.log(`firmware redirect`, { from: fp, to: p })
+        //console.log(`device redirect`, { from: dp, to: p })
         createRedirect({
           fromPath: fp,
           toPath: p
@@ -136,10 +136,10 @@ async function createDevicePages(graphql, actions, reporter) {
 
   // create device company routes
   const companies = new Set(result.data.allDevicesJson.nodes.map(node => node.company))
-  console.log(companies)
+  //console.log(companies)
   for (const company of companies.keys()) {
     const p = `/devices/${escapeDeviceIdentifier(company).replace(/-/g, '/')}`
-    console.log(`device company page`, { p })
+    //console.log(`device company page`, { p })
     createPage({
       path: p,
       component: slash(companyTemplate),
