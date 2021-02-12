@@ -342,8 +342,7 @@ export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
     return bufferEq(leftBuffer, rightBuffer);
 }
 
-
-
+/*
 import { toHex } from "./utils"
 export function jdpackTest() {
     function testOne(fmt: string, data0: any[], maxError?: number) {
@@ -410,3 +409,4 @@ export function jdpackTest() {
 }
 
 jdpackTest()
+*/

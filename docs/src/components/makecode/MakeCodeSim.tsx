@@ -83,6 +83,7 @@ export default function Page() {
     })
     const theme = responsiveFontSizes(rawTheme);
     useEffect(() => toggleDarkMode('dark'), []); // always dark mode
+    // test mode
     useEffect(() => {
         if (!Flags.diagnostics) return;
         const hostDefinitions = hosts();

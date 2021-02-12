@@ -90,6 +90,7 @@ export default function Toc(props: { pagePath: string }) {
             title
             order
             hideToc
+            hideMainMenu
           }
           excerpt
           fields {

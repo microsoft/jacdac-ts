@@ -175,7 +175,9 @@ export default function Layout(props: LayoutProps) {
 function LayoutWithDarkMode(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { pageContext } = pageProps;
-  const fullScreen = !!pageContext?.frontmatter?.fullScreen;
+  console.log({ pageContext })
+  const { frontMatter } = pageContext || {};
+  const { fullScreen = false } = frontMatter || {};
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   const isDark = darkMode === 'dark'
   const themeDef: ThemeOptions = {
@@ -206,26 +208,16 @@ function LayoutWithDarkMode(props: LayoutProps) {
 
 function MainAppBar(props: LayoutProps) {
   const { props: pageProps } = props;
-  const { pageContext, path } = pageProps;
+  const { pageContext } = pageProps;
+  const { frontMatter } = pageContext || {};
+  const { pageTitle, hideMainMenu = false } = frontMatter || {};
+
   const classes = useStyles();
   const { drawerType, widgetMode, toolsMenu, setToolsMenu } = useContext(AppContext)
   const { darkMode } = useContext(DarkModeContext)
   const drawerOpen = drawerType !== DrawerType.None
-  const frontmatter = pageContext?.frontmatter;
-  const pageTitle = frontmatter?.title;
   const appBarColor = darkMode === "dark" ? "inherit"
     : widgetMode ? "default" : undefined;
-
-  const data = useStaticQuery(graphql`
-    query {
-      site {
-        siteMetadata {
-          title
-        }
-      }
-    }
-  `)
-  const title = data.site.siteMetadata.title;
 
   const toggleToolsMenu = () => setToolsMenu(!toolsMenu)
 
@@ -279,7 +271,10 @@ function FabBar() {
 
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
-  const { path } = pageProps;
+  const { pageContext, path } = pageProps;
+  const { frontMatter } = pageContext || {};
+  const { hideMainMenu = false, hideUnderConstruction = false } = frontMatter || {};
+
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
@@ -294,18 +289,18 @@ function LayoutWithContext(props: LayoutProps) {
       <header>
         <SEO />
       </header>
-      <nav>
+      {!hideMainMenu && <nav>
         <MainAppBar {...props} />
         <AppDrawer pagePath={path} />
         <ToolsDrawer />
-      </nav>
+      </nav>}
       <Container maxWidth={"xl"} disableGutters={true} className={clsx(classes.content, {
         [classes.contentShift]: drawerOpen,
         [classes.toolsContentShift]: toolsMenu,
       })}>
         <main className={classes.mainContent}>
           <div className={classes.drawerHeader} />
-          <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the Jacdac specification. Do not build devices using Jacdac.</Alert>
+          {!hideUnderConstruction && <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the Jacdac specification. Do not build devices using Jacdac.</Alert>}
           {Flags.diagnostics && <WebDiagnostics />}
           <Typography className={'markdown'} component="span">
             {container ? <Container>{element}</Container> : element}
