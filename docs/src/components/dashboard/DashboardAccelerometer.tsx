@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { AccelerometerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
@@ -78,24 +78,24 @@ function CanvasWidget(props: { color: string, register: JDRegister }) {
     </Canvas>
 }
 
+const valueDisplay = (v: number) => roundWithPrecision(v, 1)
 function Sliders(props: { host: SensorServiceHost<[number, number, number]>, register: JDRegister }) {
     const { host, register } = props;
     const forces = useRegisterUnpackedValue<[number, number, number]>(register);
-    const handleChangeX = (event: unknown, newValue: number | number[]) => {
+    const handleChangeX = useCallback((event: unknown, newValue: number | number[]) => {
         const [x, y, z] = host.reading.values();
         const n = newValue as any as number;
         const nz = -Math.sqrt(1 - (n * n + y * y));
         host.reading.setValues([n, y, nz]);
         register.sendGetAsync()
-    }
-    const handleChangeY = (event: unknown, newValue: number | number[]) => {
+    }, [host, register])
+    const handleChangeY = useCallback((event: unknown, newValue: number | number[]) => {
         const [x, y, z] = host.reading.values();
         const n = newValue as any as number;
         const nz = -Math.sqrt(1 - (x * x + n * n));
         host.reading.setValues([x, n, nz]);
         register.sendGetAsync()
-    }
-    const valueDisplay = (v: number) => roundWithPrecision(v, 1)
+    }, [host, register])
 
     if (!forces?.length)
         return null;
