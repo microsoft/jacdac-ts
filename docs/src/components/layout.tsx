@@ -175,7 +175,6 @@ export default function Layout(props: LayoutProps) {
 function LayoutWithDarkMode(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { pageContext } = pageProps;
-  console.log({ pageContext })
   const { frontmatter } = pageContext || {};
   const { fullScreen } = frontmatter || {};
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
