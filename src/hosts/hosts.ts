@@ -823,7 +823,7 @@ const _hosts: {
                 new SensorServiceHost<[number, number, number]>(SRV_ACCELEROMETER, {
                     readingValues: [0.5, 0.5, -(1 - (0.5 * 0.5 + 0.5 * 0.5))]
                 }),
-                new SoundLevelServiceHost(),
+                new AnalogSensorServiceHost(SRV_SOUND_LEVEL, soundLevel),
                 new SensorServiceHost(SRV_LIGHT_LEVEL, { readingValues: [0.5], variant: LightLevelVariant.LEDMatrix }),
                 new BuzzerServiceHost(),
                 new SoundPlayerServiceHost(microbitSounds),
