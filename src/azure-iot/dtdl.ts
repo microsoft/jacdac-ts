@@ -170,8 +170,8 @@ function fieldType(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, field: jdspe
             type = enumDTDI(srv, en);
     }
 
-    if (!type)
-        //console.warn(`unknown field type ${field.type}`, field)
+    //if (!type)
+    //    console.warn(`unknown field type ${field.type}`, field)
 
     return {
         name: field.name == "_" ? pkt.name : field.name,
@@ -345,7 +345,14 @@ export function serviceSpecificationToDTDL(srv: jdspec.ServiceSpec): DTDLInterfa
         "description": srv.notes["short"],
         "contents": srv.packets
             .filter(pkt => !pkt.derived && !pkt.internal)
-            .map(pkt => packetToDTDL(srv, pkt)).filter(c => !!c)
+            .map(pkt => {
+                try {
+                    return packetToDTDL(srv, pkt)
+                } catch (e) {
+                    console.log(`failed to generate DTDL for ${srv.name}`, e);
+                    return undefined;
+                }
+            }).filter(c => !!c)
     }
     if (srv.extends.length)
         dtdl.extends = srv.extends.map(id => serviceSpecificationDTMI(serviceSpecificationFromName(id)))
