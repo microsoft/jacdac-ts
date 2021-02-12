@@ -19,8 +19,8 @@ export default function DashboardAnalogButton(props: DashboardServiceProps) {
     const pressureRegister = service.register(AnalogButtonReg.Pressure);
     const [pressure] = useRegisterUnpackedValue<[number]>(pressureRegister)
     const [activeThreshold] = useRegisterUnpackedValue<[number]>(service.register(AnalogButtonReg.ActiveThreshold))
-    const [buttonVariant] = useRegisterUnpackedValue<[AnalogButtonVariant]>(service.register(AnalogButtonReg.Variant));
-    const widgetSize = useWidgetSize(variant, services.length);
+    //const [buttonVariant] = useRegisterUnpackedValue<[AnalogButtonVariant]>(service.register(AnalogButtonReg.Variant));
+    const widgetSize = "5em" // useWidgetSize(variant, services.length);
     const host = useServiceHost<AnalogSensorServiceHost>(service);
     const [down, setDown] = useState(false)
     const color = host ? "secondary" : "primary";
