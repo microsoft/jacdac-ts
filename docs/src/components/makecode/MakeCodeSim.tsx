@@ -3,7 +3,7 @@ import { Button, createMuiTheme, Paper, responsiveFontSizes } from "@material-ui
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
-import { isReading, isValueOrIntensity, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
+import { isReading, isValueOrIntensity, makeCodeServices, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
 import { arrayConcatMany, strcmp, unique } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
 import useChange from "../../jacdac/useChange";
@@ -47,11 +47,10 @@ function Carousel() {
                 )
             )
         ).join('|');
-        console.log({ query })
         // send message to makecode
         window.parent.postMessage({
             type: "extensionsdialog",
-            query: query || "jacdac",
+            query: query || `jacdac|${makeCodeServices().map(info => info?.client.repo).filter(r => !!r).join("|")}`,
             broadcast: true
         }, "*")
     }
