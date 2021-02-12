@@ -9,16 +9,16 @@ export default function useWidgetSize(variant?: "icon" | "", widgetCount?: numbe
     switch (widgetCount || 1) {
         case 1:
         case 2:
-            widgetSize = mini ? "14vh" : "25vh";
+            widgetSize = mini ? "14em" : "25em";
             break;
         case 3:
         case 4:
         case 5:
         case 6:
-            widgetSize = mini ? "10vh" : "16vh";
+            widgetSize = mini ? "10em" : "16em";
             break;
         default:
-            widgetSize = mini ? "8vh" : "14vh";
+            widgetSize = mini ? "8em" : "14em";
             break;
     }
     return widgetSize;
