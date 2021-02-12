@@ -22,16 +22,13 @@ export function useAudioContext(defaultVolume?: number) {
         volumeNode.connect(ctx.destination);
         volumeNode.gain.value = (defaultVolume !== undefined ? defaultVolume : 0.2) * VOLUME_GAIN;
 
-        console.log(`new audio context`)
         // cleanup
         return () => {
-            console.log('closing audio context')
             ctx.close();
         }
     }, [])
 
     const setVolume = (v: number) => {
-        console.log("setvolumne", v)
         if (volumeRef.current && !isNaN(v)) {
             volumeRef.current.gain.value = v * VOLUME_GAIN;
         }
