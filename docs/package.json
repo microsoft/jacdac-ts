@@ -1,7 +1,7 @@
 {
   "name": "jacdac-docs",
   "private": true,
-  "description": "JACDAC Documentation",
+  "description": "Jacdac Documentation",
   "version": "0.1.0",
   "author": "Microsoft",
   "dependencies": {
