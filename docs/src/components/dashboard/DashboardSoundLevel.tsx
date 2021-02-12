@@ -5,20 +5,21 @@ import useServiceHost from "../hooks/useServiceHost";
 import { Grid, Slider } from "@material-ui/core";
 import RegisterTrend from "../RegisterTrend";
 import { useId } from "react-use-id-hook"
-import SoundLevelServiceHost from "../../../../src/hosts/soundlevelservicehost"
 import MicIcon from '@material-ui/icons/Mic';
 import { SoundLevelReg } from "../../../../src/jdom/constants";
+import AnalogSensorServiceHost from "../../../../src/hosts/analogsensorservicehost";
 
 export default function DashboardSoundLevel(props: DashboardServiceProps) {
     const { service } = props;
     const soundLevelRegister = service.register(SoundLevelReg.SoundLevel);
     const [soundLevel] = useRegisterUnpackedValue<[number]>(soundLevelRegister);
-    const host = useServiceHost<SoundLevelServiceHost>(service);
+    const host = useServiceHost<AnalogSensorServiceHost>(service);
     const color = host ? "secondary" : "primary";
 
     const onChange = (event: unknown, newValue: number | number[]): void => {
         const svalue = newValue as number;
-        host?.setSoundLevel(svalue);
+        host?.reading.setValues([svalue]);
+        soundLevelRegister.sendGetAsync(); // refresh
     }
 
     if (soundLevel === undefined)

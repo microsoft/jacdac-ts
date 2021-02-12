@@ -47,7 +47,6 @@ import LEDServiceHost from "./ledservicehost";
 import { fromHex, uniqueName } from "../jdom/utils";
 import SoundPlayerServiceHost, { SoundPlayerSound } from "./soundplayerservicehost";
 import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analogsensorservicehost";
-import SoundLevelServiceHost from "./soundlevelservicehost";
 import RandomNumberGeneratorServiceHost from "./randomnumbergeneratorservicehost";
 import CompassServiceHost from "./compassservicehost";
 
@@ -147,6 +146,12 @@ const touchButton: AnalogSensorServiceHostOptions = {
     highThreshold: 0.8,
     readingValues: [0],
     variant: AnalogButtonVariant.Capacitive
+}
+const soundLevel: AnalogSensorServiceHostOptions = {
+    readingValues: [0],
+    lowThreshold: 10,
+    highThreshold: 70,
+    intensityValues: [false]
 }
 
 const _hosts: {
@@ -645,7 +650,7 @@ const _hosts: {
         {
             name: "sound level",
             serviceClasses: [SRV_SOUND_LEVEL],
-            services: () => [new SoundLevelServiceHost()]
+            services: () => [new AnalogSensorServiceHost(SRV_SOUND_LEVEL, soundLevel)]
         },
         {
             name: "sound player (micro:bit v2 sounds)",
