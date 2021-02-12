@@ -16,6 +16,8 @@ import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 import Helmet from "react-helmet"
 import Flags from "../../../../src/jdom/flags";
 import DarkModeContext from "../ui/DarkModeContext";
+import useServiceClient from "../useServiceClient";
+import { RoleManagerClient } from "../../../../src/jdom/rolemanagerclient";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -30,11 +32,14 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 }
 
 function Carousel() {
+    const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const devices = useDevices({ announced: true, ignoreSelf: true })
         // ignore MakeCode device (role manager)
         .filter(device => device.serviceClasses.indexOf(SRV_ROLE_MANAGER) < 0)
         // show best in front
         .sort(deviceSort);
+    const roleManager = useChange(bus, b => b.services({ serviceClass: SRV_ROLE_MANAGER })[0]);
+    const roleManagerClient = useServiceClient(roleManager, srv => new RoleManagerClient(srv));
     const handleAdd = () => {
         // list all devices connected to the bus
         // and query for them, let makecode show the missing ones
@@ -54,10 +59,17 @@ function Carousel() {
             broadcast: true
         }, "*")
     }
+    const handleStartSimulators = () => {
+        roleManagerClient?.startSimulators();
+    }
 
     return <Grid container alignItems="flex-start" spacing={1}>
         {devices.map(device => <DashboardDeviceItem key={device.id}
             device={device} variant="icon" showAvatar={false} />)}
+        <Grid item>
+            <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
+                onClick={handleStartSimulators} aria-label={"Start Simulators"}>Start simulators</Button>
+        </Grid>
         <Grid item>
             <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
                 onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
@@ -81,6 +93,7 @@ export default function Page() {
         },
     })
     const theme = responsiveFontSizes(rawTheme);
+
     useEffect(() => toggleDarkMode('dark'), []); // always dark mode
     // test mode
     useEffect(() => {
