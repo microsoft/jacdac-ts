@@ -176,8 +176,8 @@ function LayoutWithDarkMode(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { pageContext } = pageProps;
   console.log({ pageContext })
-  const { frontMatter } = pageContext || {};
-  const { fullScreen = false } = frontMatter || {};
+  const { frontmatter } = pageContext || {};
+  const { fullScreen } = frontmatter || {};
   const { darkMode, darkModeMounted } = useContext(DarkModeContext)
   const isDark = darkMode === 'dark'
   const themeDef: ThemeOptions = {
@@ -199,9 +199,14 @@ function LayoutWithDarkMode(props: LayoutProps) {
   if (!darkModeMounted)
     return <div />
 
+  if (fullScreen)
+    return <MDXProvider components={mdxComponents}>
+      {element}
+    </MDXProvider>
+
   return <ThemedLayout theme={theme}>
     <MDXProvider components={mdxComponents}>
-      {fullScreen ? element : <LayoutWithContext {...props} />}
+      <LayoutWithContext {...props} />
     </MDXProvider>
   </ThemedLayout>
 }
@@ -209,8 +214,8 @@ function LayoutWithDarkMode(props: LayoutProps) {
 function MainAppBar(props: LayoutProps) {
   const { props: pageProps } = props;
   const { pageContext } = pageProps;
-  const { frontMatter } = pageContext || {};
-  const { pageTitle, hideMainMenu = false } = frontMatter || {};
+  const { frontmatter } = pageContext || {};
+  const { pageTitle } = frontmatter || {};
 
   const classes = useStyles();
   const { drawerType, widgetMode, toolsMenu, setToolsMenu } = useContext(AppContext)
@@ -272,8 +277,8 @@ function FabBar() {
 function LayoutWithContext(props: LayoutProps) {
   const { element, props: pageProps } = props;
   const { pageContext, path } = pageProps;
-  const { frontMatter } = pageContext || {};
-  const { hideMainMenu = false, hideUnderConstruction = false } = frontMatter || {};
+  const { frontmatter } = pageContext || {};
+  const { hideMainMenu = false, hideUnderConstruction = false } = frontmatter || {};
 
   const classes = useStyles();
   const { darkMode } = useContext(DarkModeContext)

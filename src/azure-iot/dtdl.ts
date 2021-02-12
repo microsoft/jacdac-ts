@@ -123,7 +123,7 @@ function toUnit(pkt: jdspec.PacketInfo) {
     if (["#", "/"].indexOf(field.unit) > -1)
         return undefined;
 
-    console.warn(`unsupported unit ${field.unit}`)
+    //console.warn(`unsupported unit ${field.unit}`)
     return undefined;
 }
 
@@ -171,7 +171,7 @@ function fieldType(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, field: jdspe
     }
 
     if (!type)
-        console.warn(`unknown field type ${field.type}`, field)
+        //console.warn(`unknown field type ${field.type}`, field)
 
     return {
         name: field.name == "_" ? pkt.name : field.name,
@@ -223,7 +223,7 @@ function toSchema(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo, supportsArray
 
     // check if arrays are supported
     if (!supportsArray) {
-        console.warn(`arrays not supported in ${srv.shortName}.${pkt.name}`)
+        //console.warn(`arrays not supported in ${srv.shortName}.${pkt.name}`)
         return undefined;
     }
 
@@ -283,12 +283,12 @@ function packetToDTDL(srv: jdspec.ServiceSpec, pkt: jdspec.PacketInfo): DTDLCont
                 dtdl["@type"] = [dtdl["@type"], unit.semantic]
             break;
         default:
-            console.log(`unknown packet kind ${pkt.kind}`)
+            //console.log(`unknown packet kind ${pkt.kind}`)
             break;
     }
 
     if (!dtdl.schema) {
-        console.log(`unknown schema for ${srv.name}.${pkt.name}`);
+        //console.log(`unknown schema for ${srv.name}.${pkt.name}`);
         return undefined;
     }
 
