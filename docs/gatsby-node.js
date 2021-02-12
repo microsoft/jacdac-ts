@@ -9,16 +9,22 @@ const { IgnorePlugin } = require('webpack')
 async function createServicePages(graphql, actions, reporter) {
   const { createPage, createRedirect } = actions
   const result = await graphql(`
-{
-  allServicesJson {
-    nodes {
-      name
-      shortName
-      shortId
-      classIdentifier
+  {
+    allServicesJson {
+      nodes {
+        name
+        shortName
+        shortId
+        classIdentifier
+      }
+    }
+    allServicesSourcesJson {
+      nodes {
+        source
+        classIdentifier
+      }
     }
   }
-}
 `)
 
   if (result.errors) {
@@ -34,16 +40,21 @@ async function createServicePages(graphql, actions, reporter) {
   // Instagram post. Since the scraped Instagram data
   // already includes an ID field, we just use that for
   // each page's path.
-  result.data.allServicesJson.nodes.forEach(node => {
-    const p = `/services/${node.shortId}/`;
+  result.data.allServicesJson.nodes.map((node) => {
+    const { classIdentifier, shortId } = node;
+    const p = `/services/${shortId}/`;
     const pplay = `${p}playground/`
     const ptest = `${p}test/`
-    const r = `/services/0x${node.classIdentifier.toString(16)}`
+    const r = `/services/0x${classIdentifier.toString(16)}`
+
+    const source = result.data.allServicesSourcesJson.nodes.find(node => node.classIdentifier === classIdentifier).source
+
     createPage({
       path: p,
       component: slash(serviceTemplate),
       context: {
-        node
+        classIdentifier,
+        source,
       },
     })
     createPage({

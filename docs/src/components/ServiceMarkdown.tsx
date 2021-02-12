@@ -3,16 +3,20 @@ import Markdown from "./ui/Markdown";
 import ServiceSpecificationStatusAlert from "./ServiceSpecificationStatusAlert"
 import { Button, Link } from "gatsby-theme-material-ui";
 import DeviceSpecificationList from "./DeviceSpecificationList";
+import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec";
 
 export default function ServiceMarkdown(props: {
-    service: jdspec.ServiceSpec
+    classIdentifier: number,
+    source: string
 }) {
-    const { service: node } = props;
-    const { shortId, classIdentifier } = node;
+    const { classIdentifier, source } = props;
+    const service = serviceSpecificationFromClassIdentifier(classIdentifier)
+    const { shortId } = service;
+
 
     return <>
-        <ServiceSpecificationStatusAlert specification={node} />
-        <Markdown source={node.source} />
+        <ServiceSpecificationStatusAlert specification={service} />
+        <Markdown source={source} />
 
         <div>
             <Button variant="contained" to={`/services/${shortId}/playground/`}>Playground</Button>

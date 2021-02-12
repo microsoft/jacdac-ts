@@ -1,5 +1,3 @@
-import { Link } from 'gatsby-theme-material-ui';
-import { serviceSpecificationFromClassIdentifier } from "../../../src/jdom/spec"
 import ServiceMarkdown from "../components/ServiceMarkdown"
 
-<ServiceMarkdown service={serviceSpecificationFromClassIdentifier(props.pageContext.node.classIdentifier)} />
+<ServiceMarkdown {...props.pageContext} />
