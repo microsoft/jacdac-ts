@@ -1,96 +1,30 @@
-import React, { useCallback, useRef } from "react";
+import React, { lazy, Suspense, useCallback } from "react";
 import { AccelerometerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { Canvas, useFrame } from "react-three-fiber"
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { JDRegister } from "../../../../src/jdom/register";
-import { Mesh } from "three";
-import { Grid, Slider, Mark } from "@material-ui/core";
-import { roundWithPrecision } from "../../../../src/jacdac";
-import { Line, Plane, OrbitControls } from "@react-three/drei";
+import { Grid, Slider, Mark, CircularProgress, NoSsr } from "@material-ui/core";
+import { roundWithPrecision } from "../../../../src/jdom/utils";
+import { Vector } from "../widgets/threeutils";
 
-function lerp(v0: number, v1: number, t: number) {
-    return v0 * (1 - t) + v1 * t
-}
-
-function Axis(props: {}) {
-    const lineProps = {
-        lineWidth: 4,                 // In pixels (default)
-        dashed: false                // Default
-    };
-    const c = 1;
-    return <>
-        <Line
-            points={[[0, 0, 0], [c, 0, 0]]}       // Array of points
-            color="blue"
-            {...lineProps}
-        />
-        <Line
-            points={[[0, 0, 0], [0, c, 0]]}       // Array of points
-            color="red"
-            {...lineProps}
-        />
-        <Line
-            points={[[0, 0, 0], [0, 0, c]]}       // Array of points
-            color="black"
-            {...lineProps}
-        />
-    </>
-}
-
-function Cube(props: { color: string, register: JDRegister }) {
-    const { color, register } = props;
-    const meshRef = useRef<Mesh>()
-
-    // updates outside of react
-    useFrame(() => {
-        const { current: mesh } = meshRef;
-        if (!mesh) return;
-
-        const forces = register.unpackedValue;
-        if (!forces) return;
-
-        const [x, y, z] = forces;
-        const roll = Math.atan2(-y, z);
-        const pitch = Math.atan(x / (y * y + z * z));
-
-        mesh.rotation.x = lerp(mesh.rotation.x, roll, 0.1)
-        mesh.rotation.z = lerp(mesh.rotation.z, pitch, 0.1);
-    })
-
-    return <mesh ref={meshRef} receiveShadow castShadow>
-        <boxBufferGeometry attach="geometry" />
-        <meshPhongMaterial attach="material" color={color} />
-    </mesh>
-}
-
-function CanvasWidget(props: { color: string, register: JDRegister }) {
-    return <Canvas shadowMap camera={{ position: [-1, 0.5, 2], fov: 50 }}>
-        <hemisphereLight intensity={0.35} />
-        <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
-        <Plane receiveShadow={true} castShadow={true} args={[5, 5]} position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} />
-        <Axis />
-        <Cube {...props} />
-        <OrbitControls />
-    </Canvas>
-}
+const CanvasWidget = lazy(() => import("../widgets/CanvasWidget"));
 
 const valueDisplay = (v: number) => roundWithPrecision(v, 1)
 function Sliders(props: { host: SensorServiceHost<[number, number, number]>, register: JDRegister }) {
     const { host, register } = props;
     const forces = useRegisterUnpackedValue<[number, number, number]>(register);
     const handleChangeX = useCallback((event: unknown, newValue: number | number[]) => {
-        const [x, y, z] = host.reading.values();
+        const [, y] = host.reading.values();
         const n = newValue as any as number;
         const nz = -Math.sqrt(1 - (n * n + y * y));
         host.reading.setValues([n, y, nz]);
         register.sendGetAsync()
     }, [host, register])
     const handleChangeY = useCallback((event: unknown, newValue: number | number[]) => {
-        const [x, y, z] = host.reading.values();
+        const [x,] = host.reading.values();
         const n = newValue as any as number;
         const nz = -Math.sqrt(1 - (x * x + n * n));
         host.reading.setValues([x, n, nz]);
@@ -138,17 +72,35 @@ function Sliders(props: { host: SensorServiceHost<[number, number, number]>, reg
     </>
 }
 
+function lerp(v0: number, v1: number, t: number) {
+    return v0 * (1 - t) + v1 * t
+}
+
 export default function DashboardAccelerometer(props: DashboardServiceProps) {
     const { service } = props;
     const register = service.register(AccelerometerReg.Forces);
     const host = useServiceHost<SensorServiceHost<[number, number, number]>>(service);
     const color = host ? "secondary" : "primary"
     const { active } = useWidgetTheme(color)
+    const rotator = useCallback((delta: number, rotation: Vector) => {
+        const forces = register.unpackedValue;
+        if (!forces) return undefined;
+        const [x, y, z] = forces;
+        const roll = Math.atan2(-y, z);
+        const pitch = Math.atan(x / (y * y + z * z));
 
+        return {
+            x: lerp(rotation.x, roll, 0.1),
+            y: 0,
+            z: lerp(rotation.z, pitch, 0.1)
+        }
+    }, [register])
 
     return <Grid container direction="row">
-        <Grid item style={({ height: "20vh", width: "20vh" })}>
-            <CanvasWidget color={active} register={register} />
+        <Grid item style={({ height: "20vh", width: "20vw" })}>
+            <NoSsr><Suspense fallback={<CircularProgress disableShrink variant="indeterminate" size="1rem" />}>
+                <CanvasWidget showAxes={true} color={active} rotator={rotator} />
+            </Suspense></NoSsr>
         </Grid>
         {host && <Sliders host={host} register={register} />}
     </Grid>

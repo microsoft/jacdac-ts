@@ -1,51 +1,15 @@
-import React, { useRef } from "react";
+import React, { Suspense, useCallback } from "react";
 import { GyroscopeReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { Canvas, useFrame } from "react-three-fiber"
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import { JDRegister } from "../../../../src/jdom/register";
-import { Mesh } from "three";
-import { Grid, Mark, Slider } from "@material-ui/core";
-import { roundWithPrecision } from "../../../../src/jacdac";
-import { Plane } from "@react-three/drei";
-
-function Cube(props: { color: string, register: JDRegister }) {
-    const { color, register } = props;
-    const meshRef = useRef<Mesh>()
-
-    // updates outside of react
-    useFrame((state, delta) => {
-        const { current: mesh } = meshRef;
-        if (!mesh) return;
-
-        const rates = register.unpackedValue;
-        if (!rates) return;
-
-        const [x, y, z] = rates; // degrees
-        const degreesToRadians = Math.PI / 180;
-        const f = delta * degreesToRadians;
-        mesh.rotation.x += x * f;
-        mesh.rotation.y += -z * f;
-        mesh.rotation.z += -y * f;
-    })
-
-    return <mesh ref={meshRef} receiveShadow castShadow>
-        <boxBufferGeometry attach="geometry" />
-        <meshPhongMaterial attach="material" color={color} />
-    </mesh>
-}
-
-function CanvasWidget(props: { color: string, register: JDRegister }) {
-    return <Canvas shadowMap camera={{ position: [1, 0.5, 2], fov: 50 }}>
-        <hemisphereLight intensity={0.35} />
-        <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
-        <Plane receiveShadow={true} castShadow={true} args={[5, 5]} position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} />
-        <Cube {...props} />
-    </Canvas>
-}
+import { CircularProgress, Grid, Mark, NoSsr, Slider } from "@material-ui/core";
+import { roundWithPrecision } from "../../../../src/jdom/utils";
+import CanvasWidget from "../widgets/CanvasWidget";
+import { Vector } from "../widgets/threeutils";
 
 function Sliders(props: { host: SensorServiceHost<[number, number, number]>, register: JDRegister }) {
     const { host, register } = props;
@@ -116,10 +80,25 @@ export default function DashboardGyroscope(props: DashboardServiceProps) {
     const host = useServiceHost<SensorServiceHost<[number, number, number]>>(service);
     const color = host ? "secondary" : "primary"
     const { active } = useWidgetTheme(color)
+    const rotator = useCallback((delta, rotation: Vector) => {
+        const rates = register.unpackedValue;
+        if (!rates) return;
+
+        const [x, y, z] = rates; // degrees
+        const degreesToRadians = Math.PI / 180;
+        const f = delta * degreesToRadians;
+        return {
+            x: rotation.x + x * f,
+            y: rotation.y - z * f,
+            z: rotation.z - y * f
+        }
+    }, [register])
 
     return <Grid container direction="row">
         <Grid item style={({ height: "20vh", width: "20vh" })}>
-            <CanvasWidget color={active} register={register} />
+            <NoSsr><Suspense fallback={<CircularProgress disableShrink variant="indeterminate" size="1rem" />}>
+                <CanvasWidget color={active} rotator={rotator} />
+            </Suspense></NoSsr>
         </Grid>
         {host && <Sliders host={host} register={register} />}
     </Grid>
