@@ -2,7 +2,7 @@ const maxImageWidth = 800
 module.exports = {
   siteMetadata: {
     title: `Jacdac`,
-    description: `USB for low-cost microcontrollers.`,
+    description: `plug-n-play for microcontrollers.`,
     author: `Microsoft`,
     siteUrl: `https://microsoft.github.io/jacdac-ts`
   },
