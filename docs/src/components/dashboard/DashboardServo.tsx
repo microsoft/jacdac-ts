@@ -2,18 +2,18 @@
 import React, { } from "react";
 import { ServoReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import { useRegisterBoolValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
 import useServiceHost from "../hooks/useServiceHost";
 import useWidgetSize from "../widgets/useWidgetSize";
-import { JDService } from "../../../../src/jacdac";
 import useThrottledValue from "../hooks/useThrottledValue";
 import { SG90_RESPONSE_SPEED } from "../../../../src/hosts/hosts";
 import { Grid } from "@material-ui/core";
 import ServoServiceHost from "../../../../src/hosts/servoservicehost";
 import RegisterInput from "../RegisterInput";
 import PowerButton from "../widgets/PowerButton";
+import { JDService } from "../../../../src/jdom/service";
 
 function useActualAngle(service: JDService) {
     const [angle] = useRegisterUnpackedValue<[number]>(service.register(ServoReg.Angle));

@@ -4,7 +4,7 @@ import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { Grid, TextField } from "@material-ui/core";
 import VoiceChatIcon from '@material-ui/icons/VoiceChat';
 import CmdButton from "../CmdButton";
-import { jdpack } from "../../../../src/jacdac";
+import { jdpack } from "../../../../src/jdom/pack";
 
 
 export default function DashboardSpeechSynthesis(props: DashboardServiceProps) {

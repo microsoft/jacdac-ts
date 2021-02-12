@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from "@material-ui/core";
 import React, { useState } from "react";
 import { useId } from "react-use-id-hook";
-import { JDDevice } from "../../../../src/jacdac";
+import { JDDevice } from "../../../../src/jdom/device";
 import DeviceActions from "../DeviceActions";
 import useDeviceHost from "../hooks/useDeviceHost";
 

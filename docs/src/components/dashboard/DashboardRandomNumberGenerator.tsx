@@ -3,11 +3,13 @@ import { DashboardServiceProps } from "./DashboardServiceWidget";
 import useServiceHost from "../hooks/useServiceHost";
 import { Grid, TextField } from "@material-ui/core";
 import Packet from "../../../../src/jdom/packet";
-import { jdpack, RngCmd, toHex } from "../../../../src/jacdac";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import RefreshIcon from '@material-ui/icons/Refresh';
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useMounted from "../hooks/useMounted";
+import { RngCmd } from "../../../../src/jdom/constants";
+import { jdpack } from "../../../../src/jdom/pack";
+import { toHex } from "../../../../src/jdom/utils";
 
 export default function DashboardRandomNumberGenerator(props: DashboardServiceProps) {
     const { service } = props;

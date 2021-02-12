@@ -15,7 +15,7 @@ import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import useServiceHost from "../hooks/useServiceHost";
 import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
 import LightWidget from "../widgets/LightWidget";
-import { LedPixelCmd } from "../../../../src/jacdac";
+import { LedPixelCmd } from "../../../../src/jdom/constants";
 /*
 0xD6: range P=0 N=length W=1 S=0- range from pixel P, Npixels long (currently unsupported: every Wpixels skip Spixels)
 */

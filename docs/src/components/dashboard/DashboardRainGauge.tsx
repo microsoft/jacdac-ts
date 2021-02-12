@@ -10,9 +10,9 @@ import useThrottledValue from "../hooks/useThrottledValue";
 import RainGaugeServiceHost from "../../../../src/hosts/RainGaugeServiceHost"
 import useChange from "../../jacdac/useChange";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { roundWithPrecision } from "../../../../src/jacdac";
 import { useId } from "react-use-id-hook";
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
+import { roundWithPrecision } from "../../../../src/jdom/utils";
 
 const TILT = 15;
 

@@ -1,23 +1,20 @@
 import React from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";
-import { SoundLevelReg } from "../../../../src/jacdac";
-import { Grid, Slider, Switch } from "@material-ui/core";
+import { Grid, Slider } from "@material-ui/core";
 import RegisterTrend from "../RegisterTrend";
 import { useId } from "react-use-id-hook"
 import SoundLevelServiceHost from "../../../../src/hosts/soundlevelservicehost"
 import MicIcon from '@material-ui/icons/Mic';
+import { SoundLevelReg } from "../../../../src/jdom/constants";
 
 export default function DashboardSoundLevel(props: DashboardServiceProps) {
-    const { service, services, variant } = props;
+    const { service } = props;
     const soundLevelRegister = service.register(SoundLevelReg.SoundLevel);
     const [soundLevel] = useRegisterUnpackedValue<[number]>(soundLevelRegister);
-    const [enabled] = useRegisterUnpackedValue<[boolean]>(service.register(SoundLevelReg.Enabled));
     const host = useServiceHost<SoundLevelServiceHost>(service);
     const color = host ? "secondary" : "primary";
-    const labelId = useId();
 
     const onChange = (event: unknown, newValue: number | number[]): void => {
         const svalue = newValue as number;

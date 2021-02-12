@@ -1,8 +1,9 @@
 import React from "react"
 import { Mark } from "@material-ui/core";
-import { JDService, SystemEvent, SystemReg } from "../../../../src/jacdac";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import EventBadge from "../ui/EventBadge"
+import { JDService } from "../../../../src/jdom/service";
+import { SystemEvent, SystemReg } from "../../../../src/jdom/constants";
 
 export default function useThresholdMarks(service: JDService, color?: "primary" | "secondary"): Mark[] {
     const marks: Mark[] = [];

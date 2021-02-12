@@ -11,7 +11,7 @@ import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import { Grid, Slider } from "@material-ui/core";
 import LEDServiceHost, { LedAnimation, LedAnimationStepsType } from "../../../../src/hosts/ledservicehost";
 import { LedReg } from "../../../../src/jdom/constants";
-import { hsvToCss } from "../../../../src/jacdac";
+import { hsvToCss } from "../../../../src/jdom/color";
 
 export default function DashboardLED(props: DashboardServiceProps) {
     const { bus } = useContext<JacdacContextProps>(JacdacContext)

@@ -7,11 +7,11 @@ import ChipList from "./ui/ChipList";
 import { deviceSpecificationsForService, isSensor, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../src/jdom/spec";
 import { arrayConcatMany, unique } from "../../../src/jdom/utils";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
-import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jacdac";
 import KindIcon from "./KindIcon";
 import { hostDefinitionFromServiceClass } from "../../../src/hosts/hosts";
 import JacdacIcon from "./icons/JacdacIcon";
 import SpeedIcon from '@material-ui/icons/Speed';
+import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
 
 interface ServiceFilter {
     query: string;
