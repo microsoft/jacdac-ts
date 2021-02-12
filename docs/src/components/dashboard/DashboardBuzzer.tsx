@@ -1,13 +1,14 @@
 
-import { Button, ButtonGroup, createStyles, Grid, makeStyles, Slider } from "@material-ui/core";
-import React, { useRef } from "react";
+import { Button, createStyles, Grid, makeStyles, Slider } from "@material-ui/core";
+import React, { useEffect, useRef } from "react";
 import { BuzzerCmd, BuzzerReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { jdpack } from "../../../../src/jdom/pack";
-import { initAudioContext } from "../../../../src/hosts/buzzerservicehost";
 import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useServiceHost from "../hooks/useServiceHost";
+import { useAudioContext } from "../hooks/useAudioContext";
+import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost";
 
 const useStyles = makeStyles(() => createStyles({
     btn: {
@@ -20,11 +21,17 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     const { service } = props;
     const classes = useStyles();
     const gridRef = useRef<HTMLDivElement>();
-    const host = useServiceHost(service);
+    const host = useServiceHost<BuzzerServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const volumeRegister = service.register(BuzzerReg.Volume);
     const [volume] = useRegisterUnpackedValue<[number]>(volumeRegister)
     const keyboardProps = useKeyboardNavigationProps(gridRef.current)
+    const { playTone, setVolume } = useAudioContext(volume);
+
+    // listen for playTone commands from the buzzer
+    useEffect(() => host?.subscribe<[number, number]>(BuzzerServiceHost.PLAY_TONE, args => {
+        playTone?.(args[0], args[1])
+    }), [host]);
 
     const notes = [
         { name: "C", frequency: 261.64 },
@@ -36,7 +43,6 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
         { name: "B", frequency: 493.92 },
     ];
     const sendPlayTone = async (f: number) => {
-        initAudioContext();
         const vol = 1;
         const period = 1000000 / f;
         const duty = period * vol / 2;
@@ -52,6 +58,7 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     const handleChange = async (ev: unknown, newValue: number | number[]) => {
         volumeRegister.sendSetPackedAsync("u0.8", [newValue], true);
     }
+    useEffect(() => setVolume(volume), [volume]);
 
     return <Grid ref={gridRef} container alignItems="center" alignContent="space-between">
         {notes.map(note => <Grid key={note.frequency} item xs><Button
@@ -70,7 +77,7 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
                 aria-label="volume"
                 value={volume}
                 color={color}
-                onChange={handleChange}  
+                onChange={handleChange}
             />
         </Grid>
     </Grid>
