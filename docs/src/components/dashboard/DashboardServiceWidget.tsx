@@ -256,7 +256,7 @@ export default function DashboardServiceWidget(props: React.Attributes & Dashboa
     const component = serviceViews[specification.classIdentifier]?.component;
     // no special support
     if (!component)
-        return createElement(component, props);;
+        return createElement(DefaultWidget, props);;
 
     return <NoSsr>
         <Suspense fallback={null}>
