@@ -194,12 +194,13 @@ export default class DeviceHost extends JDEventSource {
             if (!pkt.isCommand)
                 return; // only commands supported
             const multiCommandClass = pkt.serviceClass;
-            const h = this._services.find(s => s.serviceClass == multiCommandClass);
-            if (h) {
-                // pretend it's directly addressed to us
-                pkt.deviceIdentifier = this.deviceId
-                pkt.serviceIndex = h.serviceIndex
-                h.handlePacket(pkt)
+            for (const h of this._services) {
+                if (h.serviceClass == multiCommandClass) {
+                    // pretend it's directly addressed to us
+                    pkt.deviceIdentifier = this.deviceId
+                    pkt.serviceIndex = h.serviceIndex
+                    h.handlePacket(pkt)
+                }
             }
         } else if (devIdMatch) {
             if (!pkt.isCommand)
