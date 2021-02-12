@@ -1,4 +1,4 @@
-import React, { createElement, FunctionComponent, useMemo } from "react";
+import React, { createElement, FunctionComponent, lazy, useMemo, Suspense } from "react";
 import {
     SRV_ACCELEROMETER, SRV_ANALOG_BUTTON, SRV_ARCADE_GAMEPAD, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_COLOR,
@@ -15,42 +15,44 @@ import {
     SRV_WIND_DIRECTION, SystemReg,
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
-import DashboardAccelerometer from "./DashboardAccelerometer";
-import DashboardBuzzer from "./DashboardBuzzer";
-import DashboardLEDPixel from "./DashboardLEDPixel";
-import DashboardRoleManager from "./DashboardRoleManager";
-import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
-import DashboardButton from "./DashboardButton";
 import { isRegister } from "../../../../src/jdom/spec";
 import RegisterInput from "../RegisterInput";
-import DashboardServo from "./DashboardServo";
 import { JDRegister } from "../../../../src/jdom/register";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import DashboardSwitch from "./DashboardSwitch";
-import DashboardTrafficLight from "./DashboardTrafficLight";
-import DashboardCharacterScreen from "./DashboardCharacterScreen";
-import DashbaordRainGauge from "./DashboardRainGauge";
-import DashboardLEDMatrix from "./DashboardLEDMatrix";
-import DashboardArcadeGamepad from "./DashboardArcadeGamepad";
-import DashboardWindDirection from "./DashboardWindDirection";
-import DashboardMatrixKeypad from "./DashboardMatrixKeypad";
-import DashboardReflectedLight from "./DashboardReflectedLight";
-import DashboardPower from "./DashboardPower";
-import DashboardSpeechSynthesis from "./DashboardSpeechSynthesis";
-import DashboardSoilMoisture from "./DashboardSoilMoisture";
-import DashboardRealTimeClock from "./DashboardRealTimeClock";
-import DashboardLED from "./DashboardLED";
-import DashboardJoystick from "./DashboardJoystick";
-import DashboardSevenSegmentDisplay from "./DashboardSevenSegmentDisplay";
-import DashboardMotion from "./DashboardMotion";
-import DashbaordWaterLevel from "./DashboardWaterLevel";
-import DashboardColor from "./DashboardColor";
-import DashboardSoundPlayer from "./DashboardSoundPlayer";
-import DashboardAnalogButton from "./DashboardAnalogButton";
-import DashboardSoundLevel from "./DashboardSoundLevel";
-import DashboardRandomNumberGenerator from "./DashboardRandomNumberGenerator";
-import DashboardCompass from "./DashboardCompass";
-import DashboardGyroscope from "./DashboardGyroscope";
+import { NoSsr } from '@material-ui/core';
+
+const DashboardButton = lazy(() => import("./DashboardButton"));
+const DashboardAccelerometer = lazy(() => import("./DashboardAccelerometer"));
+const DashboardBuzzer = lazy(() => import("./DashboardBuzzer"));
+const DashboardLEDPixel = lazy(() => import("./DashboardLEDPixel"));
+const DashboardRoleManager = lazy(() => import("./DashboardRoleManager"));
+const DashboardRotaryEncoder = lazy(() => import("./DashboardRotaryEncoder"));
+const DashboardServo = lazy(() => import("./DashboardServo"));
+const DashboardSwitch = lazy(() => import("./DashboardSwitch"));
+const DashboardTrafficLight = lazy(() => import("./DashboardTrafficLight"));
+const DashboardCharacterScreen = lazy(() => import("./DashboardCharacterScreen"));
+const DashboardRainGauge = lazy(() => import("./DashboardRainGauge"));
+const DashboardLEDMatrix = lazy(() => import("./DashboardLEDMatrix"));
+const DashboardArcadeGamepad = lazy(() => import("./DashboardArcadeGamepad"));
+const DashboardWindDirection = lazy(() => import("./DashboardWindDirection"));
+const DashboardMatrixKeypad = lazy(() => import("./DashboardMatrixKeypad"));
+const DashboardReflectedLight = lazy(() => import("./DashboardReflectedLight"));
+const DashboardPower = lazy(() => import("./DashboardPower"));
+const DashboardSpeechSynthesis = lazy(() => import("./DashboardSpeechSynthesis"));
+const DashboardSoilMoisture = lazy(() => import("./DashboardSoilMoisture"));
+const DashboardRealTimeClock = lazy(() => import("./DashboardRealTimeClock"));
+const DashboardLED = lazy(() => import("./DashboardLED"));
+const DashboardJoystick = lazy(() => import("./DashboardJoystick"));
+const DashboardSevenSegmentDisplay = lazy(() => import("./DashboardSevenSegmentDisplay"));
+const DashboardMotion = lazy(() => import("./DashboardMotion"));
+const DashboardWaterLevel = lazy(() => import("./DashboardWaterLevel"));
+const DashboardColor = lazy(() => import("./DashboardColor"));
+const DashboardSoundPlayer = lazy(() => import("./DashboardSoundPlayer"));
+const DashboardAnalogButton = lazy(() => import("./DashboardAnalogButton"));
+const DashboardSoundLevel = lazy(() => import("./DashboardSoundLevel"));
+const DashboardRandomNumberGenerator = lazy(() => import("./DashboardRandomNumberGenerator"));
+const DashboardCompass = lazy(() => import("./DashboardCompass"));
+const DashboardGyroscope = lazy(() => import("./DashboardGyroscope"));
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -101,7 +103,7 @@ const serviceViews: {
         weight: (srv) => 3
     },
     [SRV_RAIN_GAUGE]: {
-        component: DashbaordRainGauge,
+        component: DashboardRainGauge,
     },
     [SRV_LED_MATRIX]: {
         component: DashboardLEDMatrix,
@@ -145,7 +147,7 @@ const serviceViews: {
         component: DashboardMotion,
     },
     [SRV_WATER_LEVEL]: {
-        component: DashbaordWaterLevel,
+        component: DashboardWaterLevel,
     },
     [SRV_COLOR]: {
         component: DashboardColor,
@@ -251,8 +253,16 @@ function DefaultWidget(props: DashboardServiceProps) {
 export default function DashboardServiceWidget(props: React.Attributes & DashboardServiceProps): JSX.Element {
     const { service } = props;
     const { specification } = service;
-    const component = serviceViews[specification.classIdentifier]?.component || DefaultWidget;
-    return createElement(component, props);
+    const component = serviceViews[specification.classIdentifier]?.component;
+    // no special support
+    if (!component)
+        return createElement(component, props);;
+
+    return <NoSsr>
+        <Suspense fallback={null}>
+            {createElement(component, props)}
+        </Suspense>
+    </NoSsr>
 }
 
 
