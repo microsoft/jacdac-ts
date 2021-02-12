@@ -15,7 +15,7 @@ import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
 
 interface ServiceFilter {
     query: string;
-    tags: string[];
+    tag?: string;
     sensors?: boolean;
     makeCode?: boolean;
     simulators?: boolean;
@@ -36,10 +36,9 @@ function FilterChip(props: { label: string, value: boolean, icon?: JSX.Element, 
 export default function ServiceCatalog() {
     const [filter, setFilter] = useState<ServiceFilter>({
         query: "",
-        tags: []
     })
     const [deboundedFilter] = useDebounce(filter, 200);
-    const { query, tags, makeCode, simulators, devices, sensors } = filter;
+    const { query, tag, makeCode, simulators, devices, sensors } = filter;
     const allTags = useMemo(() => unique(arrayConcatMany(serviceSpecifications().map(srv => srv.tags))), [])
     const services = useMemo(() => {
         const m = query.toLowerCase();
@@ -48,8 +47,8 @@ export default function ServiceCatalog() {
             const filter = (s: string) => s?.toLowerCase().indexOf(m) > -1;
             r = r.filter(srv => filter(srv.name) || filter(srv.notes["short"]));
         }
-        if (tags.length) {
-            r = r.filter(srv => tags.every(tag => srv.tags.indexOf(tag) > -1))
+        if (tag) {
+            r = r.filter(srv => srv.tags.indexOf(tag) > -1)
         }
         if (makeCode)
             r = r.filter(srv => !!resolveMakecodeServiceFromClassIdentifier(srv.classIdentifier))
@@ -67,12 +66,8 @@ export default function ServiceCatalog() {
             query: event.target.value,
         })
     }
-    const handleTagClick = (tag: string) => () => {
-        const i = tags.indexOf(tag);
-        if (i < 0)
-            setFilter({ ...filter, tags: [...tags, tag] });
-        else
-            setFilter({ ...filter, tags: [...tags.slice(0, i), ...tags.slice(i + 1)] })
+    const handleTagClick = (t: string) => () => {
+        setFilter({ ...filter, tag: tag === t ? "" : t });
     }
     const handleMakeCodeClick = () => setFilter({ ...filter, makeCode: !makeCode });
     const handleSimulatorClick = () => setFilter({ ...filter, simulators: !simulators });
@@ -101,10 +96,10 @@ export default function ServiceCatalog() {
         </Grid>
         <Grid item xs={12}>
             <ChipList>
-                {allTags.map(tag => <FilterChip key={tag} label={tag} onClick={handleTagClick(tag)}
-                    value={tags.indexOf(tag) > -1} />)}
-                <FilterChip label="Sensors" icon={<SpeedIcon />} value={sensors} onClick={handleSensorsClick} />
+                {allTags.map(t => <FilterChip key={t} label={t} onClick={handleTagClick(t)}
+                    value={tag === t} />)}
                 <Divider orientation="vertical" flexItem />
+                <FilterChip label="Sensors" icon={<SpeedIcon />} value={sensors} onClick={handleSensorsClick} />
                 <FilterChip label="Simulator" icon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />} value={simulators} onClick={handleSimulatorClick} />
                 <FilterChip label="Devices" icon={<JacdacIcon />} onClick={handleDevicesClick} value={devices} />
                 <FilterChip label="MakeCode" icon={<MakeCodeIcon />} value={makeCode} onClick={handleMakeCodeClick} />
