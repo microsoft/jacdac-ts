@@ -145,6 +145,10 @@ export class RoleManagerClient extends JDServiceClient {
         return (this.requestedRoles || []).map(rdp => rdp.toString()).join('\n')
     }
 
+    get missingRoles() {
+        return (this.requestedRoles || []).filter(role => !role.bound).length > 0
+    }
+
     startSimulators() {
         if (!this.requestedRoles) return;
 
@@ -166,8 +170,5 @@ export class RoleManagerClient extends JDServiceClient {
                 addHost(this.bus, arrayConcatMany(todo.map(t => t.hostDefinition.services())), parentName)
             }
         })
-        this.requestedRoles.filter(role => !role.bound)
-            .map(role => hostDefinitionFromServiceClass(role.serviceClass))
-            .filter(hostDefinition => !!hostDefinition)
     }
 }

@@ -1,14 +1,12 @@
 import React, { useContext, useEffect } from "react"
-import { Button, createMuiTheme, Paper, responsiveFontSizes } from "@material-ui/core";
+import { Button, createMuiTheme, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
 import { isReading, isValueOrIntensity, makeCodeServices, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
 import { arrayConcatMany, strcmp, unique } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
-import useChange from "../../jacdac/useChange";
-import { SRV_CONTROL, SRV_CTRL, SRV_LOGGER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
-import DashboardServiceWidget from "../dashboard/DashboardServiceWidget";
+import { SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import MakeCodeIcon from "../icons/MakeCodeIcon"
@@ -16,8 +14,9 @@ import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 import Helmet from "react-helmet"
 import Flags from "../../../../src/jdom/flags";
 import DarkModeContext from "../ui/DarkModeContext";
-import useServiceClient from "../useServiceClient";
-import { RoleManagerClient } from "../../../../src/jdom/rolemanagerclient";
+import KindIcon from "../KindIcon";
+import AppContext from "../AppContext";
+import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -32,14 +31,12 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
 }
 
 function Carousel() {
-    const { bus } = useContext<JacdacContextProps>(JacdacContext);
+    const { toggleShowDeviceHostsDialog } = useContext(AppContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
         // ignore MakeCode device (role manager)
         .filter(device => device.serviceClasses.indexOf(SRV_ROLE_MANAGER) < 0)
         // show best in front
         .sort(deviceSort);
-    const roleManager = useChange(bus, b => b.services({ serviceClass: SRV_ROLE_MANAGER })[0]);
-    const roleManagerClient = useServiceClient(roleManager, srv => new RoleManagerClient(srv));
     const handleAdd = () => {
         // list all devices connected to the bus
         // and query for them, let makecode show the missing ones
@@ -59,16 +56,13 @@ function Carousel() {
             broadcast: true
         }, "*")
     }
-    const handleStartSimulators = () => {
-        roleManagerClient?.startSimulators();
-    }
 
     return <Grid container alignItems="flex-start" spacing={1}>
         {devices.map(device => <DashboardDeviceItem key={device.id}
             device={device} variant="icon" showAvatar={false} />)}
         <Grid item>
-            <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
-                onClick={handleStartSimulators} aria-label={"Start Simulators"}>Start simulators</Button>
+            <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
+                onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
         </Grid>
         <Grid item>
             <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
