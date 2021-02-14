@@ -26,7 +26,7 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     const volumeRegister = service.register(BuzzerReg.Volume);
     const [volume] = useRegisterUnpackedValue<[number]>(volumeRegister)
     const keyboardProps = useKeyboardNavigationProps(gridRef.current)
-    const { playTone, setVolume } = useAudioContext(volume);
+    const { playTone, setVolume, setEnabled: enableAudio } = useAudioContext(volume);
 
     // listen for playTone commands from the buzzer
     useEffect(() => host?.subscribe<[number, number]>(BuzzerServiceHost.PLAY_TONE, args => {
@@ -43,6 +43,8 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
         { name: "B", frequency: 493.92 },
     ];
     const sendPlayTone = async (f: number) => {
+        if (host)
+            enableAudio(true); // enable audio context within click handler
         const vol = 1;
         const period = 1000000 / f;
         const duty = period * vol / 2;

@@ -5,28 +5,43 @@ const VOLUME_GAIN = 0.5;
 export function useAudioContext(defaultVolume?: number) {
     const contextRef = useRef<AudioContext>();
     const volumeRef = useRef<GainNode>();
-    const volume = volumeRef.current?.gain.value;
+    const [enabled, setEnabled] = useState(false);
 
     useEffect(() => {
-        const ctx = contextRef.current = new AudioContext();
+        if (!enabled) {
+            contextRef.current?.close();
+            contextRef.current = undefined;
+        } else {
+            try {
+                const ctx = contextRef.current = new AudioContext();
 
-        // play silence sound within onlick to unlock it
-        const buffer = ctx.createBuffer(1, 1, 22050);
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(ctx.destination);
-        source.start();
+                // play silence sound within onlick to unlock it
+                const buffer = ctx.createBuffer(1, 1, 22050);
+                const source = ctx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(ctx.destination);
+                source.start();
 
-        // output node with volume
-        const volumeNode = volumeRef.current = ctx.createGain();
-        volumeNode.connect(ctx.destination);
-        volumeNode.gain.value = (defaultVolume !== undefined ? defaultVolume : 0.2) * VOLUME_GAIN;
+                // output node with volume
+                const volumeNode = volumeRef.current = ctx.createGain();
+                volumeNode.connect(ctx.destination);
+                volumeNode.gain.value = (defaultVolume !== undefined ? defaultVolume : 0.2) * VOLUME_GAIN;
+
+            }
+            catch (e) {
+                contextRef.current = undefined;
+                volumeRef.current = undefined;
+                console.error(e);
+            }
+        }
 
         // cleanup
         return () => {
-            ctx.close();
+            contextRef.current?.close();
+            contextRef.current = undefined;
+            volumeRef.current = undefined;
         }
-    }, [])
+    }, [enabled])
 
     const setVolume = (v: number) => {
         if (volumeRef.current && !isNaN(v)) {
@@ -50,7 +65,7 @@ export function useAudioContext(defaultVolume?: number) {
     }
 
     return {
-        volume: volume,
+        setEnabled,
         setVolume,
         playTone
     }
