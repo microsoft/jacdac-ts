@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const VOLUME_GAIN = 0.5;
 
-export function useAudioContext(defaultVolume?: number) {
+export default function usePlayTone(defaultVolume?: number) {
     const contextRef = useRef<AudioContext>();
     const volumeRef = useRef<GainNode>();
 

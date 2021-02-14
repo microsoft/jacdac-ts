@@ -7,7 +7,7 @@ import { jdpack } from "../../../../src/jdom/pack";
 import useKeyboardNavigationProps from "../hooks/useKeyboardNavigationProps";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useServiceHost from "../hooks/useServiceHost";
-import { useAudioContext } from "../hooks/useAudioContext";
+import usePlayTone from "../hooks/usePlayTone";
 import BuzzerServiceHost from "../../../../src/hosts/buzzerservicehost";
 
 const useStyles = makeStyles(() => createStyles({
@@ -26,7 +26,7 @@ export default function DashboardBuzzer(props: DashboardServiceProps) {
     const volumeRegister = service.register(BuzzerReg.Volume);
     const [volume] = useRegisterUnpackedValue<[number]>(volumeRegister)
     const keyboardProps = useKeyboardNavigationProps(gridRef.current)
-    const { playTone, setVolume, onClickActivateAudioContext } = useAudioContext(volume);
+    const { playTone, setVolume, onClickActivateAudioContext } = usePlayTone(volume);
 
     // listen for playTone commands from the buzzer
     useEffect(() => host?.subscribe<[number, number]>(BuzzerServiceHost.PLAY_TONE, args => {
