@@ -15,7 +15,8 @@ export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const { service, services, variant } = props;
     const positionRegister = service.register(RotaryEncoderReg.Position);
     const [position = 0] = useRegisterUnpackedValue<[number]>(positionRegister);
-    const clicksPerTurn = 12;
+    const clicksPerTurnRegister = service.register(RotaryEncoderReg.ClicksPerTurn);
+    const [clicksPerTurn = 12] = useRegisterUnpackedValue<[number]>(clicksPerTurnRegister);
     const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<RotaryEncoderServiceHost>(service);
     const color = host ? "secondary" : "primary";
@@ -29,6 +30,7 @@ export default function DashboardRotaryEncoder(props: DashboardServiceProps) {
     const handleChange = async (ev: unknown, newValue: number | number[]) => {
         host?.reading.setValues([newValue as number]);
         positionRegister.refresh();
+        clicksPerTurnRegister.refresh();
     }
 
     const throttled = useThrottledValue(position, clicksPerTurn)
