@@ -1,7 +1,8 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
-import { READING_SENT, REFRESH, REPORT_UPDATE, SensorReg } from "../jdom/constants";
+import { CHANGE, READING_SENT, REFRESH, REPORT_UPDATE, SensorReg } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
+import TrafficLightServiceHost from "./trafficlightservicehost";
 
 export interface SensorServiceOptions<TReading extends any[]> extends ServiceHostOptions {
     readingValues?: TReading,
@@ -16,6 +17,7 @@ export default class SensorServiceHost<TReading extends any[]> extends ServiceHo
     readonly streamingInterval: RegisterHost<[number]>;
 
     private lastStream = 0;
+    private lastErrorReadingChanged = false;
 
     constructor(
         public readonly serviceClass: number,
@@ -32,6 +34,7 @@ export default class SensorServiceHost<TReading extends any[]> extends ServiceHo
         if (readingError !== undefined) {
             this.readingError = this.addRegister<TReading>(SystemReg.ReadingError, readingError);
             this.reading.errorRegister = this.readingError;
+            this.readingError.on(CHANGE, () => this.lastErrorReadingChanged = true)
         }
 
         this.on(REFRESH, this.refreshRegisters.bind(this));
@@ -51,13 +54,13 @@ export default class SensorServiceHost<TReading extends any[]> extends ServiceHo
             this.lastStream = now;
             this.streamingSamples.setValues([samples - 1]);
             this.reading.sendGetAsync();
-
-            // if there is an error register, send value as well.
-            // TODO: send in a single frame
-            const errorRegister = this.register(SystemReg.ReadingError);
-            errorRegister?.sendGetAsync();
-
             this.emit(READING_SENT);
+
+            // if the error changed, send value as well.
+            if (this.lastErrorReadingChanged) {
+                this.readingError?.sendGetAsync();
+                this.lastErrorReadingChanged = false;
+            }
         }
     }
 }
