@@ -51,6 +51,12 @@ export default class SensorServiceHost<TReading extends any[]> extends ServiceHo
             this.lastStream = now;
             this.streamingSamples.setValues([samples - 1]);
             this.reading.sendGetAsync();
+
+            // if there is an error register, send value as well.
+            // TODO: send in a single frame
+            const errorRegister = this.register(SystemReg.ReadingError);
+            errorRegister?.sendGetAsync();
+
             this.emit(READING_SENT);
         }
     }
