@@ -842,11 +842,9 @@ export class JDBus extends JDNode {
                         .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
                         // ask if data is missing or non-const/status code
                         .filter(reg => !reg.data
-                            || !(isConstRegister(reg.specification) || reg.code === SystemReg.StatusCode))
+                            || !(isConstRegister(reg.specification) || reg.code === SystemReg.StatusCode || reg.code === SystemReg.ReadingError))
                         // double double-query status light
                         .filter(reg => !reg.data || !(service.serviceClass === SRV_CONTROL && reg.code === ControlReg.StatusLight))
-                        // reading_error is streamed with reading
-                        .filter(reg => reg.code !== SystemReg.ReadingError)
                         // stop asking optional registers
                         .filter(reg => !reg.specification?.optional || reg.lastGetAttempts < REGISTER_OPTIONAL_POLL_COUNT)
                     )
