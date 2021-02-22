@@ -31,8 +31,7 @@ function HostMicrophoneButton(props: { host: AnalogSensorServiceHost }) {
         aria-label={title}
         title={title}
         indeterminate={enabled}
-        onClick={handleClick}
-    >
+        onClick={handleClick}>
         <MicIcon />
     </IconButtonWithProgress>
 }

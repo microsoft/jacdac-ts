@@ -29,7 +29,7 @@ function UnitTrendChart(props: {
     vpw: number,
     vph: number,
 } & TrendProps) {
-    const { dataSet, useGradient, data, unit, horizon, vpw, vph, dot, gradient } = props;
+    const { dataSet, useGradient, data, unit, horizon, vpw, vph, dot } = props;
 
     const shape = unit == "#" ? "step" : "line"
     const symmetric = unit == "g" ? true : false
@@ -61,7 +61,7 @@ function UnitTrendChart(props: {
     const strokeWidth = 0.25
     const axisWidth = 0.2
     const axisColor = "#ccc"
-    const pointRadius = strokeWidth * 2
+    const pointRadius = strokeWidth * 1.5
     const toffset = - pointRadius * 3
 
     function x(t: number) {

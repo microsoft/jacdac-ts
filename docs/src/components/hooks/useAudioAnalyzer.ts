@@ -14,7 +14,7 @@ function useAudioContext(enabled: boolean) {
     return context;
 }
 
-export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number) {
+export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number, smoothingTimeConstant?: number) {
     const audioContext = useAudioContext(enabled);
     const [analyzer, setAnalyzer] = useState<AnalyserNode>()
     const microphoneSource = useRef<MediaStreamAudioSourceNode>();
@@ -34,6 +34,7 @@ export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number) {
                         const source = microphoneSource.current = audioContext.createMediaStreamSource(resp);
                         const node = audioContext.createAnalyser()
                         node.fftSize = fftSize || 64;
+                        node.smoothingTimeConstant = smoothingTimeConstant || 0.1;
                         source.connect(node);
                         setAnalyzer(node);
                     }
@@ -59,7 +60,7 @@ export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number) {
 }
 
 export function useMicrophoneVolume(enabled: boolean) {
-    const analyzer = useMicrophoneAnalyzer(enabled, 64);
+    const analyzer = useMicrophoneAnalyzer(enabled, 64, 0.001);
     const frequencies = useMemo(() => analyzer && new Uint8Array(analyzer.frequencyBinCount), [analyzer]);
 
     if (!analyzer) return undefined;
