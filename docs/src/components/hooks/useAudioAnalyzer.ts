@@ -62,6 +62,7 @@ export function useMicrophoneAnalyzer(enabled: boolean, options?: AudioAnalyzerO
     // update options
     useEffect(() => {
         if (analyzer) {
+            // must be multiple of power of two
             if (!isNaN(fftSize))
                 analyzer.fftSize = fftSize;
             if (!isNaN(smoothingTimeConstant))
