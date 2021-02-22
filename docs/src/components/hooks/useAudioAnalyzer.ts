@@ -75,19 +75,3 @@ export function useMicrophoneAnalyzer(enabled: boolean, options?: AudioAnalyzerO
 
     return analyzer;
 }
-
-export function useMicrophoneVolume(enabled: boolean, options?: AudioAnalyzerOptions) {
-    const analyzer = useMicrophoneAnalyzer(enabled, options);
-    const frequencies = useMemo(() => analyzer && new Uint8Array(analyzer.frequencyBinCount), [analyzer]);
-
-    if (!analyzer) return undefined;
-    return () => {
-        analyzer?.getByteFrequencyData(frequencies);
-        let max = 0;
-        const n = frequencies.length;
-        for (let i = 0; i < n; ++i)
-            max = Math.max(max, frequencies[i]);
-        //dubious
-        return max / 0xff;
-    }
-}

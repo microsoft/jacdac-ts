@@ -11,7 +11,7 @@ import {
     SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_RNG, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SEVEN_SEGMENT_DISPLAY, SRV_SOIL_MOISTURE,
     SRV_SOUND_LEVEL,
-    SRV_SOUND_PLAYER, SRV_SPEECH_SYNTHESIS, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WATER_LEVEL,
+    SRV_SOUND_PLAYER, SRV_SOUND_SPECTRUM, SRV_SPEECH_SYNTHESIS, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WATER_LEVEL,
     SRV_WIND_DIRECTION, SystemReg,
 } from "../../../../src/jdom/constants";
 import { JDService } from "../../../../src/jdom/service";
@@ -50,6 +50,7 @@ const DashboardColor = lazy(() => import("./DashboardColor"));
 const DashboardSoundPlayer = lazy(() => import("./DashboardSoundPlayer"));
 const DashboardAnalogButton = lazy(() => import("./DashboardAnalogButton"));
 const DashboardSoundLevel = lazy(() => import("./DashboardSoundLevel"));
+const DashboardSoundSpectrum = lazy(() => import("./DashboardSoundSpectrum"));
 const DashboardRandomNumberGenerator = lazy(() => import("./DashboardRandomNumberGenerator"));
 const DashboardCompass = lazy(() => import("./DashboardCompass"));
 const DashboardGyroscope = lazy(() => import("./DashboardGyroscope"));
@@ -171,7 +172,10 @@ const serviceViews: {
     [SRV_GYROSCOPE]: {
         component: DashboardGyroscope,
         weight: () => 2,
-    }
+    },
+    [SRV_SOUND_SPECTRUM]: {
+        component: DashboardSoundSpectrum,
+    },
 }
 
 export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {

@@ -18,7 +18,7 @@ import {
     SRV_UV_INDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -37,7 +37,7 @@ import RainGaugeServiceHost from "./raingaugeservicehost";
 import RealTimeClockServiceHost from "./realtimeclockservicehost";
 import ReflectedLightServiceHost from "./reflectedlightservicehost";
 import RotaryEncoderServiceHost from "./rotaryencoderservicehost";
-import SensorServiceHost from "./sensorservicehost";
+import SensorServiceHost, { SensorServiceOptions } from "./sensorservicehost";
 import ServoServiceHost from "./servoservicehost";
 import SettingsServiceHost from "./settingsservicehost";
 import SpeechSynthesisServiceHost from "./speechsynthesisservicehost";
@@ -157,6 +157,20 @@ const soundLevel: AnalogSensorServiceHostOptions = {
         values: [-100],
     }, {
         code: SoundLevelReg.MaxDecibels,
+        values: [-30],
+    }]
+}
+const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
+    readingValues: [new Uint8Array(0)],
+    intensityValues: [false],
+    registerValues: [{
+        code: SoundSpectrumReg.FftSize,
+        values: [64],
+    }, {
+        code: SoundSpectrumReg.MinDecibels,
+        values: [-100],
+    }, {
+        code: SoundSpectrumReg.MaxDecibels,
         values: [-30],
     }]
 }
@@ -661,6 +675,11 @@ const _hosts: {
             name: "sound level",
             serviceClasses: [SRV_SOUND_LEVEL],
             services: () => [new AnalogSensorServiceHost(SRV_SOUND_LEVEL, soundLevel)]
+        },
+        {
+            name: "sound spectrum",
+            serviceClasses: [SRV_SOUND_SPECTRUM],
+            services: () => [new SensorServiceHost<[Uint8Array]>(SRV_SOUND_SPECTRUM, soundSpectrum)]
         },
         {
             name: "sound player (micro:bit v2 sounds)",

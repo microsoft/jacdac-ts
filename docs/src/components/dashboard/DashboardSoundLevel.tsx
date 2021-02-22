@@ -7,7 +7,7 @@ import RegisterTrend from "../RegisterTrend";
 import MicIcon from '@material-ui/icons/Mic';
 import { REFRESH, SoundLevelReg } from "../../../../src/jdom/constants";
 import AnalogSensorServiceHost from "../../../../src/hosts/analogsensorservicehost";
-import { useMicrophoneVolume } from "../hooks/useAudioAnalyzer";
+import { useMicrophoneVolume } from "../hooks/useMicrophoneVolume";
 import IconButtonWithProgress from "../ui/IconButtonWithProgress";
 import { JDService } from "../../../../src/jdom/service";
 
