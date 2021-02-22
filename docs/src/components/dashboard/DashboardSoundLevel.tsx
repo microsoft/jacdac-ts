@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
-import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
+import { useRegisterBoolValue, useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useServiceHost from "../hooks/useServiceHost";
 import { Grid, Slider } from "@material-ui/core";
 import RegisterTrend from "../RegisterTrend";
@@ -9,17 +9,21 @@ import { REFRESH, SoundLevelReg } from "../../../../src/jdom/constants";
 import AnalogSensorServiceHost from "../../../../src/hosts/analogsensorservicehost";
 import { useMicrophoneVolume } from "../hooks/useAudioAnalyzer";
 import IconButtonWithProgress from "../ui/IconButtonWithProgress";
+import { JDService } from "../../../../src/jdom/service";
 
-function HostMicrophoneButton(props: { host: AnalogSensorServiceHost }) {
-    const { host } = props;
-    const [enabled, setEnabled] = useState(false);
-    const volume = useMicrophoneVolume(enabled);
-    const title = enabled ? "Stop Microphone" : "Start microphone"
+function HostMicrophoneButton(props: { service: JDService, host?: AnalogSensorServiceHost }) {
+    const { host, service } = props;
+    const enabledRegister = service.register(SoundLevelReg.Enabled);
+    const enabled = useRegisterBoolValue(enabledRegister)
+    const volume = useMicrophoneVolume(enabled && !!host);
+    const title = enabled ? "Stop microphone" : "Start microphone"
 
-    const handleClick = () => setEnabled(!enabled);
+    const handleClick = async () => {
+        await enabledRegister.sendSetBoolAsync(!enabled, true);
+    }
 
     // update volume on demand
-    useEffect(() => host.subscribe(REFRESH, () => {
+    useEffect(() => host?.subscribe(REFRESH, () => {
         const v = volume?.();
         if (v !== undefined) {
             host.reading.setValues([v]);
@@ -55,13 +59,14 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
         <Grid item>
             <RegisterTrend register={soundLevelRegister} mini={true} interval={50} />
         </Grid>
-        {host && <Grid item>
-            <Grid container spacing={2}>
+        <Grid item>
+            <Grid container spacing={2} alignItems="center">
                 <Grid item>
-                    <HostMicrophoneButton host={host} />
+                    <HostMicrophoneButton service={service} host={host} />
                 </Grid>
                 <Grid item xs>
                     <Slider
+                        disabled={!host}
                         valueLabelDisplay="off"
                         min={0} max={1} step={0.1}
                         value={soundLevel}
@@ -70,6 +75,6 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
                     />
                 </Grid>
             </Grid>
-        </Grid>}
+        </Grid>
     </Grid>
 }
