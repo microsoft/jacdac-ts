@@ -18,7 +18,7 @@ import {
     SRV_UV_INDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -151,7 +151,14 @@ const soundLevel: AnalogSensorServiceHostOptions = {
     readingValues: [0],
     lowThreshold: 10,
     highThreshold: 70,
-    intensityValues: [false]
+    intensityValues: [false],
+    registerValues: [{
+        code: SoundLevelReg.MinDecibels,
+        values: [-100],
+    }, {
+        code: SoundLevelReg.MaxDecibels,
+        values: [-30],
+    }]
 }
 
 const _hosts: {

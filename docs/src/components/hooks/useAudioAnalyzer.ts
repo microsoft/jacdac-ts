@@ -14,7 +14,15 @@ function useAudioContext(enabled: boolean) {
     return context;
 }
 
-export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number, smoothingTimeConstant?: number) {
+export interface AudioAnalyzerOptions {
+    fftSize?: number;
+    smoothingTimeConstant?: number;
+    minDecibels?: number;
+    maxDecibels?: number;
+}
+
+export function useMicrophoneAnalyzer(enabled: boolean, options?: AudioAnalyzerOptions) {
+    const { fftSize, smoothingTimeConstant, minDecibels, maxDecibels } = options || {};
     const audioContext = useAudioContext(enabled);
     const [analyzer, setAnalyzer] = useState<AnalyserNode>()
     const microphoneSource = useRef<MediaStreamAudioSourceNode>();
@@ -32,8 +40,6 @@ export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number, smooth
                     , resp => {
                         const source = microphoneSource.current = audioContext.createMediaStreamSource(resp);
                         const node = audioContext.createAnalyser()
-                        node.fftSize = fftSize || 64;
-                        node.smoothingTimeConstant = smoothingTimeConstant || 0.1;
                         source.connect(node);
                         setAnalyzer(node);
                     }
@@ -51,14 +57,27 @@ export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number, smooth
             microphoneSource.current?.disconnect();
             microphoneSource.current = undefined;
         }
-    }, [enabled, fftSize]);
+    }, [enabled]);
 
-    // 
+    // update options
+    useEffect(() => {
+        if (analyzer) {
+            if (!isNaN(fftSize))
+                analyzer.fftSize = fftSize;
+            if (!isNaN(smoothingTimeConstant))
+                analyzer.smoothingTimeConstant = smoothingTimeConstant;
+            if (!isNaN(minDecibels))
+                analyzer.minDecibels = minDecibels;
+            if (!isNaN(maxDecibels))
+                analyzer.maxDecibels = maxDecibels;
+        }
+    }, [analyzer, fftSize, smoothingTimeConstant, minDecibels, maxDecibels])
+
     return analyzer;
 }
 
-export function useMicrophoneVolume(enabled: boolean) {
-    const analyzer = useMicrophoneAnalyzer(enabled, 64, 0.001);
+export function useMicrophoneVolume(enabled: boolean, options?: AudioAnalyzerOptions) {
+    const analyzer = useMicrophoneAnalyzer(enabled, options);
     const frequencies = useMemo(() => analyzer && new Uint8Array(analyzer.frequencyBinCount), [analyzer]);
 
     if (!analyzer) return undefined;
