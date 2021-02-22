@@ -1656,11 +1656,11 @@ export enum LedPixelVariant {
 
 // @public (undocumented)
 export enum LedReg {
+    Animation = 130,
     Brightness = 1,
     LedCount = 384,
     LuminousIntensity = 386,
     MaxPower = 7,
-    Steps = 130,
     Variant = 263,
     WaveLength = 385
 }

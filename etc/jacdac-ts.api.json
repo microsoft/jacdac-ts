@@ -4566,7 +4566,7 @@
             {
               "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!ControlReg.StatusLight:member",
-              "docComment": "/**\n * Specifies a status light animation sequence on a colored or monochrome LED using the [LED animation format](/spec/led-animation). Typically, up to 8 steps (repeats) are supported.\n * ```\n * const [rest] = jdunpack<[([number, number, number, number])[]]>(buf, \"r: u8 u8 u8 u8\")\n * const [hue, saturation, value, duration8] = rest[0]\n * ```\n *\n */\n",
+              "docComment": "/**\n * Specifies a status light animation sequence on a colored or monochrome LED using the [LED animation format](/spec/led-animation). Typically, up to 8 steps (repeats) are supported.\n * ```\n * const [repetitions, rest] = jdunpack<[number, ([number, number, number, number])[]]>(buf, \"u16 r: u8 u8 u8 u8\")\n * const [hue, saturation, value, duration8] = rest[0]\n * ```\n *\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -21088,6 +21088,27 @@
           "members": [
             {
               "kind": "EnumMember",
+              "canonicalReference": "jacdac-ts!LedReg.Animation:member",
+              "docComment": "/**\n * Animations are described using pairs of color description and duration, similarly to the `status_light` register in the control service. `repetition` as ``0`` is considered infinite. For monochrome LEDs, the hue and saturation are ignored. A specification `(red, 80ms), (blue, 40ms), (blue, 0ms), (yellow, 80ms)` means to start with red, cross-fade to blue over 80ms, stay blue for 40ms, change to yellow, and cross-fade back to red in 80ms.\n * ```\n * const [repetitions, rest] = jdunpack<[number, ([number, number, number, number])[]]>(buf, \"u16 r: u8 u8 u8 u8\")\n * const [hue, saturation, value, duration] = rest[0]\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "Animation = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "130"
+                }
+              ],
+              "releaseTag": "Public",
+              "name": "Animation",
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "EnumMember",
               "canonicalReference": "jacdac-ts!LedReg.Brightness:member",
               "docComment": "/**\n * Read-write ratio u0.16 (uint16_t). Set the luminosity of the strip. The value is used to scale `value` in `steps` register. At `0` the power to the strip is completely shut down.\n * ```\n * const [brightness] = jdunpack<[number]>(buf, \"u0.16\")\n * ```\n *\n */\n",
               "excerptTokens": [
@@ -21165,27 +21186,6 @@
               ],
               "releaseTag": "Public",
               "name": "MaxPower",
-              "initializerTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "EnumMember",
-              "canonicalReference": "jacdac-ts!LedReg.Steps:member",
-              "docComment": "/**\n * Animations are described using pairs of color description and duration, similarly to the `status_light` register in the control service. They repeat indefinitely until another animation is specified. For monochrome LEDs, the hue and saturation are ignored. A specification `(red, 80ms), (blue, 40ms), (blue, 0ms), (yellow, 80ms)` means to start with red, cross-fade to blue over 80ms, stay blue for 40ms, change to yellow, and cross-fade back to red in 80ms.\n * ```\n * const [rest] = jdunpack<[([number, number, number, number])[]]>(buf, \"r: u8 u8 u8 u8\")\n * const [hue, saturation, value, duration] = rest[0]\n * ```\n *\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "Steps = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "130"
-                }
-              ],
-              "releaseTag": "Public",
-              "name": "Steps",
               "initializerTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
