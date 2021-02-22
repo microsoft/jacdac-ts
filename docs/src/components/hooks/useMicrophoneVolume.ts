@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from "react";
+import { useRef } from "react";
 import { AudioAnalyzerOptions, useMicrophoneAnalyzer } from "./useAudioAnalyzer";
 
-export function useMicrophoneVolume(enabled: boolean, options?: AudioAnalyzerOptions) {
+export default function useMicrophoneVolume(enabled: boolean, options?: AudioAnalyzerOptions) {
     const analyzer = useMicrophoneAnalyzer(enabled, options);
     const frequencies = useRef(new Uint8Array(0));
 
