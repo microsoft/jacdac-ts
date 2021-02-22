@@ -137,7 +137,7 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
  * @param spec
  */
 export function serviceTestFromServiceSpec(spec: jdspec.ServiceSpec): jdtest.ServiceTest {
-    return _serviceTests.find(test => test.serviceClassIdentifier === spec.classIdentifier)
+    return !!spec && _serviceTests.find(test => test.serviceClassIdentifier === spec.classIdentifier)
 }
 
 export function isSensor(spec: jdspec.ServiceSpec): boolean {
