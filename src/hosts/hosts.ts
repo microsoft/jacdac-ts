@@ -172,6 +172,9 @@ const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     }, {
         code: SoundSpectrumReg.MaxDecibels,
         values: [-30],
+    }, {
+        code: SoundSpectrumReg.SmoothingTimeConstant,
+        values: [0.8]
     }]
 }
 
