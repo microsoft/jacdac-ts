@@ -35,7 +35,7 @@
     "test:watch": "node node_modules/jest/bin/jest.js --watch",
     "test:prod": "npm run lint && npm run test --no-cache",
     "tools": "npx http-server . -c-1",
-    "installdocs": "cd docs && npm install",
+    "installdocs": "cd docs && npm install --force",
     "installdev": "npm run pullsubmodules && npm install && npm run installdocs",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "docs": "npm run dist && cd docs && node node_modules/gatsby/cli.js develop",

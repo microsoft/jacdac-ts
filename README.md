@@ -37,8 +37,7 @@ npm install -g yarn
 ```
 * install dependencies
 ```
-yarn install
-yarn installdocs
+yarn installdev
 ```
 
 ### VS Code
