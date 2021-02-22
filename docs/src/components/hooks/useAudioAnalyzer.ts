@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 function useAudioContext(enabled: boolean) {
     const context = useMemo<AudioContext>(() => {
@@ -17,34 +17,42 @@ function useAudioContext(enabled: boolean) {
 export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number) {
     const audioContext = useAudioContext(enabled);
     const [analyzer, setAnalyzer] = useState<AnalyserNode>()
+    const microphoneSource = useRef<MediaStreamAudioSourceNode>();
 
     // grab microphone
     useEffect(() => {
         if (!enabled) {
             setAnalyzer(undefined);
-            return;
+        } else {
+            console.log(`requesting microphone`)
+            try {
+                navigator.getUserMedia({
+                    video: false,
+                    audio: true
+                }
+                    , resp => {
+                        const source = microphoneSource.current = audioContext.createMediaStreamSource(resp);
+                        const node = audioContext.createAnalyser()
+                        node.fftSize = fftSize || 64;
+                        source.connect(node);
+                        setAnalyzer(node);
+                    }
+                    , err => {
+                        console.warn(err);
+                        setAnalyzer(undefined)
+                    });
+            } catch (e) {
+                console.warn(e)
+            }
         }
 
-        try {
-            navigator.getUserMedia({
-                video: false,
-                audio: true
-            }
-                , resp => {
-                    const source = audioContext.createMediaStreamSource(resp);
-                    const node = audioContext.createAnalyser()
-                    node.fftSize = fftSize || 64;
-                    source.connect(node);
-                    setAnalyzer(node);
-                }
-                , err => {
-                    console.warn(err);
-                    setAnalyzer(undefined)
-                });
-        } catch (e) {
-            console.warn(e)
+        // cleanup
+        return () => {
+            console.log(`cleaning microphone`)
+            microphoneSource.current?.disconnect();
+            microphoneSource.current = undefined;
         }
-    }, [enabled]);
+    }, [enabled, fftSize]);
 
     // 
     return analyzer;

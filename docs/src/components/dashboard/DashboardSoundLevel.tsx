@@ -1,13 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useServiceHost from "../hooks/useServiceHost";
 import { Grid, Slider } from "@material-ui/core";
 import RegisterTrend from "../RegisterTrend";
-import { useId } from "react-use-id-hook"
 import MicIcon from '@material-ui/icons/Mic';
-import { SoundLevelReg } from "../../../../src/jdom/constants";
+import { REFRESH, SoundLevelReg } from "../../../../src/jdom/constants";
 import AnalogSensorServiceHost from "../../../../src/hosts/analogsensorservicehost";
+import { useMicrophoneVolume } from "../hooks/useAudioAnalyzer";
+import IconButtonWithProgress from "../ui/IconButtonWithProgress";
+
+function HostMicrophoneButton(props: { host: AnalogSensorServiceHost }) {
+    const { host } = props;
+    const [enabled, setEnabled] = useState(false);
+    const volume = useMicrophoneVolume(enabled);
+    const title = enabled ? "Stop Microphone" : "Start microphone"
+
+    const handleClick = () => setEnabled(!enabled);
+
+    // update volume on demand
+    useEffect(() => host.subscribe(REFRESH, () => {
+        const v = volume();
+        console.log("volume", { v })
+        host.reading.setValues([v]);
+    }), [host, volume])
+
+    return <IconButtonWithProgress
+        aria-label={title}
+        title={title}
+        indeterminate={enabled}
+        onClick={handleClick}
+    >
+        <MicIcon />
+    </IconButtonWithProgress>
+}
 
 export default function DashboardSoundLevel(props: DashboardServiceProps) {
     const { service } = props;
@@ -32,7 +58,7 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
         {host && <Grid item>
             <Grid container spacing={2}>
                 <Grid item>
-                    <MicIcon />
+                    <HostMicrophoneButton host={host} />
                 </Grid>
                 <Grid item xs>
                     <Slider
