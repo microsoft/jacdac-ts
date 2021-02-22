@@ -95,7 +95,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
 
     return (
         <div className={classes.root}>
-            <h2>Compliance tests for <Link to={`/services/0x${serviceSpec.shortId}`}>{serviceSpec.shortName || serviceSpec.name}</Link>  service</h2>
+            <h2>Compliance tests for <Link to={`/services/${serviceSpec.shortId}/`}>{serviceSpec.name}</Link>  service</h2>
             <Stepper activeStep={activeStep} orientation="vertical">
                 <Step key="device">
                     <StepLabel>Select a service to test</StepLabel>
