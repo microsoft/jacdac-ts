@@ -8,9 +8,10 @@ export default function SvgWidget(props: {
     title?: string,
     viewBox?: string,
     tabIndex?: number,
+    background?: string,
     children: ReactNode
 }) {
-    const { width, height, size, children, role, title, viewBox, tabIndex } = props;
+    const { width, height, size, background, children, role, title, viewBox, tabIndex } = props;
     const h = height || width;
     return <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -19,6 +20,7 @@ export default function SvgWidget(props: {
         style={size ? { height: size, maxWidth: "100%" } : undefined}
         aria-label={title}
         role={role || "group"}>
+        {background && <rect x={0} y={0} width={width} height={height} fill={background} rx={1} ry={1} />}
         {children}
     </svg>
 }
