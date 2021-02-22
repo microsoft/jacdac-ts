@@ -1,23 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
 
-function useAudioContext() {
+function useAudioContext(enabled: boolean) {
     const context = useMemo<AudioContext>(() => {
+        if (!enabled)
+            return undefined;
         try {
             return new AudioContext();
         } catch (e) {
             return undefined;
         }
-    }, []);
-    useEffect(() => () => context?.close(), [])
+    }, [enabled]);
+    useEffect(() => () => context?.close(), [enabled])
     return context;
 }
 
-export function useMicrophoneAnalyzer(fftSize?: number) {
-    const audioContext = useAudioContext();
+export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number) {
+    const audioContext = useAudioContext(enabled);
     const [analyzer, setAnalyzer] = useState<AnalyserNode>()
 
     // grab microphone
     useEffect(() => {
+        if (!enabled) {
+            setAnalyzer(undefined);
+            return;
+        }
+
         try {
             navigator.getUserMedia({
                 video: false,
@@ -37,14 +44,14 @@ export function useMicrophoneAnalyzer(fftSize?: number) {
         } catch (e) {
             console.warn(e)
         }
-    }, []);
+    }, [enabled]);
 
     // 
     return analyzer;
 }
 
-export function useMicrophoneVolume() {
-    const analyzer = useMicrophoneAnalyzer(64);
+export function useMicrophoneVolume(enabled: boolean) {
+    const analyzer = useMicrophoneAnalyzer(enabled, 64);
     const frequencies = useMemo(() => analyzer && new Uint8Array(analyzer.frequencyBinCount), [analyzer]);
 
     if (!analyzer) return () => 0;
