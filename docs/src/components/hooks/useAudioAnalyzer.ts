@@ -1,18 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-
-function useAudioContext(enabled: boolean) {
-    const context = useMemo<AudioContext>(() => {
-        if (!enabled)
-            return undefined;
-        try {
-            return new AudioContext();
-        } catch (e) {
-            return undefined;
-        }
-    }, [enabled]);
-    useEffect(() => () => context?.close(), [enabled])
-    return context;
-}
+import useAudioContext from "./useAudioContext";
 
 export interface AudioAnalyzerOptions {
     fftSize?: number;
