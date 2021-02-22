@@ -62,15 +62,14 @@ export function useMicrophoneVolume(enabled: boolean) {
     const analyzer = useMicrophoneAnalyzer(enabled, 64);
     const frequencies = useMemo(() => analyzer && new Uint8Array(analyzer.frequencyBinCount), [analyzer]);
 
-    if (!analyzer) return () => 0;
+    if (!analyzer) return undefined;
     return () => {
         analyzer?.getByteFrequencyData(frequencies);
-        let sum = 0;
+        let max = 0;
         const n = frequencies.length;
         for (let i = 0; i < n; ++i)
-            sum += frequencies[i];
+            max = Math.max(max, frequencies[i]);
         //dubious
-        return analyzer.minDecibels
-            + (sum / (0xff * n) * (analyzer.maxDecibels - analyzer.minDecibels));
+        return max / 0xff;
     }
 }

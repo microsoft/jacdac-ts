@@ -20,9 +20,11 @@ function HostMicrophoneButton(props: { host: AnalogSensorServiceHost }) {
 
     // update volume on demand
     useEffect(() => host.subscribe(REFRESH, () => {
-        const v = volume();
-        console.log("volume", { v })
-        host.reading.setValues([v]);
+        const v = volume?.();
+        if (v !== undefined) {
+            console.log("volume", { v })
+            host.reading.setValues([v]);
+        }
     }), [host, volume])
 
     return <IconButtonWithProgress
