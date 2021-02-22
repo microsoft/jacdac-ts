@@ -1,13 +1,16 @@
 /// <reference path="../../jacdac-spec/spectool/jdspec.d.ts" />
+/// <reference path="../../jacdac-spec/spectool/jdtest.d.ts" />
 
 import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
+import serviceTestData from "../../jacdac-spec/dist/tests.json";
 import { fromHex, SMap, toHex } from "./utils";
 import { SystemReg, SensorReg, SRV_CONTROL, SRV_ROLE_MANAGER, SRV_SETTINGS, SRV_BOOTLOADER, SRV_LOGGER, SRV_POWER, SRV_PROTO_TEST } from "./constants";
 import makecodeServicesData from "../../jacdac-spec/services/makecode-extensions.json";
 
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
+const _serviceTests: jdtest.ServiceTest[] = serviceTestData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any;
 
@@ -127,6 +130,14 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
         return undefined;
     return _serviceSpecifications.find(s => s.classIdentifier === classIdentifier)
         || _customServiceSpecifications[classIdentifier]
+}
+
+/**
+ * Given a service specification, see if it has a test
+ * @param spec
+ */
+export function serviceTestFromServiceSpec(spec: jdspec.ServiceSpec): jdtest.ServiceTest {
+    return _serviceTests.find(t => t.service === spec.classIdentifier)
 }
 
 export function isSensor(spec: jdspec.ServiceSpec): boolean {
