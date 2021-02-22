@@ -4,7 +4,7 @@
 import { NumberFormat } from "./buffer";
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json";
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json";
-import serviceTestData from "../../jacdac-spec/dist/tests.json";
+import serviceTestData from "../../jacdac-spec/dist/services-tests.json";
 import { fromHex, SMap, toHex } from "./utils";
 import { SystemReg, SensorReg, SRV_CONTROL, SRV_ROLE_MANAGER, SRV_SETTINGS, SRV_BOOTLOADER, SRV_LOGGER, SRV_POWER, SRV_PROTO_TEST } from "./constants";
 import makecodeServicesData from "../../jacdac-spec/services/makecode-extensions.json";
@@ -137,7 +137,7 @@ export function serviceSpecificationFromClassIdentifier(classIdentifier: number)
  * @param spec
  */
 export function serviceTestFromServiceSpec(spec: jdspec.ServiceSpec): jdtest.ServiceTest {
-    return _serviceTests.find(t => t.service === spec.classIdentifier)
+    return _serviceTests.find(test => test.serviceClassIdentifier === spec.classIdentifier)
 }
 
 export function isSensor(spec: jdspec.ServiceSpec): boolean {
