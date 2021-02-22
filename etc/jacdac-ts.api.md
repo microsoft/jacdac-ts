@@ -22,7 +22,9 @@ export enum AccelerometerEvent {
 
 // @public (undocumented)
 export enum AccelerometerReg {
-    Forces = 257
+    Forces = 257,
+    ForcesError = 262,
+    MaxForce = 128
 }
 
 // @public (undocumented)
@@ -295,6 +297,7 @@ export const CHANGE = "change";
 
 // @public (undocumented)
 export enum CharacterScreenReg {
+    Brightness = 1,
     Columns = 385,
     Message = 2,
     Rows = 384,
@@ -596,10 +599,10 @@ export enum DistanceVariant {
 // @public (undocumented)
 export enum ECO2Reg {
     ConditioningPeriod = 384,
-    E_CO2 = 257,
-    E_CO2Error = 262,
-    MaxE_CO2 = 261,
-    MinE_CO2 = 260,
+    ECO2 = 257,
+    ECO2Error = 262,
+    MaxECO2 = 261,
+    MinECO2 = 260,
     Variant = 263
 }
 
@@ -930,7 +933,9 @@ export function hsvToCss(hue: number, saturation: number, value: number, brightn
 // @public (undocumented)
 export enum HumidityReg {
     Humidity = 257,
-    HumidityError = 262
+    HumidityError = 262,
+    MaxHumidity = 261,
+    MinHumidity = 260
 }
 
 // @public (undocumented)
@@ -1416,9 +1421,6 @@ export function jdpack<T extends any[]>(fmt: string, data: T): Uint8Array;
 export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T): boolean;
 
 // @public (undocumented)
-export function jdpackTest(): void;
-
-// @public (undocumented)
 export class JDRegister extends JDServiceMemberNode {
     constructor(service: JDService, code: number);
     // (undocumented)
@@ -1603,7 +1605,7 @@ export function JSONTryParse(src: string): any;
 export const LATE = "late";
 
 // @public (undocumented)
-export enum LEDMatrixReg {
+export enum LedMatrixReg {
     Brightness = 1,
     Columns = 386,
     Leds = 2,
@@ -1791,12 +1793,12 @@ export type LogLevel = 'error' | 'warn' | 'log' | 'info' | 'debug';
 export const LOST = "lost";
 
 // @public (undocumented)
-export enum MagnetoCmd {
+export enum MagnetometerCmd {
     Calibrate = 2
 }
 
 // @public (undocumented)
-export enum MagnetoReg {
+export enum MagnetometerReg {
     Forces = 257,
     ForcesError = 262
 }
@@ -1862,13 +1864,13 @@ export enum MicrophoneReg {
 }
 
 // @public (undocumented)
-export enum MIDIOutputCmd {
+export enum MidiOutputCmd {
     Clear = 128,
     Send = 129
 }
 
 // @public (undocumented)
-export enum MIDIOutputReg {
+export enum MidiOutputReg {
     Enabled = 1
 }
 
@@ -2017,7 +2019,7 @@ export enum NumberFormat {
 export function numberFormatFromStorageType(tp: jdspec.StorageType): NumberFormat.Int8LE | NumberFormat.UInt8LE | NumberFormat.Int16LE | NumberFormat.UInt16LE | NumberFormat.Int32LE | NumberFormat.UInt32LE | NumberFormat.UInt64LE | NumberFormat.Int64LE;
 
 // @public (undocumented)
-export function numberFormatToStorageType(nf: NumberFormat): 1 | 2 | 4 | -4 | -2 | 8 | -1 | -8;
+export function numberFormatToStorageType(nf: NumberFormat): 1 | 2 | 4 | -4 | 8 | -2 | -1 | -8;
 
 // @public (undocumented)
 export interface Observable<T> {
@@ -2703,6 +2705,8 @@ export class RoleManagerClient extends JDServiceClient {
     // (undocumented)
     clearRoles(): Promise<void>;
     // (undocumented)
+    get missingRoles(): boolean;
+    // (undocumented)
     requestedRoles: RequestedRole[];
     // (undocumented)
     scan(): Promise<void>;
@@ -2882,8 +2886,10 @@ export function serviceSpecifications(): jdspec.ServiceSpec[];
 export enum ServoReg {
     Angle = 2,
     Enabled = 1,
-    MaxAngle = 261,
-    MinAngle = 260,
+    MaxAngle = 132,
+    MaxPulse = 133,
+    MinAngle = 130,
+    MinPulse = 131,
     Offset = 129,
     ResponseSpeed = 385,
     StallTorque = 384,
@@ -2976,6 +2982,7 @@ export enum SoundLevelEvent {
 
 // @public (undocumented)
 export enum SoundLevelReg {
+    Enabled = 1,
     LoudThreshold = 5,
     QuietThreshold = 6,
     SoundLevel = 257
@@ -3083,10 +3090,10 @@ export const SRV_JOYSTICK = 449517712;
 export const SRV_LED = 506480888;
 
 // @public (undocumented)
-export const SRV_LED_PIXEL = 309264608;
+export const SRV_LED_MATRIX = 286070091;
 
 // @public (undocumented)
-export const SRV_LEDMATRIX = 286070091;
+export const SRV_LED_PIXEL = 309264608;
 
 // @public (undocumented)
 export const SRV_LIGHT_LEVEL = 400333340;
@@ -3095,16 +3102,16 @@ export const SRV_LIGHT_LEVEL = 400333340;
 export const SRV_LOGGER = 316415946;
 
 // @public (undocumented)
-export const SRV_M_IDIOUTPUT = 444894423;
-
-// @public (undocumented)
-export const SRV_MAGNETO = 318935176;
+export const SRV_MAGNETOMETER = 318935176;
 
 // @public (undocumented)
 export const SRV_MATRIX_KEYPAD = 319172040;
 
 // @public (undocumented)
 export const SRV_MICROPHONE = 289254534;
+
+// @public (undocumented)
+export const SRV_MIDI_OUTPUT = 444894423;
 
 // @public (undocumented)
 export const SRV_MODEL_RUNNER = 336566904;
@@ -3194,7 +3201,7 @@ export const SRV_TRAFFIC_LIGHT = 365137307;
 export const SRV_TVOC = 312849815;
 
 // @public (undocumented)
-export const SRV_UVINDEX = 527306128;
+export const SRV_UV_INDEX = 527306128;
 
 // @public (undocumented)
 export const SRV_VIBRATION_MOTOR = 406832290;
@@ -3513,10 +3520,10 @@ export function tryParseMemberValue(text: string, info: jdspec.PacketMember): {
 };
 
 // @public (undocumented)
-export enum TVOCReg {
+export enum TvocReg {
     ConditioningPeriod = 384,
-    Max_TVOC = 261,
-    Min_TVOC = 260,
+    MaxTVOC = 261,
+    MinTVOC = 260,
     TVOC = 257,
     TVOCError = 262
 }
@@ -3555,14 +3562,14 @@ export interface USBOptions {
 }
 
 // @public (undocumented)
-export enum UVIndexReg {
+export enum UvIndexReg {
     UvIndex = 257,
     UvIndexError = 262,
     Variant = 263
 }
 
 // @public (undocumented)
-export enum UVIndexVariant {
+export enum UvIndexVariant {
     // (undocumented)
     UVA_UVB = 1,
     // (undocumented)
