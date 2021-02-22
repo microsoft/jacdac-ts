@@ -38,32 +38,29 @@ function interpolate(frames: LedAnimationFrame[], time: number) {
 
 export default function useLedAnimationStyle(animation: LedAnimationData, options?: LedAnimationProps) {
     const [repetitions, frames] = animation;
-    const { monochrome, cssProperty, step, interval, repeat } = options || {};
+    const { monochrome, cssProperty, step, interval } = options || {};
     // generate a CSS animation for the curren frames
     const { helmetStyle, className } = useMemo(() => {
-        if (!frames?.length)
+        if (!frames?.length || repetitions < 0)
             return { className: "", helmetStyle: undefined }
 
         const className = "a-" + (Math.random() + "").replace(/^.*\./, '');
         const DURATION = 3;
         const property = cssProperty || "background-color";
-        const nrepeat = repeat || 1;
-        const total8ms = frames.reduce((t, row) => t + row[DURATION], 0) * nrepeat;
+        const total8ms = frames.reduce((t, row) => t + row[DURATION], 0);
         const totals = (total8ms * 8) / 1000 + (interval || 0) / 1000;
 
         let kf = `@keyframes ${className} {\n`;
         if (step) {
             let t8ms = 0;
-            for (let i = 0; i < nrepeat; ++i) {
-                frames.forEach(frame => {
-                    const [hue, sat, value, duration] = frame;
-                    const csscolor = hsvToCss(hue, sat, value, 0xff, monochrome)
-                    const percent = (t8ms * 8 / 1000) / totals * 100;
-                    kf += `  ${roundWithPrecision(percent, 5)}% { ${property}: ${csscolor}); }\n`
-                    t8ms += duration;
-                    console.log({ total8ms, totals, t8ms, duration, percent })
-                })
-            }
+            frames.forEach(frame => {
+                const [hue, sat, value, duration] = frame;
+                const csscolor = hsvToCss(hue, sat, value, 0xff, monochrome)
+                const percent = (t8ms * 8 / 1000) / totals * 100;
+                kf += `  ${roundWithPrecision(percent, 5)}% { ${property}: ${csscolor}); }\n`
+                t8ms += duration;
+                console.log({ total8ms, totals, t8ms, duration, percent })
+            })
         } else {
             // 30fps
             const KEYFRAME_DURATION = 30 >> 3;
@@ -91,7 +88,7 @@ animation-iteration-count: ${!repetitions ? 'infinite' : repetitions};
             helmetStyle: kf,
             className
         }
-    }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty, interval, repeat, repetitions]);
+    }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty, interval, repetitions]);
 
     return { className, helmetStyle }
 }
