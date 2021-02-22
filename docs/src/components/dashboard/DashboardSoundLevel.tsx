@@ -22,7 +22,6 @@ function HostMicrophoneButton(props: { host: AnalogSensorServiceHost }) {
     useEffect(() => host.subscribe(REFRESH, () => {
         const v = volume?.();
         if (v !== undefined) {
-            console.log("volume", { v })
             host.reading.setValues([v]);
         }
     }), [host, volume])

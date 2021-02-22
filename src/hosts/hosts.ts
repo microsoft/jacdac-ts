@@ -355,10 +355,13 @@ const _hosts: {
             services: () => [new LEDServiceHost({
                 variant: LedVariant.ThroughHole,
                 ledCount: 2,
-                steps:
+                animation:
                     [
-                        [0xff >> 1, 0xff, 0xff >> 1, 3000 >> 3],
-                        [0xff, 0xff, 0xff, 30000 >> 3],
+                        0,
+                        [
+                            [0xff >> 1, 0xff, 0xff >> 1, 3000 >> 3],
+                            [0xff, 0xff, 0xff, 30000 >> 3],
+                        ]
                     ]
             })]
         },
@@ -369,7 +372,7 @@ const _hosts: {
                 variant: LedVariant.ThroughHole,
                 waveLength: 624,
                 ledCount: 3,
-                steps: [[0, 0, 0xff, 0xff]]
+                animation: [0, [[0, 0, 0xff, 0xff]]]
             })]
         },
         {

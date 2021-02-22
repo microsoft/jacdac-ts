@@ -122,8 +122,7 @@ export default function Toc(props: { pagePath: string }) {
 `)
 
   const handleClick = () => {
-    if (!mobile)
-      setDrawerType(DrawerType.None)
+    setDrawerType(DrawerType.None)
   }
 
   const tree = useMemo(() => {

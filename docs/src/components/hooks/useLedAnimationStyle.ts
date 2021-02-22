@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useId } from "react-use-id-hook"
-import { LedAnimationFrame } from "../../../../src/hosts/ledservicehost";
+import { LedAnimationData, LedAnimationFrame } from "../../../../src/hosts/ledservicehost";
 import { hsvToCss } from "../../../../src/jdom/color";
 import { roundWithPrecision } from "../../../../src/jdom/utils";
 
@@ -36,13 +36,15 @@ function interpolate(frames: LedAnimationFrame[], time: number) {
     return { hue: 0, saturation: 0, value: 0 };
 }
 
-export default function useLedAnimationStyle(frames: LedAnimationFrame[], options?: LedAnimationProps) {
+export default function useLedAnimationStyle(animation: LedAnimationData, options?: LedAnimationProps) {
+    const [repetitions, frames] = animation;
     const { monochrome, cssProperty, step, interval, repeat } = options || {};
-    const className = useId();
     // generate a CSS animation for the curren frames
-    const helmetStyle = useMemo(() => {
+    const { helmetStyle, className } = useMemo(() => {
         if (!frames?.length)
-            return undefined;
+            return { className: "", helmetStyle: undefined }
+
+        const className = "a-" + (Math.random() + "").replace(/^.*\./, '');
         const DURATION = 3;
         const property = cssProperty || "background-color";
         const nrepeat = repeat || 1;
@@ -83,10 +85,13 @@ animation-duration: ${totals}s;
 animation-name: ${className};
 animation-delay: 0s;
 animation-timing-function: linear;
-animation-iteration-count: infinite;
+animation-iteration-count: ${!repetitions ? 'infinite' : repetitions};
 }`;
-        return kf;
-    }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty, interval, repeat]);
+        return {
+            helmetStyle: kf,
+            className
+        }
+    }, [frames?.map(frame => frame.toString()).join(), monochrome, step, cssProperty, interval, repeat, repetitions]);
 
     return { className, helmetStyle }
 }

@@ -4,14 +4,17 @@ import RegisterHost from "../jdom/registerhost";
 import ServiceHost from "../jdom/servicehost";
 
 export type LedAnimationFrame = [number, number, number, number]
-export type LedAnimationStepsType = [LedAnimationFrame[]];
+export type LedAnimationData = [
+    number,
+    LedAnimationFrame[]
+]
 
 export class LedAnimation extends JDEventSource {
     private _currentStep: number;
     private _currentStepStartTime: number;
     private _currentHsv: number;
 
-    constructor(public steps: LedAnimationFrame[]) {
+    constructor(public data: LedAnimationData) {
         super();
 
         this._currentStep = 0;
@@ -29,7 +32,8 @@ export class LedAnimation extends JDEventSource {
 
     update(now: number) {
         // grab current step
-        const steps = this.steps;
+        const [repetitions, steps] = this.data || [];
+
         if (!steps?.length) {
             // nothing to do
             return;
@@ -85,7 +89,7 @@ export class LedAnimation extends JDEventSource {
 }
 
 export default class LEDServiceHost extends ServiceHost {
-    readonly steps: RegisterHost<LedAnimationStepsType>;
+    readonly animation: RegisterHost<LedAnimationData>;
     readonly brightness: RegisterHost<[number]>;
     readonly maxPower: RegisterHost<[number]>;
     readonly ledCount: RegisterHost<[number]>;
@@ -99,20 +103,21 @@ export default class LEDServiceHost extends ServiceHost {
         variant?: LedVariant,
         luminousIntensity?: number,
         waveLength?: number,
-        steps?: LedAnimationFrame[]
+        maxPower?: number,
+        animation?: LedAnimationData
     }) {
         super(SRV_LED);
-        const { ledCount, variant, brightness,
-            luminousIntensity, waveLength, steps } = options || {};
+        const { ledCount = 1, variant = LedVariant.ThroughHole, brightness = 0.5,
+            luminousIntensity, waveLength, animation = [0, []], maxPower = 200 } = options || {};
 
-        this.steps = this.addRegister<LedAnimationStepsType>(LedReg.Steps, [steps || []])
-        this.brightness = this.addRegister(LedReg.Brightness, [brightness || 0.5]);
-        this.maxPower = this.addRegister(LedReg.MaxPower, [200]);
-        this.ledCount = this.addRegister(LedReg.LedCount, [ledCount || 1]);
+        this.animation = this.addRegister<LedAnimationData>(LedReg.Animation, animation)
+        this.brightness = this.addRegister(LedReg.Brightness, [brightness]);
+        this.maxPower = this.addRegister(LedReg.MaxPower, [maxPower]);
+        this.ledCount = this.addRegister(LedReg.LedCount, [ledCount]);
         if (luminousIntensity !== undefined)
             this.luminousIntensity = this.addRegister(LedReg.LuminousIntensity, [luminousIntensity])
         if (waveLength !== undefined)
             this.waveLength = this.addRegister(LedReg.WaveLength, [waveLength]);
-        this.variant = this.addRegister(LedReg.Variant, [variant || LedVariant.ThroughHole])
+        this.variant = this.addRegister(LedReg.Variant, [variant])
     }
 }

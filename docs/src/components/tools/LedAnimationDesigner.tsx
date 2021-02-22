@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
-import useLedAnimationStyle, {  } from "../hooks/useLedAnimationStyle"
+import useLedAnimationStyle, { } from "../hooks/useLedAnimationStyle"
 import { Card, CardContent, CardHeader, Grid, TextField, useTheme } from "@material-ui/core"
 import SvgWidget from "../widgets/SvgWidget";
 import Helmet from "react-helmet"
@@ -10,14 +10,16 @@ import AddIcon from '@material-ui/icons/Add';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
 import { SliderPicker } from "react-color";
-import { LedAnimationFrame } from "../../../../src/hosts/ledservicehost";
+import { LedAnimationData, LedAnimationFrame } from "../../../../src/hosts/ledservicehost";
+import { clone } from "../../../../src/jdom/utils";
 
 function LedAnimationFrameDesigner(props: {
     frame: LedAnimationFrame,
     setFrame: (frame: LedAnimationFrame) => void,
-    onRemove: () => void
+    onRemove: () => void,
+    onClone: () => void,
 }) {
-    const { frame, setFrame, onRemove } = props;
+    const { frame, setFrame, onRemove, onClone } = props;
     const [hsv, setHsv] = useState({
         h: frame[0] * 360 / 0xff,
         s: frame[1] / 0xff,
@@ -43,10 +45,14 @@ function LedAnimationFrameDesigner(props: {
     }
 
     return <Card>
-        <CardHeader action={
+        <CardHeader action={<>
             <IconButtonWithTooltip title="remove animation frame" disabled={!onRemove} onClick={onRemove}>
                 <DeleteIcon />
-            </IconButtonWithTooltip>} />
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip title="clone animation frame" disabled={!onClone} onClick={onClone}>
+                <AddIcon />
+            </IconButtonWithTooltip>
+        </>} />
         <CardContent>
             <Grid container direction="column" spacing={1}>
                 <Grid item>
@@ -66,11 +72,16 @@ function LedAnimationFrameDesigner(props: {
 }
 
 export default function LedAnimationDesigner() {
+    const [repetitions, setRepetitions] = useState(0);
     const [frames, setFrames] = useState<LedAnimationFrame[]>([
-        [17, 255, 100, 64],
-        [31, 255, 100, 64]
+        [0, 255, 0, 128],
+        [0, 255, 100, 128]
     ]);
-    const { className, helmetStyle } = useLedAnimationStyle(frames, {
+    const animation: LedAnimationData = [
+        repetitions,
+        frames
+    ];
+    const { className, helmetStyle } = useLedAnimationStyle(animation, {
         cssProperty: "fill"
     });
     const theme = useTheme();
@@ -84,11 +95,21 @@ export default function LedAnimationDesigner() {
         newFrames.splice(i, 1)
         setFrames(newFrames);
     }
+    const handleClone = (i: number) => () => {
+        const frame = frames[i];
+        const newFrame = clone(frame);
+        const newFrames = [...frames.slice(0, i), newFrame, ...frames.slice(i)];
+        setFrames(newFrames);
+    }
     const handleAdd = () => setFrames([
         ...frames,
         frames[frames.length - 1].slice(0) as LedAnimationFrame
     ]);
-
+    const handleRepetitionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const v = parseInt(event.target.value);
+        if (!isNaN(v))
+            setRepetitions(v);
+    }
     return <Grid container spacing={1}>
         <Grid item>
             {helmetStyle && <Helmet><style>{helmetStyle}</style></Helmet>}
@@ -104,8 +125,21 @@ export default function LedAnimationDesigner() {
                 </CardContent>
             </Card>
         </Grid>
+        <Grid item>
+            <Card>
+                <CardHeader title="repetition" />
+                <CardContent>
+                    <TextField
+                        aria-label="number of repetitions"
+                        value={repetitions}
+                        type="number" onChange={handleRepetitionChange} />
+                </CardContent>
+            </Card>
+        </Grid>
         {frames.map((frame, i) => <Grid item xs={12} sm={6} lg={4} key={i}>
-            <LedAnimationFrameDesigner key={i} frame={frame} setFrame={handleFrame(i)}
+            <LedAnimationFrameDesigner key={i} frame={frame} 
+                setFrame={handleFrame(i)}
+                onClone={handleClone(i)}
                 onRemove={frames.length > 1 ? handleRemove(i) : undefined} />
         </Grid>)}
         <Grid item>
@@ -121,9 +155,7 @@ export default function LedAnimationDesigner() {
             <Card>
                 <CardHeader title="code" />
                 <CardContent>
-                    <Snippet
-                        value={() => JSON.stringify(frames, null, 2)} mode={"json"}
-                    />
+                    <Snippet value={() => JSON.stringify(animation, null, 2)} mode={"json"} />
                 </CardContent>
             </Card>
         </Grid>

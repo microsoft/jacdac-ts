@@ -21,7 +21,7 @@ export default function StatusLEDAnimation(props: {
         case "panic": repeat = 30; interval = 5000; break;
     }
     const frames = statusAnimation(status);
-    const { helmetStyle, className } = useLedAnimationStyle(frames, {
+    const { helmetStyle, className } = useLedAnimationStyle([0, frames], {
         cssProperty: "fill",
         monochrome: true,
         step: true,

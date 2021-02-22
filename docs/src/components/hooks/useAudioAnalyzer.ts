@@ -24,7 +24,6 @@ export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number, smooth
         if (!enabled) {
             setAnalyzer(undefined);
         } else {
-            console.log(`requesting microphone`)
             try {
                 navigator.getUserMedia({
                     video: false,
@@ -49,7 +48,6 @@ export function useMicrophoneAnalyzer(enabled: boolean, fftSize?: number, smooth
 
         // cleanup
         return () => {
-            console.log(`cleaning microphone`)
             microphoneSource.current?.disconnect();
             microphoneSource.current = undefined;
         }
