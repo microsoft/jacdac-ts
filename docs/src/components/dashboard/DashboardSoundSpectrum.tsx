@@ -81,7 +81,7 @@ export default function DashboardSoundSpectrum(props: DashboardServiceProps) {
     return <Grid container direction="column">
         <Grid item>
             <SvgWidget width={w} height={h} size={widgetSize} background={background}>
-                <path fill={active} ref={pathRef} />
+                <path fill={active} stroke={controlBackground} strokeWidth={m /2} ref={pathRef} />
             </SvgWidget>
         </Grid>
         <Grid item>
