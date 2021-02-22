@@ -10,7 +10,7 @@ import IconButtonWithProgress from "../ui/IconButtonWithProgress";
 import { JDService } from "../../../../src/jdom/service";
 import SensorServiceHost from "../../../../src/hosts/sensorservicehost";
 import useWidgetSize from "../widgets/useWidgetSize";
-import BytesBarGraphWidget from "../widgets/BarGraphWidget";
+import BytesBarGraphWidget from "../widgets/BytesBarGraphWidget";
 
 function HostMicrophoneButton(props: { service: JDService, host?: SensorServiceHost<[Uint8Array]> }) {
     const { host, service } = props;

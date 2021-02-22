@@ -10,6 +10,8 @@ import AnalogSensorServiceHost from "../../../../src/hosts/analogsensorserviceho
 import IconButtonWithProgress from "../ui/IconButtonWithProgress";
 import { JDService } from "../../../../src/jdom/service";
 import useMicrophoneVolume from "../hooks/useMicrophoneVolume"
+import TrendWidget from "../widgets/TrendWidget";
+import useWidgetSize from "../widgets/useWidgetSize";
 
 function HostMicrophoneButton(props: { service: JDService, host?: AnalogSensorServiceHost }) {
     const { host, service } = props;
@@ -42,11 +44,12 @@ function HostMicrophoneButton(props: { service: JDService, host?: AnalogSensorSe
 }
 
 export default function DashboardSoundLevel(props: DashboardServiceProps) {
-    const { service } = props;
+    const { variant, services, service } = props;
     const soundLevelRegister = service.register(SoundLevelReg.SoundLevel);
     const [soundLevel] = useRegisterUnpackedValue<[number]>(soundLevelRegister);
     const host = useServiceHost<AnalogSensorServiceHost>(service);
     const color = host ? "secondary" : "primary";
+    const widgetSize = useWidgetSize(variant, services.length)
 
     const onChange = (event: unknown, newValue: number | number[]): void => {
         const svalue = newValue as number;
@@ -59,7 +62,7 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
 
     return <Grid container direction="column">
         <Grid item>
-            <RegisterTrend register={soundLevelRegister} mini={true} interval={50} />
+            <TrendWidget register={soundLevelRegister} min={0} max={1} horizon={64} size={widgetSize} />
         </Grid>
         <Grid item>
             <Grid container spacing={2} alignItems="center">
