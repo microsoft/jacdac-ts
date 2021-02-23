@@ -27,6 +27,6 @@ export default function useThresholdMarks(service: JDService, color?: "primary" 
             label: highEvent ? <EventBadge event={highEvent} color={color} /> : highRegister.name
         });
     }
-    
+
     return marks;
 }

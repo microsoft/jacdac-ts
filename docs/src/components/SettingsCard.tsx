@@ -74,7 +74,7 @@ function AddSettingRow(props: { client: SettingsClient }) {
                 <label id={secretLabelId}>Secret</label>
             </Grid>
             <Grid item>
-                <CmdButton trackName="settings.add" 
+                <CmdButton trackName="settings.add"
                     disabled={!name || !!keyError || !!valueError} title="Add setting" onClick={handleAdd} icon={<AddIcon />} />
             </Grid>
         </Grid>

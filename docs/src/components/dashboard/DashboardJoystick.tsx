@@ -1,4 +1,4 @@
-import React, {  } from "react";
+import React, { } from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import useServiceHost from "../hooks/useServiceHost";

@@ -27,7 +27,7 @@ export default function ServiceRegisters(props: {
             ?.filter(reg => !!reg) || [];
         if (filter)
             r = r.filter(filter);
-        return r;   
+        return r;
     }, [specification, registerIdentifiers, filter])
 
     return <AutoGrid spacing={1}>

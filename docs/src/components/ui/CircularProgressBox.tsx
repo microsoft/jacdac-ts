@@ -18,7 +18,7 @@ export default function CircularProgressBox(props: {
     const id = useId();
 
     return <Box position="relative" display="inline-flex">
-        <CircularProgress 
+        <CircularProgress
             id={id}
             variant={hasProgress ? "determinate" : "indeterminate"}
             disableShrink={!hasProgress}

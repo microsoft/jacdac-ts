@@ -55,11 +55,11 @@ function FilterMenu(props: { text?: string, icon?: JSX.Element, className?: stri
         pkt => pkt.identifier.toString(16),
         pkt => pkt
     )
-    const packetFilter = pkt => isRegister(pkt) ? "register" 
-        : isCommand(pkt) ? "command" 
-        : isEvent(pkt) ? "event"
-        : isPipeReport(pkt) ? "pipe"
-        : "pkt";
+    const packetFilter = pkt => isRegister(pkt) ? "register"
+        : isCommand(pkt) ? "command"
+            : isEvent(pkt) ? "event"
+                : isPipeReport(pkt) ? "pipe"
+                    : "pkt";
 
     const handleAdd = (filter: string) => () => {
         handleAddFilter(filter)

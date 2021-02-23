@@ -45,7 +45,7 @@ export function useMicrophoneAnalyzer(options?: AudioAnalyzerOptions) {
 
             const source = microphoneSource.current = audioContext.createMediaStreamSource(resp);
             const node = audioContext.createAnalyser()
-            source.connect(node);            
+            source.connect(node);
             analyzerRef.current = node;
             applyOptions();
 

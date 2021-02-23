@@ -1,4 +1,4 @@
-import React, {  } from "react";
+import React, { } from "react";
 import { JDService } from "../../../src/jdom/service";
 import { isEvent } from "../../../src/jdom/spec";
 import EventInput from "./EventInput";

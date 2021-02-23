@@ -18,7 +18,7 @@ export default function RegisterTrend(props: {
     mini?: boolean,
     interval?: number,
 }) {
-    const { register, mini, horizon, height,interval } = props;
+    const { register, mini, horizon, height, interval } = props;
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const palette = useChartPalette()
     const dataSet = useRef(FieldDataSet.create(bus, [register], "output", palette, 100));

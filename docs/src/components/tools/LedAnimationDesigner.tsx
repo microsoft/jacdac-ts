@@ -137,7 +137,7 @@ export default function LedAnimationDesigner() {
             </Card>
         </Grid>
         {frames.map((frame, i) => <Grid item xs={12} sm={6} lg={4} key={i}>
-            <LedAnimationFrameDesigner key={i} frame={frame} 
+            <LedAnimationFrameDesigner key={i} frame={frame}
                 setFrame={handleFrame(i)}
                 onClone={handleClone(i)}
                 onRemove={frames.length > 1 ? handleRemove(i) : undefined} />

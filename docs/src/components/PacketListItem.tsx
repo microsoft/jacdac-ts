@@ -43,7 +43,7 @@ export default function PacketListItem(props: {
     const logMessage = packet.serviceClass === SRV_LOGGER
         && packet.isReport && packet.isEvent
     const pipePackets = packet.meta[META_PIPE] as Packet[];
-    
+
     const primary = (packet.isCRCAck && `crc ack ${packet.friendlyCommandName}`)
         || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
         || (pipePackets && `pipe port:${packet.pipePort} ${pipePackets.length} packets`)

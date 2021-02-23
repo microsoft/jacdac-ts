@@ -1,5 +1,5 @@
 
-import React, {  } from "react";
+import React, { } from "react";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import SvgWidget from "../widgets/SvgWidget";

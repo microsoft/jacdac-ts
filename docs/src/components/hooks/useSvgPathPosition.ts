@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export default function usePathPosition(
-    pathRef: SVGPathElement, 
+    pathRef: SVGPathElement,
     ratio: number) {
     const [position, setPosition] = useState<[number, number]>();
     useEffect(() => {
