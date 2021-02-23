@@ -10,6 +10,7 @@ import DeviceCardHeader from "./DeviceCardHeader"
 import { JDService } from '../../../src/jdom/service';
 import { serviceTestFromServiceSpec } from "../../../src/jdom/spec";
 import ServiceUnitTest, { TestStatus } from "./ServiceUnitTest"
+import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -73,7 +74,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     }
 
     return (
-        <div className={classes.root}>
+        <Grid container spacing={2}>
+        <Grid className={classes.root}>
             <h2>Compliance tests for <Link to={`/services/${serviceSpec.shortId}/`}>{serviceSpec.name}</Link>  service</h2>
             <Stepper activeStep={activeStep} orientation="vertical">
                 <Step key="device">
@@ -122,6 +124,13 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                 </Button>
                 </Paper>
             )}
-        </div>
+        </Grid>
+        {selectedServiceInstance && <DashbardDeviceItem
+            key={selectedServiceInstance.device.id}
+            device={selectedServiceInstance.device}
+            showAvatar={true}
+            showHeader={true}
+        />}
+        </Grid>
     );
 }
