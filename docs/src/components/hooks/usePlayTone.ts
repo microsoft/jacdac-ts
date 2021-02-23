@@ -35,7 +35,7 @@ export default function usePlayTone(defaultVolume?: number) {
         if (contextRef.current) return;
 
         try {
-            const ctx = contextRef.current = new AudioContext();
+            const ctx = contextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
 
             // play silence sound within onlick to unlock it
             const buffer = ctx.createBuffer(1, 1, 22050);

@@ -1,5 +1,5 @@
 
-import React, {  } from "react";
+import React, { } from "react";
 import { WaterLevelReg } from "../../../../src/jdom/constants";
 import { DashboardServiceProps } from "./DashboardServiceWidget";
 import SvgWidget from "../widgets/SvgWidget";

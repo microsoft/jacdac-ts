@@ -81,7 +81,7 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
                     onPointerUp={handleUp}
                 />);
                 if (label) {
-                    ledEls.push(<text key={`t${row}-${col}`} fontSize={ph * 2 /3} {...textProps} x={x + pw / 2} y={y + ph / 2}>{label}</text>)
+                    ledEls.push(<text key={`t${row}-${col}`} fontSize={ph * 2 / 3} {...textProps} x={x + pw / 2} y={y + ph / 2}>{label}</text>)
                 }
                 x += pw + m;
             }

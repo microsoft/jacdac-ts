@@ -30,7 +30,7 @@ export default function DeviceActions(props: {
     }
     const handleStop = () => {
         bus.removeDeviceHost(host);
-    }    
+    }
     return <>
         {showStopHost && host && <CmdButton trackName="device.stop" size="small" title="stop simulator" onClick={handleStop} icon={<CloseIcon />} />}
         {!hideIdentity && <CmdButton trackName="device.identify" size="small" title="identify" onClick={handleIdentify} icon={<FingerprintIcon />} />}

@@ -35,7 +35,7 @@ export default function ServiceSpecificationCard(props: {
             title={spec?.name || "???"}
             subheader={showServiceClass && srv && <IDChip id={sc} filter={`srv:${srv}`} />}
             action={<>
-                {hostDefinition && <Chip size="small" 
+                {hostDefinition && <Chip size="small"
                     onClick={handleSimulatorClick}
                     avatar={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
                     aria-label="start simulator and open dashboard"

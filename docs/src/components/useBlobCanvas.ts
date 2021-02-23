@@ -50,13 +50,13 @@ export default function useBlobCanvas(blob: Blob, width: number, height: number)
         if (!blob)
             setCanvas(undefined);
         else {
-        try {
-            const cvs = await readBlobToCanvas(blob, width, height);
-            setCanvas(cvs);
-        } catch (e) {
-            setCanvas(undefined)
+            try {
+                const cvs = await readBlobToCanvas(blob, width, height);
+                setCanvas(cvs);
+            } catch (e) {
+                setCanvas(undefined)
+            }
         }
-    }
     }, [blob, width, height])
     return canvas;
 }

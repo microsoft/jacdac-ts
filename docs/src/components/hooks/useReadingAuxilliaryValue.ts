@@ -10,7 +10,7 @@ export default function useReadingAuxilliaryValue(register: JDRegister, identifi
     | SystemReg.MinReading
     | SystemReg.StreamingInterval
     | SystemReg.StreamingPreferredInterval
-) : number[] {
+): number[] {
     const { service, code } = register;
     const reading = code === SystemReg.Reading || code === SystemReg.Value;
     const auxilliaryRegister = reading ? service.register(identifier) : undefined;

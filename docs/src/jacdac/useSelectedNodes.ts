@@ -13,7 +13,7 @@ export default function useSelectedNodes<TNode extends JDNode>(singleSelection?:
             if (!value)
                 nodes.current.delete(node.id)
             else {
-                if(singleSelection)
+                if (singleSelection)
                     nodes.current.clear();
                 nodes.current.add(node.id)
             }

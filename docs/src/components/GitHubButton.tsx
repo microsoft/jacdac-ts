@@ -7,7 +7,7 @@ export default function GitHubButton(props: { repo: string, size?: "small" | "me
     const { repo, size, className } = props;
     let url = repo;
     if (!/^\//.test(url)
-        && !/^https:\/\//.test(url) 
+        && !/^https:\/\//.test(url)
         && !/^https:\/\/github.com\//.test(url)) {
         url = "https://github.com/" + url;
     }

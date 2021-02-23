@@ -1,18 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-
-function useAudioContext(enabled: boolean) {
-    const context = useMemo<AudioContext>(() => {
-        if (!enabled)
-            return undefined;
-        try {
-            return new AudioContext();
-        } catch (e) {
-            return undefined;
-        }
-    }, [enabled]);
-    useEffect(() => () => context?.close(), [enabled])
-    return context;
-}
+import useAudioContext from "./useAudioContext";
 
 export interface AudioAnalyzerOptions {
     fftSize?: number;
@@ -21,46 +8,14 @@ export interface AudioAnalyzerOptions {
     maxDecibels?: number;
 }
 
-export function useMicrophoneAnalyzer(enabled: boolean, options?: AudioAnalyzerOptions) {
+export function useMicrophoneAnalyzer(options?: AudioAnalyzerOptions) {
     const { fftSize, smoothingTimeConstant, minDecibels, maxDecibels } = options || {};
-    const audioContext = useAudioContext(enabled);
-    const [analyzer, setAnalyzer] = useState<AnalyserNode>()
+    const { onClickActivateAudioContext } = useAudioContext();
+    const analyzerRef = useRef<AnalyserNode>()
     const microphoneSource = useRef<MediaStreamAudioSourceNode>();
 
-    // grab microphone
-    useEffect(() => {
-        if (!enabled) {
-            setAnalyzer(undefined);
-        } else {
-            try {
-                navigator.getUserMedia({
-                    video: false,
-                    audio: true
-                }
-                    , resp => {
-                        const source = microphoneSource.current = audioContext.createMediaStreamSource(resp);
-                        const node = audioContext.createAnalyser()
-                        source.connect(node);
-                        setAnalyzer(node);
-                    }
-                    , err => {
-                        console.warn(err);
-                        setAnalyzer(undefined)
-                    });
-            } catch (e) {
-                console.warn(e)
-            }
-        }
-
-        // cleanup
-        return () => {
-            microphoneSource.current?.disconnect();
-            microphoneSource.current = undefined;
-        }
-    }, [enabled]);
-
-    // update options
-    useEffect(() => {
+    const applyOptions = () => {
+        const analyzer = analyzerRef.current;
         if (analyzer) {
             // must be multiple of power of two
             if (!isNaN(fftSize))
@@ -72,7 +27,65 @@ export function useMicrophoneAnalyzer(enabled: boolean, options?: AudioAnalyzerO
             if (!isNaN(maxDecibels))
                 analyzer.maxDecibels = maxDecibels;
         }
-    }, [analyzer, fftSize, smoothingTimeConstant, minDecibels, maxDecibels])
+    }
 
-    return analyzer;
+    // grab microphone
+    const onClickActivateMicrophone = async () => {
+        if (analyzerRef.current) {
+            return analyzerRef.current;
+        }
+
+        const audioContext = onClickActivateAudioContext();
+        try {
+            console.log('activating microphone', { audioContext })
+            const resp = await navigator.mediaDevices.getUserMedia({
+                video: false,
+                audio: true
+            });
+
+            const source = microphoneSource.current = audioContext.createMediaStreamSource(resp);
+            const node = audioContext.createAnalyser()
+            source.connect(node);
+            analyzerRef.current = node;
+            applyOptions();
+
+            console.log(`microphone analyzer activated`)
+        } catch (e) {
+            console.warn(e)
+        }
+
+        return analyzerRef.current
+    };
+
+    const closeMicrophone = () => {
+        if (!microphoneSource.current) return;
+
+        try {
+            console.log(`closing microphone`)
+            const stream = microphoneSource.current?.mediaStream;
+            microphoneSource.current?.disconnect();
+            analyzerRef.current?.disconnect();
+            const tracks = stream?.getTracks();
+            tracks?.forEach(track => track.stop());
+        }
+        catch (e) {
+            console.warn(e)
+        }
+        finally {
+            microphoneSource.current = undefined;
+            analyzerRef.current = undefined;
+        }
+    }
+
+    // final cleanup
+    useEffect(() => closeMicrophone, []);
+
+    // update options
+    useEffect(applyOptions, [analyzerRef.current, fftSize, smoothingTimeConstant, minDecibels, maxDecibels])
+
+    return {
+        onClickActivateMicrophone,
+        closeMicrophone,
+        analyser: () => analyzerRef.current
+    }
 }

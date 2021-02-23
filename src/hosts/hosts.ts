@@ -18,7 +18,7 @@ import {
     SRV_UV_INDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg, SRV_SOLENOID
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -164,8 +164,8 @@ const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     readingValues: [new Uint8Array(0)],
     intensityValues: [false],
     registerValues: [{
-        code: SoundSpectrumReg.FftSize,
-        values: [64],
+        code: SoundSpectrumReg.FftPow2Size,
+        values: [5],
     }, {
         code: SoundSpectrumReg.MinDecibels,
         values: [-100],
@@ -673,6 +673,13 @@ const _hosts: {
             name: "speech synthesis",
             serviceClasses: [SRV_SPEECH_SYNTHESIS],
             services: () => [new SpeechSynthesisServiceHost()]
+        },
+        {
+            name: "Solenoid",
+            serviceClasses: [SRV_SOLENOID],
+            services: () => [new ServiceHost(SRV_SOLENOID, {
+                intensityValues: [0]
+            })]
         },
         {
             name: "sound level",

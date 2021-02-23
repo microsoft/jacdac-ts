@@ -31,7 +31,7 @@ export default function ImportButton(props: {
         {icon && <IconButtonWithTooltip title={text} onClick={handleOpen}>
             <OpenInBrowserIcon />
         </IconButtonWithTooltip>}
-        {!icon && <Button  disabled={disabled} variant="outlined" onClick={handleOpen} startIcon={<OpenInBrowserIcon />}>
+        {!icon && <Button disabled={disabled} variant="outlined" onClick={handleOpen} startIcon={<OpenInBrowserIcon />}>
             {text}
         </Button>}
         <DropzoneDialog

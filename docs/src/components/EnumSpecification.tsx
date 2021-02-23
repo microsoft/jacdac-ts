@@ -12,10 +12,10 @@ export default function EnumSpecification(props: { serviceClass: number }) {
     return <Fragment>
         <h2>Enums</h2>
         {enums.map(e => <Fragment key={e.name}>
-        <h3>{e.name} {e.isFlags && <Chip label="flags" size="small" />}</h3>
+            <h3>{e.name} {e.isFlags && <Chip label="flags" size="small" />}</h3>
             <ul>
                 {Object.keys(e.members).map(en => <li key={en}>{en}: <code>0x{e.members[en].toString(16)}</code></li>)}
             </ul>
-            </Fragment>)}
+        </Fragment>)}
     </Fragment>
 }

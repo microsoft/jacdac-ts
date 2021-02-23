@@ -5,7 +5,7 @@ import { JDDevice } from "./device"
 import { BootloaderCmd, ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
 import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array, toHex } from "./utils"
 import { jdpack, jdunpack } from "./pack"
-import { BootloaderError } from "../../jacdac-spec/dist/specconstants"
+import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
 
 const BL_SUBPAGE_SIZE = 208

@@ -20,7 +20,7 @@ export default function CodeBlock(props: { children: any, className?: string, do
     const language = className?.replace(/language-/, '') || ""
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme;
     const valueUri = !!downloadText && `data:application/json;charset=UTF-8,${encodeURIComponent(downloadText)}`
-    
+
     if (language === "blocks")
         return <MakeCodeSnippet source={children} />
     else if (language === "trace")

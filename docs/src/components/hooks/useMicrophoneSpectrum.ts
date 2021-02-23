@@ -1,15 +1,25 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { AudioAnalyzerOptions, useMicrophoneAnalyzer } from "./useAudioAnalyzer";
 
-export default function useMicrophoneSpectrum(enabled: boolean, options?: AudioAnalyzerOptions): () => Uint8Array {
-    const analyzer = useMicrophoneAnalyzer(enabled, options);
+export default function useMicrophoneSpectrum(enabled: boolean, options?: AudioAnalyzerOptions) {
+    const { analyser, onClickActivateMicrophone, closeMicrophone } = useMicrophoneAnalyzer(options);
     const frequencies = useRef(new Uint8Array(0));
 
-    if (!analyzer) return undefined;
-    return () => {
-        if (frequencies.current.length !== analyzer.frequencyBinCount)
-            frequencies.current = new Uint8Array(analyzer.frequencyBinCount);
-        analyzer?.getByteFrequencyData(frequencies.current);
-        return frequencies.current;
+    useEffect(() => {
+        if (!enabled)
+            closeMicrophone();
+    }, [enabled]);
+
+    return {
+        onClickActivateMicrophone,
+        spectrum: () => {
+            const a = analyser();
+            if (!a) return frequencies.current;
+
+            if (frequencies.current.length !== a.frequencyBinCount)
+                frequencies.current = new Uint8Array(a.frequencyBinCount);
+            a?.getByteFrequencyData(frequencies.current);
+            return frequencies.current;
+        }
     }
 }

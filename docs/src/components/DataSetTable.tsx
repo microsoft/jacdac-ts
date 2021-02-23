@@ -29,7 +29,7 @@ export default function DataSetTable(props: { dataSet: DataSet, maxRows?: number
   const classes = useStyles();
 
   const data = dataSet.rows.slice(maxRows !== undefined ? -maxRows : 0)
-  while(minRows !== undefined && data.length < minRows)
+  while (minRows !== undefined && data.length < minRows)
     data.push(undefined)
 
   return (
