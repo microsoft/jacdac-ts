@@ -19,10 +19,12 @@ function HostMicrophoneButton(props: { service: JDService, host?: AnalogSensorSe
     const enabled = useRegisterBoolValue(enabledRegister)
     const [minDecibels] = useRegisterUnpackedValue<[number]>(service.register(SoundLevelReg.MinDecibels))
     const [maxDecibels] = useRegisterUnpackedValue<[number]>(service.register(SoundLevelReg.MaxDecibels))
-    const volume = useMicrophoneVolume(enabled && !!host, { fftSize: 64, smoothingTimeConstant: 0, minDecibels, maxDecibels });
+    const { volume, onClickActivateMicrophone } = useMicrophoneVolume(enabled && !!host, { fftSize: 64, smoothingTimeConstant: 0, minDecibels, maxDecibels });
     const title = enabled ? "Stop microphone" : "Start microphone"
 
     const handleClick = async () => {
+        if (!enabled)
+            await onClickActivateMicrophone();
         await enabledRegister.sendSetBoolAsync(!enabled, true);
     }
 

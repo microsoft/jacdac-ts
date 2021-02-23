@@ -162,6 +162,7 @@ const serviceViews: {
     },
     [SRV_SOUND_LEVEL]: {
         component: DashboardSoundLevel,
+        weight: () => 2,
     },
     [SRV_RNG]: {
         component: DashboardRandomNumberGenerator,
@@ -175,6 +176,7 @@ const serviceViews: {
     },
     [SRV_SOUND_SPECTRUM]: {
         component: DashboardSoundSpectrum,
+        weight: () => 2,
     },
 }
 
