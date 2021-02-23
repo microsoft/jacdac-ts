@@ -9,7 +9,7 @@ import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
 import { JDService } from '../../../src/jdom/service';
 import { serviceTestFromServiceSpec } from "../../../src/jdom/spec";
-import ServiceUnitTest from "./ServiceUnitTest"
+import ServiceUnitTest, { TestStatus } from "./ServiceUnitTest"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -68,6 +68,9 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const handleReset = () => {
         setActiveStep(0);
     };
+    const testFinished = (status: TestStatus) => {
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
 
     return (
         <div className={classes.root}>
@@ -101,7 +104,11 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                                 {index != activeTest && <Button onClick={handleStartTest(index)} className={classes.button}>
                                     Start Test
                                 </Button>}
-                                {index === activeTest && <ServiceUnitTest serviceInstance={selectedServiceInstance} test={test}>
+                                {index === activeTest && <ServiceUnitTest 
+                                        serviceInstance={selectedServiceInstance} 
+                                        test={test}
+                                        finished={testFinished}
+                                        > 
                                     </ServiceUnitTest>}
                             </StepContent>
                         </Step>

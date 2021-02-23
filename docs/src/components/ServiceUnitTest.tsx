@@ -6,6 +6,7 @@ import useChange from '../jacdac/useChange';
 import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { JDService } from '../../../src/jdom/service';
+import { finished } from 'stream';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -25,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-enum TestStatus {
+export enum TestStatus {
     Inactive,
     Active,
     Passed,
@@ -34,15 +35,15 @@ enum TestStatus {
 
 // TODO: command interpreter
 
-export default function ServiceUnitTest(props: {serviceInstance: JDService, test: jdtest.UnitTest}) {
+export default function ServiceUnitTest(props: {serviceInstance: JDService, test: jdtest.UnitTest, finished: (status:TestStatus)=>void }) {
     const classes = useStyles();
-    const { serviceInstance, test } = props
+    const { serviceInstance, test, finished } = props
     const [activeCommand, setActiveCommand] = useState(0);
     const handleNext = () => {
         setActiveCommand((prevActiveStep) => prevActiveStep + 1);
     };
     const handleClose = () => {
-            
+        finished(TestStatus.Passed);
     };
     return (<div className={classes.root}>
         <h2>test steps</h2>
