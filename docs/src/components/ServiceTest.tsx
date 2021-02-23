@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-import Markdown from "./ui/Markdown"
 import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
@@ -10,7 +9,7 @@ import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
 import { JDService } from '../../../src/jdom/service';
 import { serviceTestFromServiceSpec } from "../../../src/jdom/spec";
-import { ServiceUnitTest } from "./ServiceUnitTest"
+import ServiceUnitTest from "./ServiceUnitTest"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -44,6 +43,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const classes = useStyles();
     const [selectedServiceInstance, setSelectedService] = useState<JDService>(undefined);
     const [activeStep, setActiveStep] = useState(0);
+    const [activeTest, setActiveTest] = useState(-1);
     const serviceTest = serviceTestFromServiceSpec(serviceSpec);
     const gridBreakpoints = useGridBreakpoints()
     // devices that implement serviceSpec
@@ -54,8 +54,11 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     )
     const handleSelect = (service: JDService) => () => {
         setSelectedService(service);
-        setActiveStep(1);
+        handleNext();
     }
+    const handleStartTest = (t: number) => () => {
+        setActiveTest(() => t); 
+    };
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
@@ -91,10 +94,27 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                             </ul></Alert>}
                     </StepContent>
                 </Step>
-                {serviceTest.tests.map(test => (
-                    <ServiceUnitTest serviceInstance={selectedServiceInstance} test={test} />
+                {serviceTest.tests.map((test,index) => (
+                    <Step key={index}>
+                            <StepLabel>{test.description}</StepLabel>
+                            <StepContent>
+                                {index != activeTest && <Button onClick={handleStartTest(index)} className={classes.button}>
+                                    Start Test
+                                </Button>}
+                                {index === activeTest && <ServiceUnitTest serviceInstance={selectedServiceInstance} test={test}>
+                                    </ServiceUnitTest>}
+                            </StepContent>
+                        </Step>
                 ))}
             </Stepper>
+            {activeStep === serviceTest.tests.length + 1 && (
+                <Paper square elevation={0} className={classes.resetContainer}>
+                <Typography>All steps completed - you're finished</Typography>
+                <Button onClick={handleReset} className={classes.button}>
+                    Reset
+                </Button>
+                </Paper>
+            )}
         </div>
     );
 }
