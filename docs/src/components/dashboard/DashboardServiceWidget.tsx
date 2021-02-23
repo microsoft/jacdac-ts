@@ -10,6 +10,7 @@ import {
     SRV_LED_PIXEL, SRV_MATRIX_KEYPAD, SRV_MOTION, SRV_POWER, SRV_RAIN_GAUGE,
     SRV_REAL_TIME_CLOCK, SRV_REFLECTED_LIGHT, SRV_RNG, SRV_ROLE_MANAGER,
     SRV_ROTARY_ENCODER, SRV_SERVO, SRV_SEVEN_SEGMENT_DISPLAY, SRV_SOIL_MOISTURE,
+    SRV_SOLENOID,
     SRV_SOUND_LEVEL,
     SRV_SOUND_PLAYER, SRV_SOUND_SPECTRUM, SRV_SPEECH_SYNTHESIS, SRV_SWITCH, SRV_TRAFFIC_LIGHT, SRV_WATER_LEVEL,
     SRV_WIND_DIRECTION, SystemReg,
@@ -54,6 +55,7 @@ const DashboardSoundSpectrum = lazy(() => import("./DashboardSoundSpectrum"));
 const DashboardRandomNumberGenerator = lazy(() => import("./DashboardRandomNumberGenerator"));
 const DashboardCompass = lazy(() => import("./DashboardCompass"));
 const DashboardGyroscope = lazy(() => import("./DashboardGyroscope"));
+const DashboardSolenoid = lazy(() => import("./DashboardSolenoid"));
 
 export interface DashboardServiceProps {
     service: JDService,
@@ -177,6 +179,9 @@ const serviceViews: {
     [SRV_SOUND_SPECTRUM]: {
         component: DashboardSoundSpectrum,
         weight: () => 2,
+    },
+    [SRV_SOLENOID]: {
+        component: DashboardSolenoid
     },
 }
 
