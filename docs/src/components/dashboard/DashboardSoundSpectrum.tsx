@@ -18,7 +18,8 @@ function HostMicrophoneButton(props: { service: JDService, host?: SensorServiceH
     const enabled = useRegisterBoolValue(enabledRegister)
     const [minDecibels] = useRegisterUnpackedValue<[number]>(service.register(SoundSpectrumReg.MinDecibels))
     const [maxDecibels] = useRegisterUnpackedValue<[number]>(service.register(SoundSpectrumReg.MaxDecibels))
-    const [fftSize] = useRegisterUnpackedValue<[number]>(service.register(SoundSpectrumReg.FftSize));
+    const [fftPow2Size] = useRegisterUnpackedValue<[number]>(service.register(SoundSpectrumReg.FftPow2Size));
+    const fftSize = 1 << (fftPow2Size || 5);
     const [smoothingTimeConstant] = useRegisterUnpackedValue<[number]>(service.register(SoundSpectrumReg.SmoothingTimeConstant));
     const { spectrum, onClickActivateMicrophone } = useMicrophoneSpectrum(enabled && !!host, { fftSize, smoothingTimeConstant, minDecibels, maxDecibels });
     const title = enabled ? "Stop microphone" : "Start microphone"

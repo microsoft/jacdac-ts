@@ -164,8 +164,8 @@ const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     readingValues: [new Uint8Array(0)],
     intensityValues: [false],
     registerValues: [{
-        code: SoundSpectrumReg.FftSize,
-        values: [64],
+        code: SoundSpectrumReg.FftPow2Size,
+        values: [5],
     }, {
         code: SoundSpectrumReg.MinDecibels,
         values: [-100],
