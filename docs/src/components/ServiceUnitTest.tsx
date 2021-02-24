@@ -1,12 +1,11 @@
 /// <reference path="../../../jacdac-spec/spectool/jdtest.d.ts" />
 
-import React, { useContext, useState } from 'react';
-import Markdown from "./ui/Markdown"
+import React, { useState } from 'react';
 import useChange from '../jacdac/useChange';
-import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
+import { Grid, Button, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { JDService } from '../../../src/jdom/service';
-import { JD_ADVERTISEMENT_0_COUNTER_MASK } from '../../../src/jdom/constants';
+import { JDClient } from '../../../src/jdom/client';
 
 export enum TestStatus {
     Inactive,
@@ -23,9 +22,9 @@ interface TestStep {
 
 function createTestSteps(test: jdtest.UnitTest) {
     let testSteps: TestStep[] = [];
-    let currTestStep: TestStep = { start:0, length:undefined }
+    let currTestStep: TestStep = { start: 0, length: undefined }
     let currLength = 0;
-    test.commands.forEach((cmd,index) => {
+    test.commands.forEach((cmd, index) => {
         if (cmd.kind === "say" && currLength > 0) {
             closeTestStep(index);
         } else {
@@ -37,14 +36,16 @@ function createTestSteps(test: jdtest.UnitTest) {
         currTestStep.length = currLength;
         testSteps.push(currTestStep);
         currLength = 0;
-        currTestStep = { start:index, length:undefined };
+        currTestStep = { start: index, length: undefined };
     }
 }
 
-
 // TODO: need a monitor that continually checks condition and reports back
+class TestMonitor extends JDClient {
 
-export default function ServiceUnitTest(props: {serviceInstance: JDService, test: jdtest.UnitTest, finished: (status:TestStatus)=>void }) {
+}
+
+export default function ServiceUnitTest(props: { serviceInstance: JDService, test: jdtest.UnitTest, finished: (status: TestStatus) => void }) {
     const { serviceInstance, test, finished } = props
     const [activeCommand, setActiveCommand] = useState(0);
     const handleNext = () => {
@@ -55,13 +56,13 @@ export default function ServiceUnitTest(props: {serviceInstance: JDService, test
     };
     return (<Grid>
         <Stepper activeStep={activeCommand} orientation="vertical">
-        {test.commands.map((cmd, index) => (commandToUI(index, cmd)))}
+            {test.commands.map((cmd, index) => (commandToUI(index, cmd)))}
         </Stepper>
         {activeCommand === test.commands.length && (
             <Paper square elevation={0}>
-            <Typography>All steps completed - you're finished</Typography>
-            <Button onClick={handleClose}>
-                Close
+                <Typography>All steps completed - you're finished</Typography>
+                <Button onClick={handleClose}>
+                    Close
             </Button>
             </Paper>
         )}
@@ -73,12 +74,12 @@ export default function ServiceUnitTest(props: {serviceInstance: JDService, test
     //     break
     function commandToUI(index: number, cmd: jdtest.ServiceTestCommand) {
         return (<Step key={index}>
-        {(cmd.kind === "say" || cmd.kind === "ask") && <StepLabel>{cmd.message}</StepLabel>}
-        <StepContent>
-            <Button
-                onClick={handleNext}
-            >do command</Button>
-        </StepContent>
+            {(cmd.kind === "say" || cmd.kind === "ask") && <StepLabel>{cmd.message}</StepLabel>}
+            <StepContent>
+                <Button
+                    onClick={handleNext}
+                >do command</Button>
+            </StepContent>
         </Step>)
     }
 }

@@ -3,7 +3,7 @@ import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useChange from '../jacdac/useChange';
-import { Grid, GridHeader, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
+import { Grid, Card, CardHeader, CardActions, Button, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
@@ -39,7 +39,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
         handleNext();
     }
     const handleStartTest = (t: number) => () => {
-        setActiveTest(() => t); 
+        setActiveTest(() => t);
     };
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -56,63 +56,63 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
 
     return (
         <Grid container spacing={2}>
-        <Grid>
-            <h2>Compliance tests for <Link to={`/services/${serviceSpec.shortId}/`}>{serviceSpec.name}</Link>  service</h2>
-            <Stepper activeStep={activeStep} orientation="vertical">
-                <Step key="device">
-                    <StepLabel>Select a device to test</StepLabel>
-                    <StepContent>
-                        {!!serviceInstances.length && <Grid container spacing={2}>
-                            {serviceInstances.map(service => <Grid item {...gridBreakpoints}>
-                                <Card key={service.id}>
-                                    <DeviceCardHeader device={service.device} />
-                                    <CardActions>
-                                        <Button variant="contained" color="primary" onClick={handleSelect(service)}>Select</Button>
-                                    </CardActions>
-                                </Card>
-                            </Grid>)}
-                        </Grid>}
-                        {!serviceInstances.length && <Alert severity="info">Not seeing your device? Try some of the following.
+            <Grid>
+                <h2>Compliance tests for <Link to={`/services/${serviceSpec.shortId}/`}>{serviceSpec.name}</Link>  service</h2>
+                <Stepper activeStep={activeStep} orientation="vertical">
+                    <Step key="device">
+                        <StepLabel>Select a device to test</StepLabel>
+                        <StepContent>
+                            {!!serviceInstances.length && <Grid container spacing={2}>
+                                {serviceInstances.map(service => <Grid item {...gridBreakpoints}>
+                                    <Card key={service.id}>
+                                        <DeviceCardHeader device={service.device} />
+                                        <CardActions>
+                                            <Button variant="contained" color="primary" onClick={handleSelect(service)}>Select</Button>
+                                        </CardActions>
+                                    </Card>
+                                </Grid>)}
+                            </Grid>}
+                            {!serviceInstances.length && <Alert severity="info">Not seeing your device? Try some of the following.
                         <ul>
-                                <li>Check that your device is connected</li>
-                                <li>Use the <strong>packet console</strong> to monitor packets on the bus</li>
-                                <li>Check the class identifier in your annoucement packets</li>
-                            </ul></Alert>}
-                    </StepContent>
-                </Step>
-                {serviceTest.tests.map((test,index) => (
-                    <Step key={index}>
+                                    <li>Check that your device is connected</li>
+                                    <li>Use the <strong>packet console</strong> to monitor packets on the bus</li>
+                                    <li>Check the class identifier in your annoucement packets</li>
+                                </ul></Alert>}
+                        </StepContent>
+                    </Step>
+                    {serviceTest.tests.map((test, index) => (
+                        <Step key={index}>
                             <StepLabel>{test.description}</StepLabel>
                             <StepContent>
                                 {index != activeTest && <Button onClick={handleStartTest(index)} >
                                     Start Test
                                 </Button>}
-                                {index === activeTest && <ServiceUnitTest 
-                                        serviceInstance={selectedServiceInstance} 
-                                        test={test}
-                                        finished={testFinished}
-                                        > 
-                                    </ServiceUnitTest>}
+                                {index === activeTest && <ServiceUnitTest
+                                    serviceInstance={selectedServiceInstance}
+                                    test={test}
+                                    finished={testFinished}
+                                >
+                                </ServiceUnitTest>}
                             </StepContent>
                         </Step>
-                ))}
-            </Stepper>
-            {activeStep === serviceTest.tests.length + 1 && (
-                <Paper square elevation={0} >
-                <Typography>All steps completed - you're finished</Typography>
-                <Button onClick={handleReset} >
-                    Reset
+                    ))}
+                </Stepper>
+                {activeStep === serviceTest.tests.length + 1 && (
+                    <Paper square elevation={0} >
+                        <Typography>All steps completed - you're finished</Typography>
+                        <Button onClick={handleReset} >
+                            Reset
                 </Button>
-                </Paper>
-            )}
-        </Grid>
-        {selectedServiceInstance && <DashbardDeviceItem
-            key={selectedServiceInstance.device.id}
-            device={selectedServiceInstance.device}
-            showAvatar={true}
-            showHeader={true}
-            expanded={true}
-        />}
+                    </Paper>
+                )}
+            </Grid>
+            {selectedServiceInstance && <DashbardDeviceItem
+                key={selectedServiceInstance.device.id}
+                device={selectedServiceInstance.device}
+                showAvatar={true}
+                showHeader={true}
+                expanded={true}
+            />}
         </Grid>
     );
 }
