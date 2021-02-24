@@ -3,7 +3,7 @@ import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useChange from '../jacdac/useChange';
-import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
+import { Grid, GridHeader, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
@@ -14,9 +14,6 @@ import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
-        root: {
-            width: '60%',
-        },
         button: {
             marginTop: theme.spacing(1),
             marginRight: theme.spacing(1),
@@ -75,7 +72,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
 
     return (
         <Grid container spacing={2}>
-        <Grid className={classes.root}>
+        <Grid>
             <h2>Compliance tests for <Link to={`/services/${serviceSpec.shortId}/`}>{serviceSpec.name}</Link>  service</h2>
             <Stepper activeStep={activeStep} orientation="vertical">
                 <Step key="device">
