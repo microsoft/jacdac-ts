@@ -9,6 +9,8 @@ import { fromHex, SMap, toHex } from "./utils";
 import { SystemReg, SensorReg, SRV_CONTROL, SRV_ROLE_MANAGER, SRV_SETTINGS, SRV_BOOTLOADER, SRV_LOGGER, SRV_POWER, SRV_PROTO_TEST } from "./constants";
 import makecodeServicesData from "../../jacdac-spec/services/makecode-extensions.json";
 
+console.log({ serviceTestData })
+
 const _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any;
 const _serviceTests: jdtest.ServiceTest[] = serviceTestData as any;
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {};

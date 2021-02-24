@@ -1,6 +1,5 @@
-import { bufferEq, stringToBuffer, toHex } from "../../src/jdom/utils"
 import { describe, it } from "mocha"
-import { jdpack, jdunpack } from "../../src/jdom/pack";
+import { bufferEq, stringToBuffer, jdpack, jdunpack } from "../../dist/jacdac-jdom.cjs";
 
 describe('jdpack', () => {
     function testOne(fmt: string, data0: any[], maxError?: number) {
@@ -35,7 +34,7 @@ describe('jdpack', () => {
         it(fmt, () => {
             const buf = jdpack(fmt, data0)
             const data1 = jdunpack(buf, fmt)
-            console.log(fmt, data0, data1, toHex(buf))
+            //console.log(fmt, data0, data1, toHex(buf))
             checksame(data0, data1)
         })
     }
