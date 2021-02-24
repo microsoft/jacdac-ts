@@ -17,7 +17,7 @@ export default function SvgWidget(props: {
         xmlns="http://www.w3.org/2000/svg"
         tabIndex={tabIndex}
         viewBox={viewBox || `0 0 ${width} ${h}`}
-        style={size ? { height: size, maxWidth: "100%" } : undefined}
+        style={size ? { maxHeight: size, width: "100%" } : undefined}
         aria-label={title}
         role={role || "group"}>
         {background && <rect x={0} y={0} width={width} height={height} fill={background} rx={1} ry={1} />}
