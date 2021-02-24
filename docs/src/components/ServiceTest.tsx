@@ -15,7 +15,7 @@ import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            width: '100%',
+            width: '60%',
         },
         button: {
             marginTop: theme.spacing(1),
@@ -130,6 +130,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
             device={selectedServiceInstance.device}
             showAvatar={true}
             showHeader={true}
+            expanded={true}
         />}
         </Grid>
     );
