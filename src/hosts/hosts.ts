@@ -18,7 +18,7 @@ import {
     SRV_UV_INDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg, SRV_SOLENOID, SRV_DMX
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg, SRV_SOLENOID, SRV_DMX, SRV_BIT_RADIO
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -50,6 +50,7 @@ import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analo
 import RandomNumberGeneratorServiceHost from "./randomnumbergeneratorservicehost";
 import CompassServiceHost from "./compassservicehost";
 import DMXServiceHost from "./dmxservicehost";
+import BitRadioServiceHost from "./bitradioservicehost";
 
 const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -242,6 +243,11 @@ const _hosts: {
             name: "barometer",
             serviceClasses: [SRV_BAROMETER],
             services: () => [new AnalogSensorServiceHost(SRV_BAROMETER, barometerOptions)]
+        },
+        {
+            name: "bitradio",
+            serviceClasses: [SRV_BIT_RADIO],
+            services: () => [new BitRadioServiceHost()]
         },
         {
             name: "button",
