@@ -61,6 +61,14 @@ run
 yarn buildspecs
 ```
 
+## Unit tests
+
+We use [Mocha](https://mochajs.org/) to run the unit test suite from ``/tests``. To execute the tests,
+
+```
+yarn test
+```
+
 ### Docs build
 
 Launch the gatsbdy develop mode and navigate to http://localhost:8000 . This build does not require to load dist as the library is compiled directly into the web site.
