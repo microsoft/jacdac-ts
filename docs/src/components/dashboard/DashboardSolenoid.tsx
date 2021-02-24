@@ -29,7 +29,6 @@ export default function DashboardSolenoid(props: DashboardServiceProps) {
     const label = pulled ? "pull solenoid" : "push solenoid"
 
     const onToggle = (ev: React.PointerEvent) => {
-        ev.preventDefault();
         host?.register(SolenoidReg.Pulled)?.setValues([!pulled ? 1 : 0]);
         pulledRegister.refresh();
     }
