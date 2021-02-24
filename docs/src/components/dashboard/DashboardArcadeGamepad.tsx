@@ -11,10 +11,10 @@ import ArcadeGamepadServiceHost from "../../../../src/hosts/arcadegamepadservice
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 
 const buttonLabels = {
-    [ArcadeGamepadButton.Left]: "🡄",
-    [ArcadeGamepadButton.Up]: "🡅",
-    [ArcadeGamepadButton.Down]: "🡇",
-    [ArcadeGamepadButton.Right]: "🡆",
+    [ArcadeGamepadButton.Left]: "\u25C0",
+    [ArcadeGamepadButton.Up]: "\u25B2",
+    [ArcadeGamepadButton.Down]: "\u25BC",
+    [ArcadeGamepadButton.Right]: "\u25B6",
 }
 
 function ArcadeButton(props: {
@@ -89,8 +89,8 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
         [ArcadeGamepadButton.Right]: { cx: cw * 4.5, cy: 2 * ch, small: false },
         [ArcadeGamepadButton.Down]: { cx: cw * 3, cy: 3 * ch, small: false },
 
-        [ArcadeGamepadButton.A]: { cx: cw * 9.5, cy: ch * 2.75, small: false },
-        [ArcadeGamepadButton.B]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
+        [ArcadeGamepadButton.A]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
+        [ArcadeGamepadButton.B]: { cx: cw * 9.5, cy: ch * 2.75, small: false },
 
         [ArcadeGamepadButton.Menu]: { cx: cw * 7, cy: scy, small: true },
         [ArcadeGamepadButton.Select]: { cx: cw * 6, cy: scy, small: true },
