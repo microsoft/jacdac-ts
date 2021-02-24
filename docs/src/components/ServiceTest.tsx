@@ -12,21 +12,6 @@ import { serviceTestFromServiceSpec } from "../../../src/jdom/spec";
 import ServiceUnitTest, { TestStatus } from "./ServiceUnitTest"
 import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        button: {
-            marginTop: theme.spacing(1),
-            marginRight: theme.spacing(1),
-        },
-        actionsContainer: {
-            marginBottom: theme.spacing(2),
-        },
-        resetContainer: {
-            padding: theme.spacing(3),
-        },
-    }),
-);
-
 // TODO:
 // - select one of the available devices that implements the serviceSpec
 // - enable the tests for that device/serviceSpec
@@ -38,7 +23,6 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const { serviceSpec } = props
     const { classIdentifier: serviceClass } = serviceSpec
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
-    const classes = useStyles();
     const [selectedServiceInstance, setSelectedService] = useState<JDService>(undefined);
     const [activeStep, setActiveStep] = useState(0);
     const [activeTest, setActiveTest] = useState(-1);
@@ -100,7 +84,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                     <Step key={index}>
                             <StepLabel>{test.description}</StepLabel>
                             <StepContent>
-                                {index != activeTest && <Button onClick={handleStartTest(index)} className={classes.button}>
+                                {index != activeTest && <Button onClick={handleStartTest(index)} >
                                     Start Test
                                 </Button>}
                                 {index === activeTest && <ServiceUnitTest 
@@ -114,9 +98,9 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                 ))}
             </Stepper>
             {activeStep === serviceTest.tests.length + 1 && (
-                <Paper square elevation={0} className={classes.resetContainer}>
+                <Paper square elevation={0} >
                 <Typography>All steps completed - you're finished</Typography>
-                <Button onClick={handleReset} className={classes.button}>
+                <Button onClick={handleReset} >
                     Reset
                 </Button>
                 </Paper>
