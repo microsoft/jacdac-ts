@@ -1,6 +1,6 @@
-import { bufferEq, stringToBuffer, toHex } from "./utils"
+import { bufferEq, stringToBuffer, toHex } from "../../src/jdom/utils"
 import { describe, it } from "mocha"
-import { jdpack, jdunpack } from "./pack";
+import { jdpack, jdunpack } from "../../src/jdom/pack";
 
 describe('jdpack', () => {
     function testOne(fmt: string, data0: any[], maxError?: number) {
