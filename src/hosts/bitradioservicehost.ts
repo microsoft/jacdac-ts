@@ -1,6 +1,6 @@
 import { getNumber, NumberFormat, setNumber } from "../jdom/buffer";
 import { BitRadioCmd, BitRadioReg, SRV_BIT_RADIO } from "../jdom/constants";
-import { inIFrame } from "../jdom/jacdac-jdom";
+import { inIFrame } from "../jdom/iframeclient";
 import Packet from "../jdom/packet";
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost from "../jdom/servicehost";
