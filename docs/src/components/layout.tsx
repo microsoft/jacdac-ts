@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { CSSProperties, useContext } from "react"
 import clsx from 'clsx';
 import { makeStyles, Container, Hidden, Box, useMediaQuery } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
@@ -45,6 +45,15 @@ export const MOBILE_DRAWER_WIDTH = 20;
 export const MOBILE_TOOLS_DRAWER_WIDTH = 18;
 export const MOBILE_BREAKPOINT = "sm"
 export const MEDIUM_BREAKPOINT = "md"
+
+function useJacdacBackgroundImage(): CSSProperties {
+  const theme = useTheme();
+  const background = `<svg viewBox='0 0 24 24' xmlns="http://www.w3.org/2000/svg' fill-rule='evenodd' clip-rule='evenodd' stroke-linejoin='round' stroke-miterlimit='2'><path fill='${theme.palette.background.paper}' d='M14.535 2.731c0-.841-.83-1.524-1.85-1.524h-1.152c-1.022 0-1.85.683-1.85 1.524V21.27c0 .841.828 1.524 1.85 1.524h1.152c1.02 0 1.85-.683 1.85-1.524V2.73zM20.648 4.9c0-.841-.829-1.524-1.85-1.524h-1.152c-1.021 0-1.85.683-1.85 1.524v16.369c0 .841.829 1.524 1.85 1.524h1.152c1.021 0 1.85-.683 1.85-1.524V4.899zM8.205 2.73c0-.841-.83-1.524-1.85-1.524H5.201c-1.02 0-1.85.683-1.85 1.524V21.27c0 .841.83 1.524 1.85 1.524h1.152c1.022 0 1.85-.683 1.85-1.524V2.73zM5.779 18.958a1.501 1.501 0 11-.002 3.003 1.501 1.501 0 01.002-3.003zm6.33 0a1.501 1.501 0 11-.001 3.003 1.501 1.501 0 010-3.003zm6.113 0a1.501 1.501 0 11-.002 3.003 1.501 1.501 0 01.002-3.003z' /></svg>`;
+  return {
+    background: `url("data:image/svg+xml;charset=UTF-8,${background}")`,
+    backgroundSize: "cover"
+  }
+}
 
 const useStyles = makeStyles((theme) => createStyles({
   root: {
@@ -273,6 +282,8 @@ function LayoutWithContext(props: LayoutProps) {
   const { hideMainMenu = false, hideUnderConstruction = false } = frontmatter || {};
 
   const classes = useStyles();
+  const backgroundCss = useJacdacBackgroundImage();
+
   const { darkMode } = useContext(DarkModeContext)
   const { drawerType, toolsMenu } = useContext(AppContext)
   useFirmwareBlobs();
@@ -299,7 +310,7 @@ function LayoutWithContext(props: LayoutProps) {
   </>
 
   return (
-    <div className={clsx(darkMode, classes.root)}>
+    <div className={clsx(darkMode, classes.root)} style={backgroundCss}>
       <header>
         <SEO />
       </header>

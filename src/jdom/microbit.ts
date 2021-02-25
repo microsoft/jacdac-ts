@@ -1,3 +1,4 @@
+import Flags from "./flags";
 import { Proto, Transport } from "./hf2";
 import {
     delay, PromiseQueue, write32, write16, read32, uint8ArrayToString, fromHex, bufferConcat, fromUTF8
@@ -130,8 +131,8 @@ export class CMSISProto implements Proto {
         let currSend: SendItem
         for (; ;) {
             const now = Date.now()
-            if (this.lastXchg && now - this.lastXchg > 50) {
-                console.error("slow xchg: " + (now - this.lastXchg) + "ms")
+            if (Flags.diagnostics && this.lastXchg && now - this.lastXchg > 50) {
+                console.warn("slow xchg: " + (now - this.lastXchg) + "ms")
             }
             this.lastXchg = now
 

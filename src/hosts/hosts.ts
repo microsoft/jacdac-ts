@@ -3,7 +3,7 @@ import {
     ArcadeGamepadButton,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
-    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
+    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD,
     SRV_MOTOR, SRV_POTENTIOMETER,
@@ -92,19 +92,16 @@ export const SG90_RESPONSE_SPEED = 0.12; // deg/60deg
 const microServoOptions = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
-    variant: ServoVariant.PositionalRotation
 }
 const microServo270Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
-    variant: ServoVariant.PositionalRotation,
     minAngle: -135,
     maxAngle: 135
 }
 const microServo360Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED * 2, // s/60deg
-    variant: ServoVariant.PositionalRotation,
     minAngle: -180,
     maxAngle: 180
 }
