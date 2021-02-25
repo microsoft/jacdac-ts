@@ -1,17 +1,8 @@
-/// <reference path="../../dist/types/src/jdom/jacdac-jdom.d.ts" />
-
 import { suite, test, afterEach } from "mocha"
-import {
-    JDBus, Packet, SELF_ANNOUNCE
-} from "../../dist/jacdac-jdom.cjs";
+import { JDBus } from "../../src/jdom/bus"
+import { SELF_ANNOUNCE } from "../../src/jdom/constants";
+import { mkBus } from "../testutils";
 
-function mkBus() {
-    return new JDBus({
-        sendPacketAsync: (pkt: Packet) => {
-            console.log(`pkt`, { pkt })
-        }
-    }, {});
-}
 
 suite('bus', () => {
     let bus: JDBus;

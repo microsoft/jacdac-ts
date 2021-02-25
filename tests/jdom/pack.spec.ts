@@ -1,5 +1,6 @@
 import { describe, it } from "mocha"
-import { bufferEq, stringToBuffer, jdpack, jdunpack } from "../../dist/jacdac-jdom.cjs";
+import { jdpack, jdunpack } from "../../src/jdom/pack";
+import { bufferEq, stringToBuffer } from "../../src/jdom/utils";
 
 describe('jdpack', () => {
     function testOne(fmt: string, data0: any[], maxError?: number) {
