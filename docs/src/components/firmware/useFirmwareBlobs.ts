@@ -70,6 +70,7 @@ export default function useFirmwareBlobs() {
 }
 
 export function useFirmwareBlob(repoSlug: string) {
+    repoSlug = repoSlug.replace(/^https:\/\/github\.com\//i, '');
     const { db } = useContext<DbContextProps>(DbContext)
     const firmwares = db?.firmwares;
 
@@ -86,10 +87,12 @@ export function useFirmwareBlob(repoSlug: string) {
         }
     }, [repoSlug])
 
+    const setFirmwareFile = async (tag: string, f: Blob) => {
+        await firmwares?.set(repoSlug, f)
+    }
+
     return {
         firmwareBlobs: blobs,
-        setFirmwareFile: async (tag: string, f: Blob) => {
-            firmwares?.set(repoSlug, f)
-        }
+        setFirmwareFile
     }
 }

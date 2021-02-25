@@ -14,6 +14,7 @@ import useChange from "../jacdac/useChange"
 import useDevices from "./hooks/useDevices"
 import useFirmwareBlobs from "./firmware/useFirmwareBlobs"
 import ConnectAlert from "./alert/ConnectAlert"
+import useMounted from "./hooks/useMounted"
 
 function UpdateDeviceCard(props: {
     device: JDDevice
@@ -65,6 +66,7 @@ export default function UpdateDeviceList() {
         .filter(dev => safeBoot || !dev.hasService(SRV_BOOTLOADER));
     const isFlashing = devices.some(dev => dev.flashing);
     const blobs = useFirmwareBlobs();
+    const mounted = useMounted();
     async function scan() {
         if (!blobs?.length || isFlashing || scanning || connectionState != BusState.Connected)
             return;
@@ -74,7 +76,8 @@ export default function UpdateDeviceList() {
             await scanFirmwares(bus)
         }
         finally {
-            setScanning(false)
+            if(mounted())
+                setScanning(false)
         }
     }
     // load indexed db file once
