@@ -11,7 +11,6 @@ import useServiceHost from "../hooks/useServiceHost";
 
 export default function DashboardSolenoid(props: DashboardServiceProps) {
     const { service, services, variant } = props;
-    const widgetSize = useWidgetSize(variant, services.length);
     const pulledRegister = service.register(SolenoidReg.Pulled);
     const [pulled] = useRegisterUnpackedValue<[boolean]>(pulledRegister);
     const host = useServiceHost(service);
@@ -35,7 +34,7 @@ export default function DashboardSolenoid(props: DashboardServiceProps) {
 
     const buttonProps = useSvgButtonProps<SVGRectElement>(label, !!host && onToggle)
 
-    return <SvgWidget width={w} height={h} size={widgetSize} background={background} >
+    return <SvgWidget width={w} height={h} background={background} >
         <rect x={m + pos} y={m + (bh - bsh) / 2} width={bw} height={bsh} rx={m} ry={m} fill={active} stroke={controlBackground} />
         <rect x={m} y={m} width={bw} height={bh} rx={m} ry={m} stroke={controlBackground} fill={background} {...buttonProps} />
         <text {...textProps} x={m + bw / 2} y={m + bh / 2}>{pulled ? "pulled" : "pushed"}</text>

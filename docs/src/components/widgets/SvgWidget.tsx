@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 export default function SvgWidget(props: {
     width: number,
     height?: number,
-    size: string,
+    size?: string,
     role?: string,
     title?: string,
     viewBox?: string,
@@ -17,8 +17,8 @@ export default function SvgWidget(props: {
     const vertical = aspectRatio < 1;
     return <div style={({
         position: "relative",
-        height: vertical ? size : undefined,
-        width: vertical ? undefined : size,
+        height: vertical ? (size || "100%") : undefined,
+        width: vertical ? undefined : (size || "100%"),
     })}>
         <svg
             xmlns="http://www.w3.org/2000/svg"

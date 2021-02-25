@@ -12,7 +12,6 @@ export default function DashboardJoystick(props: DashboardServiceProps) {
     const register = service.register(JoystickReg.Direction)
     const [x, y] = useRegisterUnpackedValue<[number, number]>(register)
     const host = useServiceHost<JoystickSensorServiceHost>(service);
-    const widgetSize = useWidgetSize(variant, services.length)
     const color = host ? "secondary" : "primary";
 
     const values = () => host.reading.values();
@@ -23,7 +22,6 @@ export default function DashboardJoystick(props: DashboardServiceProps) {
 
     return <JoystickWidget x={x} y={y}
         color={color}
-        widgetSize={widgetSize}
         onUpdate={onUpdate}
         hostValues={host && values} />
 }

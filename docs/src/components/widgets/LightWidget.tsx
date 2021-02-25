@@ -256,7 +256,6 @@ function LightMatrixWidget(props: {
 
 export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
     const { service, widgetCount, variant } = props;
-    const widgetSize = useWidgetSize(variant, widgetCount)
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
     const [lightVariant] = useRegisterUnpackedValue<[LedPixelVariant]>(service.register(LedPixelReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));
@@ -273,7 +272,6 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
             lightVariant={lightVariant}
             actualBrightness={actualBrightness}
             host={host}
-            widgetSize={widgetSize}
             columns={columns}
             rows={rows}
         />
@@ -284,6 +282,5 @@ export default function LightWidget(props: { variant?: "icon" | "", service: JDS
             lightVariant={lightVariant}
             actualBrightness={actualBrightness}
             host={host}
-            widgetSize={widgetSize}
         />
 }

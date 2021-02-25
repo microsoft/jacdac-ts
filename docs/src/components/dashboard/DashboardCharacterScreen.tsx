@@ -18,7 +18,6 @@ const useStyles = makeStyles(() => createStyles({
 
 export default function DashboardCharacterScreen(props: DashboardServiceProps) {
     const { service, services, variant } = props;
-    const widgetSize = useWidgetSize(variant, services.length);
     const classes = useStyles();
     const [message] = useRegisterUnpackedValue<[string]>(service.register(CharacterScreenReg.Message));
     const [rows] = useRegisterUnpackedValue<[number]>(service.register(CharacterScreenReg.Rows));
@@ -61,7 +60,7 @@ export default function DashboardCharacterScreen(props: DashboardServiceProps) {
 
         y += ch + m;
     }
-    return <SvgWidget tabIndex={0} title={`character screen displaying "${message}"`} width={w} height={h} size={widgetSize} >
+    return <SvgWidget tabIndex={0} title={`character screen displaying "${message}"`} width={w} height={h}>
         <>
             <rect x={0} y={0} width={w} height={h} r={m / 2} fill={background} />
             {els}

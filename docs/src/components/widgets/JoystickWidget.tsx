@@ -15,8 +15,7 @@ export default function JoystickWidget(props: {
     x: number, y: number,
     color: "secondary" | "primary",
     onUpdate?: (newx: number, newy: number) => void,
-    hostValues?: () => [number, number],
-    widgetSize: string
+    hostValues?: () => [number, number]
 }) {
     const { color, x, y, onUpdate, widgetSize, hostValues } = props;
     const { active, background, controlBackground } = useWidgetTheme(color);
@@ -83,7 +82,7 @@ export default function JoystickWidget(props: {
         cursor: grabbing ? "grabbing" : "grab"
     }
 
-    return <SvgWidget width={w} height={w} size={widgetSize}>
+    return <SvgWidget width={w} height={w}>
         <circle ref={dragSurfaceRef} className="joystick-background" cx={cx} cy={cy} r="16" fill={background}></circle>
         <rect className="dpad-up" x={"16"} y="6" width={ph} height={pw} rx={rp} fill={controlBackground}></rect>
         <rect className="dpad-down" x="16" y="22" width={ph} height={pw} rx={rp} fill={controlBackground}></rect>

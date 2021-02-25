@@ -31,7 +31,6 @@ export default function DashboardPower(props: DashboardServiceProps) {
     const host = useServiceHost<ReflectedLightServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textProps } = useWidgetTheme(color);
-    const widgetSize = useWidgetSize(variant, services.length)
 
     const w = 64
     const h = w
@@ -50,7 +49,7 @@ export default function DashboardPower(props: DashboardServiceProps) {
         enabledRegister.refresh();
     }
 
-    return <SvgWidget width={w} height={h} size={widgetSize}>
+    return <SvgWidget width={w} height={h}>
         <g>
             <PowerButton
                 cx={w / 2}

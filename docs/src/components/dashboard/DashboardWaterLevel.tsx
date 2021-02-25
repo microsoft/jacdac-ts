@@ -18,7 +18,6 @@ export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     const host = useServiceHost<SensorServiceHost<[number]>>(service)
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textProps } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(variant, services.length)
     const hasValue = !isNaN(value);
     const tvalue = hasValue ? `${Math.round(value * 100)}%` : `--`
 
@@ -39,7 +38,7 @@ export default function DashbaordWaterLevel(props: DashboardServiceProps) {
     }
 
     return <Grid container direction="row">
-        <Grid item><SvgWidget width={w} height={h} size={widgetSize}>
+        <Grid item><SvgWidget width={w} height={h}>
             <rect fill={background} x={0} y={0} width={w} height={h} r={r} />
             {Array(n).fill(0).map((_, i) => <path key={`back${i}`} stroke={controlBackground}
                 d={`M ${2 * mx + i * (wx + mx)} ${h - mby} v ${-hy}`}
