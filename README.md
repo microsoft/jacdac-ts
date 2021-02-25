@@ -1,4 +1,8 @@
-# Jacdac TypeScript
+# Jacdac TypeScript and Documentation
+
+**Jacdac** is a bus-based plug-and-play hardware/software stack 
+for **microcontrollers** and their peripherals (sensors/actuators), 
+with applications to rapid prototyping, making, and physical computing. 
 
 This repository contains a TypeScript/JavaScript client library for the [Jacdac](https://aka.ms/jacdac) protocol,
 as well as the source of https://aka.ms/jacdac under `/docs`.
