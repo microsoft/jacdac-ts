@@ -23,13 +23,13 @@ export default function DashboardDeviceItem(props: {
             .reduce((c: number, v) => c + v, 0);
 
         if (breakpointWeight > 3)
-            return { xs: 12, sm: 12, md: 12, lg: 8, xl: 6 };
+            return { xs: 12, sm: 12, md: 12, lg: 6, xl: 6 };
         else if (breakpointWeight == 3)
-            return { xs: 12, sm: 12, md: 6, lg: 6, xl: 4 };
+            return { xs: 12, sm: 12, md: 4, lg: 4, xl: 4 };
         else if (breakpointWeight == 2)
-            return { xs: 12, sm: 6, md: 6, lg: 6, xl: 4 };
+            return { xs: 12, sm: 6, md: 4, lg: 3, xl: 4 };
         else
-            return { xs: expanded ? 12 : 6, sm: 6, md: 6, lg: 4, xl: "auto" };
+            return { xs: expanded ? 12 : 6, sm: 4, md: 3, lg: 2, xl: "auto" };
     }, [expanded]);
 
     // based on size, expanded or reduce widget size
