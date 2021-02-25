@@ -539,7 +539,7 @@ export function unique(values: string[]): string[] {
     return Array.from(new Set(values).keys());
 }
 
-export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted: (value: T) => U) {
+export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converter: (value: T) => U) {
     const r: SMap<T> = {}
     for (let i = 0; i < values.length; ++i) {
         const value = values[i]
@@ -548,7 +548,7 @@ export function uniqueMap<T, U>(values: T[], id: (value: T) => string, converted
             r[idv] = value;
         }
     }
-    return Object.values(r).map(converted)
+    return Object.values(r).map(converter)
 }
 
 export function ellipseJoin(values: string[], maxChars: number, ellipse = "...") {

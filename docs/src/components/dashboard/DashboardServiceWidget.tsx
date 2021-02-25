@@ -156,6 +156,7 @@ const serviceViews: {
     },
     [SRV_COLOR]: {
         component: DashboardColor,
+        weight: () => 2,
     },
     [SRV_SOUND_PLAYER]: {
         component: DashboardSoundPlayer,

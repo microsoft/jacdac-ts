@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
 import { isReading, isValueOrIntensity } from "../../../../src/jdom/spec";
-import { splitFilter, strcmp } from "../../../../src/jdom/utils";
+import { splitFilter, strcmp, unique, uniqueMap } from "../../../../src/jdom/utils";
 import Alert from "../ui/Alert";
 import useDevices from "../hooks/useDevices";
 import { MOBILE_BREAKPOINT } from "../layout";
@@ -15,7 +15,7 @@ import DashboardDeviceGroup from "./DashboardDeviceGroup";
 import AddIcon from '@material-ui/icons/Add';
 import Flags from "../../../../src/jdom/flags";
 import { AlertTitle } from "@material-ui/lab";
-import hosts from "../../../../src/hosts/hosts";
+import hosts, { addHost } from "../../../../src/hosts/hosts";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -46,7 +46,11 @@ export default function Dashboard(props: DashboardDeviceProps) {
     const [hosted, physicals] = splitFilter(devices, d => !!bus.deviceHost(d.deviceId))
 
     const onStartAll = () => {
-        const hostDefinitions = hosts().filter(hd => hd.serviceClasses.length === 1);
+        const hostDefinitions = uniqueMap(
+            hosts().filter(hd => hd.serviceClasses.length === 1),
+            hd => hd.serviceClasses[0].toString(),
+            h => h);
+        hostDefinitions.forEach(hd => addHost(bus, hd.services()))
     }
 
     return <>
@@ -78,6 +82,7 @@ export default function Dashboard(props: DashboardDeviceProps) {
             <Alert>
                 <AlertTitle>Start all simulators</AlertTitle>
                 <Typography variant="caption">
+                    This is going to start a simulator for each known service with a simulator.
                     <Button variant="contained" onClick={onStartAll}>start</Button>
                 </Typography>
             </Alert>}
