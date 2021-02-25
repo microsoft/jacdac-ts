@@ -257,7 +257,12 @@ const _hosts: {
         {
             name: "button (2x)",
             serviceClasses: [SRV_BUTTON],
-            services: () => [new ButtonServiceHost(), new ButtonServiceHost()]
+            services: () => [new ButtonServiceHost("B0"), new ButtonServiceHost("B1")]
+        },
+        {
+            name: "button (4x)",
+            serviceClasses: [SRV_BUTTON],
+            services: () => Array(4).fill(0).map((_, i) => new ButtonServiceHost(`B${i}`))
         },
         {
             name: "buzzer",
@@ -268,6 +273,11 @@ const _hosts: {
             name: "capacitive button",
             serviceClasses: [SRV_ANALOG_BUTTON],
             services: () => [new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, touchButton)]
+        },
+        {
+            name: "capacitive button (6x)",
+            serviceClasses: [SRV_ANALOG_BUTTON],
+            services: () => Array(6).fill(0).map((_, i) => new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, { ...touchButton, ...{ instanceName: `C${i}` } }))
         },
         {
             name: "capacitive button (12x)",

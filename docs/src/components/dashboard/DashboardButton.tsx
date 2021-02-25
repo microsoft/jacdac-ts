@@ -16,12 +16,14 @@ export default function DashboardButton(props: DashboardServiceProps) {
     const label = `button ${pressed ? `down` : `up`}`
     const handleDown = () => host?.down();
     const handleUp = () => host?.up();
-
+    const widgetSize = `clamp(5em, 25vw, 18em)`
+    
     return <ButtonWidget
         checked={!!pressed}
         color={color}
         onDown={host && handleDown}
         onUp={host && handleUp}
         label={label}
+        size={widgetSize}
     />
 }
