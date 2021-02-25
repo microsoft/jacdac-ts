@@ -49,7 +49,7 @@ export const MEDIUM_BREAKPOINT = "md"
 const useStyles = makeStyles((theme) => createStyles({
   root: {
     display: 'flex',
-    flexGrow: 1
+    flexGrow: 1,
   },
   grow: {
     flexGrow: 1,
