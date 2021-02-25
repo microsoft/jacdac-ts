@@ -20,7 +20,8 @@ import { isRegister } from "../../../../src/jdom/spec";
 import RegisterInput from "../RegisterInput";
 import { JDRegister } from "../../../../src/jdom/register";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
-import { NoSsr } from '@material-ui/core';
+import { CircularProgress, NoSsr } from '@material-ui/core';
+import useServiceHost from "../hooks/useServiceHost";
 
 const DashboardButton = lazy(() => import("./DashboardButton"));
 const DashboardAccelerometer = lazy(() => import("./DashboardAccelerometer"));
@@ -266,12 +267,14 @@ export default function DashboardServiceWidget(props: React.Attributes & Dashboa
     const { service } = props;
     const { specification } = service;
     const component = serviceViews[specification.classIdentifier]?.component;
+    const host = useServiceHost(service);
+    const color = host ? "secondary" : "primary";
     // no special support
     if (!component)
         return createElement(DefaultWidget, props);;
 
     return <NoSsr>
-        <Suspense fallback={null}>
+        <Suspense fallback={<CircularProgress color={color} disableShrink={true} variant={"indeterminate"} size={"3em"} />}>
             {createElement(component, props)}
         </Suspense>
     </NoSsr>

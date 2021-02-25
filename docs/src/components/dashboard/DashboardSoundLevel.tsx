@@ -51,7 +51,6 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
     const [soundLevel] = useRegisterUnpackedValue<[number]>(soundLevelRegister);
     const host = useServiceHost<AnalogSensorServiceHost>(service);
     const color = host ? "secondary" : "primary";
-    const widgetSize = useWidgetSize(variant, services.length)
 
     const onChange = (event: unknown, newValue: number | number[]): void => {
         const svalue = newValue as number;
@@ -64,7 +63,7 @@ export default function DashboardSoundLevel(props: DashboardServiceProps) {
 
     return <Grid container direction="column">
         <Grid item>
-            <TrendWidget register={soundLevelRegister} min={0} max={1} horizon={64} size={widgetSize} />
+            <TrendWidget register={soundLevelRegister} min={0} max={1} horizon={64} />
         </Grid>
         <Grid item>
             <Grid container spacing={2} alignItems="center">

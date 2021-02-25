@@ -51,11 +51,10 @@ export default function DashboardSoundSpectrum(props: DashboardServiceProps) {
     const { service, variant, services } = props;
     const frequencyBinsRegister = service.register(SoundSpectrumReg.FrequencyBins);
     const host = useServiceHost<SensorServiceHost<[Uint8Array]>>(service);
-    const widgetSize = useWidgetSize(variant, services.length)
 
     return <Grid container direction="column">
         <Grid item>
-            <BytesBarGraphWidget size={widgetSize} register={frequencyBinsRegister} />
+            <BytesBarGraphWidget register={frequencyBinsRegister} />
         </Grid>
         <Grid item>
             <HostMicrophoneButton service={service} host={host} />
