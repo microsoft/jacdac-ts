@@ -51,7 +51,10 @@ export default function DashboardServo(props: DashboardServiceProps) {
     const pri = 8;
     const text = enabled ? `${Math.round(a)}°` : 'off';
 
-    const toggleOff = () => enabledRegister.sendSetBoolAsync(off, true);
+    const toggleOff = async () => {
+        await enabledRegister.sendSetBoolAsync(!enabled);
+        enabledRegister.refresh();
+    }
 
     return <Grid container alignContent="center">
         <Grid item xs={12}>
@@ -63,7 +66,7 @@ export default function DashboardServo(props: DashboardServiceProps) {
                 <PowerButton r={pr} ri={pri} cx={w - pr - 2} cy={pr + 12}
                     color={color}
                     strokeWidth={1.5}
-                    off={off} onClick={host && toggleOff} />
+                    off={off} onClick={toggleOff} />
             </SvgWidget>
         </Grid>
         <Grid item xs={12}>

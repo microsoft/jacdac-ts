@@ -11,7 +11,8 @@ import PowerButton from "../widgets/PowerButton";
 export default function DashboardPower(props: DashboardServiceProps) {
     const { service, services, variant } = props;
 
-    const [enabled] = useRegisterUnpackedValue<[boolean]>(service.register(PowerReg.Enabled));
+    const enabledRegister = service.register(PowerReg.Enabled);
+    const [enabled] = useRegisterUnpackedValue<[boolean]>(enabledRegister);
     /*
     const [] = useRegisterUnpackedValue<[number]>(service.register(PowerReg.MaxPower));
     const [] = useRegisterUnpackedValue<[boolean]>(service.register(PowerReg.Overload));
@@ -25,20 +26,28 @@ export default function DashboardPower(props: DashboardServiceProps) {
     const color = host ? "secondary" : "primary";
     const widgetSize = useWidgetSize(variant, services.length)
 
-    const w = 128
-    const h = 64
-    const r = h >> 2;
-    const ro = r - 8
-    const ri = r - 16
+    const w = 64
+    const h = w
+    const r = (h - 4) >> 1;
+    const ro = r - 4
+    const ri = ro - 8
     const label = enabled ? "on" : "off"
 
+    const toggleEnabled = async () => {
+        await enabledRegister.sendSetBoolAsync(!enabled);
+        enabledRegister.refresh();
+    }
+
     return <SvgWidget width={w} height={h} size={widgetSize}>
-        <PowerButton label={label}
-            cx={w / 3}
-            cy={r}
+        <PowerButton
+            cx={w / 2}
+            cy={h / 2}
             r={ro}
             ri={ri}
             off={!enabled}
-            color={color} />
+            color={color}
+            aria-label={label}
+            onClick={toggleEnabled}
+        />
     </SvgWidget>
 }
