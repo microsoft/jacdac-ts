@@ -4,6 +4,8 @@ import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
 import { debounce, toHex } from "./utils";
 
+const MIN_ASPECT_RATIO = 0.86;
+
 export interface PacketMessage {
     channel: "jacdac";
     type: "messagepacket";
@@ -75,7 +77,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     private handleResize() {
         const size = document.body.getBoundingClientRect()
         const ar = size.width / size.height;
-        const value = Math.min(1.22, size.width / size.height);
+        const value = Math.min(MIN_ASPECT_RATIO, size.width / size.height);
         if (!isNaN(ar) && this._lastAspectRatio !== value) {
             window.parent.postMessage({
                 type: "aspectratio",
