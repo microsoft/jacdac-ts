@@ -1,4 +1,4 @@
-import { Grid, useMediaQuery, useTheme } from "@material-ui/core";
+import { Button, Grid, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import React, { useContext } from "react";
 import { JDDevice } from "../../../../src/jdom/device";
 import useSelectedNodes from "../../jacdac/useSelectedNodes";
@@ -13,6 +13,9 @@ import AppContext from "../AppContext";
 import IconButtonWithTooltip from "../ui/IconButtonWithTooltip";
 import DashboardDeviceGroup from "./DashboardDeviceGroup";
 import AddIcon from '@material-ui/icons/Add';
+import Flags from "../../../../src/jdom/flags";
+import { AlertTitle } from "@material-ui/lab";
+import hosts from "../../../../src/hosts/hosts";
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -42,6 +45,10 @@ export default function Dashboard(props: DashboardDeviceProps) {
     const { selected, toggleSelected } = useSelectedNodes(mobile)
     const [hosted, physicals] = splitFilter(devices, d => !!bus.deviceHost(d.deviceId))
 
+    const onStartAll = () => {
+        const hostDefinitions = hosts().filter(hd => hd.serviceClasses.length === 1);
+    }
+
     return <>
         <DashboardDeviceGroup
             title="Simulators"
@@ -67,5 +74,12 @@ export default function Dashboard(props: DashboardDeviceProps) {
                 </Alert>
             </Grid>}
         </DashboardDeviceGroup>
+        {Flags.diagnostics &&
+            <Alert>
+                <AlertTitle>Start all simulators</AlertTitle>
+                <Typography variant="caption">
+                    <Button variant="contained" onClick={onStartAll}>start</Button>
+                </Typography>
+            </Alert>}
     </>
 }

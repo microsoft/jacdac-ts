@@ -12,20 +12,19 @@ export default function StatusLEDAnimation(props: {
     const { status } = props;
 
     let interval = 0;
-    let repeat = 1;
     let count = 1;
     switch (status) {
         case "connected": count = 5; break;
         case "startup": interval = 2000; break;
-        case "identify": repeat = 7; interval = 2000; break;
-        case "panic": repeat = 30; interval = 5000; break;
+        case "identify": interval = 2000; break;
+        case "panic": interval = 5000; break;
     }
     const frames = statusAnimation(status);
-    const { helmetStyle, className } = useLedAnimationStyle([0, frames], {
+    const { helmetStyle, className } = useLedAnimationStyle(frames, {
         cssProperty: "fill",
         monochrome: true,
         step: true,
-        interval, repeat
+        interval
     });
     const { controlBackground } = useWidgetTheme();
 
@@ -40,7 +39,7 @@ export default function StatusLEDAnimation(props: {
         <Helmet>
             <style>{helmetStyle}</style>
         </Helmet>
-        <SvgWidget width={w} height={h} size={"0.5em"}>
+        <SvgWidget width={w} height={h} size={"1em"}>
             {Array(n).fill(0).map((_, i) => <g key={i} transform={`translate(${wc * i}, 0)`}>
                 <circle cx={cx} cy={cy} r={r} fill={controlBackground} />
                 <circle cx={cx} cy={cy} r={r} className={className} stroke={controlBackground} strokeWidth={1} />

@@ -89,14 +89,6 @@ export default function Page() {
     const theme = responsiveFontSizes(rawTheme);
 
     useEffect(() => toggleDarkMode('dark'), []); // always dark mode
-    // test mode
-    useEffect(() => {
-        if (!Flags.diagnostics) return;
-        const hostDefinitions = hosts();
-        for (const hostDef of hostDefinitions.slice(0, 10)) {
-            addHost(bus, hostDef.services());
-        }
-    }, []);
 
     return <ThemedLayout theme={theme}>
         <Helmet>
