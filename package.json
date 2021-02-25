@@ -29,7 +29,6 @@
     "dist": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts",
     "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean && cd .. && node ./tools/prepare.js",
     "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths --no-uglify",
-    "apidocs": "node node_modules/@microsoft/api-extractor/bin/api-extractor run --local && node node_modules/@microsoft/api-documenter/bin/api-documenter markdown --input-folder etc --output-folder built/apidocs",
     "watch": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts -w",
     "test": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts",
     "tools": "npx http-server . -c-1",
@@ -131,8 +130,6 @@
     ]
   },
   "devDependencies": {
-    "@microsoft/api-documenter": "^7.12.7",
-    "@microsoft/api-extractor": "^7.13.1",
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "@types/expect": "^24.3.0",

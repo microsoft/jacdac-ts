@@ -23,7 +23,6 @@ jobs:
       - run: npm run lint
       - run: npm run dist
       - run: npm run test
-      - run: npm run apidocs
       - run: npm run installdocs
       - run: npm run distdocs
       - run: npm run builddtdl
