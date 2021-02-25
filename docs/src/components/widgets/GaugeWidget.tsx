@@ -39,7 +39,7 @@ export default function GaugeWidget(props: {
     const sa = -135;
     const ea = 135;
     const _step = step || (max - min) / 10
-    const displayValue = useThrottledValue(value, (max - min) * 1.619);
+    const displayValue = useThrottledValue(value, (max - min) * 2);
 
     const computeArc = (v: number) => {
         if (variant === "fountain") {
