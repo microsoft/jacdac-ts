@@ -400,7 +400,7 @@ const _hosts: {
             serviceClasses: [SRV_LED],
             services: () => [new LEDServiceHost({
                 variant: LedVariant.ThroughHole,
-                ledCount: 2,
+                ledCount: 1,
                 animation:
                     [
                         0,
