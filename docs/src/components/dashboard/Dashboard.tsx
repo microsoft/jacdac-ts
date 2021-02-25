@@ -16,6 +16,8 @@ import AddIcon from '@material-ui/icons/Add';
 import Flags from "../../../../src/jdom/flags";
 import { AlertTitle } from "@material-ui/lab";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
+// tslint:disable-next-line: no-submodule-imports match-default-export-name
+import ClearIcon from '@material-ui/icons/Clear';
 
 function deviceSort(l: JDDevice, r: JDDevice): number {
     const srvScore = (srv: jdspec.ServiceSpec) => srv.packets
@@ -52,15 +54,24 @@ export default function Dashboard(props: DashboardDeviceProps) {
             h => h);
         hostDefinitions.forEach(hd => addHost(bus, hd.services()))
     }
+    const handleClearSimulators = () => {
+        bus.deviceHosts().forEach(dev => bus.removeDeviceHost(dev));
+    }
 
     return <>
         <DashboardDeviceGroup
             title="Simulators"
-            action={<IconButtonWithTooltip
-                title="start simulator"
-                onClick={toggleShowDeviceHostsDialog}>
-                <AddIcon />
-            </IconButtonWithTooltip>}
+            action={<>
+                <IconButtonWithTooltip
+                    title="start simulator"
+                    onClick={toggleShowDeviceHostsDialog}>
+                    <AddIcon />
+                </IconButtonWithTooltip>
+                <IconButtonWithTooltip
+                    title="clear simulators"
+                    onClick={handleClearSimulators}>
+                    <ClearIcon />
+                </IconButtonWithTooltip>            </>}
             devices={hosted}
             expanded={selected}
             toggleExpanded={toggleSelected}
