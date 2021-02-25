@@ -12,9 +12,10 @@ export default function PowerButton(props: {
     label?: string,
     color?: "primary" | "secondary",
     off?: boolean,
+    borderStroke?: string,
     onClick?: () => void
 }) {
-    const { cx, cy, r, ri, onClick, off, color, label, strokeWidth } = props;
+    const { cx, cy, r, ri, onClick, off, color, label, strokeWidth, borderStroke } = props;
     const { background, active, controlBackground, textProps } = useWidgetTheme(color);
     const a = 135;
     const d = describeArc(cx, cy, ri, -a, a, true);
@@ -28,7 +29,7 @@ export default function PowerButton(props: {
     return <g>
         <title>{btnlabel}</title>
         <circle cx={cx} cy={cy} r={r} fill={controlBackground}
-            strokeWidth={sw} stroke={background}
+            strokeWidth={sw} stroke={borderStroke || background}
             {...buttonProps} />
         {(off || !label) && <g transform={`rotate(180, ${cx}, ${cy})`}>
             <path d={d} strokeLinecap="round" fill="none"

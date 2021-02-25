@@ -22,6 +22,7 @@
     "declarationDir": "dist/types",
     "resolveJsonModule": true,
     "outDir": "dist/lib",
+    "pretty": true,
     "newLine": "LF",
     "typeRoots": [
       "node_modules/@types"

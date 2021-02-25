@@ -17,6 +17,7 @@ import DashboardServiceDetails from "./DashboardServiceDetails";
 import { MOBILE_BREAKPOINT } from "../layout";
 import useDeviceName from "../useDeviceName";
 import { DashboardDeviceProps } from "./Dashboard";
+import useDeviceHost from "../hooks/useDeviceHost"
 
 const ignoredServices = [
     SRV_CTRL,
@@ -37,6 +38,7 @@ export default function DashboardDevice(props: {
     const { specification } = useDeviceSpecification(device);
     const theme = useTheme();
     const mobile = useMediaQuery(theme.breakpoints.down(MOBILE_BREAKPOINT));
+    const host = useDeviceHost(device);
 
     const ServiceWidgets = () =>
         <Grid container spacing={2} justify="center" alignItems="flex-end" alignContent="space-between">
@@ -55,7 +57,7 @@ export default function DashboardDevice(props: {
             <CardHeader
                 avatar={showAvatar && <DeviceAvatar device={device} />}
                 action={
-                    <DeviceActions device={device} showStopHost={expanded && !mobile} hideIdentity={true} showReset={expanded && !mobile}>
+                    <DeviceActions device={device} showStopHost={expanded && !mobile} hideIdentity={!!host} showReset={expanded && !mobile}>
                         {toggleExpanded && <IconButtonWithTooltip onClick={toggleExpanded} title={expanded ? "Collapse" : "Expand"}>
                             {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </IconButtonWithTooltip>}

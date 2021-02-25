@@ -134,7 +134,6 @@ export default class LedPixelServiceHost extends ServiceHost {
 
         const { numColumns, maxPower = 200, maxPixels = 300, numPixels = 15 } = options || {};
 
-
         this.brightness = this.addRegister<[number]>(LedPixelReg.Brightness, [15]);
         this.actualBrightness = this.addRegister<[number]>(LedPixelReg.ActualBrightness, [15]);
         this.lightType = this.addRegister<[LedPixelLightType]>(LedPixelReg.LightType, [LedPixelLightType.WS2812B_GRB]);

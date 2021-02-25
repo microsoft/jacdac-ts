@@ -12,7 +12,6 @@ import MatrixKeypadServiceHost from "../../../../src/hosts/matrixkeypadserviceho
 
 export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
     const { service, services, variant } = props;
-    const widgetSize = useWidgetSize(variant, services.length);
 
     const widgetRef = useRef<SVGGElement>();
     const pressedRegister = service.register(MatrixKeypadReg.Pressed);
@@ -92,7 +91,7 @@ export default function DashboardMatrixKeypad(props: DashboardServiceProps) {
 
     const { ledEls } = render();
     const navProps = useKeyboardNavigationProps(widgetRef.current)
-    return <SvgWidget width={w} height={h} size={widgetSize}>
+    return <SvgWidget width={w} height={h}>
         <rect x={0} y={0} width={w} height={h} rx={pr} ry={pr} fill={background} />
         <g ref={widgetRef} {...navProps}>
             {ledEls}

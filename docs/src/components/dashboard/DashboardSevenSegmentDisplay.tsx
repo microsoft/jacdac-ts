@@ -20,7 +20,6 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
     const [digitCount] = useRegisterUnpackedValue<[number]>(service.register(SevenSegmentDisplayReg.DigitCount));
     const [decimalPoint] = useRegisterUnpackedValue<[boolean]>(service.register(SevenSegmentDisplayReg.DecimalPoint))
 
-    const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     const { active, background } = useWidgetTheme(color);
@@ -102,7 +101,7 @@ export default function DashboardSevenSegmentDisplay(props: DashboardServiceProp
 
     return <Grid container direction="column">
         <Grid item xs={12}>
-            <SvgWidget width={w} height={h} size={widgetSize}>
+            <SvgWidget width={w} height={h}>
                 {Array(digitCount).fill(0).map((_, i) => <Digit
                     key={i}
                     x={md + (wd + 4 * md) * i}

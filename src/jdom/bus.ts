@@ -114,6 +114,7 @@ export interface DeviceFilter {
     ignoreSelf?: boolean;
     announced?: boolean;
     ignoreSimulators?: boolean;
+    firmwareIdentifier?: boolean;
 }
 export interface BusStats {
     packets: number;
@@ -575,6 +576,8 @@ export class JDBus extends JDNode {
             r = r.filter(s => s.announced);
         if (options?.ignoreSimulators)
             r = r.filter(r => !this.deviceHost(r.deviceId));
+        if (options?.firmwareIdentifier)
+            r = r.filter(r => !!r.firmwareIdentifier)
         return r;
     }
 

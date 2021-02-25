@@ -16,7 +16,6 @@ export default function DashboardSwitch(props: DashboardServiceProps) {
     const on = useRegisterBoolValue(service.register(SwitchReg.Active))
     const [switchVariant] = useRegisterUnpackedValue<[SwitchVariant]>(service.register(SwitchReg.Variant));
     const host = useServiceHost<SwitchServiceHost>(service);
-    const widgetSize = useWidgetSize(variant, services.length);
     const color = host ? "secondary" : "primary";
 
     const handleToggle = () => host?.toggle();
@@ -27,7 +26,6 @@ export default function DashboardSwitch(props: DashboardServiceProps) {
             return <ButtonWidget
                 checked={on}
                 color={color}
-                size={widgetSize}
                 label={on ? "on" : "off"}
                 onDown={host && handleToggle} />
         default:

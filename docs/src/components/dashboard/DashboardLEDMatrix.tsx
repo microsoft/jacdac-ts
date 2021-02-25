@@ -12,8 +12,7 @@ import { toggle } from "../../../../src/hosts/ledmatrixservicehost";
 
 export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) {
     const { service, services, variant } = props;
-    const widgetSize = useWidgetSize(variant, services.length);
-
+    
     const widgetRef = useRef<SVGGElement>();
     const ledsRegister = service.register(LedMatrixReg.Leds);
     const [leds] = useRegisterUnpackedValue<[Uint8Array]>(ledsRegister);
@@ -94,7 +93,7 @@ export default function DashboardLEDMatrixDisplay(props: DashboardServiceProps) 
 
     const { boxEls, ledEls } = render();
     const navProps = useKeyboardNavigationProps(widgetRef.current)
-    return <SvgWidget width={w} height={h} size={widgetSize}>
+    return <SvgWidget width={w} height={h}>
         <rect x={0} y={0} width={w} height={h} rx={2} ry={2} fill={background} />
         <g ref={widgetRef} {...navProps}>
             {boxEls}

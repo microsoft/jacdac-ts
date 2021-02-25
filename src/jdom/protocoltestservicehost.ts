@@ -17,6 +17,7 @@ export default class ProtocolTestServiceHost extends ServiceHost {
         this.init<[string]>(ProtoTestReg.RwString, ProtoTestReg.RoString, ProtoTestCmd.CString, ProtoTestEvent.EString, "");
         this.rwBytes = this.init<[Uint8Array]>(ProtoTestReg.RwBytes, ProtoTestReg.RoBytes, ProtoTestCmd.CBytes, ProtoTestEvent.EBytes, new Uint8Array(0));
         this.init<[number, number, number, number]>(ProtoTestReg.RwI8U8U16I32, ProtoTestReg.RoI8U8U16I32, ProtoTestCmd.CI8U8U16I32, ProtoTestEvent.EI8U8U16I32, 0, 0, 0, 0);
+        this.init<[number,string]>(ProtoTestReg.RwU8String, ProtoTestReg.RoU8String, ProtoTestCmd.CU8String, ProtoTestEvent.EU8String, 0, "");
 
         this.addCommand(ProtoTestCmd.CReportPipe, this.handleReportPipe.bind(this))
     }

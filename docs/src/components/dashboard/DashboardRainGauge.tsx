@@ -28,7 +28,6 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const tiltAngle = tiltCount !== undefined ? (tiltCount % 2 ? -TILT : TILT) : 0;
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textPrimary } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(variant, services.length)
     const a = useThrottledValue(tiltAngle, 45)
     const l = useThrottledValue(level !== undefined ? level : 0.5, 1);
     const clickeable = !!host;
@@ -51,7 +50,7 @@ export default function DashbaordRainGauge(props: DashboardServiceProps) {
     const fs = 8;
 
     return <SvgWidget
-        width={w} height={h} size={widgetSize}>
+        width={w} height={h}>
         <defs>
             <clipPath id={clipId}>
                 <rect transform={`rotate(${-a}, ${w / 2}, ${by + bh})`}

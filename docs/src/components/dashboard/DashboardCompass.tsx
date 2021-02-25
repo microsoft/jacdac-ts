@@ -23,7 +23,6 @@ export default function DashboardCompass(props: DashboardServiceProps) {
     const host = useServiceHost<SensorServiceHost<[number]>>(service);
     const color = host ? "secondary" : "primary";
     const { background, controlBackground, active, textProps } = useWidgetTheme(color)
-    const widgetSize = useWidgetSize(variant, services.length)
 
     if (heading === undefined)
         return null;
@@ -50,7 +49,7 @@ export default function DashboardCompass(props: DashboardServiceProps) {
 
     return <Grid container direction="column">
         <Grid item xs={12}>
-            <SvgWidget width={w} height={h} size={widgetSize}>
+            <SvgWidget width={w} height={h}>
                 <circle cx={cx} cy={cy} r={r} fill={controlBackground}
                     stroke={background} strokeWidth={sw} />
                 <g transform={`rotate(${off ? 0 : heading}, ${w >> 1}, ${h >> 1})`}>

@@ -14,7 +14,6 @@ export default function DashboardColor(props: DashboardServiceProps) {
     const { service, services, variant } = props;
     const register = service.register(ColorReg.Color);
     const [r, g, b] = useRegisterUnpackedValue<[number, number, number]>(register);
-    const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<SensorServiceHost<[number, number, number]>>(service);
     const color = host ? "secondary" : "primary";
     const { background, textProps } = useWidgetTheme(color)
@@ -34,7 +33,7 @@ export default function DashboardColor(props: DashboardServiceProps) {
     if (host)
         return <BlockPicker color={value} triangle="hide" onChangeComplete={host && handleChange} />
     else
-        return <SvgWidget width={w} height={w} size={"14vh"}>
+        return <SvgWidget width={w} height={w}>
             <rect x={0} y={0} width={w} height={w} rx={rx} ry={rx} fill={value}
                 stroke={background}
                 strokeWidth={2}

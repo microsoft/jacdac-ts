@@ -11,10 +11,10 @@ import ArcadeGamepadServiceHost from "../../../../src/hosts/arcadegamepadservice
 import useSvgButtonProps from "../hooks/useSvgButtonProps";
 
 const buttonLabels = {
-    [ArcadeGamepadButton.Left]: "🡄",
-    [ArcadeGamepadButton.Up]: "🡅",
-    [ArcadeGamepadButton.Down]: "🡇",
-    [ArcadeGamepadButton.Right]: "🡆",
+    [ArcadeGamepadButton.Left]: "\u25C0",
+    [ArcadeGamepadButton.Up]: "\u25B2",
+    [ArcadeGamepadButton.Down]: "\u25BC",
+    [ArcadeGamepadButton.Right]: "\u25B6",
 }
 
 function ArcadeButton(props: {
@@ -62,7 +62,6 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
     const [available] = useRegisterUnpackedValue<[[ArcadeGamepadButton][]]>(service.register(ArcadeGamepadReg.AvailableButtons))
     const pressedRegister = service.register(ArcadeGamepadReg.Buttons);
     const [pressed] = useRegisterUnpackedValue<[[ArcadeGamepadButton, number][]]>(pressedRegister);
-    const widgetSize = useWidgetSize(variant, services.length);
     const host = useServiceHost<ArcadeGamepadServiceHost>(service);
     const color = host ? "secondary" : "primary";
     const { background } = useWidgetTheme(color);
@@ -89,8 +88,8 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
         [ArcadeGamepadButton.Right]: { cx: cw * 4.5, cy: 2 * ch, small: false },
         [ArcadeGamepadButton.Down]: { cx: cw * 3, cy: 3 * ch, small: false },
 
-        [ArcadeGamepadButton.A]: { cx: cw * 9.5, cy: ch * 2.75, small: false },
-        [ArcadeGamepadButton.B]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
+        [ArcadeGamepadButton.A]: { cx: cw * 10.5, cy: ch * 1.25, small: false },
+        [ArcadeGamepadButton.B]: { cx: cw * 9.5, cy: ch * 2.75, small: false },
 
         [ArcadeGamepadButton.Menu]: { cx: cw * 7, cy: scy, small: true },
         [ArcadeGamepadButton.Select]: { cx: cw * 6, cy: scy, small: true },
@@ -105,7 +104,7 @@ export default function DashboardArcadeGamepad(props: DashboardServiceProps) {
     const aby = ch * 3 + 4
     const abr = cw / 2;
     const abw = cw * 5 - 6;
-    return <SvgWidget width={w} height={h} size={widgetSize}>
+    return <SvgWidget width={w} height={h}>
         <circle cx={cw * 3} cy={2 * ch} r={2.6 * cw} fill="none" stroke={background} strokeWidth={4} />
         <rect transform={`rotate(-66, ${abx}, ${aby})`} x={abx} y={aby} rx={abr} ry={abr} width={abw} height={cw * 2.2} fill="none" stroke={background} strokeWidth={4} />
         {available.map(button => ({ button: button[0], pos: pos[button[0]] }))

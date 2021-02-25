@@ -1,7 +1,7 @@
 import { JDDevice } from "./device"
 import { PIPE_PORT_SHIFT, PIPE_COUNTER_MASK, PIPE_CLOSE_MASK, JD_SERVICE_INDEX_PIPE, PIPE_METADATA_MASK, PACKET_RECEIVE, DATA, CLOSE } from "./constants"
 import Packet from "./packet"
-import { BusState, JDBus } from "./bus"
+import { JDBus } from "./bus"
 import { randomUInt, signal, fromHex, throwError, warn, toHex } from "./utils"
 import { JDClient } from "./client"
 import { jdpack } from "./pack"

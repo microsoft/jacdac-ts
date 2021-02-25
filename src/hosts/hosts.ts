@@ -3,7 +3,7 @@ import {
     ArcadeGamepadButton,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
-    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant, ServoVariant,
+    DistanceVariant, LedPixelVariant, PotentiometerVariant, RelayReg, RelayVariant,
     SRV_ACCELEROMETER, SRV_ARCADE_GAMEPAD, SRV_BAROMETER, SRV_BUTTON, SRV_BUZZER, SRV_CHARACTER_SCREEN,
     SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD,
     SRV_MOTOR, SRV_POTENTIOMETER,
@@ -18,7 +18,7 @@ import {
     SRV_UV_INDEX, SRV_REFLECTED_LIGHT, ReflectedLightVariant, SRV_MOTION, SRV_LED, SRV_SEVEN_SEGMENT_DISPLAY,
     SevenSegmentDisplayReg, SRV_HEART_RATE,
     HeartRateVariant, LedVariant, SRV_WATER_LEVEL, SRV_SOUND_LEVEL, SRV_COLOR, SRV_SOUND_PLAYER, SRV_PULSE_OXIMETER,
-    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg, SRV_SOLENOID, SRV_DMX
+    SRV_WEIGHT_SCALE, WeightScaleVariant, SRV_ANALOG_BUTTON, AnalogButtonVariant, SRV_LED_MATRIX, SRV_RNG, SRV_COMPASS, SRV_THERMOCOUPLE, ThermometerReg, ThermocoupleVariant, SRV_GYROSCOPE, SoundLevelReg, SRV_SOUND_SPECTRUM, SoundSpectrumReg, SRV_SOLENOID, SRV_DMX, SRV_BIT_RADIO
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
@@ -50,6 +50,7 @@ import AnalogSensorServiceHost, { AnalogSensorServiceHostOptions } from "./analo
 import RandomNumberGeneratorServiceHost from "./randomnumbergeneratorservicehost";
 import CompassServiceHost from "./compassservicehost";
 import DMXServiceHost from "./dmxservicehost";
+import BitRadioServiceHost from "./bitradioservicehost";
 
 const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -91,19 +92,16 @@ export const SG90_RESPONSE_SPEED = 0.12; // deg/60deg
 const microServoOptions = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
-    variant: ServoVariant.PositionalRotation
 }
 const microServo270Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
-    variant: ServoVariant.PositionalRotation,
     minAngle: -135,
     maxAngle: 135
 }
 const microServo360Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED * 2, // s/60deg
-    variant: ServoVariant.PositionalRotation,
     minAngle: -180,
     maxAngle: 180
 }
@@ -244,6 +242,11 @@ const _hosts: {
             services: () => [new AnalogSensorServiceHost(SRV_BAROMETER, barometerOptions)]
         },
         {
+            name: "bitradio",
+            serviceClasses: [SRV_BIT_RADIO],
+            services: () => [new BitRadioServiceHost()]
+        },
+        {
             name: "button",
             serviceClasses: [SRV_BUTTON],
             services: () => [new ButtonServiceHost()]
@@ -251,7 +254,12 @@ const _hosts: {
         {
             name: "button (2x)",
             serviceClasses: [SRV_BUTTON],
-            services: () => [new ButtonServiceHost(), new ButtonServiceHost()]
+            services: () => [new ButtonServiceHost("B0"), new ButtonServiceHost("B1")]
+        },
+        {
+            name: "button (4x)",
+            serviceClasses: [SRV_BUTTON],
+            services: () => Array(4).fill(0).map((_, i) => new ButtonServiceHost(`B${i}`))
         },
         {
             name: "buzzer",
@@ -262,6 +270,11 @@ const _hosts: {
             name: "capacitive button",
             serviceClasses: [SRV_ANALOG_BUTTON],
             services: () => [new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, touchButton)]
+        },
+        {
+            name: "capacitive button (6x)",
+            serviceClasses: [SRV_ANALOG_BUTTON],
+            services: () => Array(6).fill(0).map((_, i) => new AnalogSensorServiceHost(SRV_ANALOG_BUTTON, { ...touchButton, ...{ instanceName: `C${i}` } }))
         },
         {
             name: "capacitive button (12x)",
@@ -384,7 +397,7 @@ const _hosts: {
             serviceClasses: [SRV_LED],
             services: () => [new LEDServiceHost({
                 variant: LedVariant.ThroughHole,
-                ledCount: 2,
+                ledCount: 1,
                 animation:
                     [
                         0,

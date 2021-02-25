@@ -9,7 +9,7 @@ import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import useAnimationFrame from "../hooks/useAnimationFrame";
 import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import { Grid, Slider } from "@material-ui/core";
-import LEDServiceHost, { LedAnimation, LedAnimationStepsType } from "../../../../src/hosts/ledservicehost";
+import LEDServiceHost, { LedAnimation, LedAnimationData } from "../../../../src/hosts/ledservicehost";
 import { LedReg } from "../../../../src/jdom/constants";
 import { hsvToCss } from "../../../../src/jdom/color";
 
@@ -22,12 +22,12 @@ export default function DashboardLED(props: DashboardServiceProps) {
     const { active } = useWidgetTheme(color);
     const brightnessRegister = service.register(LedReg.Brightness);
     const [brightness] = useRegisterUnpackedValue<[number]>(brightnessRegister);
-    const [steps] = useRegisterUnpackedValue<LedAnimationStepsType>(service.register(LedReg.Steps));
+    const animationData = useRegisterUnpackedValue<LedAnimationData>(service.register(LedReg.Animation));
     const [waveLength] = useRegisterUnpackedValue<[number]>(service.register(LedReg.WaveLength));
     const [ledCount] = useRegisterUnpackedValue<[number]>(service.register(LedReg.LedCount));
 
     // restart animation with steps
-    const animation = useMemo(() => new LedAnimation(steps), [steps])
+    const animation = useMemo(() => new LedAnimation(animationData), [animationData])
     // animate
     useAnimationFrame(() => {
         animation.update(bus.timestamp); return true;
@@ -51,7 +51,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
     const m = 1;
     const w = (lw + m) * ln;
     const h = 42;
-    return <Grid container direction="row">
+    return <Grid container spacing={2}>
         <Grid item xs={2}>
             {brightness !== undefined && <Slider
                 orientation="vertical"
@@ -63,7 +63,7 @@ export default function DashboardLED(props: DashboardServiceProps) {
                 onChange={handleBrightnessChange} />}
         </Grid>
         <Grid item xs={10}>
-            <SvgWidget width={w} height={h} size={widgetSize}>
+            <SvgWidget width={w} height={h} size={"5em"}>
                 {Array(ln).fill(0).map((_, i) =>
                     <g key={i} transform={`translate(${i * (lw + m)}, 0)`}>
                         <path fill="#999" d="M14.2 13V7.1C14.2 3.2 11 0 7.1 0 3.2 0 0 3.2 0 7.1v13.7c1.9 1.9 4.4 2.9 7.1 2.8 4.6 0 8.4-2.6 8.4-5.9v-1.5c0-1.2-.5-2.3-1.3-3.2z" opacity=".65" />
