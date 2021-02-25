@@ -4,7 +4,7 @@ import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
 import { debounce, toHex } from "./utils";
 
-const MIN_ASPECT_RATIO = 0.86;
+const MIN_ASPECT_RATIO = 0.89;
 
 export interface PacketMessage {
     channel: "jacdac";
