@@ -9,7 +9,7 @@ import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, 
 import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
 import { JDService } from '../../../src/jdom/service';
-import { SRV_BUTTON } from '../../../src/jacdac';
+import { SRV_BUTTON } from '../../../src/jdom/constants';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
