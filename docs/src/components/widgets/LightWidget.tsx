@@ -83,7 +83,7 @@ function LightStripWidget(props: {
     const pixelsRef = useRef<SVGGElement>(undefined);
     const neoradius = 6;
     const neocircleradius = neoradius + 1;
-    const sw = neoradius * 2;
+    const sw = neoradius * 2.8;
     const isJewel = lightVariant === LedPixelVariant.Jewel;
     const isRing = lightVariant === LedPixelVariant.Ring;
 
@@ -156,7 +156,7 @@ function LightStripWidget(props: {
     }
     else {
         const n = numPixels - (isJewel ? 1 : 0)
-        const neoperimeter = n * (2.2 * neoradius)
+        const neoperimeter = n * (2.7 * neoradius)
         const margin = 2 * neoradius;
         const ringradius = neoperimeter / (2 * Math.PI);
         width = 2 * (margin + ringradius);
