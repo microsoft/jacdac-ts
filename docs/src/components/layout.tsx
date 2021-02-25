@@ -1,10 +1,3 @@
-/**
- * Layout component that queries for data
- * with Gatsby's useStaticQuery component
- *
- * See: https://www.gatsbyjs.org/docs/use-static-query/
- */
-
 import React, { useContext } from "react"
 import clsx from 'clsx';
 import { makeStyles, Container, Hidden, Box, useMediaQuery } from '@material-ui/core';
@@ -287,6 +280,23 @@ function LayoutWithContext(props: LayoutProps) {
   const theme = useTheme();
   const medium = useMediaQuery(theme.breakpoints.down(MEDIUM_BREAKPOINT));
   const container = !medium && !/^\/(tools\/|dashboard)/.test(path)
+  console.log("continer", { container })
+
+  const mainClasses = clsx(classes.content, {
+    [classes.contentShift]: drawerOpen,
+    [classes.toolsContentShift]: toolsMenu,
+  });
+  const MainSection = () => <>
+    <main className={classes.mainContent}>
+      <div className={classes.drawerHeader} />
+      {!hideUnderConstruction && <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the Jacdac specification. Do not build devices using Jacdac.</Alert>}
+      {Flags.diagnostics && <WebDiagnostics />}
+      <Typography className={'markdown'} component="span">
+        {container ? <Container>{element}</Container> : element}
+      </Typography>
+    </main>
+    <Footer />
+  </>
 
   return (
     <div className={clsx(darkMode, classes.root)}>
@@ -298,20 +308,11 @@ function LayoutWithContext(props: LayoutProps) {
         <AppDrawer pagePath={path} />
         <ToolsDrawer />
       </nav>}
-      <Container maxWidth={"xl"} disableGutters={true} className={clsx(classes.content, {
-        [classes.contentShift]: drawerOpen,
-        [classes.toolsContentShift]: toolsMenu,
-      })}>
-        <main className={classes.mainContent}>
-          <div className={classes.drawerHeader} />
-          {!hideUnderConstruction && <Alert closeable={true} severity="warning">UNDER CONSTRUCTION - We are still working and changing the Jacdac specification. Do not build devices using Jacdac.</Alert>}
-          {Flags.diagnostics && <WebDiagnostics />}
-          <Typography className={'markdown'} component="span">
-            {container ? <Container>{element}</Container> : element}
-          </Typography>
-        </main>
-        <Footer />
-      </Container>
+      {container
+        ? <Container maxWidth={"xl"} disableGutters={true} className={mainClasses}>
+          <MainSection />
+        </Container>
+        : <div className={mainClasses}><MainSection /></div>}
     </div>
   )
 }
