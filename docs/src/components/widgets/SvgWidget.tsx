@@ -26,7 +26,8 @@ export default function SvgWidget(props: {
             viewBox={viewBox || `0 0 ${width} ${h}`}
             aria-label={title}
             style={({ 
-                height: "100%"
+                height: vertical ? "100%" : undefined,
+                width: vertical ?  undefined : "100%",
             })}
             role={role || "group"}>
             {background && <rect x={0} y={0} width={width} height={height} fill={background} rx={1} ry={1} />}

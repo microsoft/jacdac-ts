@@ -146,7 +146,6 @@ export default function MemberInput(props: {
                 variant={signed ? "fountain" : undefined}
                 min={min} max={max} step={step}
                 valueLabel={percentValueLabelFormat}
-                size={widgetSize}
                 onChange={disabled ? undefined : handleSliderChange}
                 off={off}
                 toggleOff={toggleOff}
@@ -188,7 +187,6 @@ export default function MemberInput(props: {
                 step={step}
                 secondaryLabel={errorValue}
                 color={color}
-                size={widgetSize}
                 onChange={disabled ? undefined : handleSliderChange} />
 
         return <Slider
