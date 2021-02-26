@@ -421,7 +421,6 @@ export class CMSISProto implements Proto {
     }
 
     async postConnectAsync() {
-        this._connected = true
         this.startRecvToLoop()
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid))
