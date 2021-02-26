@@ -60,7 +60,8 @@ export default function ServiceUnitTest(props: { serviceInstance: JDService, tes
     }
     function commandToUI(index: number, cmd: jdtest.ServiceTestCommand) {
         return (<Step key={index}>
-            {(cmd.kind === "say" || cmd.kind === "ask") && <StepLabel>{cmd.expr.map(exprToString).join(" ")}</StepLabel>}        
+            {(cmd.kind === "say" || cmd.kind === "ask") && 
+                <StepLabel>{cmd.expr.map(exprToString).join(" ").slice(1,-1)}</StepLabel>}        
                 {cmd.kind === "ask" && 
                     <StepContent>
                     <Button onClick={handleClose(TestStatus.Passed)}>Yes</Button> 
