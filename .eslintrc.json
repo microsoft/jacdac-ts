@@ -1,4 +1,9 @@
 {
+    "settings": {
+        "react": {
+            "version": "17.0"
+        }
+    },
     "env": {
         "browser": true,
         "es2021": true
@@ -21,6 +26,7 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "@typescript-eslint/explicit-module-boundary-types": "off"
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-empty-function": "off"
     }
 }

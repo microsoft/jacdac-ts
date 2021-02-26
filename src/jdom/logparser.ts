@@ -78,7 +78,7 @@ Time [s],Value,Parity Error,Framing Error
 0.043264800000000,0x00,,Error
 0.063968960000000,0x00,,Error
          */
-        m = /^([\d\.]+),(?:Async Serial,)?.*(0x[A-F0-9][A-F0-9])/.exec(ln)
+        m = /^([\d.]+),(?:Async Serial,)?.*(0x[A-F0-9][A-F0-9])/.exec(ln)
         if (!m)
             continue
         const tm = parseFloat(m[1])

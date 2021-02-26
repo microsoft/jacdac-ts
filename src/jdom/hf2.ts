@@ -1,14 +1,25 @@
-import { CMSISProto } from "./microbit";
-import { USBOptions } from "./usb";
+import { CMSISProto } from "./microbit"
+import { USBOptions } from "./usb"
 import {
-    throwError, delay, assert, SMap, PromiseBuffer, PromiseQueue, memcpy, write32, write16, read16,
-    encodeU32LE, read32, bufferToString
-} from "./utils";
+    throwError,
+    delay,
+    assert,
+    SMap,
+    PromiseBuffer,
+    PromiseQueue,
+    memcpy,
+    write32,
+    write16,
+    read16,
+    encodeU32LE,
+    read32,
+    bufferToString,
+} from "./utils"
 
-const controlTransferGetReport = 0x01;
-const controlTransferSetReport = 0x09;
-const controlTransferOutReport = 0x200;
-const controlTransferInReport = 0x100;
+const controlTransferGetReport = 0x01
+const controlTransferSetReport = 0x09
+const controlTransferOutReport = 0x200
+const controlTransferInReport = 0x100
 
 // see https://github.com/microsoft/uf2/blob/main/hf2.md for full spec
 export const HF2_DEVICE_MAJOR = 42
@@ -28,11 +39,11 @@ export const HF2_CMD_INFO = 0x0002
 // no arguments
 // results is utf8 character array
 
-export const HF2_CMD_RESET_INTO_APP = 0x0003// no arguments, no result
+export const HF2_CMD_RESET_INTO_APP = 0x0003 // no arguments, no result
 
-export const HF2_CMD_RESET_INTO_BOOTLOADER = 0x0004  // no arguments, no result
+export const HF2_CMD_RESET_INTO_BOOTLOADER = 0x0004 // no arguments, no result
 
-export const HF2_CMD_START_FLASH = 0x0005   // no arguments, no result
+export const HF2_CMD_START_FLASH = 0x0005 // no arguments, no result
 
 export const HF2_CMD_WRITE_FLASH_PAGE = 0x0006
 /*
@@ -80,10 +91,10 @@ export const HF2_CMD_DMESG = 0x0010
 // results is utf8 character array
 
 export const HF2_FLAG_SERIAL_OUT = 0x80
-export const HF2_FLAG_SERIAL_ERR = 0xC0
+export const HF2_FLAG_SERIAL_ERR = 0xc0
 export const HF2_FLAG_CMDPKT_LAST = 0x40
 export const HF2_FLAG_CMDPKT_BODY = 0x00
-export const HF2_FLAG_MASK = 0xC0
+export const HF2_FLAG_MASK = 0xc0
 export const HF2_SIZE_MASK = 63
 
 export const HF2_STATUS_OK = 0x00
@@ -100,27 +111,27 @@ export const HF2_CMD_JDS_SEND = 0x0021
 export const HF2_EV_JDS_PACKET = 0x800020
 
 export class Transport {
-    dev: USBDevice;
-    iface: USBInterface;
-    altIface: USBAlternateInterface;
-    epIn: USBEndpoint;
-    epOut: USBEndpoint;
-    readLoopStarted = false;
-    ready = false;
-    rawMode = false;
+    dev: USBDevice
+    iface: USBInterface
+    altIface: USBAlternateInterface
+    epIn: USBEndpoint
+    epOut: USBEndpoint
+    readLoopStarted = false
+    ready = false
+    rawMode = false
 
-    constructor(private usb: USBOptions) { }
+    constructor(private usb: USBOptions) {}
 
-    onData = (v: Uint8Array) => { };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
         console.error("USB error: " + (e ? e.stack : e))
-    };
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
-        if (v != undefined)
-            console.log("USB: " + msg, v)
-        else
-            console.log("USB: " + msg)
+        if (v != undefined) console.log("USB: " + msg, v)
+        else console.log("USB: " + msg)
     }
 
     private mkProto(): Proto {
@@ -139,9 +150,11 @@ export class Transport {
         this.ready = false
         if (!this.dev) return Promise.resolve()
         this.log("close device")
-        return this.dev.close()
+        return this.dev
+            .close()
             .catch(e => {
                 // just ignore errors closing, most likely device just disconnected
+                console.debug(e)
             })
             .then(() => {
                 this.clearDev()
@@ -150,49 +163,53 @@ export class Transport {
     }
 
     recvPacketAsync(): Promise<Uint8Array> {
-        if (!this.rawMode)
-            this.error("rawMode required")
+        if (!this.rawMode) this.error("rawMode required")
         return this.recvPacketCoreAsync()
     }
 
     private recvPacketCoreAsync(): Promise<Uint8Array> {
         const final = (res: USBInTransferResult) => {
-            if (res.status != "ok")
-                this.error("USB IN transfer failed")
+            if (res.status != "ok") this.error("USB IN transfer failed")
             const arr = new Uint8Array(res.data.buffer)
-            if (arr.length == 0)
-                return this.recvPacketCoreAsync()
+            if (arr.length == 0) return this.recvPacketCoreAsync()
             return arr
         }
 
-        if (!this.dev)
-            return Promise.reject(new Error("Disconnected"))
+        if (!this.dev) return Promise.reject(new Error("Disconnected"))
 
         if (!this.epIn) {
-            return this.dev.controlTransferIn({
-                requestType: "class",
-                recipient: "interface",
-                request: controlTransferGetReport,
-                value: controlTransferInReport,
-                index: this.iface.interfaceNumber
-            }, 64).then(final)
+            return this.dev
+                .controlTransferIn(
+                    {
+                        requestType: "class",
+                        recipient: "interface",
+                        request: controlTransferGetReport,
+                        value: controlTransferInReport,
+                        index: this.iface.interfaceNumber,
+                    },
+                    64
+                )
+                .then(final)
         }
 
-        return this.dev.transferIn(this.epIn.endpointNumber, 64)
-            .then(final)
+        return this.dev.transferIn(this.epIn.endpointNumber, 64).then(final)
     }
 
     error(msg: string) {
-        console.error(`USB error on device ${this.dev ? this.dev.productName : "n/a"} (${msg})`)
+        console.error(
+            `USB error on device ${
+                this.dev ? this.dev.productName : "n/a"
+            } (${msg})`
+        )
         this.onError(new Error("USB error"))
     }
 
     private async readLoop() {
-        if (this.rawMode || this.readLoopStarted)
-            return
+        if (this.rawMode || this.readLoopStarted) return
         this.readLoopStarted = true
         this.log("start read loop")
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             if (!this.ready) {
                 break
@@ -221,60 +238,69 @@ export class Transport {
     }
 
     sendPacketAsync(pkt: Uint8Array) {
-        if (!this.dev)
-            return Promise.reject(new Error("Disconnected"))
+        if (!this.dev) return Promise.reject(new Error("Disconnected"))
         assert(pkt.length <= 64)
         if (!this.epOut) {
-            return this.dev.controlTransferOut({
-                requestType: "class",
-                recipient: "interface",
-                request: controlTransferSetReport,
-                value: controlTransferOutReport,
-                index: this.iface.interfaceNumber
-            }, pkt).then(res => {
-                if (res.status != "ok")
-                    this.error("USB CTRL OUT transfer failed")
-            })
+            return this.dev
+                .controlTransferOut(
+                    {
+                        requestType: "class",
+                        recipient: "interface",
+                        request: controlTransferSetReport,
+                        value: controlTransferOutReport,
+                        index: this.iface.interfaceNumber,
+                    },
+                    pkt
+                )
+                .then(res => {
+                    if (res.status != "ok")
+                        this.error("USB CTRL OUT transfer failed")
+                })
         }
-        return this.dev.transferOut(this.epOut.endpointNumber, pkt)
+        return this.dev
+            .transferOut(this.epOut.endpointNumber, pkt)
             .then(res => {
-                if (res.status != "ok")
-                    this.error("USB OUT transfer failed")
+                if (res.status != "ok") this.error("USB OUT transfer failed")
             })
     }
 
     get isMicrobit() {
-        return this.dev && this.dev.productId == 516 && this.dev.vendorId == 3368
+        return (
+            this.dev && this.dev.productId == 516 && this.dev.vendorId == 3368
+        )
     }
 
     private checkDevice() {
-        this.iface = undefined;
-        this.altIface = undefined;
-        if (!this.dev)
-            return false;
-        this.log("connect device: " + this.dev.manufacturerName + " " + this.dev.productName)
+        this.iface = undefined
+        this.altIface = undefined
+        if (!this.dev) return false
+        this.log(
+            "connect device: " +
+                this.dev.manufacturerName +
+                " " +
+                this.dev.productName
+        )
         // resolve interfaces
         const subcl = this.isMicrobit ? 0 : HF2_DEVICE_MAJOR
         for (const iface of this.dev.configuration.interfaces) {
             const alt = iface.alternates[0]
             if (alt.interfaceClass == 0xff && alt.interfaceSubclass == subcl) {
-                this.iface = iface;
-                this.altIface = alt;
-                break;
+                this.iface = iface
+                this.altIface = alt
+                break
             }
         }
-        if (this.isMicrobit)
-            this.rawMode = true
-        return !!this.iface;
+        if (this.isMicrobit) this.rawMode = true
+        return !!this.iface
     }
 
     private async tryReconnectAsync() {
         try {
-            const devices = await this.usb.getDevices();
-            this.dev = devices[0];
+            const devices = await this.usb.getDevices()
+            this.dev = devices[0]
         } catch (e) {
             console.log(e)
-            this.dev = undefined;
+            this.dev = undefined
         }
     }
 
@@ -286,29 +312,28 @@ export class Transport {
                         // hf2 devices (incl. arcade)
                         classCode: 255,
                         subclassCode: HF2_DEVICE_MAJOR,
-                    }, {
+                    },
+                    {
                         // micro:bit v2
                         vendorId: 3368,
-                        productId: 516
-                    }
-                ]
+                        productId: 516,
+                    },
+                ],
             })
         } catch (e) {
             console.log(e)
-            this.dev = undefined;
+            this.dev = undefined
         }
     }
 
     async connectAsync(background: boolean) {
-        await this.tryReconnectAsync();
-        if (!this.dev && !background)
-            await this.requestDeviceAsync();
+        await this.tryReconnectAsync()
+        if (!this.dev && !background) await this.requestDeviceAsync()
         // background call and no device, just give up for now
-        if (!this.dev && background)
-            throwError("device not paired", true);
+        if (!this.dev && background) throwError("device not paired", true)
 
         // let's connect!
-        await this.openDeviceAsync();
+        await this.openDeviceAsync()
 
         const proto = this.mkProto()
         await proto.postConnectAsync()
@@ -317,18 +342,20 @@ export class Transport {
     }
 
     private async openDeviceAsync() {
-        if (!this.dev)
-            throwError("device not found")
-        if (!this.checkDevice())
-            throwError("device does not support HF2")
+        if (!this.dev) throwError("device not found")
+        if (!this.checkDevice()) throwError("device does not support HF2")
 
         await this.dev.open()
         await this.dev.selectConfiguration(1)
         if (this.altIface.endpoints.length) {
-            this.epIn = this.altIface.endpoints.filter(e => e.direction == "in")[0]
-            this.epOut = this.altIface.endpoints.filter(e => e.direction == "out")[0]
-            assert(this.epIn.packetSize == 64);
-            assert(this.epOut.packetSize == 64);
+            this.epIn = this.altIface.endpoints.filter(
+                e => e.direction == "in"
+            )[0]
+            this.epOut = this.altIface.endpoints.filter(
+                e => e.direction == "out"
+            )[0]
+            assert(this.epIn.packetSize == 64)
+            assert(this.epOut.packetSize == 64)
         }
         this.log("claim interface")
         await this.dev.claimInterface(this.iface.interfaceNumber)
@@ -348,8 +375,8 @@ export interface Proto {
 class HF2Proto implements Proto {
     eventHandlers: SMap<(buf: Uint8Array) => void> = {}
     msgs = new PromiseBuffer<Uint8Array>()
-    cmdSeq = (Math.random() * 0xffff) | 0;
-    private lock = new PromiseQueue();
+    cmdSeq = (Math.random() * 0xffff) | 0
+    private lock = new PromiseQueue()
 
     constructor(public io: Transport) {
         let frames: Uint8Array[] = []
@@ -388,7 +415,6 @@ class HF2Proto implements Proto {
         }
     }
 
-
     error(m: string) {
         return this.io.error(m)
     }
@@ -398,26 +424,30 @@ class HF2Proto implements Proto {
         if (data) len += data.length
         const pkt = new Uint8Array(len)
         const seq = ++this.cmdSeq & 0xffff
-        write32(pkt, 0, cmd);
-        write16(pkt, 4, seq);
-        write16(pkt, 6, 0);
-        if (data)
-            memcpy(pkt, 8, data, 0, data.length)
+        write32(pkt, 0, cmd)
+        write16(pkt, 4, seq)
+        write16(pkt, 6, 0)
+        if (data) memcpy(pkt, 8, data, 0, data.length)
         let numSkipped = 0
         const handleReturnAsync = (): Promise<Uint8Array> =>
-            this.msgs.shiftAsync(1000) // we wait up to a second
+            this.msgs
+                .shiftAsync(1000) // we wait up to a second
                 .then(res => {
                     if (read16(res, 0) != seq) {
                         if (numSkipped < 3) {
                             numSkipped++
-                            this.io.log(`message out of sync, (${seq} vs ${read16(res, 0)}); will re-try`)
+                            this.io.log(
+                                `message out of sync, (${seq} vs ${read16(
+                                    res,
+                                    0
+                                )}); will re-try`
+                            )
                             return handleReturnAsync()
                         }
                         this.error("out of sync")
                     }
                     let info = ""
-                    if (res[3])
-                        info = "; info=" + res[3]
+                    if (res[3]) info = "; info=" + res[3]
                     switch (res[2]) {
                         case HF2_STATUS_OK:
                             return res.slice(4)
@@ -439,10 +469,9 @@ class HF2Proto implements Proto {
                 })
 
         return this.lock.enqueue("talk", () =>
-            this.sendMsgAsync(pkt)
-                .then(handleReturnAsync))
+            this.sendMsgAsync(pkt).then(handleReturnAsync)
+        )
     }
-
 
     private sendMsgAsync(buf: Uint8Array, serial = 0) {
         // Util.assert(buf.length <= this.maxMsgSize)
@@ -452,16 +481,16 @@ class HF2Proto implements Proto {
             if (len <= 0) return Promise.resolve()
             if (len > 63) {
                 len = 63
-                frame[0] = HF2_FLAG_CMDPKT_BODY;
+                frame[0] = HF2_FLAG_CMDPKT_BODY
             } else {
-                frame[0] = HF2_FLAG_CMDPKT_LAST;
+                frame[0] = HF2_FLAG_CMDPKT_LAST
             }
-            if (serial) frame[0] = serial == 1 ? HF2_FLAG_SERIAL_OUT : HF2_FLAG_SERIAL_ERR;
-            frame[0] |= len;
-            for (let i = 0; i < len; ++i)
-                frame[i + 1] = buf[pos + i]
-            return this.io.sendPacketAsync(frame)
-                .then(() => loop(pos + len))
+            if (serial)
+                frame[0] =
+                    serial == 1 ? HF2_FLAG_SERIAL_OUT : HF2_FLAG_SERIAL_ERR
+            frame[0] |= len
+            for (let i = 0; i < len; ++i) frame[i + 1] = buf[pos + i]
+            return this.io.sendPacketAsync(frame).then(() => loop(pos + len))
         }
         return loop(0)
     }
@@ -477,8 +506,7 @@ class HF2Proto implements Proto {
     }
 
     sendJDMessageAsync(buf: Uint8Array) {
-        return this.talkAsync(HF2_CMD_JDS_SEND, buf)
-            .then(() => { })
+        return this.talkAsync(HF2_CMD_JDS_SEND, buf).then(() => {})
     }
 
     handleEvent(buf: Uint8Array) {
@@ -495,7 +523,9 @@ class HF2Proto implements Proto {
         }
     }
     onSerial(data: Uint8Array, iserr: boolean) {
-        console.log("SERIAL:", bufferToString(data))
+        const msg = `hf2 serial: ${bufferToString(data)}`
+        if (iserr) console.error(msg)
+        else console.log(msg)
     }
 
     async postConnectAsync() {
@@ -513,7 +543,9 @@ class HF2Proto implements Proto {
             // all good
             this.io.log(`device in user-space mode`)
         } else if (mode == HF2_MODE_BOOTLOADER) {
-            this.io.log(`device in bootloader mode, reseting into user-space mode`)
+            this.io.log(
+                `device in bootloader mode, reseting into user-space mode`
+            )
             await this.talkAsync(HF2_CMD_RESET_INTO_APP)
             // and fail
             throwError("Device in bootloader mode")
@@ -524,6 +556,6 @@ class HF2Proto implements Proto {
     }
 
     disconnectAsync(): Promise<void> {
-        return this.io.disconnectAsync();
+        return this.io.disconnectAsync()
     }
 }

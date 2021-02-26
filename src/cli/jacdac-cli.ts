@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const cli = require("cli")
 const fs = require("fs-extra")
 import { PACKET_PROCESS } from "../jdom/constants"
