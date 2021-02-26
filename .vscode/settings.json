@@ -1,0 +1,7 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.tabWidth": 4,
+    "eslint.alwaysShowStatus": true,
+    "eslint.format.enable": false,
+    "eslint.debug": true,
+}
