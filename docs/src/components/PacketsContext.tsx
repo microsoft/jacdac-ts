@@ -47,16 +47,17 @@ const PacketsContext = createContext<PacketsProps>({
     tracing: false,
     toggleTracing: () => { },
     paused: false,
-    setPaused: (p) => { },
+    setPaused: () => { },
     progress: undefined,
     timeRange: undefined,
     toggleTimeRange: () => { },
-    setTimeRange: (range) => { }
+    setTimeRange: () => { }
 });
 PacketsContext.displayName = "packets";
 
 export default PacketsContext;
 
+// eslint-disable-next-line react/prop-types
 export const PacketsProvider = ({ children }) => {
     const { bus, disconnectAsync } = useContext<JacdacContextProps>(JacdacContext)
     const { value: filter, setValue: _setFilter } = useDbValue("packetfilter", "repeated-announce:false")

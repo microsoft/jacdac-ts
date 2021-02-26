@@ -7,10 +7,10 @@ import { useStaticQuery, graphql } from "gatsby"
 import AppContext, { DrawerType } from "./AppContext"
 
 interface TocNode {
-    name: string;
-    path: string;
-    order: number;
-    children?: TocNode[];
+  name: string;
+  path: string;
+  order: number;
+  children?: TocNode[];
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -210,6 +210,6 @@ export default function Toc(props: { pagePath: string }) {
   }
 
   return <List dense className={classes.root}>
-    {tree.map(entry => <TocListItem key={'tocitem' + entry.path} entry={entry} level={0} />)}
+    {tree.map((entry, i) => <TocListItem key={i} entry={entry} level={0} />)}
   </List>
 }

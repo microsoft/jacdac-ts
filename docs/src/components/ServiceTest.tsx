@@ -4,7 +4,7 @@ import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useChange from '../jacdac/useChange';
-import { Grid, Card, CardHeader, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
+import { Grid, Card, CardActions, Button, createStyles, makeStyles, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
@@ -101,8 +101,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                     <StepLabel>Select a service to test</StepLabel>
                     <StepContent>
                         {!!services.length && <Grid container spacing={2}>
-                            {services.map(service => <Grid item {...gridBreakpoints}>
-                                <Card key={service.id}>
+                            {services.map(service => <Grid item key={service.id} {...gridBreakpoints}>
+                                <Card >
                                     <DeviceCardHeader device={service.device} />
                                     <CardActions>
                                         <Button variant="contained" color="primary" onClick={handleSelect(service)}>Select</Button>

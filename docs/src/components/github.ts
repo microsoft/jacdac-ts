@@ -43,7 +43,7 @@ export interface GitHubApiOptions {
 }
 
 export function parseRepoUrl(url: string): { owner: string; name: string } {
-    const m = /^https:\/\/github\.com\/([^/ \t]+)\/([^\/ \t]+)\/?$/.exec(
+    const m = /^https:\/\/github\.com\/([^/ \t]+)\/([^/ \t]+)\/?$/.exec(
         url || ""
     )
     if (m) return { owner: m[1], name: m[2] }
@@ -136,7 +136,7 @@ export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
             status: undefined,
         }
     const uri = `repos/${normalizeSlug(slug)}/releases/latest`
-    const res = useFetchApi<GithubRelease>(uri, { ignoreThrottled: true })
+    const res = useFetchApi<GithubRelease>(uri, { ...(options || {}), ignoreThrottled: true })
     return res
 }
 
@@ -149,6 +149,6 @@ export function useLatestReleases(slug: string, options?: GitHubApiOptions) {
             status: undefined,
         }
     const uri = `repos/${normalizeSlug(slug)}/releases`
-    const res = useFetchApi<GithubRelease[]>(uri, { ignoreThrottled: true })
+    const res = useFetchApi<GithubRelease[]>(uri, { ...(options || {}), ignoreThrottled: true })
     return res
 }

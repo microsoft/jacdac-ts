@@ -191,6 +191,7 @@ DbContext.displayName = "db";
 
 export default DbContext;
 
+// eslint-disable-next-line react/prop-types
 export const DbProvider = ({ children }) => {
     const [db, setDb] = useState<Db>(undefined)
     const [error, setError] = useState(undefined)
