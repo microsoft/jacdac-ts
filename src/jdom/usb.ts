@@ -76,8 +76,8 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
     const bus = new JDBus({
         connectAsync: async (background) => {
             if (hf2) {
-                console.log(`reusing hf2`)
-                return Promise.resolve();
+                console.log(`cleanup hf2`)
+                await hf2.disconnectAsync();
             }
             const transport = new Transport(options);
             transport.onError = (e) => {

@@ -30,7 +30,7 @@ export class CMSISProto implements Proto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _lastInterval: any
 
-    constructor(public readonly io: Transport) {
+    constructor(private io: Transport) {
         console.log(`micro:bit: start proto`)
     }
 
@@ -39,6 +39,8 @@ export class CMSISProto implements Proto {
 
         let last = this.recvTo
         this._lastInterval = setInterval(() => {
+            if (!this.io)
+                this.stopRecvToLoop();
             if (last && last == this.recvTo) {
                 last()
             }
@@ -77,9 +79,14 @@ export class CMSISProto implements Proto {
     }
 
     async disconnectAsync() {
-        console.debug(`micro:bit: disconnect proto`)
-        this.stopRecvToLoop()
-        await this.io.disconnectAsync()
+        if (this.io) {
+            console.debug(`micro:bit: disconnect proto`)
+            this.stopRecvToLoop()
+            const io = this.io;
+            this.io = undefined;
+            if (io)
+                await io.disconnectAsync()    
+        }
     }
 
     private recvAsync() {
@@ -155,7 +162,7 @@ export class CMSISProto implements Proto {
 
     private async xchgLoop() {
         let currSend: SendItem
-        for (;;) {
+        while (this.io) {
             const now = Date.now()
             if (
                 Flags.diagnostics &&
@@ -215,7 +222,7 @@ export class CMSISProto implements Proto {
                         const d = Date.now() - this.lastSend
                         if (d > 50) {
                             this.lastSend = 0
-                            console.error("failed to send packet fast enough")
+                            console.warn("failed to send packet fast enough")
                         }
                     }
                 }
@@ -414,8 +421,8 @@ export class CMSISProto implements Proto {
     }
 
     async postConnectAsync() {
+        this._connected = true
         this.startRecvToLoop()
-
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid))
             this.error(`micro:bit v1 is not supported. sorry.`)
@@ -468,10 +475,9 @@ export class CMSISProto implements Proto {
             `exchange address: 0x${xchg.toString(16)}; irqn=${this.irqn}`
         )
 
-        /* async */ this.xchgLoop()
-            .catch(e => {
-                console.debug(e)
-                this.error(e?.message || "an error occured")
-            });
+        /* async */ this.xchgLoop().catch(e => {
+            console.debug(e)
+            this.error(e?.message || "an error occured")
+        })
     }
 }

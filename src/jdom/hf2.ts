@@ -125,13 +125,13 @@ export class Transport {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onData = (v: Uint8Array) => {}
     onError = (e: Error) => {
-        console.error("USB error: " + (e ? e.stack : e))
+        console.warn("usb error: " + (e ? e.stack : e))
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
-        if (v != undefined) console.log("USB: " + msg, v)
-        else console.log("USB: " + msg)
+        if (v != undefined) console.log("usb: " + msg, v)
+        else console.log("usb: " + msg)
     }
 
     private mkProto(): Proto {
@@ -196,12 +196,11 @@ export class Transport {
     }
 
     error(msg: string) {
-        console.error(
-            `USB error on device ${
-                this.dev ? this.dev.productName : "n/a"
-            } (${msg})`
+        this.onError(
+            new Error(
+                `device ${this.dev ? this.dev.productName : "n/a"} (${msg})`
+            )
         )
-        this.onError(new Error("USB error"))
     }
 
     private async readLoop() {
@@ -341,7 +340,7 @@ export class Transport {
         } catch (e) {
             console.debug(e)
             await proto.disconnectAsync()
-            throw e;
+            throw e
         }
 
         return proto
@@ -384,7 +383,7 @@ class HF2Proto implements Proto {
     cmdSeq = (Math.random() * 0xffff) | 0
     private lock = new PromiseQueue()
 
-    constructor(public io: Transport) {
+    constructor(private io: Transport) {
         let frames: Uint8Array[] = []
 
         io.onData = buf => {
@@ -530,7 +529,7 @@ class HF2Proto implements Proto {
     }
     onSerial(data: Uint8Array, iserr: boolean) {
         const msg = `hf2 serial: ${bufferToString(data)}`
-        if (iserr) console.error(msg)
+        if (iserr) console.warn(msg)
         else console.log(msg)
     }
 
@@ -561,7 +560,11 @@ class HF2Proto implements Proto {
         }
     }
 
-    disconnectAsync(): Promise<void> {
-        return this.io.disconnectAsync()
+    async disconnectAsync() {
+        if (this.io) {
+            const io = this.io
+            this.io = undefined
+            await io.disconnectAsync()
+        }
     }
 }
