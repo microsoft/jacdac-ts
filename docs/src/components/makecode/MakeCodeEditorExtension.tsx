@@ -1,10 +1,10 @@
-import { Grid, TextField, useEventCallback } from "@material-ui/core";
+import { Grid, TextField } from "@material-ui/core";
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { clone, JSONTryParse, SMap, uniqueName } from "../../../../src/jdom/utils";
 import useChange from '../../jacdac/useChange';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
-import { resolveMakecodeService, resolveMakecodeServiceFromClassIdentifier, serviceSpecificationFromClassIdentifier, serviceSpecifications } from "../../../../src/jdom/spec";
+import { resolveMakecodeService, resolveMakecodeServiceFromClassIdentifier, serviceSpecifications } from "../../../../src/jdom/spec";
 import AddServiceIconButton from "../AddServiceIconButton";
 import ServiceSpecificationSelect from "../ServiceSpecificationSelect"
 import { escapeName } from "../../../../src/azure-iot/dtdl"
@@ -91,6 +91,7 @@ function ClientRoleRow(props: { config: Configuration, component: ClientRole, on
 function validateClientRole(config: Configuration, role: ClientRole) {
     let serviceError: string = undefined;
     let nameError: string = undefined;
+    // TODO
     return { serviceError, nameError }
 }
 

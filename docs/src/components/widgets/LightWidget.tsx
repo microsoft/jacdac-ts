@@ -5,7 +5,6 @@ import useServiceHost from "../hooks/useServiceHost";
 import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
 import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
-import useWidgetSize from "../widgets/useWidgetSize";
 import { JDService } from "../../../../src/jdom/service";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue"
 
@@ -196,11 +195,10 @@ function LightMatrixWidget(props: {
     columns: number,
     rows: number,
 }) {
-    const { actualBrightness, columns, rows, host, widgetSize } = props;
+    const { columns, rows, host, widgetSize } = props;
     const { background, controlBackground } = useWidgetTheme()
 
     const widgetRef = useRef<SVGGElement>();
-    const clickeable = !!host;
     // compute size
     const pw = 8;
     const ph = 8;
@@ -255,7 +253,7 @@ function LightMatrixWidget(props: {
 }
 
 export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
-    const { service, widgetCount, variant } = props;
+    const { service } = props;
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
     const [lightVariant] = useRegisterUnpackedValue<[LedPixelVariant]>(service.register(LedPixelReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));

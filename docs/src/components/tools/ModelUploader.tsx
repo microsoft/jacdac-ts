@@ -72,7 +72,7 @@ export function ModelActions(props: {
     </>
 }
 
-export default function ModelUploader(props: {}) {
+export default function ModelUploader() {
     const classes = useStyles()
     const [importing, setImporting] = useState(false)
     const { data: model, setBlob: setModel } = useDbUint8Array("model.tflite")

@@ -2,7 +2,6 @@ import React from "react";
 import { Grid, Slider, Typography } from "@material-ui/core";
 import { isSet, roundWithPrecision } from "../../../../src/jdom/utils";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
-import useUnitIcons from "../hooks/useUnitIcon";
 
 export default function ValueWithUnitWidget(props: {
     value: number,
@@ -23,7 +22,7 @@ export default function ValueWithUnitWidget(props: {
     const hasValue = !isNaN(value);
     const valueText = hasValue ? roundWithPrecision(value, precision).toLocaleString() : "--"
     const valueTextLength = isSet(min) && isSet(max) ? [min, max, min + (min + max) / 3]
-        .map(v => roundWithPrecision(v, precision).toLocaleString().replace(/[,\.]/, '').length)
+        .map(v => roundWithPrecision(v, precision).toLocaleString().replace(/[,.]/, '').length)
         .reduce((l, r) => Math.max(l, r), 0)
         + precision : valueText.length;
 

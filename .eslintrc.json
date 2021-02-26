@@ -21,5 +21,8 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "@typescript-eslint/no-empty-function": "off",
+        "react/display-name": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off"
     }
 }
