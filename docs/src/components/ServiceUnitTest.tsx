@@ -40,24 +40,41 @@ function createTestSteps(test: jdtest.UnitTest) {
     }
 }
 
-// TODO: need a monitor that continually checks condition and reports back
-class TestMonitor extends JDClient {
-
-}
-
 export default function ServiceUnitTest(props: { serviceInstance: JDService, test: jdtest.UnitTest, finished: (status: TestStatus) => void }) {
     const { serviceInstance, test, finished } = props
     const [activeCommand, setActiveCommand] = useState(0);
     const handleNext = () => {
         setActiveCommand((prevActiveStep) => prevActiveStep + 1);
     };
-    const handleClose = () => {
-        finished(TestStatus.Passed);
+    const handleClose = (status: TestStatus) => () => {
+        finished(status);
     };
     return (<Grid>
         <Stepper activeStep={activeCommand} orientation="vertical">
             {test.commands.map((cmd, index) => (commandToUI(index, cmd)))}
         </Stepper>
+    </Grid>);
+
+    function exprToString(token: jdtest.ServiceTestToken) {
+        return (token.js ? token.js : "") + (token?.const ? token.const.toString() : "") + (token.id ? token.id : "");
+    }
+    function commandToUI(index: number, cmd: jdtest.ServiceTestCommand) {
+        return (<Step key={index}>
+            {(cmd.kind === "say" || cmd.kind === "ask") && <StepLabel>{cmd.expr.map(exprToString).join(" ")}</StepLabel>}        
+                {cmd.kind === "ask" && 
+                    <StepContent>
+                    <Button onClick={handleClose(TestStatus.Passed)}>Yes</Button> 
+                    <Button onClick={handleClose(TestStatus.Failed)}>No</Button>
+                    </StepContent>}
+                {cmd.kind === "say" && 
+                    <StepContent>
+                    <Button onClick={handleNext}>Next</Button> 
+                    </StepContent>}
+        </Step>)
+    }
+}
+
+/*
         {activeCommand === test.commands.length && (
             <Paper square elevation={0}>
                 <Typography>All steps completed - you're finished</Typography>
@@ -66,20 +83,11 @@ export default function ServiceUnitTest(props: { serviceInstance: JDService, tes
             </Button>
             </Paper>
         )}
-    </Grid>);
-    // case "ask":
-    //     case "check":
-    //     case "observe":
-    //     case "changes":
-    //     break
-    function commandToUI(index: number, cmd: jdtest.ServiceTestCommand) {
-        return (<Step key={index}>
-            {(cmd.kind === "say" || cmd.kind === "ask") && <StepLabel>{cmd.message}</StepLabel>}
-            <StepContent>
-                <Button
-                    onClick={handleNext}
-                >do command</Button>
-            </StepContent>
-        </Step>)
-    }
-}
+
+        */
+
+
+
+
+
+
