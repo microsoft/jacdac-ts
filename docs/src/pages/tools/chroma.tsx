@@ -11,6 +11,7 @@ class ChromaClient extends JDClient {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private heartbeatInterval: any;
+    private supported = true;
 
     constructor() {
         super();
@@ -30,7 +31,10 @@ class ChromaClient extends JDClient {
     }
 
     async start() {
-        console.debug("razor: connecting")
+        if (!this.supported || this.connected)
+            return;
+
+        console.debug("razor: connecting", { conn: this.connectionInfo })
         const resp = await fetch("https://chromasdk.io:54236/razer/chromasdk", {
             method: "POST",
             headers: {
@@ -59,9 +63,12 @@ class ChromaClient extends JDClient {
         if (resp.status === 200) {
             this.connectionInfo = await resp.json()
             if (this.unmounted) return;
-            console.log({ uri: this.connectionInfo })
-            this.emit(CHANGE)
             this.startHeartbeat();
+            this.emit(CHANGE)
+        } else if (resp.status == 404) {
+            this.supported = false;
+            console.log(`razor not supported`)
+            this.emit(CHANGE);
         }
     }
 
@@ -99,10 +106,17 @@ class ChromaClient extends JDClient {
         await this.fetch("/headset", "PUT", body);
     }
 
-    private fetch(path: string, method: string, body?: unknown) {
-        return fetch(this.connectionInfo.uri + path, {
-            method, body: body && JSON.stringify(body), headers: { "content-type": "application/json" }
-        })
+    private async fetch(path: string, method: string, body?: unknown) {
+        await this.start();
+        if (!this.connected)
+            return;
+        try {
+            await fetch(this.connectionInfo.uri + path, {
+                method, body: body && JSON.stringify(body), headers: { "content-type": "application/json" }
+            })
+        } catch (e) {
+            this.connectionInfo = undefined;
+        }
     }
 }
 
@@ -122,14 +136,16 @@ export default function Chroma() {
         await client.startHeadsetEffect("custom", v);
     }
 
+    // color: BGR
+
     return <Grid container spacing={1}>
         <Grid item>
             <div>connected: {connected ? "connected" : "disconnected"}</div>
         </Grid>
         <Grid item>
-            <Button onClick={handleStatic(255)}>headset 255</Button>
-            <Button onClick={handleStatic(128)}>headset 128</Button>
-            <Button onClick={handleStatic(0)}>headset 0</Button>
+            <Button onClick={handleStatic(0xff0000)}>headset 255</Button>
+            <Button onClick={handleStatic(0x00ff00)}>headset 128</Button>
+            <Button onClick={handleStatic(0x0000ff)}>headset 0</Button>
             <Button onClick={handleCustom([0, 64, 128, 196, 255])}>headset custom</Button>
         </Grid>
     </Grid>
