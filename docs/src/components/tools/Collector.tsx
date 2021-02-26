@@ -75,8 +75,7 @@ function createDataSet(bus: JDBus,
     return set;
 }
 
-export default function Collector(props: {}) {
-    const { } = props;
+export default function Collector() {
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const classes = useStyles();
     const { fileStorage } = useContext(ServiceManagerContext)

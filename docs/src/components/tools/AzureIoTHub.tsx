@@ -34,7 +34,8 @@ interface ConnectionString {
 }
 
 function parseConnectionString(source: string): ConnectionString {
-    let r: any = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const r: any = {
         source
     };
     source.split(';').map(fragment => fragment.split('=')).forEach(kv => r[kv[0]] = kv[1]);

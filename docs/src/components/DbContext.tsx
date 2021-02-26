@@ -139,8 +139,8 @@ export class Db extends JDEventSource {
                 try {
                     const transaction = this.db.transaction([table], "readwrite");
                     const blobs = transaction.objectStore(table)
-                    const request = data !== undefined ? blobs.put(data, id) : blobs.delete(id);;
-                    request.onsuccess = (event) => {
+                    const request = data !== undefined ? blobs.put(data, id) : blobs.delete(id);
+                    request.onsuccess = () => {
                         this.emit(CHANGE)
                         resolve()
                     }
