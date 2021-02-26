@@ -1,7 +1,6 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
 import { CHANGE, DEVICE_ANNOUNCE, META_ACK, META_GET, META_PIPE, PACKET_PROCESS, PACKET_SEND, TRACE_FILTER_HORIZON } from "./constants";
-import { jdunpack } from "./pack";
 import Packet from "./packet";
 import { PacketFilter, parsePacketFilter } from "./packetfilter";
 import Trace from "./trace";

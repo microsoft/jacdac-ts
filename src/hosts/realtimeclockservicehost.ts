@@ -47,7 +47,7 @@ export default class RealTimeClockServiceHost
     }
 
     private handleSetTime(pkt: Packet) {
-        console.log(`set time`)
+        console.log(`set time`, { pkt })
     }
 
     private refreshTime() {

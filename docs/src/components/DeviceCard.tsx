@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import { makeStyles } from '@material-ui/core/styles';
 // tslint:disable-next-line: no-submodule-imports
@@ -11,12 +11,12 @@ import ServiceButton from './ServiceButton';
 import useChange from '../jacdac/useChange';
 import { navigate } from "gatsby";
 import { JDService } from '../../../src/jdom/service';
-import { CardActions, createStyles, Theme } from '@material-ui/core';
+import { CardActions, createStyles } from '@material-ui/core';
 import DeviceCardHeader from './DeviceCardHeader';
 import { useRegisterStringValue } from '../jacdac/useRegisterValue';
 import { DeviceLostAlert } from './alert/DeviceLostAlert';
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
+const useStyles = makeStyles(() => createStyles({
     root: {
     },
     bullet: {

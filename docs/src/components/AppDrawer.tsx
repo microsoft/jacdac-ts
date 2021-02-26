@@ -15,7 +15,6 @@ import PacketRecorder from "./PacketRecorder";
 import DrawerSearchInput from "./DrawerSearchInput";
 import DrawerSearchResults from "./DrawerSearchResults";
 import DrawerToolsButtonGroup from "./DrawerToolsButtonGroup";
-import PacketStats from "./PacketStats";
 
 const useStyles = makeStyles((theme) => createStyles({
     drawer: {

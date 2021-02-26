@@ -1,6 +1,6 @@
 import React, { } from 'react';
 // tslint:disable-next-line: no-submodule-imports
-import { Box, Card, CardActions, CardContent, CardHeader, CircularProgress, Typography } from '@material-ui/core';
+import { Box, CardHeader, Typography } from '@material-ui/core';
 import { useLatestRelease, useRepository } from './github';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import { Link } from 'gatsby-theme-material-ui';
@@ -12,7 +12,7 @@ export default function GithubRepositoryCardHeader(props: {
 }) {
     const { slug, showRelease } = props;
     const { response: repo, loading: repoLoading } = useRepository(slug);
-    const { response: release, loading: releaseLoading } = useLatestRelease(showRelease && slug);
+    const { response: release } = useLatestRelease(showRelease && slug);
     const iframe = inIFrame();
     const target = iframe ? "_blank" : ""
 

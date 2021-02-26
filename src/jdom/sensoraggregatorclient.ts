@@ -116,6 +116,7 @@ export class SensorAggregatorClient extends JDServiceClient {
     }
 
     async stats(): Promise<SensorAggregatorStats> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const info: any = {
             "numSamples": this.getReg(SensorAggregatorReg.NumSamples, r => r.intValue),
             "sampleSize": this.getReg(SensorAggregatorReg.SampleSize, r => r.intValue),

@@ -1,16 +1,16 @@
 import { SystemReg } from "../../jacdac-spec/dist/specconstants";
-import { CHANGE, READING_SENT, REFRESH, REPORT_UPDATE, SensorReg } from "../jdom/constants";
+import { CHANGE, READING_SENT, REFRESH, SensorReg } from "../jdom/constants";
+import { PackedValues } from "../jdom/pack";
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
-import TrafficLightServiceHost from "./trafficlightservicehost";
 
-export interface SensorServiceOptions<TReading extends any[]> extends ServiceHostOptions {
+export interface SensorServiceOptions<TReading extends PackedValues> extends ServiceHostOptions {
     readingValues?: TReading,
     readingError?: TReading,
     streamingInterval?: number,
 }
 
-export default class SensorServiceHost<TReading extends any[]> extends ServiceHost {
+export default class SensorServiceHost<TReading extends PackedValues> extends ServiceHost {
     readonly reading: RegisterHost<TReading>;
     readonly readingError: RegisterHost<TReading>;
     readonly streamingSamples: RegisterHost<[number]>;
