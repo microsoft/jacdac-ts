@@ -84,7 +84,7 @@ function DeviceTreeItem(props: { device: JDDevice } & StyledTreeViewItemProps & 
 }
 
 function ServiceTreeItem(props: { service: JDService } & StyledTreeViewItemProps & JDomTreeViewProps) {
-    const { service, checked, setChecked, checkboxes, dashboard, registerFilter, eventFilter, ...other } = props;
+    const { service, checked, setChecked, checkboxes, registerFilter, eventFilter, ...other } = props;
     const specification = service.specification;
     const showSpecificationAction = false;
     const id = service.id
@@ -226,12 +226,12 @@ export default function JDomTreeView(props: JDomTreeViewProps) {
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const devices = useChange(bus, () => bus.devices().filter(dev => !deviceFilter || deviceFilter(dev)))
 
-    const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+    const handleToggle = (event: React.ChangeEvent<unknown>, nodeIds: string[]) => {
         setExpanded(nodeIds);
         if (onToggle) onToggle(nodeIds)
     };
 
-    const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+    const handleSelect = (event: React.ChangeEvent<unknown>, nodeIds: string[]) => {
         setSelected(nodeIds);
         if (onSelect) onSelect(nodeIds)
     };

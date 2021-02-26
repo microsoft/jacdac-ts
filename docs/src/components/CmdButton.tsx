@@ -87,9 +87,8 @@ export default function CmdButton(props: {
             }
         }
         finally {
-            if (!mounted())
-                return;
-            setWorking(false)
+            if (mounted())
+                setWorking(false)
         }
     }
 
