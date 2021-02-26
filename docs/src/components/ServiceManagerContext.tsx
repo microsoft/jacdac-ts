@@ -64,8 +64,10 @@ const ServiceManagerContext = createContext<ServiceManagerContextProps>({
 });
 ServiceManagerContext.displayName = "Services";
 
-export default function ServiceManagerProvider(props: { children: ReactNode }) {
-    const { children } = props;
+export default ServiceManagerContext;
+
+// eslint-disable-next-line react/prop-types
+export const ServiceManagerProvider = ({ children }) => {
     const { toggleDarkMode } = useContext(DarkModeContext)
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const propsRef = useRef<ServiceManagerContextProps>(createProps())
