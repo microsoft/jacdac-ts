@@ -30,7 +30,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const [activeStep, setActiveStep] = useState(0);
     const [activeTest, setActiveTest] = useState(-1);
     const serviceTest = serviceTestFromServiceSpec(serviceSpec);
-    const testStatuses = serviceTest.tests.map(t => TestStatus.Inactive)
+    const testStatuses = serviceTest.tests.map(() => TestStatus.Inactive)
     const gridBreakpoints = useGridBreakpoints()
     // devices that implement serviceSpec
     const serviceInstances = useChange(bus, n =>
@@ -106,7 +106,7 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                 </Stepper>
                 {activeStep === serviceTest.tests.length + 1 && (
                     <Paper square elevation={0} >
-                        <Typography>All steps completed - you're finished</Typography>
+                        <Typography>All steps completed.</Typography>
                         <Button onClick={handleReset} >
                             Reset
                 </Button>
