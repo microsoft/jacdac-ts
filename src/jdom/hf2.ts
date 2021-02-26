@@ -336,7 +336,13 @@ export class Transport {
         await this.openDeviceAsync()
 
         const proto = this.mkProto()
-        await proto.postConnectAsync()
+        try {
+            await proto.postConnectAsync()
+        } catch (e) {
+            console.debug(e)
+            await proto.disconnectAsync()
+            throw e;
+        }
 
         return proto
     }

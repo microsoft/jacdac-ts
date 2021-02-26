@@ -1,4 +1,4 @@
-import React, { CSSProperties, useContext } from "react"
+import React, { useContext } from "react"
 import clsx from 'clsx';
 import { makeStyles, Container, Hidden, Box, useMediaQuery } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
@@ -8,10 +8,8 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 // tslint:disable-next-line: no-submodule-imports
 import Typography from '@material-ui/core/Typography';
-import ConnectButton from '../jacdac/ConnectButton';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import MoreIcon from '@material-ui/icons/MoreVert';
-import { useStaticQuery, graphql } from "gatsby"
 // tslint:disable-next-line: no-import-side-effect
 import "./layout.css"
 import SEO from "./seo";
@@ -20,7 +18,6 @@ import FlashButton from "./FlashButton";
 import { createMuiTheme, responsiveFontSizes, createStyles, useTheme, ThemeOptions } from '@material-ui/core/styles';
 import AppContext, { DrawerType } from "./AppContext";
 import AppDrawer from "./AppDrawer";
-import WebUSBAlert from "./alert/WebUSBAlert";
 import useFirmwareBlobs from "./firmware/useFirmwareBlobs";
 import { MDXProvider } from "@mdx-js/react";
 import DarkModeProvider from "./ui/DarkModeProvider";
@@ -153,6 +150,7 @@ const useStyles = makeStyles((theme) => createStyles({
 export interface LayoutProps {
   element?: JSX.Element;
   props: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pageContext?: any;
     path?: string;
     uri?: string;
@@ -281,7 +279,6 @@ function LayoutWithContext(props: LayoutProps) {
   const theme = useTheme();
   const medium = useMediaQuery(theme.breakpoints.down(MEDIUM_BREAKPOINT));
   const container = !medium && !/^\/(tools\/|dashboard)/.test(path)
-  console.log("continer", { container })
 
   const mainClasses = clsx(classes.content, {
     [classes.contentShift]: drawerOpen,

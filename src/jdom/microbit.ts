@@ -1,8 +1,16 @@
-import Flags from "./flags";
-import { Proto, Transport } from "./hf2";
+import Flags from "./flags"
+import { Proto, Transport } from "./hf2"
 import {
-    delay, PromiseQueue, write32, write16, read32, uint8ArrayToString, fromHex, bufferConcat, fromUTF8
-} from "./utils";
+    delay,
+    PromiseQueue,
+    write32,
+    write16,
+    read32,
+    uint8ArrayToString,
+    fromHex,
+    bufferConcat,
+    fromUTF8,
+} from "./utils"
 
 interface SendItem {
     buf: Uint8Array
@@ -19,10 +27,18 @@ export class CMSISProto implements Proto {
     private lastSend: number
     private lastXchg: number
     private recvTo: () => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _lastInterval: any
 
     constructor(public io: Transport) {
+        console.log(`micro:bit: start proto`)
+    }
+
+    private startRecvToLoop() {
+        console.assert(!this._lastInterval);
+
         let last = this.recvTo
-        setInterval(() => {
+        this._lastInterval = setInterval(() => {
             if (last && last == this.recvTo) {
                 last()
             }
@@ -32,7 +48,7 @@ export class CMSISProto implements Proto {
 
     private error(msg: string): never {
         // debugger
-        throw new Error(msg)
+        throw new Error("micro:bit: " + msg)
     }
 
     onJDMessage(f: (buf: Uint8Array) => void): void {
@@ -48,32 +64,39 @@ export class CMSISProto implements Proto {
         return new Promise<void>(resolve => {
             this.sendQ.push({
                 buf,
-                cb: resolve
+                cb: resolve,
             })
         })
     }
 
     disconnectAsync(): Promise<void> {
+        console.debug(`micro:bit: disconnect proto`)
+        if (this._lastInterval) {
+            clearInterval(this._lastInterval)
+            this._lastInterval = undefined;
+        }
         return this.io.disconnectAsync()
     }
 
     private recvAsync() {
         return new Promise<Uint8Array>((resolve, reject) => {
-            this.io.recvPacketAsync()
-                .then(v => {
+            this.io.recvPacketAsync().then(
+                v => {
                     const f = resolve
                     resolve = null
                     if (f) {
                         this.recvTo = null
                         f(v)
                     }
-                }, err => {
+                },
+                err => {
                     if (resolve) {
                         resolve = null
                         this.recvTo = null
                         reject(err)
                     }
-                })
+                }
+            )
             this.recvTo = () => {
                 if (resolve) {
                     resolve = null
@@ -91,13 +114,14 @@ export class CMSISProto implements Proto {
             if (response[0] !== cmds[0]) {
                 const msg = `Bad response for ${cmds[0]} -> ${response[0]}`
                 console.log(msg)
-                response = await this.recvAsync()
-                    .then(v => v, () => {
+                response = await this.recvAsync().then(
+                    v => v,
+                    () => {
                         // throw the original error in case of timeout
                         this.error(msg)
-                    })
-                if (response[0] !== cmds[0])
-                    this.error(msg)
+                    }
+                )
+                if (response[0] !== cmds[0]) this.error(msg)
             }
             return response
         })
@@ -115,8 +139,7 @@ export class CMSISProto implements Proto {
 
     private dapDelay(micros: number) {
         const cmd = [0x09, 0, 0]
-        if (micros > 0xffff)
-            this.error("too large delay")
+        if (micros > 0xffff) this.error("too large delay")
         write16(cmd, 1, micros)
         return this.talkAsync(cmd)
     }
@@ -129,9 +152,13 @@ export class CMSISProto implements Proto {
 
     private async xchgLoop() {
         let currSend: SendItem
-        for (; ;) {
+        for (;;) {
             const now = Date.now()
-            if (Flags.diagnostics && this.lastXchg && now - this.lastXchg > 50) {
+            if (
+                Flags.diagnostics &&
+                this.lastXchg &&
+                now - this.lastXchg > 50
+            ) {
                 console.warn("slow xchg: " + (now - this.lastXchg) + "ms")
             }
             this.lastXchg = now
@@ -159,16 +186,24 @@ export class CMSISProto implements Proto {
 
             if (!currSend && this.sendQ.length) {
                 if (!sendFree) {
-                    const send = await this.readBytes(this.xchgAddr + 12 + 256, 4)
-                    if (!send[2])
-                        sendFree = true
+                    const send = await this.readBytes(
+                        this.xchgAddr + 12 + 256,
+                        4
+                    )
+                    if (!send[2]) sendFree = true
                 }
                 if (sendFree) {
                     currSend = this.sendQ.shift()
                     const bbody = currSend.buf.slice(4)
-                    await this.writeWords(this.xchgAddr + 12 + 256 + 4, new Uint32Array(bbody.buffer))
+                    await this.writeWords(
+                        this.xchgAddr + 12 + 256 + 4,
+                        new Uint32Array(bbody.buffer)
+                    )
                     const bhead = currSend.buf.slice(0, 4)
-                    await this.writeWords(this.xchgAddr + 12 + 256, new Uint32Array(bhead.buffer))
+                    await this.writeWords(
+                        this.xchgAddr + 12 + 256,
+                        new Uint32Array(bhead.buffer)
+                    )
                     await this.triggerIRQ()
                     this.lastSend = Date.now()
                     numev++
@@ -183,11 +218,9 @@ export class CMSISProto implements Proto {
                 }
             }
 
-            if (await this.readSerial())
-                numev++
+            if (await this.readSerial()) numev++
 
-            if (numev == 0)
-                await this.dapDelay(1000)
+            if (numev == 0) await this.dapDelay(1000)
         }
     }
 
@@ -196,23 +229,23 @@ export class CMSISProto implements Proto {
         const len = buf[1]
         if (len) {
             buf = buf.slice(2, 2 + len)
-            if (this.pendingSerial)
-                buf = bufferConcat(this.pendingSerial, buf)
+            if (this.pendingSerial) buf = bufferConcat(this.pendingSerial, buf)
             let ptr = 0
             let beg = 0
             while (ptr < buf.length) {
                 if (buf[ptr] == 10 || buf[ptr] == 13) {
                     const line = buf.slice(beg, ptr)
                     if (line.length)
-                        console.log("SERIAL: " + fromUTF8(uint8ArrayToString(line)))
+                        console.log(
+                            "SERIAL: " + fromUTF8(uint8ArrayToString(line))
+                        )
                     beg = ptr + 1
                 }
                 ptr++
             }
             buf = buf.slice(ptr)
             this.pendingSerial = buf.length ? buf : null
-            if (this.pendingSerial)
-                this.lastPendingSerial = Date.now()
+            if (this.pendingSerial) this.lastPendingSerial = Date.now()
         } else if (this.pendingSerial) {
             const d = Date.now() - this.lastPendingSerial
             if (d > 500) {
@@ -226,8 +259,7 @@ export class CMSISProto implements Proto {
     }
 
     private async talkStringAsync(...cmds: number[]) {
-        return this.talkAsync(cmds)
-            .then(buf => this.decodeString(buf))
+        return this.talkAsync(cmds).then(buf => this.decodeString(buf))
     }
 
     private async readDP(reg: number) {
@@ -245,9 +277,9 @@ export class CMSISProto implements Proto {
     private async writeWords(addr: number, data: Uint32Array) {
         await this.setupTAR(addr)
 
-        const MAX = 0xE
+        const MAX = 0xe
         let ptr = 0
-        const reqHd = [6, 0, MAX, 0, 0xD]
+        const reqHd = [6, 0, MAX, 0, 0xd]
         for (let i = 0; i < MAX * 4; ++i) reqHd.push(0)
         const req = new Uint8Array(reqHd)
         let overhang = 1
@@ -264,32 +296,34 @@ export class CMSISProto implements Proto {
                 if (ch) {
                     req[2] = ch
                     req.set(dataBytes.slice(ptrTX * 4, (ptrTX + ch) * 4), 5)
-                    await this.io.sendPacketAsync(ch == MAX ? req : req.slice(0, 5 + 4 * ch))
+                    await this.io.sendPacketAsync(
+                        ch == MAX ? req : req.slice(0, 5 + 4 * ch)
+                    )
                     ptrTX += ch
                     lastCh = ch
                 }
-                if (overhang-- > 0)
-                    continue
+                if (overhang-- > 0) continue
                 const buf = await this.recvAsync()
                 if (buf[0] != req[0])
-                    this.error("bad response")
+                    this.error(`bad response, ${buf[0]} != ${req[0]}`)
                 if (buf[1] != MAX && buf[1] != lastCh)
-                    this.error("bad response2")
+                    this.error(
+                        `bad response, ${buf[1]} != ${MAX} && ${buf[1]} != ${lastCh}`
+                    )
                 ptr += buf[1]
             }
         })
     }
 
     private async readBytes(addr: number, count: number, jdmode = false) {
-        if (addr & 3 || count & 3)
-            this.error("unaligned")
+        if (addr & 3 || count & 3) this.error("unaligned")
         const b = await this.readWords(addr, count >> 2, jdmode)
         return new Uint8Array(b.buffer)
     }
 
     private async readWords(addr: number, count: number, jdmode = false) {
         await this.setupTAR(addr)
-        const MAX = 0xE
+        const MAX = 0xe
         const res = new Uint32Array(count)
         let ptr = 0
         const req = new Uint8Array([6, 0, MAX, 0, 0xf])
@@ -307,16 +341,15 @@ export class CMSISProto implements Proto {
                     await this.io.sendPacketAsync(req)
                     ptrTX += ch
                 }
-                if (overhang-- > 0)
-                    continue
+                if (overhang-- > 0) continue
                 const buf = await this.recvAsync()
                 numPending--
-                if (buf[0] != req[0])
-                    this.error("bad response")
+                if (buf[0] != req[0]) this.error("bad response")
                 const len = buf[1]
-                const words = new Uint32Array(buf.slice(4, (1 + len) * 4).buffer)
-                if (words.length != len)
-                    this.error("bad response2")
+                const words = new Uint32Array(
+                    buf.slice(4, (1 + len) * 4).buffer
+                )
+                if (words.length != len) this.error("bad response2")
                 res.set(words, ptr)
                 // limit transfer, according to JD frame size
                 if (jdmode && ptr == 0) {
@@ -340,13 +373,11 @@ export class CMSISProto implements Proto {
         let p1 = 0x20006000 + checkSize
 
         const check = async (addr: number) => {
-            if (addr < memStart)
-                return null
-            if (addr + checkSize > memStop)
-                return null
+            if (addr < memStart) return null
+            if (addr + checkSize > memStop) return null
             const buf = await this.readWords(addr, checkSize >> 2)
             for (let i = 0; i < buf.length; ++i) {
-                if (buf[i] == 0x786D444A && buf[i + 1] == 0xB0A6C0E9)
+                if (buf[i] == 0x786d444a && buf[i + 1] == 0xb0a6c0e9)
                     return addr + (i << 2)
             }
             return 0
@@ -358,15 +389,14 @@ export class CMSISProto implements Proto {
             if (a0) return a0
             const a1 = await check(p1)
             if (a1) return a1
-            if (a0 === null && a1 === null)
-                return null
+            if (a0 === null && a1 === null) return null
             p0 -= checkSize
             p1 += checkSize
         }
     }
 
     private async triggerIRQ() {
-        const addr = 0xE000E200 + (this.irqn >> 5) * 4
+        const addr = 0xe000e200 + (this.irqn >> 5) * 4
         const data = new Uint32Array([1 << (this.irqn & 31)])
         await this.writeWords(addr, data)
     }
@@ -376,18 +406,20 @@ export class CMSISProto implements Proto {
     }
 
     private async reset() {
-        await this.writeWord(0xE000EDFC, 0) // DEMCR
-        await this.writeWord(0xE000ED0C, 0x05FA0000 | (1 << 2)); // AIRCR
+        await this.writeWord(0xe000edfc, 0) // DEMCR
+        await this.writeWord(0xe000ed0c, 0x05fa0000 | (1 << 2)) // AIRCR
     }
 
     async postConnectAsync() {
+        this.startRecvToLoop();
+
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid))
             this.error(`micro:bit v1 is not supported. sorry.`)
         if (!/^990[3456789]/.test(devid))
             this.error(`Invalid Vendor0 response: ` + devid)
 
-        this.io.log("DAPLink v" + await this.talkStringAsync(0x00, 0x04))
+        this.io.log("DAPLink v" + (await this.talkStringAsync(0x00, 0x04)))
 
         await this.setBaudRate() // this may reset the board
 
@@ -399,9 +431,9 @@ export class CMSISProto implements Proto {
             "02 00", // connect
             "04 00 64 00 00 00", // configure delays
             // SWD switch
-            "12 38 FF FF FF FF FF FF FF",  // ones
+            "12 38 FF FF FF FF FF FF FF", // ones
             "12 10 9E E7", // SWD
-            "12 38 FF FF FF FF FF FF FF",  // ones
+            "12 38 FF FF FF FF FF FF FF", // ones
             "12 08 00", // zero
             // read DPIDR
             "05 00 01 02 00 00 00 00",
@@ -409,14 +441,12 @@ export class CMSISProto implements Proto {
             "05 00 03 00 04 00 00 00 08 00 00 00 00 04 00 00 00 50",
         ]
 
-        for (const ini of inits)
-            await this.talkHexAsync(ini)
+        for (const ini of inits) await this.talkHexAsync(ini)
 
         for (let i = 0; i < 100; ++i) {
             const st = await this.readDP(4)
             const mask = (1 << 29) | (1 << 31)
-            if ((st & mask) == mask)
-                break
+            if ((st & mask) == mask) break
             await delay(20)
         }
 
@@ -431,7 +461,9 @@ export class CMSISProto implements Proto {
             this.error("invalid memory; try power-cycling the micro:bit")
         // clear initial lock
         await this.writeWord(xchg + 12, 0)
-        this.io.log(`exchange address: 0x${xchg.toString(16)}; irqn=${this.irqn}`)
+        this.io.log(
+            `exchange address: 0x${xchg.toString(16)}; irqn=${this.irqn}`
+        )
 
         /* async */ this.xchgLoop()
     }
