@@ -3,6 +3,7 @@ import { NEW_LISTENER, REMOVE_LISTENER, ERROR, CHANGE } from "./constants";
 import { Observable, Observer } from "./observable";
 import Flags from "./flags";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventHandler = (...args: any[]) => void;
 
 interface Listener {
@@ -93,6 +94,7 @@ export class JDEventSource {
      * @param eventName 
      * @param args 
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     emit(eventName: string, ...args: any[]): boolean {
         if (!eventName) return false;
 
@@ -114,6 +116,7 @@ export class JDEventSource {
                 --i;
             }
             try {
+                // eslint-disable-next-line prefer-spread
                 handler.apply(null, args);
             }
             catch (e) {

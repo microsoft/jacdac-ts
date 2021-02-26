@@ -160,10 +160,10 @@ export function useMakeCodeRenderer() {
 
     // listen for messages
     const handleMessage = (ev: MessageEvent) => {
-        let msg = ev.data;
+        const msg = ev.data;
         if (msg.source != "makecode") return;
         switch (msg.type) {
-            case "renderready":
+            case "renderready": {
                 console.log(`mkcd: renderer ready, ${Object.keys(pendingRequests).length} pending`)
                 const iframe = typeof document !== "undefined" && document.getElementById(iframeId)
                 if (iframe) {
@@ -173,17 +173,19 @@ export function useMakeCodeRenderer() {
                         .forEach(k => sendRequest(pendingRequests[k].req));
                 }
                 break;
-            case "renderblocks":
+            }
+            case "renderblocks": {
                 const id = msg.id; // this is the id you sent
                 const r = pendingRequests[id];
                 if (!r) return;
                 delete pendingRequests[id];
                 r.resolve(msg as RenderBlocksResponseMessage);
                 break;
+            }
         }
     }
 
-    useWindowEvent("message", handleMessage, false)
+    useWindowEvent("message", handleMessage, false, [])
 
     return {
         render

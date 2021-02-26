@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, {  useState } from 'react';
 // tslint:disable-next-line: no-submodule-imports
 import Tabs from '@material-ui/core/Tabs';
 // tslint:disable-next-line: no-submodule-imports
@@ -34,7 +34,7 @@ export default function DeviceSpecificationSource(props: {
     const [tab, setTab] = useState(0);
     const spec = deviceSpecification
 
-    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const handleTabChange = (event: React.ChangeEvent<unknown>, newValue: number) => {
         setTab(newValue);
     };
 

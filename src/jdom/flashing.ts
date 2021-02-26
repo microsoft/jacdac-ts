@@ -86,7 +86,7 @@ class FlashClient {
 
     private async startFlashAsync() {
         this.sessionId = (Math.random() * 0x10000000) | 0
-        for (let d of this.classClients) {
+        for (const d of this.classClients) {
             d.start()
             log(`flashing ${d.device.shortId}; available flash=${d.flashSize / 1024}kb; page=${d.pageSize}b`)
         }
@@ -96,7 +96,7 @@ class FlashClient {
         this.allPending()
 
         for (let i = 0; i < BL_RETRIES; ++i) {
-            for (let d of this.classClients) {
+            for (const d of this.classClients) {
                 if (d.pending) {
                     if (d.lastStatus && d.lastStatus.getNumber(NumberFormat.UInt32LE, 0) == this.sessionId) {
                         d.pending = false
@@ -118,14 +118,14 @@ class FlashClient {
     }
 
     private async endFlashAsync() {
-        for (let f of this.classClients) {
+        for (const f of this.classClients) {
             await delay(10)
             await f.device.sendCtrlCommand(ControlCmd.Reset)
         }
     }
 
     private allPending() {
-        for (let c of this.classClients) {
+        for (const c of this.classClients) {
             c.pending = true
             c.lastStatus = null
         }
@@ -133,7 +133,7 @@ class FlashClient {
 
     private numPending() {
         let num = 0
-        for (let c of this.classClients)
+        for (const c of this.classClients)
             if (c.pending) num++
         return num
     }
@@ -156,7 +156,7 @@ class FlashClient {
         if (page.data.length != this.pageSize)
             throw new Error("invalid page size")
 
-        for (let f of this.classClients)
+        for (const f of this.classClients)
             f.lastStatus = null
 
         this.allPending()
@@ -176,7 +176,7 @@ class FlashClient {
                 if (i == 0 || currSubpage < numSubpage)
                     await p.sendAsMultiCommandAsync(this.bus, SRV_BOOTLOADER)
                 else {
-                    for (let f of this.classClients)
+                    for (const f of this.classClients)
                         if (f.pending) {
                             f.lastStatus = null
                             await f.sendCommandAsync(p)
@@ -187,7 +187,7 @@ class FlashClient {
 
             await this.waitForStatusAsync()
 
-            for (let f of this.classClients) {
+            for (const f of this.classClients) {
                 if (f.pending) {
                     let err = ""
                     if (f.lastStatus) {
@@ -248,7 +248,7 @@ class FlashClient {
                 }
             } finally {
                 // even if resetting failed, unregister event listeners
-                for (let d of this.classClients) {
+                for (const d of this.classClients) {
                     d.stop()
                 }
             }
@@ -265,7 +265,7 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
     let currBlob: FirmwareBlob
     for (let off = 0; off < uf2.length; off += 512) {
         const header = uf2.slice(off, off + 32)
-        let [magic0, magic1, flags, trgaddr, payloadSize, blkNo, numBlocks, familyID] =
+        const [magic0, magic1, flags, trgaddr, payloadSize, blkNo, numBlocks, familyID] =
             bufferToArray(header, NumberFormat.UInt32LE)
         if (magic0 != UF2_MAGIC_START0 ||
             magic1 != UF2_MAGIC_START1 ||

@@ -105,18 +105,18 @@ const serviceViews: {
     },
     [SRV_CHARACTER_SCREEN]: {
         component: DashboardCharacterScreen,
-        weight: (srv) => 3
+        weight: () => 3
     },
     [SRV_RAIN_GAUGE]: {
         component: DashboardRainGauge,
     },
     [SRV_LED_MATRIX]: {
         component: DashboardLEDMatrix,
-        weight: (srv) => 3
+        weight: () => 3
     },
     [SRV_ARCADE_GAMEPAD]: {
         component: DashboardArcadeGamepad,
-        weight: (srv) => 3
+        weight: () => 3
     },
     [SRV_WIND_DIRECTION]: {
         component: DashboardWindDirection,
@@ -160,7 +160,7 @@ const serviceViews: {
     },
     [SRV_SOUND_PLAYER]: {
         component: DashboardSoundPlayer,
-        weight: (srv) => 2
+        weight: ( ) => 2
     },
     [SRV_ANALOG_BUTTON]: {
         component: DashboardAnalogButton,
@@ -272,7 +272,7 @@ export default function DashboardServiceWidget(props: React.Attributes & Dashboa
     const color = host ? "secondary" : "primary";
     // no special support
     if (!component)
-        return createElement(DefaultWidget, props);;
+        return createElement(DefaultWidget, props);
 
     return <NoSsr>
         <Suspense fallback={<CircularProgress color={color} disableShrink={true} variant={"indeterminate"} size={"3em"} />}>

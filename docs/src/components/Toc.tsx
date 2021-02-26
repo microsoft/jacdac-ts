@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from "react"
-import { makeStyles, createStyles, Theme, List, ListItem, Typography, useTheme, Box, useMediaQuery } from '@material-ui/core';
+import { makeStyles, createStyles, Theme, List, ListItem, Typography, useTheme, Box } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 // tslint:disable-next-line: no-submodule-imports
 import ListItemText from '@material-ui/core/ListItemText';
@@ -71,7 +71,6 @@ export default function Toc(props: { pagePath: string }) {
   const { setDrawerType } = useContext(AppContext)
   const theme = useTheme();
   const classes = useStyles();
-  const mobile = useMediaQuery(theme.breakpoints.down("lg"));
   const data = useStaticQuery(graphql`
   query {
     site {
@@ -127,7 +126,7 @@ export default function Toc(props: { pagePath: string }) {
 
   const tree = useMemo(() => {
     // convert pages into tree
-    let toc: TocNode[] = [{
+    const toc: TocNode[] = [{
       name: "Home",
       path: "/",
       order: 0
@@ -189,7 +188,7 @@ export default function Toc(props: { pagePath: string }) {
     return tree;
   }, []);
 
-  const TocListItem = (props: { entry: TocNode, level: number }) => {
+  function TocListItem(props: { entry: TocNode, level: number }) {
     const { entry, level } = props;
     const { path, children, name } = entry;
     const selected = pagePath === path;
@@ -211,6 +210,6 @@ export default function Toc(props: { pagePath: string }) {
   }
 
   return <List dense className={classes.root}>
-    {tree.map(entry => <TocListItem key={'tocitem' + entry.path} entry={entry} level={0} />)}
+    {tree.map((entry, i) => <TocListItem key={i} entry={entry} level={0} />)}
   </List>
 }

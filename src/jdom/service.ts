@@ -1,26 +1,47 @@
-import { JDDevice } from "./device";
-import Packet from "./packet";
-import { serviceName } from "./pretty";
-import { JDRegister } from "./register";
-import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED, EVENT, CHANGE } from "./constants";
-import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator, isValueOrIntensity, isValue, isIntensity } from "./spec";
-import { JDEvent } from "./event";
-import { delay, strcmp } from "./utils";
-import { BaseEvent, BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
-import { JDServiceClient } from "./serviceclient";
-import { InPipeReader } from "./pipes";
-import { jdunpack } from "./pack";
-import Flags from "./flags";
+import { JDDevice } from "./device"
+import Packet from "./packet"
+import { serviceName } from "./pretty"
+import { JDRegister } from "./register"
+import {
+    PACKET_RECEIVE,
+    PACKET_SEND,
+    SERVICE_NODE_NAME,
+    REPORT_RECEIVE,
+    SERVICE_CLIENT_ADDED,
+    SERVICE_CLIENT_REMOVED,
+    CHANGE,
+} from "./constants"
+import { JDNode } from "./node"
+import {
+    serviceSpecificationFromClassIdentifier,
+    isRegister,
+    isReading,
+    isEvent,
+    isValue,
+    isIntensity,
+    isOptionalReadingRegisterCode,
+} from "./spec"
+import { JDEvent } from "./event"
+import { delay, strcmp } from "./utils"
+import {
+    BaseEvent,
+    BaseReg,
+    SystemEvent,
+    SystemReg,
+} from "../../jacdac-spec/dist/specconstants"
+import { JDServiceClient } from "./serviceclient"
+import { InPipeReader } from "./pipes"
+import { jdunpack, PackedValues } from "./pack"
+import Flags from "./flags"
 
 export class JDService extends JDNode {
-    private _registers: JDRegister[];
-    private _events: JDEvent[];
-    private _reports: Packet[] = [];
-    private _specification: jdspec.ServiceSpec = null;
+    private _registers: JDRegister[]
+    private _events: JDEvent[]
+    private _reports: Packet[] = []
+    private _specification: jdspec.ServiceSpec = null
     // packets received since last announce
-    public registersUseAcks = false;
-    private readonly _clients: JDServiceClient[] = [];
+    public registersUseAcks = false
+    private readonly _clients: JDServiceClient[] = []
 
     constructor(
         public readonly device: JDDevice,
@@ -28,19 +49,21 @@ export class JDService extends JDNode {
     ) {
         super()
 
-        const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged);
+        const statusCodeChanged = this.event(BaseEvent.StatusCodeChanged)
         statusCodeChanged.on(CHANGE, () => {
             // todo update status code with event payload
-            const { data } = statusCodeChanged;
+            const { data } = statusCodeChanged
             console.log("status code changed", { data })
             // request data
-            const statusCode = this.register(BaseReg.StatusCode);
-            statusCode?.sendGetAsync();
+            const statusCode = this.register(BaseReg.StatusCode)
+            statusCode?.sendGetAsync()
         })
     }
 
     get id() {
-        return `${this.nodeKind}:${this.device.deviceId}:${this.serviceIndex.toString(16)}`
+        return `${this.nodeKind}:${
+            this.device.deviceId
+        }:${this.serviceIndex.toString(16)}`
     }
 
     get nodeKind() {
@@ -48,7 +71,7 @@ export class JDService extends JDNode {
     }
 
     get serviceClass() {
-        return this.device.serviceClassAt(this.serviceIndex);
+        return this.device.serviceClassAt(this.serviceIndex)
     }
 
     get name() {
@@ -57,9 +80,11 @@ export class JDService extends JDNode {
 
     get friendlyName() {
         const parts = [this.device.friendlyName]
-        if (this.device.services({ serviceClass: this.serviceClass }).length > 1)
+        if (
+            this.device.services({ serviceClass: this.serviceClass }).length > 1
+        )
             parts.push(`[${this.serviceIndex.toString(16)}]`)
-        return parts.join('.')
+        return parts.join(".")
     }
 
     get qualifiedName() {
@@ -71,48 +96,51 @@ export class JDService extends JDNode {
     }
 
     report(identifier: number) {
-        return this._reports.find(r => r.registerIdentifier === identifier);
+        return this._reports.find(r => r.registerIdentifier === identifier)
     }
 
     get reports() {
-        return this._reports.slice(0);
+        return this._reports.slice(0)
     }
 
-    private _readingRegister: JDRegister;
+    private _readingRegister: JDRegister
     get readingRegister(): JDRegister {
         if (!this._readingRegister) {
             const pkt = this.specification?.packets.find(pkt => isReading(pkt))
             this._readingRegister = pkt && this.register(pkt.identifier)
         }
-        return this._readingRegister;
+        return this._readingRegister
     }
 
-    private _valueRegister: JDRegister;
+    private _valueRegister: JDRegister
     get valueRegister(): JDRegister {
         if (!this._valueRegister) {
             const pkt = this.specification?.packets.find(pkt => isValue(pkt))
             this._valueRegister = pkt && this.register(pkt.identifier)
         }
-        return this._valueRegister;
+        return this._valueRegister
     }
 
-    private _intensityRegister: JDRegister;
+    private _intensityRegister: JDRegister
     get intensityRegister(): JDRegister {
         if (!this._intensityRegister) {
-            const pkt = this.specification?.packets.find(pkt => isIntensity(pkt))
+            const pkt = this.specification?.packets.find(pkt =>
+                isIntensity(pkt)
+            )
             this._intensityRegister = pkt && this.register(pkt.identifier)
         }
-        return this._intensityRegister;
+        return this._intensityRegister
     }
 
-    private _statusCodeRegister: JDRegister;
+    private _statusCodeRegister: JDRegister
     get statusCodeRegister(): JDRegister {
         if (!this._statusCodeRegister) {
-            const pkt = this.specification?.packets
-                .find(pkt => pkt.identifier === SystemReg.StatusCode)
-            this._statusCodeRegister = pkt && this.register(pkt.identifier);
+            const pkt = this.specification?.packets.find(
+                pkt => pkt.identifier === SystemReg.StatusCode
+            )
+            this._statusCodeRegister = pkt && this.register(pkt.identifier)
         }
-        return this._statusCodeRegister;
+        return this._statusCodeRegister
     }
 
     /**
@@ -120,75 +148,102 @@ export class JDService extends JDNode {
      */
     get specification() {
         if (this._specification === null)
-            this._specification = serviceSpecificationFromClassIdentifier(this.serviceClass)
-        return this._specification;
+            this._specification = serviceSpecificationFromClassIdentifier(
+                this.serviceClass
+            )
+        return this._specification
     }
 
     get events() {
-        return this.specification?.packets.filter(isEvent).map(info => this.event(info.identifier)) || [];
+        return (
+            this.specification?.packets
+                .filter(isEvent)
+                .map(info => this.event(info.identifier)) || []
+        )
     }
 
     registers() {
         if (!this._registers) {
-            const spec = this.specification;
-            this._registers = (spec?.packets || []).filter(isRegister).map(pkt => new JDRegister(this, pkt.identifier));
+            const spec = this.specification
+            this._registers = (spec?.packets || [])
+                .filter(isRegister)
+                .map(pkt => new JDRegister(this, pkt.identifier))
         }
-        return this._registers.slice(0);
+        return this._registers.slice(0)
     }
 
     get children(): JDNode[] {
-        return [...this.registers(), ... this.events];
+        return [...this.registers(), ...this.events]
     }
 
     register(registerCode: number): JDRegister {
-        if (registerCode === undefined)
-            return undefined;
+        if (registerCode === undefined) return undefined
         // cache known registers
         this.registers()
-        let register = this._registers.find(reg => reg.code === registerCode);
+        let register = this._registers.find(reg => reg.code === registerCode)
         // we may not have a spec.
         if (!register) {
-            const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isRegister(pkt) && pkt.identifier === registerCode)) {
-                if (Flags.diagnostics)
-                    this.log(`warn`, `attempting to access register 0x${registerCode.toString(16)}`)
-                return undefined;
+            const spec = this.specification
+            if (
+                spec &&
+                !spec.packets.some(
+                    pkt => isRegister(pkt) && pkt.identifier === registerCode
+                )
+            ) {
+                if (Flags.diagnostics &&  !isOptionalReadingRegisterCode(registerCode))
+                    this.log(
+                        `debug`,
+                        `attempting to access register ${
+                            SystemReg[registerCode] ||
+                            `0x${registerCode.toString(16)}`
+                        }`
+                    )
+                return undefined
             }
-            this._registers.push(register = new JDRegister(this, registerCode));
+            this._registers.push(
+                (register = new JDRegister(this, registerCode))
+            )
         }
-        return register;
+        return register
     }
 
     event(eventCode: number): JDEvent {
-        if (!this._events)
-            this._events = [];
-        let event = this._events.find(ev => ev.code === eventCode);
+        if (!this._events) this._events = []
+        let event = this._events.find(ev => ev.code === eventCode)
         if (!event) {
-            const spec = this.specification;
-            if (spec && !spec.packets.some(pkt => isEvent(pkt) && pkt.identifier === eventCode)) {
+            const spec = this.specification
+            if (
+                spec &&
+                !spec.packets.some(
+                    pkt => isEvent(pkt) && pkt.identifier === eventCode
+                )
+            ) {
                 if (Flags.diagnostics)
-                    this.log(`warn`, `attempting to access event 0x${eventCode.toString(16)}`)
-                return undefined;
+                    this.log(
+                        `debug`,
+                        `attempting to access event ${
+                            SystemEvent[eventCode] ||
+                            `0x${eventCode.toString(16)}`
+                        }`
+                    )
+                return undefined
             }
-            this._events.push(event = new JDEvent(this, eventCode));
+            this._events.push((event = new JDEvent(this, eventCode)))
         }
-        return event;
+        return event
     }
 
     sendPacketAsync(pkt: Packet, ack?: boolean) {
-        pkt.device = this.device;
-        pkt.serviceIndex = this.serviceIndex;
-        if (ack !== undefined)
-            pkt.requiresAck = !!ack
+        pkt.device = this.device
+        pkt.serviceIndex = this.serviceIndex
+        if (ack !== undefined) pkt.requiresAck = !!ack
         this.emit(PACKET_SEND, pkt)
-        if (pkt.requiresAck)
-            return this.device.sendPktWithAck(pkt)
-        else
-            return pkt.sendCmdAsync(this.device);
+        if (pkt.requiresAck) return this.device.sendPktWithAck(pkt)
+        else return pkt.sendCmdAsync(this.device)
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
-        const pkt = data ? Packet.from(cmd, data) : Packet.onlyHeader(cmd);
+        const pkt = data ? Packet.from(cmd, data) : Packet.onlyHeader(cmd)
         return this.sendPacketAsync(pkt, ack)
     }
 
@@ -197,8 +252,7 @@ export class JDService extends JDNode {
             const handleRes = (resp: Packet) => {
                 if (resp.serviceCommand == pkt.serviceCommand) {
                     this.off(REPORT_RECEIVE, handleRes)
-                    if (resolve)
-                        resolve(resp)
+                    if (resolve) resolve(resp)
                     resolve = null
                 }
             }
@@ -206,13 +260,16 @@ export class JDService extends JDNode {
                 if (!resolve) return
                 resolve = null
                 this.off(REPORT_RECEIVE, handleRes)
-                reject(new Error(`timeout (${timeout}ms) waiting for response to ${pkt}`))
+                reject(
+                    new Error(
+                        `timeout (${timeout}ms) waiting for response to ${pkt}`
+                    )
+                )
             })
-            this.sendPacketAsync(pkt)
-                .then(() => {
-                    this.on(REPORT_RECEIVE, handleRes)
-                })
-            // the handler remove either upon timeout, 
+            this.sendPacketAsync(pkt).then(() => {
+                this.on(REPORT_RECEIVE, handleRes)
+            })
+            // the handler remove either upon timeout,
             // or on first invocation of handleRes()
         })
     }
@@ -222,14 +279,12 @@ export class JDService extends JDNode {
         if (pkt.isReport) {
             this.emit(REPORT_RECEIVE, pkt)
             if (pkt.isRegisterGet) {
-                const id = pkt.registerIdentifier;
+                const id = pkt.registerIdentifier
                 const reg = this.register(id)
-                if (reg)
-                    reg.processReport(pkt);
+                if (reg) reg.processReport(pkt)
             } else if (pkt.isEvent) {
                 const ev = this.event(pkt.eventCode)
-                if (ev)
-                    ev.processEvent(pkt);
+                if (ev) ev.processEvent(pkt)
             } else if (pkt.isCommand) {
                 // this is a report...
                 console.log("cmd report", { pkt })
@@ -238,42 +293,44 @@ export class JDService extends JDNode {
     }
 
     compareTo(b: JDService): number {
-        const a = this;
-        return a.serviceClass - b.serviceClass ||
-            strcmp(a.device.deviceId, b.device.deviceId) ||
-            a.serviceIndex - b.serviceIndex;
+        return (
+            this.serviceClass - b.serviceClass ||
+            strcmp(this.device.deviceId, b.device.deviceId) ||
+            this.serviceIndex - b.serviceIndex
+        )
     }
 
     get clients(): JDServiceClient[] {
-        return this._clients?.slice(0) || [];
+        return this._clients?.slice(0) || []
     }
 
     addClient(client: JDServiceClient) {
         if (client && this._clients.indexOf(client) < 0) {
-            this._clients.push(client);
-            this.emit(SERVICE_CLIENT_ADDED, client);
+            this._clients.push(client)
+            this.emit(SERVICE_CLIENT_ADDED, client)
         }
     }
 
     removeClient(client: JDServiceClient) {
-        const i = this._clients.indexOf(client);
+        const i = this._clients.indexOf(client)
         if (i > -1) {
-            this._clients.splice(i, 1);
-            this.emit(SERVICE_CLIENT_REMOVED, client);
+            this._clients.splice(i, 1)
+            this.emit(SERVICE_CLIENT_REMOVED, client)
         }
     }
 
-    async receiveWithInPipe<TValues extends any[]>(cmd: number, packFormat: string) {
+    async receiveWithInPipe<TValues extends PackedValues>(
+        cmd: number,
+        packFormat: string
+    ) {
         const inp = new InPipeReader(this.device.bus)
-        await this.sendPacketAsync(
-            inp.openCommand(cmd),
-            true)
-        const recv: TValues[] = [];
+        await this.sendPacketAsync(inp.openCommand(cmd), true)
+        const recv: TValues[] = []
         for (const buf of await inp.readData()) {
-            const values = jdunpack<TValues>(buf, packFormat);
-            recv.push(values);
+            const values = jdunpack<TValues>(buf, packFormat)
+            recv.push(values)
         }
-        return recv;
+        return recv
     }
 }
 

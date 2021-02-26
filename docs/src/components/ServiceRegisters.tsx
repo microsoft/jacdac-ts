@@ -15,7 +15,7 @@ export default function ServiceRegisters(props: {
     hideMissingValues?: boolean,
     showTrends?: boolean
 }) {
-    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues, showTrends, expanded } = props;
+    const { service, registerIdentifiers, filter, showRegisterName, hideMissingValues, showTrends } = props;
     const specification = useChange(service, spec => spec.specification);
     const registers = useMemo(() => {
         const packets = specification?.packets;

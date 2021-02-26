@@ -23,6 +23,7 @@ export interface AppProps {
     setSearchQuery: (s: string) => void,
     toolsMenu: boolean,
     setToolsMenu: (visible: boolean) => void,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setError: (error: any) => void,
     widgetMode: boolean,
     showDeviceHostsDialog: boolean,
@@ -32,21 +33,22 @@ export interface AppProps {
 
 const AppContext = createContext<AppProps>({
     drawerType: DrawerType.None,
-    setDrawerType: (type) => { },
+    setDrawerType: () => { },
     searchQuery: undefined,
-    setSearchQuery: (s) => { },
+    setSearchQuery: () => { },
     toolsMenu: false,
-    setToolsMenu: (v) => { },
-    setError: (error: any) => { },
+    setToolsMenu: () => { },
+    setError: () => { },
     widgetMode: false,
     showDeviceHostsDialog: false,
     toggleShowDeviceHostsDialog: () => { },
-    showRenameDeviceDialog: (device) => { }
+    showRenameDeviceDialog: () => { }
 });
 AppContext.displayName = "app";
 
 export default AppContext;
 
+// eslint-disable-next-line react/prop-types
 export const AppProvider = ({ children }) => {
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const [type, setType] = useState(DrawerType.None)
@@ -90,7 +92,7 @@ export const AppProvider = ({ children }) => {
     useEffect(() => bus.subscribe(CONNECTION_STATE, cs => {
         switch (cs) {
             case BusState.Connected:
-                if (!!bus.transport)
+                if (bus.transport)
                     enqueueSnackbar("connected...", {
                         variant: "info"
                     })

@@ -7,7 +7,6 @@ import DeviceList from "./DeviceList"
 import ServiceList from "./ServiceList"
 import DeviceSpecificationList from "./DeviceSpecificationList"
 import FilteredDeviceSpecificationList from "./FilteredDeviceSpecificationList"
-import ServiceSpecificationList from "./ServiceSpecificationList"
 import PacketsPreview from "./PacketsPreview"
 import UpdateDeviceList from "./UpdateDeviceList";
 import FlashButton from "./FlashButton";

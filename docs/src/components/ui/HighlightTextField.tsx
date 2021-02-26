@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/jsx-key */
 import React, { useContext, useRef } from 'react'
 import Highlight, { defaultProps, Language, PrismTheme } from 'prism-react-renderer'
 // tslint:disable-next-line: no-submodule-imports match-default-export-name

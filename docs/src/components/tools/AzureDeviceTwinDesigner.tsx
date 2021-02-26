@@ -1,6 +1,6 @@
 import { Grid, TextField } from "@material-ui/core";
 import React, { ChangeEvent, useMemo } from "react";
-import { clone, SMap, uniqueName } from "../../../../src/jdom/utils";
+import { clone, uniqueName } from "../../../../src/jdom/utils";
 import useLocalStorage from "../useLocalStorage";
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -58,7 +58,7 @@ function ComponentRow(props: { twin: DigitalTwinSpec, component: DigitalTwinComp
 
 function validateTwinComponent(twin: DigitalTwinSpec, component: DigitalTwinComponent) {
     let serviceError: string = undefined;
-    let nameError: string = undefined;
+    const nameError: string = undefined;
     const count = twin.components.filter(c => c.service.classIdentifier === component.service.classIdentifier).length
     if (count > 1)
         serviceError = `Multiple same service not supported.`
@@ -110,7 +110,7 @@ export default function AzureDeviceTwinDesigner() {
                 variant={variant}
             />
         </Grid>
-        {twin.components.map(c => <ComponentRow twin={twin} component={c} onUpdate={update} />)}
+        {twin.components.map((c, i) => <ComponentRow key={i} twin={twin} component={c} onUpdate={update} />)}
         <Grid item xs={12}>
             <AddServiceIconButton onAdd={handleAddService} />
         </Grid>

@@ -43,7 +43,7 @@ function UnitTrendChart(props: {
     const mint = Math.min.apply(null, times);
     let minv = unit == "/" ? 0 : Math.min.apply(null, indexes.map(i => dataSet.mins[i]));
     let maxv = unit == "/" ? 1 : Math.max.apply(null, indexes.map(i => dataSet.maxs[i]));
-    let opposite = unit != "/" && Math.sign(minv) != Math.sign(maxv)
+    const opposite = unit != "/" && Math.sign(minv) != Math.sign(maxv)
     if (isNaN(minv) && isNaN(maxv)) {
         minv = 0
         maxv = 1

@@ -1,8 +1,9 @@
 import { PaletteType } from "@material-ui/core";
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import DarkModeContext from './DarkModeContext'
 
-const DarkModeProvider = ({ children }) => {
+export default function DarkModeProvider(props: { children: ReactNode }) {
+  const { children } = props;
   const KEY = 'darkMode'
   const [darkMode, setDarkMode] = useState<PaletteType>("light");
   const [darkModeMounted, setMounted] = useState(false);
@@ -37,5 +38,3 @@ const DarkModeProvider = ({ children }) => {
     {children}
   </DarkModeContext.Provider>
 }
-
-export default DarkModeProvider

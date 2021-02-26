@@ -17,7 +17,7 @@ export default function JoystickWidget(props: {
     onUpdate?: (newx: number, newy: number) => void,
     hostValues?: () => [number, number]
 }) {
-    const { color, x, y, onUpdate, widgetSize, hostValues } = props;
+    const { color, x, y, onUpdate, hostValues } = props;
     const { active, background, controlBackground } = useWidgetTheme(color);
     const dragSurfaceRef = useRef<SVGCircleElement>();
     const [grabbing, setGrabbing] = useState(false)

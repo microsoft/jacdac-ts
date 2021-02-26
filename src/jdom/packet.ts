@@ -261,14 +261,14 @@ export class Packet {
         if (stripped.length == 0)
             return
         let sz = -4
-        for (let s of stripped) {
+        for (const s of stripped) {
             sz += s.length
         }
         const data = new Uint8Array(sz)
         this._header.set(stripped[0], 12)
         data.set(stripped[0].slice(4), 0)
         sz = stripped[0].length - 4
-        for (let s of stripped.slice(1)) {
+        for (const s of stripped.slice(1)) {
             data.set(s, sz)
             sz += s.length
         }

@@ -1,37 +1,37 @@
-import useFetch from "./useFetch";
+import useFetch from "./useFetch"
 
 const ROOT = "https://api.github.com/"
 export const GITHUB_API_KEY = "githubtoken"
 export interface GithubRelease {
-    url: string,
-    html_url: string,
-    tag_name: string,
-    name: string,
-    body: string,
+    url: string
+    html_url: string
+    tag_name: string
+    name: string
+    body: string
     assets: {
-        url: string,
-        browser_download_url: string,
+        url: string
+        browser_download_url: string
         name: string
     }[]
 }
 
 export interface GithubUser {
-    login: string;
-    avatar_url: string;
-    html_url: string;
+    login: string
+    avatar_url: string
+    html_url: string
 }
 
 export interface GithubRepository {
-    name: string;
-    full_name: string;
-    private: boolean;
-    owner: GithubUser;
-    description: string;
-    fork: boolean;
-    homepage: string;
-    default_branch: string;
-    organization: GithubUser;
-    html_url: string;
+    name: string
+    full_name: string
+    private: boolean
+    owner: GithubUser
+    description: string
+    fork: boolean
+    homepage: string
+    default_branch: string
+    organization: GithubUser
+    html_url: string
 }
 
 export function normalizeSlug(slug: string): string {
@@ -39,46 +39,57 @@ export function normalizeSlug(slug: string): string {
 }
 
 export interface GitHubApiOptions {
-    ignoreThrottled?: boolean;
+    ignoreThrottled?: boolean
 }
 
-export function parseRepoUrl(url: string): { owner: string; name: string; } {
-    const m = /^https:\/\/github\.com\/([^\/ \t]+)\/([^\/ \t]+)\/?$/.exec(url || "")
-    if (m)
-        return { owner: m[1], name: m[2] }
-    return undefined;
+export function parseRepoUrl(url: string): { owner: string; name: string } {
+    const m = /^https:\/\/github\.com\/([^/ \t]+)\/([^/ \t]+)\/?$/.exec(
+        url || ""
+    )
+    if (m) return { owner: m[1], name: m[2] }
+    return undefined
 }
 
-export async function fetchLatestRelease(slug: string, options?: GitHubApiOptions): Promise<GithubRelease> {
-    const uri = `${ROOT}repos/${normalizeSlug(slug)}/releases/latest`;
+export async function fetchLatestRelease(
+    slug: string,
+    options?: GitHubApiOptions
+): Promise<GithubRelease> {
+    const uri = `${ROOT}repos/${normalizeSlug(slug)}/releases/latest`
     const resp = await fetch(uri)
     //    console.log(resp)
     switch (resp.status) {
         case 200:
-        case 204:
+        case 204: {
             const release: GithubRelease = await resp.json()
-            return release;
+            return release
+        }
         case 404:
             // unknow repo or no access
-            return undefined;
+            return undefined
         case 403:
             // throttled
-            if (options?.ignoreThrottled)
-                return undefined;
-            throw new Error("Too many calls to GitHub, try again later");
+            if (options?.ignoreThrottled) return undefined
+            throw new Error("Too many calls to GitHub, try again later")
     }
     throw new Error(`unknown status code ${resp.status}`)
 }
 
-export async function fetchReleaseBinary(slug: string, tag: string): Promise<Blob> {
+export async function fetchReleaseBinary(
+    slug: string,
+    tag: string
+): Promise<Blob> {
     // we are not using the release api because of CORS.
-    const downloadUrl = `https://raw.githubusercontent.com/${normalizeSlug(slug)}/${tag}/dist/firmware.uf2`
-    const req = await fetch(downloadUrl, { headers: { "Accept": "application/octet-stream" } })
+    const downloadUrl = `https://raw.githubusercontent.com/${normalizeSlug(
+        slug
+    )}/${tag}/dist/firmware.uf2`
+    const req = await fetch(downloadUrl, {
+        headers: { Accept: "application/octet-stream" },
+    })
     if (req.status == 200) {
         const firmware = await req.blob()
-        return firmware;
+        return firmware
     }
-    return undefined;
+    return undefined
 }
 
 function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
@@ -90,45 +101,54 @@ function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
             case 202:
             case 203:
             case 204:
-                break;
+                break
             case 404:
                 // unknow repo or no access
-                res.response = undefined;
-                break;
+                res.response = undefined
+                break
             case 403:
                 // throttled
                 if (options?.ignoreThrottled) {
-                    res.response = undefined;
+                    res.response = undefined
                     return res
-                }
-                else
-                    throw new Error("Too many calls to GitHub, try again later");
+                } else
+                    throw new Error("Too many calls to GitHub, try again later")
 
             default:
                 console.log(`unknown status`, res)
-                throw new Error(`Unknown response from GitHub ${res.status}`);
+                throw new Error(`Unknown response from GitHub ${res.status}`)
         }
-    return res;
+    return res
 }
 
 export function useRepository(slug: string) {
     const path = `repos/${normalizeSlug(slug)}`
-    const res = useFetchApi<GithubRepository>(path, { ignoreThrottled: true });
-    return res;
+    const res = useFetchApi<GithubRepository>(path, { ignoreThrottled: true })
+    return res
 }
 
 export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
     if (!slug)
-        return { response: undefined, loading: false, error: undefined, status: undefined }
-    const uri = `repos/${normalizeSlug(slug)}/releases/latest`;
-    const res = useFetchApi<GithubRelease>(uri, { ignoreThrottled: true });
-    return res;
+        return {
+            response: undefined,
+            loading: false,
+            error: undefined,
+            status: undefined,
+        }
+    const uri = `repos/${normalizeSlug(slug)}/releases/latest`
+    const res = useFetchApi<GithubRelease>(uri, { ...(options || {}), ignoreThrottled: true })
+    return res
 }
 
 export function useLatestReleases(slug: string, options?: GitHubApiOptions) {
     if (!slug)
-        return { response: undefined, loading: false, error: undefined, status: undefined }
-    const uri = `repos/${normalizeSlug(slug)}/releases`;
-    const res = useFetchApi<GithubRelease[]>(uri, { ignoreThrottled: true });
-    return res;
+        return {
+            response: undefined,
+            loading: false,
+            error: undefined,
+            status: undefined,
+        }
+    const uri = `repos/${normalizeSlug(slug)}/releases`
+    const res = useFetchApi<GithubRelease[]>(uri, { ...(options || {}), ignoreThrottled: true })
+    return res
 }

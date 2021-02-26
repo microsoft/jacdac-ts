@@ -22,7 +22,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     readonly bridgeId = "bridge" + Math.random();
     packetSent = 0;
     packetProcessed = 0;
-    private _lastAspectRatio: number = 0;
+    private _lastAspectRatio = 0;
 
     constructor(readonly bus: JDBus, readonly frameId: string) {
         super(bus)

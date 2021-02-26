@@ -7,7 +7,6 @@ import AppContext from "./AppContext";
 import { GITHUB_API_KEY } from "./github";
 import useDbValue from "./useDbValue";
 import { useSnackbar } from "notistack";
-import Alert from "./ui/Alert";
 import GitHubIcon from '@material-ui/icons/GitHub';
 import ApiKeyAccordion from "./ApiKeyAccordion";
 
@@ -21,7 +20,7 @@ export default function GithubPullRequestButton(props: {
 }) {
     const { commit, files, label, title, body, head } = props;
     const { value: token } = useDbValue(GITHUB_API_KEY, "")
-    const [response, setResponse] = useState(undefined);
+    const [, setResponse] = useState(undefined);
     const [busy, setBusy] = useState(false)
     const { setError: setAppError } = useContext(AppContext)
     const { enqueueSnackbar } = useSnackbar();

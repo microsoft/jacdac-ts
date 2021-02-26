@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { JDEvent } from "../../../src/jdom/event";
 import { Typography, Badge } from "@material-ui/core";
 import KindIcon from "./KindIcon";

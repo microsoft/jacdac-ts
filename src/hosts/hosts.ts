@@ -8,7 +8,7 @@ import {
     SRV_DISTANCE, SRV_E_CO2, SRV_HUMIDITY, SRV_LED_PIXEL, SRV_MATRIX_KEYPAD,
     SRV_MOTOR, SRV_POTENTIOMETER,
     SRV_PROTO_TEST, SRV_RAIN_GAUGE, SRV_RELAY,
-    SRV_ROLE_MANAGER, SRV_JOYSTICK,
+    SRV_JOYSTICK,
     SRV_ROTARY_ENCODER,
     SRV_SERVO, SRV_SETTINGS, SRV_SWITCH, SRV_THERMOMETER, SRV_TRAFFIC_LIGHT,
     SRV_VIBRATION_MOTOR, SRV_TVOC, SRV_WIND_DIRECTION, SRV_WIND_SPEED,
@@ -22,7 +22,7 @@ import {
 } from "../jdom/constants";
 import DeviceHost from "../jdom/devicehost";
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost";
-import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost";
+import ServiceHost from "../jdom/servicehost";
 import ArcadeGamepadServiceHost from "./arcadegamepadservicehost";
 import ButtonServiceHost from "./buttonservicehost";
 import BuzzerServiceHost from "./buzzerservicehost";
@@ -607,7 +607,7 @@ const _hosts: {
         {
             name: "relay 4x (SSR/5A)",
             serviceClasses: [SRV_RELAY],
-            services: () => Array(4).fill(0).map(_ => new ServiceHost(SRV_RELAY, {
+            services: () => Array(4).fill(0).map(() => new ServiceHost(SRV_RELAY, {
                 intensityValues: [false],
                 variant: RelayVariant.SolidState,
                 registerValues: [
@@ -654,12 +654,12 @@ const _hosts: {
         {
             name: "servo x 2",
             serviceClasses: [SRV_SERVO],
-            services: () => Array(2).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
+            services: () => Array(2).fill(0).map(() => new ServoServiceHost(microServoOptions))
         },
         {
             name: "servo x 4",
             serviceClasses: [SRV_SERVO],
-            services: () => Array(4).fill(0).map((_, i) => new ServoServiceHost(microServoOptions))
+            services: () => Array(4).fill(0).map(() => new ServoServiceHost(microServoOptions))
         },
         {
             name: "servo x 6",

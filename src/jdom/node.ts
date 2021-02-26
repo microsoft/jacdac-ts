@@ -53,6 +53,7 @@ export abstract class JDNode extends JDEventSource {
         return this.parent?.logger;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected log(level: LogLevel, msg: any) {
         const l = this.logger;
         if (l)
@@ -66,7 +67,7 @@ export abstract class JDNode extends JDEventSource {
 
 
 export function visitNodes(node: JDNode, vis: (node: JDNode) => void) {
-    let todo = [node];
+    const todo = [node];
     while (todo.length) {
         const node = todo.pop();
         vis(node)

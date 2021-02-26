@@ -8,7 +8,7 @@ export type ArgType = number | boolean | string | Uint8Array
 export function packArguments(info: jdspec.PacketInfo, args: ArgType[]) {
     let repeatIdx = -1
     let numReps = 0
-    let argIdx = 0
+    const argIdx = 0
     let dst = 0
 
     const buf = new Uint8Array(256)

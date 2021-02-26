@@ -93,7 +93,7 @@ export default function DeviceDesigner() {
         : deviceSpecifications().find(dev => dev.id == device.id)
             ? "identifer already used"
             : "";
-    const servicesError = !!device.services?.length
+    const servicesError = device.services?.length
         ? ""
         : "Select at least one service"
     const imageError = !imageBase64 ? "missing image" : ""

@@ -3,10 +3,9 @@ import { deviceSpecificationFromFirmwareIdentifier, deviceSpecifications } from 
 import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import useEffectAsync from "../useEffectAsync";
 import { unique } from "../../../../src/jdom/utils";
-import { BootloaderCmd, CMD_ADVERTISEMENT_DATA, ControlReg, DEVICE_CHANGE, SRV_BOOTLOADER, SRV_CTRL } from "../../../../src/jdom/constants";
+import { BootloaderCmd, ControlReg, DEVICE_CHANGE, SRV_BOOTLOADER } from "../../../../src/jdom/constants";
 import useEventRaised from "../../jacdac/useEventRaised";
 import Packet from "../../../../src/jdom/packet";
-import { jdunpack } from "../../../../src/jdom/pack";
 
 export default function useFirmwareRepos(showAllRepos?: boolean) {
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
@@ -24,7 +23,7 @@ export default function useFirmwareRepos(showAllRepos?: boolean) {
         if (showAllRepos)
             repos = deviceSpecifications().map(spec => spec.repo);
         else {
-            let firmwares: number[] = [];
+            const firmwares: number[] = [];
             // ask firmware registers
             for (const register of registers) {
                 await register.refresh(true)

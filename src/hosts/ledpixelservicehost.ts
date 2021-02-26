@@ -51,7 +51,7 @@ function hsv(hue: number, sat: number, val: number): RGB {
     const rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
     const rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
 
-    let r: number = 0, g: number = 0, b: number = 0;
+    let r = 0, g = 0, b = 0;
     if (section) {
         if (section == 1) {
             // section 1: 0x40..0x7F
@@ -107,20 +107,20 @@ export default class LedPixelServiceHost extends ServiceHost {
 
     private pxbuffer: Uint8Array = new Uint8Array(0);
 
-    private prog_mode: number = 0;
-    private prog_tmpmode: number = 0;
+    private prog_mode = 0;
+    private prog_tmpmode = 0;
 
-    private range_start: number = 0;
-    private range_end: number = 0;
-    private range_len: number = 0;
-    private range_ptr: number = 0;
+    private range_start = 0;
+    private range_end = 0;
+    private range_len = 0;
+    private range_ptr = 0;
 
-    private prog_ptr: number = 0;
-    private prog_size: number = 0;
+    private prog_ptr = 0;
+    private prog_size = 0;
     private prog_data = new Uint8Array(0);
 
-    private dirty: boolean = true;
-    private inited: boolean = false;
+    private dirty = true;
+    private inited = false;
 
     power_enable = false;
 
@@ -215,7 +215,7 @@ export default class LedPixelServiceHost extends ServiceHost {
             return false;
 
         const p = this.pxbuffer;
-        let pi = this.range_ptr++ * 3;
+        const pi = this.range_ptr++ * 3;
         // fast path
         if (this.prog_tmpmode == LIGHT_MODE_REPLACE) {
             p[pi + 0] = c.r;
@@ -267,7 +267,7 @@ export default class LedPixelServiceHost extends ServiceHost {
         let current_prev = 0;
         let di = 0;
         while (n--) {
-            let v = pxbuffer[di++];
+            const v = pxbuffer[di++];
             current += SCALE0(v, intensity);
             current_prev += SCALE0(v, prev_intensity);
             current_full += v;
@@ -279,8 +279,8 @@ export default class LedPixelServiceHost extends ServiceHost {
         current_full *= 46;
 
         // 14mA is the chip at 48MHz, 930uA per LED is static
-        let base_current = 14000 + 930 * numpixels;
-        let current_limit = maxpower * 1000 - base_current;
+        const base_current = 14000 + 930 * numpixels;
+        const current_limit = maxpower * 1000 - base_current;
 
         if (current <= current_limit) {
             this.intensity = intensity;
@@ -443,7 +443,7 @@ export default class LedPixelServiceHost extends ServiceHost {
 
         let first = range_start * 3;
         let middle = (range_start + shift) * 3;
-        let last = range_end * 3;
+        const last = range_end * 3;
         let next = middle;
 
         while (first != next) {

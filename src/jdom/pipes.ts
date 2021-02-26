@@ -57,7 +57,7 @@ export class OutPipe {
         const cmd = (this.port << PIPE_PORT_SHIFT) | flags | (this._count & PIPE_COUNTER_MASK)
         const pkt = Packet.from(cmd, buf)
         pkt.serviceIndex = JD_SERVICE_INDEX_PIPE
-        const p = this.device.sendPktWithAck(pkt)
+        this.device.sendPktWithAck(pkt)
             .then(
                 () => { },
                 err => {
@@ -107,6 +107,7 @@ export class InPipe extends JDClient {
     }
 
     private allocPort() {
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             this._port = 1 + randomUInt(511)
             const info = this.bus.selfDevice.port(this._port)

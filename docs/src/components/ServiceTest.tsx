@@ -3,7 +3,17 @@ import { Link } from 'gatsby-theme-material-ui';
 import useGridBreakpoints from './useGridBreakpoints';
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import useChange from '../jacdac/useChange';
-import { Grid, Card, CardHeader, CardActions, Button, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
+import { 
+    Grid, 
+    Card, 
+    CardActions, 
+    Button, 
+    Paper, 
+    Step, 
+    StepContent, 
+    StepLabel, 
+    Stepper, 
+    Typography } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert";
 import DeviceCardHeader from "./DeviceCardHeader"
@@ -11,13 +21,6 @@ import { JDService } from '../../../src/jdom/service';
 import { serviceTestFromServiceSpec } from "../../../src/jdom/spec";
 import ServiceUnitTest, { TestStatus } from "./ServiceUnitTest"
 import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
-
-// TODO:
-// - select one of the available devices that implements the serviceSpec
-// - enable the tests for that device/serviceSpec
-// - track the status of each test (not-started, passed, failed)
-// - allow to select a test to run it (only one active test at a time)
-// - an active test has an active command
 
 export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) {
     const { serviceSpec } = props
@@ -52,9 +55,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
         setActiveStep(0);
     };
     const handleClose = (status: TestStatus) => {
-        //if(activeStep != -1)
-        //    testStatuses[activeStep] = status;
-        console.log("HERE");
+        if(activeStep != -1)
+            testStatuses[activeStep] = status;
         setActiveTest(t => -1)
         handleNext();
     }
