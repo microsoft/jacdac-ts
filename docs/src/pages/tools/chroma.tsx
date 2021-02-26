@@ -4,6 +4,10 @@ import { CHANGE } from "../../../../src/jdom/constants";
 import useChange from "../../../src/jacdac/useChange"
 import { Button, Grid } from "@material-ui/core"
 
+/**
+ * Razor Chroma SDK client
+ * Docs: https://assets.razerzone.com/dev_portal/REST/html/index.html
+ */
 class ChromaClient extends JDClient {
     private connectionInfo: {
         sessionid: string;
