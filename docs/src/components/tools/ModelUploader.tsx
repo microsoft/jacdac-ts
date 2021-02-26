@@ -154,7 +154,7 @@ export default function ModelUploader(props: {}) {
         <p>Machine learning models are typically stored in a <code>.tflite</code> file.</p>
         {model && <Alert severity={'success'}>Model loaded ({prettySize(model.byteLength)})</Alert>}
         {model && <p />}
-        <ImportButton required={!model} disabled={importing} text={"Import model"} onFilesUploaded={handleTfmodelFiles} />
+        <ImportButton disabled={importing} text={"Import model"} onFilesUploaded={handleTfmodelFiles} />
         <Button aria-label="clear model" disabled={importing} onClick={handleClearModel}>clear model</Button>
         {models?.length && <List>
             {models.map(model => <ListItem key={model.path} button onClick={handleLoadModel(model)}>
@@ -166,7 +166,7 @@ export default function ModelUploader(props: {}) {
         {sensorConfig && <Alert severity={'success'}>Sensor configuration loaded</Alert>}
         {sensorConfig && <SensorAggregatorConfigView config={sensorConfig} />}
         {sensorConfig && <p />}
-        <ImportButton required={!sensorConfig} disabled={importing} text={"Import configuration"} onFilesUploaded={handleSensorConfigFiles} />
+        <ImportButton disabled={importing} text={"Import configuration"} onFilesUploaded={handleSensorConfigFiles} />
         <Button aria-label="clear configuration" disabled={importing} onClick={handleClearConfiguration}>clear configuration</Button>
         {inputConfigurations?.length && <List>
             {inputConfigurations.map(iconfig => <ListItem key={iconfig.path} button onClick={handleLoadInputConfiguration(iconfig)}>

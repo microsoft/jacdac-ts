@@ -75,7 +75,7 @@ function LightStripWidget(props: {
     numPixels: number,
     actualBrightness: number,
     host: LedPixelServiceHost,
-    widgetSize: string,
+    widgetSize?: string,
 }) {
     const { lightVariant, numPixels, actualBrightness, host, widgetSize } = props;
     const { background, controlBackground } = useWidgetTheme()
@@ -192,7 +192,7 @@ function LightMatrixWidget(props: {
     lightVariant: LedPixelVariant,
     actualBrightness: number,
     host: LedPixelServiceHost,
-    widgetSize: string,
+    widgetSize?: string,
     columns: number,
     rows: number,
 }) {
