@@ -5,4 +5,5 @@
     "eslint.alwaysShowStatus": true,
     "eslint.format.enable": false,
     "eslint.debug": true,
+    "eslint.lintTask.enable": true,
 }
