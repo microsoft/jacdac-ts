@@ -227,8 +227,8 @@ export function decodeMember(
 }
 
 export function valueToFlags(enumInfo: jdspec.EnumInfo, value: number) {
-    let r = [];
-    let curr = value
+    const r = [];
+    const curr = value
     for (const key of Object.keys(enumInfo.members)) {
         const val = enumInfo.members[key]
         if (curr & val) {
@@ -336,7 +336,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
         || syntheticPktInfo("event", evCode)
 
     const decoded = decodeMembers(service, evInfo, pkt)
-    let description = `EVENT[${pkt.eventCounter}] ${evInfo.name}` + wrapDecodedMembers(decoded)
+    const description = `EVENT[${pkt.eventCounter}] ${evInfo.name}` + wrapDecodedMembers(decoded)
 
     return {
         service,
@@ -418,7 +418,7 @@ export function decodePacketData(pkt: Packet): DecodedPacket {
 }
 
 function reverseLookup(map: SMap<number>, n: number) {
-    for (let k of Object.keys(map)) {
+    for (const k of Object.keys(map)) {
         if (map[k] == n)
             return k
     }
@@ -546,7 +546,7 @@ export function printPacket(pkt: Packet, opts: PrintPacketOptions = {}): string 
         if (decoded) {
             pdesc += "; " + decoded.description
         } else if (0 < d.length && d.length <= 4) {
-            let v0 = pkt.uintData, v1 = pkt.intData
+            const v0 = pkt.uintData, v1 = pkt.intData
             pdesc += "; " + num2str(v0)
             if (v0 != v1)
                 pdesc += "; signed: " + num2str(v1)

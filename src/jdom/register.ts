@@ -18,9 +18,9 @@ import { jdpack, jdunpack } from "./pack";
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _fields: JDField[];
-    private _lastSetTimestamp: number = -Infinity;
-    private _lastGetTimestamp: number = -Infinity;
-    private _lastGetAttempts: number = 0;
+    private _lastSetTimestamp = -Infinity;
+    private _lastGetTimestamp = -Infinity;
+    private _lastGetAttempts = 0;
 
     constructor(
         service: JDService,

@@ -98,15 +98,15 @@ export function ALIGN(n: number) { return (n + 3) & ~3 }
 
 // this will take lower 8 bits from each character
 export function stringToUint8Array(input: string) {
-    let len = input.length;
-    let res = new Uint8Array(len)
+    const len = input.length;
+    const res = new Uint8Array(len)
     for (let i = 0; i < len; ++i)
         res[i] = input.charCodeAt(i) & 0xff;
     return res;
 }
 
 export function uint8ArrayToString(input: ArrayLike<number>) {
-    let len = input.length;
+    const len = input.length;
     let res = ""
     for (let i = 0; i < len; ++i)
         res += String.fromCharCode(input[i]);
@@ -120,7 +120,7 @@ export function fromUTF8(binstr: string) {
     // escape function is deprecated
     let escaped = ""
     for (let i = 0; i < binstr.length; ++i) {
-        let k = binstr.charCodeAt(i) & 0xff
+        const k = binstr.charCodeAt(i) & 0xff
         if (k == 37 || k > 0x7f) {
             escaped += "%" + k.toString(16);
         } else {
@@ -142,7 +142,7 @@ export function toUTF8(str: string, cesu8?: boolean) {
             res += String.fromCharCode(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
         } else {
             if (!cesu8 && 0xd800 <= code && code <= 0xdbff) {
-                let next = str.charCodeAt(++i);
+                const next = str.charCodeAt(++i);
                 if (!isNaN(next))
                     code = 0x10000 + ((code - 0xd800) << 10) + (next - 0xdc00);
             }
@@ -167,7 +167,7 @@ export class PromiseBuffer<T> {
     private available: (T | Error)[] = [];
 
     drain() {
-        for (let f of this.waiting) {
+        for (const f of this.waiting) {
             f(new Error("Promise Buffer Reset"))
         }
         this.waiting = []
@@ -180,21 +180,21 @@ export class PromiseBuffer<T> {
     }
 
     push(v: T) {
-        let f = this.waiting.shift()
+        const f = this.waiting.shift()
         if (f) f(v)
         else this.available.push(v)
     }
 
     shiftAsync(timeout = 0) {
         if (this.available.length > 0) {
-            let v = this.available.shift()
+            const v = this.available.shift()
             if (v instanceof Error)
                 return Promise.reject<T>(v)
             else
                 return Promise.resolve<T>(v)
         } else
             return new Promise<T>((resolve, reject) => {
-                let f = (v: (T | Error)) => {
+                const f = (v: (T | Error)) => {
                     if (v instanceof Error) reject(v)
                     else resolve(v)
                 }
@@ -202,7 +202,7 @@ export class PromiseBuffer<T> {
                 if (timeout > 0) {
                     delay(timeout)
                         .then(() => {
-                            let idx = this.waiting.indexOf(f)
+                            const idx = this.waiting.indexOf(f)
                             if (idx >= 0) {
                                 this.waiting.splice(idx, 1)
                                 reject(new Error("Timeout"))
@@ -302,14 +302,14 @@ export function read16(buf: ArrayLike<number>, pos: number) {
 }
 
 export function encodeU32LE(words: number[]) {
-    let r = new Uint8Array(words.length * 4)
+    const r = new Uint8Array(words.length * 4)
     for (let i = 0; i < words.length; ++i)
         write32(r, i * 4, words[i])
     return r
 }
 
 export function decodeU32LE(buf: Uint8Array) {
-    let res: number[] = []
+    const res: number[] = []
     for (let i = 0; i < buf.length; i += 4)
         res.push(read32(buf, i))
     return res
@@ -369,8 +369,8 @@ export function arrayConcatMany<T>(arrs: T[][]) {
 }
 
 export function jsonCopyFrom<T>(trg: T, src: T) {
-    let v = clone(src)
-    for (let k of Object.keys(src)) {
+    const v = clone(src)
+    for (const k of Object.keys(src)) {
         (trg as any)[k] = (v as any)[k]
     }
 }
@@ -383,7 +383,7 @@ export function assert(cond: boolean, msg = "Assertion failed") {
 
 export function flatClone<T extends Object>(obj: T): T {
     if (obj == null) return null
-    let r: any = {}
+    const r: any = {}
     Object.keys(obj).forEach((k) => { r[k] = (obj as any)[k] })
     return r;
 }
@@ -416,7 +416,7 @@ export function signal(): Signal {
 }
 
 export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
-    if (!!blob.arrayBuffer) {
+    if (blob.arrayBuffer) {
         return blob.arrayBuffer()
             .then(data => new Uint8Array(data));
     }
@@ -439,7 +439,7 @@ export function readBlobToUint8Array(blob: Blob): Promise<Uint8Array> {
 }
 
 export function readBlobToText(blob: Blob): Promise<string> {
-    if (!!blob.text) {
+    if (blob.text) {
         return blob.text()
     }
 
@@ -604,8 +604,8 @@ export function pick(...values: number[]) {
  * @param condition 
  */
 export function splitFilter<T>(values: ArrayLike<T>, condition: (t: T) => boolean): [T[], T[]] {
-    let yays: T[] = [];
-    let nays: T[] = [];
+    const yays: T[] = [];
+    const nays: T[] = [];
     const n = values.length
     for (let i = 0; i < n; ++i) {
         const v = values[i];

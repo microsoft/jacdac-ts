@@ -22,7 +22,7 @@ export default class RealTimeClockServiceHost
     extends SensorServiceHost<RealTimeClockReadingType> {
     readonly error: RegisterHost<[number]>;
     readonly precision: RegisterHost<[number]>;
-    private lastSecond: number = 0;
+    private lastSecond = 0;
 
     constructor() {
         super(SRV_REAL_TIME_CLOCK, {

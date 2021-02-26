@@ -20,7 +20,7 @@ export interface ServiceHostOptions {
 }
 
 export default class ServiceHost extends JDEventSource {
-    public serviceIndex: number = -1; // set by device
+    public serviceIndex = -1; // set by device
     public device: DeviceHost;
     public readonly specification: jdspec.ServiceSpec;
     private readonly _registers: RegisterHost<any[]>[] = [];

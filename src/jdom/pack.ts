@@ -243,7 +243,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
             continue
         }
 
-        let dataItem = data[idx++]
+        const dataItem = data[idx++]
 
         if (c0 == ch_r && dataItem) {
             const fmt0 = fmt.slice(parser.fp)

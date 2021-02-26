@@ -45,10 +45,10 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
         }
     }
 
-    let flags = new Set<string>()
-    let serviceClasses = new Set<number>();
-    let pkts = new Set<string>();
-    let firmwares = new Set<number>();
+    const flags = new Set<string>()
+    const serviceClasses = new Set<number>();
+    const pkts = new Set<string>();
+    const firmwares = new Set<number>();
     let repeatedAnnounce: boolean = undefined;
     let announce: boolean = undefined;
     let regGet: boolean = undefined;
@@ -57,13 +57,13 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
     let log: boolean = undefined;
     let before: number = undefined;
     let after: number = undefined;
-    let devices: SMap<{ from: boolean; to: boolean; }> = {};
-    let grouping: boolean = true;
+    const devices: SMap<{ from: boolean; to: boolean; }> = {};
+    let grouping = true;
     let pipes: boolean = undefined;
     let port: number = undefined;
-    let collapseAck: boolean = true;
-    let collapsePipes: boolean = true;
-    let collapseGets: boolean = true;
+    let collapseAck = true;
+    let collapsePipes = true;
+    let collapseGets = true;
     text.split(/\s+/g).forEach(part => {
         const [match, prefix, _, value] = /([a-z\-_]+)([:=]([^\s]+))?/.exec(part) || [];
         switch (prefix || "") {
@@ -233,7 +233,7 @@ export function compileFilter(props: PacketFilterProps) {
         port
     } = props;
 
-    let filters: CompiledPacketFilter[] = [];
+    const filters: CompiledPacketFilter[] = [];
     if (before !== undefined)
         filters.push(pkt => pkt.timestamp <= before)
     if (after !== undefined)

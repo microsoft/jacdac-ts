@@ -96,7 +96,7 @@ export function lightEncode(format: string, args: (number | number[])[]) {
                 outarr.push(colors.length)
             }
         }
-        for (let c of colors) {
+        for (const c of colors) {
             outarr.push((c >> 16) & 0xff)
             outarr.push((c >> 8) & 0xff)
             outarr.push((c >> 0) & 0xff)
@@ -152,7 +152,7 @@ export function lightEncode(format: string, args: (number | number[])[]) {
                 if (typeof v == "number")
                     colors.push(v)
                 else
-                    for (let vv of v) colors.push(vv)
+                    for (const vv of v) colors.push(vv)
             } else {
                 if (token.length == 7) {
                     const b = fromHex(token.slice(1))

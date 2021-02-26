@@ -8,7 +8,7 @@ export interface SensorServiceOptions<TReading extends any[]> extends ServiceHos
     readingValues?: TReading,
     readingError?: TReading,
     streamingInterval?: number,
-};
+}
 
 export default class SensorServiceHost<TReading extends any[]> extends ServiceHost {
     readonly reading: RegisterHost<TReading>;

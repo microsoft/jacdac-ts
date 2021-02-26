@@ -156,10 +156,10 @@ export class Transport {
     }
 
     private recvPacketCoreAsync(): Promise<Uint8Array> {
-        let final = (res: USBInTransferResult) => {
+        const final = (res: USBInTransferResult) => {
             if (res.status != "ok")
                 this.error("USB IN transfer failed")
-            let arr = new Uint8Array(res.data.buffer)
+            const arr = new Uint8Array(res.data.buffer)
             if (arr.length == 0)
                 return this.recvPacketCoreAsync()
             return arr
@@ -355,10 +355,10 @@ class HF2Proto implements Proto {
         let frames: Uint8Array[] = []
 
         io.onData = buf => {
-            let tp = buf[0] & HF2_FLAG_MASK
-            let len = buf[0] & 63
+            const tp = buf[0] & HF2_FLAG_MASK
+            const len = buf[0] & 63
             //console.log(`msg tp=${tp} len=${len}`)
-            let frame = new Uint8Array(len)
+            const frame = new Uint8Array(len)
             memcpy(frame, 0, buf, 1, len)
             if (tp & HF2_FLAG_SERIAL_OUT) {
                 this.onSerial(frame, tp == HF2_FLAG_SERIAL_ERR)
@@ -370,10 +370,10 @@ class HF2Proto implements Proto {
             } else {
                 assert(tp == HF2_FLAG_CMDPKT_LAST)
                 let total = 0
-                for (let f of frames) total += f.length
-                let r = new Uint8Array(total)
+                for (const f of frames) total += f.length
+                const r = new Uint8Array(total)
                 let ptr = 0
-                for (let f of frames) {
+                for (const f of frames) {
                     memcpy(r, ptr, f)
                     ptr += f.length
                 }
@@ -396,15 +396,15 @@ class HF2Proto implements Proto {
     talkAsync(cmd: number, data?: Uint8Array) {
         let len = 8
         if (data) len += data.length
-        let pkt = new Uint8Array(len)
-        let seq = ++this.cmdSeq & 0xffff
+        const pkt = new Uint8Array(len)
+        const seq = ++this.cmdSeq & 0xffff
         write32(pkt, 0, cmd);
         write16(pkt, 4, seq);
         write16(pkt, 6, 0);
         if (data)
             memcpy(pkt, 8, data, 0, data.length)
         let numSkipped = 0
-        let handleReturnAsync = (): Promise<Uint8Array> =>
+        const handleReturnAsync = (): Promise<Uint8Array> =>
             this.msgs.shiftAsync(1000) // we wait up to a second
                 .then(res => {
                     if (read16(res, 0) != seq) {
@@ -444,10 +444,10 @@ class HF2Proto implements Proto {
     }
 
 
-    private sendMsgAsync(buf: Uint8Array, serial: number = 0) {
+    private sendMsgAsync(buf: Uint8Array, serial = 0) {
         // Util.assert(buf.length <= this.maxMsgSize)
-        let frame = new Uint8Array(64)
-        let loop = (pos: number): Promise<void> => {
+        const frame = new Uint8Array(64)
+        const loop = (pos: number): Promise<void> => {
             let len = buf.length - pos
             if (len <= 0) return Promise.resolve()
             if (len > 63) {

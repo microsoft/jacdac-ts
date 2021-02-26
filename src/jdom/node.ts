@@ -66,7 +66,7 @@ export abstract class JDNode extends JDEventSource {
 
 
 export function visitNodes(node: JDNode, vis: (node: JDNode) => void) {
-    let todo = [node];
+    const todo = [node];
     while (todo.length) {
         const node = todo.pop();
         vis(node)

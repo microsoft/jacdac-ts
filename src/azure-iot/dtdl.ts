@@ -411,9 +411,9 @@ export function deviceSpecificationToDTDL(dev: jdspec.DeviceSpec, options?: DTDL
     const schemas = uniqueServices.map(srv => serviceSpecificationToDTDL(srv));
 
     // allocate names
-    let names: string[] = [];
+    const names: string[] = [];
     services.forEach((srv, i) => {
-        let name = escapeName(srv.shortId || srv.shortName)
+        const name = escapeName(srv.shortId || srv.shortName)
         if (names.indexOf(name) < 0)
             names.push(name)
         else {

@@ -43,7 +43,7 @@ function packNumberCore(buf: Uint8Array, offset: number, num: number) {
             }
         }
     }
-    let fmt = tagFormat(tag)
+    const fmt = tagFormat(tag)
     if (buf) {
         buf[offset] = tag
         setNumber(buf, fmt, offset + 1, num)
@@ -55,12 +55,12 @@ function packNumberCore(buf: Uint8Array, offset: number, num: number) {
  * Unpacks a buffer into a number array.
  */
 export function unpackNumberArray(buf: Uint8Array, offset = 0): number[] {
-    let res: number[] = []
+    const res: number[] = []
 
     while (offset < buf.length) {
-        let fmt = tagFormat(buf[offset++])
+        const fmt = tagFormat(buf[offset++])
         if (fmt === null) {
-            let v = getNumber(buf, NumberFormat.Int8BE, offset - 1)
+            const v = getNumber(buf, NumberFormat.Int8BE, offset - 1)
             if (-31 <= v && v <= 127)
                 res.push(v)
             else
@@ -82,12 +82,12 @@ export function unpackNumberArray(buf: Uint8Array, offset = 0): number[] {
  */
 export function packNumberArray(nums: number[]): Uint8Array {
     let off = 0
-    for (let n of nums) {
+    for (const n of nums) {
         off += packNumberCore(null, off, n)
     }
-    let buf = new Uint8Array(off)
+    const buf = new Uint8Array(off)
     off = 0
-    for (let n of nums) {
+    for (const n of nums) {
         off += packNumberCore(buf, off, n)
     }
     return buf

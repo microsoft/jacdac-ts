@@ -130,7 +130,7 @@ export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: num
         default:
             const inf = fmtInfo(fmt)
             if (inf.isFloat) {
-                let arr = new Uint8Array(inf.size)
+                const arr = new Uint8Array(inf.size)
                 for (let i = 0; i < inf.size; ++i) {
                     arr[i] = buf[offset + i]
                 }
@@ -146,9 +146,9 @@ export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: num
 }
 
 export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r: number) {
-    let inf = fmtInfo(fmt)
+    const inf = fmtInfo(fmt)
     if (inf.isFloat) {
-        let arr = new Uint8Array(inf.size)
+        const arr = new Uint8Array(inf.size)
         if (inf.size == 4)
             new Float32Array(arr.buffer)[0] = r
         else
@@ -162,7 +162,7 @@ export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r:
     }
 
     for (let i = 0; i < inf.size; ++i) {
-        let off = !inf.swap ? offset + i : offset + inf.size - i - 1
+        const off = !inf.swap ? offset + i : offset + inf.size - i - 1
         buf[off] = (r & 0xff)
         r >>= 8
     }

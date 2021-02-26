@@ -6,8 +6,8 @@ import Frame from "./frame"
 import Trace from "./trace"
 
 export function parseTrace(contents: string): Trace {
-    let description: string[] = [];
-    let packets: Packet[] = []
+    const description: string[] = [];
+    const packets: Packet[] = []
     contents?.split(/\r?\n/).forEach(ln => {
         // parse data
         const m = /(\d+)\s+([a-f0-9]{12,})/i.exec(ln)
@@ -34,7 +34,7 @@ export function parseLogicLog(logcontents: string): Frame[] {
     const res: Frame[] = []
     let frameBytes = []
     let lastTime = 0
-    for (let ln of logcontents.split(/\r?\n/)) {
+    for (const ln of logcontents.split(/\r?\n/)) {
         let m = /^JD (\d+) ([0-9a-f]+)/i.exec(ln)
         if (m) {
             res.push({
