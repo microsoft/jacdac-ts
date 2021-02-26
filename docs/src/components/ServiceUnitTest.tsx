@@ -1,8 +1,6 @@
-/// <reference path="../../../jacdac-spec/spectool/jdtest.d.ts" />
-
 import React, { useState } from 'react';
 import useChange from '../jacdac/useChange';
-import { Grid, Button, Paper, Step, StepContent, StepLabel, Stepper, Theme, Typography } from '@material-ui/core';
+import { Grid, Button, Paper, Step, StepContent, StepLabel, Stepper } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { JDService } from '../../../src/jdom/service';
 import { JDClient } from '../../../src/jdom/client';
@@ -25,20 +23,20 @@ export default function ServiceUnitTest(props: { service: JDService, test: jdtes
     };
     return (<Grid>
         <Stepper activeStep={activeCommand} orientation="vertical">
-            {test.commands.map((cmd, index) => 
-                (<Step key={index}>
-                    {(cmd.kind === "say" || cmd.kind === "ask") && 
-                        <StepLabel>{cmd.expr.map(exprToString).join(" ").slice(1,-1)}</StepLabel>}        
-                        {cmd.kind === "ask" && 
-                            <StepContent>
-                            <Button onClick={handleClose(TestStatus.Passed)}>Yes</Button> 
-                            <Button onClick={handleClose(TestStatus.Failed)}>No</Button>
-                            </StepContent>}
-                        {cmd.kind === "say" && 
-                            <StepContent>
-                            <Button onClick={handleNext}>Next</Button> 
-                            </StepContent>}
-                </Step>)
+            {test.commands.map((cmd, index) =>
+            (<Step key={index}>
+                {(cmd.kind === "say" || cmd.kind === "ask") &&
+                    <StepLabel>{cmd.expr.map(exprToString).join(" ").slice(1, -1)}</StepLabel>}
+                {cmd.kind === "ask" &&
+                    <StepContent>
+                        <Button onClick={handleClose(TestStatus.Passed)}>Yes</Button>
+                        <Button onClick={handleClose(TestStatus.Failed)}>No</Button>
+                    </StepContent>}
+                {cmd.kind === "say" &&
+                    <StepContent>
+                        <Button onClick={handleNext}>Next</Button>
+                    </StepContent>}
+            </Step>)
             )}
         </Stepper>
     </Grid>);
