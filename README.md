@@ -53,6 +53,7 @@ provides seamless support for git sub-modules and is our preferred editor.
 ```
 code .
 ```
+* go to extensions and install the **ESLint** and **Prettier** extensions
 * in the Git view, click on the ``jacdac`` branch and select ``main`` so that changes are automatically synched
 * install MDX support in VS Code https://marketplace.visualstudio.com/items?itemName=silvenon.mdx
 
