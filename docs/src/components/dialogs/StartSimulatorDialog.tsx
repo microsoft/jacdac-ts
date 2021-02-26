@@ -5,7 +5,7 @@ import { useId } from "react-use-id-hook";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
 import Flags from "../../../../src/jdom/flags";
-import { delay } from "../../../../src/jdom/utils";
+import { delay, uniqueMap } from "../../../../src/jdom/utils";
 import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import KindIcon from "../KindIcon";
 import SelectWithLabel from "../ui/SelectWithLabel";
@@ -30,12 +30,16 @@ export default function StartSimulatorDialog(props: { open: boolean, onClose: ()
         onClose();
     }
     const handleAddAll = async () => {
-        enqueueSnackbar(`starting ${hostDefinitions.length} simulators...`, {
+        const allHostDefinitions = uniqueMap(
+            hostDefinitions.filter(hd => hd.serviceClasses.length === 1),
+            hd => hd.serviceClasses[0].toString(),
+            h => h);
+        enqueueSnackbar(`starting ${allHostDefinitions.length} simulators...`, {
             variant: "info",
             key: "startdevicehosts"
         })
         onClose();
-        for (const host of hostDefinitions) {
+        for (const host of allHostDefinitions) {
             await delay(100);
             addHost(bus, host.services(), host.name.split(/\s+\(/g, 1)[0]);
         }
