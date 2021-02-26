@@ -1,12 +1,14 @@
-import { LogLevel } from "../embed/protocol";
 import { JDEventSource } from "./eventsource";
 
 export class JDClient extends JDEventSource {
     private unsubscribers: (() => void)[] = []
+    protected unmounted: boolean;
     constructor() {
         super()
+        this.unmounted = false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected log(msg: any) {
         console.log(msg);
     }
@@ -21,5 +23,6 @@ export class JDClient extends JDEventSource {
         const us = this.unsubscribers;
         this.unsubscribers = [];
         us.forEach(u => u());
+        this.unmounted = true;
     }
 }
