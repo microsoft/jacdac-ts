@@ -21,6 +21,6 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "@typescript-eslint/explicit-module-boundary-types": "foo"
+        "@typescript-eslint/explicit-module-boundary-types": "off"
     }
 }
