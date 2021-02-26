@@ -2,15 +2,15 @@ import { JDDevice } from "./device";
 import Packet from "./packet";
 import { serviceName } from "./pretty";
 import { JDRegister } from "./register";
-import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED, EVENT, CHANGE } from "./constants";
+import { PACKET_RECEIVE, PACKET_SEND, SERVICE_NODE_NAME, REPORT_RECEIVE, SERVICE_CLIENT_ADDED, SERVICE_CLIENT_REMOVED, CHANGE } from "./constants";
 import { JDNode } from "./node";
-import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isSensor, isActuator, isValueOrIntensity, isValue, isIntensity } from "./spec";
+import { serviceSpecificationFromClassIdentifier, isRegister, isReading, isEvent, isValue, isIntensity } from "./spec";
 import { JDEvent } from "./event";
 import { delay, strcmp } from "./utils";
 import { BaseEvent, BaseReg, SystemReg } from "../../jacdac-spec/dist/specconstants";
 import { JDServiceClient } from "./serviceclient";
 import { InPipeReader } from "./pipes";
-import { jdunpack } from "./pack";
+import { jdunpack, PackedValues } from "./pack";
 import Flags from "./flags";
 
 export class JDService extends JDNode {
@@ -238,10 +238,9 @@ export class JDService extends JDNode {
     }
 
     compareTo(b: JDService): number {
-        const a = this;
-        return a.serviceClass - b.serviceClass ||
-            strcmp(a.device.deviceId, b.device.deviceId) ||
-            a.serviceIndex - b.serviceIndex;
+        return this.serviceClass - b.serviceClass ||
+            strcmp(this.device.deviceId, b.device.deviceId) ||
+            this.serviceIndex - b.serviceIndex;
     }
 
     get clients(): JDServiceClient[] {
@@ -263,7 +262,7 @@ export class JDService extends JDNode {
         }
     }
 
-    async receiveWithInPipe<TValues extends any[]>(cmd: number, packFormat: string) {
+    async receiveWithInPipe<TValues extends PackedValues>(cmd: number, packFormat: string) {
         const inp = new InPipeReader(this.device.bus)
         await this.sendPacketAsync(
             inp.openCommand(cmd),

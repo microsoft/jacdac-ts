@@ -69,7 +69,7 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
     if (!options) {
         options = {
             getDevices: () => Promise.resolve([]),
-            requestDevice: (filters) => Promise.resolve(undefined)
+            requestDevice: () => Promise.resolve(undefined)
         }
     }
     let hf2: Proto;
@@ -99,8 +99,7 @@ export function createUSBBus(options?: USBOptions, busOptions?: BusOptions): JDB
                 return Promise.reject("hf2 transport disconnected")
 
             const buf = p.toBuffer();
-            return hf2.sendJDMessageAsync(buf)
-                .then(() => { });
+            return hf2.sendJDMessageAsync(buf);
         },
         disconnectAsync: () => {
             const h = hf2;

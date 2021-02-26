@@ -2,6 +2,10 @@ import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer
 import { clampToStorage, numberFormatToStorageType } from "./spec"
 import { bufferEq, bufferToString, stringToBuffer } from "./utils"
 
+export type PackedSimpleValue = number | boolean | string | Uint8Array
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PackedValues = any[];
+
 /*
 
 ## Format strings
@@ -35,8 +39,8 @@ const ch_s = 115
 const ch_u = 117
 const ch_x = 120
 const ch_z = 122
-const ch_0 = 48
-const ch_9 = 57
+//const ch_0 = 48
+//const ch_9 = 57
 const ch_colon = 58
 const ch_sq_open = 91
 const ch_sq_close = 93
@@ -212,7 +216,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
     }
 }
 
-export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
+export function jdunpack<T extends PackedValues>(buf: Uint8Array, fmt: string): T {
     if (!buf || !fmt) return undefined;
 
     // hot path for buffers
@@ -230,7 +234,7 @@ export function jdunpack<T extends any[]>(buf: Uint8Array, fmt: string): T {
     return jdunpackCore(buf, fmt, 0) as T
 }
 
-function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
+function jdpackCore(trg: Uint8Array, fmt: string, data: PackedValues, off: number) {
     //console.log({ fmt, data })
     let idx = 0
     const parser = new TokenParser(fmt)
@@ -310,7 +314,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: any[], off: number) {
     return off
 }
 
-export function jdpack<T extends any[]>(fmt: string, data: T) {
+export function jdpack<T extends PackedValues>(fmt: string, data: T) {
     if (!fmt || !data)
         return undefined;
 
@@ -332,7 +336,7 @@ export function jdpack<T extends any[]>(fmt: string, data: T) {
     return res
 }
 
-export function jdpackEqual<T extends any[]>(fmt: string, left: T, right: T) {
+export function jdpackEqual<T extends PackedValues>(fmt: string, left: T, right: T) {
     if ((!left) !== (!right))
         return false;
     if (!left) return true;
