@@ -17,7 +17,7 @@ interface SendItem {
     cb: () => void
 }
 export class CMSISProto implements Proto {
-    private q = new PromiseQueue()
+    private readonly q = new PromiseQueue()
     private sendQ: SendItem[] = []
     private irqn: number
     private xchgAddr: number
@@ -30,12 +30,12 @@ export class CMSISProto implements Proto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _lastInterval: any
 
-    constructor(public io: Transport) {
+    constructor(public readonly io: Transport) {
         console.log(`micro:bit: start proto`)
     }
 
     private startRecvToLoop() {
-        console.assert(!this._lastInterval);
+        console.assert(!this._lastInterval)
 
         let last = this.recvTo
         this._lastInterval = setInterval(() => {
@@ -46,9 +46,16 @@ export class CMSISProto implements Proto {
         }, 200)
     }
 
-    private error(msg: string): never {
-        // debugger
-        throw new Error("micro:bit: " + msg)
+    private stopRecvToLoop() {
+        if (this._lastInterval) {
+            clearInterval(this._lastInterval)
+            this._lastInterval = undefined
+        }
+    }
+
+    private error(msg: string) {
+        this.stopRecvToLoop()
+        this.io.error(msg)
     }
 
     onJDMessage(f: (buf: Uint8Array) => void): void {
@@ -69,13 +76,10 @@ export class CMSISProto implements Proto {
         })
     }
 
-    disconnectAsync(): Promise<void> {
+    async disconnectAsync() {
         console.debug(`micro:bit: disconnect proto`)
-        if (this._lastInterval) {
-            clearInterval(this._lastInterval)
-            this._lastInterval = undefined;
-        }
-        return this.io.disconnectAsync()
+        this.stopRecvToLoop()
+        await this.io.disconnectAsync()
     }
 
     private recvAsync() {
@@ -114,13 +118,12 @@ export class CMSISProto implements Proto {
             if (response[0] !== cmds[0]) {
                 const msg = `Bad response for ${cmds[0]} -> ${response[0]}`
                 console.log(msg)
-                response = await this.recvAsync().then(
-                    v => v,
-                    () => {
-                        // throw the original error in case of timeout
-                        this.error(msg)
-                    }
-                )
+                try {
+                    response = await this.recvAsync()
+                } catch (e) {
+                    // throw the original error in case of timeout
+                    this.error(msg)
+                }
                 if (response[0] !== cmds[0]) this.error(msg)
             }
             return response
@@ -411,7 +414,7 @@ export class CMSISProto implements Proto {
     }
 
     async postConnectAsync() {
-        this.startRecvToLoop();
+        this.startRecvToLoop()
 
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid))
@@ -466,5 +469,9 @@ export class CMSISProto implements Proto {
         )
 
         /* async */ this.xchgLoop()
+            .catch(e => {
+                console.debug(e)
+                this.error(e?.message || "an error occured")
+            });
     }
 }

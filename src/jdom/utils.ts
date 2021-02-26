@@ -221,7 +221,7 @@ export class PromiseBuffer<T> {
 
 export class PromiseQueue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    promises: SMap<(() => Promise<any>)[]> = {}
+    private readonly promises: SMap<(() => Promise<any>)[]> = {}
 
     enqueue<T>(id: string, f: () => Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
