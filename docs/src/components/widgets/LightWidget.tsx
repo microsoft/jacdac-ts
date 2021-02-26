@@ -10,13 +10,13 @@ import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue"
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
     const [r$, g$, b$] = [r / 255, g / 255, b / 255];
-    let cMin = Math.min(r$, g$, b$);
-    let cMax = Math.max(r$, g$, b$);
-    let cDelta = cMax - cMin;
+    const cMin = Math.min(r$, g$, b$);
+    const cMax = Math.max(r$, g$, b$);
+    const cDelta = cMax - cMin;
     let h: number;
     let s: number;
     let l: number;
-    let maxAndMin = cMax + cMin;
+    const maxAndMin = cMax + cMin;
 
     //lum
     l = (maxAndMin / 2) * 100

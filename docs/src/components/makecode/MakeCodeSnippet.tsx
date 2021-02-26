@@ -41,7 +41,7 @@ function MakeCodeSnippetNoSSR(props: { source: string }) {
     const tabs = ["blocks", "typescript", "sim"]
     const { editor, setEditor } = useContext(MakeCodeSnippetContext);
     const [tab, setTab] = useState(tabs.indexOf(editor) || 0);
-    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const handleTabChange = (event: React.ChangeEvent<unknown>, newValue: number) => {
         if (newValue < tabs.length - 1)
             setEditor(tabs[newValue]);
         setTab(newValue);

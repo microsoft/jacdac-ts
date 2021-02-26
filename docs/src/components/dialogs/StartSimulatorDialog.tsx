@@ -4,9 +4,7 @@ import React, { useContext, useMemo, useState } from "react";
 import { useId } from "react-use-id-hook";
 import hosts, { addHost } from "../../../../src/hosts/hosts";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../../src/jdom/constants";
-import JDDeviceHost from "../../../../src/jdom/devicehost";
 import Flags from "../../../../src/jdom/flags";
-import ServiceHost from "../../../../src/jdom/servicehost";
 import { delay } from "../../../../src/jdom/utils";
 import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
 import KindIcon from "../KindIcon";
@@ -18,7 +16,6 @@ export default function StartSimulatorDialog(props: { open: boolean, onClose: ()
     const deviceHostDialogId = useId();
     const deviceHostLabelId = useId();
 
-    const { } = props;
     const [selected, setSelected] = useState("button");
     const { enqueueSnackbar } = useSnackbar();
     const hostDefinitions = useMemo(() => hosts(), []);

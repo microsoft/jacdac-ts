@@ -88,9 +88,10 @@ function ClientRoleRow(props: { config: Configuration, component: ClientRole, on
     </Grid>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function validateClientRole(config: Configuration, role: ClientRole) {
-    let serviceError: string = undefined;
-    let nameError: string = undefined;
+    const serviceError: string = undefined;
+    const nameError: string = undefined;
     // TODO
     return { serviceError, nameError }
 }

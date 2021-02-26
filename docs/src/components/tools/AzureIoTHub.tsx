@@ -118,7 +118,7 @@ class AzureIotHubClient {
     }
 }
 
-export default function AzureIoTHub(props: {}) {
+export default function AzureIoTHub() {
     return <>
         <ConnectAlert />
         <ApiKeyManager />

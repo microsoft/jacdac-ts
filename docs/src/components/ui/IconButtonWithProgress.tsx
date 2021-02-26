@@ -29,8 +29,9 @@ export default function IconButtonWithProgress(props: IconButtonWithProgressProp
                 progress={progress}
                 progressColor={progressColor}
                 progressStyle={progressStyle}
-                progressSize={progressSize}
-                children={badge} />}
+                progressSize={progressSize}>
+                {badge}
+            </CircularProgressBox>}
         </IconButton></span>
     </Tooltip>
 }

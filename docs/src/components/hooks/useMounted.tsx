@@ -7,4 +7,4 @@ export default function useMounted(): () => boolean {
         return () => { mounted.current = false; }
     }, []);
     return () => mounted.current;
-};
+}

@@ -9,7 +9,7 @@ import SafeBootAlert from "../firmware/SafeBootAlert";
 
 export default function Flash() {
     const [tab, setTab] = useState(0);
-    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const handleTabChange = (event: React.ChangeEvent<unknown>, newValue: number) => {
         setTab(newValue);
     }
 

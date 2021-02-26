@@ -11,13 +11,14 @@ import GaugeWidget from "../widgets/GaugeWidget";
 import useWidgetSize from "../widgets/useWidgetSize";
 import ValueWithUnitWidget from "../widgets/ValueWithUnitWidget";
 import useUnitIcon from "../hooks/useUnitIcon";
+import { PackedSimpleValue } from "../../../../src/jdom/pack";
 
 export default function MemberInput(props: {
     specification: jdspec.PacketMember,
     serviceSpecification: jdspec.ServiceSpec,
     serviceMemberSpecification: jdspec.PacketInfo,
-    value: any,
-    setValue?: (v: any) => void,
+    value: PackedSimpleValue,
+    setValue?: (v: PackedSimpleValue) => void,
     showDataType?: boolean,
     color?: "primary" | "secondary",
     variant?: RegisterInputVariant,
@@ -46,7 +47,7 @@ export default function MemberInput(props: {
 
     const minValue = pick(min, typicalMin, absoluteMin, /^u/.test(type) ? 0 : undefined)
     const maxValue = pick(max, typicalMax, absoluteMax)
-    const errorValue = !!error ? ("±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString()) : undefined;
+    const errorValue = error ? ("±" + roundWithPrecision(error, 1 - Math.floor(Math.log10(error))).toLocaleString()) : undefined;
     const unit = prettyUnit(specification.unit);
     const helperText = errorText
         || [prettyMemberUnit(specification, showDataType), errorValue]
@@ -72,8 +73,9 @@ export default function MemberInput(props: {
             setValue(r.value)
         setErrorText(r.error)
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleEnumChange = (event: React.ChangeEvent<{ value: any }>) => {
-        const v = enumInfo.isFlags ? flagsToValue(event.target.value) : event.target.value
+        const v = enumInfo.isFlags ? flagsToValue(event.target.value as number[]) : event.target.value as number
         setValue(v)
     }
     const handleSliderChange = (event: unknown, newValue: number | number[]) => {
@@ -127,7 +129,7 @@ export default function MemberInput(props: {
             aria-label={label}
             disabled={disabled}
             multiple={enumInfo.isFlags}
-            value={enumInfo.isFlags ? valueToFlags(enumInfo, value) : value}
+            value={enumInfo.isFlags ? valueToFlags(enumInfo, value as number) : value}
             onChange={handleEnumChange}>
             {Object.keys(enumInfo.members).map(n => <MenuItem key={n} value={enumInfo.members[n]}>{n}</MenuItem>)}
         </Select>
@@ -141,7 +143,7 @@ export default function MemberInput(props: {
             return <GaugeWidget
                 tabIndex={0}
                 label={label}
-                value={value}
+                value={value as number}
                 color={color}
                 variant={signed ? "fountain" : undefined}
                 min={min} max={max} step={step}
@@ -154,7 +156,7 @@ export default function MemberInput(props: {
         return <Slider
             aria-label={label}
             color={color}
-            value={value}
+            value={value as number}
             valueLabelFormat={percentValueFormat}
             onChange={disabled ? undefined : handleSliderChange}
             min={min} max={max} step={step}
@@ -180,7 +182,7 @@ export default function MemberInput(props: {
             return <ValueWithUnitWidget
                 tabIndex={0}
                 label={specification.unit}
-                value={value}
+                value={value as number}
                 min={minValue}
                 max={maxValue}
                 icon={unitIcon}
@@ -190,7 +192,7 @@ export default function MemberInput(props: {
                 onChange={disabled ? undefined : handleSliderChange} />
 
         return <Slider
-            value={value}
+            value={value as number}
             color={color}
             valueLabelFormat={off ? offFormat : valueLabelFormat}
             onChange={disabled ? undefined : handleSliderChange}
@@ -216,7 +218,7 @@ export default function MemberInput(props: {
         if (isWidget) // we need min/max to support a slider
             return <ValueWithUnitWidget
                 tabIndex={0}
-                value={roundWithPrecision(value, 1)}
+                value={roundWithPrecision(value as number, 1)}
                 label={specification.unit}
                 color={color}
                 size={widgetSize} />
