@@ -1,4 +1,4 @@
-import { Typography, useTheme } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import React from "react"
 import { JDDevice } from "../../../src/jdom/device";
 import useDeviceName from "./useDeviceName";

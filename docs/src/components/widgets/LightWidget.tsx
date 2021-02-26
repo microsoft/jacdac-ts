@@ -5,19 +5,18 @@ import useServiceHost from "../hooks/useServiceHost";
 import LedPixelServiceHost from "../../../../src/hosts/ledpixelservicehost";
 import SvgWidget from "../widgets/SvgWidget";
 import useWidgetTheme from "../widgets/useWidgetTheme";
-import useWidgetSize from "../widgets/useWidgetSize";
 import { JDService } from "../../../../src/jdom/service";
 import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue"
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
     const [r$, g$, b$] = [r / 255, g / 255, b / 255];
-    let cMin = Math.min(r$, g$, b$);
-    let cMax = Math.max(r$, g$, b$);
-    let cDelta = cMax - cMin;
+    const cMin = Math.min(r$, g$, b$);
+    const cMax = Math.max(r$, g$, b$);
+    const cDelta = cMax - cMin;
     let h: number;
     let s: number;
     let l: number;
-    let maxAndMin = cMax + cMin;
+    const maxAndMin = cMax + cMin;
 
     //lum
     l = (maxAndMin / 2) * 100
@@ -75,7 +74,7 @@ function LightStripWidget(props: {
     numPixels: number,
     actualBrightness: number,
     host: LedPixelServiceHost,
-    widgetSize: string,
+    widgetSize?: string,
 }) {
     const { lightVariant, numPixels, actualBrightness, host, widgetSize } = props;
     const { background, controlBackground } = useWidgetTheme()
@@ -192,15 +191,14 @@ function LightMatrixWidget(props: {
     lightVariant: LedPixelVariant,
     actualBrightness: number,
     host: LedPixelServiceHost,
-    widgetSize: string,
+    widgetSize?: string,
     columns: number,
     rows: number,
 }) {
-    const { actualBrightness, columns, rows, host, widgetSize } = props;
+    const { columns, rows, host, widgetSize } = props;
     const { background, controlBackground } = useWidgetTheme()
 
     const widgetRef = useRef<SVGGElement>();
-    const clickeable = !!host;
     // compute size
     const pw = 8;
     const ph = 8;
@@ -255,7 +253,7 @@ function LightMatrixWidget(props: {
 }
 
 export default function LightWidget(props: { variant?: "icon" | "", service: JDService, widgetCount?: number }) {
-    const { service, widgetCount, variant } = props;
+    const { service } = props;
     const [numPixels] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.NumPixels));
     const [lightVariant] = useRegisterUnpackedValue<[LedPixelVariant]>(service.register(LedPixelReg.Variant));
     const [actualBrightness] = useRegisterUnpackedValue<[number]>(service.register(LedPixelReg.ActualBrightness));

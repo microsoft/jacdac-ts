@@ -30,8 +30,8 @@ function NoSsrConnectAlert(props: { serviceClass?: number }) {
         connectionState === BusState.Disconnected)
         return <Box displayPrint="none">
             <Alert severity="info" closeable={true}>
-                {!spec && <span>Don't forget to connect!</span>}
-                {spec && <span>Don't forget to connect some {spec.name} devices!</span>}
+                {!spec && <span>Did you connect your device?</span>}
+                {spec && <span>Did you connect a {spec.name} device?</span>}
                 <ConnectButton className={classes.button} full={true} transparent={true} />
             </Alert>
         </Box>

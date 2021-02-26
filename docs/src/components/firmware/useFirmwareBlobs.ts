@@ -53,7 +53,7 @@ export default function useFirmwareBlobs() {
         console.log(`firmwares: change`)
         const names = await fw?.list()
         console.log(`import stored uf2`, names)
-        let uf2s: FirmwareBlob[] = [];
+        const uf2s: FirmwareBlob[] = [];
         if (names?.length) {
             for (const name of names) {
                 const blob = await fw.get(name)

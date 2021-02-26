@@ -1,4 +1,4 @@
-import { read16, read32 } from "./utils";
+import { read16, read32 } from "./utils"
 
 export enum NumberFormat {
     Int8LE = 1,
@@ -25,28 +25,49 @@ export enum NumberFormat {
 
 function fmtInfoCore(fmt: NumberFormat) {
     switch (fmt) {
-        case NumberFormat.Int8LE: return -1;
-        case NumberFormat.UInt8LE: return 1;
-        case NumberFormat.Int16LE: return -2;
-        case NumberFormat.UInt16LE: return 2;
-        case NumberFormat.Int32LE: return -4;
-        case NumberFormat.UInt32LE: return 4;
-        case NumberFormat.Int64LE: return -8;
-        case NumberFormat.UInt64LE: return 8;
-        case NumberFormat.Int8BE: return -10;
-        case NumberFormat.UInt8BE: return 10;
-        case NumberFormat.Int16BE: return -20;
-        case NumberFormat.UInt16BE: return 20;
-        case NumberFormat.Int32BE: return -40;
-        case NumberFormat.UInt32BE: return 40;
-        case NumberFormat.Int64BE: return -80;
-        case NumberFormat.UInt64BE: return 80;
+        case NumberFormat.Int8LE:
+            return -1
+        case NumberFormat.UInt8LE:
+            return 1
+        case NumberFormat.Int16LE:
+            return -2
+        case NumberFormat.UInt16LE:
+            return 2
+        case NumberFormat.Int32LE:
+            return -4
+        case NumberFormat.UInt32LE:
+            return 4
+        case NumberFormat.Int64LE:
+            return -8
+        case NumberFormat.UInt64LE:
+            return 8
+        case NumberFormat.Int8BE:
+            return -10
+        case NumberFormat.UInt8BE:
+            return 10
+        case NumberFormat.Int16BE:
+            return -20
+        case NumberFormat.UInt16BE:
+            return 20
+        case NumberFormat.Int32BE:
+            return -40
+        case NumberFormat.UInt32BE:
+            return 40
+        case NumberFormat.Int64BE:
+            return -80
+        case NumberFormat.UInt64BE:
+            return 80
 
-        case NumberFormat.Float32LE: return 4;
-        case NumberFormat.Float32BE: return 40;
-        case NumberFormat.Float64LE: return 8;
-        case NumberFormat.Float64BE: return 80;
-        default: throw new Error("unknown format");
+        case NumberFormat.Float32LE:
+            return 4
+        case NumberFormat.Float32BE:
+            return 40
+        case NumberFormat.Float64LE:
+            return 8
+        case NumberFormat.Float64BE:
+            return 80
+        default:
+            throw new Error("unknown format")
     }
 }
 
@@ -83,31 +104,35 @@ export function sizeOfNumberFormat(format: NumberFormat) {
         case NumberFormat.UInt8LE:
         case NumberFormat.Int8BE:
         case NumberFormat.UInt8BE:
-            return 1;
+            return 1
         case NumberFormat.Int16LE:
         case NumberFormat.UInt16LE:
         case NumberFormat.Int16BE:
         case NumberFormat.UInt16BE:
-            return 2;
+            return 2
         case NumberFormat.Int32LE:
         case NumberFormat.Int32BE:
         case NumberFormat.UInt32BE:
         case NumberFormat.UInt32LE:
         case NumberFormat.Float32BE:
         case NumberFormat.Float32LE:
-            return 4;
+            return 4
         case NumberFormat.UInt64BE:
         case NumberFormat.Int64BE:
         case NumberFormat.UInt64LE:
         case NumberFormat.Int64LE:
         case NumberFormat.Float64BE:
         case NumberFormat.Float64LE:
-            return 8;
+            return 8
     }
-    return 0;
+    return 0
 }
 
-export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: number) {
+export function getNumber(
+    buf: ArrayLike<number>,
+    fmt: NumberFormat,
+    offset: number
+) {
     switch (fmt) {
         case NumberFormat.UInt8BE:
         case NumberFormat.UInt8LE:
@@ -126,35 +151,38 @@ export function getNumber(buf: ArrayLike<number>, fmt: NumberFormat, offset: num
         case NumberFormat.UInt64LE:
             return read32(buf, offset) + read32(buf, offset + 4) * 0x100000000
         case NumberFormat.Int64LE:
-            return read32(buf, offset) + (read32(buf, offset + 4) >> 0) * 0x100000000
-        default:
+            return (
+                read32(buf, offset) +
+                (read32(buf, offset + 4) >> 0) * 0x100000000
+            )
+        default: {
             const inf = fmtInfo(fmt)
             if (inf.isFloat) {
-                let arr = new Uint8Array(inf.size)
+                const arr = new Uint8Array(inf.size)
                 for (let i = 0; i < inf.size; ++i) {
                     arr[i] = buf[offset + i]
                 }
-                if (inf.swap)
-                    arr.reverse()
-                if (inf.size == 4)
-                    return new Float32Array(arr.buffer)[0]
-                else
-                    return new Float64Array(arr.buffer)[0]
+                if (inf.swap) arr.reverse()
+                if (inf.size == 4) return new Float32Array(arr.buffer)[0]
+                else return new Float64Array(arr.buffer)[0]
             }
             throw new Error("unsupported fmt:" + fmt)
+        }
     }
 }
 
-export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r: number) {
-    let inf = fmtInfo(fmt)
+export function setNumber(
+    buf: Uint8Array,
+    fmt: NumberFormat,
+    offset: number,
+    r: number
+) {
+    const inf = fmtInfo(fmt)
     if (inf.isFloat) {
-        let arr = new Uint8Array(inf.size)
-        if (inf.size == 4)
-            new Float32Array(arr.buffer)[0] = r
-        else
-            new Float64Array(arr.buffer)[0] = r
-        if (inf.swap)
-            arr.reverse()
+        const arr = new Uint8Array(inf.size)
+        if (inf.size == 4) new Float32Array(arr.buffer)[0] = r
+        else new Float64Array(arr.buffer)[0] = r
+        if (inf.swap) arr.reverse()
         for (let i = 0; i < inf.size; ++i) {
             buf[offset + i] = arr[i]
         }
@@ -162,8 +190,8 @@ export function setNumber(buf: Uint8Array, fmt: NumberFormat, offset: number, r:
     }
 
     for (let i = 0; i < inf.size; ++i) {
-        let off = !inf.swap ? offset + i : offset + inf.size - i - 1
-        buf[off] = (r & 0xff)
+        const off = !inf.swap ? offset + i : offset + inf.size - i - 1
+        buf[off] = r & 0xff
         r >>= 8
     }
 }

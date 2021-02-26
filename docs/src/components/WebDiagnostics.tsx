@@ -126,7 +126,7 @@ export default function WebDiagnostics() {
         setV(v + 1);
     }
 
-    const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+    const handleChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
         setExpanded(isExpanded ? panel : false);
     };
 

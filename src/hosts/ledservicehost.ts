@@ -1,4 +1,4 @@
-import { CHANGE, LedReg, LedVariant, REPORT_UPDATE, SRV_LED } from "../jdom/constants";
+import { CHANGE, LedReg, LedVariant, SRV_LED } from "../jdom/constants";
 import { JDEventSource } from "../jdom/eventsource";
 import RegisterHost from "../jdom/registerhost";
 import ServiceHost from "../jdom/servicehost";

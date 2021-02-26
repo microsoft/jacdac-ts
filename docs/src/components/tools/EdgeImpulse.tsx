@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react"
-import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Collapse, Grid, Switch, TextField, Typography, useEventCallback, useTheme } from '@material-ui/core';
+import { Box, Button, Card, CardActions, CardContent, CardHeader, CardMedia, CircularProgress, Grid, Switch, Typography, useTheme } from '@material-ui/core';
 import { Link } from 'gatsby-theme-material-ui';
 import useDbValue from "../useDbValue";
 import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
@@ -10,7 +10,7 @@ import { JDClient } from "../../../../src/jdom/client";
 import DeviceCardHeader from "../DeviceCardHeader";
 import Alert from "../ui/Alert";
 import useEffectAsync from "../useEffectAsync";
-import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PACKET_REPORT, PROGRESS, REPORT_RECEIVE, SensorAggregatorReg, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../../src/jdom/constants";
+import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, ERROR, PROGRESS, REPORT_RECEIVE, SRV_MODEL_RUNNER, SRV_SENSOR_AGGREGATOR } from "../../../../src/jdom/constants";
 import FieldDataSet from "../FieldDataSet";
 import { deviceSpecificationFromFirmwareIdentifier, isSensor } from "../../../../src/jdom/spec";
 import CircularProgressWithLabel from "../ui/CircularProgressWithLabel";
@@ -48,6 +48,7 @@ interface EdgeImpulseResponse {
 
 interface EdgeImpulseHello {
     hello?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     err?: any;
 }
 
@@ -139,6 +140,7 @@ class EdgeImpulseClient extends JDClient {
     public samplingState = IDLE;
     private _hello: EdgeImpulseRemoteManagementInfo;
     private _sample: EdgeImpulseSampling;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _pingInterval: any;
     private pong: boolean;
     private aggregatorClient: SensorAggregatorClient;
@@ -182,6 +184,7 @@ class EdgeImpulseClient extends JDClient {
                 w.close();
             }
             catch (e) {
+                console.debug(e)
             }
             finally {
                 this.setConnectionState(DISCONNECT);
@@ -206,7 +209,7 @@ class EdgeImpulseClient extends JDClient {
         }
     }
 
-    private send(msg: any) {
+    private send(msg: unknown) {
         this._ws?.send(JSON.stringify(msg))
     }
 
@@ -241,6 +244,7 @@ class EdgeImpulseClient extends JDClient {
         this.connect();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private handleMessage(msg: any) {
         // response to ping?
         if (msg.data === "pong") {
@@ -485,7 +489,7 @@ class EdgeImpulseClient extends JDClient {
         }
     }
 
-    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string | number, body?: any): Promise<T> {
+    static async apiFetch<T extends EdgeImpulseResponse>(apiKey: string, path: string | number, body?: unknown): Promise<T> {
         const API_ROOT = "https://studio.edgeimpulse.com/v1/api/"
         const url = `${API_ROOT}${path}`
         const options: RequestInit = {
@@ -646,7 +650,7 @@ function Acquisition(props: {
     const [connectionState, setConnectionState] = useState(DISCONNECT)
     const [samplingState, setSamplingState] = useState(IDLE)
     const [samplingProgress, setSamplingProgress] = useState(0)
-    const [deviceInfo, setDeviceInfo] = useState<EdgeImpulseDeviceInfo>(undefined);
+    const [, setDeviceInfo] = useState<EdgeImpulseDeviceInfo>(undefined);
     const { deviceId } = device;
     const deviceName = useDeviceName(device, false);
     const projectId = info?.id;
@@ -726,7 +730,7 @@ function Acquisition(props: {
     </Box>
 }
 
-export default function EdgeImpulse(props: {}) {
+export default function EdgeImpulse() {
     const { value: apiKey } = useDbValue(EDGE_IMPULSE_API_KEY, "")
     const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const [model, setModel] = useState<Uint8Array>(undefined)

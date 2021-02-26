@@ -8,7 +8,7 @@ import { JDServiceMemberNode } from "./servicemembernode";
 
 export class JDEvent extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
-    private _count: number = 0;
+    private _count = 0;
 
     constructor(
         service: JDService,

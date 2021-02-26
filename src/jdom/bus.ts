@@ -1,6 +1,12 @@
-import Packet from "./packet";
-import { JDDevice } from "./device";
-import { debounceAsync, strcmp, arrayConcatMany, anyRandomUint32, toHex } from "./utils";
+import Packet from "./packet"
+import { JDDevice } from "./device"
+import {
+    debounceAsync,
+    strcmp,
+    arrayConcatMany,
+    anyRandomUint32,
+    toHex,
+} from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -46,103 +52,128 @@ import {
     DEVICE_HOST_ADDED,
     DEVICE_HOST_REMOVED,
     REFRESH,
-    PACKET_INVALID_CRC
-} from "./constants";
-import { serviceClass } from "./pretty";
-import { JDNode, Log, LogLevel } from "./node";
-import { FirmwareBlob, scanFirmwares, sendStayInBootloaderCommand } from "./flashing";
-import { JDService } from "./service";
-import { isConstRegister, isReading, isSensor } from "./spec";
-import { ControlReg, LoggerPriority, LoggerReg, SensorReg, SRV_CONTROL, SRV_LOGGER, SRV_REAL_TIME_CLOCK, SystemReg } from "../../jacdac-spec/dist/specconstants";
-import DeviceHost from "./devicehost";
-import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost";
-import { JDEventSource } from "./eventsource";
-import Flags from "./flags";
+} from "./constants"
+import { serviceClass } from "./pretty"
+import { JDNode, Log, LogLevel } from "./node"
+import {
+    FirmwareBlob,
+    scanFirmwares,
+    sendStayInBootloaderCommand,
+} from "./flashing"
+import { JDService } from "./service"
+import { isConstRegister, isReading, isSensor } from "./spec"
+import {
+    ControlReg,
+    LoggerPriority,
+    LoggerReg,
+    SensorReg,
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_REAL_TIME_CLOCK,
+    SystemReg,
+} from "../../jacdac-spec/dist/specconstants"
+import DeviceHost from "./devicehost"
+import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
+import { JDEventSource } from "./eventsource"
 
 export interface IDeviceNameSettings {
-    resolve(device: JDDevice): string;
+    resolve(device: JDDevice): string
     // notify namer that the device was renamed
-    notifyUpdate(device: JDDevice, name: string): void;
+    notifyUpdate(device: JDDevice, name: string): void
 }
 
 export interface PacketTransport {
-    sendPacketAsync?: (p: Packet) => Promise<void>;
-    connectAsync?: (background?: boolean) => Promise<void>;
-    disconnectAsync?: () => Promise<void>;
+    sendPacketAsync?: (p: Packet) => Promise<void>
+    connectAsync?: (background?: boolean) => Promise<void>
+    disconnectAsync?: () => Promise<void>
 }
 
 export interface BusOptions {
-    deviceLostDelay?: number;
-    deviceDisconnectedDelay?: number;
-    deviceId?: string;
+    deviceLostDelay?: number
+    deviceDisconnectedDelay?: number
+    deviceId?: string
 
-    parentOrigin?: string;
+    parentOrigin?: string
 }
 
 export interface BusHost {
-    log?: Log;
-    deviceNameSettings?: IDeviceNameSettings;
+    log?: Log
+    deviceNameSettings?: IDeviceNameSettings
 }
 
 export interface Error {
-    context: string;
-    exception: any;
+    context: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    exception: any
 }
 
 export enum BusState {
     Connected = "connected",
     Connecting = "connecting",
     Disconnecting = "disconnecting",
-    Disconnected = "disconnected"
+    Disconnected = "disconnected",
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
     switch (level) {
-        case 'error': console.error(message, optionalArgs || ""); break;
-        case 'warn': console.warn(message, optionalArgs || ""); break;
-        case 'info': console.info(message, optionalArgs || ""); break;
-        case 'debug': console.debug(message, optionalArgs || ""); break;
-        default: console.log(message, optionalArgs || ""); break;
+        case "error":
+            console.error(message, optionalArgs || "")
+            break
+        case "warn":
+            console.warn(message, optionalArgs || "")
+            break
+        case "info":
+            console.info(message, optionalArgs || "")
+            break
+        case "debug":
+            console.debug(message, optionalArgs || "")
+            break
+        default:
+            console.log(message, optionalArgs || "")
+            break
     }
 }
 
 export interface DeviceFilter {
-    serviceName?: string;
-    serviceClass?: number;
-    ignoreSelf?: boolean;
-    announced?: boolean;
-    ignoreSimulators?: boolean;
-    firmwareIdentifier?: boolean;
+    serviceName?: string
+    serviceClass?: number
+    ignoreSelf?: boolean
+    announced?: boolean
+    ignoreSimulators?: boolean
+    firmwareIdentifier?: boolean
 }
 export interface BusStats {
-    packets: number;
-    announce: number;
-    acks: number;
-    bytes: number;
+    packets: number
+    announce: number
+    acks: number
+    bytes: number
 }
 
 export class BusStatsMonitor extends JDEventSource {
-    private readonly _prev: BusStats[] = Array(10).fill(0).map(_ => ({
-        packets: 0,
-        announce: 0,
-        acks: 0,
-        bytes: 0
-    }));
-    private _previ = 0;
+    private readonly _prev: BusStats[] = Array(10)
+        .fill(0)
+        .map(() => ({
+            packets: 0,
+            announce: 0,
+            acks: 0,
+            bytes: 0,
+        }))
+    private _previ = 0
     private _temp: BusStats = {
         packets: 0,
         announce: 0,
         acks: 0,
-        bytes: 0
+        bytes: 0,
     }
 
     constructor(readonly bus: JDBus) {
-        super();
+        super()
         this.bus.on(PACKET_SEND, this.handlePacketSend.bind(this))
-        this.bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this));
-        this.bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this));
+        this.bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this))
+        this.bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
     }
 
     get current(): BusStats {
@@ -150,52 +181,51 @@ export class BusStatsMonitor extends JDEventSource {
             packets: 0,
             announce: 0,
             acks: 0,
-            bytes: 0
+            bytes: 0,
         }
-        const n = this._prev.length;
+        const n = this._prev.length
         for (let i = 0; i < this._prev.length; ++i) {
-            const p = this._prev[i];
-            r.packets += p.packets;
-            r.announce += p.announce;
-            r.acks += p.acks;
-            r.bytes += p.bytes;
+            const p = this._prev[i]
+            r.packets += p.packets
+            r.announce += p.announce
+            r.acks += p.acks
+            r.bytes += p.bytes
         }
         // announce every 500ms
-        const n2 = n / 2;
-        r.packets /= n2;
-        r.announce /= n2;
-        r.acks /= n2;
-        r.bytes /= n2;
-        return r;
+        const n2 = n / 2
+        r.packets /= n2
+        r.announce /= n2
+        r.acks /= n2
+        r.bytes /= n2
+        return r
     }
 
     private accumulate(pkt: Packet) {
-        this._temp.packets++;
-        this._temp.bytes += (pkt.header?.length || 0) + (pkt.data?.length || 0);
-        if (pkt.isCRCAck)
-            this._temp.acks++;
+        this._temp.packets++
+        this._temp.bytes += (pkt.header?.length || 0) + (pkt.data?.length || 0)
+        if (pkt.isCRCAck) this._temp.acks++
     }
 
     private handleSelfAnnounce() {
-        const changed = JSON.stringify(this._prev) !== JSON.stringify(this._temp);
-        this._prev[this._previ] = this._temp;
-        this._previ = (this._previ + 1) % this._prev.length;
+        const changed =
+            JSON.stringify(this._prev) !== JSON.stringify(this._temp)
+        this._prev[this._previ] = this._temp
+        this._previ = (this._previ + 1) % this._prev.length
         this._temp = {
             packets: 0,
             announce: 0,
             acks: 0,
-            bytes: 0
+            bytes: 0,
         }
-        if (changed)
-            this.emit(CHANGE);
+        if (changed) this.emit(CHANGE)
     }
 
     private handlePacketSend(pkt: Packet) {
-        this.accumulate(pkt);
+        this.accumulate(pkt)
     }
 
     private handlePacketProcess(pkt: Packet) {
-        this.accumulate(pkt);
+        this.accumulate(pkt)
     }
 }
 
@@ -203,97 +233,114 @@ export class BusStatsMonitor extends JDEventSource {
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
-    private _connectionState = BusState.Disconnected;
-    private _connectPromise: Promise<void>;
-    private _disconnectPromise: Promise<void>;
+    private _connectionState = BusState.Disconnected
+    private _connectPromise: Promise<void>
+    private _disconnectPromise: Promise<void>
 
-    private _devices: JDDevice[] = [];
-    private _startTime: number;
-    private _gcInterval: any;
-    private _announceInterval: any;
-    private _safeBootInterval: any;
-    private _refreshRegistersInterval: any;
-    private _minLoggerPriority = LoggerPriority.Log;
-    private _firmwareBlobs: FirmwareBlob[];
-    private _announcing = false;
-    private _gcDevicesEnabled = 0;
+    private _devices: JDDevice[] = []
+    private _startTime: number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _gcInterval: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _announceInterval: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _safeBootInterval: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _refreshRegistersInterval: any
+    private _minLoggerPriority = LoggerPriority.Log
+    private _firmwareBlobs: FirmwareBlob[]
+    private _announcing = false
+    private _gcDevicesEnabled = 0
 
-    private _deviceHosts: DeviceHost[] = [];
+    private _deviceHosts: DeviceHost[] = []
 
     public readonly host: BusHost = {
-        log
+        log,
     }
 
-    public readonly stats: BusStatsMonitor;
+    public readonly stats: BusStatsMonitor
 
     /**
      * Creates the bus with the given transport
-     * @param sendPacket 
+     * @param sendPacket
      */
-    constructor(public readonly transport: PacketTransport, public options?: BusOptions) {
-        super();
-        this.options = this.options || {};
+    constructor(
+        public readonly transport: PacketTransport,
+        public options?: BusOptions
+    ) {
+        super()
+        this.options = this.options || {}
         if (!this.options.deviceId) {
-            const devId = anyRandomUint32(8);
-            for (let i = 0; i < 8; ++i) devId[i] &= 0xff;
-            this.options.deviceId = toHex(devId);
+            const devId = anyRandomUint32(8)
+            for (let i = 0; i < 8; ++i) devId[i] &= 0xff
+            this.options.deviceId = toHex(devId)
         }
 
-        this.stats = new BusStatsMonitor(this);
-        this.resetTime();
+        this.stats = new BusStatsMonitor(this)
+        this.resetTime()
 
         // tell loggers to send data
-        this.on(DEVICE_ANNOUNCE, debounceAsync(this.pingLoggers.bind(this), 1000));
+        this.on(
+            DEVICE_ANNOUNCE,
+            debounceAsync(this.pingLoggers.bind(this), 1000)
+        )
         // tell RTC clock the computer time
-        this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this));
+        this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
 
         // start all timers
-        this.start();
+        this.start()
     }
 
     start() {
         if (!this._announceInterval)
-            this._announceInterval = setInterval(() => this.emit(SELF_ANNOUNCE), 499);
+            this._announceInterval = setInterval(
+                () => this.emit(SELF_ANNOUNCE),
+                499
+            )
         if (!this._refreshRegistersInterval)
-            this._refreshRegistersInterval = setInterval(this.refreshRegisters.bind(this), 50);
+            this._refreshRegistersInterval = setInterval(
+                this.refreshRegisters.bind(this),
+                50
+            )
         if (!this._gcInterval)
-            this._gcInterval = setInterval(() => this.gcDevices(), JD_DEVICE_DISCONNECTED_DELAY);
+            this._gcInterval = setInterval(
+                () => this.gcDevices(),
+                JD_DEVICE_DISCONNECTED_DELAY
+            )
     }
 
     stop() {
         if (this._announceInterval) {
-            clearInterval(this._announceInterval);
-            this._announceInterval = undefined;
+            clearInterval(this._announceInterval)
+            this._announceInterval = undefined
         }
-        this.safeBoot = false;
+        this.safeBoot = false
         if (this._refreshRegistersInterval) {
             clearInterval(this._refreshRegistersInterval)
-            this._refreshRegistersInterval = undefined;
+            this._refreshRegistersInterval = undefined
         }
         if (this._gcInterval) {
             clearInterval(this._gcInterval)
-            this._gcInterval = undefined;
+            this._gcInterval = undefined
         }
     }
 
     get safeBoot() {
-        return !!this._safeBootInterval;
+        return !!this._safeBootInterval
     }
 
     set safeBoot(enabled: boolean) {
         if (enabled && !this._safeBootInterval) {
             this._safeBootInterval = setInterval(() => {
                 // don't send message if any device is flashing
-                if (this._devices.some(d => d.flashing))
-                    return;
+                if (this._devices.some(d => d.flashing)) return
                 sendStayInBootloaderCommand(this)
-            }, 50);
-            this.emit(CHANGE);
-        }
-        else if (!enabled && this._safeBootInterval) {
-            clearInterval(this._safeBootInterval);
-            this._safeBootInterval = undefined;
-            this.emit(CHANGE);
+            }, 50)
+            this.emit(CHANGE)
+        } else if (!enabled && this._safeBootInterval) {
+            clearInterval(this._safeBootInterval)
+            this._safeBootInterval = undefined
+            this.emit(CHANGE)
         }
     }
 
@@ -301,45 +348,51 @@ export class JDBus extends JDNode {
      * Gets the bus connection state.
      */
     get connectionState(): BusState {
-        return this._connectionState;
+        return this._connectionState
     }
 
     private setConnectionState(state: BusState) {
         if (this._connectionState !== state) {
-            this.log('debug', `${this._connectionState} -> ${state}`)
-            this._connectionState = state;
-            this.emit(CONNECTION_STATE, this._connectionState);
+            this.log("debug", `${this._connectionState} -> ${state}`)
+            this._connectionState = state
+            this.emit(CONNECTION_STATE, this._connectionState)
             switch (this._connectionState) {
-                case BusState.Connected: this.emit(CONNECT); break;
-                case BusState.Connecting: this.emit(CONNECTING); break;
-                case BusState.Disconnecting: this.emit(DISCONNECTING); break;
+                case BusState.Connected:
+                    this.emit(CONNECT)
+                    break
+                case BusState.Connecting:
+                    this.emit(CONNECTING)
+                    break
+                case BusState.Disconnecting:
+                    this.emit(DISCONNECTING)
+                    break
                 case BusState.Disconnected:
-                    this.clear();
-                    this.emit(DISCONNECT);
-                    break;
+                    this.clear()
+                    this.emit(DISCONNECT)
+                    break
             }
             this.emit(CHANGE)
         }
     }
 
     clear() {
-        const devs = this._devices;
+        const devs = this._devices
         if (devs?.length) {
-            this._devices = [];
+            this._devices = []
             devs.forEach(dev => {
-                dev.disconnect();
-                this.emit(DEVICE_DISCONNECT, dev);
+                dev.disconnect()
+                this.emit(DEVICE_DISCONNECT, dev)
                 this.emit(DEVICE_CHANGE, dev)
             })
         }
-        this.resetTime();
+        this.resetTime()
     }
 
     /**
      * Gets a unique identifier for this node in the Jacdac DOM.
      */
     get id(): string {
-        return this.nodeKind;
+        return this.nodeKind
     }
 
     get name(): string {
@@ -347,7 +400,7 @@ export class JDBus extends JDNode {
     }
 
     get friendlyName(): string {
-        return this.name;
+        return this.name
     }
 
     get qualifiedName(): string {
@@ -359,60 +412,69 @@ export class JDBus extends JDNode {
     }
 
     toString(): string {
-        return this.id;
+        return this.id
     }
 
     node(id: string): JDNode {
         const resolve = (): JDNode => {
-            const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(id)
-            if (!m) return undefined;
+            const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
+                id
+            )
+            if (!m) return undefined
             const type = m.groups["type"]
-            const dev = m.groups["dev"];
-            const srv = parseInt(m.groups["srv"], 16);
-            const reg = parseInt(m.groups["reg"], 16);
-            const idx = parseInt(m.groups["idx"], 16);
+            const dev = m.groups["dev"]
+            const srv = parseInt(m.groups["srv"], 16)
+            const reg = parseInt(m.groups["reg"], 16)
+            const idx = parseInt(m.groups["idx"], 16)
             //console.log(type, this.device(dev), this.device(dev)?.service(srv), this.device(dev)?.service(srv)?.register(reg), idx)
             switch (type) {
-                case BUS_NODE_NAME: return this;
-                case DEVICE_NODE_NAME: return this.device(dev)
-                case SERVICE_NODE_NAME: return this.device(dev)?.service(srv)
-                case REGISTER_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg);
-                case EVENT_NODE_NAME: return this.device(dev)?.service(srv)?.event(reg);
-                case FIELD_NODE_NAME: return this.device(dev)?.service(srv)?.register(reg)?.fields[idx];
+                case BUS_NODE_NAME:
+                    return this
+                case DEVICE_NODE_NAME:
+                    return this.device(dev)
+                case SERVICE_NODE_NAME:
+                    return this.device(dev)?.service(srv)
+                case REGISTER_NODE_NAME:
+                    return this.device(dev)?.service(srv)?.register(reg)
+                case EVENT_NODE_NAME:
+                    return this.device(dev)?.service(srv)?.event(reg)
+                case FIELD_NODE_NAME:
+                    return this.device(dev)?.service(srv)?.register(reg)
+                        ?.fields[idx]
             }
-            this.log('info', `node ${id} not found`)
-            return undefined;
+            this.log("info", `node ${id} not found`)
+            return undefined
         }
-        const node = resolve();
-        return node;
+        const node = resolve()
+        return node
     }
 
     private resetTime() {
-        this._startTime = Date.now();
+        this._startTime = Date.now()
         this.emit(CHANGE)
     }
 
-    get timestamp() {
-        return Date.now() - this._startTime;
+    get timestamp(): number {
+        return Date.now() - this._startTime
     }
 
     get minLoggerPriority(): LoggerPriority {
-        return this._minLoggerPriority;
-    }
-
-    get parent(): JDNode {
-        return undefined;
-    }
-
-    protected get logger(): Log {
-        return this.host.log
+        return this._minLoggerPriority
     }
 
     set minLoggerPriority(priority: LoggerPriority) {
         if (priority !== this._minLoggerPriority) {
-            this._minLoggerPriority = priority;
+            this._minLoggerPriority = priority
             this.emit(CHANGE)
         }
+    }
+
+    get parent(): JDNode {
+        return undefined
+    }
+
+    protected get logger(): Log {
+        return this.host.log
     }
 
     private async pingLoggers() {
@@ -420,28 +482,28 @@ export class JDBus extends JDNode {
             const pkt = Packet.jdpacked<[LoggerPriority]>(
                 0x2000 | LoggerReg.MinPriority,
                 "i32",
-                [this._minLoggerPriority]);
-            await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER);
+                [this._minLoggerPriority]
+            )
+            await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER)
         }
     }
     private async handleRealTimeClockSync(device: JDDevice) {
         // tell time to the RTC clocks
         if (device.hasService(SRV_REAL_TIME_CLOCK))
-            await RealTimeClockServiceHost.syncTime(this);
+            await RealTimeClockServiceHost.syncTime(this)
     }
 
     sendPacketAsync(p: Packet) {
-        p.timestamp = this.timestamp;
-        this.emit(PACKET_SEND, p);
+        p.timestamp = this.timestamp
+        this.emit(PACKET_SEND, p)
 
         if (!this.connected) {
-            this.emit(PACKET_SEND_DISCONNECT, p);
-            return Promise.resolve();
+            this.emit(PACKET_SEND_DISCONNECT, p)
+            return Promise.resolve()
         }
-        const spa = this.transport?.sendPacketAsync;
-        if (!spa)
-            return Promise.resolve();
-        return spa(p);
+        const spa = this.transport?.sendPacketAsync
+        if (!spa) return Promise.resolve()
+        return spa(p)
     }
 
     get connecting() {
@@ -465,13 +527,17 @@ export class JDBus extends JDNode {
     }
 
     set firmwareBlobs(blobs: FirmwareBlob[]) {
-        this._firmwareBlobs = blobs;
+        this._firmwareBlobs = blobs
         this.emit(FIRMWARE_BLOBS_CHANGE)
         this.emit(CHANGE)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     errorHandler(context: string, exception: any) {
-        this.log('error', `error ${context} ${exception?.message}\n${exception?.stack}`)
+        this.log(
+            "error",
+            `error ${context} ${exception?.message}\n${exception?.stack}`
+        )
         this.emit(ERROR, { context, exception })
         this.emit(CHANGE)
     }
@@ -479,82 +545,86 @@ export class JDBus extends JDNode {
     connectAsync(background?: boolean): Promise<void> {
         // already connected
         if (this.connectionState == BusState.Connected) {
-            this.log('debug', `already connected`)
-            return Promise.resolve();
+            this.log("debug", `already connected`)
+            return Promise.resolve()
         }
 
         // connecting
         if (!this._connectPromise) {
             // already disconnecting, retry when disconnected
             if (this._disconnectPromise) {
-                this.log('debug', `queuing connect after disconnecting`)
+                this.log("debug", `queuing connect after disconnecting`)
                 const p = this._disconnectPromise
-                this._disconnectPromise = undefined;
+                this._disconnectPromise = undefined
                 this._connectPromise = p.then(() => this.connectAsync())
-            }
-            else {
+            } else {
                 // starting a fresh connection
-                this.log('debug', `connecting`)
-                this._connectPromise = Promise.resolve();
+                this.log("debug", `connecting`)
+                this._connectPromise = Promise.resolve()
                 this.setConnectionState(BusState.Connecting)
                 if (this.transport?.connectAsync)
-                    this._connectPromise = this._connectPromise
-                        .then(() => this.transport.connectAsync(background))
-                const p = this._connectPromise = this._connectPromise
+                    this._connectPromise = this._connectPromise.then(() =>
+                        this.transport.connectAsync(background)
+                    )
+                const p = (this._connectPromise = this._connectPromise
                     .then(() => {
                         if (p == this._connectPromise) {
-                            this._connectPromise = undefined;
+                            this._connectPromise = undefined
                             this.setConnectionState(BusState.Connected)
                         } else {
-                            this.log('debug', `connection aborted in flight`)
+                            this.log("debug", `connection aborted in flight`)
                         }
                     })
                     .catch(e => {
                         if (p == this._connectPromise) {
-                            this._connectPromise = undefined;
+                            this._connectPromise = undefined
                             this.setConnectionState(BusState.Disconnected)
-                            this.errorHandler(CONNECT, e);
+                            this.errorHandler(CONNECT, e)
                         } else {
-                            this.log('debug', `connection error aborted in flight`)
+                            this.log(
+                                "debug",
+                                `connection error aborted in flight`
+                            )
                         }
-                    })
+                    }))
             }
         } else {
-            this.log('debug', `connect with existing promise`)
+            this.log("debug", `connect with existing promise`)
         }
-        return this._connectPromise;
+        return this._connectPromise
     }
 
     disconnectAsync(): Promise<void> {
         // already disconnected
         if (this.connectionState == BusState.Disconnected)
-            return Promise.resolve();
+            return Promise.resolve()
 
         if (!this._disconnectPromise) {
             // connection in progress, wait and disconnect when done
             if (this._connectPromise) {
-                this.log('debug', `cancelling connection and disconnect`)
-                this._connectPromise = undefined;
+                this.log("debug", `cancelling connection and disconnect`)
+                this._connectPromise = undefined
             }
-            this.log('debug', `disconnecting`)
-            this._disconnectPromise = Promise.resolve();
+            this.log("debug", `disconnecting`)
+            this._disconnectPromise = Promise.resolve()
             this.setConnectionState(BusState.Disconnecting)
             if (this.transport?.disconnectAsync)
-                this._disconnectPromise = this._disconnectPromise
-                    .then(() => this.transport.disconnectAsync())
+                this._disconnectPromise = this._disconnectPromise.then(() =>
+                    this.transport.disconnectAsync()
+                )
             this._disconnectPromise = this._disconnectPromise
                 .catch(e => {
-                    this._disconnectPromise = undefined;
+                    this._disconnectPromise = undefined
                     this.errorHandler(DISCONNECT, e)
                 })
                 .finally(() => {
-                    this._disconnectPromise = undefined;
-                    this.setConnectionState(BusState.Disconnected);
-                });
+                    this._disconnectPromise = undefined
+                    this.setConnectionState(BusState.Disconnected)
+                })
         } else {
-            this.log('debug', `disconnect with existing promise`)
+            this.log("debug", `disconnect with existing promise`)
         }
-        return this._disconnectPromise;
+        return this._disconnectPromise
     }
 
     /**
@@ -563,37 +633,36 @@ export class JDBus extends JDNode {
     devices(options?: DeviceFilter) {
         if (options?.serviceName && options?.serviceClass > -1)
             throw Error("serviceClass and serviceName cannot be used together")
-        const sc = options?.serviceClass > -1
-            ? options?.serviceClass
-            : serviceClass(options?.serviceName);
+        const sc =
+            options?.serviceClass > -1
+                ? options?.serviceClass
+                : serviceClass(options?.serviceName)
 
         let r = this._devices.slice(0)
-        if (sc > -1)
-            r = r.filter(s => s.hasService(sc));
+        if (sc > -1) r = r.filter(s => s.hasService(sc))
         if (options?.ignoreSelf)
-            r = r.filter(s => s.deviceId !== this.selfDeviceId);
-        if (options?.announced)
-            r = r.filter(s => s.announced);
+            r = r.filter(s => s.deviceId !== this.selfDeviceId)
+        if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
-            r = r.filter(r => !this.deviceHost(r.deviceId));
+            r = r.filter(r => !this.deviceHost(r.deviceId))
         if (options?.firmwareIdentifier)
             r = r.filter(r => !!r.firmwareIdentifier)
-        return r;
+        return r
     }
 
     /**
      * Gets the current list of device hosts on the bus
      */
     deviceHosts(): DeviceHost[] {
-        return this._deviceHosts.slice(0);
+        return this._deviceHosts.slice(0)
     }
 
     /**
      * Get a device host for a given device
-     * @param deviceId 
+     * @param deviceId
      */
     deviceHost(deviceId: string) {
-        return this._deviceHosts.find(d => d.deviceId === deviceId);
+        return this._deviceHosts.find(d => d.deviceId === deviceId)
     }
 
     /**
@@ -602,14 +671,14 @@ export class JDBus extends JDNode {
      */
     addDeviceHost(deviceHost: DeviceHost) {
         if (deviceHost && this._deviceHosts.indexOf(deviceHost) < 0) {
-            this._deviceHosts.push(deviceHost);
-            deviceHost.bus = this;
+            this._deviceHosts.push(deviceHost)
+            deviceHost.bus = this
 
-            this.emit(DEVICE_HOST_ADDED);
-            this.emit(CHANGE);
+            this.emit(DEVICE_HOST_ADDED)
+            this.emit(CHANGE)
         }
 
-        return this.device(deviceHost.deviceId);
+        return this.device(deviceHost.deviceId)
     }
 
     /**
@@ -617,139 +686,144 @@ export class JDBus extends JDNode {
      * @param deviceHost
      */
     removeDeviceHost(deviceHost: DeviceHost) {
-        if (!deviceHost) return;
+        if (!deviceHost) return
 
-        const i = this._deviceHosts.indexOf(deviceHost);
+        const i = this._deviceHosts.indexOf(deviceHost)
         if (i > -1) {
             // remove device as well
-            const devi = this._devices.findIndex(d => d.deviceId === deviceHost.deviceId);
+            const devi = this._devices.findIndex(
+                d => d.deviceId === deviceHost.deviceId
+            )
             if (devi > -1) {
-                const dev = this._devices[devi];
+                const dev = this._devices[devi]
                 this._devices.splice(devi, 1)
-                dev.disconnect();
-                this.emit(DEVICE_DISCONNECT, dev);
+                dev.disconnect()
+                this.emit(DEVICE_DISCONNECT, dev)
                 this.emit(DEVICE_CHANGE, dev)
             }
 
             // remove host
             this._deviceHosts.splice(i, 1)
-            deviceHost.bus = undefined;
-            this.emit(DEVICE_HOST_REMOVED);
+            deviceHost.bus = undefined
+            this.emit(DEVICE_HOST_REMOVED)
 
             // removed host
-            this.emit(CHANGE);
+            this.emit(CHANGE)
         }
     }
 
     get children(): JDNode[] {
-        return this.devices();
+        return this.devices()
     }
 
     /**
      * Gets the current list of services from all the known devices on the bus
      */
-    services(options?: { serviceName?: string, serviceClass?: number }): JDService[] {
-        return arrayConcatMany(this.devices(options).map(d => d.services(options)))
+    services(options?: {
+        serviceName?: string
+        serviceClass?: number
+    }): JDService[] {
+        return arrayConcatMany(
+            this.devices(options).map(d => d.services(options))
+        )
     }
 
     /**
      * Gets a device on the bus
-     * @param id 
+     * @param id
      */
     device(id: string) {
         let d = this._devices.find(d => d.deviceId == id)
         if (!d) {
-            this.log('info', `new device ${id}`)
+            this.log("info", `new device ${id}`)
             if (this.devicesFrozen) {
                 this.log(`info`, `devices frozen, dropping ${id}`)
-                return undefined;
+                return undefined
             }
             d = new JDDevice(this, id)
             if (this.host.deviceNameSettings)
                 d.name = this.host.deviceNameSettings.resolve(d)
-            if (!d.name && id === this.selfDeviceId)
-                d.name = "self";
-            this._devices.push(d);
+            if (!d.name && id === this.selfDeviceId) d.name = "self"
+            this._devices.push(d)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
-            this.emit(DEVICE_CONNECT, d);
-            this.emit(DEVICE_CHANGE, d);
+            this.emit(DEVICE_CONNECT, d)
+            this.emit(DEVICE_CHANGE, d)
             this.emit(CHANGE)
         }
         return d
     }
 
-    private _debouncedScanFirmwares: () => void;
+    private _debouncedScanFirmwares: () => void
     setBackgroundFirmwareScans(enabled: boolean) {
         const isSSR = typeof window === "undefined"
-        if (isSSR)
-            enabled = false;
+        if (isSSR) enabled = false
 
         if (enabled) {
             if (!this._debouncedScanFirmwares) {
                 this._debouncedScanFirmwares = debounceAsync(async () => {
                     if (this.connected) {
-                        this.log('info', `scanning firmwares`)
-                        await scanFirmwares(this);
+                        this.log("info", `scanning firmwares`)
+                        await scanFirmwares(this)
                     }
                 }, SCAN_FIRMWARE_INTERVAL)
                 this.on(DEVICE_ANNOUNCE, this._debouncedScanFirmwares)
             }
         } else {
             if (this._debouncedScanFirmwares) {
-                this.log('debug', `disabling background firmware scans`)
-                const d = this._debouncedScanFirmwares;
-                this._debouncedScanFirmwares = undefined;
+                this.log("debug", `disabling background firmware scans`)
+                const d = this._debouncedScanFirmwares
+                this._debouncedScanFirmwares = undefined
                 this.off(DEVICE_ANNOUNCE, d)
             }
         }
     }
 
     freezeDevices() {
-        this._gcDevicesEnabled++;
+        this._gcDevicesEnabled++
     }
 
     unfreezeDevices() {
-        this._gcDevicesEnabled = Math.max(0, this._gcDevicesEnabled - 1);
+        this._gcDevicesEnabled = Math.max(0, this._gcDevicesEnabled - 1)
     }
 
     get devicesFrozen() {
-        return this._gcDevicesEnabled > 0;
+        return this._gcDevicesEnabled > 0
     }
 
     private gcDevices() {
         if (this.devicesFrozen) {
             this.log("debug", "devices frozen")
-            return;
+            return
         }
 
-        const LOST_DELAY = this.options?.deviceLostDelay || JD_DEVICE_LOST_DELAY;
-        const DISCONNECTED_DELAY = this.options?.deviceDisconnectedDelay || JD_DEVICE_DISCONNECTED_DELAY
+        const LOST_DELAY = this.options?.deviceLostDelay || JD_DEVICE_LOST_DELAY
+        const DISCONNECTED_DELAY =
+            this.options?.deviceDisconnectedDelay ||
+            JD_DEVICE_DISCONNECTED_DELAY
         const lostCutoff = this.timestamp - LOST_DELAY
-        const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY;
+        const disconnectedCutoff = this.timestamp - DISCONNECTED_DELAY
 
         // cycle through events and disconnect devices that are long gone
         for (let i = 0; i < this._devices.length; ++i) {
             const dev = this._devices[i]
 
             // don't gc traces
-            if (dev.replay)
-                continue;
+            if (dev.replay) continue
 
             if (dev.lastSeen < disconnectedCutoff) {
                 this._devices.splice(i, 1)
                 i--
                 this.disconnectDevice(dev)
-            }
-            else if (dev.lastSeen < lostCutoff) {
+            } else if (dev.lastSeen < lostCutoff) {
                 dev.lost = true
             }
         }
     }
 
     private disconnectDevice(dev: JDDevice) {
-        dev.disconnect();
-        this.emit(DEVICE_DISCONNECT, dev);
+        dev.disconnect()
+        this.emit(DEVICE_DISCONNECT, dev)
         this.emit(DEVICE_CHANGE, dev)
         this.emit(CHANGE)
     }
@@ -762,8 +836,7 @@ export class JDBus extends JDNode {
         if (!pkt.isMultiCommand && !pkt.device) {
             pkt.device = this.device(pkt.deviceIdentifier)
             // check if devices are frozen
-            if (!pkt.device)
-                return;
+            if (!pkt.device) return
         }
         this.emit(PACKET_PRE_PROCESS, pkt)
         let isAnnounce = false
@@ -778,7 +851,7 @@ export class JDBus extends JDNode {
                     ack.sendReportAsync(this.selfDevice)
                 }
             }
-            pkt.device.processPacket(pkt);
+            pkt.device.processPacket(pkt)
         } else {
             pkt.device.lastSeen = pkt.timestamp
             if (pkt.serviceIndex == JD_SERVICE_INDEX_CTRL) {
@@ -795,10 +868,8 @@ export class JDBus extends JDNode {
             this.emit(PACKET_RECEIVE_ANNOUNCE, pkt)
         } else {
             this.emit(PACKET_RECEIVE, pkt)
-            if (pkt.isEvent)
-                this.emit(PACKET_EVENT, pkt);
-            else if (pkt.isReport)
-                this.emit(PACKET_REPORT, pkt)
+            if (pkt.isEvent) this.emit(PACKET_EVENT, pkt)
+            else if (pkt.isReport) this.emit(PACKET_REPORT, pkt)
         }
     }
 
@@ -811,14 +882,17 @@ export class JDBus extends JDNode {
     }
 
     enableAnnounce() {
-        if (!this._announcing)
-            return;
-        this._announcing = true;
+        if (!this._announcing) return
+        this._announcing = true
         let restartCounter = 0
         this.on(SELF_ANNOUNCE, () => {
             // we do not support any services (at least yet)
             if (restartCounter < 0xf) restartCounter++
-            const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [restartCounter | 0x100])
+            const pkt = Packet.jdpacked<[number]>(
+                CMD_ADVERTISEMENT_DATA,
+                "u32",
+                [restartCounter | 0x100]
+            )
             pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
             pkt.deviceIdentifier = this.selfDeviceId
             pkt.sendReportAsync(this.selfDevice)
@@ -829,92 +903,125 @@ export class JDBus extends JDNode {
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
     private refreshRegisters() {
-        const devices = this._devices
-            .filter(device => device.announced && !device.lost); // don't try lost devices or devices flashing
+        const devices = this._devices.filter(
+            device => device.announced && !device.lost
+        ) // don't try lost devices or devices flashing
 
         // skip if no devices or any device is currently flashing
-        if (!devices.length || devices.some(dev => dev.flashing))
-            return; // no devices, we're done
+        if (!devices.length || devices.some(dev => dev.flashing)) return // no devices, we're done
 
         // collect registers
-        const registers = arrayConcatMany(devices
-            .map(device => arrayConcatMany(
-                device.services({ specification: true })
-                    .map(service => service.registers()
-                        // someone is listening for reports
-                        .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
-                        // ask if data is missing or non-const/status code
-                        .filter(reg => !reg.data
-                            || !(isConstRegister(reg.specification) || reg.code === SystemReg.StatusCode || reg.code === SystemReg.ReadingError))
-                        // double double-query status light
-                        .filter(reg => !reg.data || !(service.serviceClass === SRV_CONTROL && reg.code === ControlReg.StatusLight))
-                        // stop asking optional registers
-                        .filter(reg => !reg.specification?.optional || reg.lastGetAttempts < REGISTER_OPTIONAL_POLL_COUNT)
+        const registers = arrayConcatMany(
+            devices.map(device =>
+                arrayConcatMany(
+                    device.services({ specification: true }).map(service =>
+                        service
+                            .registers()
+                            // someone is listening for reports
+                            .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
+                            // ask if data is missing or non-const/status code
+                            .filter(
+                                reg =>
+                                    !reg.data ||
+                                    !(
+                                        isConstRegister(reg.specification) ||
+                                        reg.code === SystemReg.StatusCode ||
+                                        reg.code === SystemReg.ReadingError
+                                    )
+                            )
+                            // double double-query status light
+                            .filter(
+                                reg =>
+                                    !reg.data ||
+                                    !(
+                                        service.serviceClass === SRV_CONTROL &&
+                                        reg.code === ControlReg.StatusLight
+                                    )
+                            )
+                            // stop asking optional registers
+                            .filter(
+                                reg =>
+                                    !reg.specification?.optional ||
+                                    reg.lastGetAttempts <
+                                        REGISTER_OPTIONAL_POLL_COUNT
+                            )
                     )
-            )
+                )
             )
         )
 
         // refresh values
         for (const register of registers) {
-            const { service, specification } = register;
-            const noDataYet = !register.data;
-            const age = this.timestamp - register.lastGetTimestamp;
-            const backoff = register.lastGetAttempts;
+            const { service, specification } = register
+            const noDataYet = !register.data
+            const age = this.timestamp - register.lastGetTimestamp
+            const backoff = register.lastGetAttempts
 
             // streaming register? use streaming sample
             if (isReading(specification) && isSensor(service.specification)) {
                 // compute refresh interval
-                const intervalRegister = service.register(SensorReg.StreamingInterval);
-                let interval = intervalRegister?.intValue;
+                const intervalRegister = service.register(
+                    SensorReg.StreamingInterval
+                )
+                let interval = intervalRegister?.intValue
                 // no interval data
                 if (interval === undefined) {
                     // use preferred interval data or default to 50
-                    const preferredInterval = service.register(SensorReg.StreamingPreferredInterval);
-                    interval = preferredInterval?.intValue;
+                    const preferredInterval = service.register(
+                        SensorReg.StreamingPreferredInterval
+                    )
+                    interval = preferredInterval?.intValue
                     if (intervalRegister)
                         // all async
-                        intervalRegister.sendGetAsync();
+                        intervalRegister.sendGetAsync()
                 }
                 // still no interval data use from spec or default
                 if (interval === undefined)
-                    interval = specification.preferredInterval || STREAMING_DEFAULT_INTERVAL
-                const samplesRegister = service.register(SensorReg.StreamingSamples);
-                const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp;
+                    interval =
+                        specification.preferredInterval ||
+                        STREAMING_DEFAULT_INTERVAL
+                const samplesRegister = service.register(
+                    SensorReg.StreamingSamples
+                )
+                const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp
                 if (samplesLastSetTimesamp !== undefined) {
-                    const age = this.timestamp - samplesRegister.lastSetTimestamp;
+                    const age =
+                        this.timestamp - samplesRegister.lastSetTimestamp
                     // need to figure out when we asked for streaming
-                    const midAge = interval * 0xff / 2;
+                    const midAge = (interval * 0xff) / 2
                     // compute if half aged
                     if (age > midAge) {
                         //console.log(`auto-refresh - restream`, register)
-                        samplesRegister.sendSetPackedAsync("u8", [0xff]);
+                        samplesRegister.sendSetPackedAsync("u8", [0xff])
                     }
                 }
 
                 // first query, get data asap once per second
-                if (noDataYet && age > 1000)
-                    register.sendGetAsync();
+                if (noDataYet && age > 1000) register.sendGetAsync()
             } // regular register, ping if data is old
             else {
-                const expiration = Math.min(REGISTER_POLL_REPORT_MAX_INTERVAL,
-                    (noDataYet ? REGISTER_POLL_FIRST_REPORT_INTERVAL : REGISTER_POLL_REPORT_INTERVAL)
-                    * (1 << backoff))
+                const expiration = Math.min(
+                    REGISTER_POLL_REPORT_MAX_INTERVAL,
+                    (noDataYet
+                        ? REGISTER_POLL_FIRST_REPORT_INTERVAL
+                        : REGISTER_POLL_REPORT_INTERVAL) *
+                        (1 << backoff)
+                )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
-                    register.sendGetAsync();
+                    register.sendGetAsync()
                 }
             }
         }
 
         // apply streaming samples to device hosts
-        this._deviceHosts.map(host => host.emit(REFRESH));
+        this._deviceHosts.map(host => host.emit(REFRESH))
     }
 
     /**
      * Runs a promise with a timeout. Returns undefined if timeout happens before of disconnection.
-     * @param timeout 
-     * @param p 
+     * @param timeout
+     * @param p
      */
     withTimeout<T>(timeout: number, p: Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
@@ -926,32 +1033,34 @@ export class JDBus extends JDNode {
                         // the bus got disconnected so all operation will
                         // time out going further
                         this.emit(TIMEOUT_DISCONNECT)
-                        resolve(undefined);
-                    }
-                    else {
+                        resolve(undefined)
+                    } else {
                         // the command timed out
                         this.emit(TIMEOUT)
-                        this.emit(ERROR, "Timeout (" + timeout + "ms)");
-                        resolve(undefined);
+                        this.emit(ERROR, "Timeout (" + timeout + "ms)")
+                        resolve(undefined)
                     }
                 }
-            }, timeout);
-            p.then(v => {
-                if (!done) {
-                    done = true
-                    clearTimeout(tid);
-                    resolve(v)
-                } else {
-                    // we already gave up
-                    this.emit(LATE)
+            }, timeout)
+            p.then(
+                v => {
+                    if (!done) {
+                        done = true
+                        clearTimeout(tid)
+                        resolve(v)
+                    } else {
+                        // we already gave up
+                        this.emit(LATE)
+                    }
+                },
+                e => {
+                    if (!done) {
+                        done = true
+                        clearTimeout(tid)
+                        reject(e)
+                    }
                 }
-            }, e => {
-                if (!done) {
-                    done = true
-                    clearTimeout(tid);
-                    reject(e)
-                }
-            })
+            )
         })
     }
 }

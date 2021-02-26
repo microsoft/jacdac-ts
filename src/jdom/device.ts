@@ -168,12 +168,12 @@ export class JDDevice extends JDNode {
         return this._shortId;
     }
 
-    get firmwareInfo() {
-        return this._firmwareInfo;
-    }
-
     get parent(): JDNode {
         return this.bus
+    }
+
+    get firmwareInfo() {
+        return this._firmwareInfo;
     }
 
     set firmwareInfo(info: FirmwareInfo) {
@@ -283,7 +283,7 @@ export class JDDevice extends JDNode {
         assert(this.announced)
         if (!this._services) {
             const n = this.serviceLength;
-            let s = [];
+            const s = [];
             for (let i = 0; i < n; ++i)
                 s.push(new JDService(this, i));
             this._services = s;

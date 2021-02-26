@@ -12,15 +12,15 @@ import { isRegister, isReading } from "./spec";
 import { JDField } from "./field";
 import { JDServiceMemberNode } from "./servicemembernode";
 import { JDNode } from "./node";
-import { jdpack, jdunpack } from "./pack";
+import { jdpack, jdunpack, PackedValues } from "./pack";
 
 
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _fields: JDField[];
-    private _lastSetTimestamp: number = -Infinity;
-    private _lastGetTimestamp: number = -Infinity;
-    private _lastGetAttempts: number = 0;
+    private _lastSetTimestamp = -Infinity;
+    private _lastGetTimestamp = -Infinity;
+    private _lastGetAttempts = 0;
 
     constructor(
         service: JDService,
@@ -77,7 +77,7 @@ export class JDRegister extends JDServiceMemberNode {
             .then(() => { this.emit(GET_ATTEMPT) });
     }
 
-    sendSetPackedAsync(fmt: string, values: any[], autoRefresh?: boolean): Promise<void> {
+    sendSetPackedAsync(fmt: string, values: PackedValues, autoRefresh?: boolean): Promise<void> {
         return this.sendSetAsync(jdpack(fmt, values), autoRefresh)
     }
 
@@ -105,7 +105,7 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastReportPkt?.timestamp
     }
 
-    get unpackedValue(): any[] {
+    get unpackedValue(): PackedValues {
         const d = this.data;
         const fmt = this.specification?.packFormat;
         return d && fmt && jdunpack(this.data, fmt);
@@ -189,9 +189,8 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     compareTo(b: JDRegister) {
-        const a = this;
-        return a.code - b.code ||
-            a.service.compareTo(b.service);
+        return this.code - b.code ||
+            this.service.compareTo(b.service);
     }
 }
 

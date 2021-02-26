@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import JacdacContext from "./Context";
 import { BusState, JDBus } from "../../../src/jdom/bus";
 import { createUSBBus } from "../../../src/jdom/usb";
@@ -36,7 +36,8 @@ GamepadHostManager.start(bus);
 if (typeof window !== "undefined")
     new IFrameBridgeClient(bus, args.frameId); // start bridge
 
-const JacdacProvider = ({ children }) => {
+export default function JacdacProvider(props: { children: ReactNode }) {
+    const { children } = props;
     const [firstConnect, setFirstConnect] = useState(false)
     const [connectionState, setConnectionState] = useState(bus.connectionState);
 
@@ -60,5 +61,3 @@ const JacdacProvider = ({ children }) => {
         </JacdacContext.Provider>
     )
 }
-
-export default JacdacProvider;

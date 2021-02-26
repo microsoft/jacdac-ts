@@ -5,10 +5,10 @@ import Trace from "./trace";
 
 export default class TracePlayer extends JDClient {
     private _trace: Trace;
-    private _busStartTimestamp: number = 0;
-    private _index: number = 0;
+    private _busStartTimestamp = 0;
+    private _index = 0;
     private _interval: any;
-    private _lastProgressEmit: number = 0;
+    private _lastProgressEmit = 0;
 
     constructor(
         public readonly bus: JDBus,

@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-// tslint:disable-next-line: no-submodule-imports
-import Tabs from '@material-ui/core/Tabs';
-// tslint:disable-next-line: no-submodule-imports
-import Tab from '@material-ui/core/Tab';
+import { Tabs, Tab } from '@material-ui/core';
 import { serviceSpecificationFromClassIdentifier } from '../../../src/jdom/spec';
 import { Paper, createStyles, makeStyles, Theme } from '@material-ui/core';
 import TabPanel, { a11yProps } from './ui/TabPanel';
@@ -38,7 +35,7 @@ export default function ServiceSpecificationSource(props: {
     const convs = converters();
     const showDTDL = spec?.camelName !== "system"
 
-    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const handleTabChange = (event: React.ChangeEvent<unknown>, newValue: number) => {
         setTab(newValue);
     };
 
@@ -61,7 +58,7 @@ export default function ServiceSpecificationSource(props: {
                 {showSpecification && <TabPanel key="spec" value={tab} index={index++}>
                     <ServiceSpecification service={spec} />
                 </TabPanel>}
-                {["sts", "ts", "c", "json"].map((lang, i) =>
+                {["sts", "ts", "c", "json"].map((lang) =>
                     <TabPanel key={`conv${lang}`} value={tab} index={index++}>
                         <Snippet value={() => convs[lang](spec)} mode={lang} />
                     </TabPanel>)}

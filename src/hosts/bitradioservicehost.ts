@@ -47,6 +47,7 @@ function getStringOffset(packetType: number) {
     }
 }
 
+/*
 function getMaxStringLength(packetType: number) {
     switch (packetType) {
         case PACKET_TYPE_STRING:
@@ -58,6 +59,7 @@ function getMaxStringLength(packetType: number) {
             return undefined;
     }
 }
+*/
 
 function truncateString(str: string) {
     // TODO

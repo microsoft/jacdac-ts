@@ -7,7 +7,6 @@ import { DEVICE_CHANGE, DEVICE_FIRMWARE_INFO, FIRMWARE_BLOBS_CHANGE } from "../.
 import useEventRaised from "../jacdac/useEventRaised";
 import { computeUpdates } from "../../../src/jdom/flashing";
 import IconButtonWithTooltip from "./ui/IconButtonWithTooltip";
-import useDevices from "./hooks/useDevices";
 
 export default function FlashButton(props: { className?: string }) {
     const { bus } = useContext<JacdacContextProps>(JacdacContext)

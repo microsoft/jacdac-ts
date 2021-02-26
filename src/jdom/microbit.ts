@@ -352,6 +352,7 @@ export class CMSISProto implements Proto {
             return 0
         }
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const a0 = await check(p0)
             if (a0) return a0

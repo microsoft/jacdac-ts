@@ -1,4 +1,4 @@
-import { SystemReg, READING_SENT } from "../jdom/constants";
+import { SystemReg } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
 import { LevelDetector } from "./leveldetector";
 import SensorServiceHost, { SensorServiceOptions } from "./sensorservicehost";

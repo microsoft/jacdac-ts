@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import React, { createContext, useContext, useEffect, useRef } from "react";
 import { JSONTryParse, SMap } from "../../../src/jdom/utils";
 import { BrowserFileStorage, HostedFileStorage, IFileStorage } from '../../../src/embed/filestorage'
 import { IThemeMessage } from "../../../src/embed/protocol";
@@ -64,11 +64,15 @@ const ServiceManagerContext = createContext<ServiceManagerContextProps>({
 });
 ServiceManagerContext.displayName = "Services";
 
+export default ServiceManagerContext;
+
+// eslint-disable-next-line react/prop-types
 export const ServiceManagerProvider = ({ children }) => {
     const { toggleDarkMode } = useContext(DarkModeContext)
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
-    const props = useRef<ServiceManagerContextProps>(createProps())
+    const propsRef = useRef<ServiceManagerContextProps>(createProps())
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleMessage = (ev: MessageEvent<any>) => {
         const msg = ev.data;
         if (msg?.source !== 'jacdac')
@@ -91,14 +95,14 @@ export const ServiceManagerProvider = ({ children }) => {
         return () => { };
     }, [])
 
-    return <ServiceManagerContext.Provider value={props.current}>
+    return <ServiceManagerContext.Provider value={propsRef.current}>
         {children}
     </ServiceManagerContext.Provider>
 
     function createProps(): ServiceManagerContextProps {
         const isHosted = inIFrame();
         let fileStorage: IFileStorage = new BrowserFileStorage()
-        let deviceNames = new LocalStorageDeviceNameSettings(
+        const deviceNames = new LocalStorageDeviceNameSettings(
             bus,
             new LocalStorageSettings("jacdac_device_names")
         );
@@ -120,5 +124,3 @@ export const ServiceManagerProvider = ({ children }) => {
         }
     }
 }
-
-export default ServiceManagerContext;
