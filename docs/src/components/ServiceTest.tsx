@@ -23,10 +23,11 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const { serviceSpec } = props
     const { classIdentifier: serviceClass } = serviceSpec
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
-    const [selectedServiceInstance, setSelectedService] = useState<JDService>(undefined);
+    const [selectedService, setSelectedService] = useState<JDService>(undefined);
     const [activeStep, setActiveStep] = useState(0);
     const [activeTest, setActiveTest] = useState(-1);
     const serviceTest = serviceTestFromServiceSpec(serviceSpec);
+    let testStatuses = serviceTest.tests.map(t => TestStatus.Inactive)
     const gridBreakpoints = useGridBreakpoints()
     // devices that implement serviceSpec
     const serviceInstances = useChange(bus, n =>
@@ -50,8 +51,12 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
     const handleReset = () => {
         setActiveStep(0);
     };
-    const testFinished = (status: TestStatus) => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    const handleClose = (status: TestStatus) => {
+        //if(activeStep != -1)
+        //    testStatuses[activeStep] = status;
+        console.log("HERE");
+        setActiveTest(t => -1)
+        handleNext();
     }
 
     return (
@@ -63,8 +68,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                         <StepLabel>Select a device to test</StepLabel>
                         <StepContent>
                             {!!serviceInstances.length && <Grid container spacing={2}>
-                                {serviceInstances.map(service => <Grid item {...gridBreakpoints}>
-                                    <Card key={service.id}>
+                                {serviceInstances.map(service => <Grid key={service.id} item {...gridBreakpoints}>
+                                    <Card>
                                         <DeviceCardHeader device={service.device} />
                                         <CardActions>
                                             <Button variant="contained" color="primary" onClick={handleSelect(service)}>Select</Button>
@@ -72,8 +77,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                                     </Card>
                                 </Grid>)}
                             </Grid>}
-                            {!serviceInstances.length && <Alert severity="info">Not seeing your device? Try some of the following.
-                        <ul>
+                            {!serviceInstances?.length && <Alert severity="info">Not seeing your device? Try some of the following.
+                                <ul>
                                     <li>Check that your device is connected</li>
                                     <li>Use the <strong>packet console</strong> to monitor packets on the bus</li>
                                     <li>Check the class identifier in your annoucement packets</li>
@@ -88,9 +93,9 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                                     Start Test
                                 </Button>}
                                 {index === activeTest && <ServiceUnitTest
-                                    serviceInstance={selectedServiceInstance}
+                                    serviceInstance={selectedService}
                                     test={test}
-                                    finished={testFinished}
+                                    onFinished={handleClose}
                                 >
                                 </ServiceUnitTest>}
                             </StepContent>
@@ -106,9 +111,8 @@ export default function ServiceTest(props: { serviceSpec: jdspec.ServiceSpec }) 
                     </Paper>
                 )}
             </Grid>
-            {selectedServiceInstance && <DashbardDeviceItem
-                key={selectedServiceInstance.device.id}
-                device={selectedServiceInstance.device}
+            {selectedService && <DashbardDeviceItem
+                device={selectedService.device}
                 showAvatar={true}
                 showHeader={true}
                 expanded={true}
