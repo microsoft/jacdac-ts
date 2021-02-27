@@ -1,36 +1,17 @@
 import React, { useContext, useMemo } from "react"
-import {
-    Paper,
-    createStyles,
-    makeStyles,
-    Theme,
-    Grid,
-} from "@material-ui/core"
+import { Paper, createStyles, makeStyles, Theme, Grid } from "@material-ui/core"
 import { parseServiceSpecificationMarkdownToJSON } from "../../../../jacdac-spec/spectool/jdspec"
-import {
-    serviceMap,
-} from "../../../../src/jdom/spec"
+import { serviceMap } from "../../../../src/jdom/spec"
 import RandomGenerator from "../RandomGenerator"
 import AppContext, { DrawerType } from "../AppContext"
 import useLocalStorage from "../useLocalStorage"
 import Alert from "../ui/Alert"
 import GithubPullRequestButton from "../GithubPullRequestButton"
-import HighlightTextField from "../ui/HighlightTextField"
+import HighlightTextField, { Annotation } from "../ui/HighlightTextField"
+import ServiceSpecification from "../ServiceSpecification"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
-        root: {
-            flexGrow: 1,
-            backgroundColor: theme.palette.background.paper,
-            marginBottom: theme.spacing(1),
-        },
-        segment: {
-            marginBottom: theme.spacing(2),
-        },
-        editor: {
-            backgroundColor: theme.palette.background.default,
-            padding: theme.spacing(1),
-        },
         pre: {
             margin: "0",
             padding: "0",
@@ -44,21 +25,6 @@ const useStyles = makeStyles((theme: Theme) =>
 const SERVICE_SPECIFICATION_STORAGE_KEY =
     "jacdac:servicespecificationeditorsource"
 
-function RichEditor(props: {
-    language?: string
-    value: string
-    onChange: (newValue: string) => void
-}) {
-    const { language = "markdown", value, onChange } = props
-    return (
-        <HighlightTextField
-            code={value}
-            language={language}
-            onChange={onChange}
-        />
-    )
-}
-
 export default function ServiceSpecificationEditor() {
     const [source, setSource] = useLocalStorage(
         SERVICE_SPECIFICATION_STORAGE_KEY,
@@ -70,8 +36,8 @@ export default function ServiceSpecificationEditor() {
         () => parseServiceSpecificationMarkdownToJSON(source, serviceMap()),
         [source]
     )
-    const annotations = json?.errors?.map(error => ({
-        row: error.line,
+    const annotations: Annotation[] = json?.errors?.map(error => ({
+        line: error.line,
         column: 1,
         text: error.message,
         type: "error",
@@ -84,15 +50,17 @@ export default function ServiceSpecificationEditor() {
             json.shortId ||
             `0x${json.classIdentifier.toString(16)}`
         ).toLowerCase()}`
-
+    const annotation = annotations?.[0]
     return (
-        <Grid spacing={2} className={classes.root} container>
-            <Grid key="editor" item xs={12} md={drawerOpen ? 12 : 7}>
-                <Grid container spacing={2}>
+        <Grid spacing={1} container>
+            <Grid item xs={12} md={6}>
+                <Grid container spacing={1}>
                     <Grid item xs={12}>
-                        <RichEditor
-                            value={source}
+                        <HighlightTextField
+                            code={source}
+                            language={"markdown"}
                             onChange={setSource}
+                            annotations={annotations}
                         />
                     </Grid>
                     <Grid item>
@@ -115,21 +83,14 @@ export default function ServiceSpecificationEditor() {
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid key="output" item xs={12} md={drawerOpen ? 12 : 5}>
-                {!!annotations?.length && (
+            <Grid item>
+                {annotation && (
                     <Alert severity="warning">
-                        <ul>
-                            {annotations.map((a, i) => (
-                                <li key={i}>
-                                    line {a.row}: {a.text}
-                                </li>
-                            ))}
-                        </ul>
+                        line {annotation.line}: {annotation.text}
                     </Alert>
                 )}
-                <Paper square className={classes.segment}>
-                    <RandomGenerator device={false} />
-                </Paper>
+                <RandomGenerator device={false} />
+                {json && <ServiceSpecification service={json} />}
             </Grid>
         </Grid>
     )
