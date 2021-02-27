@@ -113,7 +113,7 @@ export default function ServiceTest(props: {
     const [selectedService, setSelectedService] = useState<JDService>(undefined)
     const [activeStep, setActiveStep] = useState(0)
     const [activeTest, setActiveTest] = useState(-1)
-    //const testStatuses = serviceTest.tests.map(() => TestStatus.Inactive)
+    const [testStatuses, setTestStatuses]  = useState<TestStatus[]>([])
 
     // devices that implement serviceSpec
     const handleSelect = (service: JDService) => {
@@ -132,8 +132,9 @@ export default function ServiceTest(props: {
     const handleReset = () => {
         setActiveStep(0)
     }
-    const handleClose = () => {
+    const handleClose = (status: TestStatus) => {
         //if (activeStep != -1) testStatuses[activeStep] = status
+        setTestStatuses([...testStatuses.slice(0, activeTest), status, ...testStatuses.slice(activeTest + 1)])
         setActiveTest(() => -1)
         handleNext()
     }
@@ -142,7 +143,7 @@ export default function ServiceTest(props: {
         <>
             <h1>
                 {`${serviceSpec.name} tests`}
-                <IconButtonWithTooltip to={`/services/${serviceSpec.shortId}/`}>
+                <IconButtonWithTooltip title="go to specifiction" to={`/services/${serviceSpec.shortId}/`}>
                     <InfoIcon />
                 </IconButtonWithTooltip>
             </h1>
@@ -161,10 +162,11 @@ export default function ServiceTest(props: {
                         </Step>
                         {serviceTest?.tests.map((test, index) => (
                             <Step key={index}>
-                                <StepLabel>{test.description}</StepLabel>
+                                <StepLabel error={testStatuses[index] === TestStatus.Failed}>{test.description}</StepLabel>
                                 <StepContent>
                                     {index !== activeTest && (
                                         <Button
+                                            variant="outlined"
                                             onClick={handleStartTest(index)}
                                         >
                                             Start Test
@@ -182,10 +184,10 @@ export default function ServiceTest(props: {
                         ))}
                     </Stepper>
                     {activeStep === serviceTest.tests.length + 1 && (
-                        <Paper square elevation={0}>
-                            <Typography>All steps completed.</Typography>
+                        <Alert severity="success">
+                            <AlertTitle>All steps completed.</AlertTitle>
                             <Button onClick={handleReset}>Reset</Button>
-                        </Paper>
+                        </Alert>
                     )}
                 </Grid>
                 {selectedService && (

@@ -29,12 +29,18 @@ export default function ServiceUnitTest(props: { service: JDService, test: jdtes
                     <StepLabel>{cmd.expr.map(exprToString).join(" ").slice(1, -1)}</StepLabel>}
                 {cmd.kind === "ask" &&
                     <StepContent>
-                        <Button onClick={handleClose(TestStatus.Passed)}>Yes</Button>
-                        <Button onClick={handleClose(TestStatus.Failed)}>No</Button>
+                        <Grid container spacing={1} direction="row">
+                            <Grid item>
+                                <Button variant="outlined" onClick={handleClose(TestStatus.Passed)}>Yes</Button>
+                            </Grid>
+                            <Grid item>
+                                <Button variant="outlined" onClick={handleClose(TestStatus.Failed)}>No</Button>
+                            </Grid>
+                        </Grid>
                     </StepContent>}
                 {cmd.kind === "say" &&
                     <StepContent>
-                        <Button onClick={handleNext}>Next</Button>
+                        <Button variant="outlined" onClick={handleNext}>Next</Button>
                     </StepContent>}
             </Step>)
             )}
