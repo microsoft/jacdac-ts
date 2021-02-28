@@ -15,18 +15,12 @@ import { useEditable } from "use-editable"
 import { Alert } from "@material-ui/lab"
 import { Grid } from "@material-ui/core"
 import GithubPullRequestButton from "../GithubPullRequestButton"
-export interface Annotation {
-    line: number
-    column: number
-    text: string
-    type: "error" | "warning"
-}
 
 export default function HighlightTextField(props: {
     language: string
     code: string
     onChange: (newValue: string) => void
-    annotations?: Annotation[]
+    annotations?: jdspec.Diagnostic[]
     pullRequestTitle?: string
     pullRequestPath?: string
     pullRequestBody?: string
@@ -77,7 +71,7 @@ export default function HighlightTextField(props: {
                                 return (
                                     <span
                                         key={i}
-                                        title={annotation?.text}
+                                        title={annotation?.message}
                                         style={
                                             annotation && {
                                                 borderBottom: "dashed 1px red",
@@ -121,7 +115,7 @@ export default function HighlightTextField(props: {
                         <ul>
                             {annotations.map((a, i) => (
                                 <li key={i}>
-                                    line {a.line}: {a.text}
+                                    line {a.line}: {a.message}
                                 </li>
                             ))}
                         </ul>

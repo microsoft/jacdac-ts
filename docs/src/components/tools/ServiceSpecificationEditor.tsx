@@ -4,7 +4,7 @@ import { parseServiceSpecificationMarkdownToJSON } from "../../../../jacdac-spec
 import { serviceMap } from "../../../../src/jdom/spec"
 import RandomGenerator from "../RandomGenerator"
 import useLocalStorage from "../useLocalStorage"
-import HighlightTextField, { Annotation } from "../ui/HighlightTextField"
+import HighlightTextField from "../ui/HighlightTextField"
 import ServiceSpecification from "../ServiceSpecification"
 
 const SERVICE_SPECIFICATION_STORAGE_KEY =
@@ -19,12 +19,6 @@ export default function ServiceSpecificationEditor() {
         () => parseServiceSpecificationMarkdownToJSON(source, serviceMap()),
         [source]
     )
-    const annotations: Annotation[] = json?.errors?.map(error => ({
-        line: error.line,
-        column: 1,
-        text: error.message,
-        type: "error",
-    }))
     const servicePath =
         json &&
         `services/${(
@@ -39,7 +33,7 @@ export default function ServiceSpecificationEditor() {
                     code={source}
                     language={"markdown"}
                     onChange={setSource}
-                    annotations={annotations}
+                    annotations={json?.errors}
                     pullRequestTitle={json && `Service: ${json.name}`}
                     pullRequestPath={servicePath}
                     pullRequestBody={`This pull request adds a new service definition.`}
