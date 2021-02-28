@@ -92,6 +92,25 @@ export async function fetchReleaseBinary(
     return undefined
 }
 
+export async function fetchText(
+    slug: string,
+    tag: string,
+    path: string,
+    mimeType: string
+) {
+    const downloadUrl = `https://raw.githubusercontent.com/${normalizeSlug(
+        slug
+    )}/${tag}/${path}`
+    const req = await fetch(downloadUrl, {
+        headers: { Accept: mimeType },
+    })
+    if (req.status == 200) {
+        const src = await req.text()
+        return src
+    }
+    return undefined
+}
+
 function useFetchApi<T>(path: string, options?: GitHubApiOptions) {
     const res = useFetch<T>(`${ROOT}${path}`)
     if (res.status !== undefined)
@@ -136,7 +155,10 @@ export function useLatestRelease(slug: string, options?: GitHubApiOptions) {
             status: undefined,
         }
     const uri = `repos/${normalizeSlug(slug)}/releases/latest`
-    const res = useFetchApi<GithubRelease>(uri, { ...(options || {}), ignoreThrottled: true })
+    const res = useFetchApi<GithubRelease>(uri, {
+        ...(options || {}),
+        ignoreThrottled: true,
+    })
     return res
 }
 
@@ -149,6 +171,9 @@ export function useLatestReleases(slug: string, options?: GitHubApiOptions) {
             status: undefined,
         }
     const uri = `repos/${normalizeSlug(slug)}/releases`
-    const res = useFetchApi<GithubRelease[]>(uri, { ...(options || {}), ignoreThrottled: true })
+    const res = useFetchApi<GithubRelease[]>(uri, {
+        ...(options || {}),
+        ignoreThrottled: true,
+    })
     return res
 }

@@ -43,7 +43,7 @@ export default function HighlightTextField(props: {
         indentation: 4,
     })
     return (
-        <Grid container spacing={1}>
+        <Grid container spacing={1} direction="row">
             <Grid item xs={12}>
                 <Highlight
                     {...defaultProps}
