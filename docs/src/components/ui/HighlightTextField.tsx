@@ -48,7 +48,10 @@ export default function HighlightTextField(props: {
                     ref={editorRef}
                     className={className}
                     spellCheck={false}
-                    style={{ ...style, ...{ minHeight: "12rem" } }}
+                    style={{
+                        ...style,
+                        ...{ minHeight: "12rem", whiteSpace: "pre-wrap" },
+                    }}
                 >
                     {tokens.map((line, i) => {
                         const annotation = annots?.find(a => a.line === i + 1)

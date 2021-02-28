@@ -1,26 +1,13 @@
-import React, { useContext, useMemo } from "react"
-import { Paper, createStyles, makeStyles, Theme, Grid } from "@material-ui/core"
+import React, { useMemo } from "react"
+import { Grid } from "@material-ui/core"
 import { parseServiceSpecificationMarkdownToJSON } from "../../../../jacdac-spec/spectool/jdspec"
 import { serviceMap } from "../../../../src/jdom/spec"
 import RandomGenerator from "../RandomGenerator"
-import AppContext, { DrawerType } from "../AppContext"
 import useLocalStorage from "../useLocalStorage"
 import Alert from "../ui/Alert"
 import GithubPullRequestButton from "../GithubPullRequestButton"
 import HighlightTextField, { Annotation } from "../ui/HighlightTextField"
 import ServiceSpecification from "../ServiceSpecification"
-
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        pre: {
-            margin: "0",
-            padding: "0",
-            backgroundColor: "transparent",
-            whiteSpec: "pre-wrap",
-            flexGrow: 1,
-        },
-    })
-)
 
 const SERVICE_SPECIFICATION_STORAGE_KEY =
     "jacdac:servicespecificationeditorsource"
@@ -30,8 +17,6 @@ export default function ServiceSpecificationEditor() {
         SERVICE_SPECIFICATION_STORAGE_KEY,
         ""
     )
-    const classes = useStyles()
-    const { drawerType } = useContext(AppContext)
     const json = useMemo(
         () => parseServiceSpecificationMarkdownToJSON(source, serviceMap()),
         [source]
@@ -42,7 +27,6 @@ export default function ServiceSpecificationEditor() {
         text: error.message,
         type: "error",
     }))
-    const drawerOpen = drawerType != DrawerType.None
     const servicePath =
         json &&
         `services/${(
@@ -53,7 +37,7 @@ export default function ServiceSpecificationEditor() {
     const annotation = annotations?.[0]
     return (
         <Grid spacing={1} container>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
                 <Grid container spacing={1}>
                     <Grid item xs={12}>
                         <HighlightTextField
