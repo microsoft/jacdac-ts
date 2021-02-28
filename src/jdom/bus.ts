@@ -579,7 +579,10 @@ export class JDBus extends JDNode {
                         if (p == this._connectPromise) {
                             this._connectPromise = undefined
                             this.setConnectionState(BusState.Disconnected)
-                            this.errorHandler(CONNECT, e)
+                            if (!background)
+                                this.errorHandler(CONNECT, e)
+                            else
+                                this.log("debug", "background connect failed");
                         } else {
                             this.log(
                                 "debug",

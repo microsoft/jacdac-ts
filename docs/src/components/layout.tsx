@@ -299,7 +299,7 @@ function LayoutWithContext(props: LayoutProps) {
   return (
     <div className={clsx(darkMode, classes.root)}>
       <header>
-        <SEO />
+        <SEO lang="en" />
       </header>
       {!hideMainMenu && <nav>
         <MainAppBar {...props} />
