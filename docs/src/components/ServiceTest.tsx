@@ -129,6 +129,7 @@ export default function ServiceTest(props: {
     //}
     const handleReset = () => {
         setActiveStep(0)
+        setTestStatuses([])
     }
     const handleClose = (status: TestStatus) => {
         //if (activeStep != -1) testStatuses[activeStep] = status
