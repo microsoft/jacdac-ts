@@ -1,7 +1,7 @@
 import { testCommandFunctions } from "../../../jacdac-spec/spectool/jdtestfuns"
 
 export function cmdToTestFunction(cmd: jsep.CallExpression) {
-    let id = (<jsep.Identifier>cmd.callee).name;
+    const id = (<jsep.Identifier>cmd.callee).name;
     return testCommandFunctions.find(t => t.id == id).prompt;
 }
 
