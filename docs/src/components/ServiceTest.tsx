@@ -104,9 +104,10 @@ function Diagnostics(props: { serviceClass: number }) {
 
 export default function ServiceTest(props: {
     serviceSpec: jdspec.ServiceSpec,
-    serviceTest?: jdtest.ServiceTest
+    serviceTest?: jdtest.ServiceTest,
+    showStartSimulator?: boolean
 }) {
-    const { serviceSpec, serviceTest = serviceTestFromServiceSpec(serviceSpec) } = props
+    const { serviceSpec, showStartSimulator, serviceTest = serviceTestFromServiceSpec(serviceSpec) } = props
     const { classIdentifier: serviceClass } = serviceSpec
     const [selectedService, setSelectedService] = useState<JDService>(undefined)
     const [activeStep, setActiveStep] = useState(0)
@@ -146,7 +147,7 @@ export default function ServiceTest(props: {
                     <InfoIcon />
                 </IconButtonWithTooltip>
             </h1>
-            {Flags.diagnostics && <Diagnostics serviceClass={serviceClass} />}
+            {(Flags.diagnostics || showStartSimulator) && <Diagnostics serviceClass={serviceClass} />}
             <Grid container spacing={2}>
                 <Grid item xs>
                     <Stepper activeStep={activeStep} orientation="vertical">
