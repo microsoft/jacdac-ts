@@ -45,12 +45,19 @@ export function cmdToPrompt(cmd: jdtest.UnitTestCommand) {
     return cmd.prompt ? cmd.prompt : cmdToTestFunction(cmd).prompt;
 }
 
+export enum CommandStatus {
+    Suceeded,
+    Failed,
+    InProgress,
+    TimedOut
+}
 
 // once we have change, 
 export function interpretCommand(context: TestContext, cmd: jdtest.UnitTestCommand) {
     const tcf = cmdToTestFunction(cmd);
     switch(<Commands>tcf.id) {
         case 'ask':
+        case 'say':
         case 'changes':
         case 'check':
         case 'decreases':
