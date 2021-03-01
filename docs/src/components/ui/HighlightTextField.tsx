@@ -13,8 +13,20 @@ import DARK_THEME from "prism-react-renderer/themes/vsDark"
 import DarkModeContext from "./DarkModeContext"
 import { useEditable } from "use-editable"
 import { Alert } from "@material-ui/lab"
-import { Grid, TextField } from "@material-ui/core"
+import { Grid, TextField, Tooltip, withStyles } from "@material-ui/core"
 import GithubPullRequestButton from "../GithubPullRequestButton"
+
+const AnnotationTooltip = withStyles(theme => ({
+    arrow: {
+        color: theme.palette.error.main,
+    },
+    tooltip: {
+        backgroundColor: theme.palette.error.main,
+        color: theme.palette.common.white,
+        boxShadow: theme.shadows[1],
+        fontSize: theme.typography.body2.fontSize,
+    },
+}))(Tooltip)
 
 export default function HighlightTextField(props: {
     language: string
@@ -71,10 +83,10 @@ export default function HighlightTextField(props: {
                                 const annotation = annotations?.find(
                                     a => a.line === i + 1
                                 )
-                                return (
+                                const title = annotation?.message
+                                const el = (
                                     <span
                                         key={i}
-                                        title={annotation?.message}
                                         style={
                                             annotation && {
                                                 borderBottom: "dashed 1px red",
@@ -93,6 +105,17 @@ export default function HighlightTextField(props: {
                                             ))}
                                         {i < tokens.length - 1 ? "\n" : null}
                                     </span>
+                                )
+                                return title ? (
+                                    <AnnotationTooltip
+                                        title={title}
+                                        arrow
+                                        key={i}
+                                    >
+                                        {el}
+                                    </AnnotationTooltip>
+                                ) : (
+                                    el
                                 )
                             })}
                         </pre>
@@ -125,7 +148,7 @@ export default function HighlightTextField(props: {
             )}
             {!!annotations?.length && (
                 <Grid item>
-                    <Alert severity="warning">
+                    <Alert severity="error">
                         <ul>
                             {annotations.map((a, i) => (
                                 <li key={i}>
