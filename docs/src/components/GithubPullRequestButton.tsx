@@ -10,14 +10,16 @@ import { useSnackbar } from "notistack";
 import GitHubIcon from '@material-ui/icons/GitHub';
 import ApiKeyAccordion from "./ApiKeyAccordion";
 
-export default function GithubPullRequestButton(props: {
+export interface GithubPullRequestButtonProps {
     title: string,
     label?: string;
     body: string,
     head: string,
     commit: string,
     files: { [path: string]: string | { content: string; encoding: "utf-8" | "base64"; } }
-}) {
+}
+
+export default function GithubPullRequestButton(props: GithubPullRequestButtonProps) {
     const { commit, files, label, title, body, head } = props;
     const { value: token } = useDbValue(GITHUB_API_KEY, "")
     const [, setResponse] = useState(undefined);

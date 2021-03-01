@@ -12,20 +12,28 @@ import LIGHT_THEME from "prism-react-renderer/themes/github"
 import DARK_THEME from "prism-react-renderer/themes/vsDark"
 import DarkModeContext from "./DarkModeContext"
 import { useEditable } from "use-editable"
-export interface Annotation {
-    line: number
-    column: number
-    text: string
-    type: "error" | "warning"
-}
+import { Alert } from "@material-ui/lab"
+import { Grid } from "@material-ui/core"
+import GithubPullRequestButton from "../GithubPullRequestButton"
 
 export default function HighlightTextField(props: {
     language: string
     code: string
     onChange: (newValue: string) => void
-    annotations?: Annotation[]
+    annotations?: jdspec.Diagnostic[]
+    pullRequestTitle?: string
+    pullRequestPath?: string
+    pullRequestBody?: string
 }) {
-    const { code, onChange, language, annotations } = props
+    const {
+        code,
+        onChange,
+        language,
+        annotations,
+        pullRequestTitle,
+        pullRequestPath,
+        pullRequestBody,
+    } = props
     const { darkMode } = useContext(DarkModeContext)
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme
     const editorRef = useRef(null)
@@ -34,51 +42,86 @@ export default function HighlightTextField(props: {
         disabled: false,
         indentation: 4,
     })
-    const annots = annotations?.slice(0, 1)
-
     return (
-        <Highlight
-            {...defaultProps}
-            code={code}
-            language={language as Language}
-            theme={theme}
-        >
-            {({ className, style, tokens, getTokenProps }) => (
-                <pre
-                    ref={editorRef}
-                    className={className}
-                    spellCheck={false}
-                    style={{ ...style, ...{ minHeight: "12rem" } }}
+        <Grid container spacing={1} direction="row">
+            <Grid item xs={12}>
+                <Highlight
+                    {...defaultProps}
+                    code={code}
+                    language={language as Language}
+                    theme={theme}
                 >
-                    {tokens.map((line, i) => {
-                        const annotation = annots?.find(a => a.line === i + 1)
-                        return (
-                            <span
-                                key={i}
-                                title={annotation?.text}
-                                style={
-                                    annotation && {
-                                        border: "solid 1px red",
-                                        backgroundColor: "rgba(255, 0, 0, 0.2)",
-                                    }
-                                }
-                            >
-                                {line
-                                    .filter(token => !token.empty)
-                                    .map((token, key) => (
-                                        <span
-                                            {...getTokenProps({
-                                                token,
-                                                key,
-                                            })}
-                                        />
-                                    ))}
-                                {i < tokens.length - 1 ? "\n" : null}
-                            </span>
-                        )
-                    })}
-                </pre>
+                    {({ className, style, tokens, getTokenProps }) => (
+                        <pre
+                            ref={editorRef}
+                            className={className}
+                            spellCheck={false}
+                            style={{
+                                ...style,
+                                ...{
+                                    minHeight: "12rem",
+                                    whiteSpace: "pre-wrap",
+                                },
+                            }}
+                        >
+                            {tokens.map((line, i) => {
+                                const annotation = annotations?.find(
+                                    a => a.line === i + 1
+                                )
+                                return (
+                                    <span
+                                        key={i}
+                                        title={annotation?.message}
+                                        style={
+                                            annotation && {
+                                                borderBottom: "dashed 1px red",
+                                            }
+                                        }
+                                    >
+                                        {line
+                                            .filter(token => !token.empty)
+                                            .map((token, key) => (
+                                                <span
+                                                    {...getTokenProps({
+                                                        token,
+                                                        key,
+                                                    })}
+                                                />
+                                            ))}
+                                        {i < tokens.length - 1 ? "\n" : null}
+                                    </span>
+                                )
+                            })}
+                        </pre>
+                    )}
+                </Highlight>
+            </Grid>
+            {pullRequestTitle && pullRequestPath && (
+                <Grid item>
+                    <GithubPullRequestButton
+                        title={pullRequestTitle}
+                        head={pullRequestPath}
+                        body={pullRequestBody}
+                        commit={`added files`}
+                        files={{
+                            [pullRequestPath + ".md"]: code,
+                        }}
+                    />
+                </Grid>
             )}
-        </Highlight>
+            {!!annotations?.length && (
+                <Grid item>
+                    <Alert severity="warning">
+                        <ul>
+                            {annotations.map((a, i) => (
+                                <li key={i}>
+                                    line {a.line}: {a.message}
+                                </li>
+                            ))}
+                        </ul>
+                    </Alert>
+                </Grid>
+            )}
+        </Grid>
     )
 }

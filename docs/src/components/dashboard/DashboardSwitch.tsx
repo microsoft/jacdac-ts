@@ -17,9 +17,12 @@ export default function DashboardSwitch(props: DashboardServiceProps) {
     const [switchVariant] = useRegisterUnpackedValue<[SwitchVariant]>(service.register(SwitchReg.Variant));
     const host = useServiceHost<SwitchServiceHost>(service);
     const color = host ? "secondary" : "primary";
+    const widgetSize = `clamp(5em, 25vw, 100%)`
 
     const handleToggle = () => host?.toggle();
 
+    if (on === undefined)
+        return null;
 
     switch (switchVariant) {
         case SwitchVariant.PushButton:
@@ -27,7 +30,8 @@ export default function DashboardSwitch(props: DashboardServiceProps) {
                 checked={on}
                 color={color}
                 label={on ? "on" : "off"}
-                onDown={host && handleToggle} />
+                onDown={host && handleToggle}
+                size={widgetSize} />
         default:
             return <>
                 <Switch aria-labelledby={labelId} color={color} checked={on} onChange={host && handleToggle} />

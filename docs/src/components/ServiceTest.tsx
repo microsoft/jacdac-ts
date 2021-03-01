@@ -7,12 +7,10 @@ import {
     Card,
     CardActions,
     Button,
-    Paper,
     Step,
     StepContent,
     StepLabel,
     Stepper,
-    Typography,
 } from "@material-ui/core"
 // tslint:disable-next-line: no-submodule-imports
 import Alert from "./ui/Alert"
@@ -105,11 +103,11 @@ function Diagnostics(props: { serviceClass: number }) {
 }
 
 export default function ServiceTest(props: {
-    serviceSpec: jdspec.ServiceSpec
+    serviceSpec: jdspec.ServiceSpec,
+    serviceTest?: jdtest.ServiceTest
 }) {
-    const { serviceSpec } = props
+    const { serviceSpec, serviceTest = serviceTestFromServiceSpec(serviceSpec) } = props
     const { classIdentifier: serviceClass } = serviceSpec
-    const serviceTest = serviceTestFromServiceSpec(serviceSpec)
     const [selectedService, setSelectedService] = useState<JDService>(undefined)
     const [activeStep, setActiveStep] = useState(0)
     const [activeTest, setActiveTest] = useState(-1)
@@ -131,6 +129,7 @@ export default function ServiceTest(props: {
     //}
     const handleReset = () => {
         setActiveStep(0)
+        setTestStatuses([])
     }
     const handleClose = (status: TestStatus) => {
         //if (activeStep != -1) testStatuses[activeStep] = status

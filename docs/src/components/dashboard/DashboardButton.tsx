@@ -17,6 +17,9 @@ export default function DashboardButton(props: DashboardServiceProps) {
     const handleDown = () => host?.down();
     const handleUp = () => host?.up();
     const widgetSize = `clamp(5em, 25vw, 100%)`
+
+    if (pressed === undefined)
+        return null;
     
     return <ButtonWidget
         checked={!!pressed}
