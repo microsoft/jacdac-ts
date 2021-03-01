@@ -4,6 +4,7 @@ import { Grid, Button, Paper, Step, StepContent, StepLabel, Stepper } from '@mat
 // tslint:disable-next-line: no-submodule-imports
 import { JDService } from '../../../src/jdom/service';
 import { JDClient } from '../../../src/jdom/client';
+import { cmdToTestFunction } from '../test/interpreter';
 
 export enum TestStatus {
     Inactive,
@@ -25,33 +26,22 @@ export default function ServiceUnitTest(props: { service: JDService, test: jdtes
         <Stepper activeStep={activeCommand} orientation="vertical">
             {test.commands.map((cmd, index) =>
             (<Step key={index}>
-                {(cmd.kind === "say" || cmd.kind === "ask") &&
-                    <StepLabel>{cmd.expr.map(exprToString).join(" ").slice(1, -1)}</StepLabel>}
-                {cmd.kind === "ask" &&
-                    <StepContent>
-                        <Grid container spacing={1} direction="row">
-                            <Grid item>
-                                <Button variant="outlined" onClick={handleClose(TestStatus.Passed)}>Yes</Button>
-                            </Grid>
-                            <Grid item>
-                                <Button variant="outlined" onClick={handleClose(TestStatus.Failed)}>No</Button>
-                            </Grid>
+                <StepLabel>{((s: string) => s == "" ? "No prompt" : s)(cmdToTestFunction(cmd))}</StepLabel>
+                <StepContent>
+                    <Grid container spacing={1} direction="row">
+                        <Grid item>
+                            <Button variant="outlined" onClick={handleNext}>Next</Button>
                         </Grid>
-                    </StepContent>}
-                {cmd.kind === "say" &&
-                    <StepContent>
-                        <Button variant="outlined" onClick={handleNext}>Next</Button>
-                    </StepContent>}
+                        <Grid item>
+                            <Button variant="outlined" onClick={handleClose(TestStatus.Passed)}>Yes</Button>
+                        </Grid>
+                        <Grid item>
+                            <Button variant="outlined" onClick={handleClose(TestStatus.Failed)}>No</Button>
+                        </Grid>
+                    </Grid>
+                </StepContent>
             </Step>)
             )}
         </Stepper>
     </Grid>);
-
-    function exprToString(token: jdtest.ServiceTestToken) {
-        return (token.js ? token.js : "") + (token?.const ? token.const.toString() : "") + (token.id ? token.id : "");
-    }
 }
-
-
-
-
