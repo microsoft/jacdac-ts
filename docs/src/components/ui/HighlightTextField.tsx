@@ -15,6 +15,7 @@ import { useEditable } from "use-editable"
 import { Alert } from "@material-ui/lab"
 import { Grid, TextField, Tooltip, withStyles } from "@material-ui/core"
 import GithubPullRequestButton from "../GithubPullRequestButton"
+import { useId } from "react-use-id-hook"
 
 const AnnotationTooltip = withStyles(theme => ({
     arrow: {
@@ -49,6 +50,7 @@ export default function HighlightTextField(props: {
     const { darkMode } = useContext(DarkModeContext)
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme
     const editorRef = useRef(null)
+    const commitId = useId()
     const [commit, setCommit] = useState("")
     const handleCommitChange = (ev: ChangeEvent<HTMLInputElement>) =>
         setCommit(ev.target.value)
@@ -126,7 +128,9 @@ export default function HighlightTextField(props: {
                 <>
                     <Grid item xs={12}>
                         <TextField
+                            id={commitId}
                             label="commit message"
+                            aria-label="Commit message describing the changes"
                             placeholder="Describe your changes"
                             fullWidth={true}
                             value={commit}
