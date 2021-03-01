@@ -14,7 +14,7 @@ interface TestContext {
 }
 
 export function createTestContext(test: jdtest.ServiceTest, service: JDService) {
-    let spec = serviceSpecificationFromClassIdentifier(test.serviceClassIdentifier)
+    const spec = serviceSpecificationFromClassIdentifier(test.serviceClassIdentifier)
     let info: TestContext = {
         service: service,
         test: test,
@@ -48,7 +48,7 @@ export function cmdToPrompt(cmd: jdtest.UnitTestCommand) {
 
 // once we have change, 
 export function interpretCommand(context: TestContext, cmd: jdtest.UnitTestCommand) {
-    let tcf = cmdToTestFunction(cmd);
+    const tcf = cmdToTestFunction(cmd);
     switch(<Commands>tcf.id) {
         case 'ask':
         case 'changes':
@@ -61,6 +61,7 @@ export function interpretCommand(context: TestContext, cmd: jdtest.UnitTestComma
         case 'rangesFromUpTo':
         case 'reset':
         default:
+            return 0;
     }
 }
 
@@ -73,15 +74,13 @@ function visitExpression(context: TestContext, e: jsep.Expression) {
         case 'CallExpression':
             // TODO: must be start
             // TODO: need to record this expression at start of unit test
+            break
         case 'BinaryExpression': {
             const be = <jsep.BinaryExpression>e
             visitExpression(context, be.left)
             visitExpression(context, be.right)
-            // pop them and evaluate
-            switch (be.operator) {
-
-            }
-            // push the result
+            // TODO: pop them and evaluate
+            // TODO: push the result
             break
         }
         case 'UnaryExpression':
@@ -104,6 +103,7 @@ function visitExpression(context: TestContext, e: jsep.Expression) {
             break
         case 'Literal':
             // push the value
+            break
         default:
             // unreachable, as we should have caught at compile time  
     }
