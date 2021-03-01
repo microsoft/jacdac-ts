@@ -36,7 +36,7 @@ export default function ServiceSpecificationEditor() {
                     annotations={json?.errors}
                     pullRequestTitle={json && `Service: ${json.name}`}
                     pullRequestPath={servicePath}
-                    pullRequestBody={`This pull request adds a new service definition.`}
+                    pullRequestDescription={`This pull request defines a new service.`}
                 />
             </Grid>
             <Grid item>

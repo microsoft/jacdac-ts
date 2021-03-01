@@ -13,8 +13,20 @@ import DARK_THEME from "prism-react-renderer/themes/vsDark"
 import DarkModeContext from "./DarkModeContext"
 import { useEditable } from "use-editable"
 import { Alert } from "@material-ui/lab"
-import { Grid } from "@material-ui/core"
+import { Grid, Tooltip, withStyles } from "@material-ui/core"
 import GithubPullRequestButton from "../GithubPullRequestButton"
+
+const AnnotationTooltip = withStyles(theme => ({
+    arrow: {
+        color: theme.palette.error.main,
+    },
+    tooltip: {
+        backgroundColor: theme.palette.error.main,
+        color: theme.palette.common.white,
+        boxShadow: theme.shadows[1],
+        fontSize: theme.typography.body2.fontSize,
+    },
+}))(Tooltip)
 
 export default function HighlightTextField(props: {
     language: string
@@ -23,7 +35,7 @@ export default function HighlightTextField(props: {
     annotations?: jdspec.Diagnostic[]
     pullRequestTitle?: string
     pullRequestPath?: string
-    pullRequestBody?: string
+    pullRequestDescription?: string
 }) {
     const {
         code,
@@ -32,7 +44,7 @@ export default function HighlightTextField(props: {
         annotations,
         pullRequestTitle,
         pullRequestPath,
-        pullRequestBody,
+        pullRequestDescription,
     } = props
     const { darkMode } = useContext(DarkModeContext)
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme
@@ -68,10 +80,10 @@ export default function HighlightTextField(props: {
                                 const annotation = annotations?.find(
                                     a => a.line === i + 1
                                 )
-                                return (
+                                const title = annotation?.message
+                                const el = (
                                     <span
                                         key={i}
-                                        title={annotation?.message}
                                         style={
                                             annotation && {
                                                 borderBottom: "dashed 1px red",
@@ -91,27 +103,25 @@ export default function HighlightTextField(props: {
                                         {i < tokens.length - 1 ? "\n" : null}
                                     </span>
                                 )
+                                return title ? (
+                                    <AnnotationTooltip
+                                        title={title}
+                                        arrow
+                                        key={i}
+                                    >
+                                        {el}
+                                    </AnnotationTooltip>
+                                ) : (
+                                        el
+                                    )
                             })}
                         </pre>
                     )}
                 </Highlight>
             </Grid>
-            {pullRequestTitle && pullRequestPath && (
-                <Grid item>
-                    <GithubPullRequestButton
-                        title={pullRequestTitle}
-                        head={pullRequestPath}
-                        body={pullRequestBody}
-                        commit={`added files`}
-                        files={{
-                            [pullRequestPath + ".md"]: code,
-                        }}
-                    />
-                </Grid>
-            )}
             {!!annotations?.length && (
-                <Grid item>
-                    <Alert severity="warning">
+                <Grid item xs={12}>
+                    <Alert severity="error">
                         <ul>
                             {annotations.map((a, i) => (
                                 <li key={i}>
@@ -120,6 +130,18 @@ export default function HighlightTextField(props: {
                             ))}
                         </ul>
                     </Alert>
+                </Grid>
+            )}
+            {pullRequestTitle && pullRequestPath && (
+                <Grid item>
+                    <GithubPullRequestButton
+                        title={pullRequestTitle}
+                        head={pullRequestPath}
+                        description={pullRequestDescription}
+                        files={{
+                            [pullRequestPath + ".md"]: code,
+                        }}
+                    />
                 </Grid>
             )}
         </Grid>

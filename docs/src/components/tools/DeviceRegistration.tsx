@@ -28,6 +28,8 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
     const { onValueChange, value, error } = props;
     const [company, setCompany] = useState(value)
     const companies = useMemo(() => unique(deviceSpecifications().map(dev => dev.company)), []);
+    const companyId = useId()
+    const helperText = "Name of the company manufacturing this device. The company name will be used to generate the module identifier."
 
     const handleChange = (ev: unknown, newValue: string) => {
         setCompany(newValue);
@@ -38,19 +40,20 @@ function CompanySelect(props: { error?: string, value?: string, onValueChange?: 
         label="Company"
         helperText={error || helperText} variant="outlined" />
 
-    const helperText = "Name of the company manufacturing this device. The company name will be used to generate the module identifier."
     return <Autocomplete
-        freeSolo={true as any}
+        id={companyId}
+        freeSolo={true}
         fullWidth={true}
         includeInputInList
         autoComplete
         options={companies}
         renderInput={renderInputs}
         inputValue={company}
+        aria-label={helperText}
         onInputChange={handleChange} />
 }
 
-export default function DeviceDesigner() {
+export default function DeviceRegistration() {
     const [device, setDevice] = useLocalStorage<jdspec.DeviceSpec>('jacdac:devicedesigner;2',
         {
             id: "my-device",
@@ -64,8 +67,13 @@ export default function DeviceDesigner() {
     }
     const [firmwaresAnchorEl, setFirmwaresAnchorEl] = React.useState<null | HTMLElement>(null);
     const [imageBase64, setImageBase64] = useState<string>(undefined);
+    const nameId = useId();
     const firmwareMenuId = useId();
-    const handleServiceAdd = (srv: jdspec.ServiceSpec) => () => {
+    const repoId = useId();
+    const identifierId = useId();
+    const homepageId = useId();
+    const handleServiceAdd = (srv: jdspec.ServiceSpec) => {
+        console.log(`add`, srv.classIdentifier)
         device.services.push(srv.classIdentifier)
         updateDevice();
     };
@@ -172,6 +180,7 @@ export default function DeviceDesigner() {
     return <Grid container direction="row" spacing={2}>
         <Grid item xs={12}>
             <TextField
+                id={nameId}
                 required
                 error={!!nameError}
                 helperText={nameError}
@@ -188,6 +197,7 @@ export default function DeviceDesigner() {
         </Grid>
         <Grid item xs={12}>
             <Autocomplete
+                id={repoId}
                 autoComplete
                 placeholder="https://github.com/..."
                 inputValue={device.repo || ""}
@@ -266,6 +276,7 @@ export default function DeviceDesigner() {
         </Grid>
         <Grid item xs={12}>
             <TextField
+                id={identifierId}
                 fullWidth={true}
                 required
                 label="Description"
@@ -278,6 +289,7 @@ export default function DeviceDesigner() {
         </Grid>
         <Grid item xs={12}>
             <TextField
+                id={homepageId}
                 label="Home page url"
                 error={!!linkError}
                 helperText={linkError}
@@ -301,22 +313,19 @@ export default function DeviceDesigner() {
             </PaperBox>
         </Grid>
         <Grid item xs={12}>
-            <PaperBox>
-                <GithubPullRequestButton
-                    label={"submit module"}
-                    title={`Module: ${device.name}`}
-                    head={device.id}
-                    body={`This pull request adds a new module for Jacdac.`}
-                    commit={`added ${device.name} files`}
-                    files={modulePath && {
-                        [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
-                        [imagePath]: {
-                            content: imageBase64,
-                            encoding: "base64"
-                        }
-                    }}
-                />
-            </PaperBox>
+            <GithubPullRequestButton
+                label={"register device"}
+                title={`Device: ${device.name}`}
+                head={`devices/${device.id}`}
+                description={`This pull request registers a new device for Jacdac.`}
+                files={modulePath && {
+                    [modulePath]: JSON.stringify(normalizeDeviceSpecification(device), null, 2),
+                    [imagePath]: {
+                        content: imageBase64,
+                        encoding: "base64"
+                    }
+                }}
+            />
         </Grid>
     </Grid>
 }

@@ -11,6 +11,7 @@ export default function DeviceRenameDialog(props: { device: JDDevice, onClose: (
     const open = !!device
     const [name, setName] = useState(device.name || "");
     const host = useDeviceHost(device)
+    const nameId = useId()
 
     const handleCancel = (ev) => {
         ev.preventDefault()
@@ -35,6 +36,7 @@ export default function DeviceRenameDialog(props: { device: JDDevice, onClose: (
             <DeviceActions device={device} />
             </DialogContentText>
             <TextField
+                id={nameId}
                 autoFocus
                 margin="dense"
                 label="name"

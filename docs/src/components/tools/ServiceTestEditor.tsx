@@ -39,7 +39,7 @@ export default function ServiceTestEditor() {
                 `services/tests/${serviceSpec.shortId}.md`,
                 "text/plain"
             )
-            if (ghSource) 
+            if (ghSource)
                 setSource(ghSource)
             else
                 setError("Test source not found")
@@ -79,7 +79,6 @@ export default function ServiceTestEditor() {
                         json && `Service test: ${serviceSpec.name}`
                     }
                     pullRequestPath={servicePath}
-                    pullRequestBody={`This pull request adds a new service definition.`}
                 />
             </Grid>
             {json && (
