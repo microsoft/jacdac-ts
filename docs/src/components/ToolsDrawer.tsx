@@ -3,25 +3,18 @@ import { Drawer, makeStyles, createStyles, List, ListItemIcon, ListItemText, Lis
 import { IconButton, Link } from "gatsby-theme-material-ui";
 import { MOBILE_BREAKPOINT, MOBILE_TOOLS_DRAWER_WIDTH, TOOLS_DRAWER_WIDTH } from "./layout";
 import AppContext, { } from "./AppContext";
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import { OpenInNew } from '@material-ui/icons';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
 import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects';
-// tslint:disable-next-line: no-submodule-imports match-default-export-name
-import EmojiNatureIcon from '@material-ui/icons/EmojiNature';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SettingsBrightnessIcon from '@material-ui/icons/SettingsBrightness';
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
-import ServiceManagerContext from "./ServiceManagerContext";
 import DarkModeContext from "./ui/DarkModeContext";
 import KindIcon from "./KindIcon";
 import MakeCodeIcon from "./icons/MakeCodeIcon";
-import EdgeImpulseIcon from "./icons/EdgeImpulseIcon";
 import JupyterIcon from "./icons/JupyterIcon";
 import { VIRTUAL_DEVICE_NODE_NAME } from "../../../src/jdom/constants";
 
@@ -70,7 +63,6 @@ function ToolsListItem(props: { text?: string; url?: string; icon?: JSX.Element,
 export default function ToolsDrawer() {
     const classes = useStyles()
     const { toolsMenu, setToolsMenu, toggleShowDeviceHostsDialog } = useContext(AppContext)
-    const { isHosted } = useContext(ServiceManagerContext)
     const { toggleDarkMode, darkMode } = useContext(DarkModeContext)
     const handleClick = (link) => () => {
         if (link.action)
@@ -97,6 +89,9 @@ export default function ToolsDrawer() {
             icon: <SystemUpdateAltIcon />
         },
         {
+            // separator
+        },
+        {
             text: "Start simulator",
             action: toggleShowDeviceHostsDialog,
             icon: <KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />
@@ -110,21 +105,21 @@ export default function ToolsDrawer() {
             icon: <MakeCodeIcon />
         },
         {
-            text: "Edge Impulse",
-            url: "/tools/edge-impulse",
-            icon: <EdgeImpulseIcon />
-        },
-        {
             text: "Jupyter Lab",
             url: "/tools/jupyterlab",
             icon: <JupyterIcon />
         },
         /*
-                {
+            {
+                text: "Edge Impulse",
+                url: "/tools/edge-impulse",
+                icon: <EdgeImpulseIcon />
+            },
+            {
             text: "Azure IoT Hub",
                     url: "/tools/azure-iot-hub",
                     icon: <CloudIcon />
-                },
+            },
         */
         {
             // separator
