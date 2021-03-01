@@ -121,7 +121,7 @@ export default function ServiceCatalog() {
         <Grid container spacing={1}>
             <Grid item xs={12}>
                 <TextField
-                    id={searchid}
+                    id={searchId}
                     margin="normal"
                     type="search"
                     variant="outlined"
