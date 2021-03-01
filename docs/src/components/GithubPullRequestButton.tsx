@@ -30,7 +30,7 @@ export default function GithubPullRequestButton(props: GithubPullRequestButtonPr
     const bodyId = useId()
     const [body, setBody] = useState(description)
 
-    const disabled = busy || !token || !body || !title || !head || !files || !Object.keys(files).length
+    const disabled = busy || !body || !title || !head || !files || !Object.keys(files).length
 
     const handleOpenConfirm = () => setConfirmDialog(true);
     const handleCloseConfirm = () => setConfirmDialog(false)
@@ -120,7 +120,7 @@ export default function GithubPullRequestButton(props: GithubPullRequestButtonPr
             <DialogActions>
                 <Button variant="contained" color="primary" 
                 onClick={handleCreatePullRequest} 
-                disabled={disabled} 
+                disabled={disabled || !token} 
                 aria-label="create pull request">create pull request</Button>
             </DialogActions>
         </Dialog>
