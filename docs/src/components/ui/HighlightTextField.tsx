@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/jsx-key */
-import React, { useContext, useRef } from "react"
+import React, { ChangeEvent, useContext, useRef, useState } from "react"
 import Highlight, {
     defaultProps,
     Language,
@@ -13,7 +13,7 @@ import DARK_THEME from "prism-react-renderer/themes/vsDark"
 import DarkModeContext from "./DarkModeContext"
 import { useEditable } from "use-editable"
 import { Alert } from "@material-ui/lab"
-import { Grid } from "@material-ui/core"
+import { Grid, TextField } from "@material-ui/core"
 import GithubPullRequestButton from "../GithubPullRequestButton"
 
 export default function HighlightTextField(props: {
@@ -37,6 +37,9 @@ export default function HighlightTextField(props: {
     const { darkMode } = useContext(DarkModeContext)
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme
     const editorRef = useRef(null)
+    const [commit, setCommit] = useState("")
+    const handleCommitChange = (ev: ChangeEvent<HTMLInputElement>) =>
+        setCommit(ev.target.value)
 
     useEditable(editorRef, onChange, {
         disabled: false,
@@ -97,17 +100,28 @@ export default function HighlightTextField(props: {
                 </Highlight>
             </Grid>
             {pullRequestTitle && pullRequestPath && (
-                <Grid item>
-                    <GithubPullRequestButton
-                        title={pullRequestTitle}
-                        head={pullRequestPath}
-                        body={pullRequestBody}
-                        commit={`added files`}
-                        files={{
-                            [pullRequestPath + ".md"]: code,
-                        }}
-                    />
-                </Grid>
+                <>
+                    <Grid item xs={12}>
+                        <TextField
+                            label="commit message"
+                            placeholder="Describe your changes"
+                            fullWidth={true}
+                            value={commit}
+                            onChange={handleCommitChange}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <GithubPullRequestButton
+                            title={pullRequestTitle}
+                            head={pullRequestPath}
+                            body={pullRequestBody}
+                            commit={commit || `added files`}
+                            files={{
+                                [pullRequestPath + ".md"]: code,
+                            }}
+                        />
+                    </Grid>
+                </>
             )}
             {!!annotations?.length && (
                 <Grid item>
