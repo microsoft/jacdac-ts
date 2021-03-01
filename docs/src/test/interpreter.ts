@@ -15,7 +15,7 @@ interface TestContext {
 
 export function createTestContext(test: jdtest.ServiceTest, service: JDService) {
     const spec = serviceSpecificationFromClassIdentifier(test.serviceClassIdentifier)
-    let info: TestContext = {
+    const info: TestContext = {
         service: service,
         test: test,
         currentTest: -1,
@@ -28,8 +28,8 @@ export function createTestContext(test: jdtest.ServiceTest, service: JDService) 
     test.tests.forEach(ut => {
         ut.registers.forEach(id => {
             if (info.deviceState.findIndex(r => r.id === id) < 0) {
-                let pkt = spec.packets.find(pkt => pkt.identifierName === id)
-                    info.deviceState.push({ id: id, reg: new JDRegister(service, pkt.identifier)})
+                const pkt = spec.packets.find(pkt => pkt.identifierName === id)
+                info.deviceState.push({ id: id, reg: new JDRegister(service, pkt.identifier)})
             }
         })
     })
