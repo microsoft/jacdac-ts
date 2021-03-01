@@ -161,7 +161,7 @@ export default function ServiceTest(props: {
                         </Step>
                         {serviceTest?.tests.map((test, index) => (
                             <Step key={index}>
-                                <StepLabel error={testStatuses[index] === TestStatus.Failed}>{test.prompt}</StepLabel>
+                                <StepLabel error={testStatuses[index] === TestStatus.Failed}>{test.description}</StepLabel>
                                 <StepContent>
                                     {index !== activeTest && (
                                         <Button

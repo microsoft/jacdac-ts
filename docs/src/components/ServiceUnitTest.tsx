@@ -4,7 +4,7 @@ import { Grid, Button, Paper, Step, StepContent, StepLabel, Stepper } from '@mat
 // tslint:disable-next-line: no-submodule-imports
 import { JDService } from '../../../src/jdom/service';
 import { JDClient } from '../../../src/jdom/client';
-import { cmdToTestFunction } from '../test/interpreter';
+import { cmdToPrompt } from '../test/interpreter';
 
 export enum TestStatus {
     Inactive,
@@ -26,7 +26,7 @@ export default function ServiceUnitTest(props: { service: JDService, test: jdtes
         <Stepper activeStep={activeCommand} orientation="vertical">
             {test.commands.map((cmd, index) =>
             (<Step key={index}>
-                <StepLabel>{((s: string) => s == "" ? "No prompt" : s)(cmdToTestFunction(cmd))}</StepLabel>
+                <StepLabel>{((s: string) => s == "" ? "No prompt" : s)(cmdToPrompt(cmd))}</StepLabel>
                 <StepContent>
                     <Grid container spacing={1} direction="row">
                         <Grid item>

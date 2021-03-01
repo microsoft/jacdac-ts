@@ -14,7 +14,6 @@ import { JDServiceMemberNode } from "./servicemembernode";
 import { JDNode } from "./node";
 import { jdpack, jdunpack, PackedValues } from "./pack";
 
-
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
     private _fields: JDField[];
