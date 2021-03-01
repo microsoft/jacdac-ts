@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/jsx-key */
-import React, { ChangeEvent, useContext, useRef, useState } from "react"
+import React, { useContext, useRef } from "react"
 import Highlight, {
     defaultProps,
     Language,
@@ -13,9 +13,8 @@ import DARK_THEME from "prism-react-renderer/themes/vsDark"
 import DarkModeContext from "./DarkModeContext"
 import { useEditable } from "use-editable"
 import { Alert } from "@material-ui/lab"
-import { Grid, TextField, Tooltip, withStyles } from "@material-ui/core"
+import { Grid, Tooltip, withStyles } from "@material-ui/core"
 import GithubPullRequestButton from "../GithubPullRequestButton"
-import { useId } from "react-use-id-hook"
 
 const AnnotationTooltip = withStyles(theme => ({
     arrow: {
@@ -36,7 +35,7 @@ export default function HighlightTextField(props: {
     annotations?: jdspec.Diagnostic[]
     pullRequestTitle?: string
     pullRequestPath?: string
-    pullRequestBody?: string
+    pullRequestDescription?: string
 }) {
     const {
         code,
@@ -45,15 +44,11 @@ export default function HighlightTextField(props: {
         annotations,
         pullRequestTitle,
         pullRequestPath,
-        pullRequestBody,
+        pullRequestDescription,
     } = props
     const { darkMode } = useContext(DarkModeContext)
     const theme = (darkMode === "dark" ? DARK_THEME : LIGHT_THEME) as PrismTheme
     const editorRef = useRef(null)
-    const commitId = useId()
-    const [commit, setCommit] = useState("")
-    const handleCommitChange = (ev: ChangeEvent<HTMLInputElement>) =>
-        setCommit(ev.target.value)
 
     useEditable(editorRef, onChange, {
         disabled: false,
@@ -117,41 +112,15 @@ export default function HighlightTextField(props: {
                                         {el}
                                     </AnnotationTooltip>
                                 ) : (
-                                    el
-                                )
+                                        el
+                                    )
                             })}
                         </pre>
                     )}
                 </Highlight>
             </Grid>
-            {pullRequestTitle && pullRequestPath && (
-                <>
-                    <Grid item xs={12}>
-                        <TextField
-                            id={commitId}
-                            label="commit message"
-                            aria-label="Commit message describing the changes"
-                            placeholder="Describe your changes"
-                            fullWidth={true}
-                            value={commit}
-                            onChange={handleCommitChange}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <GithubPullRequestButton
-                            title={pullRequestTitle}
-                            head={pullRequestPath}
-                            body={pullRequestBody}
-                            commit={commit || `added files`}
-                            files={{
-                                [pullRequestPath + ".md"]: code,
-                            }}
-                        />
-                    </Grid>
-                </>
-            )}
             {!!annotations?.length && (
-                <Grid item>
+                <Grid item xs={12}>
                     <Alert severity="error">
                         <ul>
                             {annotations.map((a, i) => (
@@ -161,6 +130,18 @@ export default function HighlightTextField(props: {
                             ))}
                         </ul>
                     </Alert>
+                </Grid>
+            )}
+            {pullRequestTitle && pullRequestPath && (
+                <Grid item>
+                    <GithubPullRequestButton
+                        title={pullRequestTitle}
+                        head={pullRequestPath}
+                        description={pullRequestDescription}
+                        files={{
+                            [pullRequestPath + ".md"]: code,
+                        }}
+                    />
                 </Grid>
             )}
         </Grid>
