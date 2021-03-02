@@ -2,7 +2,7 @@ import { JDBus } from "./bus";
 import { DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
-import { debounce, toHex } from "./utils";
+import { debounce } from "./utils";
 
 const MIN_ASPECT_RATIO = 0.89;
 
