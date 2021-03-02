@@ -59,7 +59,7 @@ function Carousel() {
 
     return <Grid container alignItems="flex-start" spacing={1}>
         {devices.map(device => <DashboardDeviceItem key={device.id}
-            device={device} variant="icon" showAvatar={false} />)}
+            device={device} showAvatar={false} />)}
         <Grid item>
             <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
                 onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
@@ -72,7 +72,6 @@ function Carousel() {
 }
 
 export default function Page() {
-    const { bus } = useContext<JacdacContextProps>(JacdacContext);
     const { toggleDarkMode } = useContext(DarkModeContext);
     const rawTheme = createMuiTheme({
         palette: {
