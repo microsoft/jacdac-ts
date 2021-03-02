@@ -83,7 +83,7 @@ export default function ServiceTestEditor() {
             </Grid>
             {json && (
                 <Grid item xs={12}>
-                    <ServiceTest serviceSpec={serviceSpec} serviceTest={json} />
+                    <ServiceTest showStartSimulator={true} serviceSpec={serviceSpec} serviceTest={json} />
                 </Grid>
             )}
         </Grid>

@@ -376,6 +376,13 @@ export class JDBus extends JDNode {
     }
 
     clear() {
+        // clear hosts
+        if (this._deviceHosts?.length) {
+            this._deviceHosts.forEach(host => host.bus = undefined);
+            this._deviceHosts = [];    
+        }
+
+        // clear devices
         const devs = this._devices
         if (devs?.length) {
             this._devices = []
@@ -579,10 +586,8 @@ export class JDBus extends JDNode {
                         if (p == this._connectPromise) {
                             this._connectPromise = undefined
                             this.setConnectionState(BusState.Disconnected)
-                            if (!background)
-                                this.errorHandler(CONNECT, e)
-                            else
-                                this.log("debug", "background connect failed");
+                            if (!background) this.errorHandler(CONNECT, e)
+                            else this.log("debug", "background connect failed")
                         } else {
                             this.log(
                                 "debug",

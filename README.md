@@ -53,9 +53,8 @@ provides seamless support for git sub-modules and is our preferred editor.
 ```
 code .
 ```
-* go to extensions and install the **ESLint** and **Prettier** extensions
+* install the recommended extensions (**MDX**, **ESLint** and **Prettier** extensions)
 * in the Git view, click on the ``jacdac`` branch and select ``main`` so that changes are automatically synched
-* install MDX support in VS Code https://marketplace.visualstudio.com/items?itemName=silvenon.mdx
 
 ### Specs build
 
@@ -113,7 +112,13 @@ gatsby serve
 nav to http://127.0.0.1:3001
 ```
 
-### Jacdac+MakeCode
+If the build fails after pulling, try
+
+```
+yarn cleandocs
+```
+
+### Jacdac + MakeCode
 
 ### Local build
 
