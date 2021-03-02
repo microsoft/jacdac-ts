@@ -2,7 +2,7 @@ import { JDBus } from "./bus";
 import { DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
-import { debounce, toHex } from "./utils";
+import { debounce } from "./utils";
 
 const MIN_ASPECT_RATIO = 0.89;
 
@@ -93,9 +93,13 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     private handleMessageJacdac(msg: PacketMessage) {
         if (msg.sender === this.bridgeId)  // returning packet
             return;
-        const pkts = Packet.fromFrame(msg.data, this.bus.timestamp);
-        if (!pkts.length)
-            return;
+        // try frame format (sent by hardware, hosts)
+        let pkts = Packet.fromFrame(msg.data, this.bus.timestamp);
+        if (!pkts.length) {
+            // try as a single packet (send by the MakeCode simulator)
+            const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
+            pkts = pkt && [pkt];
+        }
         this.packetProcessed += pkts.length;
 
         for (const pkt of pkts) {

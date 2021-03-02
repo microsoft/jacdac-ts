@@ -24,7 +24,7 @@ import makecodeServicesData from "../../jacdac-spec/services/makecode-extensions
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _serviceTests: jdtest.ServiceTest[] = serviceTestData as any
+const _serviceTests: jdtest.ServiceTestSpec[] = serviceTestData as any
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
@@ -205,7 +205,7 @@ export function serviceSpecificationFromClassIdentifier(
  */
 export function serviceTestFromServiceSpec(
     spec: jdspec.ServiceSpec
-): jdtest.ServiceTest {
+): jdtest.ServiceTestSpec {
     return (
         !!spec &&
         _serviceTests.find(
