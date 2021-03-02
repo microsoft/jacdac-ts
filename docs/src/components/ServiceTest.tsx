@@ -59,7 +59,8 @@ export default function ServiceTest(props: {
     const [activeStep, setActiveStep] = useState(0)
     const factory = useCallback(service => new JDServiceTestRunner(serviceTest, service),[serviceTest])
     const testRunner = useServiceClient(selectedService, factory)
-
+    const [testStatuses, setTestStatuses]  = useState<JDTestStatus[]>([])
+    
     const handleSelect = (service: JDService) => {
         setSelectedService(service)
         handleNext()
@@ -69,6 +70,7 @@ export default function ServiceTest(props: {
     const handleReset = () => { testRunner.reset() }
     const handleClose = (test: JDTestRunner) => (status: JDTestStatus) => {
         test.finish(status)
+        setTestStatuses(testRunner.tests.map(t => t.status))
         handleNext()
     }
 
@@ -95,9 +97,9 @@ export default function ServiceTest(props: {
                         </Step>
                         {testRunner?.tests.map((test, index) => (
                             <Step key={index}>
-                                <StepLabel error={test.status === JDTestStatus.Failed}>{test.description}</StepLabel>
+                                <StepLabel error={testStatuses[index] === JDTestStatus.Failed}>{test.description}</StepLabel>
                                 <StepContent>
-                                    {test.status === JDTestStatus.Ready && (
+                                    {testStatuses[index] === JDTestStatus.Ready && (
                                         <Button
                                             variant="outlined"
                                             onClick={handleStartTest(test)}
@@ -105,7 +107,7 @@ export default function ServiceTest(props: {
                                             Start Test
                                         </Button>
                                     )}
-                                    {test.status === JDTestStatus.Active && (
+                                    {testStatuses[index]=== JDTestStatus.Active && (
                                         <ServiceUnitTest
                                             test={test}
                                             onFinished={handleClose(test)}
