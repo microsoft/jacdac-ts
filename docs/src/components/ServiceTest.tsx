@@ -1,4 +1,5 @@
-import React, { useContext, useState } from "react"
+import React, { useContext, useState, useCallback } from "react"
+import useServiceClient from "./useServiceClient"
 import useGridBreakpoints from "./useGridBreakpoints"
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context"
 import useChange from "../jacdac/useChange"
@@ -13,21 +14,22 @@ import {
     Stepper,
 } from "@material-ui/core"
 // tslint:disable-next-line: no-submodule-imports
-import Alert from "./ui/Alert"
-import DeviceCardHeader from "./DeviceCardHeader"
-import { JDService } from "../../../src/jdom/service"
-import { serviceTestFromServiceSpec } from "../../../src/jdom/spec"
-import ServiceUnitTest, { TestStatus } from "./ServiceUnitTest"
-import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
-import Flags from "../../../src/jdom/flags"
 import { AlertTitle } from "@material-ui/lab"
+// tslint:disable-next-line: match-default-export-name no-submodule-imports
+import InfoIcon from "@material-ui/icons/Info"
+import DeviceCardHeader from "./DeviceCardHeader"
+import DashbardDeviceItem from "./dashboard/DashboardDeviceItem"
+import ServiceUnitTest from "./ServiceUnitTest"
+import Alert from "./ui/Alert"
+import IconButtonWithTooltip from "./ui/IconButtonWithTooltip"
 import {
     addHost,
     hostDefinitionFromServiceClass,
 } from "../../../src/hosts/hosts"
-import IconButtonWithTooltip from "./ui/IconButtonWithTooltip"
-// tslint:disable-next-line: match-default-export-name no-submodule-imports
-import InfoIcon from "@material-ui/icons/Info"
+import Flags from "../../../src/jdom/flags"
+import { JDService } from "../../../src/jdom/service"
+import { serviceTestFromServiceSpec } from "../../../src/jdom/spec"
+import { ServiceTestRunner, TestStatus} from "../../../src/test/testrunner"
 
 function SelectService(props: {
     serviceClass: number
@@ -102,6 +104,7 @@ function Diagnostics(props: { serviceClass: number }) {
     )
 }
 
+
 export default function ServiceTest(props: {
     serviceSpec: jdspec.ServiceSpec,
     serviceTest?: jdtest.ServiceTest,
@@ -111,31 +114,22 @@ export default function ServiceTest(props: {
     const { classIdentifier: serviceClass } = serviceSpec
     const [selectedService, setSelectedService] = useState<JDService>(undefined)
     const [activeStep, setActiveStep] = useState(0)
-    const [activeTest, setActiveTest] = useState(-1)
-    const [testStatuses, setTestStatuses]  = useState<TestStatus[]>([])
+    const factory = useCallback(service => new ServiceTestRunner(serviceTest, service),[])
+    const testRunner: ServiceTestRunner = useServiceClient(selectedService, factory)
 
-    // devices that implement serviceSpec
     const handleSelect = (service: JDService) => {
         setSelectedService(service)
         handleNext()
     }
     const handleStartTest = (t: number) => () => {
-        setActiveTest(() => t)
+        testRunner.startTest(t);
     }
     const handleNext = () => {
         setActiveStep(prevActiveStep => prevActiveStep + 1)
     }
-    //const handleBack = () => {
-    //    setActiveStep(prevActiveStep => prevActiveStep - 1)
-    //}
-    const handleReset = () => {
-        setActiveStep(0)
-        setTestStatuses([])
-    }
+    const handleReset = () => { testRunner.reset() }
     const handleClose = (status: TestStatus) => {
-        //if (activeStep != -1) testStatuses[activeStep] = status
-        setTestStatuses([...testStatuses.slice(0, activeTest), status, ...testStatuses.slice(activeTest + 1)])
-        setActiveTest(() => -1)
+        testRunner.finishTest(status);
         handleNext()
     }
 
@@ -160,11 +154,11 @@ export default function ServiceTest(props: {
                                 />
                             </StepContent>
                         </Step>
-                        {serviceTest?.tests.map((test, index) => (
+                        {testRunner?.tests.map((test, index) => (
                             <Step key={index}>
-                                <StepLabel error={testStatuses[index] === TestStatus.Failed}>{test.description}</StepLabel>
+                                <StepLabel error={test.status === TestStatus.Failed}>{test.description}</StepLabel>
                                 <StepContent>
-                                    {index !== activeTest && (
+                                    {index !== testRunner.currentTest.index && (
                                         <Button
                                             variant="outlined"
                                             onClick={handleStartTest(index)}
@@ -172,9 +166,8 @@ export default function ServiceTest(props: {
                                             Start Test
                                         </Button>
                                     )}
-                                    {index === activeTest && (
+                                    {index === testRunner.currentTest.index && (
                                         <ServiceUnitTest
-                                            service={selectedService}
                                             test={test}
                                             onFinished={handleClose}
                                         ></ServiceUnitTest>

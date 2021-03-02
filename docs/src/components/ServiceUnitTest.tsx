@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import useChange from '../jacdac/useChange';
 import { Grid, Button, Paper, Step, StepContent, StepLabel, Stepper } from '@material-ui/core';
 // tslint:disable-next-line: no-submodule-imports
 import { JDService } from '../../../src/jdom/service';
-import { JDClient } from '../../../src/jdom/client';
-import { cmdToPrompt } from '../test/interpreter';
+import { cmdToPrompt } from '../../../src/test/testrunner';
+import { UnitTestRunner, TestStatus} from "../../../src/test/testrunner"
 
-export enum TestStatus {
-    Inactive,
-    Active,
-    Passed,
-    Failed,
-}
 
-export default function ServiceUnitTest(props: { service: JDService, test: jdtest.UnitTest, onFinished: (status: TestStatus) => void }) {
-    const { service, test, onFinished } = props
+export default function ServiceUnitTest(props: { test: UnitTestRunner, onFinished: (status: TestStatus) => void }) {
+    const { test, onFinished } = props
     const [activeCommand, setActiveCommand] = useState(0);
     const handleNext = () => {
         setActiveCommand((prev) => prev + 1);
