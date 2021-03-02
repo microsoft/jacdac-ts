@@ -32,7 +32,7 @@
     "watch": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts -w",
     "test": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts",
     "tools": "npx http-server . -c-1",
-    "installdocs": "cd docs && npm install --force",
+    "installdocs": "cd docs && npm install --legacy-peer-deps",
     "installdev": "npm install && npm run installdocs",
     "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
     "docs": "npm run dist && cd docs && node node_modules/gatsby/cli.js develop",
