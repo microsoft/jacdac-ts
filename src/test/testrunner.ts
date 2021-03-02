@@ -67,30 +67,27 @@ export class ServiceTestRunner extends JDServiceClient {
 
     constructor(private test: jdtest.ServiceTest, service: JDService) {
         super(service)
-        this.start()
+        this.reset()
     }
 
-    public reset() {
+    public reset() { 
+        // TODO: what about JDRegisters?
         this.unitTests = []
         this._currentTest = null
-        this.start()
-    }
-
-    private start() { 
-        if (this._currentTest === null) {
-            const spec = serviceSpecificationFromClassIdentifier(this.test.serviceClassIdentifier)
-            // collect up all the registers that are read by the unit tests
-            this.test.tests.forEach((ut,index) => {
-                this.unitTests.push(new UnitTestRunner(ut, index));
-                ut.registers.forEach(id => {
-                    if (this.deviceState.findIndex(r => r.id === id) < 0) {
-                        const pkt = spec.packets.find(pkt => pkt.identifierName === id)
-                        this.deviceState.push({ id: id, reg: new JDRegister(this.service, pkt.identifier)})
-                    }
-                })
+        const spec = serviceSpecificationFromClassIdentifier(this.test.serviceClassIdentifier)
+        // collect up all the registers that are read by the unit tests
+        // TODO: problem here with "position"
+        /*
+        this.test.tests.forEach((ut,index) => {
+            this.unitTests.push(new UnitTestRunner(ut, index));
+            ut.registers.forEach(id => {
+                if (this.deviceState.findIndex(r => r.id === id) < 0) {
+                    const pkt = spec.packets.find(p => { console.log(p.identifierName, id); return p.identifierName === id } )
+                    this.deviceState.push({ id: id, reg: new JDRegister(this.service, pkt.identifier)})
+                }
             })
-            this._currentTest = this.unitTests[0]
-        }
+        })*/
+        this._currentTest = this.unitTests[0]
     }
 
     public startTest(index: number) {
