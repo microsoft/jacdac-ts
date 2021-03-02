@@ -114,7 +114,7 @@ export default function ServiceTest(props: {
     const { classIdentifier: serviceClass } = serviceSpec
     const [selectedService, setSelectedService] = useState<JDService>(undefined)
     const [activeStep, setActiveStep] = useState(0)
-    const factory = useCallback(service => new ServiceTestRunner(serviceTest, service),[])
+    const factory = useCallback(service => new ServiceTestRunner(serviceTest, service),[serviceTest])
     const testRunner: ServiceTestRunner = useServiceClient(selectedService, factory)
 
     const handleSelect = (service: JDService) => {

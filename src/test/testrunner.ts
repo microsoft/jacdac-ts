@@ -37,10 +37,10 @@ export class CommandRunner {
 }
 
 export class UnitTestRunner {
-    _status: TestStatus = TestStatus.NotStarted 
-    private currentCmd: number = -1;
-    private currentCmdStatus: CommandStatus = CommandStatus.NotStarted;
-    private commandTimeOut: number = 10000;
+    _status = TestStatus.NotStarted 
+    private currentCmd = -1;
+    private currentCmdStatus = CommandStatus.NotStarted;
+    private commandTimeOut = 10000;
     constructor(private unitTest: jdtest.UnitTest, private _index: number) {
     }
 
@@ -142,16 +142,16 @@ export class ServiceTestRunner extends JDServiceClient {
         }
     }
 
+    private tos() {
+        return this.exprStack[this.exprStack.length-1]
+    }
+
     // stack-based evaluation
     private visitExpression(e: jsep.Expression) {
-        let _this = this
-        function tos() {
-            return _this.exprStack[_this.exprStack.length-1]
-        }
         switch(e.type) {
             case 'CallExpression': {
-                let caller = <jsep.CallExpression>e;
-                let callee = <jsep.Identifier>caller.callee
+                const caller = <jsep.CallExpression>e;
+                const callee = <jsep.Identifier>caller.callee
                 
                 break
             }
@@ -169,10 +169,10 @@ export class ServiceTestRunner extends JDServiceClient {
                 this.visitExpression(le.left);
                 switch (le.operator) {
                     case '||': 
-                        if (tos()) return; else this.visitExpression(le.right)
+                        if (this.tos()) return; else this.visitExpression(le.right)
                         break 
                     case '&&':
-                        if (!tos()) return; else this.visitExpression(le.right)
+                        if (!this.tos()) return; else this.visitExpression(le.right)
                         break 
                     default: //unreachable
                 }
