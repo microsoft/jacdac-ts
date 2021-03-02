@@ -104,7 +104,7 @@ function Diagnostics(props: { serviceClass: number }) {
 
 export default function ServiceTest(props: {
     serviceSpec: jdspec.ServiceSpec,
-    serviceTest?: jdtest.ServiceTest,
+    serviceTest?: jdtest.ServiceTestSpec,
     showStartSimulator?: boolean
 }) {
     const { serviceSpec, showStartSimulator, serviceTest = serviceTestFromServiceSpec(serviceSpec) } = props
