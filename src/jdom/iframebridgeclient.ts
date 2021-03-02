@@ -93,9 +93,13 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     private handleMessageJacdac(msg: PacketMessage) {
         if (msg.sender === this.bridgeId)  // returning packet
             return;
-        const pkts = Packet.fromFrame(msg.data, this.bus.timestamp);
-        if (!pkts.length)
-            return;
+        // try frame format (sent by hardware, hosts)
+        let pkts = Packet.fromFrame(msg.data, this.bus.timestamp);
+        if (!pkts.length) {
+            // try as a single packet (send by the MakeCode simulator)
+            const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
+            pkts = pkt && [pkt];
+        }
         this.packetProcessed += pkts.length;
 
         for (const pkt of pkts) {
