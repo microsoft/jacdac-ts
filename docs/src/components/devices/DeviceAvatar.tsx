@@ -30,7 +30,6 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function DeviceAvatar(props: { device: JDDevice, showMissing?: boolean, size?: "small" | "large" }) {
   const { device, showMissing, size } = props;
   const { specification, imageUrl } = useDeviceSpecification(device);
-  const { showRenameDeviceDialog } = useContext(AppContext)
   const name = useDeviceName(device);
   const classes = useStyles();
   const sizeClassName = size === "small" ? classes.small : size === "large" ? classes.large : undefined;
@@ -41,11 +40,7 @@ export default function DeviceAvatar(props: { device: JDDevice, showMissing?: bo
 
   if (!showMissing && (!host && !imageUrl))
     return null;
-  const handleIdentify = async () => {
-    if (!device.name)
-      showRenameDeviceDialog(device);
-    await device.identify();
-  }
+  const handleIdentify = async () => await device.identify();
   return <>
     {statusLEDHelmetStyle && <Helmet><style>{statusLEDHelmetStyle}</style></Helmet>}
     <CmdButton
