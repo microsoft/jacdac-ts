@@ -174,9 +174,19 @@ export class JDCommandClosure {
 
     semantics() {
         switch(cmdToTestFunction(this.cmd).id) {
-            case 'ask':
             case 'say':
-            
+                break
+            case 'ask':
+            case 'changes':
+            case 'check':
+            case 'increases':
+            case 'decreases':
+            case 'decreasesBy':
+            case 'increasesBy':
+            case 'rangeFromUpTo':
+            case 'rangeFromDownTo':
+            case 'reset':
+                break
             default:
         }
     }
