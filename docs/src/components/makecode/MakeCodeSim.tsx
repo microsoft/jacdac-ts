@@ -66,10 +66,10 @@ function Carousel() {
             <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
                 onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
         </Grid>
-        <Grid item>
+        {devices?.length && <Grid item>
             <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
                 onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
-        </Grid>
+        </Grid>}
     </Grid>
 }
 
