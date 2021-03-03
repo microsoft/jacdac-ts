@@ -12,12 +12,11 @@ import CloseIcon from '@material-ui/icons/Close';
 export default function DeviceActions(props: {
     device: JDDevice,
     showReset?: boolean,
-    showRename?: boolean,
     showStopHost?: boolean,
     hideIdentity?: boolean,
     children?: JSX.Element | JSX.Element[]
 }) {
-    const { device, showReset, showRename, children, hideIdentity, showStopHost } = props
+    const { device, showReset, children, hideIdentity, showStopHost } = props
     const { bus } = useContext<JacdacContextProps>(JacdacContext)
     const host = useDeviceHost(device);
 
