@@ -15,6 +15,10 @@ import {
     Typography,
     Card,
     CardContent,
+    LinearProgressProps,
+    Box,
+    LinearProgress,
+    CardActions,
 } from "@material-ui/core"
 // tslint:disable-next-line: no-submodule-imports
 import { AlertTitle } from "@material-ui/lab"
@@ -104,9 +108,7 @@ function TestStepper(props: { test: JDTestRunner }) {
     const handleNext = () => {
         setActiveCommand((prev) => prev + 1);
     };
-    const handleClose = (status: JDTestStatus) => () => {
-        test.finish(status)
-    };
+    const handleClose = (status: JDTestStatus) => () => test.finish(status)
     return <Stepper activeStep={activeCommand} orientation="vertical">
         {commands.map((cmd, index) => <Step key={index}>
             <StepLabel>{cmdToPrompt(cmd) || "no prompt"}</StepLabel>
@@ -154,46 +156,31 @@ function ServiceTestRunnerSelect(props: { serviceClass: number, onSelect: (servi
     </>
 }
 
-/**
- *
- * @param props
- *                 <Grid container spacing={2} direction="row">
-            <Grid item xs>
-                <Stepper activeStep={activeStep} orientation="vertical">
-                    {testRunner?.tests.map((test, index) => (
-                        <Step key={index}>
-                            <StepLabel error={testStatuses[index] === JDTestStatus.Failed}>{test.description}</StepLabel>
-                            <StepContent>
-                                {testStatuses[index] === JDTestStatus.Ready && (
-                                    <Button
-                                        variant="outlined"
-                                        onClick={handleStartTest(test)}
-                                    >
-                                        Start Test
-                                    </Button>
-                                )}
-                                {testStatuses[index] === JDTestStatus.Active && (
-                                    <ServiceUnitTest
-                                        test={test}
-                                        onFinished={handleClose(test)}
-                                    ></ServiceUnitTest>
-                                )}
-                            </StepContent>
-                        </Step>
-                    ))}
-                </Stepper>
-                {activeStep === serviceTest.tests.length + 1 && (
-                    <Alert severity="success">
-                        <AlertTitle>All steps completed.</AlertTitle>
-                        <Button onClick={handleReset}>Reset</Button>
-                    </Alert>
-                )}
-            </Grid>
-            {testRunner && <Grid item md={3}>
-                <ServiceTestList testRunner={testRunner} />
-            </Grid>}
-        </Grid>
- */
+function LinearProgressWithLabel(props: LinearProgressProps & { value: number, total: number }) {
+    const { value, total, ...others } = props;
+    return (
+        <Box display="flex" alignItems="center">
+            <Box>
+                <Typography variant="h5" color="primary">{`test ${value} / ${total}`}</Typography>
+            </Box>
+            <Box width="100%" mr={1}>
+                <LinearProgress variant="determinate" value={value / total * 100} {...others} />
+            </Box>
+        </Box>
+    );
+}
+
+function TestProgress(props: { testRunner: JDServiceTestRunner }) {
+    const { testRunner } = props;
+    const { tests } = testRunner;
+    const total = tests.length;
+    const executed = useChange(testRunner, t => t.tests.reduce((v, t) => v + (t.indeterminate ? 1 : 0), 0))
+    return <Card>
+        <CardContent>
+            <LinearProgressWithLabel value={executed} total={total} />
+        </CardContent>
+    </Card>
+}
 
 export default function ServiceTest(props: {
     serviceSpec: jdspec.ServiceSpec,
@@ -206,10 +193,7 @@ export default function ServiceTest(props: {
     const factory = useCallback(service => new JDServiceTestRunner(serviceTest, service), [serviceTest])
     const testRunner = useServiceClient(selectedService, factory)
     const currentTest = useChange(testRunner, t => t?.currentTest)
-
-    const handleSelect = (service: JDService) => {
-        setSelectedService(service)
-    }
+    const handleSelect = (service: JDService) => setSelectedService(service)
     return (
         <>
             <h1>
@@ -219,21 +203,28 @@ export default function ServiceTest(props: {
                 </IconButtonWithTooltip>
             </h1>
             {(Flags.diagnostics || showStartSimulator) && <Diagnostics serviceClass={serviceClass} />}
-            <Grid container spacing={2} direction="row">
-                {!testRunner && <Grid item xs={12}>
-                    <ServiceTestRunnerSelect serviceClass={serviceClass} onSelect={handleSelect} />
-                </Grid>}
-                {testRunner && <Grid item xs={12} sm={3}>
-                    <TestList testRunner={testRunner} />
-                </Grid>}
-                {currentTest && <Grid item xs={12} sm={5}>
-                    <ActiveTest test={currentTest} />
-                </Grid>}
-                {selectedService && <Grid item xs={12} sm={4}>
-                    <DashboardDevice
-                        device={selectedService.device} />
-                </Grid>}
-            </Grid>
+            {!testRunner && <ServiceTestRunnerSelect serviceClass={serviceClass} onSelect={handleSelect} />}
+            {testRunner && <Grid container spacing={2}>
+                <Grid item xs={12}>
+                    <TestProgress testRunner={testRunner} />
+                </Grid>
+                <Grid item xs={12}>
+                    <Grid container spacing={2} direction="row">
+                        <Grid item xs={12} sm={3}>
+                            <TestList testRunner={testRunner} />
+                        </Grid>
+                        {currentTest && <Grid item xs={12} sm={5}>
+                            <ActiveTest test={currentTest} />
+                        </Grid>}
+                        {selectedService && <Grid item xs={12} sm={4}>
+                            <DashboardDevice
+                                showAvatar={true}
+                                showHeader={true}
+                                device={selectedService.device} />
+                        </Grid>}
+                    </Grid>
+                </Grid>
+            </Grid>}
         </>
     )
 }

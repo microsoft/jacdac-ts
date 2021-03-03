@@ -1,6 +1,4 @@
-import {
-    testCommandFunctions,
-} from "../../jacdac-spec/spectool/jdtestfuns"
+import { testCommandFunctions } from "../../jacdac-spec/spectool/jdtestfuns"
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
@@ -176,19 +174,16 @@ export class JDTestRunner extends JDEventSource {
     private startExpressions: jsep.CallExpression[] = []
 
     constructor(
-        public readonly specification: jdtest.TestSpec    ) {
+        private readonly testRunner: JDServiceTestRunner,
+        public readonly specification: jdtest.TestSpec
+    ) {
         super()
         // collect up the start(expr) calls
         this.specification.commands.forEach(cmd => {
-            const starts = (<jsep.CallExpression[]>(
-                JSONPath({
-                    path: "$..*[?(@.type=='CallExpression')]",
-                    json: cmd.call.arguments,
-                })
-            )).filter(
-                (ce: jsep.CallExpression) =>
-                    (<jsep.Identifier>ce.callee).name === "start"
-            )
+            const starts = (<jsep.CallExpression[]>JSONPath({
+                path: "$..*[?(@.type=='CallExpression')]",
+                json: cmd.call.arguments,
+            })).filter((ce: jsep.CallExpression) => (<jsep.Identifier>ce.callee).name === "start")
             starts.forEach(s => {
                 if (this.startExpressions.indexOf(s) < 0)
                     this.startExpressions.push(s)
@@ -207,6 +202,13 @@ export class JDTestRunner extends JDEventSource {
         }
     }
 
+    get indeterminate(): boolean {
+        return (
+            this.status !== JDTestStatus.NotReady &&
+            this.status !== JDTestStatus.Active
+        )
+    }
+
     get output() {
         return this._output
     }
@@ -219,8 +221,8 @@ export class JDTestRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = undefined;
-        this.status = JDTestStatus.NotReady;
+        this.output = undefined
+        this.status = JDTestStatus.NotReady
     }
 
     start() {
@@ -228,21 +230,30 @@ export class JDTestRunner extends JDEventSource {
         // evaluate the start conditions and create environment map
     }
 
+    cancel() {
+        // TODO
+        if (this.status === JDTestStatus.Active)
+            this.status = JDTestStatus.Failed
+    }
+
     finish(s: JDTestStatus) {
         this.status = s
+        this.testRunner.finishTest()
     }
 }
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
-    public readonly tests: JDTestRunner[];
+    public readonly tests: JDTestRunner[]
 
     constructor(
         public readonly specification: jdtest.ServiceTestSpec,
         service: JDService
     ) {
         super(service)
-        this.tests = this.specification.tests.map(t => new JDTestRunner(t));
+        this.tests = this.specification.tests.map(
+            t => new JDTestRunner(this, t)
+        )
         this.start()
     }
 
@@ -264,10 +275,9 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.testIndex = 0
     }
 
-    public finishTest(status: JDTestStatus) {
-        this.currentTest.finish(status)
+    public finishTest() {
         if (this.testIndex < this.tests.length) {
-            this.testIndex++;
+            this.testIndex++
         }
     }
 
