@@ -1,14 +1,10 @@
 import {
     testCommandFunctions,
-    Commands,
-    testExpressionFunctions
 } from "../../jacdac-spec/spectool/jdtestfuns"
-import { CHANGE, SRV_SPEECH_SYNTHESIS } from "../jdom/constants"
+import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
-import { JDRegister } from "../jdom/register"
 import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
-import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 import { JSONPath } from "jsonpath-plus"
 
 export enum JDCommandStatus {
@@ -21,7 +17,6 @@ export enum JDCommandStatus {
 
 export enum JDTestStatus {
     NotReady,
-    Ready,
     Active,
     Passed,
     Failed,
@@ -36,12 +31,12 @@ export function cmdToPrompt(cmd: jdtest.CommandSpec) {
     return cmd.prompt ? cmd.prompt : cmdToTestFunction(cmd).prompt
 }
 
-type SMap<T> = { [v: string]: T };
+type SMap<T> = { [v: string]: T }
 
 export class JDExprEvaluator {
-    private exprStack: any[] = [];
+    private exprStack: any[] = []
 
-    constructor(private env: SMap<any>) { }
+    constructor(private env: SMap<any>) {}
 
     private tos() {
         return this.exprStack[this.exprStack.length - 1]
@@ -58,10 +53,9 @@ export class JDExprEvaluator {
             case "CallExpression": {
                 const caller = <jsep.CallExpression>e
                 const callee = <jsep.Identifier>caller.callee
-                switch(callee.name) {
-                    case 'start': 
-                        
-                        return;
+                switch (callee.name) {
+                    case "start":
+                        return
                     default: // ERROR
                 }
                 break
@@ -73,30 +67,68 @@ export class JDExprEvaluator {
                 this.visitExpression(be.right)
                 const right = this.exprStack.pop()
                 const left = this.exprStack.pop()
-                switch(be.operator) {
-                    case '+': this.exprStack.push(left + right); return;
-                    case '-': this.exprStack.push(left - right); return;
-                    case '/': this.exprStack.push(left / right); return;
-                    case '*': this.exprStack.push(left * right); return;
-                    case '%': this.exprStack.push(left % right); return;
-                    
-                    case '>>': this.exprStack.push(left >> right); return;
-                    case '>>>': this.exprStack.push(left >>> right); return;
-                    case '<<': this.exprStack.push(left << right); return;
+                switch (be.operator) {
+                    case "+":
+                        this.exprStack.push(left + right)
+                        return
+                    case "-":
+                        this.exprStack.push(left - right)
+                        return
+                    case "/":
+                        this.exprStack.push(left / right)
+                        return
+                    case "*":
+                        this.exprStack.push(left * right)
+                        return
+                    case "%":
+                        this.exprStack.push(left % right)
+                        return
 
-                    case '|': this.exprStack.push(left | right); return;
-                    case '&': this.exprStack.push(left & right); return;
-                    case '^': this.exprStack.push(left ^ right); return;
+                    case ">>":
+                        this.exprStack.push(left >> right)
+                        return
+                    case ">>>":
+                        this.exprStack.push(left >>> right)
+                        return
+                    case "<<":
+                        this.exprStack.push(left << right)
+                        return
 
-                    case '==': this.exprStack.push(left == right); return;
-                    case '!=': this.exprStack.push(left != right); return;
-                    case '===': this.exprStack.push(left === right); return;
-                    case '!==': this.exprStack.push(left !== right); return;
+                    case "|":
+                        this.exprStack.push(left | right)
+                        return
+                    case "&":
+                        this.exprStack.push(left & right)
+                        return
+                    case "^":
+                        this.exprStack.push(left ^ right)
+                        return
 
-                    case '<': this.exprStack.push(left < right); return;
-                    case '>': this.exprStack.push(left > right); return;
-                    case '<=': this.exprStack.push(left <= right); return;
-                    case '>=': this.exprStack.push(left >= right); return;
+                    case "==":
+                        this.exprStack.push(left == right)
+                        return
+                    case "!=":
+                        this.exprStack.push(left != right)
+                        return
+                    case "===":
+                        this.exprStack.push(left === right)
+                        return
+                    case "!==":
+                        this.exprStack.push(left !== right)
+                        return
+
+                    case "<":
+                        this.exprStack.push(left < right)
+                        return
+                    case ">":
+                        this.exprStack.push(left > right)
+                        return
+                    case "<=":
+                        this.exprStack.push(left <= right)
+                        return
+                    case ">=":
+                        this.exprStack.push(left >= right)
+                        return
                 }
                 break
             }
@@ -118,7 +150,7 @@ export class JDExprEvaluator {
                 }
                 break
             }
-            
+
             case "Identifier": {
                 const id = <jsep.Identifier>e
                 this.exprStack.push(this.env[id.name])
@@ -139,17 +171,24 @@ export class JDExprEvaluator {
 
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
-    private currentCmd = -1
-    private currentCmdStatus = JDCommandStatus.NotStarted
-    private commandTimeOut = 10000
+    private _output: string
+
     private startExpressions: jsep.CallExpression[] = []
 
-    constructor(private unitTest: jdtest.TestSpec, private done: () => void) {
+    constructor(
+        public readonly specification: jdtest.TestSpec    ) {
         super()
         // collect up the start(expr) calls
-        unitTest.commands.forEach(cmd => {
-            const starts = (<jsep.CallExpression[]>JSONPath({path: "$..*[?(@.type=='CallExpression')]", json: cmd.call.arguments}))
-                    .filter((ce:jsep.CallExpression) => (<jsep.Identifier>ce.callee).name === 'start')
+        this.specification.commands.forEach(cmd => {
+            const starts = (<jsep.CallExpression[]>(
+                JSONPath({
+                    path: "$..*[?(@.type=='CallExpression')]",
+                    json: cmd.call.arguments,
+                })
+            )).filter(
+                (ce: jsep.CallExpression) =>
+                    (<jsep.Identifier>ce.callee).name === "start"
+            )
             starts.forEach(s => {
                 if (this.startExpressions.indexOf(s) < 0)
                     this.startExpressions.push(s)
@@ -160,25 +199,32 @@ export class JDTestRunner extends JDEventSource {
     get status() {
         return this._status
     }
-    
+
     set status(s: JDTestStatus) {
         if (s != this._status) {
             this._status = s
             this.emit(CHANGE)
         }
     }
-    
-    get description() {
-        return this.unitTest.description
+
+    get output() {
+        return this._output
     }
 
-    get commands() {
-        return this.unitTest.commands
+    set output(value: string) {
+        if (this._output !== value) {
+            this._output = value
+            this.emit(CHANGE)
+        }
+    }
+
+    reset() {
+        this.output = undefined;
+        this.status = JDTestStatus.NotReady;
     }
 
     start() {
         this.status = JDTestStatus.Active
-        this.currentCmd = 0
         // evaluate the start conditions and create environment map
     }
 
@@ -188,54 +234,44 @@ export class JDTestRunner extends JDEventSource {
 }
 
 export class JDServiceTestRunner extends JDServiceClient {
-    private _testIndex = 0;
-    private deviceState: { id: string; reg: JDRegister }[] = []
-    private exprStack: any[] = []
-    private unitTests: JDTestRunner[] = []
+    private _testIndex = -1
+    public readonly tests: JDTestRunner[];
 
-    constructor(private test: jdtest.ServiceTestSpec, service: JDService) {
+    constructor(
+        public readonly specification: jdtest.ServiceTestSpec,
+        service: JDService
+    ) {
         super(service)
-        this.reset()
+        this.tests = this.specification.tests.map(t => new JDTestRunner(t));
+        this.start()
     }
 
-    public reset() {
-        this.unitTests = []
-        this._testIndex = 0
-        const spec = serviceSpecificationFromClassIdentifier(
-            this.test.serviceClassIdentifier
-        )
-        // collect up all the registers that are read by the unit tests
-        this.test.tests.forEach((ut, index) => {
-            this.unitTests.push(new JDTestRunner(ut, () => { 
-                if (index > 0 && index < this.test.tests.length) {
-                    // when a test has finished, start the next test.
-                    this.unitTests[index].status = JDTestStatus.Ready;
-                }
-            }))
-            // TODO: problem here with "position"
-            /*ut.registers.forEach(id => {
-                if (this.deviceState.findIndex(r => r.id === id) < 0) {
-                    const pkt = spec.packets.find(p => { console.log(p.identifierName, id); return p.identifierName === id } )
-                    this.deviceState.push({ id: id, reg: this.service.register(pkt.identifier)})
-                }
-            })*/
-        })
-        this._testIndex = 0
-        this.unitTests[0].status = JDTestStatus.Ready
+    private get testIndex() {
+        return this._testIndex
+    }
+
+    private set testIndex(index: number) {
+        if (this._testIndex !== index) {
+            this._testIndex = index
+            this.emit(CHANGE)
+
+            this.currentTest?.start()
+        }
+    }
+
+    public start() {
+        this.tests.forEach(t => t.reset())
+        this.testIndex = 0
     }
 
     public finishTest(status: JDTestStatus) {
         this.currentTest.finish(status)
-        if (this._testIndex < this.unitTests.length) {
-            this._testIndex++
-             this.unitTests[this._testIndex].status = JDTestStatus.Ready
+        if (this.testIndex < this.tests.length) {
+            this.testIndex++;
         }
     }
 
-    get tests() {
-        return this.unitTests
-    }
     get currentTest() {
-        return this.unitTests[this._testIndex]
+        return this.tests[this._testIndex]
     }
 }
