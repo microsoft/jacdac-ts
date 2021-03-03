@@ -9,6 +9,7 @@ import { JDRegister } from "../jdom/register"
 import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import { JSONPath } from "jsonpath-plus"
 
 export enum JDCommandStatus {
     NotStarted,
@@ -35,85 +36,100 @@ export function cmdToPrompt(cmd: jdtest.CommandSpec) {
     return cmd.prompt ? cmd.prompt : cmdToTestFunction(cmd).prompt
 }
 
+type SMap<T> = { [v: string]: T };
 
-export class JDCommandRunner {
-    // pure interpreter
-    private interpretCommand(cmd: jdtest.CommandSpec) {
-        const tcf = cmdToTestFunction(cmd)
-        switch (<Commands>tcf.id) {
-            case "ask":
-            case "say": {
-                // TODO: replace $1...
-                // this.currentPrompt = cmd.prompt;
-                break
-            }
-            case "changes": {
-                // subscribe to change of register
-                break
-            }
-            case "check": {
-                break
-            }
-            case "decreases":
-            case "decreasesBy":
-            case "increases":
-            case "increasesBy":
-            case "rangesFromDownTo":
-            case "rangesFromUpTo":
-            case "reset":
-                // this.currentPrompt = cmdToPrompt(cmd);
-                break
-            default:
-                return 0
-        }
-    }
+export class JDExprEvaluator {
+    private exprStack: any[] = [];
+
+    constructor(private env: SMap<any>) { }
 
     private tos() {
-        // return this.exprStack[this.exprStack.length - 1]
+        return this.exprStack[this.exprStack.length - 1]
     }
 
-    // stack-based evaluation
+    public eval(e: jsep.Expression) {
+        this.exprStack = []
+        this.visitExpression(e)
+        return this.exprStack.pop()
+    }
+
     private visitExpression(e: jsep.Expression) {
         switch (e.type) {
             case "CallExpression": {
                 const caller = <jsep.CallExpression>e
                 const callee = <jsep.Identifier>caller.callee
-
+                switch(callee.name) {
+                    case 'start': 
+                        
+                        return;
+                    default: // ERROR
+                }
                 break
             }
+
             case "BinaryExpression": {
                 const be = <jsep.BinaryExpression>e
                 this.visitExpression(be.left)
                 this.visitExpression(be.right)
-                // TODO: pop them and evaluate
-                // TODO: push the result
+                let right = this.exprStack.pop()
+                let left = this.exprStack.pop()
+                switch(be.operator) {
+                    case '+': this.exprStack.push(left + right); return;
+                    case '-': this.exprStack.push(left - right); return;
+                    case '/': this.exprStack.push(left / right); return;
+                    case '*': this.exprStack.push(left * right); return;
+                    case '%': this.exprStack.push(left % right); return;
+                    
+                    case '>>': this.exprStack.push(left >> right); return;
+                    case '>>>': this.exprStack.push(left >>> right); return;
+                    case '<<': this.exprStack.push(left << right); return;
+
+                    case '|': this.exprStack.push(left | right); return;
+                    case '&': this.exprStack.push(left & right); return;
+                    case '^': this.exprStack.push(left ^ right); return;
+
+                    case '==': this.exprStack.push(left == right); return;
+                    case '!=': this.exprStack.push(left != right); return;
+                    case '===': this.exprStack.push(left === right); return;
+                    case '!==': this.exprStack.push(left !== right); return;
+
+                    case '<': this.exprStack.push(left < right); return;
+                    case '>': this.exprStack.push(left > right); return;
+                    case '<=': this.exprStack.push(left <= right); return;
+                    case '>=': this.exprStack.push(left >= right); return;
+                }
                 break
             }
+
             case "UnaryExpression":
             case "LogicalExpression": {
                 const le = <jsep.LogicalExpression>e
                 this.visitExpression(le.left)
                 switch (le.operator) {
                     case "||":
-                        // if (this.tos()) return
-                        // else this.visitExpression(le.right)
+                        if (this.tos()) return
+                        else this.visitExpression(le.right)
                         break
                     case "&&":
-                        // if (!this.tos()) return
-                        // else this.visitExpression(le.right)
+                        if (!this.tos()) return
+                        else this.visitExpression(le.right)
                         break
-                    default: //unreachable
+                    default:
                 }
                 break
             }
+            
             case "Identifier":
-                // get the value and push
+                const id = <jsep.Identifier>e
+                this.exprStack.push(this.env[id.name])
                 break
+            
             case "Literal":
-                // push the value
+                const lit = <jsep.Literal>e
+                this.exprStack.push(lit.value)
                 break
+            
             default:
-            // unreachable, as we should have caught at compile time
         }
     }
 }
@@ -126,8 +142,19 @@ export class JDTestRunner extends JDEventSource {
     private currentCmd = -1
     private currentCmdStatus = JDCommandStatus.NotStarted
     private commandTimeOut = 10000
+    private startExpressions: jsep.CallExpression[] = []
+
     constructor(private unitTest: jdtest.TestSpec, private done: () => void) {
         super()
+        // collect up the start(expr) calls
+        unitTest.commands.forEach(cmd => {
+            let starts = (<jsep.CallExpression[]>JSONPath({path: "$..*[?(@.type=='CallExpression')]", json: cmd.call.arguments}))
+                    .filter((ce:jsep.CallExpression) => (<jsep.Identifier>ce.callee).name === 'start')
+            starts.forEach(s => {
+                if (this.startExpressions.indexOf(s) < 0)
+                    this.startExpressions.push(s)
+            })
+        })
     }
 
     get status() {
@@ -152,6 +179,7 @@ export class JDTestRunner extends JDEventSource {
     start() {
         this.status = JDTestStatus.Active
         this.currentCmd = 0
+        // evaluate the start conditions and create environment map
     }
 
     finish(s: JDTestStatus) {
@@ -180,6 +208,7 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.test.tests.forEach((ut, index) => {
             this.unitTests.push(new JDTestRunner(ut, () => { 
                 if (index > 0 && index < this.test.tests.length) {
+                    // when a test has finished, start the next test.
                     this.unitTests[index].status = JDTestStatus.Ready;
                 }
             }))
@@ -187,7 +216,7 @@ export class JDServiceTestRunner extends JDServiceClient {
             /*ut.registers.forEach(id => {
                 if (this.deviceState.findIndex(r => r.id === id) < 0) {
                     const pkt = spec.packets.find(p => { console.log(p.identifierName, id); return p.identifierName === id } )
-                    this.deviceState.push({ id: id, reg: new JDRegister(this.service, pkt.identifier)})
+                    this.deviceState.push({ id: id, reg: this.service.register(pkt.identifier)})
                 }
             })*/
         })
