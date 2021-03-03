@@ -71,8 +71,8 @@ export class JDExprEvaluator {
                 const be = <jsep.BinaryExpression>e
                 this.visitExpression(be.left)
                 this.visitExpression(be.right)
-                let right = this.exprStack.pop()
-                let left = this.exprStack.pop()
+                const right = this.exprStack.pop()
+                const left = this.exprStack.pop()
                 switch(be.operator) {
                     case '+': this.exprStack.push(left + right); return;
                     case '-': this.exprStack.push(left - right); return;
@@ -119,16 +119,16 @@ export class JDExprEvaluator {
                 break
             }
             
-            case "Identifier":
+            case "Identifier": {
                 const id = <jsep.Identifier>e
                 this.exprStack.push(this.env[id.name])
                 break
-            
-            case "Literal":
+            }
+            case "Literal": {
                 const lit = <jsep.Literal>e
                 this.exprStack.push(lit.value)
                 break
-            
+            }
             default:
         }
     }
@@ -148,7 +148,7 @@ export class JDTestRunner extends JDEventSource {
         super()
         // collect up the start(expr) calls
         unitTest.commands.forEach(cmd => {
-            let starts = (<jsep.CallExpression[]>JSONPath({path: "$..*[?(@.type=='CallExpression')]", json: cmd.call.arguments}))
+            const starts = (<jsep.CallExpression[]>JSONPath({path: "$..*[?(@.type=='CallExpression')]", json: cmd.call.arguments}))
                     .filter((ce:jsep.CallExpression) => (<jsep.Identifier>ce.callee).name === 'start')
             starts.forEach(s => {
                 if (this.startExpressions.indexOf(s) < 0)
