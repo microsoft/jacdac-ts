@@ -213,10 +213,10 @@ export default function ServiceTest(props: {
                         <Grid item xs={12} sm={3}>
                             <TestList testRunner={testRunner} />
                         </Grid>
-                        {currentTest && <Grid item xs={12} sm={5}>
+                        {currentTest && <Grid item xs={12} sm={6}>
                             <ActiveTest test={currentTest} />
                         </Grid>}
-                        {selectedService && <Grid item xs={12} sm={4}>
+                        {selectedService && <Grid item xs={12} sm={3}>
                             <DashboardDevice
                                 showAvatar={true}
                                 showHeader={true}
