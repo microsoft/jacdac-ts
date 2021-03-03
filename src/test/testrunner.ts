@@ -164,6 +164,24 @@ export class JDExprEvaluator {
     }
 }
 
+export class JDCommandClosure {
+    private currentCmdStatus = JDCommandStatus.NotStarted
+    private commandTimeOut = 10000
+
+    constructor(private cmd: jdtest.CommandSpec) {
+
+    }
+
+    semantics() {
+        switch(cmdToTestFunction(this.cmd).id) {
+            case 'ask':
+            case 'say':
+            
+            default:
+        }
+    }
+}
+
 // TODO: subscribe to events on the bus to get updates about the device' registers
 // TODO: allow subscribers to test event JDEventSource
 
