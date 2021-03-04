@@ -67,7 +67,8 @@ export default function ServiceCatalog() {
     const allTags = useMemo(
         () =>
             unique(
-                arrayConcatMany(serviceSpecifications().map(srv => srv.tags))
+                arrayConcatMany(serviceSpecifications().map(srv => [srv.group, ...srv.tags]))
+                    .filter(t => !!t)
             ),
         []
     )
@@ -79,7 +80,7 @@ export default function ServiceCatalog() {
             r = r.filter(srv => filter(srv.name) || filter(srv.notes["short"]))
         }
         if (tag) {
-            r = r.filter(srv => srv.tags.indexOf(tag) > -1)
+            r = r.filter(srv => srv.group === tag || srv.tags.indexOf(tag) > -1)
         }
         if (makeCode)
             r = r.filter(
