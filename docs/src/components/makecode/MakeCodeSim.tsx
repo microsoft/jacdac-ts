@@ -68,14 +68,16 @@ function Carousel() {
     return <Grid container alignItems="flex-start" spacing={1}>
         {devices.map(device => <DashboardDeviceItem key={device.id}
             device={device} showAvatar={true} showHeader={true} />)}
-        <Grid item>
-            <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
-                onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
+        <Grid container spacing={1} direction="row">
+            <Grid item>
+                <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
+                    onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
+            </Grid>
+            {!!devices?.length && <Grid item>
+                <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
+                    onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
+            </Grid>}
         </Grid>
-        {!!devices?.length && <Grid item>
-            <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
-                onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
-        </Grid>}
     </Grid>
 }
 
