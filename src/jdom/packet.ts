@@ -27,7 +27,8 @@ import { NumberFormat, getNumber } from "./buffer";
 import { JDBus } from "./bus";
 import { commandName, DecodedPacket, decodePacketData, serviceName, shortDeviceId } from "./pretty";
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants";
-import { jdpack, jdunpack } from "./pack";
+import { jdpack, jdunpack, PackedValues } from "./pack";
+import { serviceSpecificationFromClassIdentifier } from "./spec";
 
 export class Packet {
     private _header: Uint8Array;
@@ -192,7 +193,7 @@ export class Packet {
         this._decoded = undefined;
     }
 
-    jdunpack<T extends any[]>(fmt: string): T {
+    jdunpack<T extends PackedValues>(fmt: string): T {
         return (this._data && fmt && jdunpack<T>(this._data, fmt)) || [] as T;
     }
 
@@ -342,7 +343,7 @@ export class Packet {
         return frameToPackets(frame, timestamp)
     }
 
-    static jdpacked<T extends any[]>(service_command: number, fmt: string, nums: T) {
+    static jdpacked<T extends PackedValues>(service_command: number, fmt: string, nums: T) {
         return Packet.from(service_command, jdpack<T>(fmt, nums))
     }
 
@@ -376,6 +377,11 @@ export class Packet {
                 cmdname += " meta"
             if (cmd & PIPE_CLOSE_MASK)
                 cmdname += " close"
+        } else if (this.isEvent) {
+            const spec = serviceSpecificationFromClassIdentifier(this.serviceClass);
+            const code = this.eventCode;
+            const pkt = spec.packets.find(pkt => pkt.kind === 'event' && pkt.identifier === code);
+            cmdname = pkt?.name;
         } else {
             cmdname = commandName(cmd, this.serviceClass)
         }
