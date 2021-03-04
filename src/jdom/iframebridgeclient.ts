@@ -1,8 +1,8 @@
 import { JDBus } from "./bus";
-import { DEVICE_ANNOUNCE, PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { DEVICE_CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
-import { debounce } from "./utils";
+import { debounce, roundWithPrecision } from "./utils";
 
 const MIN_ASPECT_RATIO = 0.89;
 
@@ -28,7 +28,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         super(bus)
         this.postPacket = this.postPacket.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
-        this.handleResize = debounce(this.handleResize.bind(this), 500);
+        this.handleResize = debounce(this.handleResize.bind(this), 200);
         this.registerEvents();
     }
 
@@ -36,7 +36,9 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         console.log(`jdiframe: listening for packets`)
         this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket));
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
-        this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, this.handleResize));
+        this.mount(this.bus.subscribe(DEVICE_CHANGE, this.handleResize));
+        const id = setInterval(this.handleResize, 500)
+        this.mount(() => clearInterval(id))
 
         window.addEventListener("message", this.handleMessage, false);
         this.mount(() => window.removeEventListener("message", this.handleMessage, false))
@@ -76,9 +78,10 @@ export default class IFrameBridgeClient extends JDIFrameClient {
 
     private handleResize() {
         const size = document.body.getBoundingClientRect()
-        const ar = size.width / size.height;
-        const value = Math.min(MIN_ASPECT_RATIO, size.width / size.height);
+        const ar = size.width / (size.height + 12); 
+        const value = roundWithPrecision(Math.min(MIN_ASPECT_RATIO, size.width / size.height), 4);
         if (!isNaN(ar) && this._lastAspectRatio !== value) {
+            console.log(`aspect ration`, { MIN_ASPECT_RATIO, value })
             window.parent.postMessage({
                 type: "aspectratio",
                 value,

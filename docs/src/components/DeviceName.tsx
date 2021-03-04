@@ -21,7 +21,7 @@ export default function DeviceName(props: {
         <span ref={nameRef}>{name}</span>
         {!name && showShortId && shortId}
         {showShortId && name && name !== shortId &&
-            <Typography component="span" variant="body2"> {shortId}</Typography>}
+            <Typography component="span" variant="body2" spellCheck={false}> {shortId}</Typography>}
         {serviceIndex !== undefined && `[${serviceIndex}]`}
     </span>
 }

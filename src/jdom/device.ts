@@ -395,7 +395,7 @@ export class JDDevice extends JDNode {
             this.emit(CHANGE);
 
             const ctrl = this.service(0);
-            await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, true)
+            await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, false)
 
             // wait half second
             await delay(IDENTIFY_DURATION);
