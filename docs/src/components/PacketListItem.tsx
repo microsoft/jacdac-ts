@@ -48,7 +48,7 @@ export default function PacketListItem(props: {
         || (packet.isAnnounce && `announce from ${packet.friendlyDeviceName}`)
         || (pipePackets && `pipe port:${packet.pipePort} ${pipePackets.length} packets`)
         || (logMessage && jdunpack<[string]>(packet.data, "s")[0])
-        || `${packet.friendlyCommandName} ${decoded ? ellipseJoin(decoded.decoded.map(f => f.humanValue), 18) : ""}`;
+        || `${decoded?.info.name || packet.friendlyCommandName} ${decoded ? ellipseJoin(decoded.decoded.map(f => f.humanValue), 18) : ""}`;
     const secondary = `${showTime ? `${prettyDuration(packet.timestamp)}: ` : ""}${packet.isCommand ? 'to' : 'from'} ${packet.friendlyDeviceName}/${packet.friendlyServiceName}`
 
     return <ListItem button className={classes.item} dense={true} onClick={handleClick} selected={selected}>
