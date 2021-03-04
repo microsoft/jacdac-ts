@@ -28,7 +28,6 @@ export interface AppProps {
     widgetMode: boolean,
     showDeviceHostsDialog: boolean,
     toggleShowDeviceHostsDialog: () => void,
-    showRenameDeviceDialog: (device: JDDevice) => void
 }
 
 const AppContext = createContext<AppProps>({
@@ -42,7 +41,6 @@ const AppContext = createContext<AppProps>({
     widgetMode: false,
     showDeviceHostsDialog: false,
     toggleShowDeviceHostsDialog: () => { },
-    showRenameDeviceDialog: () => { }
 });
 AppContext.displayName = "app";
 
@@ -55,7 +53,6 @@ export const AppProvider = ({ children }) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [toolsMenu, _setToolsMenu] = useState(false)
     const [showDeviceHostsDialog, setShowDeviceHostsDialog] = useState(false)
-    const [renameDevice, setRenameDevice] = useState<JDDevice>()
 
     const { enqueueSnackbar } = useSnackbar();
     const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
@@ -106,8 +103,6 @@ export const AppProvider = ({ children }) => {
         if (!b)
             setToolsMenu(false);
     }
-    const handleCloseRenameDialog = () => setRenameDevice(undefined)
-    const showRenameDeviceDialog = (device: JDDevice) => setRenameDevice(device)
 
     return (
         <AppContext.Provider value={{
@@ -121,11 +116,9 @@ export const AppProvider = ({ children }) => {
             widgetMode,
             showDeviceHostsDialog,
             toggleShowDeviceHostsDialog,
-            showRenameDeviceDialog
         }}>
             {children}
             {showDeviceHostsDialog && <StartSimulatorDialog open={showDeviceHostsDialog} onClose={toggleShowDeviceHostsDialog} />}
-            {renameDevice && <DeviceRenameDialog device={renameDevice} onClose={handleCloseRenameDialog} />}
         </AppContext.Provider>
     )
 }

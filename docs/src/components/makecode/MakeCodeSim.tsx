@@ -40,7 +40,7 @@ function Carousel() {
     const handleAdd = () => {
         // list all devices connected to the bus
         // and query for them, let makecode show the missing ones
-        const query = unique(
+        const extensions = unique(
             arrayConcatMany(
                 devices.map(device => device.services()
                     .map(srv => resolveMakecodeServiceFromClassIdentifier(srv.serviceClass))
@@ -48,13 +48,15 @@ function Carousel() {
                     .filter(q => !!q)
                 )
             )
-        ).join('|');
-        // send message to makecode
-        window.parent.postMessage({
-            type: "extensionsdialog",
-            query: query || `jacdac|${makeCodeServices().map(info => info?.client.repo).filter(r => !!r).join("|")}`,
-            broadcast: true
-        }, "*")
+        );
+        if (extensions?.length) {
+            // send message to makecode
+            window.parent.postMessage({
+                type: "addextensions",
+                extensions,
+                broadcast: true
+            }, "*")
+        }
     }
 
     return <Grid container alignItems="flex-start" spacing={1}>
@@ -64,10 +66,10 @@ function Carousel() {
             <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
                 onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
         </Grid>
-        <Grid item>
+        {devices?.length && <Grid item>
             <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
                 onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
-        </Grid>
+        </Grid>}
     </Grid>
 }
 
