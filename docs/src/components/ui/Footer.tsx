@@ -34,8 +34,9 @@ export default function Footer() {
       }
     `)
 
+  const  packageJson = data.allJacdacTsJson.nodes[0]
   return <footer role="contentinfo" className={classes.footer}>
-    <a target="_blank" rel="noopener noreferrer" href={`https://github.com/microsoft/jacdac-ts/tree/v${data.allJacdacTsJson.nodes[0].version}`}>Jacdac-TS v{data.allJacdacTsJson.nodes[0].version}</a>
+    <a target="_blank" rel="noopener noreferrer" href={`https://github.com/microsoft/jacdac-ts/tree/v${packageJson?.version}`}>Jacdac-TS v{packageJson?.version}</a>
     <a href="https://makecode.com/privacy" target="_blank" rel="noopener noreferrer">Privacy &amp; Cookies</a>
     <a href="https://makecode.com/termsofuse" target="_blank" rel="noopener noreferrer">Terms Of Use</a>
     <a href="https://makecode.com/trademarks" target="_blank" rel="noopener noreferrer">Trademarks</a>
