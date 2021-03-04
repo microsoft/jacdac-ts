@@ -100,7 +100,6 @@ module.exports = {
           'gatsby-plugin-mdx-code-demo',
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',
-          'gatsby-remark-embedder',
           {
             resolve: `gatsby-remark-images`,
             options: {
@@ -123,7 +122,6 @@ module.exports = {
           `gatsby-remark-autolink-headers`,
           'gatsby-remark-external-links',
           'gatsby-remark-numbered-footnotes',
-          'gatsby-remark-embedder',
           {
             resolve: `gatsby-remark-images`,
             options: {
