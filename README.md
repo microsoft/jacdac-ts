@@ -116,12 +116,6 @@ The releases are automatically created by the build system based on the title of
 * ``patch|fix:...``  patch
 * ``minor:feature:...`` minor
 
-### NPM scripts
-
- - `npm run watch`: Run `npm run build` in watch mode
- - `npm run lint`: Lints code
- - `npm run docs`: Launch docs web service
-
 ## Microsoft Open Source Code of Conduct
 
 This project is hosted at https://github.com/microsoft/jacdac-ts. 
