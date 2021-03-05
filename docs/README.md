@@ -1,1 +1,0 @@
-This is the documentation site for Jacdac.
