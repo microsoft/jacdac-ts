@@ -81,7 +81,6 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         const ar = size.width / (size.height + 12); 
         const value = roundWithPrecision(Math.min(MIN_ASPECT_RATIO, size.width / size.height), 4);
         if (!isNaN(ar) && this._lastAspectRatio !== value) {
-            console.log(`aspect ration`, { MIN_ASPECT_RATIO, value })
             window.parent.postMessage({
                 type: "aspectratio",
                 value,
