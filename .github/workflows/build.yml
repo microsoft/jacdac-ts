@@ -20,9 +20,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - uses: bahmutov/npm-install@v1
-      - run: npm run lint
-      - run: npm run dist
-      - run: npm run test
+      - run: yarn lint
+      - run: yarn dist
+      - run: yarn test
       - run: npx semantic-release
         if: ${{ github.ref == 'refs/heads/main' }}
         env:

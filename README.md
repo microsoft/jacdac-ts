@@ -95,7 +95,7 @@ yarn buildpxt
 
 Launch a small web server and 
 try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/js/console.html . These tools load the files under ``dist`` so you'll want 
-to also run ``npm run watch`` on the side.
+to also run ``yarn watch`` on the side.
 
 ```
 yarn tools
