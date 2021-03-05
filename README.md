@@ -113,8 +113,8 @@ yarn tools
 
 The releases are automatically created by the build system based on the title of the commit:
 
-* ``patch|fix:...``  patch
-* ``minor:feature:...`` minor
+* ``patch:...`` or ``fix:...``  patch
+* ``minor:...`` or ``feature:...`` minor
 
 ## Microsoft Open Source Code of Conduct
 
