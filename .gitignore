@@ -10,3 +10,4 @@ built
 dist
 temp
 .lighthouseci
+package-lock.json
