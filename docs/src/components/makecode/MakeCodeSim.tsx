@@ -3,16 +3,13 @@ import { Button, createMuiTheme, responsiveFontSizes } from "@material-ui/core";
 import ThemedLayout from "../../components/ui/ThemedLayout";
 import { Grid } from "@material-ui/core";
 import { JDDevice } from "../../../../src/jdom/device";
-import { isReading, isValueOrIntensity, makeCodeServices, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
+import { isReading, isValueOrIntensity, resolveMakecodeServiceFromClassIdentifier } from "../../../../src/jdom/spec";
 import { arrayConcatMany, strcmp, unique } from "../../../../src/jdom/utils";
 import useDevices from "../hooks/useDevices";
-import { SRV_ROLE_MANAGER } from "../../../../src/jdom/constants";
-import hosts, { addHost } from "../../../../src/hosts/hosts";
-import JacdacContext, { JacdacContextProps } from "../../jacdac/Context";
+import { SRV_CONTROL, SRV_LOGGER, SRV_POWER, SRV_ROLE_MANAGER, SRV_SETTINGS } from "../../../../src/jdom/constants";
 import MakeCodeIcon from "../icons/MakeCodeIcon"
 import DashboardDeviceItem from "../dashboard/DashboardDeviceItem";
 import Helmet from "react-helmet"
-import Flags from "../../../../src/jdom/flags";
 import DarkModeContext from "../ui/DarkModeContext";
 import KindIcon from "../KindIcon";
 import AppContext from "../AppContext";
@@ -30,11 +27,20 @@ function deviceSort(l: JDDevice, r: JDDevice): number {
     return strcmp(l.deviceId, r.deviceId);
 }
 
+// hide the makecode device itself and power devices
+const ignoredServices = [
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_SETTINGS,
+    SRV_ROLE_MANAGER,
+    SRV_POWER
+]
+
 function Carousel() {
     const { toggleShowDeviceHostsDialog } = useContext(AppContext)
     const devices = useDevices({ announced: true, ignoreSelf: true })
-        // ignore MakeCode device (role manager)
-        .filter(device => device.serviceClasses.indexOf(SRV_ROLE_MANAGER) < 0)
+        // ignore MakeCode device (role manager) and power devices
+        .filter(device => device.serviceClasses.filter(sc => ignoredServices.indexOf(sc) < 0).length)
         // show best in front
         .sort(deviceSort);
     const handleAdd = () => {
@@ -61,15 +67,19 @@ function Carousel() {
 
     return <Grid container alignItems="flex-start" spacing={1}>
         {devices.map(device => <DashboardDeviceItem key={device.id}
-            device={device} showAvatar={false} />)}
+            device={device} showAvatar={true} showHeader={true} />)}
         <Grid item>
-            <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
-                onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
+            <Grid container spacing={1} direction="row">
+                <Grid item>
+                    <Button size="medium" variant="contained" startIcon={<KindIcon kind={VIRTUAL_DEVICE_NODE_NAME} />}
+                        onClick={toggleShowDeviceHostsDialog} aria-label={"Start Simulator"}>Start simulator</Button>
+                </Grid>
+                {!!devices?.length && <Grid item>
+                    <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
+                        onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
+                </Grid>}
+            </Grid>
         </Grid>
-        {devices?.length && <Grid item>
-            <Button size="medium" color="primary" variant="contained" startIcon={<MakeCodeIcon />}
-                onClick={handleAdd} aria-label={"Add blocks"}>Add blocks</Button>
-        </Grid>}
     </Grid>
 }
 

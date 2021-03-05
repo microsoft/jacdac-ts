@@ -23,14 +23,17 @@ import { useRegisterUnpackedValue } from "../../jacdac/useRegisterValue";
 import { CircularProgress, NoSsr } from '@material-ui/core';
 import useServiceHost from "../hooks/useServiceHost";
 
-const DashboardButton = lazy(() => import("./DashboardButton"));
+// bundled
+import DashboardButton from "./DashboardButton";
+import DashboardServo from "./DashboardServo";
+import DashboardRotaryEncoder from "./DashboardRotaryEncoder";
+import DashboardSwitch from "./DashboardSwitch";
+
+// lazy devices
 const DashboardAccelerometer = lazy(() => import("./DashboardAccelerometer"));
 const DashboardBuzzer = lazy(() => import("./DashboardBuzzer"));
 const DashboardLEDPixel = lazy(() => import("./DashboardLEDPixel"));
 const DashboardRoleManager = lazy(() => import("./DashboardRoleManager"));
-const DashboardRotaryEncoder = lazy(() => import("./DashboardRotaryEncoder"));
-const DashboardServo = lazy(() => import("./DashboardServo"));
-const DashboardSwitch = lazy(() => import("./DashboardSwitch"));
 const DashboardTrafficLight = lazy(() => import("./DashboardTrafficLight"));
 const DashboardCharacterScreen = lazy(() => import("./DashboardCharacterScreen"));
 const DashboardRainGauge = lazy(() => import("./DashboardRainGauge"));
@@ -70,6 +73,7 @@ export type DashboardServiceComponent = FunctionComponent<DashboardServiceProps>
 const serviceViews: {
     [serviceClass: number]: {
         component: DashboardServiceComponent;
+        bundled?: boolean
         weight?: (service: JDService) => number;
     }
 } = {
@@ -90,15 +94,19 @@ const serviceViews: {
     },
     [SRV_ROTARY_ENCODER]: {
         component: DashboardRotaryEncoder,
+        bundled: true,
     },
     [SRV_BUTTON]: {
         component: DashboardButton,
+        bundled: true,
     },
     [SRV_SERVO]: {
         component: DashboardServo,
+        bundled: true,
     },
     [SRV_SWITCH]: {
         component: DashboardSwitch,
+        bundled: true,
     },
     [SRV_TRAFFIC_LIGHT]: {
         component: DashboardTrafficLight,
@@ -160,7 +168,7 @@ const serviceViews: {
     },
     [SRV_SOUND_PLAYER]: {
         component: DashboardSoundPlayer,
-        weight: ( ) => 2
+        weight: () => 2
     },
     [SRV_ANALOG_BUTTON]: {
         component: DashboardAnalogButton,
@@ -186,10 +194,6 @@ const serviceViews: {
     [SRV_SOLENOID]: {
         component: DashboardSolenoid
     },
-}
-
-export function addServiceComponent(serviceClass: number, component: DashboardServiceComponent) {
-    serviceViews[serviceClass] = { component };
 }
 
 const collapsedRegisters = [
@@ -267,13 +271,18 @@ function DefaultWidget(props: DashboardServiceProps) {
 export default function DashboardServiceWidget(props: React.Attributes & DashboardServiceProps): JSX.Element {
     const { service } = props;
     const { specification } = service;
-    const component = serviceViews[specification.classIdentifier]?.component;
+    const { component, bundled } = serviceViews[specification.classIdentifier] || {};
     const host = useServiceHost(service);
     const color = host ? "secondary" : "primary";
     // no special support
     if (!component)
         return createElement(DefaultWidget, props);
 
+    // precompiled
+    if (bundled)
+        return createElement(component, props);
+
+    // lazy loading
     return <NoSsr>
         <Suspense fallback={<CircularProgress color={color} disableShrink={true} variant={"indeterminate"} size={"3em"} />}>
             {createElement(component, props)}

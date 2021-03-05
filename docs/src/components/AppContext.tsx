@@ -2,10 +2,8 @@ import { useSnackbar } from "notistack";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { BusState } from "../../../src/jdom/bus";
 import { CONNECTION_STATE, ERROR } from "../../../src/jdom/constants";
-import { JDDevice } from "../../../src/jdom/device";
 import { isCancelError } from "../../../src/jdom/utils";
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
-import DeviceRenameDialog from "./dialogs/DeviceRenameDialog";
 import StartSimulatorDialog from "./dialogs/StartSimulatorDialog";
 
 export enum DrawerType {
