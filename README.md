@@ -27,7 +27,7 @@ npm install -g yarn
 ```
 * install dependencies
 ```
-yarn install
+yarn install --frozen-lockfile
 ```
 
 ### VS Code
