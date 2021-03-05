@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { ReactNode, useContext } from 'react'
 import Highlight, { defaultProps, Language, PrismTheme } from 'prism-react-renderer'
 // tslint:disable-next-line: no-submodule-imports match-default-export-name
 import LIGHT_THEME from 'prism-react-renderer/themes/github';
@@ -14,7 +14,7 @@ import Tooltip from './ui/Tooltip';
 import MakeCodeSnippet from './makecode/MakeCodeSnippet';
 import TraceSnippet from './TraceSnippet';
 
-export default function CodeBlock(props: { children: any, className?: string, downloadName?: string; downloadText?: string; url?: string; }) {
+export default function CodeBlock(props: { children: ReactNode, className?: string, downloadName?: string; downloadText?: string; url?: string; }) {
     const { children, className, downloadName, downloadText, url } = props;
     const { darkMode } = useContext(DarkModeContext)
     const language = className?.replace(/language-/, '') || ""

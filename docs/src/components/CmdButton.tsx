@@ -1,6 +1,6 @@
 import { createStyles, darken, lighten, makeStyles, Theme } from "@material-ui/core"
 import { Button } from "gatsby-theme-material-ui"
-import React, { useContext, useEffect, useState } from "react"
+import React, { ReactNode, useContext, useEffect, useState } from "react"
 import AppContext from "./AppContext"
 // tslint:disable-next-line: match-default-export-name no-submodule-imports
 import ErrorIcon from '@material-ui/icons/Error';
@@ -32,7 +32,7 @@ export default function CmdButton(props: {
     onClick: () => Promise<void>,
     className?: string,
     title?: string,
-    children?: any,
+    children?: ReactNode,
     icon?: JSX.Element,
     size?: "small" | undefined,
     variant?: "outlined" | "contained" | undefined,
@@ -40,6 +40,7 @@ export default function CmdButton(props: {
     disableReset?: boolean,
     autoRun?: boolean,
     trackName?: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     trackProperties?: { [key: string]: any },
     ackResetDelay?: number
 }) {

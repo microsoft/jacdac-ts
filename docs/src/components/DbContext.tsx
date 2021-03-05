@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState } from "react";
 import { CHANGE, ERROR } from "../../../src/jdom/constants";
 import { JDEventSource } from "../../../src/jdom/eventsource";
 import { delay } from "../../../src/jdom/utils";
@@ -62,15 +62,15 @@ export class Db extends JDEventSource {
     static STORE_FIRMWARE_BLOBS = "STORE_FIRMWARE_BLOBS"
     static STORE_STORAGE = "STORAGE"
     public static create(): Promise<Db> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             // create or upgrade database
             const request = indexedDB.open(Db.DB_NAME, Db.DB_VERSION);
             const db: Db = new Db();
-            request.onsuccess = function (event) {
+            request.onsuccess = function () {
                 db.db = request.result
                 resolve(db);
             }
-            request.onupgradeneeded = function (event) {
+            request.onupgradeneeded = function () {
                 console.log(`db: upgrade`)
                 db.upgrading = true;
                 try {
@@ -103,6 +103,7 @@ export class Db extends JDEventSource {
                 const transaction = this.db.transaction([table], "readonly");
                 const blobs = transaction.objectStore(table)
                 const request = blobs.getAllKeys()
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 request.onsuccess = (event) => resolve((event.target as any).result)
                 request.onerror = (event) => {
                     this.emit(ERROR, event)
@@ -116,11 +117,13 @@ export class Db extends JDEventSource {
     }
 
     get<T>(table: string, id: string): Promise<T> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.checkUpgrading().then(() => new Promise<any>((resolve, reject) => {
             try {
                 const transaction = this.db.transaction([table], "readonly");
                 const blobs = transaction.objectStore(table)
                 const request = blobs.get(id);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 request.onsuccess = (event) => resolve((event.target as any).result)
                 request.onerror = (event) => {
                     this.emit(ERROR, event)
@@ -162,7 +165,7 @@ export class Db extends JDEventSource {
                     const transaction = this.db.transaction([table], "readwrite");
                     const blobs = transaction.objectStore(table)
                     const request = blobs.clear();
-                    request.onsuccess = (event) => {
+                    request.onsuccess = () => {
                         this.emit(CHANGE)
                         resolve()
                     }
@@ -180,6 +183,7 @@ export class Db extends JDEventSource {
 
 export interface DbContextProps {
     db: Db,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: any
 }
 

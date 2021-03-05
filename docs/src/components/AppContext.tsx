@@ -55,6 +55,7 @@ export const AppProvider = ({ children }) => {
     const { enqueueSnackbar } = useSnackbar();
     const widgetMode = typeof window !== "undefined" && /widget=1/.test(window.location.href);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const setError = (e: any) => {
         if (isCancelError(e))
             return;

@@ -9,12 +9,13 @@ import { DecodedPacket, printPacket, serviceName } from "../../../src/jdom/prett
 import Packet from "../../../src/jdom/packet";
 import JacdacContext, { JacdacContextProps } from "../jacdac/Context";
 import CmdButton from "./CmdButton";
+import { PackedValues } from "../../../src/jdom/pack";
 
 export default function CommandInput(props: {
     service: JDService,
     command: jdspec.PacketInfo,
     showDeviceName?: boolean,
-    args?: any[],
+    args?: PackedValues,
     setReports?: (reports: DecodedPacket[]) => void
 }) {
     const { service, command, showDeviceName, args, setReports } = props;
