@@ -2,8 +2,10 @@ import { testCommandFunctions } from "../../jacdac-spec/spectool/jdtestfuns"
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
+import { JDRegister } from "../jdom/register"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JSONPath } from "jsonpath-plus"
+import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 
 export enum JDCommandStatus {
     NotStarted,
@@ -244,6 +246,8 @@ export class JDTestRunner extends JDEventSource {
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
+    private registers: SMap<JDRegister> = {}
+    private environment: SMap<number> = {}
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -254,6 +258,24 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.tests = this.specification.tests.map(
             t => new JDTestRunner(this, t)
         )
+        const serviceSpec = serviceSpecificationFromClassIdentifier(service.serviceClass)
+        this.specification.tests.forEach(t => {
+            t.registers.forEach(regName => {
+                if (!this.registers[regName]) {
+                    const pkt = serviceSpec.packets.find(pkt => pkt.identifierName === regName)
+                    const register = service.register(pkt.identifier)
+                    this.registers[regName] = register
+                    this.environment[regName] = 0;
+                    register.subscribe(CHANGE, () => {
+                        this.environment[regName] = register.intValue
+                        if (this.currentTest) {
+                            // TODO: notify the active test of the change
+                            // this.currentTest.
+                        }
+                    });
+                }
+            })
+        })
         this.start()
     }
 
