@@ -1,4 +1,4 @@
-import { testCommandFunctions } from "../../jacdac-spec/spectool/jdtestfuns"
+import { Commands, testCommandFunctions } from "../../jacdac-spec/spectool/jdtestfuns"
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
@@ -8,11 +8,10 @@ import { JSONPath } from "jsonpath-plus"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 
 export enum JDCommandStatus {
-    NotStarted,
-    Suceeded,
+    NotReady,
+    Active,
+    Passed,
     Failed,
-    InProgress,
-    TimedOut,
 }
 
 export enum JDTestStatus {
@@ -166,12 +165,77 @@ export class JDExprEvaluator {
     }
 }
 
-// TODO: subscribe to events on the bus to get updates about the device' registers
-// TODO: allow subscribers to test event JDEventSource
+export class JDCommandRunner extends JDEventSource {
+    private _status = JDCommandStatus.NotReady
+    private _output = ""
+    private _progress = 0               // progress towards test success
+    private readonly _timeOut = 5000    // timeout
+    private _timeLeft = 5000
+
+    constructor(
+        private readonly testRunner: JDTestRunner,
+        private readonly command: jdtest.CommandSpec
+    ) {
+        super()
+    }
+
+    get status() {
+        return this._status
+    }
+
+    set status(s: JDCommandStatus) {
+        if (s != this._status) {
+            this._status = s
+            this.emit(CHANGE)
+        }
+    }
+
+    get indeterminate(): boolean {
+        return (
+            this.status === JDCommandStatus.NotReady ||
+            this.status === JDCommandStatus.Active
+        )
+    }
+
+    get output() {
+        return this._output
+    }
+
+    set output(value: string) {
+        if (this._output !== value) {
+            this._output = value
+            this.emit(CHANGE)
+        }
+    }
+
+    reset() {
+        this.output = undefined
+        this.status = JDCommandStatus.NotReady
+    }
+
+    start() {
+        this.status = JDCommandStatus.Active
+        // evaluate the start conditions and create environment map
+    }
+
+    cancel() {
+        // TODO
+        if (this.status === JDCommandStatus.Active)
+            this.status = JDCommandStatus.Failed
+    }
+
+    finish(s: JDCommandStatus) {
+        this.status = s
+        // .testRunner.finishTest()
+    }
+}
+
 
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
     private _output: string
+    private _commandIndex: number
+    public readonly commands: JDCommandRunner[]
 
     private startExpressions: jsep.CallExpression[] = []
 
@@ -180,6 +244,9 @@ export class JDTestRunner extends JDEventSource {
         public readonly specification: jdtest.TestSpec
     ) {
         super()
+        this.commands = this.specification.commands.map(
+            c => new JDCommandRunner(this, c)
+        )
         // collect up the start(expr) calls
         this.specification.commands.forEach(cmd => {
             const starts = (<jsep.CallExpression[]>JSONPath({
@@ -206,8 +273,8 @@ export class JDTestRunner extends JDEventSource {
 
     get indeterminate(): boolean {
         return (
-            this.status !== JDTestStatus.NotReady &&
-            this.status !== JDTestStatus.Active
+            this.status === JDTestStatus.NotReady ||
+            this.status === JDTestStatus.Active
         )
     }
 
@@ -227,11 +294,6 @@ export class JDTestRunner extends JDEventSource {
         this.status = JDTestStatus.NotReady
     }
 
-    start() {
-        this.status = JDTestStatus.Active
-        // evaluate the start conditions and create environment map
-    }
-
     cancel() {
         // TODO
         if (this.status === JDTestStatus.Active)
@@ -242,7 +304,36 @@ export class JDTestRunner extends JDEventSource {
         this.status = s
         this.testRunner.finishTest()
     }
+
+    private get commandIndex() {
+        return this._commandIndex
+    }
+
+    private set commandIndex(index: number) {
+        if (this._commandIndex !== index) {
+            this._commandIndex = index
+            this.emit(CHANGE)
+
+            this.currentCommand?.start()
+        }
+    }
+
+    public start() {
+        this.commands.forEach(t => t.reset())
+        this.commandIndex = 0
+    }
+
+    public finishTest() {
+        if (this.commandIndex < this.commands.length) {
+            this.commandIndex++
+        }
+    }
+
+    get currentCommand() {
+        return this.commands[this._commandIndex]
+    }
 }
+
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
