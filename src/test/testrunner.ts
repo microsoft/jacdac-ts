@@ -6,6 +6,7 @@ import { JDRegister } from "../jdom/register"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JSONPath } from "jsonpath-plus"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import { JDServiceMemberNode } from "../jdom/servicemembernode"
 
 export enum JDCommandStatus {
     NotReady,
@@ -60,7 +61,7 @@ function unparse(e: jsep.Expression): string {
 }
 
 type SMap<T> = { [v: string]: T }
-type StartMap = { e: jsep.CallExpression, v: any}[]
+type StartMap = { e: jsep.Expression, v: any}[]
 
 class JDExprEvaluator {
     private exprStack: any[] = []
@@ -206,26 +207,50 @@ class JDCommandEvaluator {
     {
     }
 
-    // TODO: checks in test parser (argument types)
-    // TODO: start(...) only inside check(...)
-    // TODO: no nested start, please
+    public get prompt() { return this._prompt }
+    public get status() { return this._status }
+    public get progress() { return this._progress }
+
     public start () {
         const testFun = cmdToTestFunction(this.command)
-        if (testFun.args.length>0 && testFun.args[0] === "register") {
-            this._saveRegister = this.env[unparse(this.command.call.arguments[0])] 
-        } else if (testFun.id === 'check') {
-            (<jsep.CallExpression[]>JSONPath({
-                path: "$..*[?(@.type=='CallExpression')]",
-                json: this.command.call.arguments,
-            }))
-            .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
-            .forEach(ce => {
-                if (this._startExpressions.findIndex(r => r.e === ce) < 0) {
-                    const exprEval = new JDExprEvaluator(this.env, [])
-                    this._startExpressions.push({e: ce, v: exprEval.eval(ce.arguments[0])})
-                }
-            })
+        let startExprs: jsep.Expression[] = []
+        switch (testFun.id) {
+            case 'check': {
+                startExprs = (<jsep.CallExpression[]>JSONPath({
+                    path: "$..*[?(@.type=='CallExpression')]",
+                    json: this.command.call.arguments,
+                }))
+                .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
+                .map(ce => ce.arguments[0])
+                break
+            }
+            case 'increaseBy':
+            case 'decreaseBy': {
+                const byExpr = this.command.call.arguments[1]
+                startExprs.push(byExpr)
+            }
+            case 'change': 
+            case 'increase':
+            case 'decrease':{
+                const regExpr = this.command.call.arguments[0]
+                startExprs.push(regExpr)
+                break
+            }
+            case 'rangeFromUpTo':
+            case 'rangeFromDownTo': {
+                const rangeBegin = this.command.call.arguments[1]
+                const rangeEnd = this.command.call.arguments[2]
+                startExprs.push(rangeBegin)
+                startExprs.push(rangeEnd)
+                break
+            }
         }
+        startExprs.forEach(child => {
+            if (this._startExpressions.findIndex(r => r.e === child) < 0) {
+                const exprEval = new JDExprEvaluator(this.env, [])
+                this._startExpressions.push({e: child, v: exprEval.eval(child)})
+            }
+        })
     }
 
     public evaluate() {
@@ -284,9 +309,15 @@ class JDCommandEvaluator {
     }
 }
 
+interface JDCommandOutput {
+    prompt: string
+    progress: number
+    request: boolean
+}
+
 export class JDCommandRunner extends JDEventSource {
     private _status = JDCommandStatus.NotReady
-    private _output = ""
+    private _output: JDCommandOutput = undefined
     private _progress = 0               // progress towards test success
     private readonly _timeOut = 5000    // timeout
     private _timeLeft = 5000
@@ -318,12 +349,15 @@ export class JDCommandRunner extends JDEventSource {
         )
     }
 
+    // TODO: output is more than string
     get output() {
         return this._output
     }
 
-    set output(value: string) {
-        if (this._output !== value) {
+    set output(value: JDCommandOutput) {
+        if (this._output.prompt !== value.prompt ||
+            this._output.progress !== value.progress ||
+            this._output.request !== value.request) {
             this._output = value
             this.emit(CHANGE)
         }
@@ -343,7 +377,9 @@ export class JDCommandRunner extends JDEventSource {
 
     envChange() {
         this._commmandEvaluator?.evaluate()
+        // this.output = this._commmandEvaluator?.prompt
         // TODO: propagate status upwards
+        // TODO: progress report
         // TODO: what if ask prompt?
     }
 
