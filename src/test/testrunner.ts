@@ -259,7 +259,7 @@ class JDCommandEvaluator {
         const testFun = cmdToTestFunction(this.command)
         this._prompt = this.command.prompt 
         if (this.command.call.arguments.length > 0) {
-            let replace = this.command.call.arguments.map((a,i) => [`${i+1}`,unparse(a)])
+            const replace = this.command.call.arguments.map((a,i) => [`${i+1}`,unparse(a)])
             this._prompt = testFun.prompt.slice(0)
             replace.forEach(p => this._prompt.replace(p[0],p[1]))
         }
