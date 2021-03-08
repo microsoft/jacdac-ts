@@ -194,11 +194,13 @@ export class JDExprEvaluator {
     }
 }
 
-class JDCOmmandEvaluator {
+class JDCommandEvaluator {
     private _prompt = ""
     private _progress =  0.0
     private _status = JDCommandStatus.Active
     private _saveRegister: number = undefined
+    private _starts: SMap<any>    
+    private _startExpressions: {e: jsep.CallExpression, v: any}[] = []
 
     constructor(
         private readonly env: SMap<any>, 
@@ -206,12 +208,26 @@ class JDCOmmandEvaluator {
     {
     }
 
+    // TODO: checks in test parser (argument types)
+    // TODO: start(...) only inside check(...)
+    // TODO: no nested start, please
     public start () {
         const testFun = cmdToTestFunction(this.command)
         if (testFun.args.length>0 && testFun.args[0] === "register") {
             // TODO: assumes first argument is an Identifier
             this._saveRegister = this.env[unparse(this.command.call.arguments[0])] 
         }
+        (<jsep.CallExpression[]>JSONPath({
+            path: "$..*[?(@.type=='CallExpression')]",
+            json: this.command.call.arguments,
+        }))
+        .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
+        .forEach(ce => {
+            if (this._startExpressions.findIndex(r => r.e === ce) < 0) {
+                let exprEval = new JDExprEvaluator(this.env)
+                this._startExpressions.push({e: ce, v: exprEval.eval(ce.arguments[0])})
+            }
+        })
     }
 
     public evaluate() {
@@ -234,8 +250,7 @@ class JDCOmmandEvaluator {
             }
             case 'changes': 
             case 'increases':
-            case 'decreases': 
-            {
+            case 'decreases': {
                 const regValue = this.env[unparse(this.command.call.arguments[0])] 
                 const [status, progress] =  
                         (testFun.id === 'changes' && regValue !== this._saveRegister ||
@@ -249,7 +264,19 @@ class JDCOmmandEvaluator {
                 break
             }
             case 'increasesBy':
-            case 'decreasesBy':  
+            case 'decreasesBy': {
+                // TODO: second parameter needs to be "started"
+                const regValue = this.env[unparse(this.command.call.arguments[0])] 
+                const [status, progress] =  
+                        (testFun.id === 'increasesBy' && regValue > this._saveRegister ||
+                         testFun.id === 'decreasesBy' && regValue < this._saveRegister
+                        ) ?  [JDCommandStatus.Passed, 1.0]
+                    : [JDCommandStatus.Failed, 0.0]
+                this._status = status
+                this._progress = progress
+                this._saveRegister = regValue
+                break
+            }  
             case 'rangesFromUpTo':
             case 'rangesFromDownTo':
             {
@@ -324,14 +351,11 @@ export class JDCommandRunner extends JDEventSource {
     }
 }
 
-
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
     private _output: string
     private _commandIndex: number
     public readonly commands: JDCommandRunner[]
-
-    private startExpressions: jsep.CallExpression[] = []
 
     constructor(
         private readonly testRunner: JDServiceTestRunner,
@@ -341,17 +365,6 @@ export class JDTestRunner extends JDEventSource {
         this.commands = this.specification.commands.map(
             c => new JDCommandRunner(this, c)
         )
-        // collect up the start(expr) calls
-        this.specification.commands.forEach(cmd => {
-            const starts = (<jsep.CallExpression[]>JSONPath({
-                path: "$..*[?(@.type=='CallExpression')]",
-                json: cmd.call.arguments,
-            })).filter((ce: jsep.CallExpression) => (<jsep.Identifier>ce.callee).name === "start")
-            starts.forEach(s => {
-                if (this.startExpressions.indexOf(s) < 0)
-                    this.startExpressions.push(s)
-            })
-        })
     }
 
     get status() {
@@ -427,7 +440,6 @@ export class JDTestRunner extends JDEventSource {
         return this.commands[this._commandIndex]
     }
 }
-
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
