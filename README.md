@@ -30,7 +30,7 @@ npm install -g yarn
 yarn install --frozen-lockfile
 ```
 
-### VS Code
+### Visual Studio Code
 
 You are welcome to use any editor you want! Visual Studio Code
 provides seamless support for git sub-modules and is our preferred editor.
