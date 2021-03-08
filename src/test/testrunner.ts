@@ -224,7 +224,7 @@ class JDCommandEvaluator {
         .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
         .forEach(ce => {
             if (this._startExpressions.findIndex(r => r.e === ce) < 0) {
-                let exprEval = new JDExprEvaluator(this.env)
+                const exprEval = new JDExprEvaluator(this.env)
                 this._startExpressions.push({e: ce, v: exprEval.eval(ce.arguments[0])})
             }
         })
