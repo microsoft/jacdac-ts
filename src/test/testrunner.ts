@@ -10,6 +10,7 @@ import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 export enum JDCommandStatus {
     NotReady,
     Active,
+    RequiresUserInput,
     Passed,
     Failed,
 }
@@ -29,6 +30,35 @@ export function cmdToTestFunction(cmd: jdtest.CommandSpec) {
 export function cmdToPrompt(cmd: jdtest.CommandSpec) {
     return cmd.prompt ? cmd.prompt : cmdToTestFunction(cmd).prompt
 }
+
+function unparse(e: jsep.Expression) {
+    switch (e.type) {
+        case "CallExpression": {
+            const caller = e as jsep.CallExpression
+            return `${unparse(caller.callee)}(${caller.arguments.map(unparse).join(", ")})`
+        }
+        case "BinaryExpression": 
+        case "LogicalExpression":     
+        {
+            const be = e as any
+            return `(${unparse(be.left)} ${be.operator} ${unparse(be.right)})`
+        }
+        case "UnaryExpression":
+        {
+            const ue = e as jsep.UnaryExpression
+            return `${ue.operator}${unparse(ue.argument)}`
+        }
+        case "Identifier": {
+            return (e as jsep.Identifier).name
+        }
+        case "Literal": {
+            return (e as jsep.Literal).raw
+        }
+        default:
+    }
+}
+
+
 
 type SMap<T> = { [v: string]: T }
 
@@ -156,11 +186,48 @@ export class JDExprEvaluator {
                 break
             }
             case "Literal": {
-                const lit = <jsep.Literal>e
+                        const lit = <jsep.Literal>e
                 this.exprStack.push(lit.value)
                 break
             }
             default:
+        }
+    }
+}
+
+class JDCOmmandEvaluator {
+    private _prompt = ""
+    private _progress =  0.0
+    private _status = JDCommandStatus.Active
+
+    constructor(
+        private readonly env: SMap<any>, 
+        private readonly command: jdtest.CommandSpec) 
+    {
+    }
+
+    public evaluate() {
+        const testFun = cmdToTestFunction(this.command)
+        this._prompt = testFun.prompt // TODO: pretty print expr and substitute
+        switch(testFun.id) {
+            case 'say':
+            case 'ask': {
+                this._prompt = this.command.prompt
+                this._status = testFun.id === 'say' ? JDCommandStatus.Passed : JDCommandStatus.RequiresUserInput;
+                break
+            }
+            case 'check': {
+                let expr = new JDExprEvaluator(this.env)
+                let ev = expr.eval(this.command.call.arguments[0])
+                this._status = ev ? JDCommandStatus.Passed : JDCommandStatus.Failed
+            }
+            case 'changes': {
+
+            }
+            case 'increases':
+            case 'decreases':
+            case 'increasesBy':
+            case 'decreasesBy':        
         }
     }
 }
