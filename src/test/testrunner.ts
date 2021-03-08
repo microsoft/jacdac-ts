@@ -338,18 +338,25 @@ export class JDCommandRunner extends JDEventSource {
     start() {
         this.status = JDCommandStatus.Active
         this._commmandEvaluator = new JDCommandEvaluator(this.env, this.command)
-        // evaluate the start conditions and create environment map
+        this._commmandEvaluator.start()
+    }
+
+    envChange() {
+        this._commmandEvaluator?.evaluate()
+        // TODO: propagate status upwards
+        // TODO: what if ask prompt?
     }
 
     cancel() {
-        // TODO
-        if (this.status === JDCommandStatus.Active)
-            this.status = JDCommandStatus.Failed
+        this.finish(JDCommandStatus.Failed)
     }
 
     finish(s: JDCommandStatus) {
-        this.status = s
-        // .testRunner.finishTest()
+        if (this.status === JDCommandStatus.Active) {
+            this._commmandEvaluator = null
+            this.status = s
+            this.testRunner.finishTest()
+        }
     }
 }
 
@@ -433,6 +440,10 @@ export class JDTestRunner extends JDEventSource {
         this.commandIndex = 0
     }
 
+    public envChange() {
+        this.currentCommand?.envChange();
+    }
+
     public finishTest() {
         if (this.commandIndex < this.commands.length) {
             this.commandIndex++
@@ -467,11 +478,9 @@ export class JDServiceTestRunner extends JDServiceClient {
                     this.registers[regName] = register
                     this.environment[regName] = 0;
                     register.subscribe(CHANGE, () => {
+                        // TODO: review with Peli
                         this.environment[regName] = register.intValue
-                        if (this.currentTest) {
-                            // TODO: notify the active test of the change
-                            // this.currentTest.
-                        }
+                        this.currentTest?.envChange()
                     });
                 }
             })
