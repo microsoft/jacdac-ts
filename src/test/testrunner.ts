@@ -31,7 +31,7 @@ export function cmdToPrompt(cmd: jdtest.CommandSpec) {
     return cmd.prompt ? cmd.prompt : cmdToTestFunction(cmd).prompt
 }
 
-function unparse(e: jsep.Expression) {
+function unparse(e: jsep.Expression): string {
     switch (e.type) {
         case "CallExpression": {
             const caller = e as jsep.CallExpression
@@ -55,10 +55,9 @@ function unparse(e: jsep.Expression) {
             return (e as jsep.Literal).raw
         }
         default:
+            return "TODO"
     }
 }
-
-
 
 type SMap<T> = { [v: string]: T }
 
@@ -199,6 +198,7 @@ class JDCOmmandEvaluator {
     private _prompt = ""
     private _progress =  0.0
     private _status = JDCommandStatus.Active
+    private _saveRegister: number = undefined
 
     constructor(
         private readonly env: SMap<any>, 
@@ -206,9 +206,18 @@ class JDCOmmandEvaluator {
     {
     }
 
+    public start () {
+        const testFun = cmdToTestFunction(this.command)
+        if (testFun.args.length>0 && testFun.args[0] === "register") {
+            // TODO: assumes first argument is an Identifier
+            this._saveRegister = this.env[unparse(this.command.call.arguments[0])] 
+        }
+    }
+
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
-        this._prompt = testFun.prompt // TODO: pretty print expr and substitute
+        this._prompt = this.command.call.args.length === 0 ? this.command.prompt 
+            : testFun.prompt(this.command.call.arguments.map(unparse))
         switch(testFun.id) {
             case 'say':
             case 'ask': {
@@ -217,17 +226,35 @@ class JDCOmmandEvaluator {
                 break
             }
             case 'check': {
-                let expr = new JDExprEvaluator(this.env)
-                let ev = expr.eval(this.command.call.arguments[0])
+                const expr = new JDExprEvaluator(this.env)
+                const ev = expr.eval(this.command.call.arguments[0])
                 this._status = ev ? JDCommandStatus.Passed : JDCommandStatus.Failed
+                this._progress = 1.00
+                break
             }
-            case 'changes': {
-
-            }
+            case 'changes': 
             case 'increases':
-            case 'decreases':
+            case 'decreases': 
+            {
+                const regValue = this.env[unparse(this.command.call.arguments[0])] 
+                const [status, progress] =  
+                        (testFun.id === 'changes' && regValue !== this._saveRegister ||
+                        testFun.id === 'increases' && regValue > this._saveRegister ||
+                        testFun.id === 'decreases' && regValue < this._saveRegister
+                        ) ?  [JDCommandStatus.Passed, 1.0]
+                    : [JDCommandStatus.Failed, 0.0]
+                this._status = status
+                this._progress = progress
+                this._saveRegister = regValue
+                break
+            }
             case 'increasesBy':
-            case 'decreasesBy':        
+            case 'decreasesBy':  
+            case 'rangesFromUpTo':
+            case 'rangesFromDownTo':
+            {
+                break
+            }     
         }
     }
 }
