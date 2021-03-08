@@ -60,11 +60,12 @@ function unparse(e: jsep.Expression): string {
 }
 
 type SMap<T> = { [v: string]: T }
+type StartMap = { e: jsep.CallExpression, v: any}[]
 
-export class JDExprEvaluator {
+class JDExprEvaluator {
     private exprStack: any[] = []
 
-    constructor(private env: SMap<any>) {}
+    constructor(private env: SMap<any>, private start: StartMap) {}
 
     private tos() {
         return this.exprStack[this.exprStack.length - 1]
@@ -83,6 +84,7 @@ export class JDExprEvaluator {
                 const callee = <jsep.Identifier>caller.callee
                 switch (callee.name) {
                     case "start":
+                        this.exprStack.push(this.start.find(r => r.e === caller).v)
                         return
                     default: // ERROR
                 }
@@ -111,7 +113,6 @@ export class JDExprEvaluator {
                     case "%":
                         this.exprStack.push(left % right)
                         return
-
                     case ">>":
                         this.exprStack.push(left >> right)
                         return
@@ -121,7 +122,6 @@ export class JDExprEvaluator {
                     case "<<":
                         this.exprStack.push(left << right)
                         return
-
                     case "|":
                         this.exprStack.push(left | right)
                         return
@@ -131,7 +131,6 @@ export class JDExprEvaluator {
                     case "^":
                         this.exprStack.push(left ^ right)
                         return
-
                     case "==":
                         this.exprStack.push(left == right)
                         return
@@ -185,7 +184,7 @@ export class JDExprEvaluator {
                 break
             }
             case "Literal": {
-                        const lit = <jsep.Literal>e
+                const lit = <jsep.Literal>e
                 this.exprStack.push(lit.value)
                 break
             }
@@ -198,9 +197,8 @@ class JDCommandEvaluator {
     private _prompt = ""
     private _progress =  0.0
     private _status = JDCommandStatus.Active
-    private _saveRegister: number = undefined
-    private _starts: SMap<any>    
-    private _startExpressions: {e: jsep.CallExpression, v: any}[] = []
+    private _saveRegister: number = undefined   
+    private _startExpressions: StartMap = []
 
     constructor(
         private readonly env: SMap<any>, 
@@ -214,25 +212,25 @@ class JDCommandEvaluator {
     public start () {
         const testFun = cmdToTestFunction(this.command)
         if (testFun.args.length>0 && testFun.args[0] === "register") {
-            // TODO: assumes first argument is an Identifier
             this._saveRegister = this.env[unparse(this.command.call.arguments[0])] 
+        } else if (testFun.id === 'check') {
+            (<jsep.CallExpression[]>JSONPath({
+                path: "$..*[?(@.type=='CallExpression')]",
+                json: this.command.call.arguments,
+            }))
+            .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
+            .forEach(ce => {
+                if (this._startExpressions.findIndex(r => r.e === ce) < 0) {
+                    const exprEval = new JDExprEvaluator(this.env, [])
+                    this._startExpressions.push({e: ce, v: exprEval.eval(ce.arguments[0])})
+                }
+            })
         }
-        (<jsep.CallExpression[]>JSONPath({
-            path: "$..*[?(@.type=='CallExpression')]",
-            json: this.command.call.arguments,
-        }))
-        .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
-        .forEach(ce => {
-            if (this._startExpressions.findIndex(r => r.e === ce) < 0) {
-                const exprEval = new JDExprEvaluator(this.env)
-                this._startExpressions.push({e: ce, v: exprEval.eval(ce.arguments[0])})
-            }
-        })
     }
 
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
-        this._prompt = this.command.call.args.length === 0 ? this.command.prompt 
+        this._prompt = this.command.call.arguments.length === 0 ? this.command.prompt 
             : testFun.prompt(this.command.call.arguments.map(unparse))
         switch(testFun.id) {
             case 'say':
@@ -242,7 +240,7 @@ class JDCommandEvaluator {
                 break
             }
             case 'check': {
-                const expr = new JDExprEvaluator(this.env)
+                const expr = new JDExprEvaluator(this.env, this._startExpressions)
                 const ev = expr.eval(this.command.call.arguments[0])
                 this._status = ev ? JDCommandStatus.Passed : JDCommandStatus.Failed
                 this._progress = 1.00
@@ -292,9 +290,11 @@ export class JDCommandRunner extends JDEventSource {
     private _progress = 0               // progress towards test success
     private readonly _timeOut = 5000    // timeout
     private _timeLeft = 5000
+    private _commmandEvaluator: JDCommandEvaluator = null
 
     constructor(
         private readonly testRunner: JDTestRunner,
+        private readonly env: SMap<any>, 
         private readonly command: jdtest.CommandSpec
     ) {
         super()
@@ -332,10 +332,12 @@ export class JDCommandRunner extends JDEventSource {
     reset() {
         this.output = undefined
         this.status = JDCommandStatus.NotReady
+        this._commmandEvaluator = null;
     }
 
     start() {
         this.status = JDCommandStatus.Active
+        this._commmandEvaluator = new JDCommandEvaluator(this.env, this.command)
         // evaluate the start conditions and create environment map
     }
 
@@ -359,11 +361,12 @@ export class JDTestRunner extends JDEventSource {
 
     constructor(
         private readonly testRunner: JDServiceTestRunner,
+        private readonly env: SMap<any>, 
         public readonly specification: jdtest.TestSpec
     ) {
         super()
         this.commands = this.specification.commands.map(
-            c => new JDCommandRunner(this, c)
+            c => new JDCommandRunner(this, this.env, c)
         )
     }
 
@@ -453,7 +456,7 @@ export class JDServiceTestRunner extends JDServiceClient {
     ) {
         super(service)
         this.tests = this.specification.tests.map(
-            t => new JDTestRunner(this, t)
+            t => new JDTestRunner(this, this.environment, t)
         )
         const serviceSpec = serviceSpecificationFromClassIdentifier(service.serviceClass)
         this.specification.tests.forEach(t => {
