@@ -377,7 +377,7 @@ export class JDCommandRunner extends JDEventSource {
     }
 
     set output(value: JDCommandOutput) {
-        if (this._output.prompt !== value.prompt || this._output.progress !== value.progress) {
+        if (!this._output || this._output.prompt !== value.prompt || this._output.progress !== value.progress) {
             this._output = value
             this.emit(CHANGE)
         }
@@ -533,7 +533,7 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.testSpec.tests.forEach(t => {
             t.registers.forEach(regName => {
                 if (!this.registers[regName]) {
-                    const pkt = serviceSpec.packets.find(pkt => pkt.identifierName === regName)
+                    const pkt = serviceSpec.packets.find(pkt => pkt.name === regName)
                     const register = service.register(pkt.identifier)
                     this.registers[regName] = register
                     this.environment[regName] = 0;
