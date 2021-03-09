@@ -302,14 +302,27 @@ class JDCommandEvaluator {
                 const amt = this.command.call.arguments[1]
                 const amtSaved = this._startExpressions.find(r => r.e === amt)
                 const regValue = this.env[unparse(reg)] 
-                const [status, progress] =  
-                        (testFun.id === 'increasesBy' && regValue > regSaved ||
-                         testFun.id === 'decreasesBy' && regValue < regSaved
-                        ) ?  [JDCommandStatus.Passed, 1.0]
-                    : [JDCommandStatus.Failed, 0.0]
-                this._status = status
-                this._progress = progress
-                regSaved.v = regValue
+                if (testFun.id === 'increasesBy') {
+                    if (regValue === regSaved.v + amtSaved.v) {
+                        this._status = JDCommandStatus.Passed
+                        this._progress = 1.0
+                    } else if (regValue >= regSaved.v && regValue < regSaved.v.v + amtSaved.v) {
+                        this._status = JDCommandStatus.Active
+                        this._progress = (regValue - regSaved.v) / amtSaved.v
+                    } else {
+                        this._status = JDCommandStatus.Failed
+                    }
+                } else {
+                    if (regValue === regSaved.v - amtSaved.v) {
+                        this._status = JDCommandStatus.Passed
+                        this._progress = 1.0
+                    } else if (regValue <= regSaved.v && regValue > regSaved.v.v - amtSaved.v) {
+                        this._status = JDCommandStatus.Active
+                        this._progress = (regSaved.v - regValue) / amtSaved.v
+                    } else {
+                        this._status = JDCommandStatus.Failed
+                    } 
+                }
                 break
             }  
             case 'rangesFromUpTo':
@@ -329,7 +342,6 @@ export interface JDCommandOutput {
 export class JDCommandRunner extends JDEventSource {
     private _status = JDCommandStatus.NotReady
     private _output: JDCommandOutput = undefined
-    private _progress = 0               // progress towards test success
     private readonly _timeOut = 5000    // timeout
     private _timeLeft = 5000
     private _commmandEvaluator: JDCommandEvaluator = null
@@ -404,7 +416,7 @@ export class JDCommandRunner extends JDEventSource {
             this.status === JDCommandStatus.RequiresUserInput) {
             this._commmandEvaluator = null
             this.status = s
-            this.testRunner.finishTest()
+            this.testRunner.finishCommand()
         }
     }
 }
@@ -416,14 +428,15 @@ export class JDTestRunner extends JDEventSource {
     public readonly commands: JDCommandRunner[]
 
     constructor(
-        private readonly testRunner: JDServiceTestRunner,
+        private readonly serviceTestRunner: JDServiceTestRunner,
         private readonly env: SMap<any>, 
-        public readonly specification: jdtest.TestSpec
+        private readonly testSpec: jdtest.TestSpec
     ) {
         super()
-        this.commands = this.specification.commands.map(
+        this.commands = testSpec.commands.map(
             c => new JDCommandRunner(this, this.env, c)
         )
+        this.output = testSpec.description
     }
 
     get status() {
@@ -456,19 +469,18 @@ export class JDTestRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = undefined
         this.status = JDTestStatus.NotReady
     }
 
     cancel() {
-        // TODO
-        if (this.status === JDTestStatus.Active)
-            this.status = JDTestStatus.Failed
+        this.finish(JDTestStatus.Failed);
     }
 
     finish(s: JDTestStatus) {
-        this.status = s
-        this.testRunner.finishTest()
+        if (this.status === JDTestStatus.Active) {
+            this.status = s
+            this.serviceTestRunner.finishTest()
+        }
     }
 
     private get commandIndex() {
@@ -478,9 +490,8 @@ export class JDTestRunner extends JDEventSource {
     private set commandIndex(index: number) {
         if (this._commandIndex !== index) {
             this._commandIndex = index
-            this.emit(CHANGE)
-
             this.currentCommand?.start()
+            this.emit(CHANGE)
         }
     }
 
@@ -493,7 +504,7 @@ export class JDTestRunner extends JDEventSource {
         this.currentCommand?.envChange();
     }
 
-    public finishTest() {
+    public finishCommand() {
         if (this.commandIndex < this.commands.length) {
             this.commandIndex++
         }
@@ -511,15 +522,15 @@ export class JDServiceTestRunner extends JDServiceClient {
     public readonly tests: JDTestRunner[]
 
     constructor(
-        public readonly specification: jdtest.ServiceTestSpec,
+        public readonly testSpec: jdtest.ServiceTestSpec,
         service: JDService
     ) {
         super(service)
-        this.tests = this.specification.tests.map(
+        this.tests = this.testSpec.tests.map(
             t => new JDTestRunner(this, this.environment, t)
         )
         const serviceSpec = serviceSpecificationFromClassIdentifier(service.serviceClass)
-        this.specification.tests.forEach(t => {
+        this.testSpec.tests.forEach(t => {
             t.registers.forEach(regName => {
                 if (!this.registers[regName]) {
                     const pkt = serviceSpec.packets.find(pkt => pkt.identifierName === regName)
