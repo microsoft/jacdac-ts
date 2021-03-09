@@ -247,22 +247,24 @@ class JDCommandEvaluator {
                 this._startExpressions.push({e: child, v: exprEval.eval(child)})
             }
         })
+        this.createPrompt()
+    }
+
+    private createPrompt() {
+        const testFun = cmdToTestFunction(this.command)
+        const replace = this.command.call.arguments.map((a,i) => [`{${i+1}}`,unparse(a)])
+        this._prompt = (testFun.id === 'ask' || testFun.id === 'say') ? 
+            this.command.prompt.slice(0) : testFun.prompt.slice(0)
+        replace.forEach(p => this._prompt = this._prompt.replace(p[0],p[1]))
     }
 
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
         this._status = JDCommandStatus.Active
-        this._prompt = this.command.prompt 
         this._progress = undefined
-        if (this.command.call.arguments.length > 0) {
-            const replace = this.command.call.arguments.map((a,i) => [`${i+1}`,unparse(a)])
-            this._prompt = testFun.prompt.slice(0)
-            replace.forEach(p => this._prompt.replace(p[0],p[1]))
-        }
         switch(testFun.id as Commands) {
             case 'say':
             case 'ask': {
-                this._prompt = this.command.prompt
                 this._status = testFun.id === 'say' ? JDCommandStatus.Passed : JDCommandStatus.RequiresUserInput;
                 break
             }
@@ -387,11 +389,10 @@ export class JDCommandRunner extends JDEventSource {
         this.status = JDCommandStatus.Active
         this._commmandEvaluator = new JDCommandEvaluator(this.env, this.command)
         this._commmandEvaluator.start()
-        this._commmandEvaluator.evaluate()
-        this.finish(this._commmandEvaluator.status)
+        this.envChange(false)
     }
 
-    envChange() {
+    envChange(finish = true) {
         if (this._commmandEvaluator) {
             this._commmandEvaluator.evaluate()
             const newOutput: JDCommandOutput = {
@@ -399,7 +400,8 @@ export class JDCommandRunner extends JDEventSource {
                 progress: this._commmandEvaluator.progress,
             }
             this.output = newOutput
-            this.finish(this._commmandEvaluator.status)
+            if (finish)
+               this.finish(this._commmandEvaluator.status)
         }
     }
 
