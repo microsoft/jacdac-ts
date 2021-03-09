@@ -247,6 +247,7 @@ class JDCommandEvaluator {
                 break
             }
         }
+        // evaluate the start expressions and store the results
         startExprs.forEach(child => {
             if (this._startExpressions.findIndex(r => r.e === child) < 0) {
                 const exprEval = new JDExprEvaluator(this.env, [])
@@ -320,7 +321,7 @@ class JDCommandEvaluator {
     }
 }
 
-interface JDCommandOutput {
+export interface JDCommandOutput {
     prompt: string
     progress: number
 }
