@@ -93,15 +93,6 @@ export function deviceSpecifications(): jdspec.DeviceSpec[] {
     return _deviceRegistry.slice(0)
 }
 
-export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
-    return (
-        spec &&
-        `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${identifierToUrlPath(
-            spec.id
-        )}.jpg`
-    )
-}
-
 export function identifierToUrlPath(id: string) {
     return id?.replace(/-/g, "/")
 }
