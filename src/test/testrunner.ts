@@ -341,7 +341,7 @@ export interface JDCommandOutput {
 
 export class JDCommandRunner extends JDEventSource {
     private _status = JDCommandStatus.NotReady
-    private _output: JDCommandOutput = undefined
+    private _output: JDCommandOutput = { prompt: "", progress: 0.0 }
     private readonly _timeOut = 5000    // timeout
     private _timeLeft = 5000
     private _commmandEvaluator: JDCommandEvaluator = null
@@ -384,7 +384,7 @@ export class JDCommandRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = undefined
+        this.output = { prompt: "", progress: 0.0}
         this.status = JDCommandStatus.NotReady
         this._commmandEvaluator = null;
     }
