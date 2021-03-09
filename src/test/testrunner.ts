@@ -23,13 +23,9 @@ export enum JDTestStatus {
     Failed,
 }
 
-export function cmdToTestFunction(cmd: jdtest.CommandSpec) {
+function cmdToTestFunction(cmd: jdtest.CommandSpec) {
     const id = (<jsep.Identifier>cmd.call.callee).name
     return testCommandFunctions.find(t => t.id == id)
-}
-
-export function cmdToPrompt(cmd: jdtest.CommandSpec) {
-    return cmd.prompt ? cmd.prompt : cmdToTestFunction(cmd).prompt
 }
 
 function unparse(e: jsep.Expression): string {
@@ -211,39 +207,36 @@ class JDCommandEvaluator {
     public get progress() { return this._progress }
 
     public start () {
+        this._startExpressions = []
         const testFun = cmdToTestFunction(this.command)
+        const args = this.command.call.arguments
         let startExprs: jsep.Expression[] = []
-        switch (testFun.id) {
+        switch (testFun.id as Commands) {
             case 'check': {
                 startExprs = (<jsep.CallExpression[]>JSONPath({
                     path: "$..*[?(@.type=='CallExpression')]",
-                    json: this.command.call.arguments,
+                    json: args,
                 }))
                 .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
                 .map(ce => ce.arguments[0])
                 break
             }
-            case 'change': 
-            case 'increase':
-            case 'decrease':{
-                const regExpr = this.command.call.arguments[0]
-                startExprs.push(regExpr)
+            case 'changes': 
+            case 'increases':
+            case 'decreases':{
+                startExprs.push(args[0])
                 break
             }
-            case 'increaseBy':
-            case 'decreaseBy': {
-                const byExpr = this.command.call.arguments[1]
-                startExprs.push(byExpr)
-                const regExpr = this.command.call.arguments[0]
-                startExprs.push(regExpr)
+            case 'increasesBy':
+            case 'decreasesBy': {
+                startExprs.push(args[0])
+                startExprs.push(args[1])
                 break
             }
-            case 'rangeFromUpTo':
-            case 'rangeFromDownTo': {
-                const rangeBegin = this.command.call.arguments[1]
-                const rangeEnd = this.command.call.arguments[2]
-                startExprs.push(rangeBegin)
-                startExprs.push(rangeEnd)
+            case 'rangesFromUpTo':
+            case 'rangesFromDownTo': {
+                startExprs.push(args[1])
+                startExprs.push(args[2])
                 break
             }
         }
@@ -258,13 +251,15 @@ class JDCommandEvaluator {
 
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
+        this._status = JDCommandStatus.Active
         this._prompt = this.command.prompt 
+        this._progress = undefined
         if (this.command.call.arguments.length > 0) {
             const replace = this.command.call.arguments.map((a,i) => [`${i+1}`,unparse(a)])
             this._prompt = testFun.prompt.slice(0)
             replace.forEach(p => this._prompt.replace(p[0],p[1]))
         }
-        switch(testFun.id) {
+        switch(testFun.id as Commands) {
             case 'say':
             case 'ask': {
                 this._prompt = this.command.prompt
@@ -274,8 +269,7 @@ class JDCommandEvaluator {
             case 'check': {
                 const expr = new JDExprEvaluator(this.env, this._startExpressions)
                 const ev = expr.eval(this.command.call.arguments[0])
-                this._status = ev ? JDCommandStatus.Passed : JDCommandStatus.Failed
-                this._progress = 1.00
+                this._status = ev ? JDCommandStatus.Passed : JDCommandStatus.Active
                 break
             }
             case 'changes': 
@@ -289,7 +283,7 @@ class JDCommandEvaluator {
                         testFun.id === 'increases' && regValue > regSaved.v ||
                         testFun.id === 'decreases' && regValue < regSaved.v
                         ) ?  [JDCommandStatus.Passed, 1.0]
-                    : [JDCommandStatus.Failed, 0.0]
+                    : [JDCommandStatus.Active, 0.0]
                 this._status = status
                 this._progress = progress
                 regSaved.v = regValue
@@ -310,7 +304,7 @@ class JDCommandEvaluator {
                         this._status = JDCommandStatus.Active
                         this._progress = (regValue - regSaved.v) / amtSaved.v
                     } else {
-                        this._status = JDCommandStatus.Failed
+                        this._status = JDCommandStatus.Active
                     }
                 } else {
                     if (regValue === regSaved.v - amtSaved.v) {
@@ -320,7 +314,7 @@ class JDCommandEvaluator {
                         this._status = JDCommandStatus.Active
                         this._progress = (regSaved.v - regValue) / amtSaved.v
                     } else {
-                        this._status = JDCommandStatus.Failed
+                        this._status = JDCommandStatus.Active
                     } 
                 }
                 break
@@ -393,6 +387,8 @@ export class JDCommandRunner extends JDEventSource {
         this.status = JDCommandStatus.Active
         this._commmandEvaluator = new JDCommandEvaluator(this.env, this.command)
         this._commmandEvaluator.start()
+        this._commmandEvaluator.evaluate()
+        this.finish(this._commmandEvaluator.status)
     }
 
     envChange() {
@@ -402,8 +398,8 @@ export class JDCommandRunner extends JDEventSource {
                 prompt: this._commmandEvaluator.prompt,
                 progress: this._commmandEvaluator.progress,
             }
-            this.status = this._commmandEvaluator.status
             this.output = newOutput
+            this.finish(this._commmandEvaluator.status)
         }
     }
 
@@ -412,8 +408,8 @@ export class JDCommandRunner extends JDEventSource {
     }
 
     finish(s: JDCommandStatus) {
-        if (this.status === JDCommandStatus.Active || 
-            this.status === JDCommandStatus.RequiresUserInput) {
+        if ((s === JDCommandStatus.Failed || s === JDCommandStatus.Passed) &&
+            (this.status === JDCommandStatus.Active || this.status === JDCommandStatus.RequiresUserInput)) {
             this._commmandEvaluator = null
             this.status = s
             this.testRunner.finishCommand()
