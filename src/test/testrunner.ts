@@ -597,6 +597,7 @@ export class JDServiceTestRunner extends JDServiceClient {
                         this.environment[regName] = register.intValue
                         this.currentTest?.envChange()
                     })
+                }
             })
         })
         this.start()
