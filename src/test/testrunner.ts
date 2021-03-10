@@ -280,10 +280,12 @@ class JDCommandEvaluator {
 
     private createPrompt() {
         const testFun = cmdToTestFunction(this.command)
-        const replace = this.command.call.arguments.map((a, i) => [
+        const replace = this.command.call.arguments.map((a, i) => {
+            const aStart = this._startExpressions.find(r => r.e === a)
+            return [
             `{${i + 1}}`,
-            unparse(a),
-        ])
+            aStart && testFun.args[i] !== "register" ? aStart.v.toString() : unparse(a),
+        ]})
         this._prompt =
             testFun.id === "ask" || testFun.id === "say"
                 ? this.command.prompt.slice(0)
@@ -593,7 +595,7 @@ export class JDServiceTestRunner extends JDServiceClient {
                     )
                     const register = service.register(pkt.identifier)
                     this.registers[regName] = register
-                    this.environment[regName] = 0
+                    this.environment[regName] = register.intValue
                     this.mount(register.subscribe(CHANGE, () => {
                         this.environment[regName] = register.intValue
                         this.currentTest?.envChange()
