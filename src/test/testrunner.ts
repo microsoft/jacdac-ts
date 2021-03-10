@@ -441,6 +441,7 @@ export class JDCommandRunner extends JDEventSource {
         this._commmandEvaluator = new JDCommandEvaluator(this.env, this.command)
         this._commmandEvaluator.start()
         this.envChange(false)
+        this.envChange(true)
     }
 
     envChange(finish = true) {
@@ -491,6 +492,7 @@ export class JDTestRunner extends JDEventSource {
 
     reset() {
         this.status = JDTestStatus.NotReady
+        this.commands.forEach(t => t.reset())
     }
 
     ready() {
@@ -501,7 +503,6 @@ export class JDTestRunner extends JDEventSource {
     public start() {
         if (this.status === JDTestStatus.ReadyToRun) {
             this.status = JDTestStatus.Active
-            this.commands.forEach(t => t.reset())
             this.commandIndex = 0
         }
     }
@@ -612,7 +613,7 @@ export class JDServiceTestRunner extends JDServiceClient {
             this._testIndex = index
             this.emit(CHANGE)
 
-            this.currentTest?.start()
+            this.currentTest?.ready()
         }
     }
 
