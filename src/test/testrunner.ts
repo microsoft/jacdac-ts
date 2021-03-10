@@ -21,6 +21,7 @@ export enum JDCommandStatus {
 
 export enum JDTestStatus {
     NotReady,
+    ReadyToRun,
     Active,
     Passed,
     Failed,
@@ -472,7 +473,7 @@ export class JDCommandRunner extends JDEventSource {
 
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
-    private _output: string
+    private _description: string
     private _commandIndex: number
     public readonly commands: JDCommandRunner[]
 
@@ -485,7 +486,28 @@ export class JDTestRunner extends JDEventSource {
         this.commands = testSpec.commands.map(
             c => new JDCommandRunner(this, this.env, c)
         )
-        this.output = testSpec.description
+        this._description = testSpec.description
+    }
+
+    reset() {
+        this.status = JDTestStatus.NotReady
+    }
+
+    ready() {
+        if (this.status === JDTestStatus.NotReady)
+           this.status = JDTestStatus.ReadyToRun
+    }
+
+    public start() {
+        if (this.status === JDTestStatus.ReadyToRun) {
+            this.status = JDTestStatus.Active
+            this.commands.forEach(t => t.reset())
+            this.commandIndex = 0
+        }
+    }
+
+    cancel() {
+        this.finish(JDTestStatus.Failed)
     }
 
     get status() {
@@ -506,23 +528,8 @@ export class JDTestRunner extends JDEventSource {
         )
     }
 
-    get output() {
-        return this._output
-    }
-
-    set output(value: string) {
-        if (this._output !== value) {
-            this._output = value
-            this.emit(CHANGE)
-        }
-    }
-
-    reset() {
-        this.status = JDTestStatus.NotReady
-    }
-
-    cancel() {
-        this.finish(JDTestStatus.Failed)
+    get description() {
+        return this._description
     }
 
     finish(s: JDTestStatus) {
@@ -542,12 +549,6 @@ export class JDTestRunner extends JDEventSource {
             this.currentCommand?.start()
             this.emit(CHANGE)
         }
-    }
-
-    public start() {
-        this.status = JDTestStatus.Active
-        this.commands.forEach(t => t.reset())
-        this.commandIndex = 0
     }
 
     public envChange() {
@@ -596,7 +597,6 @@ export class JDServiceTestRunner extends JDServiceClient {
                         this.environment[regName] = register.intValue
                         this.currentTest?.envChange()
                     })
-                }
             })
         })
         this.start()
