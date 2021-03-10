@@ -6,7 +6,6 @@
 import { NumberFormat } from "./buffer"
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json"
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
-import serviceTestData from "../../jacdac-spec/dist/services-tests.json"
 import { fromHex, SMap, toHex } from "./utils"
 import {
     SystemReg,
@@ -22,8 +21,6 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _serviceTests: jdtest.ServiceTestSpec[] = serviceTestData as any
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
@@ -166,21 +163,6 @@ export function serviceSpecificationFromClassIdentifier(
         _serviceSpecifications.find(
             s => s.classIdentifier === classIdentifier
         ) || _customServiceSpecifications[classIdentifier]
-    )
-}
-
-/**
- * Given a service specification, see if it has a test
- * @param spec
- */
-export function serviceTestFromServiceSpec(
-    spec: jdspec.ServiceSpec
-): jdtest.ServiceTestSpec {
-    return (
-        !!spec &&
-        _serviceTests.find(
-            test => test.serviceClassIdentifier === spec.classIdentifier
-        )
     )
 }
 
