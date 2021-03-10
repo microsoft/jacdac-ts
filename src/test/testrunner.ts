@@ -414,6 +414,7 @@ export class JDCommandRunner extends JDEventSource {
         )
     }
 
+
     get output() {
         return this._output
     }
@@ -593,10 +594,10 @@ export class JDServiceTestRunner extends JDServiceClient {
                     const register = service.register(pkt.identifier)
                     this.registers[regName] = register
                     this.environment[regName] = 0
-                    register.subscribe(CHANGE, () => {
+                    this.mount(register.subscribe(CHANGE, () => {
                         this.environment[regName] = register.intValue
                         this.currentTest?.envChange()
-                    })
+                    }))
                 }
             })
         })
