@@ -9,7 +9,6 @@ import { JDRegister } from "../jdom/register"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JSONPath } from "jsonpath-plus"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
-import { JDServiceMemberNode } from "../jdom/servicemembernode"
 
 export enum JDCommandStatus {
     NotReady,
@@ -378,13 +377,13 @@ class JDCommandEvaluator {
 }
 
 export interface JDCommandOutput {
-    prompt: string
+    message: string
     progress: number
 }
 
 export class JDCommandRunner extends JDEventSource {
     private _status = JDCommandStatus.NotReady
-    private _output: JDCommandOutput = { prompt: "", progress: 0.0 }
+    private _output: JDCommandOutput = { message: "", progress: 0.0 }
     private readonly _timeOut = 5000 // timeout
     private _timeLeft = 5000
     private _commmandEvaluator: JDCommandEvaluator = null
@@ -422,7 +421,7 @@ export class JDCommandRunner extends JDEventSource {
     set output(value: JDCommandOutput) {
         if (
             !this._output ||
-            this._output.prompt !== value.prompt ||
+            this._output.message !== value.message ||
             this._output.progress !== value.progress
         ) {
             this._output = value
@@ -431,7 +430,7 @@ export class JDCommandRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = { prompt: "", progress: 0.0 }
+        this.output = { message: "", progress: 0.0 }
         this.status = JDCommandStatus.NotReady
         this._commmandEvaluator = null
     }
@@ -448,7 +447,7 @@ export class JDCommandRunner extends JDEventSource {
         if (this._commmandEvaluator) {
             this._commmandEvaluator.evaluate()
             const newOutput: JDCommandOutput = {
-                prompt: this._commmandEvaluator.prompt,
+                message: this._commmandEvaluator.prompt,
                 progress: this._commmandEvaluator.progress,
             }
             this.output = newOutput
