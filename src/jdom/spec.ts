@@ -19,7 +19,6 @@ import {
     SRV_POWER,
     SRV_PROTO_TEST,
 } from "./constants"
-import makecodeServicesData from "../../jacdac-spec/services/makecode-extensions.json"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any
@@ -135,26 +134,6 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
         ].indexOf(spec.classIdentifier) > -1 ||
             spec.shortId[0] === "_")
     )
-}
-
-export function makeCodeServices(): jdspec.MakeCodeServiceInfo[] {
-    return (makecodeServicesData as jdspec.MakeCodeServiceInfo[]).slice(0)
-}
-
-export function resolveMakecodeService(service: jdspec.ServiceSpec) {
-    return (
-        service &&
-        (makecodeServicesData as jdspec.MakeCodeServiceInfo[]).find(
-            mk => mk.service === service.shortId
-        )
-    )
-}
-
-export function resolveMakecodeServiceFromClassIdentifier(
-    serviceClass: number
-) {
-    const srv = serviceSpecificationFromClassIdentifier(serviceClass)
-    return srv && resolveMakecodeService(srv)
 }
 
 /**
