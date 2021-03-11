@@ -68,7 +68,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         console.log("pxt message", msg)
         switch (msg.type) {
             case "run": // simulation is starting
-                this.bus.clear();
+                // don't clear!
                 break;
             case "stop": // start again
                 // pause bus?:
