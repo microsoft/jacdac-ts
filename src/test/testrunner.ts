@@ -630,6 +630,23 @@ export class JDServiceTestRunner extends JDServiceClient {
         }
     }
 
+    public stats() {
+        const r = {
+            total: this.tests.length,
+            success: 0,
+            failed: 0,
+            indeterminate: 0
+        }
+        for (const test of this.tests) {
+            switch(test.status) {
+                case JDTestStatus.Failed: r.failed++; break;
+                case JDTestStatus.Passed: r.success++; break;
+                default: r.indeterminate++;
+            }
+        }
+        return r;
+    }
+
     public start() {
         this.tests.forEach(t => t.reset())
         this.testIndex = 0
