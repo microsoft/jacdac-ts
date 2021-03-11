@@ -2,12 +2,13 @@ import {
     Commands,
     testCommandFunctions,
 } from "../../jacdac-spec/spectool/jdtestfuns"
+import { getExpressionsOfType } from "../../jacdac-spec/spectool/jdtest"
+
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
 import { JDRegister } from "../jdom/register"
 import { JDServiceClient } from "../jdom/serviceclient"
-import { JSONPath } from "jsonpath-plus"
 import { serviceSpecificationFromClassIdentifier } from "../jdom/spec"
 
 export enum JDCommandStatus {
@@ -237,10 +238,7 @@ class JDCommandEvaluator {
         let startExprs: jsep.Expression[] = []
         switch (testFun.id as Commands) {
             case "check": {
-                startExprs = (<jsep.CallExpression[]>JSONPath({
-                    path: "$..*[?(@.type=='CallExpression')]",
-                    json: args,
-                }))
+                startExprs = (<jsep.CallExpression[]>getExpressionsOfType(args,'CallExpression'))
                     .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
                     .map(ce => ce.arguments[0])
                 break
@@ -349,7 +347,7 @@ class JDCommandEvaluator {
                         this._progress = 1.0
                     } else if (
                         regValue >= regSaved.v &&
-                        regValue < regSaved.v.v + amtSaved.v
+                        regValue < regSaved.v + amtSaved.v
                     ) {
                         this._status = JDCommandStatus.Active
                         this._progress = (regValue - regSaved.v) / amtSaved.v
@@ -362,7 +360,7 @@ class JDCommandEvaluator {
                         this._progress = 1.0
                     } else if (
                         regValue <= regSaved.v &&
-                        regValue > regSaved.v.v - amtSaved.v
+                        regValue > regSaved.v - amtSaved.v
                     ) {
                         this._status = JDCommandStatus.Active
                         this._progress = (regSaved.v - regValue) / amtSaved.v
