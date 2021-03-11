@@ -15,7 +15,8 @@ const _serviceTests: jdtest.ServiceTestSpec[] = serviceTestData as any
 export function serviceTestFromServiceClass(
     serviceClass: number
 ): jdtest.ServiceTestSpec {
-    return serviceClass !== undefined && _serviceTests.find(
-        test => test.serviceClassIdentifier === serviceClass
+    return (
+        serviceClass !== undefined &&
+        _serviceTests.find(test => test.serviceClassIdentifier === serviceClass)
     )
 }

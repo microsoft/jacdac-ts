@@ -79,7 +79,7 @@ type StartMap = { e: jsep.Expression; v: any }[]
 class JDExprEvaluator {
     private exprStack: any[] = []
 
-    constructor(private env: SMap<any>, private start: StartMap) { }
+    constructor(private env: SMap<any>, private start: StartMap) {}
 
     private tos() {
         return this.exprStack[this.exprStack.length - 1]
@@ -218,7 +218,7 @@ class JDCommandEvaluator {
     constructor(
         private readonly env: SMap<any>,
         private readonly command: jdtest.CommandSpec
-    ) { }
+    ) {}
 
     public get prompt() {
         return this._prompt
@@ -327,8 +327,8 @@ class JDCommandEvaluator {
                 const regValue = this.env[unparse(reg)]
                 const [status, progress] =
                     (testFun.id === "changes" && regValue !== regSaved.v) ||
-                        (testFun.id === "increases" && regValue > regSaved.v) ||
-                        (testFun.id === "decreases" && regValue < regSaved.v)
+                    (testFun.id === "increases" && regValue > regSaved.v) ||
+                    (testFun.id === "decreases" && regValue < regSaved.v)
                         ? [JDCommandStatus.Passed, 1.0]
                         : [JDCommandStatus.Active, 0.0]
                 this._status = status
@@ -496,14 +496,14 @@ export class JDTestRunner extends JDEventSource {
     reset() {
         if (this.status !== JDTestStatus.NotReady) {
             this._status = JDTestStatus.NotReady
-            this._commandIndex = undefined;
+            this._commandIndex = undefined
             this.commands.forEach(t => t.reset())
             this.emit(CHANGE)
         }
     }
 
     start() {
-        this.reset();
+        this.reset()
         this.status = JDTestStatus.Active
         this.commandIndex = 0
     }
@@ -617,10 +617,10 @@ export class JDServiceTestRunner extends JDServiceClient {
     private set testIndex(index: number) {
         if (this._testIndex !== index) {
             // stop previous test if needed
-            const ct = this.currentTest;
+            const ct = this.currentTest
             if (ct) {
                 if (ct.status === JDTestStatus.Active) {
-                    ct.cancel();
+                    ct.cancel()
                 }
             }
 
@@ -635,16 +635,21 @@ export class JDServiceTestRunner extends JDServiceClient {
             total: this.tests.length,
             success: 0,
             failed: 0,
-            indeterminate: 0
+            indeterminate: 0,
         }
         for (const test of this.tests) {
-            switch(test.status) {
-                case JDTestStatus.Failed: r.failed++; break;
-                case JDTestStatus.Passed: r.success++; break;
-                default: r.indeterminate++;
+            switch (test.status) {
+                case JDTestStatus.Failed:
+                    r.failed++
+                    break
+                case JDTestStatus.Passed:
+                    r.success++
+                    break
+                default:
+                    r.indeterminate++
             }
         }
-        return r;
+        return r
     }
 
     public start() {
@@ -661,8 +666,7 @@ export class JDServiceTestRunner extends JDServiceClient {
     }
 
     set currentTest(test: JDTestRunner) {
-        const index = this.tests.indexOf(test);
-        if (index > -1)
-            this.testIndex = index;
+        const index = this.tests.indexOf(test)
+        if (index > -1) this.testIndex = index
     }
 }
