@@ -169,9 +169,9 @@ export class RoleManagerClient extends JDServiceClient {
             const todo = todos[parentName];
             // no parent, spawn individual services
             if (!parentName) {
-                todo.forEach(t => addHost(this.bus, t.hostDefinition.services(), t.hostDefinition.name));
+                todo.forEach(t => addHost(this.bus, t.hostDefinition.services()));
             } else { // spawn all services into 1
-                addHost(this.bus, arrayConcatMany(todo.map(t => t.hostDefinition.services())), parentName)
+                addHost(this.bus, arrayConcatMany(todo.map(t => t.hostDefinition.services())))
             }
         })
     }

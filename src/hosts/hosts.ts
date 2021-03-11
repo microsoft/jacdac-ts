@@ -893,11 +893,9 @@ export default function hosts() {
     return _hosts.slice(0);
 }
 
-export function addHost(bus: JDBus, services: ServiceHost[], name?: string) {
+export function addHost(bus: JDBus, services: ServiceHost[]) {
     const d = new DeviceHost(services);
     const device = bus.addDeviceHost(d);
-    if (name)
-        device.name = uniqueName(bus.devices().map(dev => dev.name), name);
     return d;
 }
 
