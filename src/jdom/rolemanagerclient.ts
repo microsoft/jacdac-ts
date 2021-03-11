@@ -127,7 +127,7 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     role(service: JDService) {
-        return this.requestedRoles.find(role => role.bound === service);
+        return this.requestedRoles?.find(role => role.bound === service);
     }
 
     private recomputeCandidates() {
