@@ -283,9 +283,12 @@ class JDCommandEvaluator {
         const replace = this.command.call.arguments.map((a, i) => {
             const aStart = this._startExpressions.find(r => r.e === a)
             return [
-            `{${i + 1}}`,
-            aStart && testFun.args[i] !== "register" ? aStart.v.toString() : unparse(a),
-        ]})
+                `{${i + 1}}`,
+                aStart && testFun.args[i] !== "register"
+                    ? aStart.v.toString()
+                    : unparse(a),
+            ]
+        })
         this._prompt =
             testFun.id === "ask" || testFun.id === "say"
                 ? this.command.prompt.slice(0)
@@ -416,7 +419,6 @@ export class JDCommandRunner extends JDEventSource {
         )
     }
 
-
     get output() {
         return this._output
     }
@@ -499,14 +501,18 @@ export class JDTestRunner extends JDEventSource {
 
     ready() {
         if (this.status === JDTestStatus.NotReady)
-           this.status = JDTestStatus.ReadyToRun
+            this.status = JDTestStatus.ReadyToRun
     }
 
-    public start() {
+    start() {
         if (this.status === JDTestStatus.ReadyToRun) {
             this.status = JDTestStatus.Active
             this.commandIndex = 0
         }
+    }
+
+    next() {
+        this.serviceTestRunner.next()
     }
 
     cancel() {
@@ -537,8 +543,7 @@ export class JDTestRunner extends JDEventSource {
 
     finish(newStatus: JDTestStatus) {
         if (this.status === JDTestStatus.Active) {
-            this.status = newStatus;
-            this.serviceTestRunner.finishTest()
+            this.status = newStatus
         }
     }
 
@@ -596,10 +601,12 @@ export class JDServiceTestRunner extends JDServiceClient {
                     const register = service.register(pkt.identifier)
                     this.registers[regName] = register
                     this.environment[regName] = register.intValue
-                    this.mount(register.subscribe(CHANGE, () => {
-                        this.environment[regName] = register.intValue
-                        this.currentTest?.envChange()
-                    }))
+                    this.mount(
+                        register.subscribe(CHANGE, () => {
+                            this.environment[regName] = register.intValue
+                            this.currentTest?.envChange()
+                        })
+                    )
                 }
             })
         })
@@ -624,10 +631,8 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.testIndex = 0
     }
 
-    public finishTest() {
-        if (this.testIndex < this.tests.length) {
-            this.testIndex++
-        }
+    public next() {
+        this.testIndex++
     }
 
     get currentTest() {
