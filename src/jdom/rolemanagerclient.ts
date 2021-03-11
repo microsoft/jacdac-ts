@@ -79,7 +79,7 @@ export class RoleManagerClient extends JDServiceClient {
         }
 
         try {
-            console.log(`rdp start`)
+            //console.log(`rdp start`)
             this.scanning = true;
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
@@ -94,7 +94,7 @@ export class RoleManagerClient extends JDServiceClient {
                 const [devidbuf, serviceClass, serviceIdx, role]
                     = jdunpack<[Uint8Array, number, number, string]>(buf, "b[8] u32 u8 s")
                 const devid = toHex(devidbuf);
-                console.log({ devidbuf, role, serviceClass })
+                //console.log({ devidbuf, role, serviceClass })
                 const r = addRequested(rdevs, role, serviceClass)
                 const srv = localDevs
                     .find(d => d.deviceId == devid)
@@ -112,11 +112,11 @@ export class RoleManagerClient extends JDServiceClient {
             ) {
                 this.requestedRoles = rdevs;
                 this.recomputeCandidates();
-                console.log(`rdp changed`, this.requestedRoles)
+                //console.log(`rdp changed`, this.requestedRoles)
                 this.emit(CHANGE, this.requestedRoles)
             }
 
-            console.log(`rdp done`)
+            //console.log(`rdp done`)
         }
         catch (e) {
             this.emit(ERROR, e);
