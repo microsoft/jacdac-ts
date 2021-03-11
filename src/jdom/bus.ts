@@ -76,12 +76,6 @@ import DeviceHost from "./devicehost"
 import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
 import { JDEventSource } from "./eventsource"
 
-export interface IDeviceNameSettings {
-    resolve(device: JDDevice): string
-    // notify namer that the device was renamed
-    notifyUpdate(device: JDDevice, name: string): void
-}
-
 export interface PacketTransport {
     sendPacketAsync?: (p: Packet) => Promise<void>
     connectAsync?: (background?: boolean) => Promise<void>
@@ -98,7 +92,6 @@ export interface BusOptions {
 
 export interface BusHost {
     log?: Log
-    deviceNameSettings?: IDeviceNameSettings
 }
 
 export interface Error {

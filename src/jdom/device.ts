@@ -2,7 +2,7 @@ import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, NAME_CHANGE, DEVICE_NAME_CHANGE, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUNCE
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUNCE
 } from "./constants"
 import { read32, SMap, bufferEq, assert, setAckError, delay } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -68,7 +68,6 @@ export class JDDevice extends JDNode {
     connected: boolean;
     private _source: string;
     private _replay: boolean;
-    private _name: string;
     private _lost: boolean;
     private _servicesData: Uint8Array
     lastSeen: number
@@ -92,6 +91,10 @@ export class JDDevice extends JDNode {
 
     get id() {
         return `${this.nodeKind}:${this.deviceId}`
+    }
+
+    get name() {
+        return this.shortId;
     }
 
     get nodeKind() {
@@ -120,29 +123,11 @@ export class JDDevice extends JDNode {
     }
 
     get friendlyName() {
-        return this._name || this.shortId;
-    }
-
-    get name() {
-        return this._name;
-    }
-
-    set name(value: string) {
-        if (value !== this._name) {
-            this._name = value;
-            this.log('debug', `renamed to ${this._name}`)
-            this.emit(NAME_CHANGE)
-            this.bus.emit(DEVICE_NAME_CHANGE, this)
-            this.emit(CHANGE)
-            this.bus.emit(CHANGE)
-
-            // notify role manager of the change
-            this.bus.host.deviceNameSettings?.notifyUpdate(this, this._name);
-        }
+        return this.shortId;
     }
 
     get qualifiedName() {
-        return this.name
+        return this.shortId;
     }
 
     get announced(): boolean {
