@@ -743,9 +743,6 @@ export class JDBus extends JDNode {
                 return undefined
             }
             d = new JDDevice(this, id)
-            if (this.host.deviceNameSettings)
-                d.name = this.host.deviceNameSettings.resolve(d)
-            if (!d.name && id === this.selfDeviceId) d.name = "self"
             this._devices.push(d)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
