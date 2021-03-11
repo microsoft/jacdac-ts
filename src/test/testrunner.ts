@@ -80,7 +80,7 @@ type StartMap = { e: jsep.Expression; v: any }[]
 class JDExprEvaluator {
     private exprStack: any[] = []
 
-    constructor(private env: SMap<any>, private start: StartMap) {}
+    constructor(private env: SMap<any>, private start: StartMap) { }
 
     private tos() {
         return this.exprStack[this.exprStack.length - 1]
@@ -219,7 +219,7 @@ class JDCommandEvaluator {
     constructor(
         private readonly env: SMap<any>,
         private readonly command: jdtest.CommandSpec
-    ) {}
+    ) { }
 
     public get prompt() {
         return this._prompt
@@ -328,8 +328,8 @@ class JDCommandEvaluator {
                 const regValue = this.env[unparse(reg)]
                 const [status, progress] =
                     (testFun.id === "changes" && regValue !== regSaved.v) ||
-                    (testFun.id === "increases" && regValue > regSaved.v) ||
-                    (testFun.id === "decreases" && regValue < regSaved.v)
+                        (testFun.id === "increases" && regValue > regSaved.v) ||
+                        (testFun.id === "decreases" && regValue < regSaved.v)
                         ? [JDCommandStatus.Passed, 1.0]
                         : [JDCommandStatus.Active, 0.0]
                 this._status = status
@@ -619,6 +619,17 @@ export class JDServiceTestRunner extends JDServiceClient {
 
     private set testIndex(index: number) {
         if (this._testIndex !== index) {
+            // stop previous test if needed
+            const ct = this.currentTest;
+            if (ct) {
+                if (ct.status === JDTestStatus.Active) {
+                    ct.cancel();
+                } else if (ct.status === JDTestStatus.ReadyToRun) {
+                    ct.reset();
+                }
+            }
+
+            // update test
             this._testIndex = index
             this.emit(CHANGE)
 
@@ -637,5 +648,11 @@ export class JDServiceTestRunner extends JDServiceClient {
 
     get currentTest() {
         return this.tests[this._testIndex]
+    }
+
+    set currentTest(test: JDTestRunner) {
+        const index = this.tests.indexOf(test);
+        if (index > -1)
+            this.testIndex = index;
     }
 }
