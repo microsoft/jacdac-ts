@@ -145,6 +145,7 @@ export const FIELD_NODE_NAME = "field"
 export const PIPE_NODE_NAME = "pipe"
 export const PIPE_REPORT_NODE_NAME = "pipe_report"
 export const CRC_ACK_NODE_NAME = "crc_ack"
+export const SERVICE_TEST_NODE_NAME = "service_test"
 
 export const REGISTER_REFRESH_TIMEOUT = 150
 export const REGISTER_REFRESH_RETRY_0 = 30
