@@ -298,7 +298,12 @@ export class JDDevice extends JDNode {
     }
 
 
-    services(options?: { serviceIndex?: number, serviceName?: string, serviceClass?: number, specification?: boolean }): JDService[] {
+    services(options?: { 
+        serviceIndex?: number, 
+        serviceName?: string, 
+        serviceClass?: number, 
+        specification?: boolean 
+    }): JDService[] {
         if (!this.announced) return [];
 
         if (options?.serviceIndex >= 0)
