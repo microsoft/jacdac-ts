@@ -379,7 +379,7 @@ export class JDBus extends JDNode {
         // clear hosts
         if (this._deviceHosts?.length) {
             this._deviceHosts.forEach(host => host.bus = undefined);
-            this._deviceHosts = [];    
+            this._deviceHosts = [];
         }
 
         // clear devices
@@ -729,7 +729,8 @@ export class JDBus extends JDNode {
      */
     services(options?: {
         serviceName?: string
-        serviceClass?: number
+        serviceClass?: number,
+        specification?: boolean
     }): JDService[] {
         return arrayConcatMany(
             this.devices(options).map(d => d.services(options))
@@ -951,7 +952,7 @@ export class JDBus extends JDNode {
                                 reg =>
                                     !reg.specification?.optional ||
                                     reg.lastGetAttempts <
-                                        REGISTER_OPTIONAL_POLL_COUNT
+                                    REGISTER_OPTIONAL_POLL_COUNT
                             )
                     )
                 )
@@ -1013,7 +1014,7 @@ export class JDBus extends JDNode {
                     (noDataYet
                         ? REGISTER_POLL_FIRST_REPORT_INTERVAL
                         : REGISTER_POLL_REPORT_INTERVAL) *
-                        (1 << backoff)
+                    (1 << backoff)
                 )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)

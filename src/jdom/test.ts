@@ -12,13 +12,10 @@ const _serviceTests: jdtest.ServiceTestSpec[] = serviceTestData as any
  * Given a service specification, see if it has a test
  * @param spec
  */
- export function serviceTestFromServiceSpec(
-    spec: jdspec.ServiceSpec
+export function serviceTestFromServiceClass(
+    serviceClass: number
 ): jdtest.ServiceTestSpec {
-    return (
-        !!spec &&
-        _serviceTests.find(
-            test => test.serviceClassIdentifier === spec.classIdentifier
-        )
+    return serviceClass !== undefined && _serviceTests.find(
+        test => test.serviceClassIdentifier === serviceClass
     )
 }

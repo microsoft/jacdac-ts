@@ -535,9 +535,9 @@ export class JDTestRunner extends JDEventSource {
         return this._description
     }
 
-    finish(s: JDTestStatus) {
+    finish(newStatus: JDTestStatus) {
         if (this.status === JDTestStatus.Active) {
-            this.status = s
+            this.status = newStatus;
             this.serviceTestRunner.finishTest()
         }
     }
