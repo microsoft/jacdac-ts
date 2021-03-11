@@ -20,7 +20,6 @@ export enum JDCommandStatus {
 
 export enum JDTestStatus {
     NotReady,
-    ReadyToRun,
     Active,
     Passed,
     Failed,
@@ -495,20 +494,18 @@ export class JDTestRunner extends JDEventSource {
     }
 
     reset() {
-        this.status = JDTestStatus.NotReady
-        this.commands.forEach(t => t.reset())
-    }
-
-    ready() {
-        if (this.status === JDTestStatus.NotReady)
-            this.status = JDTestStatus.ReadyToRun
+        if (this.status !== JDTestStatus.NotReady) {
+            this._status = JDTestStatus.NotReady
+            this._commandIndex = undefined;
+            this.commands.forEach(t => t.reset())
+            this.emit(CHANGE)
+        }
     }
 
     start() {
-        if (this.status === JDTestStatus.ReadyToRun) {
-            this.status = JDTestStatus.Active
-            this.commandIndex = 0
-        }
+        this.reset();
+        this.status = JDTestStatus.Active
+        this.commandIndex = 0
     }
 
     next() {
@@ -624,16 +621,12 @@ export class JDServiceTestRunner extends JDServiceClient {
             if (ct) {
                 if (ct.status === JDTestStatus.Active) {
                     ct.cancel();
-                } else if (ct.status === JDTestStatus.ReadyToRun) {
-                    ct.reset();
                 }
             }
 
             // update test
             this._testIndex = index
             this.emit(CHANGE)
-
-            this.currentTest?.ready()
         }
     }
 
