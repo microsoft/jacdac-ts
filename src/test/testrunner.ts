@@ -212,9 +212,10 @@ class JDExprEvaluator {
 
 class JDCommandEvaluator {
     private _prompt = ""
-    private _progress = 0.0
+    private _progress = ""
     private _status = JDCommandStatus.Active
     private _startExpressions: StartMap = []
+    private _rangeComplete: number = undefined
 
     constructor(
         private readonly env: SMap<any>,
@@ -296,7 +297,7 @@ class JDCommandEvaluator {
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
         this._status = JDCommandStatus.Active
-        this._progress = undefined
+        this._progress = ""
         switch (testFun.id as Commands) {
             case "say":
             case "ask": {
@@ -323,14 +324,13 @@ class JDCommandEvaluator {
                 const reg = this.command.call.arguments[0]
                 const regSaved = this._startExpressions.find(r => r.e === reg)
                 const regValue = this.env[unparse(reg)]
-                const [status, progress] =
+                const status =
                     (testFun.id === "changes" && regValue !== regSaved.v) ||
                     (testFun.id === "increases" && regValue > regSaved.v) ||
                     (testFun.id === "decreases" && regValue < regSaved.v)
-                        ? [JDCommandStatus.Passed, 1.0]
-                        : [JDCommandStatus.Active, 0.0]
+                        ? JDCommandStatus.Passed
+                        : JDCommandStatus.Active
                 this._status = status
-                this._progress = progress
                 regSaved.v = regValue
                 break
             }
@@ -344,26 +344,25 @@ class JDCommandEvaluator {
                 if (testFun.id === "increasesBy") {
                     if (regValue === regSaved.v + amtSaved.v) {
                         this._status = JDCommandStatus.Passed
-                        this._progress = 1.0
                     } else if (
                         regValue >= regSaved.v &&
                         regValue < regSaved.v + amtSaved.v
                     ) {
                         this._status = JDCommandStatus.Active
-                        this._progress = (regValue - regSaved.v) / amtSaved.v
+                        this._progress = `${(regValue - regSaved.v)} out of ${amtSaved.v}`
                     } else {
                         this._status = JDCommandStatus.Active
                     }
                 } else {
                     if (regValue === regSaved.v - amtSaved.v) {
                         this._status = JDCommandStatus.Passed
-                        this._progress = 1.0
+                        this._progress = "completed"
                     } else if (
                         regValue <= regSaved.v &&
                         regValue > regSaved.v - amtSaved.v
                     ) {
                         this._status = JDCommandStatus.Active
-                        this._progress = (regSaved.v - regValue) / amtSaved.v
+                        this._progress = `${(regSaved.v - regValue)} out of ${amtSaved.v}`
                     } else {
                         this._status = JDCommandStatus.Active
                     }
@@ -372,6 +371,29 @@ class JDCommandEvaluator {
             }
             case "rangesFromUpTo":
             case "rangesFromDownTo": {
+                this._status = JDCommandStatus.Active
+                const reg = this.command.call.arguments[0]
+                const regValue = this.env[unparse(reg)]
+                const begin = this.command.call.arguments[1]
+                const beginSaved = this._startExpressions.find(r => r.e === begin)
+                const end = this.command.call.arguments[2]
+                const endSaved = this._startExpressions.find(r => r.e === end)
+                if (this._rangeComplete === undefined) {
+                    if (regValue == beginSaved.v)
+                        this._rangeComplete = regValue
+                } else {
+                    if (regValue === this._rangeComplete + (testFun.id == 'rangesFromUpTo' ? 1 : -1))
+                        this._rangeComplete = regValue
+                    if (this._rangeComplete === endSaved.v) {
+                        this._status =  JDCommandStatus.Passed
+                    }
+                }
+                if (this._rangeComplete != undefined) {
+                    this._progress = 
+                        testFun.id == 'rangesFromUpTo' 
+                            ? `from ${(beginSaved.v)} up to ${this._rangeComplete}`
+                            : `from ${(beginSaved.v)} down to ${this._rangeComplete}`
+                }
                 break
             }
         }
@@ -380,12 +402,12 @@ class JDCommandEvaluator {
 
 export interface JDCommandOutput {
     message: string
-    progress: number
+    progress: string
 }
 
 export class JDCommandRunner extends JDEventSource {
     private _status = JDCommandStatus.NotReady
-    private _output: JDCommandOutput = { message: "", progress: 0.0 }
+    private _output: JDCommandOutput = { message: "", progress: "" }
     private readonly _timeOut = 5000 // timeout
     private _timeLeft = 5000
     private _commmandEvaluator: JDCommandEvaluator = null
@@ -432,7 +454,7 @@ export class JDCommandRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = { message: "", progress: 0.0 }
+        this.output = { message: "", progress: "" }
         this.status = JDCommandStatus.NotReady
         this._commmandEvaluator = null
     }
@@ -453,7 +475,10 @@ export class JDCommandRunner extends JDEventSource {
                 progress: this._commmandEvaluator.progress,
             }
             this.output = newOutput
-            if (finish) this.finish(this._commmandEvaluator.status)
+            if (this._commmandEvaluator.status === JDCommandStatus.RequiresUserInput)
+                this.status= JDCommandStatus.RequiresUserInput
+            else if (finish) 
+                this.finish(this._commmandEvaluator.status)
         }
     }
 
