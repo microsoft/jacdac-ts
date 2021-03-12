@@ -83,6 +83,8 @@ export const GET_ATTEMPT = 'getAttempt'
 export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
 export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
 export const READING_SENT = 'readingSent'
+export const ROLE_CHANGE = 'roleChange'
+export const ROLE_MANAGER_CHANGE = 'roleManagerChange'
 
 export const DEVICE_HOST_ADDED = `deviceHostAdded`
 export const DEVICE_HOST_REMOVED = `deviceHostRemoved`

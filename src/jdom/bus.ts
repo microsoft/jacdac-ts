@@ -6,6 +6,7 @@ import {
     arrayConcatMany,
     anyRandomUint32,
     toHex,
+    fromHex,
 } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
@@ -52,6 +53,8 @@ import {
     DEVICE_HOST_ADDED,
     DEVICE_HOST_REMOVED,
     REFRESH,
+    EVENT,
+    ROLE_MANAGER_CHANGE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode, Log, LogLevel } from "./node"
@@ -66,15 +69,21 @@ import {
     ControlReg,
     LoggerPriority,
     LoggerReg,
+    RoleManagerCmd,
     SensorReg,
     SRV_CONTROL,
     SRV_LOGGER,
     SRV_REAL_TIME_CLOCK,
+    SystemEvent,
     SystemReg,
-} from "../../jacdac-spec/dist/specconstants"
+} from "../../src/jdom/constants"
 import DeviceHost from "./devicehost"
 import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
 import { JDEventSource } from "./eventsource"
+import { JDServiceClient } from "./serviceclient"
+import { InPipeReader } from "./pipes"
+import { jdpack, jdunpack } from "./pack"
+import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
 
 export interface PacketTransport {
     sendPacketAsync?: (p: Packet) => Promise<void>
@@ -222,6 +231,191 @@ export class BusStatsMonitor extends JDEventSource {
     }
 }
 
+export interface Role {
+    deviceId: string
+    serviceClass: number
+    serviceIndex: number
+    role: string
+}
+
+export class BusRoleManagerClient extends JDServiceClient {
+    private _roles: Role[] = []
+    private _needRefresh = true
+
+    public readonly startRefreshRoles: () => void
+
+    constructor(service: JDService) {
+        super(service)
+        const changeEvent = service.event(SystemEvent.Change)
+
+        // always debounce refresh roles
+        this.startRefreshRoles = debounceAsync(
+            this.refreshRoles.bind(this),
+            200
+        )
+
+        // role manager emits change events
+        this.mount(changeEvent.subscribe(EVENT, this.handleChange.bind(this)))
+        // assign roles when need device enter the bus
+        this.mount(
+            this.bus.subscribe(DEVICE_ANNOUNCE, this.assignRoles.bind(this))
+        )
+        // unmount when device is removed
+        this.mount(
+            service.device.subscribe(DISCONNECT, () => {
+                if (this.bus.roleManager?.service === this.service)
+                    this.bus.setRoleManagerService(undefined)
+            })
+        )
+        // clear on unmount
+        this.mount(this.clearRoles.bind(this))
+        // retry to get roles on every self-announce
+        this.mount(
+            this.bus.subscribe(
+                SELF_ANNOUNCE,
+                this.handleSelfAnnounce.bind(this)
+            )
+        )
+    }
+
+    private handleSelfAnnounce() {
+        if (this._needRefresh) {
+            this.log("self announce refresh")
+            this.startRefreshRoles()
+        }
+    }
+
+    get roles() {
+        return this._roles
+    }
+
+    private async handleChange() {
+        console.debug(`role manager change event`)
+        this.startRefreshRoles()
+    }
+
+    private async refreshRoles() {
+        if (this.unmounted) return
+
+        this._needRefresh = false
+        await this.collectRoles()
+
+        if (this.unmounted) return
+        this.assignRoles()
+    }
+
+    private async collectRoles() {
+        this.log("query roles")
+        try {
+            const inp = new InPipeReader(this.bus)
+            await this.service.sendPacketAsync(
+                inp.openCommand(RoleManagerCmd.ListRequiredRoles),
+                true
+            )
+            // collect all roles
+            const roles: Role[] = []
+            for (const buf of await inp.readData()) {
+                const [devidbuf, serviceClass, serviceIndex, role] = jdunpack<
+                    [Uint8Array, number, number, string]
+                >(buf, "b[8] u32 u8 s")
+                const deviceId = toHex(devidbuf)
+                roles.push({ deviceId, serviceClass, serviceIndex, role })
+            }
+            // store result
+            this._roles = roles
+            console.debug(`updated roles`, { roles: this._roles })
+        } catch (e) {
+            this._needRefresh = true
+            console.debug(`refresh failed`, { refresh: this._needRefresh })
+            console.error(e)
+        }
+    }
+
+    static unroledSrvs = [SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER]
+
+    private assignRoles() {
+        console.debug("assign roles", { roles: this._roles })
+        this.bus
+            .services()
+            .filter(
+                srv =>
+                    BusRoleManagerClient.unroledSrvs.indexOf(srv.serviceClass) <
+                    0
+            )
+            .forEach(srv => this.assignRole(srv))
+    }
+
+    private assignRole(service: JDService) {
+        const deviceId = service.device.deviceId
+        const serviceIndex = service.serviceIndex
+        const role = this._roles.find(
+            r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
+        )
+        console.debug(`role ${service.id} -> ${role?.role}`, { service })
+        service.role = role?.role
+    }
+
+    private clearRoles() {
+        this.bus.services().forEach(srv => (srv.role = undefined))
+    }
+
+    hasRoleForService(service: JDService) {
+        const { serviceClass } = service
+        return !!this._roles.find(r => r.serviceClass === serviceClass)
+    }
+
+    compatibleRoles(service: JDService): Role[] {
+        const { serviceClass } = service
+        return this._roles.filter(r => r.serviceClass === serviceClass)
+    }
+
+    role(name: string): Role {
+        return this._roles.find(r => r.role === name)
+    }
+
+    async setRole(service: JDService, role: string) {
+        const { device, serviceIndex } = service
+        const { deviceId } = device
+        this.log(`set role ${deviceId}:${serviceIndex} to ${role}`)
+
+        const previous = role && this._roles.find(r => r.role === role)
+        if (
+            previous &&
+            previous.deviceId === deviceId &&
+            previous.serviceIndex === serviceIndex
+        ) {
+            // nothing todo
+            this.log(`role unmodified, skipping`)
+            return
+        }
+
+        // set new role assignment
+        const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
+            fromHex(deviceId),
+            serviceIndex,
+            role || "",
+        ])
+        await this.service.sendPacketAsync(
+            Packet.from(RoleManagerCmd.SetRole, data),
+            true
+        )
+
+        // clear previous role assignment
+        if (previous) {
+            this.log(`clear role ${previous.deviceId}:${previous.serviceIndex}`)
+            const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
+                fromHex(previous.deviceId),
+                previous.serviceIndex,
+                "",
+            ])
+            await this.service.sendPacketAsync(
+                Packet.from(RoleManagerCmd.SetRole, data),
+                true
+            )
+        }
+    }
+}
+
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
@@ -240,6 +434,8 @@ export class JDBus extends JDNode {
     private _safeBootInterval: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
+    private _roleManagerClient: BusRoleManagerClient
+
     private _minLoggerPriority = LoggerPriority.Log
     private _firmwareBlobs: FirmwareBlob[]
     private _announcing = false
@@ -279,6 +475,8 @@ export class JDBus extends JDNode {
         )
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
+        // grab the default role manager
+        this.on(DEVICE_ANNOUNCE, this.handleRoleManager.bind(this))
 
         // start all timers
         this.start()
@@ -371,8 +569,8 @@ export class JDBus extends JDNode {
     clear() {
         // clear hosts
         if (this._deviceHosts?.length) {
-            this._deviceHosts.forEach(host => host.bus = undefined);
-            this._deviceHosts = [];
+            this._deviceHosts.forEach(host => (host.bus = undefined))
+            this._deviceHosts = []
         }
 
         // clear devices
@@ -409,6 +607,32 @@ export class JDBus extends JDNode {
 
     get nodeKind(): string {
         return BUS_NODE_NAME
+    }
+
+    get roleManager() {
+        return this._roleManagerClient
+    }
+
+    setRoleManagerService(service: JDService) {
+        console.log(`set role manager`, { service })
+        // clean if needed
+        if (
+            this._roleManagerClient &&
+            this._roleManagerClient.service !== service
+        ) {
+            console.debug("unmount role manager")
+            this._roleManagerClient.unmount()
+            this._roleManagerClient = undefined
+        }
+
+        // allocate new manager
+        if (service && service !== this._roleManagerClient?.service) {
+            console.debug("mount role manager")
+            this._roleManagerClient = new BusRoleManagerClient(service)
+            this.emit(ROLE_MANAGER_CHANGE)
+            this.emit(CHANGE)
+            this._roleManagerClient.startRefreshRoles()
+        }
     }
 
     toString(): string {
@@ -491,6 +715,16 @@ export class JDBus extends JDNode {
         // tell time to the RTC clocks
         if (device.hasService(SRV_REAL_TIME_CLOCK))
             await RealTimeClockServiceHost.syncTime(this)
+    }
+
+    private handleRoleManager(device: JDDevice) {
+        // auto allocate the first role manager
+        if (!this._roleManagerClient && device.hasService(SRV_ROLE_MANAGER)) {
+            const [service] = device.services({
+                serviceClass: SRV_ROLE_MANAGER,
+            })
+            this.setRoleManagerService(service)
+        }
     }
 
     sendPacketAsync(p: Packet) {
@@ -722,7 +956,7 @@ export class JDBus extends JDNode {
      */
     services(options?: {
         serviceName?: string
-        serviceClass?: number,
+        serviceClass?: number
         specification?: boolean
     }): JDService[] {
         return arrayConcatMany(
@@ -734,9 +968,9 @@ export class JDBus extends JDNode {
      * Gets a device on the bus
      * @param id
      */
-    device(id: string) {
+    device(id: string, skipCreate?: boolean) {
         let d = this._devices.find(d => d.deviceId == id)
-        if (!d) {
+        if (!d && !skipCreate) {
             this.log("info", `new device ${id}`)
             if (this.devicesFrozen) {
                 this.log(`info`, `devices frozen, dropping ${id}`)
@@ -942,7 +1176,7 @@ export class JDBus extends JDNode {
                                 reg =>
                                     !reg.specification?.optional ||
                                     reg.lastGetAttempts <
-                                    REGISTER_OPTIONAL_POLL_COUNT
+                                        REGISTER_OPTIONAL_POLL_COUNT
                             )
                     )
                 )
@@ -1004,7 +1238,7 @@ export class JDBus extends JDNode {
                     (noDataYet
                         ? REGISTER_POLL_FIRST_REPORT_INTERVAL
                         : REGISTER_POLL_REPORT_INTERVAL) *
-                    (1 << backoff)
+                        (1 << backoff)
                 )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
