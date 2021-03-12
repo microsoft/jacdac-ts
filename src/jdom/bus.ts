@@ -82,7 +82,7 @@ import { JDEventSource } from "./eventsource"
 import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdunpack } from "./pack"
-import { SRV_ROLE_MANAGER } from "../../jacdac-spec/dist/specconstants"
+import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
 
 export interface PacketTransport {
     sendPacketAsync?: (p: Packet) => Promise<void>
@@ -230,8 +230,15 @@ export class BusStatsMonitor extends JDEventSource {
     }
 }
 
+interface Role {
+    deviceId: string
+    serviceClass: number
+    serviceIndex: number
+    role: string
+}
+
 export class BusRoleManagerClient extends JDServiceClient {
-    private _roles: { [deviceIdServiceIndex: string]: string } = {}
+    private _roles: Role[] = []
     private _needRefresh = true
 
     public readonly startRefreshRoles: () => void
@@ -255,8 +262,8 @@ export class BusRoleManagerClient extends JDServiceClient {
         // unmount when device is removed
         this.mount(
             service.device.subscribe(DISCONNECT, () => {
-                if (this.bus.roleManager === this.service)
-                    this.bus.roleManager = undefined
+                if (this.bus.roleManager?.service === this.service)
+                    this.bus.setRoleManagerService(undefined)
             })
         )
         // clear on unmount
@@ -301,13 +308,13 @@ export class BusRoleManagerClient extends JDServiceClient {
                 true
             )
             // collect all roles
-            const roles: { [deviceIdServiceIndex: string]: string } = {}
+            const roles: Role[] = []
             for (const buf of await inp.readData()) {
-                const [devidbuf, serviceClass, serviceIdx, role] = jdunpack<
+                const [devidbuf, serviceClass, serviceIndex, role] = jdunpack<
                     [Uint8Array, number, number, string]
                 >(buf, "b[8] u32 u8 s")
-                const devid = toHex(devidbuf)
-                roles[`${devid}:${serviceIdx}`] = role
+                const deviceId = toHex(devidbuf)
+                roles.push({ deviceId, serviceClass, serviceIndex, role })
             }
             // store result
             this._roles = roles
@@ -334,14 +341,22 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     private assignRole(service: JDService) {
-        const key = `${service.device.deviceId}:${service.serviceIndex}`
-        const role = this._roles[key]
-        console.debug(`role ${key} -> ${role}`, { service })
-        service.role = role
+        const deviceId = service.device.deviceId
+        const serviceIndex = service.serviceIndex
+        const role = this._roles.find(
+            r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
+        )
+        console.debug(`role ${service.id} -> ${role?.role}`, { service })
+        service.role = role?.role
     }
 
     private clearRoles() {
         this.bus.services().forEach(srv => (srv.role = undefined))
+    }
+
+    hasRoleForService(service: JDService) {
+        const { serviceClass } = service;
+        return !!this._roles.find(r => r.serviceClass === serviceClass);
     }
 }
 
@@ -538,11 +553,11 @@ export class JDBus extends JDNode {
         return BUS_NODE_NAME
     }
 
-    get roleManager(): JDService {
-        return this._roleManagerClient?.service
+    get roleManager() {
+        return this._roleManagerClient
     }
 
-    set roleManager(service: JDService) {
+    setRoleManagerService(service: JDService) {
         console.log(`set role manager`, { service })
         // clean if needed
         if (
@@ -652,7 +667,7 @@ export class JDBus extends JDNode {
             const [service] = device.services({
                 serviceClass: SRV_ROLE_MANAGER,
             })
-            this.roleManager = service
+            this.setRoleManagerService(service)
         }
     }
 
