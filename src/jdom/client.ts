@@ -3,6 +3,7 @@ import { JDEventSource } from "./eventsource";
 
 export class JDClient extends JDEventSource {
     private unsubscribers: (() => void)[] = []
+    protected unmounted = false;
     constructor() {
         super()
     }
@@ -21,5 +22,6 @@ export class JDClient extends JDEventSource {
         const us = this.unsubscribers;
         this.unsubscribers = [];
         us.forEach(u => u());
+        this.unmounted = true;
     }
 }

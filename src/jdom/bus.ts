@@ -232,23 +232,22 @@ export class BusStatsMonitor extends JDEventSource {
 
 export class BusRoleManagerClient extends JDServiceClient {
     private _roles: { [deviceIdServiceIndex: string]: string } = {}
-    private _needRefresh = true;
+    private _needRefresh = true
 
-    public readonly startRefreshRoles: () => void;
+    public readonly startRefreshRoles: () => void
 
     constructor(service: JDService) {
         super(service)
         const changeEvent = service.event(SystemEvent.Change)
 
         // always debounce refresh roles
-        this.startRefreshRoles = debounceAsync(this.refreshRoles.bind(this), 500);
+        this.startRefreshRoles = debounceAsync(
+            this.refreshRoles.bind(this),
+            200
+        )
 
         // role manager emits change events
-        const throttledHandleChange = debounceAsync(
-            this.handleChange.bind(this),
-            500
-        )
-        this.mount(changeEvent.subscribe(EVENT, throttledHandleChange))
+        this.mount(changeEvent.subscribe(EVENT, this.handleChange.bind(this)))
         // assign roles when need device enter the bus
         this.mount(
             this.bus.subscribe(DEVICE_ANNOUNCE, this.assignRoles.bind(this))
@@ -263,12 +262,19 @@ export class BusRoleManagerClient extends JDServiceClient {
         // clear on unmount
         this.mount(this.clearRoles.bind(this))
         // retry to get roles on every self-announce
-        this.mount(this.bus.subscribe(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this)));
+        this.mount(
+            this.bus.subscribe(
+                SELF_ANNOUNCE,
+                this.handleSelfAnnounce.bind(this)
+            )
+        )
     }
 
     private handleSelfAnnounce() {
-        if (this._needRefresh)
-            this.startRefreshRoles();
+        if (this._needRefresh) {
+            this.log("self announce refresh")
+            this.startRefreshRoles()
+        }
     }
 
     private async handleChange() {
@@ -277,12 +283,17 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     private async refreshRoles() {
+        if (this.unmounted) return
+
+        this._needRefresh = false
         await this.collectRoles()
+
+        if (this.unmounted) return
         this.assignRoles()
     }
 
     private async collectRoles() {
-        this.log("refresh roles")
+        this.log("query roles")
         try {
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
@@ -300,25 +311,25 @@ export class BusRoleManagerClient extends JDServiceClient {
             }
             // store result
             this._roles = roles
-            this._needRefresh = false;
-            console.debug(`roles`, { roles: this._roles })
+            console.debug(`updated roles`, { roles: this._roles })
         } catch (e) {
-            this.log(`refresh failed`)
-            this._needRefresh = true;
+            this._needRefresh = true
+            console.debug(`refresh failed`, { refresh: this._needRefresh })
             console.error(e)
         }
     }
 
-    static unroledSrvs = [
-        SRV_CONTROL,
-        SRV_ROLE_MANAGER,
-        SRV_LOGGER,
-    ]
+    static unroledSrvs = [SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER]
 
     private assignRoles() {
         console.debug("assign roles", { roles: this._roles })
-        this.bus.services()
-            .filter(srv => BusRoleManagerClient.unroledSrvs.indexOf(srv.serviceClass) < 0)
+        this.bus
+            .services()
+            .filter(
+                srv =>
+                    BusRoleManagerClient.unroledSrvs.indexOf(srv.serviceClass) <
+                    0
+            )
             .forEach(srv => this.assignRole(srv))
     }
 
@@ -637,11 +648,6 @@ export class JDBus extends JDNode {
 
     private handleRoleManager(device: JDDevice) {
         // auto allocate the first role manager
-        console.log("handle role manager", {
-            device,
-            hasRoleManager: device.hasService(SRV_ROLE_MANAGER),
-            SRV_ROLE_MANAGER,
-        })
         if (!this._roleManagerClient && device.hasService(SRV_ROLE_MANAGER)) {
             const [service] = device.services({
                 serviceClass: SRV_ROLE_MANAGER,
