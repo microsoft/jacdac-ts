@@ -370,7 +370,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     role(name: string): Role {
-        return this._roles.find(r => r.role === name)
+        return this._roles.find(r => r.serviceIndex > 0 && r.role === name)
     }
 
     async setRole(service: JDService, role: string) {
@@ -390,15 +390,17 @@ export class BusRoleManagerClient extends JDServiceClient {
         }
 
         // set new role assignment
-        const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
-            fromHex(deviceId),
-            serviceIndex,
-            role || "",
-        ])
-        await this.service.sendPacketAsync(
-            Packet.from(RoleManagerCmd.SetRole, data),
-            true
-        )
+        {
+            const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
+                fromHex(deviceId),
+                serviceIndex,
+                role || "",
+            ])
+            await this.service.sendPacketAsync(
+                Packet.from(RoleManagerCmd.SetRole, data),
+                true
+            )
+        }
 
         // clear previous role assignment
         if (previous) {
