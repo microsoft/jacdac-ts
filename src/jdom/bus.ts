@@ -286,7 +286,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     get roles() {
-        return this._roles;
+        return this._roles
     }
 
     private async handleChange() {
@@ -360,24 +360,59 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     hasRoleForService(service: JDService) {
-        const { serviceClass } = service;
-        return !!this._roles.find(r => r.serviceClass === serviceClass);
+        const { serviceClass } = service
+        return !!this._roles.find(r => r.serviceClass === serviceClass)
     }
 
     compatibleRoles(service: JDService): Role[] {
-        const { serviceClass } = service;
-        return this._roles.filter(r => r.serviceClass === serviceClass);
+        const { serviceClass } = service
+        return this._roles.filter(r => r.serviceClass === serviceClass)
     }
 
     role(name: string): Role {
-        return this._roles.find(r => r.role === name);
+        return this._roles.find(r => r.role === name)
     }
 
     async setRole(service: JDService, role: string) {
-        const { device, serviceIndex } = service;
-        this.log(`set role ${device.deviceId}:${serviceIndex} to ${role}`)
-        const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [fromHex(device.deviceId), serviceIndex, role || ""]);
-        await this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
+        const { device, serviceIndex } = service
+        const { deviceId } = device
+        this.log(`set role ${deviceId}:${serviceIndex} to ${role}`)
+
+        const previous = role && this._roles.find(r => r.role === role)
+        if (
+            previous &&
+            previous.deviceId === deviceId &&
+            previous.serviceIndex === serviceIndex
+        ) {
+            // nothing todo
+            this.log(`role unmodified, skipping`)
+            return
+        }
+
+        // set new role assignment
+        const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
+            fromHex(deviceId),
+            serviceIndex,
+            role || "",
+        ])
+        await this.service.sendPacketAsync(
+            Packet.from(RoleManagerCmd.SetRole, data),
+            true
+        )
+
+        // clear previous role assignment
+        if (previous) {
+            this.log(`clear role ${previous.deviceId}:${previous.serviceIndex}`)
+            const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
+                fromHex(previous.deviceId),
+                previous.serviceIndex,
+                "",
+            ])
+            await this.service.sendPacketAsync(
+                Packet.from(RoleManagerCmd.SetRole, data),
+                true
+            )
+        }
     }
 }
 
