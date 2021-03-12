@@ -971,7 +971,7 @@ export class JDBus extends JDNode {
      * @param id
      */
     device(id: string, skipCreate?: boolean) {
-        if (id === "0000000000000000") {
+        if (id === "0000000000000000" && !skipCreate) {
             console.warn("jadac: trying to access device 0000000000000000")
             return undefined
         }
