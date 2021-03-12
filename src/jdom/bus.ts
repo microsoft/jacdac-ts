@@ -232,10 +232,16 @@ export class BusStatsMonitor extends JDEventSource {
 
 export class BusRoleManagerClient extends JDServiceClient {
     private _roles: { [deviceIdServiceIndex: string]: string } = {}
+    private _needRefresh = true;
+
+    public readonly startRefreshRoles: () => void;
 
     constructor(service: JDService) {
         super(service)
         const changeEvent = service.event(SystemEvent.Change)
+
+        // always debounce refresh roles
+        this.startRefreshRoles = debounceAsync(this.refreshRoles.bind(this), 500);
 
         // role manager emits change events
         const throttledHandleChange = debounceAsync(
@@ -256,15 +262,22 @@ export class BusRoleManagerClient extends JDServiceClient {
         )
         // clear on unmount
         this.mount(this.clearRoles.bind(this))
+        // retry to get roles on every self-announce
+        this.mount(this.bus.subscribe(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this)));
+    }
+
+    private handleSelfAnnounce() {
+        if (this._needRefresh)
+            this.startRefreshRoles();
     }
 
     private async handleChange() {
         console.debug(`role manager change event`)
-        await this.refreshRoles()
+        this.startRefreshRoles()
     }
 
-    async refreshRoles() {
-        this.collectRoles()
+    private async refreshRoles() {
+        await this.collectRoles()
         this.assignRoles()
     }
 
@@ -287,9 +300,11 @@ export class BusRoleManagerClient extends JDServiceClient {
             }
             // store result
             this._roles = roles
+            this._needRefresh = false;
             console.debug(`roles`, { roles: this._roles })
         } catch (e) {
             this.log(`refresh failed`)
+            this._needRefresh = true;
             console.error(e)
         }
     }
@@ -527,13 +542,14 @@ export class JDBus extends JDNode {
             this._roleManagerClient.unmount()
             this._roleManagerClient = undefined
         }
+
         // allocate new manager
         if (service && service !== this._roleManagerClient?.service) {
             console.debug("mount role manager")
             this._roleManagerClient = new BusRoleManagerClient(service)
             this.emit(ROLE_MANAGER_CHANGE)
             this.emit(CHANGE)
-            this._roleManagerClient.refreshRoles()
+            this._roleManagerClient.startRefreshRoles()
         }
     }
 
@@ -619,7 +635,7 @@ export class JDBus extends JDNode {
             await RealTimeClockServiceHost.syncTime(this)
     }
 
-    private async handleRoleManager(device: JDDevice) {
+    private handleRoleManager(device: JDDevice) {
         // auto allocate the first role manager
         console.log("handle role manager", {
             device,
