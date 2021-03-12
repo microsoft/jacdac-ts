@@ -367,7 +367,7 @@ export class BusRoleManagerClient extends JDServiceClient {
 
     async setRole(service: JDService, role: string) {
         const { device, serviceIndex } = service;
-        this.log(`set role ${device.shortId}:${serviceIndex} to ${role}`)
+        this.log(`set role ${device.deviceId}:${serviceIndex} to ${role}`)
         const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [fromHex(device.deviceId), serviceIndex, role || ""]);
         await this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
     }
