@@ -6,6 +6,7 @@ import {
     arrayConcatMany,
     anyRandomUint32,
     toHex,
+    fromHex,
 } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
@@ -81,7 +82,7 @@ import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
 import { JDEventSource } from "./eventsource"
 import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
-import { jdunpack } from "./pack"
+import { jdpack, jdunpack } from "./pack"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
 
 export interface PacketTransport {
@@ -230,7 +231,7 @@ export class BusStatsMonitor extends JDEventSource {
     }
 }
 
-interface Role {
+export interface Role {
     deviceId: string
     serviceClass: number
     serviceIndex: number
@@ -357,6 +358,18 @@ export class BusRoleManagerClient extends JDServiceClient {
     hasRoleForService(service: JDService) {
         const { serviceClass } = service;
         return !!this._roles.find(r => r.serviceClass === serviceClass);
+    }
+
+    compatibleRoles(service: JDService): Role[] {
+        const { serviceClass } = service;
+        return this._roles.filter(r => r.serviceClass === serviceClass);
+    }
+
+    async setRole(service: JDService, role: string) {
+        const { device, serviceIndex } = service;
+        this.log(`set role ${device.shortId}:${serviceIndex} to ${role}`)
+        const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [fromHex(device.deviceId), serviceIndex, role || ""]);
+        await this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
     }
 }
 
@@ -912,9 +925,9 @@ export class JDBus extends JDNode {
      * Gets a device on the bus
      * @param id
      */
-    device(id: string) {
+    device(id: string, skipCreate?: boolean) {
         let d = this._devices.find(d => d.deviceId == id)
-        if (!d) {
+        if (!d && !skipCreate) {
             this.log("info", `new device ${id}`)
             if (this.devicesFrozen) {
                 this.log(`info`, `devices frozen, dropping ${id}`)
