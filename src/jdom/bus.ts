@@ -285,6 +285,10 @@ export class BusRoleManagerClient extends JDServiceClient {
         }
     }
 
+    get roles() {
+        return this._roles;
+    }
+
     private async handleChange() {
         console.debug(`role manager change event`)
         this.startRefreshRoles()
@@ -363,6 +367,10 @@ export class BusRoleManagerClient extends JDServiceClient {
     compatibleRoles(service: JDService): Role[] {
         const { serviceClass } = service;
         return this._roles.filter(r => r.serviceClass === serviceClass);
+    }
+
+    role(name: string): Role {
+        return this._roles.find(r => r.role === name);
     }
 
     async setRole(service: JDService, role: string) {
