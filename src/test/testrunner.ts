@@ -4,7 +4,7 @@ import {
 } from "../../jacdac-spec/spectool/jdtestfuns"
 import { getExpressionsOfType } from "../../jacdac-spec/spectool/jdutils"
 
-import { CHANGE } from "../jdom/constants"
+import { CHANGE, EVENT } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
 import { JDRegister } from "../jdom/register"
@@ -294,18 +294,19 @@ class JDCommandEvaluator {
 
     private createPrompt() {
         const testFun = cmdToTestFunction(this.command)
-        const replace = this.command.call.arguments.map((a, i) => {
+        const replaceId = this.command.call.arguments.map((a, i) => {
+            return [`{${i + 1}}`, unparse(a) ]
+        })
+        const replaceVal = this.command.call.arguments.map((a, i) => {
             const aStart = this._startExpressions.find(r => r.e === a)
-            return [
-                `{${i + 1}}`,
-                aStart && aStart.v && testFun.args[i] === "number" ? aStart.v.toString() : unparse(a),
-            ]
+            return [`{${i + 1}:val}`, aStart && aStart.v ? aStart.v.toString() : "NA" ]
         })
         this._prompt =
             testFun.id === "ask" || testFun.id === "say"
                 ? this.command.prompt.slice(0)
                 : testFun.prompt.slice(0)
-        replace.forEach(p => (this._prompt = this._prompt.replace(p[0], p[1])))
+        replaceId.forEach(p => (this._prompt = this._prompt.replace(p[0], p[1])))
+        replaceVal.forEach(p => (this._prompt = this._prompt.replace(p[0], p[1])))
     }
 
     public setEvent(ev: string) {
@@ -367,7 +368,7 @@ class JDCommandEvaluator {
                         regValue < regSaved.v + amtSaved.v
                     ) {
                         this._status = JDTestCommandStatus.Active
-                        this._progress = `${(regValue - regSaved.v)} out of ${amtSaved.v}`
+                        this._progress = `current: ${regValue}, goal: ${regSaved.v + amtSaved.v}`
                     } else {
                         this._status = JDTestCommandStatus.Active
                     }
@@ -380,7 +381,7 @@ class JDCommandEvaluator {
                         regValue > regSaved.v - amtSaved.v
                     ) {
                         this._status = JDTestCommandStatus.Active
-                        this._progress = `${(regSaved.v - regValue)} out of ${amtSaved.v}`
+                        this._progress = `current: ${regValue} goal: ${regSaved.v - amtSaved.v}`
                     } else {
                         this._status = JDTestCommandStatus.Active
                     }
@@ -392,15 +393,13 @@ class JDCommandEvaluator {
                 this._status = JDTestCommandStatus.Active
                 const reg = this.command.call.arguments[0]
                 const regValue = this.env[unparse(reg)]
-                const begin = this.command.call.arguments[0]
-                const beginSaved = this._startExpressions.find(r => r.e === begin)
+                const beginSaved = this._startExpressions.find(r => r.e === reg)
                 const end = this.command.call.arguments[1]
                 const endSaved = this._startExpressions.find(r => r.e === end)
                 if (this._rangeComplete === undefined) {
-                    if (regValue == beginSaved.v)
-                        this._rangeComplete = regValue
+                    this._rangeComplete = regValue
                 } else {
-                    if (regValue === this._rangeComplete + (testFun.id == 'rangesFromUpTo' ? 1 : -1))
+                    if (regValue === this._rangeComplete + (testFun.id == 'stepsUpTo' ? 1 : -1))
                         this._rangeComplete = regValue
                     if (this._rangeComplete === endSaved.v) {
                         this._status =  JDTestCommandStatus.Passed
@@ -408,7 +407,7 @@ class JDCommandEvaluator {
                 }
                 if (this._rangeComplete != undefined) {
                     this._progress = 
-                        testFun.id == 'rangesFromUpTo' 
+                        testFun.id == 'stepsUpTo' 
                             ? `from ${(beginSaved.v)} up to ${this._rangeComplete}`
                             : `from ${(beginSaved.v)} down to ${this._rangeComplete}`
                 }
@@ -422,7 +421,9 @@ class JDCommandEvaluator {
                         if (this._eventsComplete.length === 0)
                             this._status = JDTestCommandStatus.Passed
                     }
-                    this._progress = `got event ${ev}; remaining = ${this._eventsComplete}`
+                    this._progress = `got event ${ev}; remaining = [${this._eventsComplete}]`
+                } else {
+                    this._progress = `no events received; remaining = [${this._eventsComplete}]`
                 }
                 break
             }
@@ -515,7 +516,6 @@ export class JDTestCommandRunner extends JDEventSource {
     eventChange(event: string) {
         this._commmandEvaluator.setEvent(event)
         this.envChange()
-        console.log(`got ${event}`)
     }
 
     cancel() {
@@ -662,7 +662,7 @@ export class JDServiceTestRunner extends JDServiceClient {
                     const event = service.event(pkt.identifier)
                     this.events[eventName] = event
                     this.mount(
-                        event.subscribe(CHANGE, () => {
+                        event.subscribe(EVENT, () => {
                             this.currentTest?.eventChange(eventName)
                         })
                     )
