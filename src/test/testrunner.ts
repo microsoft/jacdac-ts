@@ -105,6 +105,7 @@ class JDExprEvaluator {
                 // nothing to do here yet (only used for event function)
                 break
             }
+
             case "CallExpression": {
                 const caller = <jsep.CallExpression>e
                 const callee = <jsep.Identifier>caller.callee
@@ -227,6 +228,8 @@ class JDCommandEvaluator {
     private _status = JDTestCommandStatus.Active
     private _startExpressions: StartMap = []
     private _rangeComplete: number = undefined
+    private _eventsComplete: string[] = undefined
+    private _eventsQueue: string[] = undefined
 
     constructor(
         private readonly env: SMap<any>,
@@ -262,15 +265,17 @@ class JDCommandEvaluator {
                 break
             }
             case "increasesBy":
-            case "decreasesBy": {
-                startExprs.push(args[0])
-                startExprs.push(args[1])
-                break
-            }
+            case "decreasesBy": 
             case "stepsUpTo":
             case "stepsDownTo": {
                 startExprs.push(args[0])
                 startExprs.push(args[1])
+                break
+            }
+            case "events": {
+                const eventList = this.command.call.arguments[0] as jsep.ArrayExpression
+                this._eventsComplete = (eventList.elements as jsep.Identifier[]).map(id => id.name)
+                this._eventsQueue = []
                 break
             }
         }
@@ -293,9 +298,7 @@ class JDCommandEvaluator {
             const aStart = this._startExpressions.find(r => r.e === a)
             return [
                 `{${i + 1}}`,
-                aStart && testFun.args[i] !== "register"
-                    ? aStart.v.toString()
-                    : unparse(a),
+                aStart ? aStart.v.toString() : unparse(a),
             ]
         })
         this._prompt =
@@ -303,6 +306,10 @@ class JDCommandEvaluator {
                 ? this.command.prompt.slice(0)
                 : testFun.prompt.slice(0)
         replace.forEach(p => (this._prompt = this._prompt.replace(p[0], p[1])))
+    }
+
+    public setEvent(ev: string) {
+        this._eventsQueue.push(ev)
     }
 
     public evaluate() {
@@ -407,6 +414,18 @@ class JDCommandEvaluator {
                 }
                 break
             }
+            case "events": {
+                if (this._eventsQueue?.length > 0 && this._eventsComplete?.length > 0) {
+                    const ev = this._eventsQueue.pop()
+                    if (ev === this._eventsComplete[0]) {
+                        this._eventsComplete.shift()
+                        if (this._eventsComplete.length === 0)
+                            this._status = JDTestCommandStatus.Passed
+                    }
+                    this._progress = `got event ${ev}; remaining = ${this._eventsComplete}`
+                }
+                break
+            }
         }
     }
 }
@@ -494,6 +513,8 @@ export class JDTestCommandRunner extends JDEventSource {
     }
 
     eventChange(event: string) {
+        this._commmandEvaluator.setEvent(event)
+        this.envChange()
         console.log(`got ${event}`)
     }
 
