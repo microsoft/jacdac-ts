@@ -10,6 +10,7 @@ import {
     SERVICE_CLIENT_ADDED,
     SERVICE_CLIENT_REMOVED,
     CHANGE,
+    ROLE_CHANGE,
 } from "./constants"
 import { JDNode } from "./node"
 import {
@@ -35,6 +36,7 @@ import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
 
 export class JDService extends JDNode {
+    private _role: string;
     private _registers: JDRegister[]
     private _events: JDEvent[]
     private _reports: Packet[] = []
@@ -93,6 +95,18 @@ export class JDService extends JDNode {
 
     get parent(): JDNode {
         return this.device
+    }
+
+    get role(): string {
+        return this._role;
+    }
+
+    set role(value: string) {
+        if (value !== this._role) {
+            this._role = value;
+            this.emit(ROLE_CHANGE)
+            this.emit(CHANGE)
+        }
     }
 
     report(identifier: number) {
