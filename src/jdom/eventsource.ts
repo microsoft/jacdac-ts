@@ -155,7 +155,7 @@ export class JDEventSource {
     }
 
     /**
-     * Subscribbes to an event and returns the unsubscription handler
+     * Subscribes to an event and returns the unsubscription handler
      * @param eventName 
      * @param next 
      */
