@@ -2,7 +2,7 @@ import {
     Commands,
     testCommandFunctions,
 } from "../../jacdac-spec/spectool/jdtestfuns"
-import { getExpressionsOfType } from "../../jacdac-spec/spectool/jdtest"
+import { getExpressionsOfType } from "../../jacdac-spec/spectool/jdutils"
 
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
