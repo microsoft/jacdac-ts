@@ -298,7 +298,7 @@ class JDCommandEvaluator {
             const aStart = this._startExpressions.find(r => r.e === a)
             return [
                 `{${i + 1}}`,
-                aStart ? aStart.v.toString() : unparse(a),
+                aStart && aStart.v && testFun.args[i] === "number" ? aStart.v.toString() : unparse(a),
             ]
         })
         this._prompt =
