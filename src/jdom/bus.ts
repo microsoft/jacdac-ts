@@ -971,6 +971,10 @@ export class JDBus extends JDNode {
      * @param id
      */
     device(id: string, skipCreate?: boolean) {
+        if (id === "0000000000000000") {
+            console.warn("jadac: trying to access device 0000000000000000")
+            return undefined
+        }
         let d = this._devices.find(d => d.deviceId == id)
         if (!d && !skipCreate) {
             this.log("info", `new device ${id}`)
