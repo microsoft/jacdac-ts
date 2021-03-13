@@ -318,12 +318,8 @@ class JDCommandEvaluator {
         this._status = JDTestCommandStatus.Active
         this._progress = ""
         switch (testFun.id as Commands) {
-            case "say":
             case "ask": {
-                this._status =
-                    testFun.id === "say"
-                        ? JDTestCommandStatus.Passed
-                        : JDTestCommandStatus.RequiresUserInput
+                this._status = JDTestCommandStatus.RequiresUserInput
                 break
             }
             case "check": {
@@ -536,7 +532,6 @@ export class JDTestCommandRunner extends JDEventSource {
 
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
-    private _description: string
     private _commandIndex: number
     public readonly commands: JDTestCommandRunner[]
 
@@ -549,7 +544,6 @@ export class JDTestRunner extends JDEventSource {
         this.commands = testSpec.testCommands.map(
             c => new JDTestCommandRunner(this, this.env, c)
         )
-        this._description = testSpec.description
     }
 
     reset() {
@@ -594,7 +588,11 @@ export class JDTestRunner extends JDEventSource {
     }
 
     get description() {
-        return this._description
+        return this.testSpec.description
+    }
+
+    get prompt() {
+        return this.testSpec.prompt
     }
 
     finish(newStatus: JDTestStatus) {
