@@ -84,6 +84,7 @@ import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdpack, jdunpack } from "./pack"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
+import { JDTransport } from "./transport"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -96,13 +97,6 @@ export interface Error {
     context: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     exception: any
-}
-
-export enum BusState {
-    Connected = "connected",
-    Connecting = "connecting",
-    Disconnecting = "disconnecting",
-    Disconnected = "disconnected",
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000
@@ -385,165 +379,6 @@ export class BusRoleManagerClient extends JDServiceClient {
                 true
             )
         }
-    }
-}
-
-export abstract class JDTransport extends JDEventSource {
-    public bus: JDBus;
-    constructor(readonly type: string) {
-        super()
-    }
-
-    private _connectionState = BusState.Disconnected
-    private _connectPromise: Promise<void>
-    private _disconnectPromise: Promise<void>
-
-    /**
-     * Gets the bus connection state.
-     */
-    get connectionState(): BusState {
-        return this._connectionState
-    }
-
-    private setConnectionState(state: BusState) {
-        if (this._connectionState !== state) {
-            console.debug(`${this._connectionState} -> ${state}`)
-            this._connectionState = state
-            this.emit(CONNECTION_STATE, this._connectionState)
-            switch (this._connectionState) {
-                case BusState.Connected:
-                    this.emit(CONNECT)
-                    break
-                case BusState.Connecting:
-                    this.emit(CONNECTING)
-                    break
-                case BusState.Disconnecting:
-                    this.emit(DISCONNECTING)
-                    break
-                case BusState.Disconnected:
-                    this.emit(DISCONNECT)
-                    break
-            }
-            this.emit(CHANGE)
-        }
-    }
-
-    get connecting() {
-        return this.connectionState == BusState.Connecting
-    }
-
-    get disconnecting() {
-        return this.connectionState == BusState.Disconnecting
-    }
-
-    get connected() {
-        return this._connectionState == BusState.Connected
-    }
-
-    get disconnected() {
-        return this._connectionState == BusState.Disconnected
-    }
-
-    protected abstract transportSendPacketAsync(p: Packet): Promise<void>
-    protected abstract transportConnectAsync(background?: boolean): Promise<void>
-    protected abstract transportDisconnectAsync(): Promise<void>
-
-    async sendPacketAsync(p: Packet) {
-        if (!this.connected) {
-            this.emit(PACKET_SEND_DISCONNECT, p)
-        } else {
-            await this.transportSendPacketAsync(p)
-        }
-    }
-
-    connect(background?: boolean): Promise<void> {
-        // already connected
-        if (this.connectionState == BusState.Connected) {
-            console.debug(`already connected`)
-            return Promise.resolve()
-        }
-
-        // connecting
-        if (!this._connectPromise) {
-            // already disconnecting, retry when disconnected
-            if (this._disconnectPromise) {
-                console.debug(`queuing connect after disconnecting`)
-                const p = this._disconnectPromise
-                this._disconnectPromise = undefined
-                this._connectPromise = p.then(() => this.connect())
-            } else {
-                // starting a fresh connection
-                console.debug(`connecting`)
-                this._connectPromise = Promise.resolve()
-                this.setConnectionState(BusState.Connecting)
-                this._connectPromise = this._connectPromise.then(() =>
-                    this.transportConnectAsync(background)
-                )
-                const p = (this._connectPromise = this._connectPromise
-                    .then(() => {
-                        if (p == this._connectPromise) {
-                            this._connectPromise = undefined
-                            this.setConnectionState(BusState.Connected)
-                        } else {
-                            console.debug(`connection aborted in flight`)
-                        }
-                    })
-                    .catch(e => {
-                        if (p == this._connectPromise) {
-                            this._connectPromise = undefined
-                            this.setConnectionState(BusState.Disconnected)
-                            if (!background) this.errorHandler(CONNECT, e)
-                            else console.debug("background connect failed")
-                        } else {
-                            console.debug(`connection error aborted in flight`)
-                        }
-                    }))
-            }
-        } else {
-            console.debug(`connect with existing promise`)
-        }
-        return this._connectPromise
-    }
-
-    disconnect(): Promise<void> {
-        // already disconnected
-        if (this.connectionState == BusState.Disconnected)
-            return Promise.resolve()
-
-        if (!this._disconnectPromise) {
-            // connection in progress, wait and disconnect when done
-            if (this._connectPromise) {
-                console.debug(`cancelling connection and disconnect`)
-                this._connectPromise = undefined
-            }
-            console.debug(`disconnecting`)
-            this._disconnectPromise = Promise.resolve()
-            this.setConnectionState(BusState.Disconnecting)
-            this._disconnectPromise = this._disconnectPromise.then(() =>
-                this.transportDisconnectAsync()
-            )
-            this._disconnectPromise = this._disconnectPromise
-                .catch(e => {
-                    this._disconnectPromise = undefined
-                    this.errorHandler(DISCONNECT, e)
-                })
-                .finally(() => {
-                    this._disconnectPromise = undefined
-                    this.setConnectionState(BusState.Disconnected)
-                })
-        } else {
-            console.debug(`disconnect with existing promise`)
-        }
-        return this._disconnectPromise
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected errorHandler(context: string, exception: any) {
-        console.error(
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
-        this.emit(ERROR, { context, exception })
-        this.emit(CHANGE)
     }
 }
 

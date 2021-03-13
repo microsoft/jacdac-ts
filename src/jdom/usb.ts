@@ -1,11 +1,11 @@
 import { Transport, Proto } from "./hf2"
-import { BusState, JDTransport } from "./bus"
 import Packet from "./packet"
 import { Observable } from "./observable"
 import { EventTargetObservable } from "./eventtargetobservable"
 import { delay } from "./utils"
 import Flags from "./flags"
 import { USB_TRANSPORT } from "./constants"
+import { ConnectionState, JDTransport } from "./transport"
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
@@ -68,7 +68,7 @@ class USBTransport extends JDTransport {
                     this.connectionState,
                     ev
                 )
-                if (this.connectionState === BusState.Disconnected)
+                if (this.connectionState === ConnectionState.Disconnected)
                     delay(500).then(() => this.connect(true))
             },
         })
