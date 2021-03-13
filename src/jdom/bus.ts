@@ -362,6 +362,8 @@ export class JDBus extends JDNode {
     async connect() {
         for (const transport of this._transports) {
             await transport.connect()
+            if (transport.connected)
+                break;
         }
     }
 
