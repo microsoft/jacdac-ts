@@ -55,7 +55,7 @@ class BluetoothTransport extends JDTransport {
     private _service: BluetoothRemoteGATTService
     private _characteristic: BluetoothRemoteGATTCharacteristic
 
-    constructor(public readonly options: {}) {
+    constructor() {
         super(BLE_TRANSPORT)
 
         this.handleDisconnected = this.handleDisconnected.bind(this)
@@ -142,7 +142,7 @@ class BluetoothTransport extends JDTransport {
         this.disconnect()
     }
 
-    private handleCharacteristicChanged(event: Event) {
+    private handleCharacteristicChanged() {
         const data = new Uint8Array(this._characteristic.value.buffer)
         const pkt = Packet.fromBinary(data, this.bus.timestamp)
         pkt.sender = BLE_TRANSPORT
