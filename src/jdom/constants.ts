@@ -167,6 +167,6 @@ export const META_GET = "GET"
 export const TRACE_FILTER_HORIZON = 100
 
 export const BLUETOOTH_JACDAC_SERVICE = "f8538af2-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC = "000"
+export const BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC = "3ec08ed9-39b5-4f55-b2df-44691a6ac952"
 
 export * from "../../jacdac-spec/dist/specconstants"
