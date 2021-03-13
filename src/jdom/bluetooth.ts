@@ -98,6 +98,8 @@ class BluetoothTransport extends JDTransport {
             this.handleCharacteristicChanged,
             false
         )
+        // start listening
+        await this._characteristic.startNotifications();
     }
 
     protected async transportSendPacketAsync(p: Packet) {
