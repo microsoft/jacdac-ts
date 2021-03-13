@@ -1,6 +1,10 @@
 import Packet from "./packet"
 import Flags from "./flags"
-import { BLE_TRANSPORT } from "./constants"
+import {
+    BLE_TRANSPORT,
+    BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC,
+    BLUETOOTH_JACDAC_SERVICE,
+} from "./constants"
 import { JDTransport } from "./transport"
 
 export function isWebBluetoothEnabled(): boolean {
@@ -45,9 +49,6 @@ function bleGetDevices(): Promise<BluetoothDevice[]> {
     }
 }
 
-const BLUETOOTH_JACDAC_SERVICE = "000"
-const BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC = "000"
-
 class BluetoothTransport extends JDTransport {
     private _device: BluetoothDevice
     private _server: BluetoothRemoteGATTServer
@@ -69,7 +70,9 @@ class BluetoothTransport extends JDTransport {
             const devices = await bleGetDevices()
             this._device = devices?.[0]
         } else {
-            const device = await bleRequestDevice()
+            const device = await bleRequestDevice({
+                filters: [{ services: [BLUETOOTH_JACDAC_SERVICE] }],
+            })
             this._device = device
         }
 
@@ -99,7 +102,7 @@ class BluetoothTransport extends JDTransport {
             false
         )
         // start listening
-        await this._characteristic.startNotifications();
+        await this._characteristic.startNotifications()
     }
 
     protected async transportSendPacketAsync(p: Packet) {
