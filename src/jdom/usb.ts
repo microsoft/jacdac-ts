@@ -125,9 +125,5 @@ export function createUSBTransport(options?: USBOptions): JDTransport {
             }
         }
     }
-    // not supported
-    if (!options) return undefined
-
-    const transport = new USBTransport(options)
-    return transport
+    return options && new USBTransport(options)
 }

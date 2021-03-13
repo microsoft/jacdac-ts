@@ -79,6 +79,7 @@ export abstract class JDTransport extends JDEventSource {
     }
 
     connect(background?: boolean): Promise<void> {
+        console.debug(`connection ${this.type}`)
         // already connected
         if (this.connectionState == ConnectionState.Connected) {
             console.debug(`already connected`)
