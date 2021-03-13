@@ -25,7 +25,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - uses: bahmutov/npm-install@v1
-      - run: yarn lint
       - run: yarn dist
       - run: yarn test
       - run: npx semantic-release
