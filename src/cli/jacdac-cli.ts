@@ -82,7 +82,7 @@ if (options.usb) {
     // start listening to bus
     if (options.pkt) bus.on(PACKET_PROCESS, pkt => cli.debug(pkt))
     const run = async () => {
-        await bus.connectAsync()
+        await bus.connect()
     }
     run()
 }

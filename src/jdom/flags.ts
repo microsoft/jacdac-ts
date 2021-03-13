@@ -7,4 +7,9 @@ export default class Flags {
      * Enables/disabled WebUSB
      */
     static webUSB = true;
+
+    /**
+     * Enables/disables WebBLE
+     */
+    static webBluetooth = true;
 }
