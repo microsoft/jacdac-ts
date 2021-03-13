@@ -84,13 +84,6 @@ import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdpack, jdunpack } from "./pack"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-
-export interface PacketTransport {
-    sendPacketAsync?: (p: Packet) => Promise<void>
-    connectAsync?: (background?: boolean) => Promise<void>
-    disconnectAsync?: () => Promise<void>
-}
-
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -117,27 +110,6 @@ export enum BusState {
 }
 
 const SCAN_FIRMWARE_INTERVAL = 30000
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
-    switch (level) {
-        case "error":
-            console.error(message, optionalArgs || "")
-            break
-        case "warn":
-            console.warn(message, optionalArgs || "")
-            break
-        case "info":
-            console.info(message, optionalArgs || "")
-            break
-        case "debug":
-            console.debug(message, optionalArgs || "")
-            break
-        default:
-            console.log(message, optionalArgs || "")
-            break
-    }
-}
 
 export interface DeviceFilter {
     serviceName?: string
@@ -280,7 +252,7 @@ export class BusRoleManagerClient extends JDServiceClient {
 
     private handleSelfAnnounce() {
         if (this._needRefresh) {
-            this.log("self announce refresh")
+            console.debug("self announce refresh")
             this.startRefreshRoles()
         }
     }
@@ -305,7 +277,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     private async collectRoles() {
-        this.log("query roles")
+        console.debug("query roles")
         try {
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
@@ -376,7 +348,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     async setRole(service: JDService, role: string) {
         const { device, serviceIndex } = service
         const { deviceId } = device
-        this.log(`set role ${deviceId}:${serviceIndex} to ${role}`)
+        console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
 
         const previous = role && this._roles.find(r => r.role === role)
         if (
@@ -385,7 +357,7 @@ export class BusRoleManagerClient extends JDServiceClient {
             previous.serviceIndex === serviceIndex
         ) {
             // nothing todo
-            this.log(`role unmodified, skipping`)
+            console.debug(`role unmodified, skipping`)
             return
         }
 
@@ -404,7 +376,9 @@ export class BusRoleManagerClient extends JDServiceClient {
 
         // clear previous role assignment
         if (previous) {
-            this.log(`clear role ${previous.deviceId}:${previous.serviceIndex}`)
+            console.debug(
+                `clear role ${previous.deviceId}:${previous.serviceIndex}`
+            )
             const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
                 fromHex(previous.deviceId),
                 previous.serviceIndex,
@@ -418,8 +392,9 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 }
 
-class TransportDriver extends JDEventSource {
-    constructor(readonly bus: JDBus, readonly transport: PacketTransport) {
+export abstract class JDTransport extends JDEventSource {
+    public bus: JDBus;
+    constructor(readonly type: string) {
         super()
     }
 
@@ -436,7 +411,7 @@ class TransportDriver extends JDEventSource {
 
     private setConnectionState(state: BusState) {
         if (this._connectionState !== state) {
-            this.log("debug", `${this._connectionState} -> ${state}`)
+            console.debug(`${this._connectionState} -> ${state}`)
             this._connectionState = state
             this.emit(CONNECTION_STATE, this._connectionState)
             switch (this._connectionState) {
@@ -450,7 +425,6 @@ class TransportDriver extends JDEventSource {
                     this.emit(DISCONNECTING)
                     break
                 case BusState.Disconnected:
-                    this.clear()
                     this.emit(DISCONNECT)
                     break
             }
@@ -474,20 +448,22 @@ class TransportDriver extends JDEventSource {
         return this._connectionState == BusState.Disconnected
     }
 
-    sendPacketAsync(p: Packet) {
+    protected abstract transportSendPacketAsync(p: Packet): Promise<void>
+    protected abstract transportConnectAsync(background?: boolean): Promise<void>
+    protected abstract transportDisconnectAsync(): Promise<void>
+
+    async sendPacketAsync(p: Packet) {
         if (!this.connected) {
             this.emit(PACKET_SEND_DISCONNECT, p)
-            return Promise.resolve()
+        } else {
+            await this.transportSendPacketAsync(p)
         }
-        const spa = this.transport?.sendPacketAsync
-        if (!spa) return Promise.resolve()
-        return spa(p)
     }
 
-    connectAsync(background?: boolean): Promise<void> {
+    connect(background?: boolean): Promise<void> {
         // already connected
         if (this.connectionState == BusState.Connected) {
-            this.log("debug", `already connected`)
+            console.debug(`already connected`)
             return Promise.resolve()
         }
 
@@ -495,26 +471,25 @@ class TransportDriver extends JDEventSource {
         if (!this._connectPromise) {
             // already disconnecting, retry when disconnected
             if (this._disconnectPromise) {
-                this.log("debug", `queuing connect after disconnecting`)
+                console.debug(`queuing connect after disconnecting`)
                 const p = this._disconnectPromise
                 this._disconnectPromise = undefined
-                this._connectPromise = p.then(() => this.connectAsync())
+                this._connectPromise = p.then(() => this.connect())
             } else {
                 // starting a fresh connection
-                this.log("debug", `connecting`)
+                console.debug(`connecting`)
                 this._connectPromise = Promise.resolve()
                 this.setConnectionState(BusState.Connecting)
-                if (this.transport?.connectAsync)
-                    this._connectPromise = this._connectPromise.then(() =>
-                        this.transport.connectAsync(background)
-                    )
+                this._connectPromise = this._connectPromise.then(() =>
+                    this.transportConnectAsync(background)
+                )
                 const p = (this._connectPromise = this._connectPromise
                     .then(() => {
                         if (p == this._connectPromise) {
                             this._connectPromise = undefined
                             this.setConnectionState(BusState.Connected)
                         } else {
-                            this.log("debug", `connection aborted in flight`)
+                            console.debug(`connection aborted in flight`)
                         }
                     })
                     .catch(e => {
@@ -522,22 +497,19 @@ class TransportDriver extends JDEventSource {
                             this._connectPromise = undefined
                             this.setConnectionState(BusState.Disconnected)
                             if (!background) this.errorHandler(CONNECT, e)
-                            else this.log("debug", "background connect failed")
+                            else console.debug("background connect failed")
                         } else {
-                            this.log(
-                                "debug",
-                                `connection error aborted in flight`
-                            )
+                            console.debug(`connection error aborted in flight`)
                         }
                     }))
             }
         } else {
-            this.log("debug", `connect with existing promise`)
+            console.debug(`connect with existing promise`)
         }
         return this._connectPromise
     }
 
-    disconnectAsync(): Promise<void> {
+    disconnect(): Promise<void> {
         // already disconnected
         if (this.connectionState == BusState.Disconnected)
             return Promise.resolve()
@@ -545,16 +517,15 @@ class TransportDriver extends JDEventSource {
         if (!this._disconnectPromise) {
             // connection in progress, wait and disconnect when done
             if (this._connectPromise) {
-                this.log("debug", `cancelling connection and disconnect`)
+                console.debug(`cancelling connection and disconnect`)
                 this._connectPromise = undefined
             }
-            this.log("debug", `disconnecting`)
+            console.debug(`disconnecting`)
             this._disconnectPromise = Promise.resolve()
             this.setConnectionState(BusState.Disconnecting)
-            if (this.transport?.disconnectAsync)
-                this._disconnectPromise = this._disconnectPromise.then(() =>
-                    this.transport.disconnectAsync()
-                )
+            this._disconnectPromise = this._disconnectPromise.then(() =>
+                this.transportDisconnectAsync()
+            )
             this._disconnectPromise = this._disconnectPromise
                 .catch(e => {
                     this._disconnectPromise = undefined
@@ -565,9 +536,18 @@ class TransportDriver extends JDEventSource {
                     this.setConnectionState(BusState.Disconnected)
                 })
         } else {
-            this.log("debug", `disconnect with existing promise`)
+            console.debug(`disconnect with existing promise`)
         }
         return this._disconnectPromise
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    protected errorHandler(context: string, exception: any) {
+        console.error(
+            `error ${context} ${exception?.message}\n${exception?.stack}`
+        )
+        this.emit(ERROR, { context, exception })
+        this.emit(CHANGE)
     }
 }
 
@@ -575,7 +555,7 @@ class TransportDriver extends JDEventSource {
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
-    private readonly _transports: TransportDriver[] = []
+    private readonly _transports: JDTransport[] = []
     private _devices: JDDevice[] = []
     private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -595,18 +575,18 @@ export class JDBus extends JDNode {
 
     private _deviceHosts: DeviceHost[] = []
 
-    public readonly host: BusHost = {
-        log,
-    }
-
     public readonly stats: BusStatsMonitor
 
     /**
      * Creates the bus with the given transport
      * @param sendPacket
      */
-    constructor(public options?: BusOptions) {
+    constructor(transports: JDTransport[], public options?: BusOptions) {
         super()
+
+        this._transports = transports.filter(tr => !!tr)
+        this._transports.forEach(tr => (tr.bus = this))
+
         this.options = this.options || {}
         if (!this.options.deviceId) {
             const devId = anyRandomUint32(8)
@@ -629,6 +609,18 @@ export class JDBus extends JDNode {
 
         // start all timers
         this.start()
+    }
+
+    async connect() {
+        for(const transport of this._transports) {
+            await transport.connect();
+        }
+    }
+
+    async disconnect() {
+        for(const transport of this._transports) {
+            await transport.disconnect();
+        }
     }
 
     start() {
@@ -663,6 +655,10 @@ export class JDBus extends JDNode {
             clearInterval(this._gcInterval)
             this._gcInterval = undefined
         }
+    }
+
+    get transports() {
+        return this._transports.slice(0)
     }
 
     get safeBoot() {
@@ -784,7 +780,7 @@ export class JDBus extends JDNode {
                     return this.device(dev)?.service(srv)?.register(reg)
                         ?.fields[idx]
             }
-            this.log("info", `node ${id} not found`)
+            console.info(`node ${id} not found`)
             return undefined
         }
         const node = resolve()
@@ -813,10 +809,6 @@ export class JDBus extends JDNode {
 
     get parent(): JDNode {
         return undefined
-    }
-
-    protected get logger(): Log {
-        return this.host.log
     }
 
     private async pingLoggers() {
@@ -861,16 +853,6 @@ export class JDBus extends JDNode {
     set firmwareBlobs(blobs: FirmwareBlob[]) {
         this._firmwareBlobs = blobs
         this.emit(FIRMWARE_BLOBS_CHANGE)
-        this.emit(CHANGE)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    errorHandler(context: string, exception: any) {
-        this.log(
-            "error",
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
-        this.emit(ERROR, { context, exception })
         this.emit(CHANGE)
     }
 
@@ -987,9 +969,9 @@ export class JDBus extends JDNode {
         }
         let d = this._devices.find(d => d.deviceId == id)
         if (!d && !skipCreate) {
-            this.log("info", `new device ${id}`)
+            console.info(`new device ${id}`)
             if (this.devicesFrozen) {
-                this.log(`info`, `devices frozen, dropping ${id}`)
+                console.info(`info`, `devices frozen, dropping ${id}`)
                 return undefined
             }
             d = new JDDevice(this, id)
@@ -1012,7 +994,7 @@ export class JDBus extends JDNode {
             if (!this._debouncedScanFirmwares) {
                 this._debouncedScanFirmwares = debounceAsync(async () => {
                     if (this._transports.some(tr => tr.connected)) {
-                        this.log("info", `scanning firmwares`)
+                        console.info(`scanning firmwares`)
                         await scanFirmwares(this)
                     }
                 }, SCAN_FIRMWARE_INTERVAL)
@@ -1020,7 +1002,7 @@ export class JDBus extends JDNode {
             }
         } else {
             if (this._debouncedScanFirmwares) {
-                this.log("debug", `disabling background firmware scans`)
+                console.debug(`disabling background firmware scans`)
                 const d = this._debouncedScanFirmwares
                 this._debouncedScanFirmwares = undefined
                 this.off(DEVICE_ANNOUNCE, d)
@@ -1042,7 +1024,7 @@ export class JDBus extends JDNode {
 
     private gcDevices() {
         if (this.devicesFrozen) {
-            this.log("debug", "devices frozen")
+            console.debug("devices frozen")
             return
         }
 
