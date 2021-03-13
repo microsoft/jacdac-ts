@@ -32,7 +32,7 @@ function bleRequestDevice(
     try {
         return navigator?.bluetooth?.requestDevice(options)
     } catch (e) {
-        console.warn(e)
+        if (Flags.diagnostics) console.warn(e)
         return undefined
     }
 }
@@ -44,7 +44,7 @@ function bleGetDevices(): Promise<BluetoothDevice[]> {
     try {
         return navigator?.bluetooth?.getDevices() || Promise.resolve([])
     } catch (e) {
-        console.warn(e)
+        if (Flags.diagnostics) console.warn(e)
         return Promise.resolve([])
     }
 }

@@ -38,7 +38,7 @@ function usbRequestDevice(
     try {
         return navigator?.usb?.requestDevice(options)
     } catch (e) {
-        console.warn(e)
+        if (Flags.diagnostics) console.warn(e)
         return undefined
     }
 }
@@ -50,7 +50,7 @@ function usbGetDevices(): Promise<USBDevice[]> {
     try {
         return navigator?.usb?.getDevices() || Promise.resolve([])
     } catch (e) {
-        console.warn(e)
+        if (Flags.diagnostics) console.warn(e)
         return Promise.resolve([])
     }
 }
