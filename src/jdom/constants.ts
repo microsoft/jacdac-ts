@@ -1,4 +1,3 @@
-
 // Registers 0x001-0x07f - r/w common to all services
 // Registers 0x080-0x0ff - r/w defined per-service
 // Registers 0x100-0x17f - r/o common to all services
@@ -48,7 +47,7 @@ export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
 // the device_identifier contains target service class number
 export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
-export const JD_ADVERTISEMENT_0_COUNTER_MASK = 0x0000000F
+export const JD_ADVERTISEMENT_0_COUNTER_MASK = 0x0000000f
 export const JD_ADVERTISEMENT_0_ACK_SUPPORTED = 0x00000100
 
 // time withouth seeing a package to be considered "lost", 2x announce interval
@@ -56,35 +55,35 @@ export const JD_DEVICE_LOST_DELAY = 1500
 // time without seeing a packet to be considered "disconnected"
 export const JD_DEVICE_DISCONNECTED_DELAY = 5000
 
-export const SRV_CTRL = 0;
+export const SRV_CTRL = 0
 
-export const NEW_LISTENER = 'newListener'
-export const REMOVE_LISTENER = 'removeListener'
+export const NEW_LISTENER = "newListener"
+export const REMOVE_LISTENER = "removeListener"
 
-export const CONNECTION_STATE = 'connectionState'
-export const CONNECT = 'connect';
-export const LOST = 'lost'
-export const FOUND = 'found'
-export const CONNECTING = 'connecting';
-export const DISCONNECT = 'disconnect';
-export const DISCONNECTING = 'disconnecting'
-export const ANNOUNCE = 'announce'
-export const START = 'start'
-export const RESTART = 'restart'
-export const STOP = 'stop'
-export const CHANGE = 'change'
-export const EVENT = 'event'
-export const RENDER = 'render'
-export const REFRESH = 'refresh'
-export const FIRMWARE_INFO = 'firmwareInfo'
-export const FIRMWARE_BLOBS_CHANGE = 'firmwareBlobsChange'
-export const LATE = 'late'
-export const GET_ATTEMPT = 'getAttempt'
+export const CONNECTION_STATE = "connectionState"
+export const CONNECT = "connect"
+export const LOST = "lost"
+export const FOUND = "found"
+export const CONNECTING = "connecting"
+export const DISCONNECT = "disconnect"
+export const DISCONNECTING = "disconnecting"
+export const ANNOUNCE = "announce"
+export const START = "start"
+export const RESTART = "restart"
+export const STOP = "stop"
+export const CHANGE = "change"
+export const EVENT = "event"
+export const RENDER = "render"
+export const REFRESH = "refresh"
+export const FIRMWARE_INFO = "firmwareInfo"
+export const FIRMWARE_BLOBS_CHANGE = "firmwareBlobsChange"
+export const LATE = "late"
+export const GET_ATTEMPT = "getAttempt"
 export const SERVICE_CLIENT_ADDED = `serviceClientAdded`
 export const SERVICE_CLIENT_REMOVED = `serviceClientRemoved`
-export const READING_SENT = 'readingSent'
-export const ROLE_CHANGE = 'roleChange'
-export const ROLE_MANAGER_CHANGE = 'roleManagerChange'
+export const READING_SENT = "readingSent"
+export const ROLE_CHANGE = "roleChange"
+export const ROLE_MANAGER_CHANGE = "roleManagerChange"
 
 export const DEVICE_HOST_ADDED = `deviceHostAdded`
 export const DEVICE_HOST_REMOVED = `deviceHostRemoved`
@@ -93,39 +92,39 @@ export const IDENTIFY = "identify"
 export const IDENTIFY_DURATION = 2000
 export const RESET = "reset"
 
-export const DATA = 'data'
-export const CLOSE = 'close'
+export const DATA = "data"
+export const CLOSE = "close"
 
-export const DEVICE_CONNECT = 'deviceConnect'
-export const DEVICE_LOST = 'deviceLost'
-export const DEVICE_FOUND = 'deviceFound'
-export const DEVICE_DISCONNECT = 'deviceDisconnect'
-export const DEVICE_ANNOUNCE = 'deviceAnnounce'
-export const DEVICE_RESTART = 'deviceRestart'
-export const DEVICE_CHANGE = 'deviceChange'
-export const DEVICE_FIRMWARE_INFO = 'firmwareInfo'
-export const SELF_ANNOUNCE = 'selfAnnounce'
+export const DEVICE_CONNECT = "deviceConnect"
+export const DEVICE_LOST = "deviceLost"
+export const DEVICE_FOUND = "deviceFound"
+export const DEVICE_DISCONNECT = "deviceDisconnect"
+export const DEVICE_ANNOUNCE = "deviceAnnounce"
+export const DEVICE_RESTART = "deviceRestart"
+export const DEVICE_CHANGE = "deviceChange"
+export const DEVICE_FIRMWARE_INFO = "firmwareInfo"
+export const SELF_ANNOUNCE = "selfAnnounce"
 
-export const PACKET_SEND = 'packetSend'
-export const PACKET_SEND_DISCONNECT = 'packetSendDisconnect'
+export const PACKET_SEND = "packetSend"
+export const PACKET_SEND_DISCONNECT = "packetSendDisconnect"
 
-export const PACKET_PRE_PROCESS = 'packetPreProcess'
-export const PACKET_PROCESS = 'packetProcess'
-export const PACKET_RECEIVE = 'packetReceive'
-export const PACKET_RECEIVE_ANNOUNCE = 'packetReceiveAnnounce'
-export const PACKET_EVENT = 'packetEvent'
-export const PACKET_REPORT = 'packetReport'
-export const PACKET_ANNOUNCE = 'packetAnnounce'
-export const PACKET_INVALID_CRC = 'packetInvalidCrc';
+export const PACKET_PRE_PROCESS = "packetPreProcess"
+export const PACKET_PROCESS = "packetProcess"
+export const PACKET_RECEIVE = "packetReceive"
+export const PACKET_RECEIVE_ANNOUNCE = "packetReceiveAnnounce"
+export const PACKET_EVENT = "packetEvent"
+export const PACKET_REPORT = "packetReport"
+export const PACKET_ANNOUNCE = "packetAnnounce"
+export const PACKET_INVALID_CRC = "packetInvalidCrc"
 
-export const REPORT_RECEIVE = 'reportReceive'
-export const REPORT_UPDATE = 'reportUpdate'
+export const REPORT_RECEIVE = "reportReceive"
+export const REPORT_UPDATE = "reportUpdate"
 
-export const ERROR = 'error'
-export const TIMEOUT = 'timeout'
-export const TIMEOUT_DISCONNECT = 'timeoutDisconnect'
+export const ERROR = "error"
+export const TIMEOUT = "timeout"
+export const TIMEOUT_DISCONNECT = "timeoutDisconnect"
 
-export const PROGRESS = 'progress'
+export const PROGRESS = "progress"
 
 export const PACKET_KIND_RW = "rw"
 export const PACKET_KIND_RO = "ro"
@@ -156,7 +155,8 @@ export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
 export const STREAMING_DEFAULT_INTERVAL = 50
 
-export const USB_TRANSPORT = "usb"
+export const USB_TRANSPORT = "USB"
+export const BLE_TRANSPORT = "Bluetooth"
 export const PACKETIO_TRANSPORT = "packetio"
 
 export const META_ACK = "ACK"
@@ -166,4 +166,7 @@ export const META_GET = "GET"
 
 export const TRACE_FILTER_HORIZON = 100
 
-export * from "../../jacdac-spec/dist/specconstants";
+export const BLUETOOTH_JACDAC_SERVICE = "f8538af2-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC = "3ec08ed9-39b5-4f55-b2df-44691a6ac952"
+
+export * from "../../jacdac-spec/dist/specconstants"

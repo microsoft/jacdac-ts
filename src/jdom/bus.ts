@@ -42,7 +42,6 @@ import {
     TIMEOUT,
     LATE,
     PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT,
     REPORT_UPDATE,
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
@@ -55,9 +54,10 @@ import {
     REFRESH,
     EVENT,
     ROLE_MANAGER_CHANGE,
+    TIMEOUT_DISCONNECT,
 } from "./constants"
 import { serviceClass } from "./pretty"
-import { JDNode, Log, LogLevel } from "./node"
+import { JDNode } from "./node"
 import {
     FirmwareBlob,
     scanFirmwares,
@@ -84,13 +84,8 @@ import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdpack, jdunpack } from "./pack"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-
-export interface PacketTransport {
-    sendPacketAsync?: (p: Packet) => Promise<void>
-    connectAsync?: (background?: boolean) => Promise<void>
-    disconnectAsync?: () => Promise<void>
-}
-
+import { JDTransport } from "./transport"
+import { BusStatsMonitor } from "./busstats"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -99,45 +94,13 @@ export interface BusOptions {
     parentOrigin?: string
 }
 
-export interface BusHost {
-    log?: Log
-}
-
 export interface Error {
     context: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     exception: any
 }
 
-export enum BusState {
-    Connected = "connected",
-    Connecting = "connecting",
-    Disconnecting = "disconnecting",
-    Disconnected = "disconnected",
-}
-
 const SCAN_FIRMWARE_INTERVAL = 30000
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
-    switch (level) {
-        case "error":
-            console.error(message, optionalArgs || "")
-            break
-        case "warn":
-            console.warn(message, optionalArgs || "")
-            break
-        case "info":
-            console.info(message, optionalArgs || "")
-            break
-        case "debug":
-            console.debug(message, optionalArgs || "")
-            break
-        default:
-            console.log(message, optionalArgs || "")
-            break
-    }
-}
 
 export interface DeviceFilter {
     serviceName?: string
@@ -147,90 +110,6 @@ export interface DeviceFilter {
     ignoreSimulators?: boolean
     firmwareIdentifier?: boolean
 }
-export interface BusStats {
-    packets: number
-    announce: number
-    acks: number
-    bytes: number
-}
-
-export class BusStatsMonitor extends JDEventSource {
-    private readonly _prev: BusStats[] = Array(10)
-        .fill(0)
-        .map(() => ({
-            packets: 0,
-            announce: 0,
-            acks: 0,
-            bytes: 0,
-        }))
-    private _previ = 0
-    private _temp: BusStats = {
-        packets: 0,
-        announce: 0,
-        acks: 0,
-        bytes: 0,
-    }
-
-    constructor(readonly bus: JDBus) {
-        super()
-        this.bus.on(PACKET_SEND, this.handlePacketSend.bind(this))
-        this.bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this))
-        this.bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
-    }
-
-    get current(): BusStats {
-        const r: BusStats = {
-            packets: 0,
-            announce: 0,
-            acks: 0,
-            bytes: 0,
-        }
-        const n = this._prev.length
-        for (let i = 0; i < this._prev.length; ++i) {
-            const p = this._prev[i]
-            r.packets += p.packets
-            r.announce += p.announce
-            r.acks += p.acks
-            r.bytes += p.bytes
-        }
-        // announce every 500ms
-        const n2 = n / 2
-        r.packets /= n2
-        r.announce /= n2
-        r.acks /= n2
-        r.bytes /= n2
-        return r
-    }
-
-    private accumulate(pkt: Packet) {
-        this._temp.packets++
-        this._temp.bytes += (pkt.header?.length || 0) + (pkt.data?.length || 0)
-        if (pkt.isCRCAck) this._temp.acks++
-    }
-
-    private handleSelfAnnounce() {
-        const changed =
-            JSON.stringify(this._prev) !== JSON.stringify(this._temp)
-        this._prev[this._previ] = this._temp
-        this._previ = (this._previ + 1) % this._prev.length
-        this._temp = {
-            packets: 0,
-            announce: 0,
-            acks: 0,
-            bytes: 0,
-        }
-        if (changed) this.emit(CHANGE)
-    }
-
-    private handlePacketSend(pkt: Packet) {
-        this.accumulate(pkt)
-    }
-
-    private handlePacketProcess(pkt: Packet) {
-        this.accumulate(pkt)
-    }
-}
-
 export interface Role {
     deviceId: string
     serviceClass: number
@@ -280,7 +159,7 @@ export class BusRoleManagerClient extends JDServiceClient {
 
     private handleSelfAnnounce() {
         if (this._needRefresh) {
-            this.log("self announce refresh")
+            console.debug("self announce refresh")
             this.startRefreshRoles()
         }
     }
@@ -305,7 +184,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     private async collectRoles() {
-        this.log("query roles")
+        console.debug("query roles")
         try {
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
@@ -376,7 +255,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     async setRole(service: JDService, role: string) {
         const { device, serviceIndex } = service
         const { deviceId } = device
-        this.log(`set role ${deviceId}:${serviceIndex} to ${role}`)
+        console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
 
         const previous = role && this._roles.find(r => r.role === role)
         if (
@@ -385,7 +264,7 @@ export class BusRoleManagerClient extends JDServiceClient {
             previous.serviceIndex === serviceIndex
         ) {
             // nothing todo
-            this.log(`role unmodified, skipping`)
+            console.debug(`role unmodified, skipping`)
             return
         }
 
@@ -404,7 +283,9 @@ export class BusRoleManagerClient extends JDServiceClient {
 
         // clear previous role assignment
         if (previous) {
-            this.log(`clear role ${previous.deviceId}:${previous.serviceIndex}`)
+            console.debug(
+                `clear role ${previous.deviceId}:${previous.serviceIndex}`
+            )
             const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
                 fromHex(previous.deviceId),
                 previous.serviceIndex,
@@ -422,10 +303,7 @@ export class BusRoleManagerClient extends JDServiceClient {
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
-    private _connectionState = BusState.Disconnected
-    private _connectPromise: Promise<void>
-    private _disconnectPromise: Promise<void>
-
+    private readonly _transports: JDTransport[] = []
     private _devices: JDDevice[] = []
     private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -445,21 +323,22 @@ export class JDBus extends JDNode {
 
     private _deviceHosts: DeviceHost[] = []
 
-    public readonly host: BusHost = {
-        log,
-    }
-
     public readonly stats: BusStatsMonitor
 
     /**
      * Creates the bus with the given transport
      * @param sendPacket
      */
-    constructor(
-        public readonly transport: PacketTransport,
-        public options?: BusOptions
-    ) {
+    constructor(transports: JDTransport[], public options?: BusOptions) {
         super()
+
+        this._transports = transports.filter(tr => !!tr)
+        this._transports.forEach(tr => {
+            tr.bus = this
+            // disconnect all transprots when one starts connecting
+            tr.on(CONNECTING, () => this.preConnect(tr))
+        })
+
         this.options = this.options || {}
         if (!this.options.deviceId) {
             const devId = anyRandomUint32(8)
@@ -482,6 +361,27 @@ export class JDBus extends JDNode {
 
         // start all timers
         this.start()
+    }
+
+    private preConnect(transport: JDTransport) {
+        return Promise.all(
+            this._transports
+                .filter(t => t !== transport)
+                .map(t => t.disconnect())
+        )
+    }
+
+    async connect() {
+        for (const transport of this._transports) {
+            await transport.connect()
+            if (transport.connected) break
+        }
+    }
+
+    async disconnect() {
+        for (const transport of this._transports) {
+            await transport.disconnect()
+        }
     }
 
     start() {
@@ -518,6 +418,10 @@ export class JDBus extends JDNode {
         }
     }
 
+    get transports() {
+        return this._transports.slice(0)
+    }
+
     get safeBoot() {
         return !!this._safeBootInterval
     }
@@ -537,35 +441,12 @@ export class JDBus extends JDNode {
         }
     }
 
-    /**
-     * Gets the bus connection state.
-     */
-    get connectionState(): BusState {
-        return this._connectionState
+    get connected() {
+        return this._transports.some(t => t.connected)
     }
 
-    private setConnectionState(state: BusState) {
-        if (this._connectionState !== state) {
-            this.log("debug", `${this._connectionState} -> ${state}`)
-            this._connectionState = state
-            this.emit(CONNECTION_STATE, this._connectionState)
-            switch (this._connectionState) {
-                case BusState.Connected:
-                    this.emit(CONNECT)
-                    break
-                case BusState.Connecting:
-                    this.emit(CONNECTING)
-                    break
-                case BusState.Disconnecting:
-                    this.emit(DISCONNECTING)
-                    break
-                case BusState.Disconnected:
-                    this.clear()
-                    this.emit(DISCONNECT)
-                    break
-            }
-            this.emit(CHANGE)
-        }
+    get disconnected() {
+        return this._transports.every(t => t.disconnected)
     }
 
     clear() {
@@ -668,7 +549,7 @@ export class JDBus extends JDNode {
                     return this.device(dev)?.service(srv)?.register(reg)
                         ?.fields[idx]
             }
-            this.log("info", `node ${id} not found`)
+            console.info(`node ${id} not found`)
             return undefined
         }
         const node = resolve()
@@ -699,10 +580,6 @@ export class JDBus extends JDNode {
         return undefined
     }
 
-    protected get logger(): Log {
-        return this.host.log
-    }
-
     private async pingLoggers() {
         if (this._minLoggerPriority < LoggerPriority.Silent) {
             const pkt = Packet.jdpacked<[LoggerPriority]>(
@@ -729,33 +606,13 @@ export class JDBus extends JDNode {
         }
     }
 
-    sendPacketAsync(p: Packet) {
+    async sendPacketAsync(p: Packet) {
         p.timestamp = this.timestamp
         this.emit(PACKET_SEND, p)
 
-        if (!this.connected) {
-            this.emit(PACKET_SEND_DISCONNECT, p)
-            return Promise.resolve()
-        }
-        const spa = this.transport?.sendPacketAsync
-        if (!spa) return Promise.resolve()
-        return spa(p)
-    }
-
-    get connecting() {
-        return this.connectionState == BusState.Connecting
-    }
-
-    get disconnecting() {
-        return this.connectionState == BusState.Disconnecting
-    }
-
-    get connected() {
-        return this._connectionState == BusState.Connected
-    }
-
-    get disconnected() {
-        return this._connectionState == BusState.Disconnected
+        await Promise.all(
+            this._transports.map(transport => transport.sendPacketAsync(p))
+        )
     }
 
     get firmwareBlobs() {
@@ -766,102 +623,6 @@ export class JDBus extends JDNode {
         this._firmwareBlobs = blobs
         this.emit(FIRMWARE_BLOBS_CHANGE)
         this.emit(CHANGE)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    errorHandler(context: string, exception: any) {
-        this.log(
-            "error",
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
-        this.emit(ERROR, { context, exception })
-        this.emit(CHANGE)
-    }
-
-    connectAsync(background?: boolean): Promise<void> {
-        // already connected
-        if (this.connectionState == BusState.Connected) {
-            this.log("debug", `already connected`)
-            return Promise.resolve()
-        }
-
-        // connecting
-        if (!this._connectPromise) {
-            // already disconnecting, retry when disconnected
-            if (this._disconnectPromise) {
-                this.log("debug", `queuing connect after disconnecting`)
-                const p = this._disconnectPromise
-                this._disconnectPromise = undefined
-                this._connectPromise = p.then(() => this.connectAsync())
-            } else {
-                // starting a fresh connection
-                this.log("debug", `connecting`)
-                this._connectPromise = Promise.resolve()
-                this.setConnectionState(BusState.Connecting)
-                if (this.transport?.connectAsync)
-                    this._connectPromise = this._connectPromise.then(() =>
-                        this.transport.connectAsync(background)
-                    )
-                const p = (this._connectPromise = this._connectPromise
-                    .then(() => {
-                        if (p == this._connectPromise) {
-                            this._connectPromise = undefined
-                            this.setConnectionState(BusState.Connected)
-                        } else {
-                            this.log("debug", `connection aborted in flight`)
-                        }
-                    })
-                    .catch(e => {
-                        if (p == this._connectPromise) {
-                            this._connectPromise = undefined
-                            this.setConnectionState(BusState.Disconnected)
-                            if (!background) this.errorHandler(CONNECT, e)
-                            else this.log("debug", "background connect failed")
-                        } else {
-                            this.log(
-                                "debug",
-                                `connection error aborted in flight`
-                            )
-                        }
-                    }))
-            }
-        } else {
-            this.log("debug", `connect with existing promise`)
-        }
-        return this._connectPromise
-    }
-
-    disconnectAsync(): Promise<void> {
-        // already disconnected
-        if (this.connectionState == BusState.Disconnected)
-            return Promise.resolve()
-
-        if (!this._disconnectPromise) {
-            // connection in progress, wait and disconnect when done
-            if (this._connectPromise) {
-                this.log("debug", `cancelling connection and disconnect`)
-                this._connectPromise = undefined
-            }
-            this.log("debug", `disconnecting`)
-            this._disconnectPromise = Promise.resolve()
-            this.setConnectionState(BusState.Disconnecting)
-            if (this.transport?.disconnectAsync)
-                this._disconnectPromise = this._disconnectPromise.then(() =>
-                    this.transport.disconnectAsync()
-                )
-            this._disconnectPromise = this._disconnectPromise
-                .catch(e => {
-                    this._disconnectPromise = undefined
-                    this.errorHandler(DISCONNECT, e)
-                })
-                .finally(() => {
-                    this._disconnectPromise = undefined
-                    this.setConnectionState(BusState.Disconnected)
-                })
-        } else {
-            this.log("debug", `disconnect with existing promise`)
-        }
-        return this._disconnectPromise
     }
 
     /**
@@ -977,9 +738,9 @@ export class JDBus extends JDNode {
         }
         let d = this._devices.find(d => d.deviceId == id)
         if (!d && !skipCreate) {
-            this.log("info", `new device ${id}`)
+            console.info(`new device ${id}`)
             if (this.devicesFrozen) {
-                this.log(`info`, `devices frozen, dropping ${id}`)
+                console.info(`info`, `devices frozen, dropping ${id}`)
                 return undefined
             }
             d = new JDDevice(this, id)
@@ -1001,8 +762,8 @@ export class JDBus extends JDNode {
         if (enabled) {
             if (!this._debouncedScanFirmwares) {
                 this._debouncedScanFirmwares = debounceAsync(async () => {
-                    if (this.connected) {
-                        this.log("info", `scanning firmwares`)
+                    if (this._transports.some(tr => tr.connected)) {
+                        console.info(`scanning firmwares`)
                         await scanFirmwares(this)
                     }
                 }, SCAN_FIRMWARE_INTERVAL)
@@ -1010,7 +771,7 @@ export class JDBus extends JDNode {
             }
         } else {
             if (this._debouncedScanFirmwares) {
-                this.log("debug", `disabling background firmware scans`)
+                console.debug(`disabling background firmware scans`)
                 const d = this._debouncedScanFirmwares
                 this._debouncedScanFirmwares = undefined
                 this.off(DEVICE_ANNOUNCE, d)
@@ -1032,7 +793,7 @@ export class JDBus extends JDNode {
 
     private gcDevices() {
         if (this.devicesFrozen) {
-            this.log("debug", "devices frozen")
+            console.debug("devices frozen")
             return
         }
 
@@ -1268,7 +1029,7 @@ export class JDBus extends JDNode {
             const tid = setTimeout(() => {
                 if (!done) {
                     done = true
-                    if (!this.connected) {
+                    if (!this._transports.some(tr => tr.connected)) {
                         // the bus got disconnected so all operation will
                         // time out going further
                         this.emit(TIMEOUT_DISCONNECT)

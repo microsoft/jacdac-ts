@@ -36,7 +36,7 @@ import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
 
 export class JDService extends JDNode {
-    private _role: string;
+    private _role: string
     private _registers: JDRegister[]
     private _events: JDEvent[]
     private _reports: Packet[] = []
@@ -98,12 +98,12 @@ export class JDService extends JDNode {
     }
 
     get role(): string {
-        return this._role;
+        return this._role
     }
 
     set role(value: string) {
         if (value !== this._role) {
-            this._role = value;
+            this._role = value
             this.emit(ROLE_CHANGE)
             this.emit(CHANGE)
         }
@@ -204,9 +204,11 @@ export class JDService extends JDNode {
                     pkt => isRegister(pkt) && pkt.identifier === registerCode
                 )
             ) {
-                if (Flags.diagnostics &&  !isOptionalReadingRegisterCode(registerCode))
-                    this.log(
-                        `debug`,
+                if (
+                    Flags.diagnostics &&
+                    !isOptionalReadingRegisterCode(registerCode)
+                )
+                    console.debug(
                         `attempting to access register ${
                             SystemReg[registerCode] ||
                             `0x${registerCode.toString(16)}`
@@ -233,8 +235,7 @@ export class JDService extends JDNode {
                 )
             ) {
                 if (Flags.diagnostics)
-                    this.log(
-                        `debug`,
+                    console.debug(
                         `attempting to access event ${
                             SystemEvent[eventCode] ||
                             `0x${eventCode.toString(16)}`
