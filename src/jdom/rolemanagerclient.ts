@@ -140,7 +140,7 @@ export class RoleManagerClient extends JDServiceClient {
 
     async setRole(service: JDService, role: string) {
         const { device, serviceIndex } = service;
-        this.log(`set role ${device}:${serviceIndex} to ${role}`)
+        console.debug(`set role ${device}:${serviceIndex} to ${role}`)
         const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [fromHex(device.deviceId), serviceIndex, role || ""]);
         await this.service.sendPacketAsync(Packet.from(RoleManagerCmd.SetRole, data), true)
     }

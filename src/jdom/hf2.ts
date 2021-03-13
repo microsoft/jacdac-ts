@@ -149,7 +149,7 @@ export class Transport {
     disconnectAsync(): Promise<void> {
         this.ready = false
         if (!this.dev) return Promise.resolve()
-        this.log("close device")
+        console.debug("close device")
         return this.dev
             .close()
             .catch(e => {
@@ -206,7 +206,7 @@ export class Transport {
     private async readLoop() {
         if (this.rawMode || this.readLoopStarted) return
         this.readLoopStarted = true
-        this.log("start read loop")
+        console.debug("start read loop")
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -273,7 +273,7 @@ export class Transport {
         this.iface = undefined
         this.altIface = undefined
         if (!this.dev) return false
-        this.log(
+        console.debug(
             "connect device: " +
                 this.dev.manufacturerName +
                 " " +
@@ -362,9 +362,9 @@ export class Transport {
             assert(this.epIn.packetSize == 64)
             assert(this.epOut.packetSize == 64)
         }
-        this.log("claim interface")
+        console.debug("claim interface")
         await this.dev.claimInterface(this.iface.interfaceNumber)
-        this.log("all connected")
+        console.debug("all connected")
         this.ready = true
         this.readLoop()
     }

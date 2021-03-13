@@ -42,7 +42,6 @@ import {
     TIMEOUT,
     LATE,
     PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT,
     REPORT_UPDATE,
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
@@ -55,9 +54,10 @@ import {
     REFRESH,
     EVENT,
     ROLE_MANAGER_CHANGE,
+    TIMEOUT_DISCONNECT,
 } from "./constants"
 import { serviceClass } from "./pretty"
-import { JDNode, Log, LogLevel } from "./node"
+import { JDNode } from "./node"
 import {
     FirmwareBlob,
     scanFirmwares,
@@ -90,10 +90,6 @@ export interface BusOptions {
     deviceId?: string
 
     parentOrigin?: string
-}
-
-export interface BusHost {
-    log?: Log
 }
 
 export interface Error {

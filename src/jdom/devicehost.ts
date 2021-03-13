@@ -45,10 +45,6 @@ export default class DeviceHost extends JDEventSource {
         this.on(REFRESH, this.refreshRegisters.bind(this));
     }
 
-    protected log(msg: any) {
-        console.log(`${this.shortId}: ${msg}`);
-    }
-
     get bus() {
         return this._bus;
     }
@@ -68,7 +64,7 @@ export default class DeviceHost extends JDEventSource {
         this._packetCount = 0;
         this._bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce);
         this._bus.on([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        this.log(`start host`)
+        console.debug(`start host`)
     }
 
     private stop() {
@@ -78,7 +74,7 @@ export default class DeviceHost extends JDEventSource {
 
         this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce);
         this._bus.off([PACKET_PROCESS, PACKET_SEND], this.handlePacket)
-        this.log(`stop host`)
+        console.debug(`stop host`)
         this._bus = undefined;
     }
 

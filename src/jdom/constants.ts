@@ -123,6 +123,7 @@ export const REPORT_UPDATE = 'reportUpdate'
 
 export const ERROR = 'error'
 export const TIMEOUT = 'timeout'
+export const TIMEOUT_DISCONNECT = 'timeoutDisconnect'
 
 export const PROGRESS = 'progress'
 
