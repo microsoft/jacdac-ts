@@ -59,7 +59,8 @@ export class QualityOfService extends JDEventSource {
         this.emit(CHANGE);
     }
 
-    processPacket() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    processPacket(pkt: Packet) {
         this._receivedPackets++;
     }
 }
