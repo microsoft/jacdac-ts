@@ -1,9 +1,9 @@
 import Packet from "./packet"
 import Flags from "./flags"
 import {
-    BLE_TRANSPORT,
     BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC,
     BLUETOOTH_JACDAC_SERVICE,
+    BLUETOOTH_TRANSPORT,
 } from "./constants"
 import { JDTransport } from "./transport"
 
@@ -56,7 +56,7 @@ class BluetoothTransport extends JDTransport {
     private _characteristic: BluetoothRemoteGATTCharacteristic
 
     constructor() {
-        super(BLE_TRANSPORT)
+        super(BLUETOOTH_TRANSPORT)
 
         this.handleDisconnected = this.handleDisconnected.bind(this)
         this.handleCharacteristicChanged = this.handleCharacteristicChanged.bind(
@@ -145,7 +145,7 @@ class BluetoothTransport extends JDTransport {
     private handleCharacteristicChanged() {
         const data = new Uint8Array(this._characteristic.value.buffer)
         const pkt = Packet.fromBinary(data, this.bus.timestamp)
-        pkt.sender = BLE_TRANSPORT
+        pkt.sender = BLUETOOTH_TRANSPORT
         this.bus.processPacket(pkt)
     }
 }

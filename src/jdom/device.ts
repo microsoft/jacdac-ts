@@ -2,7 +2,7 @@ import Packet from "./packet"
 import {
     JD_SERVICE_INDEX_CTRL, DEVICE_ANNOUNCE, DEVICE_CHANGE, ANNOUNCE, DISCONNECT, JD_ADVERTISEMENT_0_COUNTER_MASK, DEVICE_RESTART, RESTART, CHANGE,
     PACKET_RECEIVE, PACKET_REPORT, PACKET_EVENT, FIRMWARE_INFO, DEVICE_FIRMWARE_INFO, ControlCmd, DEVICE_NODE_NAME, LOST,
-    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUNCE
+    DEVICE_LOST, DEVICE_FOUND, FOUND, JD_SERVICE_INDEX_CRC_ACK, ACK_MIN_DELAY, ACK_MAX_DELAY, ControlReg, USB_TRANSPORT, PACKETIO_TRANSPORT, META_ACK_FAILED, ControlAnnounceFlags, IDENTIFY_DURATION, PACKET_ANNOUNCE, BLUETOOTH_TRANSPORT
 } from "./constants"
 import { read32, SMap, bufferEq, assert, setAckError, delay } from "./utils"
 import { getNumber, NumberFormat } from "./buffer";
@@ -59,7 +59,7 @@ export class QualityOfService extends JDEventSource {
         this.emit(CHANGE);
     }
 
-    processPacket(pkt: Packet) {
+    processPacket() {
         this._receivedPackets++;
     }
 }
@@ -105,7 +105,7 @@ export class JDDevice extends JDNode {
      * Indicates if the devices is a physical device, not emulated.
      */
     get physical() {
-        return this._source === USB_TRANSPORT || this._source === PACKETIO_TRANSPORT;
+        return this._source === USB_TRANSPORT || this._source === BLUETOOTH_TRANSPORT || this._source === PACKETIO_TRANSPORT;
     }
 
     /**
