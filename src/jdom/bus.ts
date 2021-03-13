@@ -413,6 +413,14 @@ export class JDBus extends JDNode {
         return !!this._safeBootInterval
     }
 
+    get connected() {
+        return this._transports.some(t => t.connected);
+    }
+
+    get disconnected() {
+        return this._transports.every(t => t.disconnected);
+    }
+
     set safeBoot(enabled: boolean) {
         if (enabled && !this._safeBootInterval) {
             this._safeBootInterval = setInterval(() => {

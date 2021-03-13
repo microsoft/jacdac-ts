@@ -47,6 +47,7 @@ export abstract class JDTransport extends JDEventSource {
                     break
             }
             this.emit(CHANGE)
+            this.bus.emit(CHANGE)
         }
     }
 

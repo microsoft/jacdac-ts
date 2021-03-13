@@ -155,8 +155,8 @@ export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
 export const STREAMING_DEFAULT_INTERVAL = 50
 
-export const USB_TRANSPORT = "usb"
-export const BLE_TRANSPORT = "ble"
+export const USB_TRANSPORT = "USB"
+export const BLE_TRANSPORT = "Bluetooth"
 export const PACKETIO_TRANSPORT = "packetio"
 
 export const META_ACK = "ACK"
