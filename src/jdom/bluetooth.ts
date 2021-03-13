@@ -151,5 +151,5 @@ class BluetoothTransport extends JDTransport {
 }
 
 export function createBluetoothTransport(): JDTransport {
-    return new BluetoothTransport({})
+    return new BluetoothTransport()
 }
