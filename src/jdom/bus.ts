@@ -333,7 +333,11 @@ export class JDBus extends JDNode {
         super()
 
         this._transports = transports.filter(tr => !!tr)
-        this._transports.forEach(tr => (tr.bus = this))
+        this._transports.forEach(tr => {
+            tr.bus = this
+            // disconnect all transprots when one starts connecting
+            tr.on(CONNECTING, () => this.preConnect(tr))
+        })
 
         this.options = this.options || {}
         if (!this.options.deviceId) {
@@ -359,11 +363,18 @@ export class JDBus extends JDNode {
         this.start()
     }
 
+    private preConnect(transport: JDTransport) {
+        return Promise.all(
+            this._transports
+                .filter(t => t !== transport)
+                .map(t => t.disconnect())
+        )
+    }
+
     async connect() {
         for (const transport of this._transports) {
             await transport.connect()
-            if (transport.connected)
-                break;
+            if (transport.connected) break
         }
     }
 
