@@ -109,6 +109,7 @@ export interface DeviceFilter {
     announced?: boolean
     ignoreSimulators?: boolean
     firmwareIdentifier?: boolean
+    physical?: boolean
 }
 export interface Role {
     deviceId: string
@@ -645,6 +646,8 @@ export class JDBus extends JDNode {
             r = r.filter(r => !this.deviceHost(r.deviceId))
         if (options?.firmwareIdentifier)
             r = r.filter(r => !!r.firmwareIdentifier)
+        if (options?.physical)
+            r = r.filter(r => !!r.physical)
         return r
     }
 
