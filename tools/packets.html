@@ -55,14 +55,14 @@
 
         async function listenWebUsb() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             log('started')
         }
 
         // replace
         async function importLog(file) {
-            await jd.disconnectAsync();
+            await jd.disconnect();
             const opts = {
                 skipRepeatedAnnounce: false,
                 showTime: true
@@ -80,7 +80,7 @@
         const connect = document.getElementById("connect");
         connect.onclick = listenWebUsb;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
         document.body.ondragover = ev => ev.preventDefault();
         document.body.ondrop = drop;
 

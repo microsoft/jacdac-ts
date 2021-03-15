@@ -51,8 +51,8 @@
 
         async function scan() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             log('started')
         }
 
@@ -89,7 +89,7 @@
         const connect = document.getElementById("connect");
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         const tftest = document.getElementById("tftest");
         tftest.onclick = () => {

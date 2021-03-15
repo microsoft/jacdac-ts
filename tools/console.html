@@ -63,15 +63,15 @@
 
         async function sniff() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             log('started')
         }
 
         const connect = document.getElementById("connect");
         connect.onclick = sniff;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         function log(msg) {
             const logDiv = document.getElementById("log");

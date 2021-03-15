@@ -71,15 +71,15 @@
 
         async function sniff() {
             console.log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             console.log('started')
         }
 
         const connect = document.getElementById("connect");
         connect.onclick = sniff;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         function slider(pkt) {
             const id = pkt.device_identifier + ":" + pkt.service_index;

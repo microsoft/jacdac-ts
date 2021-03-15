@@ -53,8 +53,8 @@
 
         async function scan() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             render()
             log('started')
         }
@@ -110,7 +110,7 @@
         const connect = document.getElementById("connect");
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         function updateConnectionState() {
             connect.classList.remove('active');

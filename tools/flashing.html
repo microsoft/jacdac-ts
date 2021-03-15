@@ -73,8 +73,8 @@
                 return
 
             if (!jd.connected) {
-                await jd.disconnectAsync()
-                await jd.connectAsync()
+                await jd.disconnect()
+                await jd.connect()
             }
 
             const fws = await jacdac.scanFirmwares(jd)
@@ -137,7 +137,7 @@
         const connect = document.getElementById("connect");
         connect.onclick = listenWebUsb;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
         document.body.ondragover = ev => ev.preventDefault();
         document.body.ondrop = drop;
 
