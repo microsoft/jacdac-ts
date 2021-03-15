@@ -41,6 +41,7 @@
     <script src="/dist/jacdac-jdom.umd.js"></script>
     <script>
         const graphs = document.getElementById("graphs");
+        const jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
         jd.on(jacdac.DEVICE_ANNOUNCE, d => {
             for (let i = 1; i < d.serviceLength; ++i) {

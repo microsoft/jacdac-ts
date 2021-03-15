@@ -48,9 +48,9 @@
     <script src="/dist/jacdac-jdom.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
+        const jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
-        jd.minConsolePriority = jacdac.ConsolePriority.Debug;
         jd.on(jacdac.DEVICE_CHANGE, d => {
             devicesDiv.innerText = jd.devices().map(d => d.toString()).join(', ')
         });
