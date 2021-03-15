@@ -67,7 +67,7 @@
                 skipRepeatedAnnounce: false,
                 showTime: true
             }
-            jd = new jacdac.JDBus()
+            jd = new jacdac.JDBus([])
             jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt, opts)))
             jd.on(jacdac.PACKET_RECEIVE_ANNOUNCE, pkt => log(jacdac.printPacket(pkt, opts)))
             const logDiv = document.getElementById("log");
