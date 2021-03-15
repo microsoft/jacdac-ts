@@ -101,15 +101,15 @@ to also run ``yarn watch`` on the side.
 yarn tools
 ```
 
-These tools are also available on the GitHub pages of this repository:
+These tools are also available on the [GitHub pages](./) of this repository:
 
-* [console](/tools/js/console.html)
-* [devices](/http://localhost:8080/tools/js/devices.html)
-* [flashing](/http://localhost:8080/tools/js/flashing.html)
-* [namer](/http://localhost:8080/tools/js/namer.html)
-* [tfite](/http://localhost:8080/tools/js/tflite.html)
-* [streaming](/http://localhost:8080/tools/js/streaming.html)
-* [streaming-rickshaw](/http://localhost:8080/tools/js/streaming-rickshaw.html)
+* [console](./tools/console.html)
+* [devices](./tools/devices.html)
+* [flashing](./tools/flashing.html)
+* [namer](./tools/namer.html)
+* [tfite](./tools/tflite.html)
+* [streaming](./tools/streaming.html)
+* [streaming-rickshaw](./tools/streaming-rickshaw.html)
 
 ### Commits create releases
 
