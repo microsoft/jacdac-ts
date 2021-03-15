@@ -416,6 +416,8 @@ class JDCommandEvaluator {
                         this._eventsComplete.shift()
                         if (this._eventsComplete.length === 0)
                             this._status = JDTestCommandStatus.Passed
+                    } else {
+                        this._status = JDTestCommandStatus.Failed
                     }
                     this._progress = `got event ${ev}; remaining = [${this._eventsComplete}]`
                 } else {
