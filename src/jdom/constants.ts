@@ -166,7 +166,9 @@ export const META_GET = "GET"
 
 export const TRACE_FILTER_HORIZON = 100
 
-export const BLUETOOTH_JACDAC_SERVICE = "f8538af2-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC = "3ec08ed9-39b5-4f55-b2df-44691a6ac952"
+export const BLUETOOTH_JACDAC_SERVICE = "f8530001-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC = "f8530002-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC = "f8530003-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC = "f8530004-a97f-49f5-a554-3e373fbea2d5"
 
 export * from "../../jacdac-spec/dist/specconstants"
