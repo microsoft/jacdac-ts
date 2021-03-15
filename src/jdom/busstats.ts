@@ -11,7 +11,7 @@ export interface BusStats {
 }
 
 export class BusStatsMonitor extends JDEventSource {
-    private readonly _prev: BusStats[] = Array(10)
+    private readonly _prev: BusStats[] = Array(4)
         .fill(0)
         .map(() => ({
             packets: 0,
