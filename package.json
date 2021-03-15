@@ -32,7 +32,8 @@
     "tools": "npx http-server . -c-1",
     "buildspecs": "cd jacdac-spec/spectool && sh build.sh && cd ../.. && cp -r jacdac-spec/services/generated/makecode/* pxt-jacdac",
     "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm=on",
-    "buildpxt": "cd pxt-jacdac && sh mk.sh"
+    "buildpxt": "cd pxt-jacdac && sh mk.sh",
+    "serve": "npx http-serve -c-1"
   },
   "devDependencies": {
     "@semantic-release/exec": "^5.0.0",

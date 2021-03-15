@@ -65,6 +65,19 @@ run
 yarn buildspecs
 ```
 
+## Vanilla tools
+
+* [console](./tools/console.html)
+* [packets](./tools/packets.html)
+
+To run locally, run
+
+```
+yarn serve
+```
+
+then go to http://127.0.0.1:8080/tools
+
 ## Unit tests
 
 We use [Mocha](https://mochajs.org/) to run the unit test suite from ``/tests``. To execute the tests,
