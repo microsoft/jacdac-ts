@@ -69,6 +69,9 @@
     "@types/w3c-web-usb": "^1.0.4",
     "@types/web-bluetooth": "^0.0.9",
     "fs-extra": "^9.1.0",
-    "regenerator-runtime": "^0.13.7"
+    "regenerator-runtime": "^0.13.7",
+    "rollup-plugin-filesize": "^9.1.1",
+    "rollup-plugin-progress": "^1.1.2",
+    "rollup-plugin-visualizer": "^4.2.0"
   }
 }

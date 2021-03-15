@@ -4,8 +4,9 @@ import sourceMaps from "rollup-plugin-sourcemaps"
 import camelCase from "lodash.camelcase"
 import typescript from "rollup-plugin-typescript2"
 import json from "rollup-plugin-json"
-
-const pkg = require("./package.json")
+import filesize from "rollup-plugin-filesize"
+import visualizer from "rollup-plugin-visualizer"
+import progress from 'rollup-plugin-progress';
 
 export default [
     { libraryName: "jacdac-jdom", dir: "jdom" },
@@ -71,6 +72,9 @@ export default [
             resolve(),
             // Resolve source maps to the original source
             sourceMaps(),
+            progress(),
+            filesize(),
+            visualizer()
         ],
     }
 })
