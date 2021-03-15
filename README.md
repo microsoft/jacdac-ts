@@ -94,20 +94,22 @@ yarn buildpxt
 ### HTML Tools
 
 Launch a small web server and 
-try all the tools under ``docs/static/tools/*`` at http://localhost:8080/docs/static/tools/js/console.html . These tools load the files under ``dist`` so you'll want 
+try all the tools under ``/tools/*`` at [http://localhost:8080/tools](http://localhost:8080/tools) . These tools load the files under ``dist`` so you'll want 
 to also run ``yarn watch`` on the side.
 
 ```
 yarn tools
 ```
 
-* console http://localhost:8080/tools/js/console.html
-* devices http://localhost:8080/tools/js/devices.html
-* flashing http://localhost:8080/tools/js/flashing.html
-* namer http://localhost:8080/tools/js/namer.html
-* tfite http://localhost:8080/tools/js/tflite.html
-* streaming http://localhost:8080/tools/js/streaming.html
-* streaming-rickshaw: http://localhost:8080/tools/js/streaming-rickshaw.html
+These tools are also available on the GitHub pages of this repository:
+
+* [console](/tools/js/console.html)
+* [devices](/http://localhost:8080/tools/js/devices.html)
+* [flashing](/http://localhost:8080/tools/js/flashing.html)
+* [namer](/http://localhost:8080/tools/js/namer.html)
+* [tfite](/http://localhost:8080/tools/js/tflite.html)
+* [streaming](/http://localhost:8080/tools/js/streaming.html)
+* [streaming-rickshaw](/http://localhost:8080/tools/js/streaming-rickshaw.html)
 
 ### Commits create releases
 
