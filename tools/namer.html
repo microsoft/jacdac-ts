@@ -39,7 +39,7 @@
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
-        jacdac = jacdacJdom;
+        const jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
 
         jd.on(jacdac.DEVICE_ANNOUNCE, render)
