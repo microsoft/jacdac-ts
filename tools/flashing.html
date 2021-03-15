@@ -98,10 +98,9 @@
                     line.appendChild(btn)
                     btn.onclick = async () => {
                         flashing = true
-                        blob.updateCandidates = [fw]
                         btn.innerText = "Flashing..."
                         try {
-                            await jacdac.flashFirmwareBlob(jd, blob, prog => {
+                            await jacdac.flashFirmwareBlob(jd, blob, [fw], prog => {
                                 btn.innerText = Math.round(prog) + "% done"
                             })
                         } catch (e) {
