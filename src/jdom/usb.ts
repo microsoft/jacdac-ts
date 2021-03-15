@@ -6,6 +6,7 @@ import { delay } from "./utils"
 import Flags from "./flags"
 import { USB_TRANSPORT } from "./constants"
 import { ConnectionState, JDTransport } from "./transport"
+import { JDBus } from "./bus"
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
@@ -126,4 +127,8 @@ export function createUSBTransport(options?: USBOptions): JDTransport {
         }
     }
     return options && new USBTransport(options)
+}
+
+export function createUSBBus(options?: USBOptions) {
+    return new JDBus([createUSBTransport(options)])
 }
