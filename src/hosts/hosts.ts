@@ -1219,6 +1219,18 @@ const _hosts: {
         ],
     },
     {
+        name: "Arcade controller (6 x buttons)",
+        serviceClasses: [SRV_BUTTON],
+        services: () => [
+            new ButtonServiceHost("Left"),
+            new ButtonServiceHost("Up"),
+            new ButtonServiceHost("Right"),
+            new ButtonServiceHost("Down"),
+            new ButtonServiceHost("A"),
+            new ButtonServiceHost("B")
+        ]
+    },
+    {
         name: "micro:bit v2",
         serviceClasses: [
             SRV_LED_MATRIX,
