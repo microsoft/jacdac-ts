@@ -1,5 +1,6 @@
 import Packet from "./packet"
 import Flags from "./flags"
+import { bufferConcat } from "./utils"
 import {
     BLUETOOTH_JACDAC_TX_CHARACTERISTIC,
     BLUETOOTH_JACDAC_RX_CHARACTERISTIC,
@@ -57,6 +58,8 @@ class BluetoothTransport extends JDTransport {
     private _service: BluetoothRemoteGATTService
     private _rxCharacteristic: BluetoothRemoteGATTCharacteristic
     private _txCharacteristic: BluetoothRemoteGATTCharacteristic
+    private _rxBuffer: Uint8Array
+    private _rxTotalSize: number
 
     constructor() {
         super(BLUETOOTH_TRANSPORT)
@@ -120,6 +123,7 @@ class BluetoothTransport extends JDTransport {
         }
 
         const data = p.toBuffer()
+        console.log(`send: ${p}`);
         this._txCharacteristic.writeValueWithoutResponse(data)
     }
 
@@ -143,6 +147,7 @@ class BluetoothTransport extends JDTransport {
             this._service = undefined
             this._server = undefined
             this._device = undefined
+            this._rxBuffer = undefined;
         }
     }
 
@@ -153,9 +158,28 @@ class BluetoothTransport extends JDTransport {
 
     private handleCharacteristicChanged() {
         const data = new Uint8Array(this._rxCharacteristic.value.buffer)
-        const pkt = Packet.fromBinary(data, this.bus.timestamp)
-        pkt.sender = BLUETOOTH_TRANSPORT
-        this.bus.processPacket(pkt)
+        console.log(`received length ${data.length}`)
+        if (!this._rxBuffer)
+        {
+            this._rxBuffer = data
+            const frame_len = data[2] || 0
+            this._rxTotalSize = frame_len + 12;
+            console.log(`first dp ${this._rxTotalSize}` )
+        }
+        else
+        {
+            console.log(`notf dp rx buffer length ${this._rxBuffer.length}, expected size ${this._rxTotalSize}`)
+            this._rxBuffer = bufferConcat(this._rxBuffer, data);
+        }
+
+        if (this._rxBuffer.length >= this._rxTotalSize)
+        {
+            const pkt = Packet.fromBinary(this._rxBuffer, this.bus.timestamp)
+            pkt.sender = BLUETOOTH_TRANSPORT
+            this.bus.processPacket(pkt)
+            this._rxBuffer = undefined;
+            this._rxTotalSize = 0;
+        }
     }
 }
 
