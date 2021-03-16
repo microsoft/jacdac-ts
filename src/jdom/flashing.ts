@@ -211,7 +211,7 @@ class FlashClient {
             }
 
             if (this.numPending() == 0) {
-                log(`page ${pageAddr & 0xffffff} done, ${BL_RETRIES} retries`)
+                log(`page ${pageAddr & 0xffffff} done, ${i}/${BL_RETRIES} retries`)
                 return
             }
         }
