@@ -69,7 +69,6 @@ import {
     SRV_RNG,
     SRV_COMPASS,
     SRV_THERMOCOUPLE,
-    ThermometerReg,
     ThermocoupleVariant,
     SRV_GYROSCOPE,
     SoundLevelReg,
@@ -103,7 +102,7 @@ import SpeechSynthesisServiceHost from "./speechsynthesisservicehost"
 import SwitchServiceHost from "./switchservicehost"
 import TrafficLightServiceHost from "./trafficlightservicehost"
 import LEDServiceHost from "./ledservicehost"
-import { fromHex, uniqueName } from "../jdom/utils"
+import { fromHex } from "../jdom/utils"
 import SoundPlayerServiceHost, {
     SoundPlayerSound,
 } from "./soundplayerservicehost"
