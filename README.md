@@ -101,15 +101,15 @@ to also run ``yarn watch`` on the side.
 yarn tools
 ```
 
-These tools are also available on the [GitHub pages](./) of this repository:
+These tools are also available on the [GitHub pages](https://microsoft.github.io/jacdac-ts/) of this repository:
 
-* [console](./tools/console.html)
-* [devices](./tools/devices.html)
-* [flashing](./tools/flashing.html)
-* [namer](./tools/namer.html)
-* [tfite](./tools/tflite.html)
-* [streaming](./tools/streaming.html)
-* [streaming-rickshaw](./tools/streaming-rickshaw.html)
+* [console](https://microsoft.github.io/jacdac-ts/tools/console.html)
+* [devices](https://microsoft.github.io/jacdac-ts/tools/devices.html)
+* [flashing](https://microsoft.github.io/jacdac-ts/tools/flashing.html)
+* [namer](https://microsoft.github.io/jacdac-ts/tools/namer.html)
+* [tfite](https://microsoft.github.io/jacdac-ts/tools/tflite.html)
+* [streaming](https://microsoft.github.io/jacdac-ts/tools/streaming.html)
+* [streaming-rickshaw](https://microsoft.github.io/jacdac-ts/tools/streaming-rickshaw.html)
 
 ### Commits create releases
 
