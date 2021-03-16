@@ -123,8 +123,18 @@ class BluetoothTransport extends JDTransport {
         }
 
         const data = p.toBuffer()
+
+        const length = data.length;
+
+        let sent = 0;
+        while(sent < length) {
+            let n = Math.min(20, length - sent)
+            this._txCharacteristic.writeValueWithoutResponse(data.slice(sent, sent + n))
+            sent += n
+        }
+        
         console.log(`send: ${p}`);
-        this._txCharacteristic.writeValueWithoutResponse(data)
+        
     }
 
     protected async transportDisconnectAsync() {
