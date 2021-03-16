@@ -15,7 +15,6 @@ import {
     PACKET_SEND,
     ERROR,
     CONNECTING,
-    CONNECT,
     DISCONNECT,
     DEVICE_CONNECT,
     DEVICE_DISCONNECT,
@@ -24,8 +23,6 @@ import {
     PACKET_EVENT,
     PACKET_REPORT,
     PACKET_PROCESS,
-    CONNECTION_STATE,
-    DISCONNECTING,
     DEVICE_CHANGE,
     CHANGE,
     FIRMWARE_BLOBS_CHANGE,
@@ -41,7 +38,6 @@ import {
     SELF_ANNOUNCE,
     TIMEOUT,
     LATE,
-    PACKET_SEND_DISCONNECT,
     REPORT_UPDATE,
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
@@ -55,6 +51,7 @@ import {
     EVENT,
     ROLE_MANAGER_CHANGE,
     TIMEOUT_DISCONNECT,
+    REGISTER_POLL_STREAMING_INTERVAL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -79,7 +76,6 @@ import {
 } from "../../src/jdom/constants"
 import DeviceHost from "./devicehost"
 import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
-import { JDEventSource } from "./eventsource"
 import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdpack, jdunpack } from "./pack"
@@ -646,8 +642,7 @@ export class JDBus extends JDNode {
             r = r.filter(r => !this.deviceHost(r.deviceId))
         if (options?.firmwareIdentifier)
             r = r.filter(r => !!r.firmwareIdentifier)
-        if (options?.physical)
-            r = r.filter(r => !!r.physical)
+        if (options?.physical) r = r.filter(r => !!r.physical)
         return r
     }
 
@@ -974,7 +969,13 @@ export class JDBus extends JDNode {
                         SensorReg.StreamingPreferredInterval
                     )
                     interval = preferredInterval?.intValue
-                    if (intervalRegister)
+                    // if no interval, poll interval value
+                    if (
+                        interval === undefined &&
+                        intervalRegister &&
+                        intervalRegister.lastGetTimestamp - this.timestamp >
+                            REGISTER_POLL_STREAMING_INTERVAL
+                    )
                         // all async
                         intervalRegister.sendGetAsync()
                 }
