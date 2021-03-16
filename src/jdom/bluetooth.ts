@@ -55,8 +55,8 @@ class BluetoothTransport extends JDTransport {
     private _device: BluetoothDevice
     private _server: BluetoothRemoteGATTServer
     private _service: BluetoothRemoteGATTService
-    private _rx_characteristic: BluetoothRemoteGATTCharacteristic
-    private _tx_characteristic: BluetoothRemoteGATTCharacteristic
+    private _rxCharacteristic: BluetoothRemoteGATTCharacteristic
+    private _txCharacteristic: BluetoothRemoteGATTCharacteristic
 
     constructor() {
         super(BLUETOOTH_TRANSPORT)
@@ -95,33 +95,32 @@ class BluetoothTransport extends JDTransport {
         this._service = await this._server.getPrimaryService(
             BLUETOOTH_JACDAC_SERVICE
         )
-        console.log(`${BLUETOOTH_JACDAC_RX_CHARACTERISTIC}, ${this._service}`)
         // connect to characteristic
-        this._rx_characteristic = await this._service.getCharacteristic(
+        this._rxCharacteristic = await this._service.getCharacteristic(
             BLUETOOTH_JACDAC_RX_CHARACTERISTIC
         )
 
-        this._tx_characteristic = await this._service.getCharacteristic(
+        this._txCharacteristic = await this._service.getCharacteristic(
             BLUETOOTH_JACDAC_TX_CHARACTERISTIC
         )
         // listen for incoming packet
-        this._rx_characteristic.addEventListener(
+        this._rxCharacteristic.addEventListener(
             "characteristicvaluechanged",
             this.handleCharacteristicChanged,
             false
         )
         // start listening
-        await this._rx_characteristic.startNotifications()
+        await this._rxCharacteristic.startNotifications()
     }
 
     protected async transportSendPacketAsync(p: Packet) {
-        if (!this._tx_characteristic) {
+        if (!this._txCharacteristic) {
             console.debug(`trying to send Bluetooth packet while disconnected`)
             return
         }
 
         const data = p.toBuffer()
-        this._tx_characteristic.writeValueWithoutResponse(data)
+        this._txCharacteristic.writeValueWithoutResponse(data)
     }
 
     protected async transportDisconnectAsync() {
@@ -129,7 +128,7 @@ class BluetoothTransport extends JDTransport {
 
         console.debug(`ble: disconnecting`)
         try {
-            this._rx_characteristic?.removeEventListener(
+            this._rxCharacteristic?.removeEventListener(
                 "characteristicvaluechanged",
                 this.handleCharacteristicChanged
             )
@@ -139,7 +138,8 @@ class BluetoothTransport extends JDTransport {
             )
             this._server.disconnect()
         } finally {
-            this._rx_characteristic = undefined
+            this._rxCharacteristic = undefined
+            this._txCharacteristic = undefined
             this._service = undefined
             this._server = undefined
             this._device = undefined
@@ -152,7 +152,7 @@ class BluetoothTransport extends JDTransport {
     }
 
     private handleCharacteristicChanged() {
-        const data = new Uint8Array(this._rx_characteristic.value.buffer)
+        const data = new Uint8Array(this._rxCharacteristic.value.buffer)
         const pkt = Packet.fromBinary(data, this.bus.timestamp)
         pkt.sender = BLUETOOTH_TRANSPORT
         this.bus.processPacket(pkt)
