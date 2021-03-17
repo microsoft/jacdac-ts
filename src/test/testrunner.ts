@@ -11,6 +11,7 @@ import { JDRegister } from "../jdom/register"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { isEvent, isRegister, serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import { assert } from "../jdom/utils"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -126,6 +127,10 @@ class JDExprEvaluator {
                 this.visitExpression(be.right)
                 const right = this.exprStack.pop()
                 const left = this.exprStack.pop()
+                assert(right && left)
+                console.log(right)
+                console.log(left)
+                console.log(be.operator)
                 switch (be.operator) {
                     case "+":
                         this.exprStack.push(left + right)
@@ -357,7 +362,7 @@ class JDCommandEvaluator {
                 const amtSaved = this._startExpressions.find(r => r.e === amt)
                 const regValue = this.env[unparse(reg)]
                 if (testFun.id === "increasesBy") {
-                    if (regValue === regSaved.v + amtSaved.v) {
+                    if (regValue >= regSaved.v + amtSaved.v) {
                         this._status = JDTestCommandStatus.Passed
                     } else if (
                         regValue >= regSaved.v &&
@@ -369,7 +374,7 @@ class JDCommandEvaluator {
                         this._status = JDTestCommandStatus.Active
                     }
                 } else {
-                    if (regValue === regSaved.v - amtSaved.v) {
+                    if (regValue <= regSaved.v - amtSaved.v) {
                         this._status = JDTestCommandStatus.Passed
                         this._progress = "completed"
                     } else if (
@@ -635,11 +640,13 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
+// TODO: what is the type of the register
+// TODO: if fixed point, then we should expect noise
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
     private registers: SMap<JDRegister> = {}
     private events: SMap<JDEvent> = {}
-    private environment: SMap<number> = {}
+    private environment: SMap<any> = {}
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -675,10 +682,10 @@ export class JDServiceTestRunner extends JDServiceClient {
                     )
                     const register = service.register(pkt.identifier)
                     this.registers[regName] = register
-                    this.environment[regName] = register.intValue
+                    this.environment[regName] = register.unpackedValue ? register.unpackedValue[0] : register.intValue
                     this.mount(
                         register.subscribe(CHANGE, () => {
-                            this.environment[regName] = register.intValue
+                            this.environment[regName] = register.unpackedValue ? register.unpackedValue[0] : register.intValue
                             this.currentTest?.envChange()
                         })
                     )
