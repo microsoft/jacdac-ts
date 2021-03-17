@@ -3,7 +3,7 @@ import { jdpack, jdunpack } from "./pack";
 import Packet from "./packet";
 import { bufferEq, isSet, pick } from "./utils";
 import { JDEventSource } from "./eventsource";
-import { CHANGE, CMD_GET_REG, REPORT_RECEIVE } from "./constants";
+import { CHANGE, CMD_GET_REG, REGISTER_PRE_GET, REPORT_RECEIVE } from "./constants";
 import { isRegister } from "./spec";
 
 function defaultFieldPayload(specification: jdspec.PacketMember) {
@@ -114,6 +114,8 @@ export default class RegisterHost<TValues extends any[]> extends JDEventSource {
     }
 
     async sendGetAsync() {
+        this.emit(REGISTER_PRE_GET)
+
         let d = this.data;
         if (!d)
             return;
