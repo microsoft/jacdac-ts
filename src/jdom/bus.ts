@@ -52,6 +52,7 @@ import {
     ROLE_MANAGER_CHANGE,
     TIMEOUT_DISCONNECT,
     REGISTER_POLL_STREAMING_INTERVAL,
+    ROLE_MANAGER_POLL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -117,6 +118,7 @@ export interface Role {
 export class BusRoleManagerClient extends JDServiceClient {
     private _roles: Role[] = []
     private _needRefresh = true
+    private _lastRefreshAttempt = 0
 
     public readonly startRefreshRoles: () => void
 
@@ -155,7 +157,10 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     private handleSelfAnnounce() {
-        if (this._needRefresh) {
+        if (
+            this._needRefresh &&
+            this.bus.timestamp - this._lastRefreshAttempt > ROLE_MANAGER_POLL
+        ) {
             console.debug("self announce refresh")
             this.startRefreshRoles()
         }
@@ -182,6 +187,7 @@ export class BusRoleManagerClient extends JDServiceClient {
 
     private async collectRoles() {
         console.debug("query roles")
+        this._lastRefreshAttempt = this.bus.timestamp
         try {
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
