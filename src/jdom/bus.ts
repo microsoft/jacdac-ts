@@ -294,6 +294,32 @@ export class BusRoleManagerClient extends JDServiceClient {
             )
         }
     }
+
+    /*
+
+    startSimulators() {
+        if (!this.requestedRoles) return;
+
+        // collect roles that need to be bound
+        const todos = groupBy(this.requestedRoles.filter(role => !role.bound)
+            .map(role => ({
+                role, hostDefinition: hostDefinitionFromServiceClass(role.serviceClass)
+            }))
+            .filter(todo => !!todo.hostDefinition),
+            todo => todo.role.parentName || "");
+
+        // spawn devices with group of devices
+        Object.keys(todos).forEach(parentName => {
+            const todo = todos[parentName];
+            // no parent, spawn individual services
+            if (!parentName) {
+                todo.forEach(t => addHost(this.bus, t.hostDefinition.services()));
+            } else { // spawn all services into 1
+                addHost(this.bus, arrayConcatMany(todo.map(t => t.hostDefinition.services())))
+            }
+        })
+    }
+    */
 }
 
 /**
