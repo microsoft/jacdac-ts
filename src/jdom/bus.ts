@@ -786,13 +786,13 @@ export class JDBus extends JDNode {
         }
         let d = this._devices.find(d => d.deviceId == id)
         if (!d && !skipCreate) {
-            console.info(`new device ${id}`)
             if (this.devicesFrozen) {
-                console.info(`info`, `devices frozen, dropping ${id}`)
+                console.debug(`info`, `devices frozen, dropping ${id}`)
                 return undefined
             }
             d = new JDDevice(this, id)
             this._devices.push(d)
+            console.debug(`new device ${d.shortId} (${id})`)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
             this.emit(DEVICE_CONNECT, d)
