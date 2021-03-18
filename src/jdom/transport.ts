@@ -21,6 +21,8 @@ export enum ConnectionState {
 
 export abstract class JDTransport extends JDEventSource {
     public bus: JDBus
+    protected disposed = false
+
     constructor(readonly type: string) {
         super()
     }
@@ -92,6 +94,8 @@ export abstract class JDTransport extends JDEventSource {
 
     connect(background?: boolean): Promise<void> {
         console.debug(`connection ${this.type}`)
+        if (this.disposed)
+            throw new Error("attempted to connect to a disposed transport")
         // already connected
         if (this.connectionState == ConnectionState.Connected) {
             console.debug(`already connected`)
@@ -125,7 +129,11 @@ export abstract class JDTransport extends JDEventSource {
                                 old: this._connectPromise,
                                 new: p,
                             })
-                            if (!background) this.errorHandler(CONNECT, new Error("connection aborted in flight"))
+                            if (!background)
+                                this.errorHandler(
+                                    CONNECT,
+                                    new Error("connection aborted in flight")
+                                )
                         }
                     })
                     .catch(e => {
@@ -186,5 +194,9 @@ export abstract class JDTransport extends JDEventSource {
         )
         this.emit(ERROR, { context, exception })
         this.emit(CHANGE)
+    }
+
+    dispose() {
+        this.disposed = true
     }
 }

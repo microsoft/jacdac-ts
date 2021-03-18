@@ -361,7 +361,6 @@ export class JDBus extends JDNode {
     constructor(transports: JDTransport[], public options?: BusOptions) {
         super()
 
-        console.debug(`creating bus`)
         this._transports = transports.filter(tr => !!tr)
         this._transports.forEach(tr => {
             tr.bus = this
@@ -443,7 +442,8 @@ export class JDBus extends JDNode {
             )
     }
 
-    stop() {
+    async stop() {
+        await this.disconnect()
         if (this._announceInterval) {
             clearInterval(this._announceInterval)
             this._announceInterval = undefined
@@ -457,6 +457,12 @@ export class JDBus extends JDNode {
             clearInterval(this._gcInterval)
             this._gcInterval = undefined
         }
+    }
+
+    async dispose() {
+        console.debug(`${this.id}: disposing.`)
+        await this.stop()
+        this._transports.forEach(transport => transport.dispose())
     }
 
     get transports() {

@@ -120,6 +120,10 @@ export class CMSISProto implements Proto {
         return this.q.enqueue("talk", async () => {
             //console.log("TALK", cmds)
             await this.io.sendPacketAsync(new Uint8Array(cmds))
+            if (!this.io) {
+                console.debug(`micro:bit disconnected`)
+                return // disconnected
+            }
             let response = await this.recvAsync()
             if (response[0] !== cmds[0]) {
                 const msg = `Bad response for ${cmds[0]} -> ${response[0]}`

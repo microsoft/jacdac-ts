@@ -4,7 +4,7 @@ import { Observable } from "./observable"
 import { EventTargetObservable } from "./eventtargetobservable"
 import Flags from "./flags"
 import { USB_TRANSPORT } from "./constants"
-import { ConnectionState, JDTransport } from "./transport"
+import { JDTransport } from "./transport"
 import { JDBus } from "./bus"
 import { delay } from "./utils"
 export interface USBOptions {
@@ -59,28 +59,38 @@ function usbGetDevices(): Promise<USBDevice[]> {
 class USBTransport extends JDTransport {
     private hf2: Proto
 
+    private _cleanups: (() => void)[]
+
     constructor(public readonly options: USBOptions) {
         super(USB_TRANSPORT)
         console.debug(`usb transport loaded`)
-        this.options?.connectObservable?.subscribe({
-            next: async ev => {
-                console.log(
-                    `usb device event: connect, `,
-                    this.connectionState,
-                    ev
-                )
-                if (this.bus.disconnected) {
-                    await delay(500)
-                    if (this.bus.disconnected) this.connect(true)
-                }
-            },
-        })
-        this.options?.disconnectObservable?.subscribe({
-            next: () => {
-                console.debug(`usb event: disconnect`)
-                this.disconnect()
-            },
-        })
+        this._cleanups = [
+            this.options?.connectObservable?.subscribe({
+                next: async ev => {
+                    console.log(
+                        `usb device event: connect, `,
+                        this.connectionState,
+                        ev
+                    )
+                    if (this.bus.disconnected) {
+                        await delay(500)
+                        if (this.bus.disconnected) this.connect(true)
+                    }
+                },
+            })?.unsubscribe,
+            this.options?.disconnectObservable?.subscribe({
+                next: () => {
+                    console.debug(`usb event: disconnect`)
+                    this.disconnect()
+                },
+            })?.unsubscribe,
+        ].filter(c => !!c)
+    }
+
+    dispose() {
+        super.dispose()
+        this._cleanups.forEach(c => c())
+        this._cleanups = [];
     }
 
     protected async transportConnectAsync(background: boolean) {
