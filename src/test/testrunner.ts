@@ -127,10 +127,6 @@ class JDExprEvaluator {
                 this.visitExpression(be.right)
                 const right = this.exprStack.pop()
                 const left = this.exprStack.pop()
-                assert(right && left)
-                console.log(right)
-                console.log(left)
-                console.log(be.operator)
                 switch (be.operator) {
                     case "+":
                         this.exprStack.push(left + right)
