@@ -10,6 +10,8 @@ import {
 } from "./constants"
 import { JDTransport } from "./transport"
 
+const JD_BLE_FIRST_CHUNK_FLAG = 0x80
+
 export function isWebBluetoothEnabled(): boolean {
     return !!Flags.webBluetooth
 }
@@ -59,7 +61,7 @@ class BluetoothTransport extends JDTransport {
     private _rxCharacteristic: BluetoothRemoteGATTCharacteristic
     private _txCharacteristic: BluetoothRemoteGATTCharacteristic
     private _rxBuffer: Uint8Array
-    private _rxTotalSize: number
+    private _rxChunkCounter: number
 
     constructor() {
         super(BLUETOOTH_TRANSPORT)
@@ -123,18 +125,26 @@ class BluetoothTransport extends JDTransport {
         }
 
         const data = p.toBuffer()
-
         const length = data.length;
 
+        const totalChunks = Math.ceil(data.length / 18);
+        let remainingChunks = (totalChunks == 0) ? 0 : totalChunks - 1;
         let sent = 0;
         while(sent < length) {
-            let n = Math.min(20, length - sent)
-            this._txCharacteristic.writeValueWithoutResponse(data.slice(sent, sent + n))
+            let n = Math.min(18, length - sent)
+            const chunk = data.slice(sent, sent + n)
+            let header = new Uint8Array(2);
+            header[0] =  (totalChunks & 0x7f);
+
+            if (sent == 0)
+                header[0] |= JD_BLE_FIRST_CHUNK_FLAG 
+
+            header[1] = remainingChunks;
+            this._txCharacteristic.writeValueWithoutResponse(bufferConcat(header, chunk))
             sent += n
+            remainingChunks = (remainingChunks == 0 ? 0 : remainingChunks - 1);
+            console.log(`chunk: ${chunk.toString()} [${remainingChunks} chunks remaining]`);
         }
-        
-        console.log(`send: ${p}`);
-        
     }
 
     protected async transportDisconnectAsync() {
@@ -168,27 +178,32 @@ class BluetoothTransport extends JDTransport {
 
     private handleCharacteristicChanged() {
         const data = new Uint8Array(this._rxCharacteristic.value.buffer)
+        const packetData = data.slice(2)
         console.log(`received length ${data.length}`)
-        if (!this._rxBuffer)
-        {
-            this._rxBuffer = data
-            const frame_len = data[2] || 0
-            this._rxTotalSize = frame_len + 12;
-            console.log(`first dp ${this._rxTotalSize}` )
-        }
-        else
-        {
-            console.log(`notf dp rx buffer length ${this._rxBuffer.length}, expected size ${this._rxTotalSize}`)
-            this._rxBuffer = bufferConcat(this._rxBuffer, data);
+
+        if (data[0] & JD_BLE_FIRST_CHUNK_FLAG) {
+            if (this._rxBuffer)
+                console.error(`Dropped buffer. Chunks remaining: ${this._rxChunkCounter}`)
+            this._rxBuffer = new Uint8Array();
+            this._rxChunkCounter = data[0] & 0x7f;
+            console.log(`Initial chunk counter: ${this._rxChunkCounter}`)
         }
 
-        if (this._rxBuffer.length >= this._rxTotalSize)
-        {
+        this._rxChunkCounter = (this._rxChunkCounter == 0) ? 0 : this._rxChunkCounter - 1;
+        console.log(`after modification chunk counter: ${this._rxChunkCounter}`)
+        
+        if ((data[1]) !== this._rxChunkCounter)
+            console.error(`Data out of order. Expected chunk: ${this._rxChunkCounter} Got chunk: ${data[1]}`);
+        else
+            this._rxBuffer = bufferConcat(this._rxBuffer, packetData);
+
+        if (this._rxChunkCounter == 0) {
             const pkt = Packet.fromBinary(this._rxBuffer, this.bus.timestamp)
+            console.log(`processed packet ${pkt}`)
             pkt.sender = BLUETOOTH_TRANSPORT
             this.bus.processPacket(pkt)
             this._rxBuffer = undefined;
-            this._rxTotalSize = 0;
+            this._rxChunkCounter = 0;
         }
     }
 }
