@@ -170,22 +170,27 @@ const microServo360Options = {
 const windDirectionOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
     readingError: [5],
+    streamingInterval: 1000,
 }
 const windSpeedOptions: AnalogSensorServiceHostOptions = {
     readingValues: [0],
     readingError: [0.5],
+    streamingInterval: 1000,
     registerValues: [{ code: WindSpeedReg.MaxWindSpeed, values: [55] }],
 }
 const eCO2Options: AnalogSensorServiceHostOptions = {
     readingValues: [4000],
+    streamingInterval: 1000,
     variant: ECO2Variant.VOC,
 }
 const CO2Options: AnalogSensorServiceHostOptions = {
     readingValues: [4000],
+    streamingInterval: 1000,
     variant: ECO2Variant.NDIR,
 }
 const tvocOptions: AnalogSensorServiceHostOptions = {
     readingValues: [500],
+    streamingInterval: 1000,
 }
 
 const microbitSounds: SoundPlayerSound[] = [
@@ -477,6 +482,7 @@ const _hosts: {
         services: () => [
             new AnalogSensorServiceHost(SRV_HEART_RATE, {
                 readingValues: [80],
+                streamingInterval: 100,
                 variant: HeartRateVariant.Finger,
             }),
         ],
@@ -796,7 +802,10 @@ const _hosts: {
         name: "motion",
         serviceClasses: [SRV_MOTION],
         services: () => [
-            new SensorServiceHost(SRV_MOTION, { readingValues: [false] }),
+            new SensorServiceHost(SRV_MOTION, {
+                readingValues: [false],
+                streamingInterval: 1000,
+            }),
         ],
     },
     {
@@ -815,6 +824,7 @@ const _hosts: {
         services: () => [
             new SensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
                 readingValues: [98],
+                streamingInterval: 1000,
             }),
         ],
     },
@@ -824,9 +834,11 @@ const _hosts: {
         services: () => [
             new SensorServiceHost<[number]>(SRV_PULSE_OXIMETER, {
                 readingValues: [98],
+                streamingInterval: 1000,
             }),
             new AnalogSensorServiceHost(SRV_HEART_RATE, {
                 readingValues: [80],
+                streamingInterval: 1000,
                 variant: HeartRateVariant.Finger,
             }),
         ],
@@ -972,6 +984,7 @@ const _hosts: {
         services: () => [
             new AnalogSensorServiceHost(SRV_SOIL_MOISTURE, {
                 readingValues: [0.5],
+                streamingInterval: 1000,
             }),
         ],
     },
@@ -1102,7 +1115,10 @@ const _hosts: {
         name: "UV index",
         serviceClasses: [SRV_UV_INDEX],
         services: () => [
-            new AnalogSensorServiceHost(SRV_UV_INDEX, { readingValues: [5] }),
+            new AnalogSensorServiceHost(SRV_UV_INDEX, {
+                readingValues: [5],
+                streamingInterval: 1000,
+            }),
         ],
     },
     {
@@ -1111,6 +1127,7 @@ const _hosts: {
         services: () => [
             new AnalogSensorServiceHost(SRV_WATER_LEVEL, {
                 readingValues: [0.5],
+                streamingInterval: 1000,
             }),
         ],
     },
@@ -1227,8 +1244,8 @@ const _hosts: {
             new ButtonServiceHost("Right"),
             new ButtonServiceHost("Down"),
             new ButtonServiceHost("A"),
-            new ButtonServiceHost("B")
-        ]
+            new ButtonServiceHost("B"),
+        ],
     },
     {
         name: "micro:bit v2",
