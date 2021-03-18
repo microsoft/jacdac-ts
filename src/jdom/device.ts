@@ -284,11 +284,11 @@ export class JDDevice extends JDNode {
     }
 
 
-    services(options?: { 
-        serviceIndex?: number, 
-        serviceName?: string, 
-        serviceClass?: number, 
-        specification?: boolean 
+    services(options?: {
+        serviceIndex?: number,
+        serviceName?: string,
+        serviceClass?: number,
+        specification?: boolean
     }): JDService[] {
         if (!this.announced) return [];
 
@@ -315,7 +315,7 @@ export class JDDevice extends JDNode {
         return this.services();
     }
 
-    sendCtrlCommand(cmd: number, payload: Buffer = null) {
+    sendCtrlCommand(cmd: number, payload: Uint8Array = null) {
         const pkt = !payload ? Packet.onlyHeader(cmd) : Packet.from(cmd, payload)
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         return pkt.sendCmdAsync(this)
