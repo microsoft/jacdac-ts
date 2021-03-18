@@ -2,11 +2,11 @@ import { Transport, Proto } from "./hf2"
 import Packet from "./packet"
 import { Observable } from "./observable"
 import { EventTargetObservable } from "./eventtargetobservable"
-import { delay } from "./utils"
 import Flags from "./flags"
 import { USB_TRANSPORT } from "./constants"
 import { ConnectionState, JDTransport } from "./transport"
 import { JDBus } from "./bus"
+import { delay } from "./utils"
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
@@ -61,7 +61,6 @@ class USBTransport extends JDTransport {
 
     constructor(public readonly options: USBOptions) {
         super(USB_TRANSPORT)
-
         this.options?.connectObservable?.subscribe({
             next: ev => {
                 console.log(
@@ -86,6 +85,7 @@ class USBTransport extends JDTransport {
             this.disconnect()
         }
         const onJDMessage = (buf: Uint8Array) => {
+            if (!this.hf2) console.warn("hf2: receiving on disconnected hf2")
             const pkts = Packet.fromFrame(buf, this.bus.timestamp)
             for (const pkt of pkts) {
                 pkt.sender = USB_TRANSPORT

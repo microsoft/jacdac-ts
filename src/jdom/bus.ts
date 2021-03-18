@@ -365,7 +365,7 @@ export class JDBus extends JDNode {
         this._transports.forEach(tr => {
             tr.bus = this
             // disconnect all transprots when one starts connecting
-            tr.on(CONNECTING, () => this.preConnect(tr))
+            tr.bus.on(CONNECTING, () => this.preConnect(tr))
         })
 
         this.options = this.options || {}
@@ -393,6 +393,7 @@ export class JDBus extends JDNode {
     }
 
     private preConnect(transport: JDTransport) {
+        console.debug(`preconnect ${transport.type}`, { transport })
         return Promise.all(
             this._transports
                 .filter(t => t !== transport)
@@ -400,9 +401,19 @@ export class JDBus extends JDNode {
         )
     }
 
-    async connect() {
+    async connect(background?: boolean) {
+        if (this.connected) return
+
+        console.debug(`bus: connect start`, { background })
         for (const transport of this._transports) {
-            await transport.connect()
+            // start connection
+            console.debug(`bus: connect ${transport.type}`, { transport })
+            await transport.connect(background)
+            console.log(
+                `bus: connect ${transport.type} ${transport.connectionState}`,
+                { transport }
+            )
+            // keep going if not connected
             if (transport.connected) break
         }
     }

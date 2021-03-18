@@ -1,7 +1,16 @@
-import { JDBus } from "./bus";
-import { CHANGE, CONNECT, CONNECTING, CONNECTION_STATE, DISCONNECT, DISCONNECTING, ERROR, PACKET_SEND_DISCONNECT } from "./constants";
-import { JDEventSource } from "./eventsource";
-import Packet from "./packet";
+import { JDBus } from "./bus"
+import {
+    CHANGE,
+    CONNECT,
+    CONNECTING,
+    CONNECTION_STATE,
+    DISCONNECT,
+    DISCONNECTING,
+    ERROR,
+    PACKET_SEND_DISCONNECT,
+} from "./constants"
+import { JDEventSource } from "./eventsource"
+import Packet from "./packet"
 
 export enum ConnectionState {
     Connected = "connected",
@@ -11,7 +20,7 @@ export enum ConnectionState {
 }
 
 export abstract class JDTransport extends JDEventSource {
-    public bus: JDBus;
+    public bus: JDBus
     constructor(readonly type: string) {
         super()
     }
@@ -68,7 +77,9 @@ export abstract class JDTransport extends JDEventSource {
     }
 
     protected abstract transportSendPacketAsync(p: Packet): Promise<void>
-    protected abstract transportConnectAsync(background?: boolean): Promise<void>
+    protected abstract transportConnectAsync(
+        background?: boolean
+    ): Promise<void>
     protected abstract transportDisconnectAsync(): Promise<void>
 
     async sendPacketAsync(p: Packet) {
@@ -109,13 +120,20 @@ export abstract class JDTransport extends JDEventSource {
                             this._connectPromise = undefined
                             this.setConnectionState(ConnectionState.Connected)
                         } else {
-                            console.debug(`connection aborted in flight`)
+                            console.debug(`connection aborted in flight`, {
+                                state: this._connectionState,
+                                old: this._connectPromise,
+                                new: p,
+                            })
+                            if (!background) this.errorHandler(CONNECT, new Error("connection aborted in flight"))
                         }
                     })
                     .catch(e => {
                         if (p == this._connectPromise) {
                             this._connectPromise = undefined
-                            this.setConnectionState(ConnectionState.Disconnected)
+                            this.setConnectionState(
+                                ConnectionState.Disconnected
+                            )
                             if (!background) this.errorHandler(CONNECT, e)
                             else console.debug("background connect failed")
                         } else {

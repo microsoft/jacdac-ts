@@ -39,8 +39,7 @@ export class CMSISProto implements Proto {
 
         let last = this.recvTo
         this._lastInterval = setInterval(() => {
-            if (!this.io)
-                this.stopRecvToLoop();
+            if (!this.io) this.stopRecvToLoop()
             if (last && last == this.recvTo) {
                 last()
             }
@@ -82,10 +81,10 @@ export class CMSISProto implements Proto {
         if (this.io) {
             console.debug(`micro:bit: disconnect proto`)
             this.stopRecvToLoop()
-            const io = this.io;
-            this.io = undefined;
-            if (io)
-                await io.disconnectAsync()    
+            this._onJDMsg = () => console.warn("rogue jd callback")
+            const io = this.io
+            this.io = undefined
+            if (io) await io.disconnectAsync()
         }
     }
 
