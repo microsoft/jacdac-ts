@@ -233,7 +233,7 @@ export class BusRoleManagerClient extends JDServiceClient {
         const role = this._roles.find(
             r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
         )
-        console.debug(`role ${service.id} -> ${role?.role}`, { service })
+        //console.debug(`role ${service.id} -> ${role?.role}`, { service })
         service.role = role?.role
     }
 
@@ -258,7 +258,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     async setRole(service: JDService, role: string) {
         const { device, serviceIndex } = service
         const { deviceId } = device
-        console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
+        //console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
 
         const previous = role && this._roles.find(r => r.role === role)
         if (
