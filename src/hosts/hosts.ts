@@ -543,7 +543,7 @@ const _hosts: {
             new LEDServiceHost({
                 variant: LedVariant.ThroughHole,
                 ledCount: 1,
-                color: [255, 0, 0]
+                color: [255, 0, 0],
             }),
         ],
     },
@@ -555,7 +555,7 @@ const _hosts: {
                 variant: LedVariant.ThroughHole,
                 waveLength: 624,
                 ledCount: 3,
-                animation: [0, [[0, 0, 0xff, 0xff]]],
+                color: [0, 0, 255],
             }),
         ],
     },
