@@ -977,15 +977,6 @@ export class JDBus extends JDNode {
                                         reg.code === SystemReg.ReadingError
                                     )
                             )
-                            // double double-query status light
-                            .filter(
-                                reg =>
-                                    !reg.data ||
-                                    !(
-                                        service.serviceClass === SRV_CONTROL &&
-                                        reg.code === ControlReg.StatusLight
-                                    )
-                            )
                             // stop asking optional registers
                             .filter(
                                 reg =>

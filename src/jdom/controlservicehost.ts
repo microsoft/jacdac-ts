@@ -10,7 +10,6 @@ export default class ControlServiceHost extends ServiceHost {
     readonly resetIn: RegisterHost<[number]>;
     readonly uptime: RegisterHost<[number]>;
     readonly startTime: number;
-    readonly statusLight: RegisterHost<LedAnimationData>;
 
     constructor() {
         super(SRV_CTRL)
@@ -21,7 +20,6 @@ export default class ControlServiceHost extends ServiceHost {
         this.mcuTemperature = this.addRegister<[number]>(ControlReg.McuTemperature, [25]);
         this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn);
         this.uptime = this.addRegister<[number]>(ControlReg.Uptime);
-        this.statusLight = this.addRegister<LedAnimationData>(ControlReg.StatusLight, [0, []]);
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this));
         this.addCommand(ControlCmd.Identify, this.identify.bind(this));
