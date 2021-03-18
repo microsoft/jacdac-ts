@@ -33,7 +33,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private registerEvents() {
-        console.log(`jdiframe: listening for packets`)
+        console.debug(`jdiframe: listening for packets`)
         this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket));
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
         this.mount(this.bus.subscribe(DEVICE_CHANGE, this.handleResize));
