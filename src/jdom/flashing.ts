@@ -349,7 +349,7 @@ export async function parseFirmwareFile(blob: Blob, store?: string): Promise<Fir
     return uf2Blobs;
 }
 
-async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
+async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, recovery = false) {
     const devices: SMap<FirmwareInfo> = {}
     const flashers: FlashClient[] = []
     try {
@@ -369,9 +369,11 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
                 }
             }
 
-            // also ask BL services if any
-            const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
-            await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+            if (recovery) {
+                // also ask BL services if any
+                const bl_announce = Packet.onlyHeader(CMD_ADVERTISEMENT_DATA)
+                await bl_announce.sendAsMultiCommandAsync(bus, SRV_BOOTLOADER)
+            }
 
             await delay(10)
         }
@@ -409,6 +411,8 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean) {
             }
         }
 
+        // note that we may get this even if recovery==false due to someone else asking
+        // (eg when the user set the recovery mode toggle)
         if (p.serviceIndex == 1 &&
             p.serviceCommand == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
