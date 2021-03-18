@@ -361,6 +361,7 @@ export class JDBus extends JDNode {
     constructor(transports: JDTransport[], public options?: BusOptions) {
         super()
 
+        console.debug(`creating jacdac bus`)
         this._transports = transports.filter(tr => !!tr)
         this._transports.forEach(tr => {
             tr.bus = this

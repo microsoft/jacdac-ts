@@ -61,15 +61,24 @@ class USBTransport extends JDTransport {
 
     constructor(public readonly options: USBOptions) {
         super(USB_TRANSPORT)
+        console.debug(`usb transport loaded`)
         this.options?.connectObservable?.subscribe({
-            next: ev => {
+            next: async ev => {
                 console.log(
                     `usb device event: connect, `,
                     this.connectionState,
                     ev
                 )
-                if (this.connectionState === ConnectionState.Disconnected)
-                    delay(500).then(() => this.connect(true))
+                if (this.bus.disconnected) {
+                    await delay(500)
+                    if (this.bus.disconnected) this.connect(true)
+                }
+            },
+        })
+        this.options?.disconnectObservable?.subscribe({
+            next: () => {
+                console.debug(`usb event: disconnect`)
+                this.disconnect()
             },
         })
     }
@@ -112,6 +121,7 @@ class USBTransport extends JDTransport {
 export function createUSBTransport(options?: USBOptions): JDTransport {
     if (!options) {
         if (isWebUSBSupported()) {
+            console.debug(`register usb events`)
             options = {
                 getDevices: usbGetDevices,
                 requestDevice: usbRequestDevice,
