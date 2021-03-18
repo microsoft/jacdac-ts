@@ -52,6 +52,7 @@ import {
     ROLE_MANAGER_CHANGE,
     TIMEOUT_DISCONNECT,
     REGISTER_POLL_STREAMING_INTERVAL,
+    ROLE_MANAGER_POLL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -117,6 +118,7 @@ export interface Role {
 export class BusRoleManagerClient extends JDServiceClient {
     private _roles: Role[] = []
     private _needRefresh = true
+    private _lastRefreshAttempt = 0
 
     public readonly startRefreshRoles: () => void
 
@@ -155,7 +157,10 @@ export class BusRoleManagerClient extends JDServiceClient {
     }
 
     private handleSelfAnnounce() {
-        if (this._needRefresh) {
+        if (
+            this._needRefresh &&
+            this.bus.timestamp - this._lastRefreshAttempt > ROLE_MANAGER_POLL
+        ) {
             console.debug("self announce refresh")
             this.startRefreshRoles()
         }
@@ -182,6 +187,7 @@ export class BusRoleManagerClient extends JDServiceClient {
 
     private async collectRoles() {
         console.debug("query roles")
+        this._lastRefreshAttempt = this.bus.timestamp
         try {
             const inp = new InPipeReader(this.bus)
             await this.service.sendPacketAsync(
@@ -227,7 +233,7 @@ export class BusRoleManagerClient extends JDServiceClient {
         const role = this._roles.find(
             r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
         )
-        console.debug(`role ${service.id} -> ${role?.role}`, { service })
+        //console.debug(`role ${service.id} -> ${role?.role}`, { service })
         service.role = role?.role
     }
 
@@ -252,7 +258,7 @@ export class BusRoleManagerClient extends JDServiceClient {
     async setRole(service: JDService, role: string) {
         const { device, serviceIndex } = service
         const { deviceId } = device
-        console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
+        //console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
 
         const previous = role && this._roles.find(r => r.role === role)
         if (
@@ -294,6 +300,32 @@ export class BusRoleManagerClient extends JDServiceClient {
             )
         }
     }
+
+    /*
+
+    startSimulators() {
+        if (!this.requestedRoles) return;
+
+        // collect roles that need to be bound
+        const todos = groupBy(this.requestedRoles.filter(role => !role.bound)
+            .map(role => ({
+                role, hostDefinition: hostDefinitionFromServiceClass(role.serviceClass)
+            }))
+            .filter(todo => !!todo.hostDefinition),
+            todo => todo.role.parentName || "");
+
+        // spawn devices with group of devices
+        Object.keys(todos).forEach(parentName => {
+            const todo = todos[parentName];
+            // no parent, spawn individual services
+            if (!parentName) {
+                todo.forEach(t => addHost(this.bus, t.hostDefinition.services()));
+            } else { // spawn all services into 1
+                addHost(this.bus, arrayConcatMany(todo.map(t => t.hostDefinition.services())))
+            }
+        })
+    }
+    */
 }
 
 /**
@@ -333,7 +365,7 @@ export class JDBus extends JDNode {
         this._transports.forEach(tr => {
             tr.bus = this
             // disconnect all transprots when one starts connecting
-            tr.on(CONNECTING, () => this.preConnect(tr))
+            tr.bus.on(CONNECTING, () => this.preConnect(tr))
         })
 
         this.options = this.options || {}
@@ -361,6 +393,7 @@ export class JDBus extends JDNode {
     }
 
     private preConnect(transport: JDTransport) {
+        console.debug(`preconnect ${transport.type}`, { transport })
         return Promise.all(
             this._transports
                 .filter(t => t !== transport)
@@ -368,9 +401,19 @@ export class JDBus extends JDNode {
         )
     }
 
-    async connect() {
+    async connect(background?: boolean) {
+        if (this.connected) return
+
+        console.debug(`bus: connect start`, { background })
         for (const transport of this._transports) {
-            await transport.connect()
+            // start connection
+            console.debug(`bus: connect ${transport.type}`, { transport })
+            await transport.connect(background)
+            console.log(
+                `bus: connect ${transport.type} ${transport.connectionState}`,
+                { transport }
+            )
+            // keep going if not connected
             if (transport.connected) break
         }
     }
@@ -399,7 +442,8 @@ export class JDBus extends JDNode {
             )
     }
 
-    stop() {
+    async stop() {
+        await this.disconnect()
         if (this._announceInterval) {
             clearInterval(this._announceInterval)
             this._announceInterval = undefined
@@ -413,6 +457,12 @@ export class JDBus extends JDNode {
             clearInterval(this._gcInterval)
             this._gcInterval = undefined
         }
+    }
+
+    async dispose() {
+        console.debug(`${this.id}: disposing.`)
+        await this.stop()
+        this._transports.forEach(transport => transport.dispose())
     }
 
     get transports() {

@@ -143,6 +143,7 @@ export class Transport {
             this.dev = null
             this.epIn = null
             this.epOut = null
+            this.onData = () => console.warn("rogue hf2 onData")
         }
     }
 
@@ -425,6 +426,9 @@ class HF2Proto implements Proto {
     }
 
     talkAsync(cmd: number, data?: Uint8Array) {
+        if (!this.io)
+            console.log("rogue hf2 instance")
+
         let len = 8
         if (data) len += data.length
         const pkt = new Uint8Array(len)

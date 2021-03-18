@@ -2,11 +2,11 @@ import { Transport, Proto } from "./hf2"
 import Packet from "./packet"
 import { Observable } from "./observable"
 import { EventTargetObservable } from "./eventtargetobservable"
-import { delay } from "./utils"
 import Flags from "./flags"
 import { USB_TRANSPORT } from "./constants"
-import { ConnectionState, JDTransport } from "./transport"
+import { JDTransport } from "./transport"
 import { JDBus } from "./bus"
+import { delay } from "./utils"
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>
     requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
@@ -59,20 +59,38 @@ function usbGetDevices(): Promise<USBDevice[]> {
 class USBTransport extends JDTransport {
     private hf2: Proto
 
+    private _cleanups: (() => void)[]
+
     constructor(public readonly options: USBOptions) {
         super(USB_TRANSPORT)
+        console.debug(`usb transport loaded`)
+        this._cleanups = [
+            this.options?.connectObservable?.subscribe({
+                next: async ev => {
+                    console.log(
+                        `usb device event: connect, `,
+                        this.connectionState,
+                        ev
+                    )
+                    if (this.bus.disconnected) {
+                        await delay(500)
+                        if (this.bus.disconnected) this.connect(true)
+                    }
+                },
+            })?.unsubscribe,
+            this.options?.disconnectObservable?.subscribe({
+                next: () => {
+                    console.debug(`usb event: disconnect`)
+                    this.disconnect()
+                },
+            })?.unsubscribe,
+        ].filter(c => !!c)
+    }
 
-        this.options?.connectObservable?.subscribe({
-            next: ev => {
-                console.log(
-                    `usb device event: connect, `,
-                    this.connectionState,
-                    ev
-                )
-                if (this.connectionState === ConnectionState.Disconnected)
-                    delay(500).then(() => this.connect(true))
-            },
-        })
+    dispose() {
+        super.dispose()
+        this._cleanups.forEach(c => c())
+        this._cleanups = [];
     }
 
     protected async transportConnectAsync(background: boolean) {
@@ -86,6 +104,7 @@ class USBTransport extends JDTransport {
             this.disconnect()
         }
         const onJDMessage = (buf: Uint8Array) => {
+            if (!this.hf2) console.warn("hf2: receiving on disconnected hf2")
             const pkts = Packet.fromFrame(buf, this.bus.timestamp)
             for (const pkt of pkts) {
                 pkt.sender = USB_TRANSPORT
@@ -112,6 +131,7 @@ class USBTransport extends JDTransport {
 export function createUSBTransport(options?: USBOptions): JDTransport {
     if (!options) {
         if (isWebUSBSupported()) {
+            console.debug(`register usb events`)
             options = {
                 getDevices: usbGetDevices,
                 requestDevice: usbRequestDevice,
