@@ -472,7 +472,7 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
         log(`resetting ${device}`)
         await device.sendCtrlCommand(ControlCmd.Reset)
     }
-    const flashers = (await scanCore(bus, 10, true)).flashers
+    const flashers = (await scanCore(bus, 10, true, true)).flashers
         .filter(f => f.dev_class == blob.firmwareIdentifier)
     if (!flashers.length)
         throw new Error("no devices to flash")
