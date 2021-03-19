@@ -11,7 +11,6 @@ import { JDRegister } from "../jdom/register"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { isEvent, isRegister, serviceSpecificationFromClassIdentifier } from "../jdom/spec"
-import { assert } from "../jdom/utils"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -580,6 +579,7 @@ export class JDTestRunner extends JDEventSource {
         this.reset()
         this.status = JDTestStatus.Active
         this.commandIndex = 0
+        this.serviceTestRunner.refreshEnvironment()
     }
 
     next() {
@@ -654,8 +654,15 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
-// TODO: what is the type of the register
-// TODO: if fixed point, then we should expect noise
+async function refresh_env(registers: SMap<JDRegister>, environment: SMap<any>)
+{
+    for(const k in environment) {
+        const register = registers[k]
+        await register.refresh()
+        environment[k] = register.unpackedValue ? register.unpackedValue[0] : register.intValue
+    }
+}
+
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
     private _registers: SMap<JDRegister> = {}
@@ -707,6 +714,10 @@ export class JDServiceTestRunner extends JDServiceClient {
             })
         })
         this.start()
+    }
+
+    public refreshEnvironment() {
+        refresh_env(this.registers, this.environment)
     }
 
     public get environment() {
