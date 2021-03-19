@@ -1,91 +1,16 @@
-import { CHANGE, LedReg, LedVariant, SRV_LED } from "../jdom/constants"
-import { JDEventSource } from "../jdom/eventsource"
+import {
+    LedCmd,
+    LedReg,
+    LedVariant,
+    REGISTER_PRE_GET,
+    SRV_LED,
+} from "../jdom/constants"
+import Packet from "../jdom/packet"
 import RegisterHost from "../jdom/registerhost"
-import ServiceHost from "../jdom/servicehost"
+import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost"
 
 export type LedAnimationFrame = [number, number, number, number]
-export type LedAnimationData = [number, LedAnimationFrame[]]
 
-export class LedAnimation extends JDEventSource {
-    private _currentStep: number
-    private _currentStepStartTime: number
-    private _currentHsv: number
-
-    constructor(public data: LedAnimationData) {
-        super()
-
-        this._currentStep = 0
-        this._currentStepStartTime = 0
-        this._currentHsv = 0
-    }
-
-    get hsv(): [number, number, number] {
-        return [
-            (this._currentHsv >> 16) & 0xff,
-            (this._currentHsv >> 8) & 0xff,
-            this._currentHsv & 0xff,
-        ]
-    }
-
-    update(now: number) {
-        // grab current step
-        const [repetitions, steps] = this.data || []
-
-        if (!steps?.length) {
-            // nothing to do
-            return
-        }
-
-        // find the step we are in
-        if (this._currentStepStartTime == 0) this._currentStepStartTime = now
-
-        while (this._currentStep < steps.length) {
-            const [h, s, v, duration8] = steps[this._currentStep]
-            const duration = duration8 << 3
-            if (duration === 0) break
-            const elapsed = now - this._currentStepStartTime
-            if (elapsed < duration) {
-                break
-            }
-
-            // restart iteration if needed
-            if (this._currentStep === steps.length - 1) {
-                // restart
-                this._currentStep = 0
-                this._currentStepStartTime = now
-            } else {
-                // try next step
-                this._currentStep++
-                this._currentStepStartTime += duration
-            }
-        }
-
-        // render
-        if (this._currentStep < steps.length) {
-            const [startHue, startSat, startValue, duration8] = steps[
-                this._currentStep
-            ]
-            const duration = duration8 << 3
-            const [endHue, endSat, endValue] = steps[
-                (this._currentStep + 1) % steps.length
-            ]
-
-            const elapsed = now - this._currentStepStartTime
-            const alpha = elapsed / duration
-            const oneAlpha = 1 - alpha
-
-            const h = oneAlpha * startHue + alpha * endHue
-            const s = oneAlpha * startSat + alpha * endSat
-            const v = oneAlpha * startValue + alpha * endValue
-            const hsv = ((h & 0xff) << 16) | ((s & 0xff) << 8) | (v & 0xff)
-
-            if (hsv !== this._currentHsv) {
-                this._currentHsv = hsv
-                this.emit(CHANGE)
-            }
-        }
-    }
-}
 
 export default class LEDServiceHost extends ServiceHost {
     readonly color: RegisterHost<[number, number, number]>
@@ -95,15 +20,28 @@ export default class LEDServiceHost extends ServiceHost {
     readonly waveLength: RegisterHost<[number]>
     readonly variant: RegisterHost<[LedVariant]>
 
-    constructor(options?: {
-        ledCount?: number
-        variant?: LedVariant
-        luminousIntensity?: number
-        waveLength?: number
-        maxPower?: number
-        color?: [number, number, number]
-    }) {
-        super(SRV_LED)
+    private _animation: {
+        red: number
+        green: number
+        blue: number
+        toRed: number
+        toGreen: number
+        toBlue: number
+        speed: number
+        start: number
+    }
+
+    constructor(
+        options?: {
+            ledCount?: number
+            variant?: LedVariant
+            luminousIntensity?: number
+            waveLength?: number
+            maxPower?: number
+            color?: [number, number, number]
+        } & ServiceHostOptions
+    ) {
+        super(SRV_LED, options)
         const {
             ledCount = 1,
             variant = LedVariant.ThroughHole,
@@ -117,6 +55,7 @@ export default class LEDServiceHost extends ServiceHost {
             LedReg.Color,
             color
         )
+        this.color.on(REGISTER_PRE_GET, this.updateColor.bind(this))
         this.maxPower = this.addRegister(LedReg.MaxPower, [maxPower])
         this.ledCount = this.addRegister(LedReg.LedCount, [ledCount])
         if (luminousIntensity !== undefined)
@@ -127,5 +66,63 @@ export default class LEDServiceHost extends ServiceHost {
         if (waveLength !== undefined)
             this.waveLength = this.addRegister(LedReg.WaveLength, [waveLength])
         this.variant = this.addRegister(LedReg.Variant, [variant])
+
+        this.addCommand(LedCmd.Animate, this.handleAnimate.bind(this))
+    }
+
+    private updateColor() {
+        if (!this._animation) return // nothing to do
+
+        // compute new color
+        const {
+            red,
+            green,
+            blue,
+            toRed,
+            toGreen,
+            toBlue,
+            speed,
+            start,
+        } = this._animation
+        const now = this.device.bus.timestamp
+        const elapsed = now - start
+        // see control.md
+        const total = ((512 / speed) * 100) | 0
+        const progress = elapsed / total // may overshoot
+        const alpha = Math.min(1, progress)
+        const oneAlpha = 1 - alpha
+
+        const newRed = (red * alpha + oneAlpha * toRed) | 0
+        const newGreen = (green * alpha + oneAlpha * toGreen) | 0
+        const newBlue = (blue * alpha + oneAlpha * toBlue) | 0
+
+        this.color.setValues([newRed, newGreen, newBlue], true)
+
+        // clear animation when done
+        if (progress > 1) this._animation = undefined
+    }
+
+    private handleAnimate(pkt: Packet) {
+        const [toRed, toGreen, toBlue, speed] = pkt.jdunpack<
+            [number, number, number, number]
+        >("u8 u8 u8 u8")
+
+        if (speed == 0) {
+            this.color.setValues([toRed, toGreen, toBlue])
+            this._animation = undefined
+        } else {
+            const [red, green, blue] = this.color.values()
+
+            this._animation = {
+                red,
+                green,
+                blue,
+                toRed,
+                toGreen,
+                toBlue,
+                speed,
+                start: this.device.bus.timestamp,
+            }
+        }
     }
 }
