@@ -8,10 +8,6 @@ import {
 import Packet from "../jdom/packet"
 import RegisterHost from "../jdom/registerhost"
 import ServiceHost, { ServiceHostOptions } from "../jdom/servicehost"
-
-export type LedAnimationFrame = [number, number, number, number]
-
-
 export default class LEDServiceHost extends ServiceHost {
     readonly color: RegisterHost<[number, number, number]>
     readonly maxPower: RegisterHost<[number]>
