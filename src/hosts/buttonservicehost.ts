@@ -1,13 +1,11 @@
 import { ButtonEvent, REFRESH, SRV_BUTTON } from "../jdom/constants";
 import SensorServiceHost from "./sensorservicehost";
 
-const LONG_CLICK_DELAY = 500
-const HOLD_DELAY = 1500
+const CLICK_HOLD_TIME = 500
 
 export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
     private _downTime: number;
     private _held = false;
-    private _longClick = false;
 
     constructor(instanceName?: string) {
         super(SRV_BUTTON, { instanceName, readingValues: [false], streamingInterval: 50 });
@@ -18,11 +16,7 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
         const [v] = this.reading.values();
         if (v) {
             const delay = this.device.bus.timestamp - this._downTime;
-            if (!this._longClick && delay > LONG_CLICK_DELAY) {
-                this._longClick = true;
-                await this.sendEvent(ButtonEvent.LongClick);
-            }
-            if (!this._held && delay > HOLD_DELAY) {
+            if (!this._held && delay > CLICK_HOLD_TIME) {
                 this._held = true;
                 await this.sendEvent(ButtonEvent.Hold);
             }
@@ -34,7 +28,6 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
         if (v) return;
         this._downTime = this.device.bus.timestamp;
         this._held = false;
-        this._longClick = false;
         this.reading.setValues([true]);
         await this.sendEvent(ButtonEvent.Down);
     }
@@ -48,7 +41,7 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
 
         // generate clicks
         if (this._downTime !== undefined) {
-            if (!this._longClick)
+            if (upTime - this._downTime < CLICK_HOLD_TIME)
                 await this.sendEvent(ButtonEvent.Click);
         }
     }
