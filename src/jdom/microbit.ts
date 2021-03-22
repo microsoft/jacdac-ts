@@ -56,7 +56,7 @@ export class CMSISProto implements Proto {
 
     private error(msg: string) {
         this.stopRecvToLoop()
-        this.io.error(msg)
+        this.io?.error(msg)
     }
 
     onJDMessage(f: (buf: Uint8Array) => void): void {
@@ -118,16 +118,22 @@ export class CMSISProto implements Proto {
 
     private talkAsync(cmds: ArrayLike<number>) {
         return this.q.enqueue("talk", async () => {
+            if (!this.io) {
+                console.debug(`micro:bit disconnected, skip send`, { cmds })
+                this.error('micro:bit disconnected')
+                return // disconnected
+            }
             //console.log("TALK", cmds)
             await this.io.sendPacketAsync(new Uint8Array(cmds))
             if (!this.io) {
-                console.debug(`micro:bit disconnected`)
+                console.debug(`micro:bit disconnected, skip response`, { cmds })
+                this.error('micro:bit disconnected')
                 return // disconnected
             }
             let response = await this.recvAsync()
             if (response[0] !== cmds[0]) {
-                const msg = `Bad response for ${cmds[0]} -> ${response[0]}`
-                console.log(msg)
+                const msg = `Bad response for ${cmds[0]} -> ${response[0]}, try again`
+                console.debug(msg, { cmds, response })
                 try {
                     response = await this.recvAsync()
                 } catch (e) {
