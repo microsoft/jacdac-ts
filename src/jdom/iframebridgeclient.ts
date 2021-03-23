@@ -102,6 +102,11 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             const pkt = Packet.fromBinary(msg.data, this.bus.timestamp);
             pkts = pkt && [pkt];
         }
+
+        // bail out if unknown packet
+        if (!pkts)
+            return;
+
         this.packetProcessed += pkts.length;
 
         for (const pkt of pkts) {
