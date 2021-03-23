@@ -157,7 +157,7 @@ export class JDBus extends JDNode {
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
         // grab the default role manager
-        this.on(DEVICE_ANNOUNCE, this.handleRoleManager.bind(this))
+        this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
 
         // start all timers
         this.start()
@@ -414,14 +414,11 @@ export class JDBus extends JDNode {
             await RealTimeClockServiceHost.syncTime(this)
     }
 
-    private handleRoleManager(device: JDDevice) {
-        // auto allocate the first role manager
-        if (!this._roleManagerClient && device.hasService(SRV_ROLE_MANAGER)) {
-            const [service] = device.services({
-                serviceClass: SRV_ROLE_MANAGER,
-            })
-            this.setRoleManagerService(service)
-        }
+    private handleRoleManager() {
+        if (this.roleManager) return;
+
+        const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0];
+        this.setRoleManagerService(service)
     }
 
     async sendPacketAsync(p: Packet) {
