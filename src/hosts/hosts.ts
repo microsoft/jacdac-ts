@@ -1060,7 +1060,7 @@ const _hosts: {
         name: "thermometer (outdoor)",
         serviceClasses: [SRV_THERMOMETER],
         services: () => [
-            new SensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
+            new AnalogSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
         ],
     },
     {
