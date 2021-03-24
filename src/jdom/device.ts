@@ -355,6 +355,7 @@ export class JDDevice extends JDNode {
         if (changed) {
             this.bus.emit(DEVICE_CHANGE, this);
             this.bus.emit(CHANGE);
+            this.emit(CHANGE);
         }
     }
 
