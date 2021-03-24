@@ -334,6 +334,8 @@ export class JDDevice extends JDNode {
 
         // notify that services got updated
         if (servicesChanged) {
+            this._services = undefined // respawn services
+            this.initServices()
             this.lastServiceUpdate = pkt.timestamp
             this.bus.emit(DEVICE_ANNOUNCE, this)
             this.emit(ANNOUNCE)

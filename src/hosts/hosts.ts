@@ -77,6 +77,8 @@ import {
     SRV_SOLENOID,
     SRV_DMX,
     SRV_BIT_RADIO,
+    SRV_POWER,
+    CHANGE,
 } from "../jdom/constants"
 import DeviceHost from "../jdom/devicehost"
 import ProtocolTestServiceHost from "../jdom/protocoltestservicehost"
@@ -113,6 +115,7 @@ import RandomNumberGeneratorServiceHost from "./randomnumbergeneratorservicehost
 import CompassServiceHost from "./compassservicehost"
 import DMXServiceHost from "./dmxservicehost"
 import BitRadioServiceHost from "./bitradioservicehost"
+import PowerServiceHost from "./powerservicehost"
 
 const indoorThermometerOptions: AnalogSensorServiceHostOptions = {
     readingValues: [21.5],
@@ -250,11 +253,14 @@ const soundSpectrum: SensorServiceOptions<[Uint8Array]> = {
     ],
 }
 
-const _hosts: {
+export interface HostDefinition {
     name: string
     serviceClasses: number[]
     services: () => ServiceHost[]
-}[] = [
+    factory?: (services: ServiceHost[]) => DeviceHost
+}
+
+const _hosts: HostDefinition[] = [
     {
         name: "7-segment (4 segments)",
         serviceClasses: [SRV_SEVEN_SEGMENT_DISPLAY],
@@ -838,6 +844,11 @@ const _hosts: {
         ],
     },
     {
+        name: "power",
+        serviceClasses: [SRV_POWER],
+        services: () => [new PowerServiceHost()]
+    },
+    {
         name: "RNG (random number generator)",
         serviceClasses: [SRV_RNG],
         services: () => [new RandomNumberGeneratorServiceHost()],
@@ -932,7 +943,13 @@ const _hosts: {
         services: () =>
             Array(2)
                 .fill(0)
-                .map(() => new ServoServiceHost(microServoOptions)),
+                .map(
+                    (_, i) =>
+                        new ServoServiceHost({
+                            ...microServoOptions,
+                            instanceName: `S${i}`,
+                        })
+                ),
     },
     {
         name: "servo x 4",
@@ -940,7 +957,13 @@ const _hosts: {
         services: () =>
             Array(4)
                 .fill(0)
-                .map(() => new ServoServiceHost(microServoOptions)),
+                .map(
+                    (_, i) =>
+                        new ServoServiceHost({
+                            ...microServoOptions,
+                            instanceName: `S${i}`,
+                        })
+                ),
     },
     {
         name: "servo x 6",
@@ -948,7 +971,13 @@ const _hosts: {
         services: () =>
             Array(6)
                 .fill(0)
-                .map((_, i) => new ServoServiceHost(microServoOptions)),
+                .map(
+                    (_, i) =>
+                        new ServoServiceHost({
+                            ...microServoOptions,
+                            instanceName: `S${i}`,
+                        })
+                ),
     },
     {
         name: "servo x 16",
@@ -956,7 +985,13 @@ const _hosts: {
         services: () =>
             Array(16)
                 .fill(0)
-                .map((_, i) => new ServoServiceHost(microServoOptions)),
+                .map(
+                    (_, i) =>
+                        new ServoServiceHost({
+                            ...microServoOptions,
+                            instanceName: `S${i}`,
+                        })
+                ),
     },
     {
         name: "settings",
@@ -1060,7 +1095,10 @@ const _hosts: {
         name: "thermometer (outdoor)",
         serviceClasses: [SRV_THERMOMETER],
         services: () => [
-            new AnalogSensorServiceHost(SRV_THERMOMETER, outdoorThermometerOptions),
+            new AnalogSensorServiceHost(
+                SRV_THERMOMETER,
+                outdoorThermometerOptions
+            ),
         ],
     },
     {
@@ -1268,14 +1306,34 @@ const _hosts: {
             new SoundPlayerServiceHost(microbitSounds),
         ],
     },
+    {
+        name: "power + humidity",
+        serviceClasses: [SRV_POWER, SRV_HUMIDITY],
+        services: () => [new PowerServiceHost(), new HumidityServiceHost()],
+        factory: services => {
+            const dev = new DeviceHost([services[0]])
+            const pwr = dev.service(1) as PowerServiceHost
+            pwr.enabled.on(CHANGE, () => {
+                const enabled = !!pwr.enabled.values()[0]
+                console.log(`power: ${enabled ? "on" : "off"}`)
+                if (enabled)
+                    // power + rest
+                    dev.updateServices(services)
+                // power only
+                else dev.updateServices([services[0]])
+            })
+            return dev
+        },
+    },
 ]
 
 export default function hosts() {
     return _hosts.slice(0)
 }
 
-export function addHost(bus: JDBus, services: ServiceHost[]) {
-    const d = new DeviceHost(services)
+export function addHost(bus: JDBus, definition: HostDefinition) {
+    const services = definition.services()
+    const d = definition.factory?.(services) || new DeviceHost(services)
     bus.addDeviceHost(d)
     return d
 }
