@@ -502,22 +502,22 @@ const _hosts: HostDefinition[] = [
         name: "humidity + temperature",
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
-            new HumidityServiceHost(),
             new AnalogSensorServiceHost(
                 SRV_THERMOMETER,
                 outdoorThermometerOptions
             ),
+            new HumidityServiceHost(),
         ],
     },
     {
         name: "humidity + temperature + barometer",
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
         services: () => [
-            new HumidityServiceHost(),
             new AnalogSensorServiceHost(
                 SRV_THERMOMETER,
                 outdoorThermometerOptions
             ),
+            new HumidityServiceHost(),
             new AnalogSensorServiceHost(SRV_BAROMETER, barometerOptions),
         ],
     },
@@ -846,7 +846,7 @@ const _hosts: HostDefinition[] = [
     {
         name: "power",
         serviceClasses: [SRV_POWER],
-        services: () => [new PowerServiceHost()]
+        services: () => [new PowerServiceHost()],
     },
     {
         name: "RNG (random number generator)",
