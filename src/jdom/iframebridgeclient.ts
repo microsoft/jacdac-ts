@@ -1,10 +1,8 @@
 import { JDBus } from "./bus";
-import { DEVICE_CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { DEVICE_CHANGE, EMBED_MIN_ASPECT_RATIO, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import JDIFrameClient from "./iframeclient";
 import Packet from "./packet";
 import { debounce, roundWithPrecision } from "./utils";
-
-const MIN_ASPECT_RATIO = 0.89;
 
 export interface PacketMessage {
     channel: "jacdac";
@@ -79,7 +77,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     private handleResize() {
         const size = document.body.getBoundingClientRect()
         const ar = size.width / (size.height + 12); 
-        const value = roundWithPrecision(Math.min(MIN_ASPECT_RATIO, size.width / size.height), 4);
+        const value = roundWithPrecision(Math.min(EMBED_MIN_ASPECT_RATIO, size.width / size.height), 4);
         if (!isNaN(ar) && this._lastAspectRatio !== value) {
             window.parent.postMessage({
                 type: "aspectratio",
