@@ -48,6 +48,9 @@ export abstract class JDNode extends JDEventSource {
     }
 }
 
+export function dependencyId(nodes: JDNode[]) {
+    return nodes?.map(node => node?.id || "?").join(",") || ""
+}
 
 export function visitNodes(node: JDNode, vis: (node: JDNode) => void) {
     const todo = [node];
