@@ -262,7 +262,7 @@ export class CMSISProto implements Proto {
                 }
                 ptr++
             }
-            buf = buf.slice(ptr)
+            buf = buf.slice(beg)
             this.pendingSerial = buf.length ? buf : null
             if (this.pendingSerial) this.lastPendingSerial = Date.now()
         } else if (this.pendingSerial) {
