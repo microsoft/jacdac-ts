@@ -71,11 +71,14 @@ export class JDDevice extends JDNode {
     private _eventCounter: number
     readonly qos = new QualityOfService()
 
-    constructor(public readonly bus: JDBus, public readonly deviceId: string) {
+    constructor(public readonly bus: JDBus, public readonly deviceId: string, pkt?: Packet) {
         super()
         this.connected = true
         this._lost = false
         this._identifying = false
+
+        this._source = pkt?.sender;
+        this._replay = !!pkt?.replay;
     }
 
     get id() {
@@ -200,6 +203,8 @@ export class JDDevice extends JDNode {
         if (value !== this._flashing) {
             this._flashing = value
             this.emit(CHANGE)
+            this.bus.emit(DEVICE_CHANGE, this)
+            this.bus.emit(CHANGE)
         }
     }
 
@@ -329,8 +334,6 @@ export class JDDevice extends JDNode {
         // compare service data
         const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
         this._servicesData = pkt.data
-        this._source = pkt.sender || this._source // remember who's sending those packets
-        this._replay = !!pkt.replay
 
         // notify that services got updated
         if (servicesChanged) {

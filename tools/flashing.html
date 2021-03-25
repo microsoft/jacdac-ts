@@ -133,7 +133,7 @@
                 line.appendChild(idbtn)
                 idbtn.onclick = () => {
                     // identify
-                    jd.device(fw.deviceId).sendCtrlCommand(0x81)
+                    jd.device(fw.deviceId, true)?.sendCtrlCommand(0x81)
                 }
 
                 if (/rgb=1/.test(window.location.href)) {

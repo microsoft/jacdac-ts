@@ -158,8 +158,9 @@ export function decodeMember(
             humanValue = "pipe to " + shortDeviceId(devid) + " port:" + port
             // + " [" + toHex(buf.slice(10)) + "]"
             if (pkt?.device?.bus) {
-                const trg = pkt.device.bus.device(devid)
-                trg.port(port).pipeType = service.shortId + "." + pktInfo.pipeType + ".report"
+                const trg = pkt.device.bus.device(devid, true)
+                if (trg)
+                    trg.port(port).pipeType = service.shortId + "." + pktInfo.pipeType + ".report"
             }
         } else {
             value = buf

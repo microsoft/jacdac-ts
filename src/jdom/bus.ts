@@ -356,15 +356,15 @@ export class JDBus extends JDNode {
                 case BUS_NODE_NAME:
                     return this
                 case DEVICE_NODE_NAME:
-                    return this.device(dev)
+                    return this.device(dev, true)
                 case SERVICE_NODE_NAME:
-                    return this.device(dev)?.service(srv)
+                    return this.device(dev, true)?.service(srv)
                 case REGISTER_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.register(reg)
+                    return this.device(dev, true)?.service(srv)?.register(reg)
                 case EVENT_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.event(reg)
+                    return this.device(dev, true)?.service(srv)?.event(reg)
                 case FIELD_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.register(reg)
+                    return this.device(dev, true)?.service(srv)?.register(reg)
                         ?.fields[idx]
             }
             console.info(`node ${id} not found`)
@@ -547,7 +547,7 @@ export class JDBus extends JDNode {
      * Gets a device on the bus
      * @param id
      */
-    device(id: string, skipCreate?: boolean) {
+    device(id: string, skipCreate?: boolean, pkt?: Packet) {
         if (id === "0000000000000000" && !skipCreate) {
             console.warn("jadac: trying to access device 0000000000000000")
             return undefined
@@ -558,7 +558,7 @@ export class JDBus extends JDNode {
                 console.debug(`info`, `devices frozen, dropping ${id}`)
                 return undefined
             }
-            d = new JDDevice(this, id)
+            d = new JDDevice(this, id, pkt)
             this._devices.push(d)
             console.debug(`new device ${d.shortId} (${id})`)
             // stable sort
@@ -650,7 +650,7 @@ export class JDBus extends JDNode {
      */
     processPacket(pkt: Packet) {
         if (!pkt.isMultiCommand && !pkt.device) {
-            pkt.device = this.device(pkt.deviceIdentifier)
+            pkt.device = this.device(pkt.deviceIdentifier, false, pkt)
             // check if devices are frozen
             if (!pkt.device) return
         }

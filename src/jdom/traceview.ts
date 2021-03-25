@@ -154,7 +154,7 @@ export default class TraceView extends JDClient {
 
         // resolve packet device for pretty name
         if (!pkt.isMultiCommand && !pkt.device)
-            pkt.device = this.bus.device(pkt.deviceIdentifier);
+            pkt.device = this.bus.device(pkt.deviceIdentifier, false, pkt);
 
         // keep in filtered view
         let filtered = true;

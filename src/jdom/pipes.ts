@@ -16,7 +16,7 @@ export class OutPipe {
         bus.enableAnnounce(); // ned self device
         const [idbuf, port] = pkt.jdunpack<[Buffer, number]>("b[8] u16");
         const id = toHex(idbuf);
-        const dev = bus.device(id);
+        const dev = bus.device(id, false, pkt);
         return new OutPipe(dev, port, hosted);
     }
 

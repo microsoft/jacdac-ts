@@ -391,7 +391,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, rec
     })
     // store info in objects
     devs.forEach(info => {
-        const dev = bus.device(info.deviceId)
+        const dev = bus.device(info.deviceId, true)
         if (dev) dev.firmwareInfo = info
     })
     return {
