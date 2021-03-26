@@ -1,0 +1,83 @@
+{
+    "name": "jacdac",
+    "version": "0.4.23",
+    "description": "Jacdac for MakeCode",
+    "dependencies": {
+        "core": "*",
+        "settings": "*"
+    },
+    "files": [
+        "README.md",
+        "jacdac.svg",
+        "jdlow.c",
+        "jdlow.h",
+        "jdprotocol.h",
+        "jdutil.c",
+        "app.cpp",
+        "hw.cpp",
+        "jdsim.ts",
+        "hw.h",
+        "mbbridge.h",
+        "mbbridge.cpp",
+        "mbcompat.ts",
+        "commands.ts",
+        "config.ts",
+        "packet.ts",
+        "pack.ts",
+        "service.ts",
+        "pipes.ts",
+        "actuator.ts",
+        "diagnostics.ts",
+        "modules.ts",
+        "eventqueue.ts",
+        "ns.ts",
+        "system/constants.ts",
+        "base/constants.ts",
+        "bootloader/constants.ts",
+        "control/constants.ts",
+        "logger/constants.ts",
+        "logger/client.ts",
+        "logger-host/host.ts",
+        "sensor/constants.ts",
+        "sensor/client.ts",
+        "sensor/host.ts",
+        "role-manager/constants.ts",
+        "rolemgr.ts",
+        "proto-test/constants.ts",
+        "proto-test/host.ts",
+        "routing.ts"
+    ],
+    "testFiles": [
+        "test.microbit.ts",
+        "test.ts"
+    ],
+    "testDependencies": {
+        "radio": "*"
+    },
+    "fileDependencies": {
+        "mbcompat.ts": "target:microbit",
+        "test.microbit.ts": "target:microbit"
+    },
+    "public": true,
+    "targetVersions": {
+        "target": "3.1.62",
+        "targetId": "microbit"
+    },
+    "supportedTargets": [
+        "arcade",
+        "maker",
+        "microbit"
+    ],
+    "preferredEditor": "tsprj",
+    "disablesVariants": [
+        "mbdal"
+    ],
+    "binaryonly": true,
+    "extension": {
+        "namespace": "modules",
+        "label": "Configure",
+        "group": "Services",
+        "url": "https://microsoft.github.io/jacdac-docs/tools/makecode-editor-extension",
+        "localUrl": "http://localhost:8000/tools/makecode-editor-extension"
+    }
+}

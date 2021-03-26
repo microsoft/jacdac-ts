@@ -1,0 +1,10 @@
+{
+    "targetWebsite": "https://maker.makecode.com",
+    "links": {
+        "jacdac": ".",
+        "jacdac-settings": "./settings",
+        "jacdac-tcp": "./tcp",
+        "jacdac-button": "./button",
+        "jacdac-accelerometer": "./accelerometer"
+    }
+}

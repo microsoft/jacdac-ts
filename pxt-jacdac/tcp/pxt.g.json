@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-tcp",
+    "version": "0.0.0",
+    "description": "Data transfer over TCP/IP and TLS stream sockets.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

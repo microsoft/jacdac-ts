@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-gyroscope",
+    "version": "0.0.0",
+    "description": "A 3-axis gyroscope.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

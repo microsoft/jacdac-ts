@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-indexedscreen",
+    "version": "0.0.0",
+    "description": "A screen with indexed colors.\n\nThis is often run over an SPI connection, not regular single-wire JACDAC.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

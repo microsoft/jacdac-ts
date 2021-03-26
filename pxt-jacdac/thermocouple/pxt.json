@@ -1,0 +1,22 @@
+{
+    "name": "jacdac-thermocouple",
+    "version": "0.4.23",
+    "description": "A thermocouple using a heat probe to gather temperatures.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

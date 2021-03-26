@@ -1,0 +1,1 @@
+modules.characterScreen.start();

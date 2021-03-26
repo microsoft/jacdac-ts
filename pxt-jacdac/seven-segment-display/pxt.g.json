@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-sevensegmentdisplay",
+    "version": "0.0.0",
+    "description": "A 7-segment numeric display, with one or more digits.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

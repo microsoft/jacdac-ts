@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-iothub",
+    "version": "0.0.0",
+    "description": "Send messages, receive commands, and work with device twins in Azure IoT Hub.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

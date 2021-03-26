@@ -1,0 +1,28 @@
+{
+    "name": "jacdac-button-host",
+    "version": "0.4.23",
+    "description": "MakeCode support for Jacdac Button host service",
+    "dependencies": {
+        "core": "*",
+        "buttons": "*",
+        "jacdac": "github:microsoft/pxt-jacdac",
+        "jacdac-button": "github:microsoft/pxt-jacdac/button"
+    },
+    "files": [
+        "host.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "testDependencies": {
+        "adafruit-circuit-playground-bluefruit": "*"
+    },
+    "targetVersions": {
+        "target": "0.14.12",
+        "targetId": "maker"
+    },
+    "supportedTargets": [
+        "maker"
+    ],
+    "preferredEditor": "tsprj"
+}

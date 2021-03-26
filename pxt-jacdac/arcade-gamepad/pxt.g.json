@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-arcadegamepad",
+    "version": "0.0.0",
+    "description": "A gamepad with direction and action buttons for one player.\nIf a device has multiple controllers, it should have multiple gamepad services, using consecutive service identifiers.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

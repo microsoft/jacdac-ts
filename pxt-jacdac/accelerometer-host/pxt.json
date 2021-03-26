@@ -1,0 +1,19 @@
+{
+    "name": "jacdac-accelerometer-host",
+    "version": "0.4.23",
+    "description": "MakeCode support for Jacdac Accelerometer service",
+    "dependencies": {
+        "core": "*",
+        "accelerometer": "*",
+        "jacdac": "github:microsoft/pxt-jacdac",
+        "jacdac-accelerometer": "github:microsoft/pxt-jacdac/accelerometer"
+    },
+    "files": [
+        "host.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "maker"
+    ],
+    "preferredEditor": "tsprj"
+}

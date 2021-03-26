@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-rng",
+    "version": "0.0.0",
+    "description": "Generates random numbers using entropy sourced from physical processes.\n\nThis typically uses a cryptographical pseudo-random number generator (for example [Fortuna](https://en.wikipedia.org/wiki/Fortuna_(PRNG))),\nwhich is periodically re-seeded with entropy coming from some hardware source.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

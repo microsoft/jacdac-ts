@@ -1,0 +1,24 @@
+{
+    "name": "jacdac-raingauge",
+    "version": "0.0.0",
+    "description": "Measures the amount of liquid precipitation over an area in a predefined period of time.",
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "microbit",
+        "maker"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
+    }
+}

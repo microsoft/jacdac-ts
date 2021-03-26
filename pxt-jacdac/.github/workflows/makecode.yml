@@ -1,0 +1,42 @@
+name: MakeCode
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Cache npm and makecode
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+            ~/.pxt/mkc-cache
+          key: ${{ runner.os }}-${{ hashFiles('pxt.json') }}-${{ hashFiles('mkc*json') }}
+          restore-keys: |
+            ${{ runner.os }}-
+      - name: npm install
+        run: |
+          npm install -g makecode
+      - run: makecode -u -j --mono-repo -c mkc.json
+      - run: makecode -u -j --mono-repo -c mkc-microbit.json
+      - run: makecode -u -j --mono-repo -c mkc-arcade.json
+      - run: makecode -c mkc.json
+      - run: makecode -c mkc-microbit.json
+      - run: makecode -c mkc-arcade.json --hw F4
+      - run: makecode -c mkc-arcade.json --hw D5
+      - run: makecode -c mkc-arcade.json --hw N4
+      - run: makecode -c mkc-arcade.json --hw N3
+
+

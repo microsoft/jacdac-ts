@@ -1,0 +1,15 @@
+{
+    "name": "jacdac-controller",
+    "version": "0.4.23",
+    "description": "MakeCode support for Jacdac Controller service",
+    "files": [
+        "controllerclient.ts"
+    ],
+    "supportedTargets": [
+        "arcade"
+    ],
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    }
+}

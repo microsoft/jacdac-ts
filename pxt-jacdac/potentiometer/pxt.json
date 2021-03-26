@@ -1,0 +1,19 @@
+{
+    "name": "jacdac-potentiometer",
+    "version": "0.4.23",
+    "description": "Jacdac potentiometer service",
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "files": [
+        "constants.ts",
+        "client.g.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "maker",
+        "microbit"
+    ],
+    "preferredEditor": "tsprj"
+}

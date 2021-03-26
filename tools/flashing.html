@@ -1,0 +1,234 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .hint {
+            font-size: 80%;
+        }
+
+        #log {
+            margin-top: 1rem;
+        }
+
+        #log>div {
+            margin: 0.25rem;
+        }
+    </style>
+    <script>
+        var process = {
+            env: {}
+        }
+    </script>
+</head>
+
+<body>
+    <h1>JACDAC/Flashing</h1>
+    <div>
+        <button id="connect">connect</button>
+        <button id="disconnect">disconnect</button>
+    </div>
+    <div class="hint">
+        Drag and drop a UF2 file with firmware.
+    </div>
+    <div id="err" style="color: red">
+    </div>
+    <div id="upd" style="padding: 1em">
+    </div>
+    <div id="log">
+        <div>waiting for message...</div>
+    </div>
+
+    <script src="/dist/jacdac.umd.js"></script>
+    <script>
+        // webusb
+        const jd = jacdac.createUSBBus()
+        // jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
+        jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
+
+        let flashing = false
+        let blobs
+
+        async function startUpdate() {
+            if (!blobs) {
+                blobs = []
+                while (true) {
+                    if (flashing)
+                        await jacdac.delay(100)
+                    await refreshUpdateList()
+                }
+            }
+        }
+
+        async function listenWebUsb() {
+            startUpdate()
+        }
+
+        let deviceDivs = {}
+
+        function clearDevices() {
+            deviceDivs = {}
+            const logDiv = document.getElementById("upd");
+            while (logDiv.firstChild)
+                logDiv.removeChild(logDiv.firstChild)
+        }
+
+        async function refreshUpdateList() {
+            if (flashing)
+                return
+
+            if (!jd.connected) {
+                await jd.disconnect()
+                await jd.connect()
+            }
+
+            const fws = await jacdac.scanFirmwares(jd)
+
+            if (flashing)
+                return
+
+            const logDiv = document.getElementById("upd");
+            for (const key of Object.keys(deviceDivs)) {
+                if (fws.some(fw => fw.deviceId == key))
+                    continue
+                logDiv.removeChild(deviceDivs[key])
+                delete deviceDivs[key]
+            }
+
+            fws.forEach(fw => {
+                if (deviceDivs[fw.deviceId])
+                    return
+                const blob = blobs.find(b => jacdac.updateApplicable(fw, b))
+                const line = document.createElement("div");
+                deviceDivs[fw.deviceId] = line
+                logDiv.appendChild(line)
+                line.innerText = jd.device(fw.deviceId) + ": " + fw.name + " " + fw.version
+                if (blob) {
+                    const text = "-> " + blob.name + " " + blob.version;
+                    const btn = document.createElement("button");
+                    btn.innerText = text;
+                    line.appendChild(btn)
+                    btn.onclick = async () => {
+                        flashing = true
+                        btn.innerText = "Flashing..."
+                        try {
+                            await jacdac.flashFirmwareBlob(jd, blob, [fw], prog => {
+                                btn.innerText = Math.round(prog) + "% done"
+                            })
+                            clearDevices()
+                        } catch (e) {
+                            error(e)
+                        } finally {
+                            flashing = false
+                        }
+                    }
+                }
+
+                const idbtn = document.createElement("button");
+                idbtn.innerText = "blink";
+                line.appendChild(idbtn)
+                idbtn.onclick = () => {
+                    // identify
+                    jd.device(fw.deviceId, true)?.sendCtrlCommand(0x81)
+                }
+
+                if (/rgb=1/.test(window.location.href)) {
+                    /*
+                    const rgb = document.createElement("button");
+                    rgb.innerText = "rgb";
+                    line.appendChild(rgb)
+                    let interval
+                    rgb.onclick = () => {
+                        if (interval) {
+                            clearInterval(interval)
+                            interval = null
+                            rgb.innerText = "rgb";
+                        } else {
+                            rgb.innerText = "stop";
+                            let idx = 0
+                            interval = setInterval(() => {
+                                const vals = [0, 0, 0, 0]
+                                vals[idx] = 255
+                                idx++
+                                if (idx == 3) idx = 0
+                                jd.device(fw.deviceId).sendCtrlCommand(jacdac.ControlCmd
+                                    .SetStatusLight,
+                                    jacdac.jdpack("u8 u8 u8 u8", vals))
+
+                            }, 500)
+                        }
+                    }
+                    */
+
+                    const inputs = []
+                    for (let i = 0; i < 4; ++i) {
+                        const inp = document.createElement("input")
+                        inp.style.width = "3em"
+                        inp.value = "0"
+                        inputs.push(inp)
+                        line.appendChild(inp)
+                    }
+                    const rgb = document.createElement("button");
+                    rgb.innerText = "rgb";
+                    line.appendChild(rgb)
+                    rgb.onclick = () => {
+                        const vals = inputs.map(i => parseInt(i.value))
+                        if (vals.some(isNaN))
+                            throw new Error("wrong!")
+                        jd.device(fw.deviceId).sendCtrlCommand(jacdac.ControlCmd.SetStatusLight,
+                            jacdac.jdpack("u8 u8 u8 u8", vals))
+                    }
+
+                }
+            })
+        }
+
+        function error(e) {
+            console.error(e.stack)
+            document.getElementById("err").innerText = e.message;
+        }
+
+        async function importUF2(file) {
+            const buf = await jacdac.readBlobToUint8Array(file)
+            startUpdate()
+            blobs = jacdac.parseUF2(buf)
+            //for (const b of blobs)
+            //    b.version += "-x" // make sure it appears as applicable
+            console.log(jacdac.generateDeviceList(buf))
+            clearDevices()
+        }
+
+        // binding ui
+        const connect = document.getElementById("connect");
+        connect.onclick = listenWebUsb;
+        const disconnect = document.getElementById("disconnect");
+        disconnect.onclick = () => jd.disconnect()
+        document.body.ondragover = ev => ev.preventDefault();
+        document.body.ondrop = drop;
+
+        async function drop(ev) {
+            ev.preventDefault();
+            const items = ev.dataTransfer.items;
+            if (!items) return;
+            const item = items[0];
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                importUF2(file);
+            }
+        }
+
+        function log(msg) {
+            const logDiv = document.getElementById("log");
+            const line = document.createElement("div");
+            line.innerText = "" + msg;
+            logDiv.insertBefore(line, logDiv.firstElementChild);
+            if (logDiv.childElementCount > 100)
+                logDiv.lastElementChild.remove();
+        }
+    </script>
+</body>
+
+</html>

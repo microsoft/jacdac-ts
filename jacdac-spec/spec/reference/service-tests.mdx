@@ -1,0 +1,51 @@
+---
+title: Service Tests
+order: 5
+---
+
+## Service Tests
+
+A service test is a markdown file that contains a number of unit tests for a
+given service. 
+
+```info
+Use the [service test dashboard](../../tools/service-test/) to run tests on devices. 
+Use the [service test editor](../../tools/service-test-editor/) to
+view, create and edit tests.
+```
+
+The unit tests can be a mixture of automated and manual tests.
+A simple domain-specific set of test constructs is made available for easy
+authoring of tests for the common cases, with an escape hatch to write TypeScript
+for more complex test scenarios.
+
+The markdown file can (optionally) have a header (#) with a descriptive title. Each unit
+test must with a subheader (##) with a unique short description. A test
+generally starts with a prompt to the user, specified in markdown, followed by 
+a sequence of test commands. 
+
+## Test commands
+
+A test command is a single line JavaScript function call, indented. We currently
+support the following calls:
+
+- **assign**(*register*,*expr*): assigns the value of *expr* to *register*
+- **ask**(): ask the user to give a Yes/No answer to the question specified in preceding markdown
+- **check**(*expr*): check if the *expr* evaluates true (can make use of the **start** test expression)
+- **changes**(*expr*): check if the *expr* changes
+- **increases**(*register*): check if *register* increases in value
+- **decreases**(*register*): check if *register* decreases in value
+- **increasesBy**(*register*,*expr*): check if *register* increases in value by at least *expr*
+- **decreasesBy**(*register*,*expr*): check if *register* decreases in value by at least *expr*
+- **stepsUpTo**(*register*,*startExpr*,*endExpr*): check if register increases from startExpr to endExpr (and integer values in between)
+- **stepsDownTo**(*register*,*startExpr*,*endExpr*): check if register decreases from startExpr to endExpr (and integer values in between
+- **events**([*event1*, *event2*...]): checks for the given sequence of events
+
+## Test expressions
+
+Most test expressions are just JavaScript expressions where identifiers 
+refer to elements of the service specification (e.g., registers). A few 
+special test functions are provided:
+- **start**(*expr*): the value of *expr* just before execution of the **check** test command, multiple **start** subexpressions can be used within a **check** expression
+
+

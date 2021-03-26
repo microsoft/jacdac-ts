@@ -1,0 +1,16 @@
+{
+    "targetWebsite": "https://arcade.makecode.com/beta",
+    "overrides": {
+        "testDependencies": {
+            "net": "*",
+            "device": "*"
+        }
+    },
+    "links": {
+        "jacdac": ".",
+        "jacdac-settings": "./settings",
+        "jacdac-tcp": "./tcp",
+        "jacdac-button": "./button",
+        "jacdac-accelerometer": "./accelerometer"
+    }
+}

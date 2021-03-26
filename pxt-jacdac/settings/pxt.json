@@ -1,0 +1,18 @@
+{
+    "name": "jacdac-settings",
+    "version": "0.4.23",
+    "description": "MakeCode support for Jacdac Settings service",
+    "dependencies": {
+        "core": "*",
+        "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "files": [
+        "constants.ts"
+    ],
+    "supportedTargets": [
+        "arcade",
+        "maker",
+        "microbit"
+    ],
+    "preferredEditor": "tsprj"
+}
