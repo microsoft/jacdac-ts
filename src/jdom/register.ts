@@ -180,6 +180,7 @@ export class JDRegister extends JDServiceMemberNode {
         const updated = !bufferEq(this.data, pkt.data)
         this._lastReportPkt = pkt;
         this._lastGetAttempts = 0; // reset counter
+        this._lastGetTimestamp = this.service.device.bus.timestamp; // reset time counter too
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
             this.emit(REPORT_UPDATE, this)
