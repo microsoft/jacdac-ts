@@ -16,19 +16,44 @@ namespace pins {
     }
 }
 
+let identifyAnimationRunning = false
+function identifyAnimation() {
+    console.log(`identify ` + identifyAnimationRunning)
+    if (identifyAnimationRunning)
+        return
+
+    identifyAnimationRunning = true;
+    const sc = led.screenshot()
+    control.inBackground(() => {
+        led.stopAnimation();
+        basic.showAnimation(
+       `0###0 00000 0###0  00000 0###0  00000
+        0###0 00000 0###0  00000 0###0  00000 
+        0###0 00000 0###0  00000 0###0  00000 
+        00##0 00000 00##0  00000 00##0  00000 
+        00000 00000 00000  00000 00000  00000`, 250);
+        sc.plotFrame(0)
+        identifyAnimationRunning = false;
+    })
+}
+
 jacdac.onStatusEvent = function (event) {
     switch (event) {
         case jacdac.StatusEvent.ProxyStarted:
-            basic.showLeds(`
+            identifyAnimation()
+            break;
+        case jacdac.StatusEvent.ProxyPacketReceived:
+            basic.plotLeds(`
             . # # # .
             . # # # .
             . # # # .
             . . # # .
             . . . . .
             `)
-            break;
-        case jacdac.StatusEvent.ProxyPacketReceived:
             led.toggle(1, 3);
+            break;
+        case jacdac.StatusEvent.Identify:
+            identifyAnimation();
             break;
     }
 }

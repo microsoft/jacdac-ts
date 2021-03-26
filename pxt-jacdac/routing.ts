@@ -2,6 +2,7 @@ namespace jacdac {
     export const enum StatusEvent {
         ProxyStarted = 200,
         ProxyPacketReceived = 201,
+        Identify = 202,
     }
     export let onStatusEvent: (event: StatusEvent) => void;
 
@@ -736,7 +737,10 @@ namespace jacdac {
                         queueAnnounce()
                         break
                     case ControlCmd.Identify:
-                        control.runInParallel(onIdentifyRequest)
+                        if (onIdentifyRequest)
+                            control.runInParallel(onIdentifyRequest)
+                        if (onStatusEvent)
+                            onStatusEvent(StatusEvent.Identify)
                         break
                     case ControlCmd.Reset:
                         control.reset()
