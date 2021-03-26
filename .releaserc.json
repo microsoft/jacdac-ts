@@ -40,12 +40,6 @@
         ],
         ["@semantic-release/release-notes-generator"],
         [
-            "@semantic-release/exec",
-            {
-                "prepareCmd": "cd tools && node ./prepare.js ${nextRelease.version}"
-            }
-        ],
-        [
             "@semantic-release/github",
             {
                 "successComment": false,

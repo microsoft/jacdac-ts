@@ -1,12 +1,6 @@
 const replace = require("replace-in-file")
-const myArgs = process.argv.slice(2)
-let version = myArgs[0]
-
-if (!version) {
-    const pkg = require("../package.json")
-    version = pkg.version
-}
-
+const pkg = require("../package.json")
+const version = pkg.version
 console.log(`patching version: ${version}`)
 
 // patch with cdn files
