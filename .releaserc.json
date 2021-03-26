@@ -52,17 +52,6 @@
                 "failComment": false
             }
         ],
-        ["@semantic-release/npm"],
-        [
-            "@semantic-release/git",
-            {
-                "assets": [
-                    "package.json",
-                    "package-lock.json",
-                    "etc/jacdac-ts.api.json",
-                    "etc/jacdac-ts.api.md"
-                ]
-            }
-        ]
+        ["@semantic-release/npm"]
     ]
 }
