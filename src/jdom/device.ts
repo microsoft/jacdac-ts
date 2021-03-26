@@ -81,6 +81,11 @@ export class JDDevice extends JDNode {
         this._replay = !!pkt?.replay;
     }
 
+    describe() {
+        return this.toString() + (this.physical ? "" : " (sim)") + ": " +
+            this.services().map(s => s.specification?.camelName || s.serviceClass.toString(16)).join(", ")
+    }
+
     get id() {
         return `${this.nodeKind}:${this.deviceId}`
     }
@@ -478,5 +483,11 @@ export class JDDevice extends JDNode {
             this._ackAwaiting.push(ack)
             pkt.sendCmdAsync(this)
         })
+    }
+
+    async floodPing(numPkts = 100, size = 32) {
+        const pkt = Packet.jdpacked(ControlCmd.FloodPing, "u32 u32 u8", [numPkts, 0x1000, size])
+        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
+        await this.sendPktWithAck(pkt)
     }
 }
