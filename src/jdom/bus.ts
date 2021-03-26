@@ -750,7 +750,7 @@ export class JDBus extends JDNode {
                                 reg =>
                                     !reg.specification?.optional ||
                                     reg.lastGetAttempts <
-                                        REGISTER_OPTIONAL_POLL_COUNT
+                                    REGISTER_OPTIONAL_POLL_COUNT
                             )
                     )
                 )
@@ -783,10 +783,14 @@ export class JDBus extends JDNode {
                         interval === undefined &&
                         intervalRegister &&
                         intervalRegister.lastGetTimestamp - this.timestamp >
-                            REGISTER_POLL_STREAMING_INTERVAL
-                    )
+                        REGISTER_POLL_STREAMING_INTERVAL
+                    ) {
                         // all async
-                        intervalRegister.sendGetAsync()
+                        if (!intervalRegister.data)
+                            intervalRegister.sendGetAsync()
+                        if (!preferredInterval.data)
+                            preferredInterval.sendGetAsync()
+                    }
                 }
                 // still no interval data use from spec or default
                 if (interval === undefined)
@@ -798,19 +802,20 @@ export class JDBus extends JDNode {
                 )
                 const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp
                 if (samplesLastSetTimesamp !== undefined) {
-                    const age =
+                    const samplesAge =
                         this.timestamp - samplesRegister.lastSetTimestamp
                     // need to figure out when we asked for streaming
-                    const midAge = (interval * 0xff) / 2
+                    const midSamplesAge = (interval * 0xff) / 2
                     // compute if half aged
-                    if (age > midAge) {
-                        //console.log(`auto-refresh - restream`, register)
+                    if (samplesAge > midSamplesAge) {
+                        console.debug({ samplesAge, midSamplesAge, interval })
                         samplesRegister.sendSetPackedAsync("u8", [0xff])
                     }
                 }
 
                 // first query, get data asap once per second
-                if (noDataYet && age > 1000) register.sendGetAsync()
+                if (noDataYet && age > 1000)
+                    register.sendGetAsync()
             } // regular register, ping if data is old
             else {
                 const expiration = Math.min(
@@ -818,7 +823,7 @@ export class JDBus extends JDNode {
                     (noDataYet
                         ? REGISTER_POLL_FIRST_REPORT_INTERVAL
                         : REGISTER_POLL_REPORT_INTERVAL) *
-                        (1 << backoff)
+                    (1 << backoff)
                 )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)
