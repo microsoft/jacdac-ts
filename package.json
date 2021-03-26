@@ -3,9 +3,9 @@
   "version": "1.8.8",
   "description": "",
   "keywords": [],
-  "main": "dist/jacdac.jdom.umd.js",
-  "module": "dist/jacdac.jdom.js",
-  "typings": "dist/types/src/jacdac.dom.d.ts",
+  "main": "dist/jacdac.umd.js",
+  "module": "dist/jacdac.js",
+  "typings": "dist/types/src/jacdac.d.ts",
   "files": [
     "dist",
     "jacdac-spec",

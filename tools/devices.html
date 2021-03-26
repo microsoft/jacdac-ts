@@ -35,12 +35,10 @@
     <div id="devices">
     </div>
 
-    <script src="/dist/jacdac-jdom.umd.js"></script>
+    <script src="/dist/jacdac.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
-        const jacdac = jacdacJdom;
-        jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
         const speedTest = /speed/.test(document.location.search)
         jd.on(jacdac.DEVICE_CONNECT, dev => {

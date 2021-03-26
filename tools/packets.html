@@ -45,10 +45,9 @@
         <div>waiting for message...</div>
     </div>
 
-    <script src="/dist/jacdac-jdom.umd.js"></script>
+    <script src="/dist/jacdac.umd.js"></script>
     <script>
         // webusb
-        const jacdac = jacdacJdom;
         let jd = jacdac.createUSBBus()
         jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))

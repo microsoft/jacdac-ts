@@ -9,32 +9,25 @@ import visualizer from "rollup-plugin-visualizer"
 import progress from 'rollup-plugin-progress';
 
 export default [
-    { libraryName: "jacdac-jdom", dir: "jdom" },
-    { libraryName: "jacdac-hosts", dir: "hosts", external: ["jacdac-jdom"] },
-    { libraryName: "jacdac-test", dir: "test", external: ["jacdac-jdom", "jacdac-hosts"] },
+    { libraryName: "jacdac", dir: "", watch: "src/**" },
+    { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
         libraryName: "jacdac-node",
         dir: "node",
-        external: ["jacdac-jdom", "webusb"],
+        external: ["jacdac", "webusb"],
     },
-    { libraryName: "jacdac-embed", dir: "embed", external: ["jacdac-jdom", "jacdac-hosts"] },
-    {
-        libraryName: "jacdac-azure-iot",
-        dir: "azure-iot",
-        external: ["jacdac-jdom", "jacdac-hosts"],
-    },
+    { libraryName: "jacdac-embed", dir: "embed", external: ["jacdac"] },
     {
         libraryName: "jacdac-cli",
         dir: "cli",
         external: [
-            "jacdac-jdom",
-            "jacdac-hosts",
+            "jacdac",
             "jacdac-node",
-            "jacdac-azure-iot",
             "webusb",
         ],
         watch: "src/**",
     },
+
 ].map(({ libraryName, dir, external, watch }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
