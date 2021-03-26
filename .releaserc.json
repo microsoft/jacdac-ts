@@ -42,7 +42,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "node ./tools/prepare.js ${nextRelease.version}"
+                "prepareCmd": "cd tools && node ./prepare.js ${nextRelease.version}"
             }
         ],
         [

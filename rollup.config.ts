@@ -10,18 +10,18 @@ import progress from 'rollup-plugin-progress';
 
 export default [
     { libraryName: "jacdac-jdom", dir: "jdom" },
-    { libraryName: "jacdac-hosts", dir: "hosts" },
-    { libraryName: "jacdac-test", dir: "test" },
+    { libraryName: "jacdac-hosts", dir: "hosts", external: ["jacdac-jdom"] },
+    { libraryName: "jacdac-test", dir: "test", external: ["jacdac-jdom", "jacdac-hosts"] },
     {
         libraryName: "jacdac-node",
         dir: "node",
         external: ["jacdac-jdom", "webusb"],
     },
-    { libraryName: "jacdac-embed", dir: "embed", external: ["jacdac-jdom"] },
+    { libraryName: "jacdac-embed", dir: "embed", external: ["jacdac-jdom", "jacdac-hosts"] },
     {
         libraryName: "jacdac-azure-iot",
         dir: "azure-iot",
-        external: ["jacdac-azure-iot"],
+        external: ["jacdac-jdom", "jacdac-hosts"],
     },
     {
         libraryName: "jacdac-cli",
