@@ -27,6 +27,7 @@ jobs:
       - uses: bahmutov/npm-install@v1
       - run: yarn dist
       - run: yarn test
+      - run: yarn disttools
       - run: npx semantic-release
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
