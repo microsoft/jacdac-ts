@@ -472,8 +472,8 @@ class JDCommandEvaluator {
                         if (testFun.id === "nextEvent")
                             this._status = JDTestCommandStatus.Failed
                     } else {
-                        this._status = JDTestCommandStatus.Passed
-                        // this._status = this.checkExpression(this.command.call.arguments[1])
+                        // this._status = JDTestCommandStatus.Passed
+                        this._status = this.checkExpression(this.command.call.arguments[1])
                     }
                 } else {
                     this._progress = `no events received; ${this._progress}`
@@ -775,17 +775,16 @@ export class JDServiceTestRunner extends JDServiceClient {
     }
     
     public lookup(root: string, fld: string = ""): any {
-        const regs = this.registers
-        const events = this.events
-        if (root in regs) {
+        if (root in this.registers) {
             if (!fld)
-                return regs[root].unpackedValue?.[0]
+                return this.registers[root].unpackedValue?.[0]
             else {
-                let field = regs[root].fields.find(f => f.name === fld)
+                let field = this.registers[root].fields.find(f => f.name === fld)
                 return field?.value
             }
-        } else if (root in events) {
-            let field = events[root].fields.find(f => f.name === fld)
+        } else if (root in this.events) {
+            // console.log(root, events[root])
+            let field = this.events[root].fields?.find(f => f.name === fld)
             return field?.value
         }
         return undefined
