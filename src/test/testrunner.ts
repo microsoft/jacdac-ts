@@ -64,9 +64,8 @@ function unparse(e: jsep.Expression): string {
         }
         case "MemberExpression": {
             const root = e as jsep.MemberExpression
-            const lhs = root.object as jsep.Identifier
-            const rhs = root.property as jsep.Identifier
-            return `${lhs.name}.${rhs.name}`
+            return root.computed ? `${unparse(root.object)}[${unparse(root.property)}]`
+                : `${unparse(root.object)}.${unparse(root.property)}`
         }
         case "BinaryExpression":
         case "LogicalExpression": {
@@ -92,12 +91,14 @@ type SMap<T> = { [v: string]: T }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StartMap = { e: jsep.Expression; v: any }[]
 
+type GetValue = (root: string, fld: string) => any
+
 class JDExprEvaluator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exprStack: any[] = []
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(private env: SMap<any>, private start: StartMap) { }
+    constructor(private env: GetValue, private start: StartMap) { }
 
     private tos() {
         return this.exprStack[this.exprStack.length - 1]
@@ -217,15 +218,16 @@ class JDExprEvaluator {
                 break
             }
             case "MemberExpression": {
+                // member expressions are of form [register|event].field
                 const root = e as jsep.MemberExpression
                 const lhs = root.object as jsep.Identifier
                 const rhs = root.property as jsep.Identifier
-                // TODO: need to work on unpacking (where???)
+                this.exprStack.push(this.env(lhs.name, rhs.name))
                 break
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
-                this.exprStack.push(this.env[id.name])
+                this.exprStack.push(this.env(id.name, ""))
                 break
             }
             case "Literal": {
@@ -254,6 +256,25 @@ class JDCommandEvaluator {
 
     }
 
+    public get env() {
+        return (root: string, fld: string = ""): any => {
+            const regs = this.testRunner.serviceTestRunner.registers
+            const events = this.testRunner.serviceTestRunner.events
+            if (root in regs) {
+                if (!fld)
+                    return regs[root].unpackedValue?.[0]
+                else {
+                    let field = regs[root].fields.find(f => f.name === fld)
+                    return field?.value
+                }
+            } else if (root in events) {
+                let field = events[root].fields.find(f => f.name === fld)
+                return field?.value
+            }
+            return undefined
+        }
+    }
+
     public get prompt() {
         return this._prompt
     }
@@ -272,7 +293,10 @@ class JDCommandEvaluator {
         const args = this.command.call.arguments
         let startExprs: jsep.Expression[] = []
         switch (testFun.id as Commands) {
-            case "check": {
+            case "check": 
+            case "awaitEvent":
+            case "nextEvent":
+            {
                 exprVisitor(null, args, (p,ce:jsep.CallExpression) => {
                     if (ce.type === 'CallExpression' && (<jsep.Identifier>ce.callee).name === "start")
                         startExprs.push(ce.arguments[0])
@@ -305,10 +329,9 @@ class JDCommandEvaluator {
             }
         }
         // evaluate the start expressions and store the results
-        const env = this.testRunner.serviceTestRunner.environment;
         startExprs.forEach(child => {
             if (this._startExpressions.findIndex(r => r.e === child) < 0) {
-                const exprEval = new JDExprEvaluator(env, [])
+                const exprEval = new JDExprEvaluator(this.env, [])
                 this._startExpressions.push({
                     e: child,
                     v: exprEval.eval(child),
@@ -338,9 +361,18 @@ class JDCommandEvaluator {
     public setEvent(ev: string) {
         this._eventsQueue.push(ev)
     }
+    
+    private checkExpression(e: jsep.Expression) {
+        const expr = new JDExprEvaluator(
+            this.env,
+            this._startExpressions
+        )
+        return expr.eval(e)
+            ? JDTestCommandStatus.Passed
+            : JDTestCommandStatus.Active
+    }
 
     public evaluate() {
-        const env = this.testRunner.serviceTestRunner.environment;
         const testFun = cmdToTestFunction(this.command)
         this._status = JDTestCommandStatus.Active
         this._progress = ""
@@ -350,14 +382,7 @@ class JDCommandEvaluator {
                 break
             }
             case "check": {
-                const expr = new JDExprEvaluator(
-                    env,
-                    this._startExpressions
-                )
-                const ev = expr.eval(this.command.call.arguments[0])
-                this._status = ev
-                    ? JDTestCommandStatus.Passed
-                    : JDTestCommandStatus.Active
+                this._status = this.checkExpression(this.command.call.arguments[0])
                 break
             }
             case "changes":
@@ -365,7 +390,7 @@ class JDCommandEvaluator {
             case "decreases": {
                 const reg = this.command.call.arguments[0]
                 const regSaved = this._startExpressions.find(r => r.e === reg)
-                const regValue = env[unparse(reg)]
+                const regValue = this.env(unparse(reg))
                 const status =
                     (testFun.id === "changes" && regValue !== regSaved.v) ||
                         (testFun.id === "increases" && regValue > regSaved.v) ||
@@ -382,7 +407,7 @@ class JDCommandEvaluator {
                 const regSaved = this._startExpressions.find(r => r.e === reg)
                 const amt = this.command.call.arguments[1]
                 const amtSaved = this._startExpressions.find(r => r.e === amt)
-                const regValue = env[unparse(reg)]
+                const regValue = this.env(unparse(reg))
                 if (testFun.id === "increasesBy") {
                     if (regValue >= regSaved.v + amtSaved.v) {
                         this._status = JDTestCommandStatus.Passed
@@ -415,7 +440,7 @@ class JDCommandEvaluator {
             case "stepsDownTo": {
                 this._status = JDTestCommandStatus.Active
                 const reg = this.command.call.arguments[0]
-                const regValue = env[unparse(reg)]
+                const regValue = this.env(unparse(reg))
                 const beginSaved = this._startExpressions.find(r => r.e === reg)
                 const end = this.command.call.arguments[1]
                 const endSaved = this._startExpressions.find(r => r.e === end)
@@ -452,11 +477,26 @@ class JDCommandEvaluator {
                 }
                 break
             }
+            case "awaitEvent":
+            case "nextEvent":{
+                const event = this.command.call.arguments[0] as jsep.Identifier
+                this._progress = `waiting for event ${event.name}`
+                if (this._eventsQueue?.length > 0) {
+                    const ev = this._eventsQueue.pop()
+                    if (ev !== event.name) {
+                        if (testFun.id === "nextEvent")
+                            this._status = JDTestCommandStatus.Failed
+                    } else {
+                        this._status = this.checkExpression(this.command.call.arguments[1])
+                    }
+                }
+                break
+            }
             case "assign": {
                 const reg = this.command.call.arguments[0] as jsep.Identifier
                 const jdreg = this.testRunner.serviceTestRunner.registers[reg.name]
                 const expr = new JDExprEvaluator(
-                    env,
+                    this.env,
                     this._startExpressions
                 )
                 const ev = expr.eval(this.command.call.arguments[1])
@@ -677,23 +717,22 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
-async function refresh_env(registers: SMap<JDRegister>, environment: SMap<any>) {
-    for (const k in environment) {
+async function refresh_env(registers: SMap<JDRegister>) {
+    for (const k in registers) {
         const register = registers[k]
         let retry = 0;
+        let val: any = undefined
         do {
             await register.refresh()
-            environment[k] = register.unpackedValue?.[0]
-        } while (environment[k] === undefined && retry++ < 2)
+            val = register.unpackedValue?.[0]
+        } while (val === undefined && retry++ < 2)
     }
 }
 
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
     private _registers: SMap<JDRegister> = {}
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _environment: SMap<any> = {}
-    private events: SMap<JDEvent> = {}
+    private _events: SMap<JDEvent> = {}
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -729,10 +768,8 @@ export class JDServiceTestRunner extends JDServiceClient {
                     )
                     const register = service.register(pkt.identifier)
                     this._registers[regName] = register
-                    this._environment[regName] = register.unpackedValue ? register.unpackedValue[0] : register.intValue
                     this.mount(
                         register.subscribe(CHANGE, () => {
-                            this._environment[regName] = register.unpackedValue ? register.unpackedValue[0] : register.intValue
                             this.currentTest?.envChange()
                         })
                     )
@@ -743,15 +780,15 @@ export class JDServiceTestRunner extends JDServiceClient {
     }
 
     public refreshEnvironment() {
-        refresh_env(this.registers, this.environment)
-    }
-
-    public get environment() {
-        return this._environment
+        refresh_env(this.registers)
     }
 
     public get registers() {
         return this._registers
+    }
+
+    public get events() {
+        return this._events
     }
 
     private get testIndex() {
