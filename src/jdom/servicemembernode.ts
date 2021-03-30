@@ -1,5 +1,6 @@
 import { JDNode } from "./node";
 import { JDService } from "./service";
+import { DecodedPacket } from "./pretty";
 
 export abstract class JDServiceMemberNode extends JDNode {
     private _specification: jdspec.PacketInfo;
@@ -38,4 +39,6 @@ export abstract class JDServiceMemberNode extends JDNode {
         const parts = [this.service.friendlyName, this.name]
         return parts.join('.')
     }
+
+    abstract get decoded(): DecodedPacket;
 }

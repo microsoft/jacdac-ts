@@ -5,6 +5,7 @@ import { intOfBuffer } from "./buffer";
 import { CHANGE, CMD_EVENT_COUNTER_MASK, EVENT, EVENT_NODE_NAME } from "./constants";
 import { isEvent } from "./spec";
 import { JDServiceMemberNode } from "./servicemembernode";
+import { DecodedPacket } from "./pretty";
 
 export class JDEvent extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
@@ -39,6 +40,10 @@ export class JDEvent extends JDServiceMemberNode {
     get intValue(): number {
         const d = this.data;
         return d && intOfBuffer(d);
+    }
+
+    get decoded(): DecodedPacket {
+        return this._lastReportPkt?.decoded;
     }
 
     processEvent(pkt: Packet) {

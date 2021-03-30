@@ -2,7 +2,7 @@ import {
     Commands,
     testCommandFunctions,
 } from "../../jacdac-spec/spectool/jdtestfuns"
-import { getExpressionsOfType } from "../../jacdac-spec/spectool/jdutils"
+import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 
 import { CHANGE, EVENT } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
@@ -61,6 +61,12 @@ function unparse(e: jsep.Expression): string {
             return `${unparse(caller.callee)}(${caller.arguments
                 .map(unparse)
                 .join(", ")})`
+        }
+        case "MemberExpression": {
+            const root = e as jsep.MemberExpression
+            const lhs = root.object as jsep.Identifier
+            const rhs = root.property as jsep.Identifier
+            return `${lhs.name}.${rhs.name}`
         }
         case "BinaryExpression":
         case "LogicalExpression": {
@@ -210,7 +216,13 @@ class JDExprEvaluator {
                 }
                 break
             }
-
+            case "MemberExpression": {
+                const root = e as jsep.MemberExpression
+                const lhs = root.object as jsep.Identifier
+                const rhs = root.property as jsep.Identifier
+                // TODO: need to work on unpacking (where???)
+                break
+            }
             case "Identifier": {
                 const id = <jsep.Identifier>e
                 this.exprStack.push(this.env[id.name])
@@ -252,6 +264,8 @@ class JDCommandEvaluator {
         return this._progress
     }
 
+    // TODO: define an interface between test runner and command evaluator
+    // TODO: so this all can be done modularly
     public start() {
         this._startExpressions = []
         const testFun = cmdToTestFunction(this.command)
@@ -259,9 +273,10 @@ class JDCommandEvaluator {
         let startExprs: jsep.Expression[] = []
         switch (testFun.id as Commands) {
             case "check": {
-                startExprs = (<jsep.CallExpression[]>getExpressionsOfType(args, 'CallExpression'))
-                    .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
-                    .map(ce => ce.arguments[0])
+                exprVisitor(null, args, (p,ce:jsep.CallExpression) => {
+                    if (ce.type === 'CallExpression' && (<jsep.Identifier>ce.callee).name === "start")
+                        startExprs.push(ce.arguments[0])
+                })
                 break
             }
             case "changes":
