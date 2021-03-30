@@ -1,11 +1,11 @@
 import { ButtonEvent, REFRESH, SRV_BUTTON } from "../jdom/constants";
 import SensorServiceHost from "./sensorservicehost";
 
-const CLICK_HOLD_TIME = 500
+const HOLD_TIME = 500
 
 export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
     private _downTime: number;
-    private _held = false;
+    private _nextHold: number;
 
     constructor(instanceName?: string) {
         super(SRV_BUTTON, { instanceName, readingValues: [false], streamingInterval: 50 });
@@ -15,9 +15,8 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
     private async handleRefresh() {
         const [v] = this.reading.values();
         if (v) {
-            const delay = this.device.bus.timestamp - this._downTime;
-            if (!this._held && delay > CLICK_HOLD_TIME) {
-                this._held = true;
+            if (this.device.bus.timestamp  > this._nextHold) {
+                this._nextHold = this.device.bus.timestamp + HOLD_TIME;
                 await this.sendEvent(ButtonEvent.Hold);
             }
         }
@@ -27,7 +26,7 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
         const [v] = this.reading.values();
         if (v) return;
         this._downTime = this.device.bus.timestamp;
-        this._held = false;
+        this._nextHold = this._downTime + HOLD_TIME;
         this.reading.setValues([true]);
         await this.sendEvent(ButtonEvent.Down);
     }
@@ -35,14 +34,7 @@ export default class ButtonServiceHost extends SensorServiceHost<[boolean]> {
     async up() {
         const [v] = this.reading.values();
         if (!v) return;
-        const upTime = this.device.bus.timestamp;
         this.reading.setValues([false]);
         await this.sendEvent(ButtonEvent.Up);
-
-        // generate clicks
-        if (this._downTime !== undefined) {
-            if (upTime - this._downTime < CLICK_HOLD_TIME)
-                await this.sendEvent(ButtonEvent.Click);
-        }
     }
 }

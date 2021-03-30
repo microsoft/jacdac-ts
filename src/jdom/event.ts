@@ -6,9 +6,11 @@ import { CHANGE, CMD_EVENT_COUNTER_MASK, EVENT, EVENT_NODE_NAME } from "./consta
 import { isEvent } from "./spec";
 import { JDServiceMemberNode } from "./servicemembernode";
 import { DecodedPacket } from "./pretty";
+import { JDField } from "./field";
 
 export class JDEvent extends JDServiceMemberNode {
     private _lastReportPkt: Packet;
+    private _fields: JDField[];
     private _count = 0;
 
     constructor(
@@ -21,6 +23,16 @@ export class JDEvent extends JDServiceMemberNode {
         return EVENT_NODE_NAME
     }
 
+    get fields() {
+        if (!this._fields)
+            this._fields = this.specification?.fields.map((field, index) => new JDField(this, index, field));
+        return this._fields.slice();
+    }
+
+    get children(): JDNode[] {
+        return this.fields;
+    }
+
     get data() {
         return this._lastReportPkt ? this._lastReportPkt.data.slice(4) : undefined
     }
@@ -31,10 +43,6 @@ export class JDEvent extends JDServiceMemberNode {
 
     get lastDataTimestamp() {
         return this._lastReportPkt?.timestamp
-    }
-
-    get children(): JDNode[] {
-        return [];
     }
 
     get intValue(): number {
