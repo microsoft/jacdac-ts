@@ -1,8 +1,6 @@
 import { FIELD_NODE_NAME } from "./constants"
-import { JDRegister } from "./register"
 import { JDNode } from "./node"
-import { DecodedMember, DecodedPacket } from "./pretty"
-import { JDService } from "./service"
+import { DecodedMember } from "./pretty"
 import { JDServiceMemberNode } from "./servicemembernode"
 
 export class JDField extends JDNode {

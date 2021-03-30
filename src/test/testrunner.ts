@@ -783,7 +783,6 @@ export class JDServiceTestRunner extends JDServiceClient {
                 return field?.value
             }
         } else if (root in this.events) {
-            // console.log(root, events[root])
             let field = this.events[root].fields?.find(f => f.name === fld)
             return field?.value
         }
