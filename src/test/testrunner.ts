@@ -247,32 +247,12 @@ class JDCommandEvaluator {
     private _startExpressions: StartMap = []
     private _rangeComplete: number = undefined
     private _eventsComplete: string[] = undefined
-    private _eventsQueue: string[] = undefined
 
     constructor(
         private readonly testRunner: JDTestRunner,
         private readonly command: jdtest.TestCommandSpec
     ) {
 
-    }
-
-    public get env() {
-        return (root: string, fld: string = ""): any => {
-            const regs = this.testRunner.serviceTestRunner.registers
-            const events = this.testRunner.serviceTestRunner.events
-            if (root in regs) {
-                if (!fld)
-                    return regs[root].unpackedValue?.[0]
-                else {
-                    let field = regs[root].fields.find(f => f.name === fld)
-                    return field?.value
-                }
-            } else if (root in events) {
-                let field = events[root].fields.find(f => f.name === fld)
-                return field?.value
-            }
-            return undefined
-        }
     }
 
     public get prompt() {
@@ -283,6 +263,12 @@ class JDCommandEvaluator {
     }
     public get progress() {
         return this._progress
+    }
+
+    private get env() {
+        return (root: string, fld: string = "") => {
+            return this.testRunner.serviceTestRunner.lookup(root, fld)
+        }
     }
 
     // TODO: define an interface between test runner and command evaluator
@@ -324,7 +310,6 @@ class JDCommandEvaluator {
             case "events": {
                 const eventList = this.command.call.arguments[0] as jsep.ArrayExpression
                 this._eventsComplete = (eventList.elements as jsep.Identifier[]).map(id => id.name)
-                this._eventsQueue = []
                 break
             }
         }
@@ -359,7 +344,7 @@ class JDCommandEvaluator {
     }
 
     public setEvent(ev: string) {
-        this._eventsQueue.push(ev)
+
     }
     
     private checkExpression(e: jsep.Expression) {
@@ -462,8 +447,8 @@ class JDCommandEvaluator {
                 break
             }
             case "events": {
-                if (this._eventsQueue?.length > 0 && this._eventsComplete?.length > 0) {
-                    const ev = this._eventsQueue.pop()
+                if (this.testRunner.hasEvent) {
+                    const ev = this.testRunner.consumeEvent()
                     if (ev === this._eventsComplete[0]) {
                         this._eventsComplete.shift()
                         if (this._eventsComplete.length === 0)
@@ -481,14 +466,17 @@ class JDCommandEvaluator {
             case "nextEvent":{
                 const event = this.command.call.arguments[0] as jsep.Identifier
                 this._progress = `waiting for event ${event.name}`
-                if (this._eventsQueue?.length > 0) {
-                    const ev = this._eventsQueue.pop()
+                if (this.testRunner.hasEvent) {
+                    const ev = this.testRunner.consumeEvent()
                     if (ev !== event.name) {
                         if (testFun.id === "nextEvent")
                             this._status = JDTestCommandStatus.Failed
                     } else {
-                        this._status = this.checkExpression(this.command.call.arguments[1])
+                        this._status = JDTestCommandStatus.Passed
+                        // this._status = this.checkExpression(this.command.call.arguments[1])
                     }
+                } else {
+                    this._progress = `no events received; ${this._progress}`
                 }
                 break
             }
@@ -593,11 +581,6 @@ export class JDTestCommandRunner extends JDEventSource {
         }
     }
 
-    eventChange(event: string) {
-        this._commmandEvaluator.setEvent(event)
-        this.envChange()
-    }
-
     cancel() {
         this.finish(JDTestCommandStatus.Failed)
     }
@@ -617,6 +600,7 @@ export class JDTestCommandRunner extends JDEventSource {
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
     private _commandIndex: number
+    private _currentEvent: string = undefined
     public readonly commands: JDTestCommandRunner[]
 
     constructor(
@@ -702,7 +686,18 @@ export class JDTestRunner extends JDEventSource {
     }
 
     public eventChange(event: string) {
-        this.currentCommand?.eventChange(event)
+        this._currentEvent = event;
+        this.envChange();
+    }
+
+    public get hasEvent() {
+        return this._currentEvent != undefined
+    }
+
+    public consumeEvent() {
+        let ret = this._currentEvent
+        this._currentEvent = undefined
+        return ret
     }
 
     public finishCommand() {
@@ -777,6 +772,23 @@ export class JDServiceTestRunner extends JDServiceClient {
             })
         })
         this.start()
+    }
+    
+    public lookup(root: string, fld: string = ""): any {
+        const regs = this.registers
+        const events = this.events
+        if (root in regs) {
+            if (!fld)
+                return regs[root].unpackedValue?.[0]
+            else {
+                let field = regs[root].fields.find(f => f.name === fld)
+                return field?.value
+            }
+        } else if (root in events) {
+            let field = events[root].fields.find(f => f.name === fld)
+            return field?.value
+        }
+        return undefined
     }
 
     public refreshEnvironment() {
