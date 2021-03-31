@@ -121,11 +121,15 @@ class JDExprEvaluator {
                 const caller = <jsep.CallExpression>e
                 const callee = <jsep.Identifier>caller.callee
                 switch (callee.name) {
-                    case "start":
+                    case "start": {
                         this.exprStack.push(
                             this.start.find(r => r.e === caller).v
                         )
                         return
+                    }
+                    case "closeTo": {
+
+                    }
                     default: // ERROR
                 }
                 break
@@ -286,8 +290,14 @@ class JDCommandEvaluator {
             case "nextEvent":
             {
                 exprVisitor(null, args, (p,ce:jsep.CallExpression) => {
-                    if (ce.type === 'CallExpression' && (<jsep.Identifier>ce.callee).name === "start")
+                    if (ce.type !== 'CallExpression')
+                        return 
+                    if ((<jsep.Identifier>ce.callee).name === "start")
                         startExprs.push(ce.arguments[0])
+                    else if ((<jsep.Identifier>ce.callee).name === "closeTo") {
+                        startExprs.push(ce.arguments[1])
+                        startExprs.push(ce.arguments[2])
+                    }
                 })
                 break
             }
@@ -303,6 +313,11 @@ class JDCommandEvaluator {
             case "stepsDownTo": {
                 startExprs.push(args[0])
                 startExprs.push(args[1])
+                break
+            }
+            case "closeTo": {
+                startExprs.push(args[1])
+                startExprs.push(args[2])
                 break
             }
             case "assign": {
@@ -359,8 +374,13 @@ class JDCommandEvaluator {
             : JDTestCommandStatus.Active
     }
 
+    private getStart(e: jsep.Expression){
+        return this._startExpressions.find(r => r.e === e)
+    }
+
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
+        const args = this.command.call.arguments
         this._status = JDTestCommandStatus.Active
         this._progress = ""
         switch (testFun.id as Commands) {
@@ -369,15 +389,28 @@ class JDCommandEvaluator {
                 break
             }
             case "check": {
-                this._status = this.checkExpression(this.command.call.arguments[0])
+                this._status = this.checkExpression(args[0])
+                break
+            }
+            case "closeTo": {
+                // TODO: need to but this into expression evaluation as well
+                const goal = this.getStart(args[1])
+                const error = this.getStart(args[2])
+                const expr = new JDExprEvaluator(
+                    this.env,
+                    this._startExpressions
+                )
+                const ev = expr.eval(args[0])
+                if (ev >= goal.v - error.v && ev <= goal.v + error.v)
+                    this._status = JDTestCommandStatus.Passed
+                this._progress = `current: ${ev}; goal: ${goal.v}; error: ${error.v}`
                 break
             }
             case "changes":
             case "increases":
             case "decreases": {
-                const reg = this.command.call.arguments[0]
-                const regSaved = this._startExpressions.find(r => r.e === reg)
-                const regValue = this.env(unparse(reg))
+                const regSaved = this._startExpressions.find(r => r.e === args[0])
+                const regValue = this.env(unparse(args[0]))
                 const status =
                     (testFun.id === "changes" && regValue !== regSaved.v) ||
                         (testFun.id === "increases" && regValue > regSaved.v) ||
@@ -390,11 +423,9 @@ class JDCommandEvaluator {
             }
             case "increasesBy":
             case "decreasesBy": {
-                const reg = this.command.call.arguments[0]
-                const regSaved = this._startExpressions.find(r => r.e === reg)
-                const amt = this.command.call.arguments[1]
-                const amtSaved = this._startExpressions.find(r => r.e === amt)
-                const regValue = this.env(unparse(reg))
+                const regSaved = this.getStart(args[0])
+                const amtSaved = this.getStart(args[1])
+                const regValue = this.env(unparse(args[0]))
                 if (testFun.id === "increasesBy") {
                     if (regValue >= regSaved.v + amtSaved.v) {
                         this._status = JDTestCommandStatus.Passed
@@ -426,11 +457,9 @@ class JDCommandEvaluator {
             case "stepsUpTo":
             case "stepsDownTo": {
                 this._status = JDTestCommandStatus.Active
-                const reg = this.command.call.arguments[0]
-                const regValue = this.env(unparse(reg))
-                const beginSaved = this._startExpressions.find(r => r.e === reg)
-                const end = this.command.call.arguments[1]
-                const endSaved = this._startExpressions.find(r => r.e === end)
+                const regValue = this.env(unparse(args[0]))
+                const beginSaved = this.getStart(args[0])
+                const endSaved = this.getStart(args[1])
                 if (this._rangeComplete === undefined) {
                     this._rangeComplete = regValue
                 } else {
@@ -466,7 +495,7 @@ class JDCommandEvaluator {
             }
             case "awaitEvent":
             case "nextEvent":{
-                const event = this.command.call.arguments[0] as jsep.Identifier
+                const event = args[0] as jsep.Identifier
                 this._progress = `waiting for event ${event.name}`
                 if (this.testRunner.hasEvent) {
                     const ev = this.testRunner.consumeEvent()
@@ -483,7 +512,7 @@ class JDCommandEvaluator {
                 break
             }
             case "assign": {
-                const reg = this.command.call.arguments[0] as jsep.Identifier
+                const reg = args[0] as jsep.Identifier
                 const jdreg = this.testRunner.serviceTestRunner.registers[reg.name]
                 const expr = new JDExprEvaluator(
                     this.env,
