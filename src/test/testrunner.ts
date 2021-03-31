@@ -222,7 +222,9 @@ class JDExprEvaluator {
                 const root = e as jsep.MemberExpression
                 const lhs = root.object as jsep.Identifier
                 const rhs = root.property as jsep.Identifier
-                this.exprStack.push(this.env(lhs.name, rhs.name))
+                const val = this.env(lhs.name, rhs.name)
+                // console.log(`${lhs.name}.${rhs.name} = ${val}`)
+                this.exprStack.push(val)
                 break
             }
             case "Identifier": {
@@ -562,11 +564,10 @@ export class JDTestCommandRunner extends JDEventSource {
         this.status = JDTestCommandStatus.Active
         this._commmandEvaluator = new JDCommandEvaluator(this.testRunner, this.command)
         this._commmandEvaluator.start()
-        this.envChange(false)
-        this.envChange(true)
+        this.envChange()
     }
 
-    envChange(finish = true) {
+    envChange() {
         if (this._commmandEvaluator) {
             this._commmandEvaluator.evaluate()
             const newOutput: JDCommandOutput = {
@@ -576,7 +577,7 @@ export class JDTestCommandRunner extends JDEventSource {
             this.output = newOutput
             if (this._commmandEvaluator.status === JDTestCommandStatus.RequiresUserInput)
                 this.status = JDTestCommandStatus.RequiresUserInput
-            else if (finish)
+            else
                 this.finish(this._commmandEvaluator.status)
         }
     }
