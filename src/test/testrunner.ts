@@ -1,6 +1,6 @@
 import {
-    Commands,
-    testCommandFunctions,
+    getTestCommandFunctions,
+    JDTestFunctions,
 } from "../../jacdac-spec/spectool/jdtestfuns"
 import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 
@@ -45,7 +45,7 @@ function commandStatusToTestStatus(status: JDTestCommandStatus) {
 
 function cmdToTestFunction(cmd: jdtest.TestCommandSpec) {
     const id = (<jsep.Identifier>cmd.call.callee).name
-    return testCommandFunctions.find(t => t.id == id)
+    return getTestCommandFunctions().find(t => t.id == id)
 }
 
 function unparse(e: jsep.Expression): string {
@@ -284,7 +284,7 @@ class JDCommandEvaluator {
         const testFun = cmdToTestFunction(this.command)
         const args = this.command.call.arguments
         let startExprs: jsep.Expression[] = []
-        switch (testFun.id as Commands) {
+        switch (testFun.id as JDTestFunctions) {
             case "check": 
             case "awaitEvent":
             case "nextEvent":
@@ -383,7 +383,7 @@ class JDCommandEvaluator {
         const args = this.command.call.arguments
         this._status = JDTestCommandStatus.Active
         this._progress = ""
-        switch (testFun.id as Commands) {
+        switch (testFun.id as JDTestFunctions) {
             case "ask": {
                 this._status = JDTestCommandStatus.RequiresUserInput
                 break
