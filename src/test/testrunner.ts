@@ -562,8 +562,6 @@ export interface JDCommandOutput {
 export class JDTestCommandRunner extends JDEventSource {
     private _status = JDTestCommandStatus.NotReady
     private _output: JDCommandOutput = { message: "", progress: "" }
-    private readonly _timeOut = 5000 // timeout
-    private _timeLeft = 5000
     private _commmandEvaluator: JDCommandEvaluator = null
 
     constructor(
@@ -614,8 +612,8 @@ export class JDTestCommandRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = { message: "", progress: "" }
         this.status = JDTestCommandStatus.NotReady
+        this.output = { message: "", progress: "" }
         this._commmandEvaluator = null
     }
 
@@ -659,7 +657,7 @@ export class JDTestCommandRunner extends JDEventSource {
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
     private _commandIndex: number
-    private _currentEvent: string = undefined
+    private _currentEvent: string
     public readonly commands: JDTestCommandRunner[]
 
     constructor(
@@ -672,10 +670,11 @@ export class JDTestRunner extends JDEventSource {
         )
     }
 
-    reset() {
+    public reset() {
         if (this.status !== JDTestStatus.NotReady) {
             this._status = JDTestStatus.NotReady
             this._commandIndex = undefined
+            this._currentEvent = undefined
             this.commands.forEach(t => t.reset())
             this.emit(CHANGE)
         }
@@ -741,12 +740,16 @@ export class JDTestRunner extends JDEventSource {
     }
 
     public envChange() {
-        this.currentCommand?.envChange()
+        if (this.status === JDTestStatus.Active) {
+            this.currentCommand?.envChange()
+        }
     }
 
     public eventChange(event: string) {
-        this._currentEvent = event;
-        this.envChange();
+        if (this.status === JDTestStatus.Active) {
+            this._currentEvent = event;
+            this.envChange();
+        }
     }
 
     public get hasEvent() {
@@ -762,8 +765,8 @@ export class JDTestRunner extends JDEventSource {
     public finishCommand() {
         if (this.commandIndex === this.commands.length - 1)
             this.finish(commandStatusToTestStatus(this.currentCommand.status))
-        // (this.commandIndex < this.commands.length)
-        else this.commandIndex++
+        else 
+            this.commandIndex++
     }
 
     get currentCommand() {
