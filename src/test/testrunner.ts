@@ -416,7 +416,6 @@ class JDCommandEvaluator {
                 break
             }
             case "closeTo": {
-                // TODO: need to but this into expression evaluation as well
                 const goal = this.getStart(args[1])
                 const error = this.getStart(args[2])
                 const expr = new JDExprEvaluator(
@@ -592,6 +591,13 @@ export class JDTestCommandRunner extends JDEventSource {
         )
     }
 
+    get isActive(): boolean {
+        return (
+            this.status === JDTestCommandStatus.Active ||
+            this.status === JDTestCommandStatus.RequiresUserInput
+        )
+    }
+
     get output() {
         return this._output
     }
@@ -621,7 +627,7 @@ export class JDTestCommandRunner extends JDEventSource {
     }
 
     envChange() {
-        if (this._commmandEvaluator) {
+        if (this.isActive) {
             this._commmandEvaluator.evaluate()
             const newOutput: JDCommandOutput = {
                 message: this._commmandEvaluator.prompt,
@@ -640,10 +646,9 @@ export class JDTestCommandRunner extends JDEventSource {
     }
 
     finish(s: JDTestCommandStatus) {
-        if (
-            (s === JDTestCommandStatus.Failed || s === JDTestCommandStatus.Passed) &&
-            (this.status === JDTestCommandStatus.Active ||
-                this.status === JDTestCommandStatus.RequiresUserInput)
+        if ( this.isActive &&
+            (s === JDTestCommandStatus.Failed || s === JDTestCommandStatus.Passed)
+          
         ) {
             this.status = s
             this.testRunner.finishCommand()
