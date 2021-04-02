@@ -435,9 +435,10 @@ class JDCommandEvaluator {
                 const regSaved = this._startExpressions.find(r => r.e === args[0])
                 const regValue = this.env(unparse(args[0]))
                 const status =
-                    (testFun.id === "changes" && regValue !== regSaved.v) ||
-                        (testFun.id === "increases" && regValue > regSaved.v) ||
-                        (testFun.id === "decreases" && regValue < regSaved.v)
+                    regValue && regSaved.v && 
+                        ((testFun.id === "changes" && regValue !== regSaved.v) ||
+                         (testFun.id === "increases" && regValue > regSaved.v) ||
+                         (testFun.id === "decreases" && regValue < regSaved.v))
                         ? JDTestCommandStatus.Passed
                         : JDTestCommandStatus.Active
                 this._status = status
