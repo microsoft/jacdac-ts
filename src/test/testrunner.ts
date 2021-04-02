@@ -11,7 +11,7 @@ import { JDRegister } from "../jdom/register"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { isEvent, isRegister, serviceSpecificationFromClassIdentifier } from "../jdom/spec"
-import { roundWithPrecision } from "../jdom/utils"
+import { assert, roundWithPrecision } from "../jdom/utils"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -123,12 +123,14 @@ class JDExprEvaluator {
                 switch (callee.name) {
                     case "start": {
                         this.exprStack.push(
-                            this.start.find(r => r.e === caller).v
+                            this.start.find(r => r.e === caller.arguments[0]).v
                         )
                         return
                     }
                     case "closeTo": {
-
+                        // TODO
+                        assert(false, "closeTo as expression not yet implemented")
+                        return
                     }
                     default: // ERROR
                 }
@@ -204,7 +206,28 @@ class JDExprEvaluator {
                 break
             }
 
-            case "UnaryExpression":
+            case "UnaryExpression": {
+                const ue = <jsep.UnaryExpression>e
+                this.visitExpression(ue.argument)
+                const top = this.exprStack.pop()
+                switch(ue.operator) {
+                    case "!": 
+                        this.exprStack.push(!top)
+                        return
+                    case "~":
+                        this.exprStack.push(~top)
+                        return
+                    case "-":
+                        this.exprStack.push(-top)
+                        return
+                    case "+":
+                        this.exprStack.push(+top)
+                        return
+                }
+                break
+            }
+
+
             case "LogicalExpression": {
                 const le = <jsep.LogicalExpression>e
                 this.visitExpression(le.left)
@@ -212,11 +235,11 @@ class JDExprEvaluator {
                     case "||":
                         if (this.tos()) return
                         else this.visitExpression(le.right)
-                        break
+                        return
                     case "&&":
                         if (!this.tos()) return
                         else this.visitExpression(le.right)
-                        break
+                        return
                     default:
                 }
                 break
@@ -229,17 +252,17 @@ class JDExprEvaluator {
                 const val = this.env(lhs.name, rhs.name)
                 // console.log(`${lhs.name}.${rhs.name} = ${val}`)
                 this.exprStack.push(val)
-                break
+                return
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
                 this.exprStack.push(this.env(id.name, ""))
-                break
+                return
             }
             case "Literal": {
                 const lit = <jsep.Literal>e
                 this.exprStack.push(lit.value)
-                break
+                return
             }
             default:
         }
