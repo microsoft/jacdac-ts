@@ -110,6 +110,10 @@ class JDExprEvaluator {
         return this.exprStack.pop()
     }
 
+    private getStartVal(e: jsep.Expression) {
+        return this.start.find(r => r.e === e).v
+    }
+
     private visitExpression(e: jsep.Expression) {
         switch (e.type) {
             case "ArrayExpression": {
@@ -122,15 +126,17 @@ class JDExprEvaluator {
                 const callee = <jsep.Identifier>caller.callee
                 switch (callee.name) {
                     case "start": {
-                        this.exprStack.push(
-                            this.start.find(r => r.e === caller.arguments[0]).v
-                        )
+                        this.exprStack.push(this.getStartVal(caller.arguments[0]))
                         return
                     }
                     case "closeTo": {
-                        // TODO
-                        assert(false, "closeTo as expression not yet implemented")
-                        return
+                        const args = caller.arguments
+                        const goal = this.getStartVal(args[1])
+                        const error = this.getStartVal(args[2])
+                        this.visitExpression(args[0])
+                        const ev = this.exprStack.pop()
+                        this.exprStack.push(ev >= goal - error && ev <= goal + error)
+                        break
                     }
                     default: // ERROR
                 }
