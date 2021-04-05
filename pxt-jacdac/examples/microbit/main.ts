@@ -18,6 +18,7 @@ function startAll() {
     buttonB.start();
     buttonAB.start();
     soundLevel.start();
+    soundLevel.registerEvents()
     lightLevel.start();
     screen.start();
 }

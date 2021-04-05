@@ -28,12 +28,14 @@ namespace jacdac {
     }
 
     function mkEventCmd(evCode: number) {
-        if (!_myDevice._eventCounter)
-            _myDevice._eventCounter = 0
-        _myDevice._eventCounter = (_myDevice._eventCounter + 1) & CMD_EVENT_COUNTER_MASK
+        // protect access to _myDevice
+        let myDevice = selfDevice()
+        if (!myDevice._eventCounter)
+            myDevice._eventCounter = 0
+        myDevice._eventCounter = (myDevice._eventCounter + 1) & CMD_EVENT_COUNTER_MASK
         if (evCode >> 8)
             throw "invalid evcode"
-        return CMD_EVENT_MASK | (_myDevice._eventCounter << CMD_EVENT_COUNTER_POS) | evCode
+        return CMD_EVENT_MASK | (myDevice._eventCounter << CMD_EVENT_COUNTER_POS) | evCode
     }
 
     //% fixedInstances
@@ -87,7 +89,7 @@ namespace jacdac {
 
         protected sendReport(pkt: JDPacket) {
             pkt.serviceIndex = this.serviceIndex
-            pkt._sendReport(_myDevice)
+            pkt._sendReport(selfDevice())
         }
 
         protected sendEvent(eventCode: number, data?: Buffer) {
