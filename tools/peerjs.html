@@ -49,6 +49,7 @@
     <div>
         <button id="connect">connect WebUSB</button>
         <button id="disconnect">disconnect WebUSB</button>
+        <button id="startsim">start humidity simulator</button>
     </div>
     <hr/>
     <div id="log">
@@ -63,14 +64,14 @@
         jd.on(jacdac.PACKET_PROCESS, pkt => console.debug(jacdac.printPacket(pkt)))
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
         jd.on(jacdac.DEVICE_ANNOUNCE, (dev) => {
-            log(`device: ${dev}`)
+            log(`device: ${dev} (${dev.deviceId})`)
             if (dev !== jd.selfDevice)
                 dev.services()
                     .map(srv => srv.register(jacdac.SystemReg.Reading))
                     .filter(reg => !!reg)
                     .forEach(reg => {
                         log(`listening to ${reg}`)
-                        reg.on('REPORT_UPDATE', () => log(`${reg}: ${reg.humanValue}`))
+                        reg.on(jacdac.REPORT_UPDATE, () => log(`${reg}: ${reg.humanValue}`))
                     })
         });
 
@@ -121,6 +122,10 @@
         connect.onclick = listenWebUsb;
         const disconnect = document.getElementById("disconnect");
         disconnect.onclick = () => jd.disconnect()
+        const startsim = document.getElementById("startsim")
+        startsim.onclick = () => {
+            jacdac.addHost(jd, jacdac.hostDefinitionFromServiceClass(jacdac.SRV_HUMIDITY))
+        }
 
         const connectpeer = document.getElementById("connectpeer")
         connectpeer.onclick = connectPeerClick
@@ -149,9 +154,6 @@
         }        
         jd.on(jacdac.CONNECTION_STATE, updateConnectionState)
         updateConnectionState()
-
-        // start humidity simulator
-        jacdac.addHost(jd, jacdac.hostDefinitionFromServiceClass(jacdac.SRV_HUMIDITY))
     </script>
 </body>
 
