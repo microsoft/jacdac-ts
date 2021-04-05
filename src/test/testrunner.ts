@@ -295,7 +295,7 @@ class JDCommandEvaluator {
     }
 
     private get env() {
-        return (root: string, fld: string = "") => {
+        return (root: string, fld = "") => {
             return this.testRunner.serviceTestRunner.lookup(root, fld)
         }
     }
@@ -306,7 +306,7 @@ class JDCommandEvaluator {
         this._startExpressions = []
         const testFun = cmdToTestFunction(this.command)
         const args = this.command.call.arguments
-        let startExprs: jsep.Expression[] = []
+        const startExprs: jsep.Expression[] = []
         switch (testFun.id as JDTestFunctions) {
             case "check": 
             case "awaitEvent":
@@ -422,10 +422,10 @@ class JDCommandEvaluator {
                     this.env,
                     this._startExpressions
                 )
-                const ev = expr.eval(args[0])
-                if (ev >= goal.v - error.v && ev <= goal.v + error.v)
+                const ev = expr.eval(args[0]) as number
+                if (Math.abs(ev - goal.v) <= error.v)
                     this._status = JDTestCommandStatus.Passed
-                this._progress = `current: ${ev}; goal: ${goal.v}; error: ${error.v}`
+                this._progress = `current: ${pretify(ev)}; goal: ${pretify(goal.v)}; error: ${pretify(error.v)}`
                 break
             }
             case "changes":

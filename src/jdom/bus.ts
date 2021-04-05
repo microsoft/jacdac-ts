@@ -808,7 +808,7 @@ export class JDBus extends JDNode {
                     const midSamplesAge = (interval * 0xff) / 2
                     // compute if half aged
                     if (samplesAge > midSamplesAge) {
-                        console.debug({ samplesAge, midSamplesAge, interval })
+                        //console.debug({ samplesAge, midSamplesAge, interval })
                         samplesRegister.sendSetPackedAsync("u8", [0xff])
                     }
                 }
