@@ -95,10 +95,10 @@
             connect.classList.remove('active');
             disconnect.classList.remove('active');
             switch (jd.connectionState) {
-                case jacdac.BusState.Connected:
+                case jacdac.ConnectionState.Connected:
                     disconnect.classList.add('active');
                     break;
-                case jacdac.BusState.Disconnected:
+                case jacdac.ConnectionState.Disconnected:
                     connect.classList.add('active');
                     break;
             }

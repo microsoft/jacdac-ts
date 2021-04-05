@@ -263,8 +263,7 @@ export class JDDevice extends JDNode {
     }
 
     private initServices() {
-        assert(this.announced)
-        if (!this._services) {
+        if (!this._services && this._servicesData) {
             const n = this.serviceLength
             const s = []
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
