@@ -549,7 +549,8 @@ class JDCommandEvaluator {
                 )
                 const ev = expr.eval(args[1])
                 if (jdreg) {
-                    jdreg.sendSetIntAsync(ev)
+                    const fmt = jdreg.specification?.packFormat;
+                    jdreg.sendSetPackedAsync(fmt,[ev])
                     this._status = JDTestCommandStatus.Passed
                     this._progress = `wrote ${ev} to register ${reg.name}`
                 }
