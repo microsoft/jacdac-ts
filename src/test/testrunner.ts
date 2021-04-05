@@ -379,7 +379,7 @@ class JDCommandEvaluator {
         })
         const replaceVal = this.command.call.arguments.map((a, i) => {
             const aStart = this._startExpressions.find(r => r.e === a)
-            return [`{${i + 1}:val}`, aStart && aStart.v ? roundWithPrecision(aStart.v, 3).toString() : "NA"]
+            return [`{${i + 1}:val}`, aStart && aStart.v ? roundWithPrecision(aStart.v, 3).toString() : unparse(a)]
         })
         this._prompt =
             testFun.id === "ask" || testFun.id === "say"
@@ -547,10 +547,12 @@ class JDCommandEvaluator {
                     this.env,
                     this._startExpressions
                 )
-                const ev = expr.eval(this.command.call.arguments[1])
-                // TODO: generalize
-                jdreg.sendSetIntAsync(ev)
-                this._status = JDTestCommandStatus.Passed
+                const ev = expr.eval(args[1])
+                if (jdreg) {
+                    jdreg.sendSetIntAsync(ev)
+                    this._status = JDTestCommandStatus.Passed
+                    this._progress = `wrote ${ev} to register ${reg.name}`
+                }
             }
         }
 
