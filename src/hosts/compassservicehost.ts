@@ -1,4 +1,4 @@
-import { CHANGE, CompassCmd, CompassReg, SRV_COMPASS, SystemStatusCodes } from "../jdom/constants";
+import { CHANGE, CompassReg, SRV_COMPASS, SystemStatusCodes } from "../jdom/constants";
 import RegisterHost from "../jdom/registerhost";
 import AnalogSensorServiceHost from "./analogsensorservicehost";
 
