@@ -35,7 +35,7 @@
 </head>
 
 <body>
-    <h1>JACDAC/Console</h1>
+    <h1>Jacdac/Console</h1>
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
@@ -87,9 +87,9 @@
             connect.classList.remove('active');
             disconnect.classList.remove('active');
             switch (jd.connectionState) {
-                case jacdac.BusState.Connected:
+                case jacdac.ConnectionState.Connected:
                     disconnect.classList.add('active'); break;
-                case jacdac.BusState.Disconnected:
+                case jacdac.ConnectionState.Disconnected:
                     connect.classList.add('active'); break;
             }
         }        

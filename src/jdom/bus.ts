@@ -315,7 +315,7 @@ export class JDBus extends JDNode {
     }
 
     setRoleManagerService(service: JDService) {
-        console.log(`set role manager`, { service })
+        //console.log(`set role manager`, { service })
         // clean if needed
         if (
             this._roleManagerClient &&
