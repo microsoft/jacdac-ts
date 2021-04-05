@@ -113,6 +113,7 @@ Experimental...
 * [tfite](https://microsoft.github.io/jacdac-ts/tools/tflite.html)
 * [streaming](https://microsoft.github.io/jacdac-ts/tools/streaming.html)
 * [streaming-rickshaw](https://microsoft.github.io/jacdac-ts/tools/streaming-rickshaw.html)
+* [peer.js](https://microsoft.github.io/jacdac-ts/tools/tflite.html)
 
 ### Commits create releases
 
