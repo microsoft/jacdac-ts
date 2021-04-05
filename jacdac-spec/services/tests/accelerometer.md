@@ -17,3 +17,22 @@ Now, tilt it left
 Now, tilt it right
 
     awaitEvent(tilt_right, true)
+
+## face events
+
+Place the device face down
+
+    awaitEvent(face_down, true)
+    
+    
+Place the device face up
+
+    awaitEvent(face_up, true)
+
+
+## accelerometer 
+
+Move the device quickly in any direction
+
+    check(forces.x >= 3 || forces.y >= 3 || forces.z >= 3)
+    awaitEvent(force_3g, true)
