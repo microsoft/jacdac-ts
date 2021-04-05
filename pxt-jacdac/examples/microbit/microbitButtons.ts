@@ -1,14 +1,15 @@
 namespace microbit {
+    export const SRV_BUTTON = 0x1473a263
     export class MButton extends jacdac.SensorHost {
         constructor(dev: string, private button: Button) {
-            super(dev, jacdac.SRV_BUTTON);
+            super(dev, SRV_BUTTON);
             control.onEvent(button, EventBusValue.MICROBIT_EVT_ANY, 
             () => {    
                 let v = control.eventValue();    
                 if (v == EventBusValue.MICROBIT_BUTTON_EVT_DOWN)
-                    this.sendEvent(jacdac.ButtonEvent.Down);
+                    this.sendEvent(0x1);
                 else if (v == EventBusValue.MICROBIT_BUTTON_EVT_UP)
-                    this.sendEvent(jacdac.ButtonEvent.Up);
+                    this.sendEvent(0x2);
             })
         }
         public serializeState(): Buffer {

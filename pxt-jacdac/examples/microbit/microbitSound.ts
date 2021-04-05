@@ -121,7 +121,7 @@ namespace microbit {
                 this.sendEvent(jacdac.SoundLevelEvent.Loud)
             })
             input.onSound(DetectedSound.Quiet, function () {
-                ///this.sendEvent(jacdac.SoundLevelEvent.Quiet)
+                this.sendEvent(jacdac.SoundLevelEvent.Quiet)
             })
         }
     }

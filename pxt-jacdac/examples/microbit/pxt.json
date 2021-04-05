@@ -5,11 +5,7 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "jacdac": "github:microsoft/pxt-jacdac",
-        "jacdac-accelerometer": "github:microsoft/pxt-jacdac/accelerometer",
-        "jacdac-button": "github:microsoft/pxt-jacdac/button",
-        "jacdac-compass": "github:microsoft/pxt-jacdac/compass",
-        "jacdac-light-level": "github:microsoft/pxt-jacdac/light-level"
+        "jacdac": "github:microsoft/pxt-jacdac"
     },
     "files": [
         "main.ts",
