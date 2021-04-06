@@ -72,6 +72,7 @@ import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
 import { JDTransport } from "./transport"
 import { BusStatsMonitor } from "./busstats"
 import { RoleManagerClient } from "./rolemanagerclient"
+import JDBridge from "./bridge"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -103,6 +104,7 @@ export interface DeviceFilter {
  */
 export class JDBus extends JDNode {
     private readonly _transports: JDTransport[] = []
+    private _bridges: JDBridge[] = [];
     private _devices: JDDevice[] = []
     private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -155,6 +157,10 @@ export class JDBus extends JDNode {
         this.start()
     }
 
+    get transports() {
+        return this._transports.slice(0)
+    }
+
     addTransport(transport: JDTransport) {
         if (this._transports.indexOf(transport) > -1)
             return; // already added
@@ -162,6 +168,26 @@ export class JDBus extends JDNode {
         this._transports.push(transport);
         transport.bus = this
         transport.bus.on(CONNECTING, () => this.preConnect(transport))
+    }
+
+    get bridges() {
+        return this._bridges.slice(0);
+    }
+
+    addBridge(bridge: JDBridge): () => void {
+        if (this._bridges.indexOf(bridge) < 0) {
+            this._bridges.push(bridge);
+            this.emit(CHANGE)
+        }
+        return () => this.removeBridge(bridge);
+    }
+
+    private removeBridge(bridge: JDBridge) {
+        const i = this._bridges.indexOf(bridge);
+        if (i > -1) {
+            this._bridges = this._bridges.splice(i, 1);
+            this.emit(CHANGE);
+        }
     }
 
     private preConnect(transport: JDTransport) {
@@ -235,10 +261,6 @@ export class JDBus extends JDNode {
         console.debug(`${this.id}: disposing.`)
         await this.stop()
         this._transports.forEach(transport => transport.dispose())
-    }
-
-    get transports() {
-        return this._transports.slice(0)
     }
 
     get safeBoot() {
