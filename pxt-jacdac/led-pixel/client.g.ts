@@ -42,7 +42,7 @@ namespace modules {
         brightness(): number {
             this.start();            
             const values = this._brightness.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -54,12 +54,12 @@ namespace modules {
         //% block="set %ledpixel brightness to %value"
         //% weight=99
         //% value.min=0
-        //% value.max=1
+        //% value.max=100
         //% value.defl=0.05
         setBrightness(value: number) {
             this.start();
             const values = this._brightness.values as any[];
-            values[0] = value;
+            values[0] = value / 100;
             this._brightness.values = values as [number];
         }
 
@@ -74,7 +74,7 @@ namespace modules {
         actualBrightness(): number {
             this.start();            
             const values = this._actualBrightness.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**

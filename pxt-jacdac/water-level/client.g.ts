@@ -23,7 +23,7 @@ namespace modules {
         //% blockId=jacdac_waterlevel_level___get
         //% weight=100
         level(): number {
-            return this.reading();
+            return this.reading() * 100;
         
         }
 

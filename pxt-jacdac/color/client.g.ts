@@ -23,7 +23,7 @@ namespace modules {
         red(): number {
             this.setStreaming(true);            
             const values = this._reading.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -37,7 +37,7 @@ namespace modules {
         green(): number {
             this.setStreaming(true);            
             const values = this._reading.pauseUntilValues() as any[];
-            return values[1];
+            return values[1] * 100;
         }
 
         /**
@@ -51,7 +51,7 @@ namespace modules {
         blue(): number {
             this.setStreaming(true);            
             const values = this._reading.pauseUntilValues() as any[];
-            return values[2];
+            return values[2] * 100;
         }
 
     

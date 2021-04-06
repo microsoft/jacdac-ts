@@ -33,7 +33,7 @@ namespace modules {
         duty(): number {
             this.start();            
             const values = this._duty.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -45,12 +45,12 @@ namespace modules {
         //% blockId=jacdac_motor_duty___set
         //% block="set %motor duty to %value"
         //% weight=99
-        //% value.min=-1
-        //% value.max=1
+        //% value.min=-100
+        //% value.max=100
         setDuty(value: number) {
             this.start();
             const values = this._duty.values as any[];
-            values[0] = value;
+            values[0] = value / 100;
             this._duty.values = values as [number];
         }
 

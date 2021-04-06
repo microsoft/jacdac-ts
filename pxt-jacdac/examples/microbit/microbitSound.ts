@@ -92,6 +92,12 @@ namespace microbit {
         constructor() {
             super("microbitSound", jacdac.SRV_SOUND_LEVEL)
             this.setThresholds()
+            input.onSound(DetectedSound.Loud, function() {
+                this.sendEvent(jacdac.SoundLevelEvent.Loud)
+            })
+            input.onSound(DetectedSound.Quiet, function () {
+                this.sendEvent(jacdac.SoundLevelEvent.Quiet)
+            })
         }
 
         private setThresholds() {
@@ -114,15 +120,6 @@ namespace microbit {
         public serializeState(): Buffer {
             this.updateSoundLevel();
             return jacdac.jdpack("u0.16", [this.soundLevel]);
-        }
-
-        public registerEvents() {
-            input.onSound(DetectedSound.Loud, function() {
-                this.sendEvent(jacdac.SoundLevelEvent.Loud)
-            })
-            input.onSound(DetectedSound.Quiet, function () {
-                this.sendEvent(jacdac.SoundLevelEvent.Quiet)
-            })
         }
     }
 }

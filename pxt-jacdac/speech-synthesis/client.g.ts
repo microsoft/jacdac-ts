@@ -83,7 +83,7 @@ namespace modules {
         volume(): number {
             this.start();            
             const values = this._volume.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -92,12 +92,12 @@ namespace modules {
         //% group="Speech synthesis"
         //% weight=95
         //% value.min=0
-        //% value.max=1
+        //% value.max=100
         //% value.defl=1
         setVolume(value: number) {
             this.start();
             const values = this._volume.values as any[];
-            values[0] = value;
+            values[0] = value / 100;
             this._volume.values = values as [number];
         }
 

@@ -23,7 +23,7 @@ namespace modules {
         //% blockId=jacdac_soilmoisture_moisture___get
         //% weight=100
         moisture(): number {
-            return this.reading();
+            return this.reading() * 100;
         
         }
 

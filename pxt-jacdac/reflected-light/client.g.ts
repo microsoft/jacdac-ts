@@ -23,7 +23,7 @@ namespace modules {
         //% blockId=jacdac_reflectedlight_brightness___get
         //% weight=100
         brightness(): number {
-            return this.reading();
+            return this.reading() * 100;
         
         }
 

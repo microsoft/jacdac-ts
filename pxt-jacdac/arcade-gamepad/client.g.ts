@@ -42,7 +42,7 @@ namespace modules {
         pressure(): undefined {
             this.setStreaming(true);            
             const values = this._reading.pauseUntilValues() as any[];
-            return values[1];
+            return values[1] * 100;
         }
 
         /**

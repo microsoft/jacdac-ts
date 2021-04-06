@@ -27,7 +27,7 @@ namespace modules {
         //% blockId=jacdac_analogbutton_pressure___get
         //% weight=100
         pressure(): number {
-            return this.reading();
+            return this.reading() * 100;
         
         }
 
@@ -40,7 +40,7 @@ namespace modules {
         inactiveThreshold(): number {
             this.start();            
             const values = this._inactiveThreshold.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -49,11 +49,11 @@ namespace modules {
         //% group="Button"
         //% weight=98
         //% value.min=0
-        //% value.max=1
+        //% value.max=100
         setInactiveThreshold(value: number) {
             this.start();
             const values = this._inactiveThreshold.values as any[];
-            values[0] = value;
+            values[0] = value / 100;
             this._inactiveThreshold.values = values as [number];
         }
 
@@ -66,7 +66,7 @@ namespace modules {
         activeThreshold(): number {
             this.start();            
             const values = this._activeThreshold.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -75,11 +75,11 @@ namespace modules {
         //% group="Button"
         //% weight=96
         //% value.min=0
-        //% value.max=1
+        //% value.max=100
         setActiveThreshold(value: number) {
             this.start();
             const values = this._activeThreshold.values as any[];
-            values[0] = value;
+            values[0] = value / 100;
             this._activeThreshold.values = values as [number];
         }
 

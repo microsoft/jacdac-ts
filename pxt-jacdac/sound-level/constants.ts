@@ -51,16 +51,16 @@ namespace jacdac {
          * const [loudThreshold] = jdunpack<[number]>(buf, "u0.16")
          * ```
          */
-        LoudThreshold = 0x5,
+        LoudThreshold = 0x6,
 
         /**
-         * Read-write ratio u0.16 (uint16_t). The sound level to trigger a quite event.
+         * Read-write ratio u0.16 (uint16_t). The sound level to trigger a quiet event.
          *
          * ```
          * const [quietThreshold] = jdunpack<[number]>(buf, "u0.16")
          * ```
          */
-        QuietThreshold = 0x6,
+        QuietThreshold = 0x5,
     }
 
     export const enum SoundLevelEvent {

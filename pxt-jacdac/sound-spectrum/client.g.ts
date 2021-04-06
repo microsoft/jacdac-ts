@@ -149,7 +149,7 @@ namespace modules {
         smoothingTimeConstant(): number {
             this.start();            
             const values = this._smoothingTimeConstant.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
@@ -159,12 +159,12 @@ namespace modules {
         //% group="Sound"
         //% weight=90
         //% value.min=0
-        //% value.max=1
+        //% value.max=100
         //% value.defl=0.8
         setSmoothingTimeConstant(value: number) {
             this.start();
             const values = this._smoothingTimeConstant.values as any[];
-            values[0] = value;
+            values[0] = value / 100;
             this._smoothingTimeConstant.values = values as [number];
         }
 

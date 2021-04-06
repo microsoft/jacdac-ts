@@ -23,7 +23,7 @@ namespace modules {
         //% blockId=jacdac_potentiometer_position___get
         //% weight=100
         position(): number {
-            return this.reading();
+            return this.reading() * 100;
         
         }
 

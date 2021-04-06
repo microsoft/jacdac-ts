@@ -16,10 +16,9 @@ namespace microbit {
         }
 
         public serializeState(): Buffer {
-            let ax = input.acceleration(Dimension.X);
-            let ay = input.acceleration(Dimension.Y);
-            let az = input.acceleration(Dimension.Z);
-            // TODO: proper conversion
+            let ax = input.acceleration(Dimension.X) / 1000;
+            let ay = input.acceleration(Dimension.Y) / 1000;
+            let az = input.acceleration(Dimension.Z) / 1000;
             return jacdac.jdpack("i12.20 i12.20 i12.20", [ax, ay, az]);
         }
     }

@@ -23,7 +23,7 @@ namespace modules {
         //% blockId=jacdac_lightlevel_light_level___get
         //% weight=100
         lightLevel(): number {
-            return this.reading();
+            return this.reading() * 100;
         
         }
 

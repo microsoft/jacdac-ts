@@ -1,6 +1,6 @@
 {
     "name": "jacdac-led",
-    "version": "0.4.24",
+    "version": "0.4.26",
     "description": "MakeCode support for Jacdac LED service",
     "dependencies": {
         "core": "*",

@@ -134,7 +134,7 @@ namespace modules {
         batteryCharge(): number {
             this.start();            
             const values = this._batteryCharge.pauseUntilValues() as any[];
-            return values[0];
+            return values[0] * 100;
         }
 
         /**
