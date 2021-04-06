@@ -5,7 +5,7 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "jacdac": "github:microsoft/pxt-jacdac"
+        "jacdac": "github:microsoft/pxt-jacdac#v0.4.25"
     },
     "files": [
         "main.ts",
@@ -23,7 +23,7 @@
         "test.ts"
     ],
     "targetVersions": {
-        "target": "3.1.52",
+        "target": "3.1.67",
         "targetId": "microbit"
     },
     "supportedTargets": [

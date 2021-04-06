@@ -521,6 +521,12 @@ export function randomUInt(max: number) {
     return arr[0] % max
 }
 
+export function randomDeviceId() {
+    const devId = anyRandomUint32(8)
+    for (let i = 0; i < 8; ++i) devId[i] &= 0xff
+    return toHex(devId)
+}
+
 export function JSONTryParse(src: string) {
     if (src === undefined || src === null) return src
 

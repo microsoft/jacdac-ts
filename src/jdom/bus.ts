@@ -4,8 +4,7 @@ import {
     debounceAsync,
     strcmp,
     arrayConcatMany,
-    anyRandomUint32,
-    toHex,
+    randomDeviceId,
 } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
@@ -129,22 +128,15 @@ export class JDBus extends JDNode {
      * Creates the bus with the given transport
      * @param sendPacket
      */
-    constructor(transports: JDTransport[], public options?: BusOptions) {
+    constructor(transports?: JDTransport[], public options?: BusOptions) {
         super()
 
-        this._transports = transports.filter(tr => !!tr)
-        this._transports.forEach(tr => {
-            tr.bus = this
-            // disconnect all transprots when one starts connecting
-            tr.bus.on(CONNECTING, () => this.preConnect(tr))
-        })
+        transports?.filter(tr => !!tr)
+            .map(tr => this.addTransport(tr));
 
         this.options = this.options || {}
-        if (!this.options.deviceId) {
-            const devId = anyRandomUint32(8)
-            for (let i = 0; i < 8; ++i) devId[i] &= 0xff
-            this.options.deviceId = toHex(devId)
-        }
+        if (!this.options.deviceId)
+            this.options.deviceId = randomDeviceId()
 
         this.stats = new BusStatsMonitor(this)
         this.resetTime()
@@ -161,6 +153,15 @@ export class JDBus extends JDNode {
 
         // start all timers
         this.start()
+    }
+
+    addTransport(transport: JDTransport) {
+        if (this._transports.indexOf(transport) > -1)
+            return; // already added
+
+        this._transports.push(transport);
+        transport.bus = this
+        transport.bus.on(CONNECTING, () => this.preConnect(transport))
     }
 
     private preConnect(transport: JDTransport) {

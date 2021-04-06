@@ -19,6 +19,9 @@ export enum ConnectionState {
     Disconnected = "disconnected",
 }
 
+/**
+ * A transport marshalls Jacdac packets between a physical device on the TypeScript bus.
+ */
 export abstract class JDTransport extends JDEventSource {
     public bus: JDBus
     protected disposed = false

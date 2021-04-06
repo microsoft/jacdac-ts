@@ -1,4 +1,3 @@
-import { LogLevel } from "../embed/protocol";
 import { JDEventSource } from "./eventsource";
 
 export class JDClient extends JDEventSource {
@@ -8,6 +7,7 @@ export class JDClient extends JDEventSource {
         super()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected log(msg: any) {
         console.log(msg);
     }

@@ -1,0 +1,64 @@
+import { JDBus } from "./bus";
+import { JDClient } from "./client";
+import { PACKET_PROCESS, PACKET_SEND } from "./constants";
+import Packet from "./packet";
+import { randomDeviceId } from "./utils";
+
+/**
+ * A client that bridges received and sent packets to a parent iframe
+ */
+export default abstract class JDBridge extends JDClient {
+    readonly bridgeId = randomDeviceId()
+    packetSent = 0;
+    packetProcessed = 0;
+
+    constructor(public readonly bus: JDBus) {
+        super()
+        this.handleSendPacket = this.handleSendPacket.bind(this);
+        this.mount(this.bus.subscribe(PACKET_PROCESS, this.handleSendPacket));
+        this.mount(this.bus.subscribe(PACKET_SEND, this.handleSendPacket))
+    }
+
+    /**
+     * Receives packet data payload and injects it into the bus
+     * @param data
+     * @returns 
+     */
+    protected receivePacket(data: Uint8Array) {
+        // try frame format (sent by hardware, hosts)
+        let pkts = Packet.fromFrame(data, this.bus.timestamp);
+        if (!pkts.length) {
+            // try as a single packet (send by the MakeCode simulator)
+            const pkt = Packet.fromBinary(data, this.bus.timestamp);
+            pkts = pkt && [pkt];
+        }
+
+        // bail out if no packets
+        if (!pkts?.length)
+            return;
+
+        this.packetProcessed += pkts.length;
+
+        for (const pkt of pkts) {
+            // tracing the source of packets to avoid self-resending
+            pkt.sender = this.bridgeId;
+            // send to native bus
+            this.bus.sendPacketAsync(pkt);
+            // send to javascript bus
+            this.bus.processPacket(pkt);
+        }
+    }
+
+    private handleSendPacket(pkt: Packet) {
+        if (pkt.sender === this.bridgeId)
+            return;
+        this.packetSent++;
+        this.sendPacket(pkt.toBuffer());
+    }
+
+    /**
+     * Sends packet data over the bridge
+     * @param pkt 
+     */
+    protected abstract sendPacket(data: Uint8Array): void;
+}
