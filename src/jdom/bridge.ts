@@ -1,22 +1,39 @@
 import { JDBus } from "./bus";
 import { JDClient } from "./client";
-import { PACKET_PROCESS, PACKET_SEND } from "./constants";
+import { CHANGE, PACKET_PROCESS, PACKET_SEND } from "./constants";
 import Packet from "./packet";
 import { randomDeviceId } from "./utils";
 
 /**
- * A client that bridges received and sent packets to a parent iframe
+ * A client that bridges received and sent packets to a parent iframe.
  */
 export default abstract class JDBridge extends JDClient {
+    private _bus: JDBus;
     readonly bridgeId = randomDeviceId()
     packetSent = 0;
     packetProcessed = 0;
 
-    constructor(public readonly bus: JDBus) {
+    constructor() {
         super()
         this.handleSendPacket = this.handleSendPacket.bind(this);
-        this.mount(this.bus.subscribe(PACKET_PROCESS, this.handleSendPacket));
-        this.mount(this.bus.subscribe(PACKET_SEND, this.handleSendPacket))
+    }
+
+    get bus() {
+        return this._bus;
+    }
+
+    set bus(newBus: JDBus) {
+        if (newBus !== this._bus) {
+            if (this._bus)
+                this.unmount();
+            this._bus = newBus;
+            if (this._bus) {
+                this.mount(this._bus.addBridge(this));
+                this.mount(this._bus.subscribe(PACKET_PROCESS, this.handleSendPacket));
+                this.mount(this._bus.subscribe(PACKET_SEND, this.handleSendPacket))        
+            }
+            this.emit(CHANGE);
+        }
     }
 
     /**
@@ -25,6 +42,9 @@ export default abstract class JDBridge extends JDClient {
      * @returns 
      */
     protected receivePacket(data: Uint8Array) {
+        if (!this._bus)
+            return; // disconnected
+
         // try frame format (sent by hardware, hosts)
         let pkts = Packet.fromFrame(data, this.bus.timestamp);
         if (!pkts.length) {
@@ -50,7 +70,7 @@ export default abstract class JDBridge extends JDClient {
     }
 
     private handleSendPacket(pkt: Packet) {
-        if (pkt.sender === this.bridgeId)
+        if (!this._bus || pkt.sender === this.bridgeId)
             return;
         this.packetSent++;
         this.sendPacket(pkt.toBuffer());
