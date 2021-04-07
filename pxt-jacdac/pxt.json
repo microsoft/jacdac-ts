@@ -1,6 +1,6 @@
 {
     "name": "jacdac",
-    "version": "0.4.28",
+    "version": "0.4.29",
     "description": "Jacdac for MakeCode",
     "dependencies": {
         "core": "*",
@@ -8,7 +8,6 @@
     },
     "files": [
         "README.md",
-        "jacdac.svg",
         "jdlow.c",
         "jdlow.h",
         "jdprotocol.h",
