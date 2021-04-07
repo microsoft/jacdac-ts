@@ -64,5 +64,10 @@ if (settings.exists("__jacdac_proxy")) {
     input.onButtonPressed(Button.B, () => control.reset())
 }
 
-// force v2, TODO: do something better here
-input.logoIsPressed()
+/**
+ * force v2.
+ */
+//% parts=v2
+function useV2() {
+}
+useV2();

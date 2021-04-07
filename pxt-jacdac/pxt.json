@@ -1,6 +1,6 @@
 {
     "name": "jacdac",
-    "version": "0.4.30",
+    "version": "0.4.31",
     "description": "Jacdac for MakeCode",
     "dependencies": {
         "core": "*",
@@ -59,7 +59,7 @@
     },
     "public": true,
     "targetVersions": {
-        "target": "3.1.67",
+        "target": "3.1.70",
         "targetId": "microbit"
     },
     "supportedTargets": [
