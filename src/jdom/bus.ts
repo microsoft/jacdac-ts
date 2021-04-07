@@ -66,8 +66,8 @@ import {
     SRV_REAL_TIME_CLOCK,
     SystemReg,
 } from "../../src/jdom/constants"
-import DeviceHost from "./devicehost"
-import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
+import JDServiceProvider from "./serviceprovider"
+import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
 import { JDTransport } from "./transport"
 import { BusStatsMonitor } from "./busstats"
@@ -122,7 +122,7 @@ export class JDBus extends JDNode {
     private _announcing = false
     private _gcDevicesEnabled = 0
 
-    private _deviceHosts: DeviceHost[] = []
+    private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
 
@@ -294,9 +294,9 @@ export class JDBus extends JDNode {
 
     clear() {
         // clear hosts
-        if (this._deviceHosts?.length) {
-            this._deviceHosts.forEach(host => (host.bus = undefined))
-            this._deviceHosts = []
+        if (this._serviceProviders?.length) {
+            this._serviceProviders.forEach(host => (host.bus = undefined))
+            this._serviceProviders = []
         }
 
         // clear devices
@@ -436,7 +436,7 @@ export class JDBus extends JDNode {
     private async handleRealTimeClockSync(device: JDDevice) {
         // tell time to the RTC clocks
         if (device.hasService(SRV_REAL_TIME_CLOCK))
-            await RealTimeClockServiceHost.syncTime(this)
+            await RealTimeClockServer.syncTime(this)
     }
 
     private handleRoleManager() {
@@ -482,7 +482,7 @@ export class JDBus extends JDNode {
             r = r.filter(s => s.deviceId !== this.selfDeviceId)
         if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
-            r = r.filter(r => !this.deviceHost(r.deviceId))
+            r = r.filter(r => !this.findServiceProvider(r.deviceId))
         if (options?.firmwareIdentifier)
             r = r.filter(r => !!r.firmwareIdentifier)
         if (options?.physical) r = r.filter(r => !!r.physical)
@@ -490,48 +490,47 @@ export class JDBus extends JDNode {
     }
 
     /**
-     * Gets the current list of device hosts on the bus
+     * Gets the current list of service providers on the bus
      */
-    deviceHosts(): DeviceHost[] {
-        return this._deviceHosts.slice(0)
+    serviceProviders(): JDServiceProvider[] {
+        return this._serviceProviders.slice(0)
     }
 
     /**
-     * Get a device host for a given device
+     * Get a service providers for a given device
      * @param deviceId
      */
-    deviceHost(deviceId: string) {
-        return this._deviceHosts.find(d => d.deviceId === deviceId)
+    findServiceProvider(deviceId: string) {
+        return this._serviceProviders.find(d => d.deviceId === deviceId)
     }
 
     /**
-     * Adds the device host to the bus
-     * @param deviceHost
+     * Adds the service provider to the bus
      */
-    addDeviceHost(deviceHost: DeviceHost) {
-        if (deviceHost && this._deviceHosts.indexOf(deviceHost) < 0) {
-            this._deviceHosts.push(deviceHost)
-            deviceHost.bus = this
+    addServiceProvider(provider: JDServiceProvider) {
+        if (provider && this._serviceProviders.indexOf(provider) < 0) {
+            this._serviceProviders.push(provider)
+            provider.bus = this
 
             this.emit(DEVICE_HOST_ADDED)
             this.emit(CHANGE)
         }
 
-        return this.device(deviceHost.deviceId)
+        return this.device(provider.deviceId)
     }
 
     /**
-     * Adds the device host to the bus
-     * @param deviceHost
+     * Adds the service provider to the bus
+     * @param provider
      */
-    removeDeviceHost(deviceHost: DeviceHost) {
-        if (!deviceHost) return
+    removeServiceProvider(provider: JDServiceProvider) {
+        if (!provider) return
 
-        const i = this._deviceHosts.indexOf(deviceHost)
+        const i = this._serviceProviders.indexOf(provider)
         if (i > -1) {
             // remove device as well
             const devi = this._devices.findIndex(
-                d => d.deviceId === deviceHost.deviceId
+                d => d.deviceId === provider.deviceId
             )
             if (devi > -1) {
                 const dev = this._devices[devi]
@@ -542,8 +541,8 @@ export class JDBus extends JDNode {
             }
 
             // remove host
-            this._deviceHosts.splice(i, 1)
-            deviceHost.bus = undefined
+            this._serviceProviders.splice(i, 1)
+            provider.bus = undefined
             this.emit(DEVICE_HOST_REMOVED)
 
             // removed host
@@ -857,8 +856,8 @@ export class JDBus extends JDNode {
             }
         }
 
-        // apply streaming samples to device hosts
-        this._deviceHosts.map(host => host.emit(REFRESH))
+        // apply streaming samples to service provider
+        this._serviceProviders.map(host => host.emit(REFRESH))
     }
 
     /**

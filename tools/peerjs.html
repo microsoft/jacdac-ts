@@ -128,7 +128,7 @@
         disconnect.onclick = () => jd.disconnect()
         const startsim = document.getElementById("startsim")
         startsim.onclick = () => {
-            jacdac.addHost(jd, jacdac.hostDefinitionFromServiceClass(jacdac.SRV_HUMIDITY))
+            jacdac.addServiceProvider(jd, jacdac.serviceProviderDefinitionFromServiceClass(jacdac.SRV_HUMIDITY))
         }
 
         const connectpeer = document.getElementById("connectpeer")

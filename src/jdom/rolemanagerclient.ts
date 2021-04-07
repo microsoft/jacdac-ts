@@ -1,4 +1,4 @@
-import { addHost, hostDefinitionFromServiceClass } from "../hosts/hosts"
+import { addServiceProvider, serviceProviderDefinitionFromServiceClass } from "../servers/servers"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -230,7 +230,7 @@ export class RoleManagerClient extends JDServiceClient {
                 .filter(role => !this.bus.device(role.deviceId, true))
                 .map(role => ({
                     role,
-                    hostDefinition: hostDefinitionFromServiceClass(
+                    hostDefinition: serviceProviderDefinitionFromServiceClass(
                         role.serviceClass
                     ),
                 }))
@@ -243,10 +243,10 @@ export class RoleManagerClient extends JDServiceClient {
             const todo = todos[parent]
             // no parent, spawn individual services
             if (!parent) {
-                todo.forEach(t => addHost(this.bus, t.hostDefinition))
+                todo.forEach(t => addServiceProvider(this.bus, t.hostDefinition))
             } else {
                 // spawn all services into 1
-                addHost(this.bus, {
+                addServiceProvider(this.bus, {
                     name: "",
                     serviceClasses: [],
                     services: () =>
