@@ -1,8 +1,8 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "tslint.enable": false,
     "eslint.alwaysShowStatus": true,
     "eslint.format.enable": false,
     "eslint.debug": true,
     "eslint.lintTask.enable": true,
+    "files.eol": "\n"
 }
