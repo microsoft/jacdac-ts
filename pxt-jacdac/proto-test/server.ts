@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class ProtoTestHost extends Host {
+    export class ProtoTestServer extends Server {
         constructor() {
             super("prototest", SRV_PROTO_TEST);
         }
@@ -88,5 +88,5 @@ namespace jacdac {
     }
 
     //% whenUsed
-    export const protoTestHost = new ProtoTestHost();
+    export const protoTestServer = new ProtoTestServer();
 }

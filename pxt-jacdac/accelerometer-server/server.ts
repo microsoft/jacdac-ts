@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class AccelerometerHost extends jacdac.SensorHost {
+    export class AccelerometerServer extends jacdac.SensorServer {
         constructor(dev: string) {
             super(dev, jacdac.SRV_ACCELEROMETER);
 

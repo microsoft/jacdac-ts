@@ -1,5 +1,5 @@
 namespace jacdac {
-    export class LoggerHost extends Host {
+    export class LoggerServer extends Server {
         private _lastListenerTime = 0;
         minPriority = jacdac.LoggerPriority.Silent;
 
@@ -60,5 +60,5 @@ namespace jacdac {
     }
 
     //% whenUsed
-    export const loggerHost = new LoggerHost()
+    export const logger = new LoggerServer()
 }

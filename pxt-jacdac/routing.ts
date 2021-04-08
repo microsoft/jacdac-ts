@@ -9,7 +9,7 @@ namespace jacdac {
     // common logging level for jacdac services
     export let consolePriority = ConsolePriority.Debug;
 
-    let _hostServices: Host[]
+    let _hostServices: Server[]
     export let _unattachedClients: Client[]
     export let _allClients: Client[]
     let _myDevice: Device;
@@ -39,7 +39,7 @@ namespace jacdac {
     }
 
     //% fixedInstances
-    export class Host {
+    export class Server {
         protected supressLog: boolean;
         running: boolean
         serviceIndex: number
@@ -691,7 +691,7 @@ namespace jacdac {
 
     function doNothing() { }
 
-    class ControlService extends Host {
+    class ControlService extends Server {
         constructor() {
             super("ctrl", 0)
         }
@@ -812,14 +812,14 @@ namespace jacdac {
         // only try autoBind, proxy we see some devices online
         if (_devices.length > 1) {
             // check for proxy mode
-            jacdac.roleManagerHost.checkProxy()
+            jacdac.roleManager.checkProxy()
             // auto bind
             if (autoBind) {
                 autoBindCnt++
                 // also, only do it every two announces (TBD)
                 if (autoBindCnt >= 2) {
                     autoBindCnt = 0
-                    jacdac.roleManagerHost.autoBind();
+                    jacdac.roleManager.autoBind();
                 }
             }
         }
@@ -1132,12 +1132,12 @@ namespace jacdac {
         if (!options.disableLogger) {
             console.addListener(function (pri, msg) {
                 if (msg[0] != ":")
-                    loggerHost.add(pri as number, msg);
+                    jacdac.logger.add(pri as number, msg);
             });
-            loggerHost.start()
+            jacdac.logger.start()
         }
         if (!options.disableRoleManager) {
-            roleManagerHost.start();
+            roleManager.start();
             controlService.sendUptime();
         }
         // and we're done

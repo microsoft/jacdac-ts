@@ -15,7 +15,7 @@ namespace jacdac {
     class Collector extends Client {
         private requiredServiceNum: number
         lastSample: Buffer
-        private parent: SensorAggregatorHost
+        private parent: SensorAggregatorServer
         private numElts: number
         private sampleType: jacdac.SensorAggregatorSampleType
         private sampleMult: number
@@ -40,7 +40,7 @@ namespace jacdac {
             this.setReg(jacdac.SensorReg.StreamingSamples, "u8", [255])
         }
 
-        constructor(parent: SensorAggregatorHost, config: Buffer) {
+        constructor(parent: SensorAggregatorServer, config: Buffer) {
             const [devIdBuf, serviceClass, serviceNum, sampleSize, sampleType, sampleShift] = jdunpack(config, "b[8] u32 u8 u8 u8 i8")
             const devId = devIdBuf.getNumber(NumberFormat.Int32LE, 0) == 0 ? null : devIdBuf.toHex()
             super(serviceClass, devId + ":" + serviceNum)
@@ -65,7 +65,7 @@ namespace jacdac {
         }
     }
 
-    export class SensorAggregatorHost extends Host {
+    export class SensorAggregatorServer extends Server {
         private collectors: Collector[]
         private lastSample: number
         private samplingInterval: number
@@ -208,5 +208,5 @@ namespace jacdac {
     }
 
     //% whenUsed
-    export const sensorAggregatorHost = new SensorAggregatorHost()
+    export const sensorAggregatorServer = new SensorAggregatorServer()
 }

@@ -36,14 +36,14 @@
         "control/constants.ts",
         "logger/constants.ts",
         "logger/client.ts",
-        "logger-host/host.ts",
+        "logger-server/server.ts",
         "sensor/constants.ts",
         "sensor/client.ts",
-        "sensor/host.ts",
+        "sensor/server.ts",
         "role-manager/constants.ts",
         "rolemgr.ts",
         "proto-test/constants.ts",
-        "proto-test/host.ts",
+        "proto-test/server.ts",
         "routing.ts"
     ],
     "testFiles": [

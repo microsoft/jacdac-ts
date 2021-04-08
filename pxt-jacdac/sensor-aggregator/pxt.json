@@ -8,7 +8,7 @@
     },
     "files": [
         "constants.ts",
-        "host.ts"
+        "server.ts"
     ],
     "supportedTargets": [
         "arcade",

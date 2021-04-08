@@ -80,7 +80,7 @@ namespace jacdac {
 }
 
 namespace microbit {
-    export class SoundLevel extends jacdac.SensorHost {
+    export class SoundLevel extends jacdac.SensorServer {
         enabled: boolean = true;
         // Sensitivity	-38dB ±3dB @ 94dB SPL
         minDecibels: number = 56

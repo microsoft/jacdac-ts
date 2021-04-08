@@ -54,7 +54,7 @@ namespace jacdac._rolemgr {
         }
     }
 
-    class HostBindings {
+    class ServerBindings {
         bindings: RoleBinding[] = []
         constructor(
             public host: string
@@ -125,7 +125,7 @@ namespace jacdac._rolemgr {
         return maxElt
     }
 
-    export class RoleManagerHost extends Host {
+    export class RoleManagerServer extends Server {
         private _oldBindingsHash: number;
 
         constructor() {
@@ -237,26 +237,26 @@ namespace jacdac._rolemgr {
                 }
             }
 
-            let hosts: HostBindings[] = []
+            let servers: ServerBindings[] = []
 
             // Group all clients by host
             for (const b of bindings) {
                 const hn = b.host()
-                let h = hosts.find(h => h.host == hn)
+                let h = servers.find(h => h.host == hn)
                 if (!h) {
-                    h = new HostBindings(hn)
-                    hosts.push(h)
+                    h = new ServerBindings(hn)
+                    servers.push(h)
                 }
                 h.bindings.push(b)
             }
 
             // exclude hosts that have already everything bound
-            hosts = hosts.filter(h => !h.fullyBound)
+            servers = servers.filter(h => !h.fullyBound)
 
-            while (hosts.length > 0) {
+            while (servers.length > 0) {
                 // Get host with maximum number of clients (resolve ties by name)
                 // This gives priority to assignment of "more complicated" hosts, which are generally more difficult to assign
-                const h = maxIn(hosts, (a, b) => a.bindings.length - b.bindings.length || b.host.compare(a.host))
+                const h = maxIn(servers, (a, b) => a.bindings.length - b.bindings.length || b.host.compare(a.host))
 
                 for (const d of wraps)
                     d.score = h.scoreFor(d)
@@ -265,7 +265,7 @@ namespace jacdac._rolemgr {
 
                 if (dev.score == 0) {
                     // nothing can be assigned, on any device
-                    hosts.removeElement(h)
+                    servers.removeElement(h)
                     continue
                 }
 
@@ -278,7 +278,7 @@ namespace jacdac._rolemgr {
 
                 // if everything bound on this host, remove it from further consideration
                 if (h.fullyBound)
-                    hosts.removeElement(h)
+                    servers.removeElement(h)
                 else {
                     // otherwise, remove bindings on the current device, to update sort order
                     // it's unclear we need this
@@ -305,7 +305,7 @@ namespace jacdac._rolemgr {
 namespace jacdac {
 
     //% fixedInstance whenUsed block="role manager"
-    export const roleManagerHost = new _rolemgr.RoleManagerHost()
+    export const roleManager = new _rolemgr.RoleManagerServer()
 
     /*
 

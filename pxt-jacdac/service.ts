@@ -11,7 +11,7 @@ namespace jacdac {
         }
     }
 
-    export class Broadcast extends Host {
+    export class Broadcast extends Server {
         readonly client: BroadcastClient
 
         constructor(name: string, serviceClass: number) {

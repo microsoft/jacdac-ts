@@ -2,7 +2,7 @@ namespace jacdac {
     /**
      * JacDac service running on sensor and streaming data out
      */
-    export class SensorHost extends Host {
+    export class SensorServer extends Server {
         public streamingInterval: number; // millis
         public streamingSamples: number;
 
@@ -42,7 +42,7 @@ namespace jacdac {
         protected handleCustomCommand(pkt: JDPacket) {
         }
 
-        protected raiseHostEvent(value: number) {
+        protected raiseServerEvent(value: number) {
             this.sendEvent(value)
         }
 

@@ -1,7 +1,7 @@
 {
     "name": "jacdac-button-host",
     "version": "0.4.31",
-    "description": "MakeCode support for Jacdac Button host service",
+    "description": "MakeCode support for Jacdac Button server",
     "dependencies": {
         "core": "*",
         "buttons": "*",
@@ -9,7 +9,7 @@
         "jacdac-button": "github:microsoft/pxt-jacdac/button"
     },
     "files": [
-        "host.ts"
+        "server.ts"
     ],
     "testFiles": [
         "test.ts"
