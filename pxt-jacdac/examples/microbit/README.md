@@ -1,31 +1,21 @@
 
-> Open this page at [https://tballmsft.github.io/jacdacv2/](https://tballmsft.github.io/jacdacv2/)
+# Jacdac micro:bit (V2)
+
+Jacdac servers to surface sensors of the micro:bit V2. **Supported in MakeCode beta only for now!!**
 
 ## Use as Extension
 
 This repository can be added as an **extension** in MakeCode.
 
-* open [https://makecode.microbit.org/](https://makecode.microbit.org/)
+* open [https://makecode.microbit.org/beta](https://makecode.microbit.org/beta)
 * click on **New Project**
 * click on **Extensions** under the gearwheel menu
-* search for **https://github.com/tballmsft/jacdacv2** and import
+* search for **https://github.com/microsoft/pxt-jacdac/examples/microbit** and import
 
-## Edit this project ![Build status badge](https://github.com/tballmsft/jacdacv2/workflows/MakeCode/badge.svg)
+## Edit this project
 
 To edit this repository in MakeCode.
 
-* open [https://makecode.microbit.org/](https://makecode.microbit.org/)
+* open [https://makecode.microbit.org/beta](https://makecode.microbit.org/beta)
 * click on **Import** then click on **Import URL**
-* paste **https://github.com/tballmsft/jacdacv2** and click import
-
-## Blocks preview
-
-This image shows the blocks code from the last commit in master.
-This image may take a few minutes to refresh.
-
-![A rendered view of the blocks](https://github.com/tballmsft/jacdacv2/raw/master/.github/makecode/blocks.png)
-
-#### Metadata (used for search, rendering)
-
-* for PXT/microbit
-<script src="https://makecode.com/gh-pages-embed.js"></script><script>makeCodeRender("{{ site.makecode.home_url }}", "{{ site.github.owner_name }}/{{ site.github.repository_name }}");</script>
+* paste **https://github.com/microsoft/pxt-jacdac/examples/microbit** and click import

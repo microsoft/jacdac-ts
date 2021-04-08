@@ -126,36 +126,6 @@ namespace modules {
             this._frequencyBand.values = values as [number];
         }
 
-        /**
-         * Raised when a string packet is received
-         */
-        //% group="Bit:radio"
-        //% blockId=jacdac_on_bitradio_string_received
-        //% block="on %bitradio string received"
-        //% weight=92
-        onStringReceived(handler: () => void): void {
-            this.registerEvent(jacdac.BitRadioEvent.StringReceived, handler);
-        }
-        /**
-         * Raised when a number packet is received
-         */
-        //% group="Bit:radio"
-        //% blockId=jacdac_on_bitradio_number_received
-        //% block="on %bitradio number received"
-        //% weight=91
-        onNumberReceived(handler: () => void): void {
-            this.registerEvent(jacdac.BitRadioEvent.NumberReceived, handler);
-        }
-        /**
-         * Raised when a buffer packet is received
-         */
-        //% group="Bit:radio"
-        //% blockId=jacdac_on_bitradio_buffer_received
-        //% block="on %bitradio buffer received"
-        //% weight=90
-        onBufferReceived(handler: () => void): void {
-            this.registerEvent(jacdac.BitRadioEvent.BufferReceived, handler);
-        }
 
         /**
         * Sends a string payload as a radio message, maximum 18 characters.
@@ -163,7 +133,7 @@ namespace modules {
         //% group="Bit:radio"
         //% blockId=jacdac_bitradio_send_string_cmd
         //% block="%bitradio send string"
-        //% weight=89
+        //% weight=92
         sendString(message: string): void {
             this.start();
             this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.BitRadioCmd.SendString, "s", [message]))
@@ -175,7 +145,7 @@ namespace modules {
         //% group="Bit:radio"
         //% blockId=jacdac_bitradio_send_number_cmd
         //% block="%bitradio send number"
-        //% weight=88
+        //% weight=91
         sendNumber(value: number): void {
             this.start();
             this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.BitRadioCmd.SendNumber, "f64", [value]))
@@ -187,7 +157,7 @@ namespace modules {
         //% group="Bit:radio"
         //% blockId=jacdac_bitradio_send_value_cmd
         //% block="%bitradio send value"
-        //% weight=87
+        //% weight=90
         sendValue(value: number, name: string): void {
             this.start();
             this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.BitRadioCmd.SendValue, "f64 s", [value, name]))
@@ -199,7 +169,7 @@ namespace modules {
         //% group="Bit:radio"
         //% blockId=jacdac_bitradio_send_buffer_cmd
         //% block="%bitradio send buffer"
-        //% weight=86
+        //% weight=89
         sendBuffer(data: Buffer): void {
             this.start();
             this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.BitRadioCmd.SendBuffer, "b", [data]))

@@ -75,9 +75,7 @@ namespace microbit {
          * ```
          */
         SendBuffer = 0x83,
-    }
 
-    const enum BitRadioEvent {
         /**
          * Raised when a string packet is received
          *
@@ -85,8 +83,7 @@ namespace microbit {
          * const [time, deviceSerialNumber, rssi, message] = jdunpack<[number, number, number, string]>(buf, "u32 u32 i8 x[1] s")
          * ```
          */
-        //% block="string received"
-        StringReceived = 0x80,
+        StringReceived = 0x90,
 
         /**
          * Raised when a number packet is received
@@ -95,8 +92,7 @@ namespace microbit {
          * const [time, deviceSerialNumber, rssi, value, name] = jdunpack<[number, number, number, number, string]>(buf, "u32 u32 i8 x[3] f64 s")
          * ```
          */
-        //% block="number received"
-        NumberReceived = 0x81,
+        NumberReceived = 0x91,
 
         /**
          * Raised when a buffer packet is received
@@ -105,8 +101,7 @@ namespace microbit {
          * const [time, deviceSerialNumber, rssi, data] = jdunpack<[number, number, number, Buffer]>(buf, "u32 u32 i8 x[1] b")
          * ```
          */
-        //% block="buffer received"
-        BufferReceived = 0x82,
+        BufferReceived = 0x92,
     }
 
     export class RadioServer extends jacdac.Server {
@@ -154,7 +149,7 @@ namespace microbit {
             const time = radio.receivedTime()
 
             const payload = jacdac.jdpack<[number, number, number, Buffer]>("u32 u32 i8 x[1] b", [time, deviceSerialNumber, rssi, data])
-            this.sendEvent(BitRadioEvent.BufferReceived, payload)
+            this.sendReport(JDPacket.from(BitRadioCmd.BufferReceived, payload))
         }
 
         private handleReceivedString(data: string) {
@@ -163,7 +158,7 @@ namespace microbit {
             const time = radio.receivedTime()
 
             const payload = jacdac.jdpack<[number, number, number, string]>("u32 u32 i8 x[1] s", [time, deviceSerialNumber, rssi, data])
-            this.sendEvent(BitRadioEvent.StringReceived, payload)
+            this.sendReport(JDPacket.from(BitRadioCmd.StringReceived, payload))
         }
 
         private handleReceivedNumber(name: string, data: number) {
@@ -172,7 +167,7 @@ namespace microbit {
             const time = radio.receivedTime()
 
             const payload = jacdac.jdpack<[number, number, number, number, string]>("u32 u32 i8 x[3] f64 s", [time, deviceSerialNumber, rssi, data, name])
-            this.sendEvent(BitRadioEvent.NumberReceived, payload)
+            this.sendReport(JDPacket.from(BitRadioCmd.NumberReceived, payload))
         }
 
         private handleSendBuffer(pkt: jacdac.JDPacket) {
