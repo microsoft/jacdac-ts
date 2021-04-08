@@ -85,8 +85,8 @@ export const READING_SENT = "readingSent"
 export const ROLE_CHANGE = "roleChange"
 export const ROLE_MANAGER_CHANGE = "roleManagerChange"
 
-export const DEVICE_HOST_ADDED = `deviceHostAdded`
-export const DEVICE_HOST_REMOVED = `deviceHostRemoved`
+export const SERVICE_PROVIDER_ADDED = `serviceProviderAdded`
+export const SERVICE_PROVIDER_REMOVED = `serviceProviderRemoved`
 
 export const IDENTIFY = "identify"
 export const IDENTIFY_DURATION = 2000
