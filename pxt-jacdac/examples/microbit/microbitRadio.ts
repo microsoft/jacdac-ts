@@ -109,7 +109,7 @@ namespace microbit {
         BufferReceived = 0x82,
     }
 
-    export class Radio extends jacdac.Server {
+    export class RadioServer extends jacdac.Server {
         readonly enabled = true;
         group = 1;
         transmissionPower = 6;
@@ -192,4 +192,7 @@ namespace microbit {
             radio.sendValue(name, value)
         }
     }
+
+    //% fixedInstance whenUsed
+    export const radioServer = new RadioServer()
 }

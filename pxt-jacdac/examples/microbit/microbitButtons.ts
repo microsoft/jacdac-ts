@@ -17,4 +17,11 @@ namespace microbit {
             return jacdac.jdpack("u8", [ pressed ? 1 : 0]);
         }
     }
+
+    //% fixedInstance whenUsed block="button A"
+    export const buttonA = new microbit.MButton("buttonA", Button.A);
+    //% fixedInstance whenUsed block="button B"
+    export const buttonB = new microbit.MButton("buttonB", Button.B);
+    //% fixedInstance whenUsed block="button AB"
+    export const buttonAB = new microbit.MButton("buttonAB", Button.AB);
 }

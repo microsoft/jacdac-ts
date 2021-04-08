@@ -77,8 +77,9 @@ namespace microbit {
         Quiet = 0x5,
     }
 
-    export class SoundLevel extends jacdac.SensorServer {
+    export class SoundLevelServer extends jacdac.SensorServer {
         enabled: boolean = false;
+        private registered = false;
         // Sensitivity	-38dB ±3dB @ 94dB SPL
         minDecibels: number = 56
         maxDecibels: number = 132
@@ -87,7 +88,6 @@ namespace microbit {
                 
         constructor() {
             super("soundlevel", SRV_SOUND_LEVEL)
-            this.setThresholds()
         }
 
         private setThresholds() {
@@ -109,15 +109,17 @@ namespace microbit {
 
         private registerEvents() {
             if (this.enabled) {
+                this.registered = true;
                 input.onSound(DetectedSound.Loud, function () {
                     this.sendEvent(SoundLevelEvent.Loud)
                 })
                 input.onSound(DetectedSound.Quiet, function () {
                     this.sendEvent(SoundLevelEvent.Quiet)
                 })
-            } else {
+            } else if (this.registered) {
                 input.onSound(DetectedSound.Loud, function() {})
                 input.onSound(DetectedSound.Quiet, function () { })
+                this.registered = false;
             }
         }
 
@@ -128,4 +130,7 @@ namespace microbit {
             return jacdac.jdpack("u0.16", [soundLevel]);
         }
     }
+
+    //% fixedInstance whenUsed
+    export const soundLevelServer = new SoundLevelServer()
 }

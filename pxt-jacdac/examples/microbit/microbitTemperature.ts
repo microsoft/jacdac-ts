@@ -55,7 +55,7 @@ namespace microbit {
         Variant = 0x107,
     }
 
-    export class Thermometer extends jacdac.SensorServer {
+    export class ThermometerServer extends jacdac.SensorServer {
         variant: ThermometerVariant = ThermometerVariant.Indoor;
 
         constructor() {
@@ -74,4 +74,7 @@ namespace microbit {
             return jacdac.jdpack("i22.10", [input.temperature()]);
         }
     }
+
+    //% fixedInstance whenUsed
+    export const thermometerServer = new ThermometerServer()
 }

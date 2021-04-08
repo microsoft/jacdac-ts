@@ -37,7 +37,7 @@ namespace microbit {
         Calibrate = 0x2,
     }
 
-    export class Compass extends jacdac.SensorServer {
+    export class CompassServer extends jacdac.SensorServer {
         enabled = false
 
         constructor() {
@@ -62,11 +62,16 @@ namespace microbit {
         }
 
         protected handleCalibrateCommand(pkt: jacdac.JDPacket) {
-            this.startCalibration();
+            if (this.enabled)
+                this.startCalibration();
         }
 
         public serializeState(): Buffer {
-            return jacdac.jdpack("u16.16", [input.compassHeading()]);
+            const heading = this.enabled ? input.compassHeading() : 0
+            return jacdac.jdpack("u16.16", [heading]);
         }
     }
+
+    //% fixedInstance whenUsed
+    export const compassServer = new CompassServer()
 }

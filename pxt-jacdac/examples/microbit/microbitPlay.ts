@@ -40,9 +40,9 @@ namespace microbit {
      * ```
      */
 
-    export class SoundPlayer extends jacdac.Server {
+    export class SoundPlayerServer extends jacdac.Server {
         constructor() {
-            super("sndplayer", SRV_SOUND_PLAYER)
+            super("soundplayer", SRV_SOUND_PLAYER)
         }
 
         public handlePacket(pkt: jacdac.JDPacket) {
@@ -85,4 +85,7 @@ namespace microbit {
             })
         }
     }
+
+    //% fixedInstance whenUsed
+    export const soundPlayerServer = new SoundPlayerServer()
 }

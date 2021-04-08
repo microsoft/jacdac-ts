@@ -1,11 +1,12 @@
 {
-    "name": "microbit-app",
+    "name": "jacdac-microbit",
+    "version": "0.4.33",
     "description": "An app that exposes micro:bit components as Jacdac hosts.",
     "dependencies": {
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "jacdac": "github:microsoft/pxt-jacdac#v0.4.32"
+        "jacdac": "github:microsoft/pxt-jacdac"
     },
     "files": [
         "main.ts",

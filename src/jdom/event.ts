@@ -34,7 +34,7 @@ export class JDEvent extends JDServiceMemberNode {
     }
 
     get data() {
-        return this._lastReportPkt ? this._lastReportPkt.data.slice(4) : undefined
+        return this._lastReportPkt?.data
     }
 
     get count() {

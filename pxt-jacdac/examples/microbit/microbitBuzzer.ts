@@ -26,7 +26,7 @@ namespace microbit {
         PlayTone = 0x80,
     }
 
-    export class Buzzer extends jacdac.Server {
+    export class BuzzerServer extends jacdac.Server {
         constructor() {
             super("buzzer", SRV_BUZZER)
         }
@@ -52,4 +52,7 @@ namespace microbit {
             music.playTone(frequency, duration)
         }
     }
+
+    //% fixedInstance whenUsed
+    export const buzzerServer = new BuzzerServer()
 }
