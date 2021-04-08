@@ -5,7 +5,7 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "jacdac": "github:microsoft/pxt-jacdac#v0.4.25"
+        "jacdac": "github:microsoft/pxt-jacdac#v0.4.32"
     },
     "files": [
         "main.ts",
@@ -17,13 +17,15 @@
         "microbitLightLevel.ts",
         "microbitPlay.ts",
         "microbitTemperature.ts",
-        "microbitCompass.ts"
+        "microbitCompass.ts",
+        "microbitRadio.ts",
+        "microbitBuzzer.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "targetVersions": {
-        "target": "3.1.67",
+        "target": "3.1.70",
         "targetId": "microbit"
     },
     "supportedTargets": [

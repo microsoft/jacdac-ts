@@ -1,7 +1,7 @@
-namespace jacdac {
+namespace microbit {
     // Service: Sound level
-    export const SRV_SOUND_LEVEL = 0x14ad1a5d
-    export const enum SoundLevelReg {
+    const SRV_SOUND_LEVEL = 0x14ad1a5d
+    const enum SoundLevelReg {
         /**
          * Read-only ratio u0.16 (uint16_t). The sound level detected by the microphone
          *
@@ -63,7 +63,7 @@ namespace jacdac {
         QuietThreshold = 0x6,
     }
 
-    export const enum SoundLevelEvent {
+    const enum SoundLevelEvent {
         /**
          * Raised when a loud sound is detected
          */
@@ -77,27 +77,17 @@ namespace jacdac {
         Quiet = 0x5,
     }
 
-}
-
-namespace microbit {
     export class SoundLevel extends jacdac.SensorServer {
-        enabled: boolean = true;
+        enabled: boolean = false;
         // Sensitivity	-38dB ±3dB @ 94dB SPL
         minDecibels: number = 56
         maxDecibels: number = 132
         loudThreshold: number = 0.5;
         quietThreshold: number = 0.2;
-        soundLevel: number = 0;
-        
+                
         constructor() {
-            super("microbitSound", jacdac.SRV_SOUND_LEVEL)
+            super("soundlevel", SRV_SOUND_LEVEL)
             this.setThresholds()
-            input.onSound(DetectedSound.Loud, function() {
-                this.sendEvent(jacdac.SoundLevelEvent.Loud)
-            })
-            input.onSound(DetectedSound.Quiet, function () {
-                this.sendEvent(jacdac.SoundLevelEvent.Quiet)
-            })
         }
 
         private setThresholds() {
@@ -107,19 +97,35 @@ namespace microbit {
 
         public handlePacket(pkt: jacdac.JDPacket) {
             super.handlePacket(pkt)
-            this.enabled = this.handleRegBool(pkt, jacdac.SoundLevelReg.Enabled, this.enabled);
-            this.loudThreshold = this.handleRegValue(pkt, jacdac.SoundLevelReg.LoudThreshold, "u0.16", this.loudThreshold);
-            this.quietThreshold = this.handleRegValue(pkt, jacdac.SoundLevelReg.QuietThreshold, "u0.16", this.quietThreshold);
-            this.setThresholds()
+            const oldEnabled = this.enabled
+            this.enabled = this.handleRegBool(pkt, SoundLevelReg.Enabled, this.enabled);
+            this.loudThreshold = this.handleRegValue(pkt, SoundLevelReg.LoudThreshold, "u0.16", this.loudThreshold);
+            this.quietThreshold = this.handleRegValue(pkt, SoundLevelReg.QuietThreshold, "u0.16", this.quietThreshold);
+            if (this.enabled && oldEnabled !== this.enabled)
+                this.registerEvents()
+            if (this.enabled)
+                this.setThresholds()
         }
 
-        private updateSoundLevel() {
-            this.soundLevel = this.enabled ? (input.soundLevel() / 255) : 0.0
+        private registerEvents() {
+            if (this.enabled) {
+                input.onSound(DetectedSound.Loud, function () {
+                    this.sendEvent(SoundLevelEvent.Loud)
+                })
+                input.onSound(DetectedSound.Quiet, function () {
+                    this.sendEvent(SoundLevelEvent.Quiet)
+                })
+            } else {
+                input.onSound(DetectedSound.Loud, function() {})
+                input.onSound(DetectedSound.Quiet, function () { })
+            }
         }
 
         public serializeState(): Buffer {
-            this.updateSoundLevel();
-            return jacdac.jdpack("u0.16", [this.soundLevel]);
+            const soundLevel = this.enabled 
+                ? (input.soundLevel() / 255) 
+                : 0.0
+            return jacdac.jdpack("u0.16", [soundLevel]);
         }
     }
 }

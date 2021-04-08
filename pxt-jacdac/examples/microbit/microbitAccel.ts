@@ -1,10 +1,9 @@
 namespace microbit {
-
-    export const SRV_ACCELEROMETER = 0x1f140409
+    const SRV_ACCELEROMETER = 0x1f140409
     export class Accelerometer extends jacdac.SensorServer {
         private lastEvent: number = -1;
         constructor() {
-            super("microbitAccel", SRV_ACCELEROMETER);
+            super("accelerometer", SRV_ACCELEROMETER);
             input.onGesture(Gesture.Shake, function() { this.sendEvent(0x8b); });
             input.onGesture(Gesture.ScreenUp, function() { this.sendEvent(0x85); });
             input.onGesture(Gesture.ScreenDown, function() { this.sendEvent(0x86); });

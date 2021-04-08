@@ -1,7 +1,7 @@
 namespace microbit {
     export class Screen extends jacdac.Server {
         constructor() {
-            super("microbitScreen", 0x110d154b)
+            super("screen", 0x110d154b)
         }
         
         handlePacket(packet: jacdac.JDPacket) {

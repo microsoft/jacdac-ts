@@ -1,5 +1,5 @@
 namespace microbit {
-    export const SRV_BUTTON = 0x1473a263
+    const SRV_BUTTON = 0x1473a263
     export class MButton extends jacdac.SensorServer {
         constructor(dev: string, private button: Button) {
             super(dev, SRV_BUTTON);
