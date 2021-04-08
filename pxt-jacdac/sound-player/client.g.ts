@@ -46,15 +46,15 @@ namespace modules {
 
 
         /**
-        * Starts playing a sounds with a specific volume.
+        * Starts playing a sound.
         */
         //% group="Sound"
         //% blockId=jacdac_soundplayer_play_cmd
         //% block="%soundplayer play"
         //% weight=98
-        play(volume: number, name: string): void {
+        play(_: string): void {
             this.start();
-            this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.SoundPlayerCmd.Play, "u0.16 s", [volume, name]))
+            this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.SoundPlayerCmd.Play, "s", [_]))
         }
     
     }

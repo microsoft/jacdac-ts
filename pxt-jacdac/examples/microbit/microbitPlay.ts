@@ -14,10 +14,10 @@ namespace microbit {
 
     const enum SoundPlayerCmd {
         /**
-         * Starts playing a sounds with a specific volume.
+         * Argument: string (bytes). Starts playing a sound.
          *
          * ```
-         * const [volume, name] = jdunpack<[number, string]>(buf, "u0.16 s")
+         * const [play] = jdunpack<[string]>(buf, "s")
          * ```
          */
         Play = 0x80,
@@ -31,14 +31,6 @@ namespace microbit {
          */
         ListSounds = 0x81,
     }
-
-
-    /**
-     * pipe_report ListSoundsPipe
-     * ```
-     * const [duration, name] = jdunpack<[number, string]>(buf, "u32 s")
-     * ```
-     */
 
     export class SoundPlayerServer extends jacdac.Server {
         constructor() {
@@ -62,7 +54,7 @@ namespace microbit {
         }
 
         private handlePlayCommand(pkt: jacdac.JDPacket) {
-            const [volume, name] = pkt.jdunpack<[number, string]>("u0.16 s")
+            const [name] = pkt.jdunpack<[number, string]>("s")
             const exp = new SoundExpression(name)
             exp.play()
         }
@@ -80,7 +72,7 @@ namespace microbit {
                 [0, "twinkle"],
                 [0, "yawn"]
             ]
-            jacdac.OutPipe.respondForEach(pkt, sounds, k => {
+            jacdac.OutPipe.respondForEach(pkt, sounds, (k: string) => {
                 return jacdac.jdpack<[number, string]>("u32 s", k)
             })
         }
