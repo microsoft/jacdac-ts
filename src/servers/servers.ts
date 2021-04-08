@@ -1340,8 +1340,8 @@ export function addServiceProvider(bus: JDBus, definition: ServiceProviderDefini
 
 export function serviceProviderDefinitionFromServiceClass(serviceClass: number) {
     return _providerDefinitions.find(
-        host =>
-            host.serviceClasses.length === 1 &&
-            host.serviceClasses[0] === serviceClass
+        provider =>
+            provider.serviceClasses.length === 1 &&
+            provider.serviceClasses[0] === serviceClass
     )
 }
