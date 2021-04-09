@@ -149,7 +149,7 @@ namespace microbit {
             const time = radio.receivedTime()
 
             const payload = jacdac.jdpack<[number, number, number, Buffer]>("u32 u32 i8 x[1] b", [time, deviceSerialNumber, rssi, data])
-            this.sendReport(JDPacket.from(BitRadioCmd.BufferReceived, payload))
+            this.sendReport(jacdac.JDPacket.from(BitRadioCmd.BufferReceived, payload))
         }
 
         private handleReceivedString(data: string) {
@@ -158,7 +158,7 @@ namespace microbit {
             const time = radio.receivedTime()
 
             const payload = jacdac.jdpack<[number, number, number, string]>("u32 u32 i8 x[1] s", [time, deviceSerialNumber, rssi, data])
-            this.sendReport(JDPacket.from(BitRadioCmd.StringReceived, payload))
+            this.sendReport(jacdac.JDPacket.from(BitRadioCmd.StringReceived, payload))
         }
 
         private handleReceivedNumber(name: string, data: number) {
@@ -167,7 +167,7 @@ namespace microbit {
             const time = radio.receivedTime()
 
             const payload = jacdac.jdpack<[number, number, number, number, string]>("u32 u32 i8 x[3] f64 s", [time, deviceSerialNumber, rssi, data, name])
-            this.sendReport(JDPacket.from(BitRadioCmd.NumberReceived, payload))
+            this.sendReport(jacdac.JDPacket.from(BitRadioCmd.NumberReceived, payload))
         }
 
         private handleSendBuffer(pkt: jacdac.JDPacket) {

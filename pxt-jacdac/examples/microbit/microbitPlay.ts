@@ -54,7 +54,7 @@ namespace microbit {
         }
 
         private handlePlayCommand(pkt: jacdac.JDPacket) {
-            const [name] = pkt.jdunpack<[number, string]>("s")
+            const [name] = pkt.jdunpack<[string]>("s")
             const exp = new SoundExpression(name)
             exp.play()
         }
@@ -72,7 +72,7 @@ namespace microbit {
                 [0, "twinkle"],
                 [0, "yawn"]
             ]
-            jacdac.OutPipe.respondForEach(pkt, sounds, (k: string) => {
+            jacdac.OutPipe.respondForEach(pkt, sounds, k => {
                 return jacdac.jdpack<[number, string]>("u32 s", k)
             })
         }

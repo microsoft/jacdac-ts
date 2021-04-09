@@ -1,6 +1,6 @@
 {
     "name": "jacdac-reflectedlight",
-    "version": "0.4.41",
+    "version": "0.4.42",
     "description": "A sensor that detects light and dark surfaces, commonly used for line following robots.",
     "files": [
         "constants.ts",
