@@ -211,7 +211,10 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         ).length
     }
 
-    get candidateExtensions() {
+    get candidateExtensions(): string[] {
+        if (!this._runOptions)
+            return [];
+
         const devices = this.bus
             .devices({ announced: true, ignoreSelf: true })
             .filter(this.deviceFilter.bind(this))
@@ -233,7 +236,6 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         const dependencies = Object.values(this._runOptions?.dependencies || {})
             .filter(d => /^github:/.test(d))
             .map(d => /^github:([^#]+)(#.?)?/.exec(d)[1])
-        console.log(dependencies)
         if (dependencies?.length > 0) {
             // remove all needed extenions that are already in the dependencies
             extensions = extensions.filter(extension => {
