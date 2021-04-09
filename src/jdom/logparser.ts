@@ -6,26 +6,24 @@ import Frame from "./frame"
 import Trace from "./trace"
 
 export function parseTrace(contents: string): Trace {
-    const description: string[] = [];
+    const description: string[] = []
     const packets: Packet[] = []
     contents?.split(/\r?\n/).forEach(ln => {
         // parse data
         const m = /(\d+)\s+([a-f0-9]{12,})/i.exec(ln)
-        if (!m) { // probably junk data
-            if (packets.length == 0)
-                description.push(ln)
-            return;
+        if (!m) {
+            // probably junk data
+            if (packets.length == 0) description.push(ln)
+            return
         }
 
         const timestamp = parseInt(m[1])
         const data = fromHex(m[2])
         // add to array
         packets.push(Packet.fromBinary(data, timestamp))
-    });
-    if (packets.length)
-        return new Trace(packets, description.join('\n').trim());
-    else
-        return undefined;
+    })
+    if (packets.length) return new Trace(packets, description.join("\n").trim())
+    else return undefined
 }
 
 export function parseLogicLog(logcontents: string): Frame[] {
@@ -39,7 +37,7 @@ export function parseLogicLog(logcontents: string): Frame[] {
         if (m) {
             res.push({
                 timestamp: parseInt(m[1]),
-                data: fromHex(m[2])
+                data: fromHex(m[2]),
             })
             continue
         }
@@ -79,14 +77,13 @@ Time [s],Value,Parity Error,Framing Error
 0.063968960000000,0x00,,Error
          */
         m = /^([\d.]+),(?:Async Serial,)?.*(0x[A-F0-9][A-F0-9])/.exec(ln)
-        if (!m)
-            continue
+        if (!m) continue
         const tm = parseFloat(m[1])
         if (lastTime && tm - lastTime > 0.1) {
             res.push({
                 timestamp: lastTime * 1000,
                 data: new Uint8Array(frameBytes),
-                info: "timeout"
+                info: "timeout",
             })
             frameBytes = []
             lastTime = 0
@@ -110,8 +107,10 @@ Time [s],Value,Parity Error,Framing Error
 }
 
 export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void {
-    const packets = arrayConcatMany(frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp)))
-    const player = new TracePlayer(bus, speed);
-    player.trace = new Trace(packets);
-    player.start();
+    const packets = arrayConcatMany(
+        frames.map(frame => Packet.fromFrame(frame.data, frame.timestamp))
+    )
+    const player = new TracePlayer(bus, speed)
+    player.trace = new Trace(packets)
+    player.start()
 }

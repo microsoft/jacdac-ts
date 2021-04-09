@@ -2,8 +2,26 @@ import { bufferToArray, NumberFormat, getNumber } from "./buffer"
 import { JDBus } from "./bus"
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import { BootloaderCmd, ControlCmd, SRV_BOOTLOADER, SRV_CTRL, CMD_ADVERTISEMENT_DATA, CMD_GET_REG, CMD_REG_MASK, ControlReg, PACKET_REPORT } from "./constants"
-import { assert, delay, bufferConcat, bufferToString, SMap, strcmp, readBlobToUint8Array, toHex } from "./utils"
+import {
+    BootloaderCmd,
+    ControlCmd,
+    SRV_BOOTLOADER,
+    SRV_CTRL,
+    CMD_ADVERTISEMENT_DATA,
+    CMD_GET_REG,
+    CMD_REG_MASK,
+    ControlReg,
+    PACKET_REPORT,
+} from "./constants"
+import {
+    assert,
+    delay,
+    bufferConcat,
+    bufferToString,
+    SMap,
+    strcmp,
+    readBlobToUint8Array,
+} from "./utils"
 import { jdpack, jdunpack } from "./pack"
 import { BootloaderError } from "./constants"
 import { prettySize } from "./pretty"
@@ -19,27 +37,26 @@ const uf2ExtTags: SMap<number> = {
     version: -0x9fc7bc,
     name: -0x650d9d,
     pageSize: 0x0be9f7,
-    firmwareIdentifier: 0xc8a729
+    firmwareIdentifier: 0xc8a729,
 }
 
 export interface FirmwarePage {
-    data: Uint8Array;
-    targetAddress: number;
+    data: Uint8Array
+    targetAddress: number
 }
 
 export interface FirmwareBlob {
-    pages: FirmwarePage[];
-    firmwareIdentifier: number;
-    pageSize: number;
-    name: string;
-    version: string;
+    pages: FirmwarePage[]
+    firmwareIdentifier: number
+    pageSize: number
+    name: string
+    version: string
     // name of the file or repo
-    store: string;
+    store: string
 }
 
 function timestamp() {
-    if (!_startTime)
-        _startTime = Date.now()
+    if (!_startTime) _startTime = Date.now()
     return Date.now() - _startTime
 }
 
@@ -67,8 +84,7 @@ class FlashClient {
     }
 
     private handlePacket(pkt: Packet) {
-        if (pkt.serviceCommand == BootloaderCmd.PageData)
-            this.lastStatus = pkt
+        if (pkt.serviceCommand == BootloaderCmd.PageData) this.lastStatus = pkt
     }
 
     private start() {
@@ -88,17 +104,29 @@ class FlashClient {
         this.sessionId = (Math.random() * 0x10000000) | 0
         for (const d of this.classClients) {
             d.start()
-            log(`flashing ${d.device.shortId}; available flash=${d.flashSize / 1024}kb; page=${d.pageSize}b`)
+            log(
+                `flashing ${d.device.shortId}; available flash=${
+                    d.flashSize / 1024
+                }kb; page=${d.pageSize}b`
+            )
         }
 
-        const setsession = Packet.jdpacked<[number]>(BootloaderCmd.SetSession, "u32", [this.sessionId])
+        const setsession = Packet.jdpacked<[number]>(
+            BootloaderCmd.SetSession,
+            "u32",
+            [this.sessionId]
+        )
 
         this.allPending()
 
         for (let i = 0; i < BL_RETRIES; ++i) {
             for (const d of this.classClients) {
                 if (d.pending) {
-                    if (d.lastStatus && d.lastStatus.getNumber(NumberFormat.UInt32LE, 0) == this.sessionId) {
+                    if (
+                        d.lastStatus &&
+                        d.lastStatus.getNumber(NumberFormat.UInt32LE, 0) ==
+                            this.sessionId
+                    ) {
                         d.pending = false
                     } else {
                         d.lastStatus = null
@@ -108,13 +136,11 @@ class FlashClient {
                     await delay(BL_SESSION_DELAY)
                 }
             }
-            if (this.numPending() == 0)
-                break
+            if (this.numPending() == 0) break
             await this.waitForStatusAsync()
         }
 
-        if (this.numPending())
-            throw new Error("Can't set session id")
+        if (this.numPending()) throw new Error("Can't set session id")
     }
 
     private async endFlashAsync() {
@@ -133,15 +159,13 @@ class FlashClient {
 
     private numPending() {
         let num = 0
-        for (const c of this.classClients)
-            if (c.pending) num++
+        for (const c of this.classClients) if (c.pending) num++
         return num
     }
 
     private async waitForStatusAsync() {
         for (let i = 0; i < 100; ++i) {
-            if (this.classClients.every(c => c.lastStatus != null))
-                break
+            if (this.classClients.every(c => c.lastStatus != null)) break
             await delay(5)
         }
     }
@@ -149,15 +173,19 @@ class FlashClient {
     private async flashPage(page: FirmwarePage) {
         const pageAddr = page.targetAddress
         const pageSize = this.pageSize
-        const numSubpage = ((pageSize + BL_SUBPAGE_SIZE - 1) / BL_SUBPAGE_SIZE) | 0
+        const numSubpage =
+            ((pageSize + BL_SUBPAGE_SIZE - 1) / BL_SUBPAGE_SIZE) | 0
 
-        log(`flash ${prettySize(this.pageSize)} at ${(pageAddr & 0xffffff).toString(16)}`)
+        log(
+            `flash ${prettySize(this.pageSize)} at ${(
+                pageAddr & 0xffffff
+            ).toString(16)}`
+        )
 
         if (page.data.length != this.pageSize)
             throw new Error("invalid page size")
 
-        for (const f of this.classClients)
-            f.lastStatus = null
+        for (const f of this.classClients) f.lastStatus = null
 
         this.allPending()
         for (let i = 0; i < BL_RETRIES; ++i) {
@@ -165,12 +193,28 @@ class FlashClient {
             let currSubpage = 0
             for (let suboff = 0; suboff < pageSize; suboff += BL_SUBPAGE_SIZE) {
                 let sz = BL_SUBPAGE_SIZE
-                if (suboff + sz > pageSize)
-                    sz = pageSize - suboff
-                log(`send sub page ${currSubpage}/${numSubpage - 1} at ${suboff.toString(16)}[${sz}]`)
-                const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32", [pageAddr, suboff, currSubpage++, numSubpage - 1, this.sessionId, 0, 0, 0, 0])
+                if (suboff + sz > pageSize) sz = pageSize - suboff
+                log(
+                    `send sub page ${currSubpage}/${
+                        numSubpage - 1
+                    } at ${suboff.toString(16)}[${sz}]`
+                )
+                const hd = jdpack("u32 u16 u8 u8 u32 u32 u32 u32 u32", [
+                    pageAddr,
+                    suboff,
+                    currSubpage++,
+                    numSubpage - 1,
+                    this.sessionId,
+                    0,
+                    0,
+                    0,
+                    0,
+                ])
                 assert(hd.length == 4 * 7)
-                const p = Packet.from(BootloaderCmd.PageData, bufferConcat(hd, page.data.slice(suboff, suboff + sz)))
+                const p = Packet.from(
+                    BootloaderCmd.PageData,
+                    bufferConcat(hd, page.data.slice(suboff, suboff + sz))
+                )
                 // in first round, just broadcast everything
                 // in other rounds, broadcast everything except for last packet
                 if (i == 0 || currSubpage < numSubpage)
@@ -191,13 +235,17 @@ class FlashClient {
                 if (f.pending) {
                     let err = ""
                     if (f.lastStatus) {
-                        const [session_id, page_error, pageAddrR] = jdunpack<[number, BootloaderError, number]>(f.lastStatus.data, "u32 u32 u32")
+                        const [session_id, page_error, pageAddrR] = jdunpack<
+                            [number, BootloaderError, number]
+                        >(f.lastStatus.data, "u32 u32 u32")
                         if (session_id != this.sessionId)
                             err = "invalid session_id"
                         else if (pageAddrR != pageAddr)
                             err = "invalid page address"
                         else if (page_error)
-                            err = "err: " + (BootloaderError[page_error] || page_error)
+                            err =
+                                "err: " +
+                                (BootloaderError[page_error] || page_error)
                     } else {
                         err = "timeout"
                     }
@@ -211,7 +259,11 @@ class FlashClient {
             }
 
             if (this.numPending() == 0) {
-                log(`page ${pageAddr & 0xffffff} done, ${i}/${BL_RETRIES} retries`)
+                log(
+                    `page ${
+                        pageAddr & 0xffffff
+                    } done, ${i}/${BL_RETRIES} retries`
+                )
                 return
             }
         }
@@ -219,13 +271,15 @@ class FlashClient {
         throw new Error("too many retries")
     }
 
-    public async flashFirmwareBlob(fw: FirmwareBlob, progress?: (perc: number) => void) {
-        const waitCycles = 15;
+    public async flashFirmwareBlob(
+        fw: FirmwareBlob,
+        progress?: (perc: number) => void
+    ) {
+        const waitCycles = 15
         const total = fw.pages.length + waitCycles + 3
         let idx = 0
         const prog = () => {
-            if (progress)
-                progress(100 * idx / total)
+            if (progress) progress((100 * idx) / total)
             idx++
         }
         try {
@@ -256,20 +310,31 @@ class FlashClient {
     }
 }
 
-const UF2_MAGIC_START0 = 0x0A324655;
-const UF2_MAGIC_START1 = 0x9E5D5157;
-const UF2_MAGIC_END = 0x0AB16F30;
+const UF2_MAGIC_START0 = 0x0a324655
+const UF2_MAGIC_START1 = 0x9e5d5157
+const UF2_MAGIC_END = 0x0ab16f30
 
 export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
     const blobs: FirmwareBlob[] = []
     let currBlob: FirmwareBlob
     for (let off = 0; off < uf2.length; off += 512) {
         const header = uf2.slice(off, off + 32)
-        const [magic0, magic1, flags, trgaddr, payloadSize, blkNo, numBlocks, familyID] =
-            bufferToArray(header, NumberFormat.UInt32LE)
-        if (magic0 != UF2_MAGIC_START0 ||
+        const [
+            magic0,
+            magic1,
+            flags,
+            trgaddr,
+            payloadSize,
+            blkNo,
+            numBlocks,
+            familyID,
+        ] = bufferToArray(header, NumberFormat.UInt32LE)
+        if (
+            magic0 != UF2_MAGIC_START0 ||
             magic1 != UF2_MAGIC_START1 ||
-            getNumber(uf2, NumberFormat.UInt32LE, off + 512 - 4) != UF2_MAGIC_END)
+            getNumber(uf2, NumberFormat.UInt32LE, off + 512 - 4) !=
+                UF2_MAGIC_END
+        )
             throw new Error("invalid UF2")
         if (blkNo == 0) {
             flush()
@@ -279,38 +344,44 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
                 version: "",
                 pageSize: 1024,
                 name: "FW " + familyID.toString(16),
-                store
+                store,
             }
         }
         if (flags & 0x8000)
             parseExtTags(uf2.slice(off + 32 + payloadSize, off + 512))
         const pageSize = currBlob.pageSize || 1024
         let currPage = currBlob.pages[currBlob.pages.length - 1]
-        if (!currPage || !(currPage.targetAddress <= trgaddr && trgaddr < currPage.targetAddress + pageSize)) {
+        if (
+            !currPage ||
+            !(
+                currPage.targetAddress <= trgaddr &&
+                trgaddr < currPage.targetAddress + pageSize
+            )
+        ) {
             currPage = {
                 targetAddress: trgaddr & ~(pageSize - 1),
-                data: new Uint8Array(pageSize)
+                data: new Uint8Array(pageSize),
             }
             currPage.data.fill(0xff)
             currBlob.pages.push(currPage)
         }
-        currPage.data.set(uf2.slice(off + 32, off + 32 + payloadSize), trgaddr - currPage.targetAddress)
-
+        currPage.data.set(
+            uf2.slice(off + 32, off + 32 + payloadSize),
+            trgaddr - currPage.targetAddress
+        )
     }
     flush()
     return blobs
 
     function flush() {
-        if (currBlob)
-            blobs.push(currBlob)
+        if (currBlob) blobs.push(currBlob)
     }
 
     function parseExtTags(buf: Uint8Array) {
         let sz = 0
         for (let i = 0; i < buf.length; i += sz) {
             sz = buf[i]
-            if (sz == 0)
-                break
+            if (sz == 0) break
             const desig = getNumber(buf, NumberFormat.UInt32LE, i) >>> 8
             for (const key of Object.keys(uf2ExtTags)) {
                 const tg = uf2ExtTags[key]
@@ -321,7 +392,8 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
                     } else {
                         v = getNumber(buf, NumberFormat.UInt32LE, i + 4)
                     }
-                    (currBlob as any)[key] = v
+                    const cbany = currBlob as any
+                    cbany[key] = v
                     break
                 }
             }
@@ -331,25 +403,35 @@ export function parseUF2(uf2: Uint8Array, store: string): FirmwareBlob[] {
 }
 
 export function generateDeviceList(uf2: Uint8Array) {
-    return parseUF2(uf2, "").map(b => `* \`\`0x${b.firmwareIdentifier.toString(16)}\`\` ${b.name}`).join("\n")
+    return parseUF2(uf2, "")
+        .map(b => `* \`\`0x${b.firmwareIdentifier.toString(16)}\`\` ${b.name}`)
+        .join("\n")
 }
 
 export interface FirmwareInfo {
-    deviceId: string;
-    version: string;
-    name: string;
-    firmwareIdentifier: number;
-    blFirmwareIdentifier: number;
+    deviceId: string
+    version: string
+    name: string
+    firmwareIdentifier: number
+    blFirmwareIdentifier: number
 }
 
-export async function parseFirmwareFile(blob: Blob, store?: string): Promise<FirmwareBlob[]> {
-    const data = await readBlobToUint8Array(blob);
-    const buf = new Uint8Array(data);
-    const uf2Blobs = parseUF2(buf, store);
-    return uf2Blobs;
+export async function parseFirmwareFile(
+    blob: Blob,
+    store?: string
+): Promise<FirmwareBlob[]> {
+    const data = await readBlobToUint8Array(blob)
+    const buf = new Uint8Array(data)
+    const uf2Blobs = parseUF2(buf, store)
+    return uf2Blobs
 }
 
-async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, recovery = false) {
+async function scanCore(
+    bus: JDBus,
+    numTries: number,
+    makeFlashers: boolean,
+    recovery = false
+) {
     const devices: SMap<FirmwareInfo> = {}
     const flashers: FlashClient[] = []
     try {
@@ -383,10 +465,8 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, rec
     const devs = Object.values(devices).filter(d => {
         if (!d.blFirmwareIdentifier)
             d.blFirmwareIdentifier = d.firmwareIdentifier
-        if (!d.firmwareIdentifier)
-            d.firmwareIdentifier = d.blFirmwareIdentifier
-        if (!d.firmwareIdentifier)
-            return false
+        if (!d.firmwareIdentifier) d.firmwareIdentifier = d.blFirmwareIdentifier
+        if (!d.firmwareIdentifier) return false
         return true
     })
     // store info in objects
@@ -396,7 +476,7 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, rec
     })
     return {
         devs,
-        flashers
+        flashers,
     }
 
     function handlePkt(p: Packet) {
@@ -407,26 +487,33 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, rec
                 firmwareIdentifier: null,
                 version: null,
                 name: null,
-                blFirmwareIdentifier: null
+                blFirmwareIdentifier: null,
             }
         }
 
         // note that we may get this even if recovery==false due to someone else asking
         // (eg when the user set the recovery mode toggle)
-        if (p.serviceIndex == 1 &&
+        if (
+            p.serviceIndex == 1 &&
             p.serviceCommand == CMD_ADVERTISEMENT_DATA &&
             p.getNumber(NumberFormat.UInt32LE, 0) == SRV_BOOTLOADER
         ) {
             dev.blFirmwareIdentifier = p.getNumber(NumberFormat.UInt32LE, 12)
             if (makeFlashers) {
-                if (!flashers.find(f => f.device.deviceId == p.deviceIdentifier)) {
+                if (
+                    !flashers.find(f => f.device.deviceId == p.deviceIdentifier)
+                ) {
                     log(`new flasher`)
                     flashers.push(new FlashClient(bus, p))
                 }
             }
         }
 
-        if (!makeFlashers && p.serviceIndex == 0 && p.serviceCommand & CMD_GET_REG) {
+        if (
+            !makeFlashers &&
+            p.serviceIndex == 0 &&
+            p.serviceCommand & CMD_GET_REG
+        ) {
             const reg = p.serviceCommand & CMD_REG_MASK
             if (reg == ControlReg.BootloaderFirmwareIdentifier)
                 dev.blFirmwareIdentifier = p.uintData
@@ -440,45 +527,62 @@ async function scanCore(bus: JDBus, numTries: number, makeFlashers: boolean, rec
     }
 }
 
-export async function scanFirmwares(bus: JDBus, timeout = 300): Promise<FirmwareInfo[]> {
+export async function scanFirmwares(
+    bus: JDBus,
+    timeout = 300
+): Promise<FirmwareInfo[]> {
     const devs = (await scanCore(bus, (timeout / 50) >> 0, false)).devs
     devs.sort((a, b) => strcmp(a.deviceId, b.deviceId))
     return devs
 }
 
 export function updateApplicable(dev: FirmwareInfo, blob: FirmwareBlob) {
-    return dev && blob && dev.blFirmwareIdentifier == blob.firmwareIdentifier && dev.version !== blob.version
+    return (
+        dev &&
+        blob &&
+        dev.blFirmwareIdentifier == blob.firmwareIdentifier &&
+        dev.version !== blob.version
+    )
 }
 
 export function computeUpdates(devices: FirmwareInfo[], blobs: FirmwareBlob[]) {
-    return (blobs || []).map(blob => {
-        const updateCandidates = devices.filter(d => updateApplicable(d, blob))
-        if (updateCandidates.length == 0)
-            return undefined
-        return {
-            blob,
-            updateCandidates
-        }
-    }).filter(r => !!r)
+    return (blobs || [])
+        .map(blob => {
+            const updateCandidates = devices.filter(d =>
+                updateApplicable(d, blob)
+            )
+            if (updateCandidates.length == 0) return undefined
+            return {
+                blob,
+                updateCandidates,
+            }
+        })
+        .filter(r => !!r)
 }
 
-export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCandidates: FirmwareInfo[], progress?: (perc: number) => void) {
-    if (!updateCandidates?.length)
-        return
+export async function flashFirmwareBlob(
+    bus: JDBus,
+    blob: FirmwareBlob,
+    updateCandidates: FirmwareInfo[],
+    progress?: (perc: number) => void
+) {
+    if (!updateCandidates?.length) return
     _startTime = Date.now()
     log(`resetting ${updateCandidates.length} device(s)`)
     for (const d of updateCandidates) {
-        const device = bus.device(d.deviceId);
+        const device = bus.device(d.deviceId)
         log(`resetting ${device}`)
         await device.sendCtrlCommand(ControlCmd.Reset)
     }
-    const flashers = (await scanCore(bus, 10, true, true)).flashers
-        .filter(f => f.dev_class == blob.firmwareIdentifier)
-    if (!flashers.length)
-        throw new Error("no devices to flash")
+    const flashers = (await scanCore(bus, 10, true, true)).flashers.filter(
+        f => f.dev_class == blob.firmwareIdentifier
+    )
+    if (!flashers.length) throw new Error("no devices to flash")
     if (flashers.length != updateCandidates.length) {
         console.log(flashers, blob)
-        throw new Error(`expected ${updateCandidates.length} flashers, got ${flashers.length}`)
+        throw new Error(
+            `expected ${updateCandidates.length} flashers, got ${flashers.length}`
+        )
     }
     flashers[0].classClients = flashers
     log(`flashing ${blob.name}`)
@@ -487,7 +591,7 @@ export async function flashFirmwareBlob(bus: JDBus, blob: FirmwareBlob, updateCa
 
 /**
  * This command can be sent every 50ms to keep devices in bootloader mode
- * @param bus 
+ * @param bus
  */
 export async function sendStayInBootloaderCommand(bus: JDBus) {
     const bl_announce = Packet.onlyHeader(BootloaderCmd.Info)

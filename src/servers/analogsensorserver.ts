@@ -12,17 +12,12 @@ export interface AnalogSensorServerOptions
     readingResolution?: number
 }
 
-export default class AnalogSensorServer extends SensorServer<
-    [number]
-> {
+export default class AnalogSensorServer extends SensorServer<[number]> {
     readonly lowThreshold: JDRegisterServer<[number]>
     readonly highThreshold: JDRegisterServer<[number]>
     readonly levelDetector: LevelDetector
 
-    constructor(
-        serviceClass: number,
-        options?: AnalogSensorServerOptions
-    ) {
+    constructor(serviceClass: number, options?: AnalogSensorServerOptions) {
         super(serviceClass, options)
         const {
             minReading,

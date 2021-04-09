@@ -1,24 +1,27 @@
-import { JDNode } from "./node";
-import { JDService } from "./service";
-import { DecodedPacket } from "./pretty";
+import { JDNode } from "./node"
+import { JDService } from "./service"
+import { DecodedPacket } from "./pretty"
 
 export abstract class JDServiceMemberNode extends JDNode {
-    private _specification: jdspec.PacketInfo;
+    private _specification: jdspec.PacketInfo
 
     constructor(
         public readonly service: JDService,
         public readonly code: number,
-        private readonly isPacket: (pkt: jdspec.PacketInfo) => boolean) {
+        private readonly isPacket: (pkt: jdspec.PacketInfo) => boolean
+    ) {
         super()
-        this._specification = null;
+        this._specification = null
     }
 
     get id() {
-        return `${this.nodeKind}:${this.service.device.deviceId}:${this.service.serviceIndex.toString(16)}:${this.code.toString(16)}`
+        return `${this.nodeKind}:${
+            this.service.device.deviceId
+        }:${this.service.serviceIndex.toString(16)}:${this.code.toString(16)}`
     }
 
     get name() {
-        return this.specification?.name || this.code.toString(16);
+        return this.specification?.name || this.code.toString(16)
     }
 
     get qualifiedName() {
@@ -26,9 +29,13 @@ export abstract class JDServiceMemberNode extends JDNode {
     }
 
     get specification() {
-        if (this._specification === null) // lookup once
-            this._specification = this.service.specification?.packets.find(packet => this.isPacket(packet) && packet.identifier === this.code)
-        return this._specification;
+        if (this._specification === null)
+            // lookup once
+            this._specification = this.service.specification?.packets.find(
+                packet =>
+                    this.isPacket(packet) && packet.identifier === this.code
+            )
+        return this._specification
     }
 
     get parent(): JDNode {
@@ -37,8 +44,8 @@ export abstract class JDServiceMemberNode extends JDNode {
 
     get friendlyName() {
         const parts = [this.service.friendlyName, this.name]
-        return parts.join('.')
+        return parts.join(".")
     }
 
-    abstract get decoded(): DecodedPacket;
+    abstract get decoded(): DecodedPacket
 }

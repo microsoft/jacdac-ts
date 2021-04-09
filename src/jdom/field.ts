@@ -13,15 +13,21 @@ export class JDField extends JDNode {
     }
 
     get id(): string {
-        return `${this.nodeKind}:${this.member.service.device.deviceId}:${this.member.service.serviceIndex.toString(16)}:${this.member.code.toString(16)}:${this.index.toString(16)}`
+        return `${this.nodeKind}:${
+            this.member.service.device.deviceId
+        }:${this.member.service.serviceIndex.toString(
+            16
+        )}:${this.member.code.toString(16)}:${this.index.toString(16)}`
     }
 
     get name(): string {
-        return this.specification.name === "_" ? this.member.specification.name : this.specification.name
+        return this.specification.name === "_"
+            ? this.member.specification.name
+            : this.specification.name
     }
 
     get children(): JDNode[] {
-        return [];
+        return []
     }
 
     get qualifiedName(): string {
@@ -34,13 +40,12 @@ export class JDField extends JDNode {
 
     get friendlyName() {
         const parts = [this.member.friendlyName]
-        if (this.specification.name !== "_")
-            parts.push(this.name)
-        return parts.join('.')
+        if (this.specification.name !== "_") parts.push(this.name)
+        return parts.join(".")
     }
 
     get unit(): jdspec.Unit {
-        return this.specification.unit;
+        return this.specification.unit
     }
 
     get nodeKind(): string {
@@ -48,7 +53,7 @@ export class JDField extends JDNode {
     }
 
     get decoded(): DecodedMember {
-        const decoded = this.member.decoded;
+        const decoded = this.member.decoded
         return decoded?.decoded[this.index]
     }
 

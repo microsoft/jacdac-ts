@@ -443,7 +443,7 @@ export function deviceSpecificationToDTDL(
 
     // allocate names
     const names: string[] = []
-    services.forEach((srv) => {
+    services.forEach(srv => {
         const name = escapeName(srv.shortId || srv.shortName)
         if (names.indexOf(name) < 0) names.push(name)
         else {

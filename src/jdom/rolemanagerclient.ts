@@ -1,4 +1,7 @@
-import { addServiceProvider, serviceProviderDefinitionFromServiceClass } from "../servers/servers"
+import {
+    addServiceProvider,
+    serviceProviderDefinitionFromServiceClass,
+} from "../servers/servers"
 import {
     CHANGE,
     DEVICE_ANNOUNCE,
@@ -243,7 +246,9 @@ export class RoleManagerClient extends JDServiceClient {
             const todo = todos[parent]
             // no parent, spawn individual services
             if (!parent) {
-                todo.forEach(t => addServiceProvider(this.bus, t.hostDefinition))
+                todo.forEach(t =>
+                    addServiceProvider(this.bus, t.hostDefinition)
+                )
             } else {
                 // spawn all services into 1
                 addServiceProvider(this.bus, {

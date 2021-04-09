@@ -1,11 +1,6 @@
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import {
-    debounceAsync,
-    strcmp,
-    arrayConcatMany,
-    randomDeviceId,
-} from "./utils"
+import { debounceAsync, strcmp, arrayConcatMany, randomDeviceId } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -104,7 +99,7 @@ export interface DeviceFilter {
  */
 export class JDBus extends JDNode {
     private readonly _transports: JDTransport[] = []
-    private _bridges: JDBridge[] = [];
+    private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
     private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,12 +128,10 @@ export class JDBus extends JDNode {
     constructor(transports?: JDTransport[], public options?: BusOptions) {
         super()
 
-        transports?.filter(tr => !!tr)
-            .map(tr => this.addTransport(tr));
+        transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
 
         this.options = this.options || {}
-        if (!this.options.deviceId)
-            this.options.deviceId = randomDeviceId()
+        if (!this.options.deviceId) this.options.deviceId = randomDeviceId()
 
         this.stats = new BusStatsMonitor(this)
         this.resetTime()
@@ -162,33 +155,32 @@ export class JDBus extends JDNode {
     }
 
     addTransport(transport: JDTransport) {
-        if (this._transports.indexOf(transport) > -1)
-            return; // already added
+        if (this._transports.indexOf(transport) > -1) return // already added
 
-        this._transports.push(transport);
+        this._transports.push(transport)
         transport.bus = this
         transport.bus.on(CONNECTING, () => this.preConnect(transport))
     }
 
     get bridges() {
-        return this._bridges.slice(0);
+        return this._bridges.slice(0)
     }
 
     addBridge(bridge: JDBridge): () => void {
         if (this._bridges.indexOf(bridge) < 0) {
             console.debug(`add bridge`, { bridge })
-            this._bridges.push(bridge);
+            this._bridges.push(bridge)
             this.emit(CHANGE)
         }
-        return () => this.removeBridge(bridge);
+        return () => this.removeBridge(bridge)
     }
 
     private removeBridge(bridge: JDBridge) {
-        const i = this._bridges.indexOf(bridge);
+        const i = this._bridges.indexOf(bridge)
         if (i > -1) {
             console.debug(`remove bridge`, { bridge })
-            this._bridges.splice(i, 1);
-            this.emit(CHANGE);
+            this._bridges.splice(i, 1)
+            this.emit(CHANGE)
         }
     }
 
@@ -440,9 +432,9 @@ export class JDBus extends JDNode {
     }
 
     private handleRoleManager() {
-        if (this.roleManager) return;
+        if (this.roleManager) return
 
-        const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0];
+        const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
         this.setRoleManagerService(service)
     }
 
@@ -774,7 +766,7 @@ export class JDBus extends JDNode {
                                 reg =>
                                     !reg.specification?.optional ||
                                     reg.lastGetAttempts <
-                                    REGISTER_OPTIONAL_POLL_COUNT
+                                        REGISTER_OPTIONAL_POLL_COUNT
                             )
                     )
                 )
@@ -807,7 +799,7 @@ export class JDBus extends JDNode {
                         interval === undefined &&
                         intervalRegister &&
                         intervalRegister.lastGetTimestamp - this.timestamp >
-                        REGISTER_POLL_STREAMING_INTERVAL
+                            REGISTER_POLL_STREAMING_INTERVAL
                     ) {
                         // all async
                         if (!intervalRegister.data)
@@ -838,8 +830,7 @@ export class JDBus extends JDNode {
                 }
 
                 // first query, get data asap once per second
-                if (noDataYet && age > 1000)
-                    register.sendGetAsync()
+                if (noDataYet && age > 1000) register.sendGetAsync()
             } // regular register, ping if data is old
             else {
                 const expiration = Math.min(
@@ -847,7 +838,7 @@ export class JDBus extends JDNode {
                     (noDataYet
                         ? REGISTER_POLL_FIRST_REPORT_INTERVAL
                         : REGISTER_POLL_REPORT_INTERVAL) *
-                    (1 << backoff)
+                        (1 << backoff)
                 )
                 if (age > expiration) {
                     //console.log(`bus: poll ${register.id}`, register, age, backoff, expiration)

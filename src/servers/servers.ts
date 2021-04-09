@@ -105,9 +105,7 @@ import SwitchServer from "./switchserver"
 import TrafficLightServer from "./trafficlightserver"
 import LEDServer from "./ledserver"
 import { fromHex } from "../jdom/utils"
-import SoundPlayerServer, {
-    SoundPlayerSound,
-} from "./soundplayerserver"
+import SoundPlayerServer, { SoundPlayerSound } from "./soundplayerserver"
 import AnalogSensorServer, {
     AnalogSensorServerOptions,
 } from "./analogsensorserver"
@@ -349,10 +347,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "button (2x)",
         serviceClasses: [SRV_BUTTON],
-        services: () => [
-            new ButtonServer("B0"),
-            new ButtonServer("B1"),
-        ],
+        services: () => [new ButtonServer("B0"), new ButtonServer("B1")],
     },
     {
         name: "button (4x)",
@@ -439,9 +434,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "distance (sonar)",
         serviceClasses: [SRV_DISTANCE],
-        services: () => [
-            new AnalogSensorServer(SRV_DISTANCE, sonarOptions),
-        ],
+        services: () => [new AnalogSensorServer(SRV_DISTANCE, sonarOptions)],
     },
     {
         name: "DMX",
@@ -467,10 +460,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new AnalogSensorServer(SRV_E_CO2, CO2Options),
             new HumidityServer(),
-            new AnalogSensorServer(
-                SRV_THERMOMETER,
-                indoorThermometerOptions
-            ),
+            new AnalogSensorServer(SRV_THERMOMETER, indoorThermometerOptions),
         ],
     },
     {
@@ -502,10 +492,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "humidity + temperature",
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
-            new AnalogSensorServer(
-                SRV_THERMOMETER,
-                outdoorThermometerOptions
-            ),
+            new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
             new HumidityServer(),
         ],
     },
@@ -513,10 +500,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "humidity + temperature + barometer",
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
         services: () => [
-            new AnalogSensorServer(
-                SRV_THERMOMETER,
-                outdoorThermometerOptions
-            ),
+            new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
             new HumidityServer(),
             new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
         ],
@@ -794,9 +778,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "matrix keypad (1x4)",
         serviceClasses: [SRV_MATRIX_KEYPAD],
-        services: () => [
-            new MatrixKeypadServer(4, 1, ["1", "2", "3", "4"]),
-        ],
+        services: () => [new MatrixKeypadServer(4, 1, ["1", "2", "3", "4"])],
     },
     {
         name: "motion",
@@ -907,10 +889,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "rotary encoder + button",
         serviceClasses: [SRV_ROTARY_ENCODER, SRV_BUTTON],
-        services: () => [
-            new RotaryEncoderServer(),
-            new ButtonServer(),
-        ],
+        services: () => [new RotaryEncoderServer(), new ButtonServer()],
     },
     {
         name: "rotary potentiometer",
@@ -1034,18 +1013,13 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "sound level",
         serviceClasses: [SRV_SOUND_LEVEL],
-        services: () => [
-            new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel),
-        ],
+        services: () => [new AnalogSensorServer(SRV_SOUND_LEVEL, soundLevel)],
     },
     {
         name: "sound spectrum",
         serviceClasses: [SRV_SOUND_SPECTRUM],
         services: () => [
-            new SensorServer<[Uint8Array]>(
-                SRV_SOUND_SPECTRUM,
-                soundSpectrum
-            ),
+            new SensorServer<[Uint8Array]>(SRV_SOUND_SPECTRUM, soundSpectrum),
         ],
     },
     {
@@ -1056,9 +1030,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "switch (slide)",
         serviceClasses: [SRV_SWITCH],
-        services: () => [
-            new SwitchServer({ variant: SwitchVariant.Slide }),
-        ],
+        services: () => [new SwitchServer({ variant: SwitchVariant.Slide })],
     },
     {
         name: "switch (push button)",
@@ -1070,16 +1042,12 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "switch (toggle)",
         serviceClasses: [SRV_SWITCH],
-        services: () => [
-            new SwitchServer({ variant: SwitchVariant.Toggle }),
-        ],
+        services: () => [new SwitchServer({ variant: SwitchVariant.Toggle })],
     },
     {
         name: "switch (tilt)",
         serviceClasses: [SRV_SWITCH],
-        services: () => [
-            new SwitchServer({ variant: SwitchVariant.Tilt }),
-        ],
+        services: () => [new SwitchServer({ variant: SwitchVariant.Tilt })],
     },
     {
         name: "switch (proximity)",
@@ -1095,20 +1063,14 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "thermometer (outdoor)",
         serviceClasses: [SRV_THERMOMETER],
         services: () => [
-            new AnalogSensorServer(
-                SRV_THERMOMETER,
-                outdoorThermometerOptions
-            ),
+            new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
         ],
     },
     {
         name: "thermometer (medical)",
         serviceClasses: [SRV_THERMOMETER],
         services: () => [
-            new AnalogSensorServer(
-                SRV_THERMOMETER,
-                medicalThermometerOptions
-            ),
+            new AnalogSensorServer(SRV_THERMOMETER, medicalThermometerOptions),
         ],
     },
     {
@@ -1204,10 +1166,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "wind direction",
         serviceClasses: [SRV_WIND_DIRECTION],
         services: () => [
-            new AnalogSensorServer(
-                SRV_WIND_DIRECTION,
-                windDirectionOptions
-            ),
+            new AnalogSensorServer(SRV_WIND_DIRECTION, windDirectionOptions),
         ],
     },
     {
@@ -1222,10 +1181,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_WIND_SPEED, SRV_WIND_DIRECTION, SRV_RAIN_GAUGE],
         services: () => [
             new AnalogSensorServer(SRV_WIND_SPEED, windSpeedOptions),
-            new AnalogSensorServer(
-                SRV_WIND_DIRECTION,
-                windDirectionOptions
-            ),
+            new AnalogSensorServer(SRV_WIND_DIRECTION, windDirectionOptions),
             new RainGaugeServer(),
         ],
     },
@@ -1331,14 +1287,19 @@ export default function serviceProviderDefinitions() {
     return _providerDefinitions.slice(0)
 }
 
-export function addServiceProvider(bus: JDBus, definition: ServiceProviderDefinition) {
+export function addServiceProvider(
+    bus: JDBus,
+    definition: ServiceProviderDefinition
+) {
     const services = definition.services()
     const d = definition.factory?.(services) || new JDServiceProvider(services)
     bus.addServiceProvider(d)
     return d
 }
 
-export function serviceProviderDefinitionFromServiceClass(serviceClass: number) {
+export function serviceProviderDefinitionFromServiceClass(
+    serviceClass: number
+) {
     return _providerDefinitions.find(
         provider =>
             provider.serviceClasses.length === 1 &&

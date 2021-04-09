@@ -426,8 +426,7 @@ class HF2Proto implements Proto {
     }
 
     talkAsync(cmd: number, data?: Uint8Array) {
-        if (!this.io)
-            console.log("rogue hf2 instance")
+        if (!this.io) console.log("rogue hf2 instance")
 
         let len = 8
         if (data) len += data.length
