@@ -1,7 +1,7 @@
 {
     "name": "jacdac-microbit",
     "version": "0.4.33",
-    "description": "An app that exposes micro:bit components as Jacdac hosts.",
+    "description": "Jacdac servers for micro:bit V2 sensors.",
     "dependencies": {
         "core": "*",
         "radio": "*",
@@ -9,7 +9,6 @@
         "jacdac": "github:microsoft/pxt-jacdac"
     },
     "files": [
-        "main.ts",
         "README.md",
         "microbitAccel.ts",
         "microbitButtons.ts",

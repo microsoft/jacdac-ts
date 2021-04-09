@@ -1,13 +1,28 @@
 import { JDBus } from "./bus"
 import {
+    CHANGE,
     DEVICE_CHANGE,
     EMBED_MIN_ASPECT_RATIO,
     PACKET_PROCESS,
     PACKET_SEND,
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_POWER,
+    SRV_PROTO_TEST,
+    SRV_ROLE_MANAGER,
+    SRV_SETTINGS,
 } from "./constants"
+import { JDDevice } from "./device"
 import JDIFrameClient from "./iframeclient"
+import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
-import { debounce, roundWithPrecision } from "./utils"
+import {
+    arrayConcatMany,
+    debounce,
+    roundWithPrecision,
+    SMap,
+    unique,
+} from "./utils"
 
 export interface PacketMessage {
     channel: "jacdac"
@@ -16,6 +31,42 @@ export interface PacketMessage {
     data: Uint8Array
     sender?: string
 }
+
+interface SimulatorRunOptions {
+    debug?: boolean
+    trace?: boolean
+    boardDefinition?: any //pxsim.BoardDefinition;
+    parts?: string[]
+    builtinParts?: string[]
+    fnArgs?: any
+    aspectRatio?: number
+    partDefinitions?: SMap<any> // SMap<PartDefinition>;
+    mute?: boolean
+    highContrast?: boolean
+    light?: boolean
+    cdnUrl?: string
+    localizedStrings?: SMap<string>
+    refCountingDebug?: boolean
+    version?: string
+    clickTrigger?: boolean
+    breakOnStart?: boolean
+    storedState?: SMap<any>
+    autoRun?: boolean
+    ipc?: boolean
+    dependencies?: SMap<string> // Map<string>;
+    // single iframe, no message simulators
+    single?: boolean
+}
+
+// hide the makecode device itself and power devices
+const ignoredServices = [
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_SETTINGS,
+    SRV_ROLE_MANAGER,
+    SRV_POWER,
+    SRV_PROTO_TEST,
+]
 
 /**
  * A client that bridges received and sent packets to a parent iframe
@@ -27,12 +78,20 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     packetProcessed = 0
     private _lastAspectRatio = 0
 
+    private _runOptions: SimulatorRunOptions
+
     constructor(readonly bus: JDBus, readonly frameId: string) {
         super(bus)
         this.postPacket = this.postPacket.bind(this)
         this.handleMessage = this.handleMessage.bind(this)
         this.handleResize = debounce(this.handleResize.bind(this), 200)
         this.registerEvents()
+
+        this.bus.iframeBridge = this
+    }
+
+    get dependencies() {
+        return this._runOptions?.dependencies
     }
 
     private registerEvents() {
@@ -40,6 +99,8 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket))
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
         this.mount(this.bus.subscribe(DEVICE_CHANGE, this.handleResize))
+        // force compute add blocks button
+        this.mount(this.bus.subscribe(DEVICE_CHANGE, () => this.emit(CHANGE)))
         const id = setInterval(this.handleResize, 500)
         this.mount(() => clearInterval(id))
 
@@ -67,17 +128,21 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     private handleDriverMessage(msg: { type: string }) {
         console.log("pxt message", msg)
         switch (msg.type) {
-            case "run": // simulation is starting
-                // don't clear!
+            case "run": {
+                // simulation is starting
+                this._runOptions = msg as SimulatorRunOptions
+                this.emit(CHANGE)
                 break
+            }
             case "stop": // start again
-                // pause bus?:
+                this._runOptions = undefined
                 break
         }
     }
 
     private handleResize() {
-        const size = document.body.getBoundingClientRect()
+        const { body } = document;
+        const size = body.getBoundingClientRect()
         const ar = size.width / (size.height + 12)
         const value = roundWithPrecision(
             Math.min(EMBED_MIN_ASPECT_RATIO, size.width / size.height),
@@ -138,5 +203,64 @@ export default class IFrameBridgeClient extends JDIFrameClient {
             sender: this.bridgeId,
         }
         window.parent.postMessage(msg, this.origin)
+    }
+
+    deviceFilter(device: JDDevice) {
+        return !!device.serviceClasses.filter(
+            sc => ignoredServices.indexOf(sc) < 0
+        ).length
+    }
+
+    get candidateExtensions() {
+        const devices = this.bus
+            .devices({ announced: true, ignoreSelf: true })
+            .filter(this.deviceFilter.bind(this))
+        let extensions = unique(
+            arrayConcatMany(
+                devices.map(device =>
+                    device
+                        .services()
+                        .map(srv =>
+                            resolveMakecodeServiceFromClassIdentifier(
+                                srv.serviceClass
+                            )
+                        )
+                        .map(info => info?.client.repo)
+                        .filter(q => !!q)
+                )
+            )
+        )
+        const dependencies = Object.values(this._runOptions?.dependencies || {})
+            .filter(d => /^github:/.test(d))
+            .map(d => /^github:([^#]+)(#.?)?/.exec(d)[1])
+        console.log(dependencies)
+        if (dependencies?.length > 0) {
+            // remove all needed extenions that are already in the dependencies
+            extensions = extensions.filter(extension => {
+                console.log(`check ext`, { extension })
+                return dependencies.indexOf(extension) < 0
+            })
+        }
+
+        return extensions
+    }
+
+    public postAddExtensions() {
+        const extensions = this.candidateExtensions
+        console.log(`addextensions`, {
+            extensions,
+            deps: this._runOptions?.dependencies,
+        })
+        // list all devices connected to the bus
+        // and query for them, let makecode show the missing ones
+        // send message to makecode
+        window.parent.postMessage(
+            {
+                type: "addextensions",
+                extensions,
+                broadcast: true,
+            },
+            "*"
+        )
     }
 }

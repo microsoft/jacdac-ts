@@ -68,6 +68,7 @@ import { JDTransport } from "./transport"
 import { BusStatsMonitor } from "./busstats"
 import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"
+import IFrameBridgeClient from "./iframebridgeclient"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -120,6 +121,7 @@ export class JDBus extends JDNode {
     private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
+    public iframeBridge: IFrameBridgeClient;
 
     /**
      * Creates the bus with the given transport

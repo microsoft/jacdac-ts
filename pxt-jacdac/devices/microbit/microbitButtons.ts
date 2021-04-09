@@ -19,9 +19,9 @@ namespace microbit {
     }
 
     //% fixedInstance whenUsed block="button A"
-    export const buttonA = new microbit.MButton("buttonA", Button.A);
+    export const buttonA = new microbit.MButton("A", Button.A);
     //% fixedInstance whenUsed block="button B"
-    export const buttonB = new microbit.MButton("buttonB", Button.B);
+    export const buttonB = new microbit.MButton("B", Button.B);
     //% fixedInstance whenUsed block="button AB"
-    export const buttonAB = new microbit.MButton("buttonAB", Button.AB);
+    export const buttonAB = new microbit.MButton("A+B", Button.AB);
 }

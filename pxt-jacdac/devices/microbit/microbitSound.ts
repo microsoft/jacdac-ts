@@ -87,7 +87,7 @@ namespace microbit {
         quietThreshold: number = 0.2;
                 
         constructor() {
-            super("soundlevel", SRV_SOUND_LEVEL)
+            super("sound level", SRV_SOUND_LEVEL)
         }
 
         private setThresholds() {
