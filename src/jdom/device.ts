@@ -71,19 +71,33 @@ export class JDDevice extends JDNode {
     private _eventCounter: number
     readonly qos = new QualityOfService()
 
-    constructor(public readonly bus: JDBus, public readonly deviceId: string, pkt?: Packet) {
+    constructor(
+        public readonly bus: JDBus,
+        public readonly deviceId: string,
+        pkt?: Packet
+    ) {
         super()
         this.connected = true
         this._lost = false
         this._identifying = false
 
-        this._source = pkt?.sender;
-        this._replay = !!pkt?.replay;
+        this._source = pkt?.sender
+        this._replay = !!pkt?.replay
     }
 
     describe() {
-        return this.toString() + (this.physical ? "" : " (sim)") + ": " +
-            this.services().map(s => s.specification?.camelName || s.serviceClass.toString(16)).join(", ")
+        return (
+            this.toString() +
+            (this.physical ? "" : " (sim)") +
+            ": " +
+            this.services()
+                .map(
+                    s =>
+                        s.specification?.camelName ||
+                        s.serviceClass.toString(16)
+                )
+                .join(", ")
+        )
     }
 
     get id() {
@@ -485,7 +499,11 @@ export class JDDevice extends JDNode {
     }
 
     async floodPing(numPkts = 100, size = 32) {
-        const pkt = Packet.jdpacked(ControlCmd.FloodPing, "u32 u32 u8", [numPkts, 0x1000, size])
+        const pkt = Packet.jdpacked(ControlCmd.FloodPing, "u32 u32 u8", [
+            numPkts,
+            0x1000,
+            size,
+        ])
         pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
         await this.sendPktWithAck(pkt)
     }

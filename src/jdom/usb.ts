@@ -90,7 +90,7 @@ class USBTransport extends JDTransport {
     dispose() {
         super.dispose()
         this._cleanups.forEach(c => c())
-        this._cleanups = [];
+        this._cleanups = []
     }
 
     protected async transportConnectAsync(background: boolean) {

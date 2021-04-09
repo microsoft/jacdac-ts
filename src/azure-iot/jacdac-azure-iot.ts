@@ -1,1 +1,1 @@
-export * from './dtdl'
+export * from "./dtdl"

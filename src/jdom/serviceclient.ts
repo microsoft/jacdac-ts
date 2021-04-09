@@ -1,10 +1,9 @@
-import { JDService } from "./service";
-import { JDDevice } from "./device";
-import { JDBus } from "./bus";
-import { JDClient } from "./client";
+import { JDService } from "./service"
+import { JDDevice } from "./device"
+import { JDBus } from "./bus"
+import { JDClient } from "./client"
 
 export class JDServiceClient extends JDClient {
-
     constructor(public readonly service: JDService) {
         super()
     }

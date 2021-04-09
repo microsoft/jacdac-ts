@@ -1,10 +1,15 @@
-import { getNumber, NumberFormat, setNumber, sizeOfNumberFormat } from "./buffer"
+import {
+    getNumber,
+    NumberFormat,
+    setNumber,
+    sizeOfNumberFormat,
+} from "./buffer"
 import { clampToStorage, numberFormatToStorageType } from "./spec"
 import { bufferEq, bufferToString, stringToBuffer } from "./utils"
 
 export type PackedSimpleValue = number | boolean | string | Uint8Array
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type PackedValues = any[];
+export type PackedValues = any[]
 
 /*
 
@@ -47,17 +52,28 @@ const ch_sq_close = 93
 
 function numberFormatOfType(tp: string): NumberFormat {
     switch (tp) {
-        case "u8": return NumberFormat.UInt8LE
-        case "u16": return NumberFormat.UInt16LE
-        case "u32": return NumberFormat.UInt32LE
-        case "i8": return NumberFormat.Int8LE
-        case "i16": return NumberFormat.Int16LE
-        case "i32": return NumberFormat.Int32LE
-        case "f32": return NumberFormat.Float32LE
-        case "f64": return NumberFormat.Float64LE
-        case "i64": return NumberFormat.Int64LE
-        case "u64": return NumberFormat.UInt64LE
-        default: return null
+        case "u8":
+            return NumberFormat.UInt8LE
+        case "u16":
+            return NumberFormat.UInt16LE
+        case "u32":
+            return NumberFormat.UInt32LE
+        case "i8":
+            return NumberFormat.Int8LE
+        case "i16":
+            return NumberFormat.Int16LE
+        case "i32":
+            return NumberFormat.Int32LE
+        case "f32":
+            return NumberFormat.Float32LE
+        case "f64":
+            return NumberFormat.Float64LE
+        case "i64":
+            return NumberFormat.Int64LE
+        case "u64":
+            return NumberFormat.UInt64LE
+        default:
+            return null
     }
 }
 
@@ -74,7 +90,7 @@ class TokenParser {
     word: string
     isArray: boolean
 
-    constructor(public fmt: string) { }
+    constructor(public fmt: string) {}
 
     parse() {
         this.div = 1
@@ -83,12 +99,10 @@ class TokenParser {
         const fmt = this.fmt
         while (this.fp < fmt.length) {
             let endp = this.fp
-            while (endp < fmt.length && fmt.charCodeAt(endp) != 32)
-                endp++
+            while (endp < fmt.length && fmt.charCodeAt(endp) != 32) endp++
             let word = fmt.slice(this.fp, endp)
             this.fp = endp + 1
-            if (!word)
-                continue
+            if (!word) continue
 
             const dotIdx = word.indexOf(".")
             let c0 = word.charCodeAt(0)
@@ -107,7 +121,10 @@ class TokenParser {
                 this.size = -1
             }
 
-            if (word.charCodeAt(word.length - 1) == ch_sq_close && word.charCodeAt(word.length - 2) == ch_sq_open) {
+            if (
+                word.charCodeAt(word.length - 1) == ch_sq_close &&
+                word.charCodeAt(word.length - 2) == ch_sq_open
+            ) {
                 word = word.slice(0, -2)
                 this.isArray = true
             }
@@ -117,19 +134,15 @@ class TokenParser {
 
             if (this.nfmt == null) {
                 if (c0 == ch_r) {
-                    if (c1 != ch_colon)
-                        c0 = 0
+                    if (c1 != ch_colon) c0 = 0
                 } else if (c0 == ch_s || c0 == ch_b || c0 == ch_x) {
-                    if (word.length != 1 && this.size == -1)
-                        c0 = 0
+                    if (word.length != 1 && this.size == -1) c0 = 0
                 } else if (c0 == ch_z) {
-                    if (word.length != 1)
-                        c0 = 0
+                    if (word.length != 1) c0 = 0
                 } else {
                     c0 = 0
                 }
-                if (c0 == 0)
-                    throw new Error(`invalid format: ${word}`)
+                if (c0 == 0) throw new Error(`invalid format: ${word}`)
                 this.c0 = c0
             } else {
                 this.size = sizeOfNumberFormat(this.nfmt)
@@ -148,11 +161,16 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
     let off = 0
     let fp0 = 0
     const parser = new TokenParser(fmt)
-    if (repeat && buf.length == 0)
-        return []
+    if (repeat && buf.length == 0) return []
     while (parser.parse()) {
         if (parser.isArray && !repeat) {
-            res.push(jdunpackCore(bufferSlice(buf, off, buf.length), fmt.slice(fp0), 1))
+            res.push(
+                jdunpackCore(
+                    bufferSlice(buf, off, buf.length),
+                    fmt.slice(fp0),
+                    1
+                )
+            )
             return res
         }
 
@@ -161,8 +179,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
         const c0 = parser.c0
         if (c0 == ch_z) {
             let endoff = off
-            while (endoff < buf.length && buf[endoff] != 0)
-                endoff++
+            while (endoff < buf.length && buf[endoff] != 0) endoff++
             sz = endoff - off
         } else if (sz < 0) {
             sz = buf.length - off
@@ -177,8 +194,7 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
             const subbuf = bufferSlice(buf, off, off + sz)
             if (c0 == ch_z || c0 == ch_s) {
                 let zerop = 0
-                while (zerop < subbuf.length && subbuf[zerop] != 0)
-                    zerop++
+                while (zerop < subbuf.length && subbuf[zerop] != 0) zerop++
                 res.push(bufferToString(bufferSlice(subbuf, 0, zerop)))
             } else if (c0 == ch_b) {
                 res.push(subbuf)
@@ -191,10 +207,8 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
                 throw new Error(`whoops`)
             }
             off += subbuf.length
-            if (c0 == ch_z)
-                off++
+            if (c0 == ch_z) off++
         }
-
 
         if (repeat && parser.fp >= fmt.length) {
             parser.fp = 0
@@ -202,39 +216,46 @@ function jdunpackCore(buf: Uint8Array, fmt: string, repeat: number) {
                 repeatRes.push(res)
                 res = []
             }
-            if (off >= buf.length)
-                break
+            if (off >= buf.length) break
         }
     }
 
     if (repeat == 2) {
-        if (res.length)
-            repeatRes.push(res)
+        if (res.length) repeatRes.push(res)
         return repeatRes
     } else {
         return res
     }
 }
 
-export function jdunpack<T extends PackedValues>(buf: Uint8Array, fmt: string): T {
-    if (!buf || !fmt) return undefined;
+export function jdunpack<T extends PackedValues>(
+    buf: Uint8Array,
+    fmt: string
+): T {
+    if (!buf || !fmt) return undefined
 
     // hot path for buffers
-    if (fmt === "b")
-        return [buf.slice(0)] as T;
+    if (fmt === "b") return [buf.slice(0)] as T
     // hot path
-    const nf = numberFormatOfType(fmt);
+    const nf = numberFormatOfType(fmt)
     if (nf !== null) {
-        const sz = sizeOfNumberFormat(nf);
+        const sz = sizeOfNumberFormat(nf)
         if (buf.length < sz)
-            throw new Error(`size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`);
-        return [getNumber(buf, nf, 0)] as T;
+            throw new Error(
+                `size mistmatch, expected ${fmt} (${sz} bytes), got ${buf.length}`
+            )
+        return [getNumber(buf, nf, 0)] as T
     }
     // slow path
     return jdunpackCore(buf, fmt, 0) as T
 }
 
-function jdpackCore(trg: Uint8Array, fmt: string, data: PackedValues, off: number) {
+function jdpackCore(
+    trg: Uint8Array,
+    fmt: string,
+    data: PackedValues,
+    off: number
+) {
     //console.log({ fmt, data })
     let idx = 0
     const parser = new TokenParser(fmt)
@@ -251,7 +272,7 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: PackedValues, off: numbe
 
         if (c0 == ch_r && dataItem) {
             const fmt0 = fmt.slice(parser.fp)
-            for (const velt of (dataItem as any[][])) {
+            for (const velt of dataItem as any[][]) {
                 off = jdpackCore(trg, fmt0, velt, off)
             }
             break
@@ -259,35 +280,35 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: PackedValues, off: numbe
 
         // use temporary variable to avoid a Gatsby build bug
         let arr: any[]
-        if (parser.isArray)
-            arr = dataItem
-        else
-            arr = [dataItem]
+        if (parser.isArray) arr = dataItem
+        else arr = [dataItem]
 
         for (const v of arr) {
             if (parser.nfmt !== null) {
                 if (typeof v != "number")
                     throw new Error(`expecting number, got ` + typeof v)
                 if (trg) {
-                    const st: jdspec.StorageType = numberFormatToStorageType(parser.nfmt);
-                    setNumber(trg, parser.nfmt, off, clampToStorage((Math.round(v * parser.div)), st))
+                    const st: jdspec.StorageType = numberFormatToStorageType(
+                        parser.nfmt
+                    )
+                    setNumber(
+                        trg,
+                        parser.nfmt,
+                        off,
+                        clampToStorage(Math.round(v * parser.div), st)
+                    )
                 }
                 off += parser.size
             } else {
                 let buf: Uint8Array
                 if (typeof v === "string") {
-                    if (c0 == ch_z)
-                        buf = stringToBuffer(v + "\u0000")
-                    else if (c0 == ch_s)
-                        buf = stringToBuffer(v)
-                    else
-                        throw new Error(`unexpected string`)
+                    if (c0 == ch_z) buf = stringToBuffer(v + "\u0000")
+                    else if (c0 == ch_s) buf = stringToBuffer(v)
+                    else throw new Error(`unexpected string`)
                 } else if (v && typeof v === "object" && v.length != null) {
                     // assume buffer
-                    if (c0 == ch_b)
-                        buf = v
-                    else
-                        throw new Error(`unexpected buffer`)
+                    if (c0 == ch_b) buf = v
+                    else throw new Error(`unexpected buffer`)
                 } else {
                     console.log({ parser, v })
                     throw new Error(`expecting string or buffer`)
@@ -295,39 +316,34 @@ function jdpackCore(trg: Uint8Array, fmt: string, data: PackedValues, off: numbe
 
                 let sz = parser.size
                 if (sz >= 0) {
-                    if (buf.length > sz)
-                        buf = bufferSlice(buf, 0, sz)
+                    if (buf.length > sz) buf = bufferSlice(buf, 0, sz)
                 } else {
                     sz = buf.length
                 }
 
-                if (trg)
-                    trg.set(buf, off)
+                if (trg) trg.set(buf, off)
                 off += sz
             }
         }
     }
 
-    if (data.length > idx)
-        throw new Error(`format '${fmt}' too short`)
+    if (data.length > idx) throw new Error(`format '${fmt}' too short`)
 
     return off
 }
 
 export function jdpack<T extends PackedValues>(fmt: string, data: T) {
-    if (!fmt || !data)
-        return undefined;
+    if (!fmt || !data) return undefined
 
     // hot path for buffers
-    if (fmt === "b")
-        return (data[0] as Uint8Array)?.slice(0);
+    if (fmt === "b") return (data[0] as Uint8Array)?.slice(0)
 
     // hot path
-    const nf = numberFormatOfType(fmt);
+    const nf = numberFormatOfType(fmt)
     if (nf !== null) {
-        const buf = new Uint8Array(sizeOfNumberFormat(nf));
-        setNumber(buf, nf, 0, data[0]);
-        return buf;
+        const buf = new Uint8Array(sizeOfNumberFormat(nf))
+        setNumber(buf, nf, 0, data[0])
+        return buf
     }
     // slow path
     const len = jdpackCore(null, fmt, data, 0)
@@ -336,12 +352,15 @@ export function jdpack<T extends PackedValues>(fmt: string, data: T) {
     return res
 }
 
-export function jdpackEqual<T extends PackedValues>(fmt: string, left: T, right: T) {
-    if ((!left) !== (!right))
-        return false;
-    if (!left) return true;
+export function jdpackEqual<T extends PackedValues>(
+    fmt: string,
+    left: T,
+    right: T
+) {
+    if (!left !== !right) return false
+    if (!left) return true
 
-    const leftBuffer = jdpack<T>(fmt, left);
-    const rightBuffer = jdpack<T>(fmt, right);
-    return bufferEq(leftBuffer, rightBuffer);
+    const leftBuffer = jdpack<T>(fmt, left)
+    const rightBuffer = jdpack<T>(fmt, right)
+    return bufferEq(leftBuffer, rightBuffer)
 }

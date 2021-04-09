@@ -120,14 +120,14 @@ export class CMSISProto implements Proto {
         return this.q.enqueue("talk", async () => {
             if (!this.io) {
                 console.debug(`micro:bit disconnected, skip send`, { cmds })
-                this.error('micro:bit disconnected')
+                this.error("micro:bit disconnected")
                 return // disconnected
             }
             //console.log("TALK", cmds)
             await this.io.sendPacketAsync(new Uint8Array(cmds))
             if (!this.io) {
                 console.debug(`micro:bit disconnected, skip response`, { cmds })
-                this.error('micro:bit disconnected')
+                this.error("micro:bit disconnected")
                 return // disconnected
             }
             let response = await this.recvAsync()

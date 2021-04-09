@@ -20,8 +20,7 @@ export async function packetSpeedTest(dev: JDDevice) {
     while (numpkt < 100) {
         await U.delay(50)
         const now = Date.now()
-        if (now - t0 > 3000)
-            break
+        if (now - t0 > 3000) break
         if (now - lastSend > 100) {
             timeouts++
             await ask()
@@ -33,10 +32,12 @@ export async function packetSpeedTest(dev: JDDevice) {
     const ms = Date.now() - t0
 
     const pktsPerSecond = numpkt / (ms / 1000)
-    const dropRate = 100 * (numpkt - numrecv) / numpkt
+    const dropRate = (100 * (numpkt - numrecv)) / numpkt
 
     return {
-        msg: `${pktsPerSecond.toFixed(1)} pkts/s; ${dropRate.toFixed(2)}% dropped`,
+        msg: `${pktsPerSecond.toFixed(1)} pkts/s; ${dropRate.toFixed(
+            2
+        )}% dropped`,
         pktsPerSecond,
         dropRate,
     }
@@ -48,10 +49,12 @@ export async function packetSpeedTest(dev: JDDevice) {
     }
 
     async function onPacket(p: Packet) {
-        if (p.serviceIndex == JD_SERVICE_INDEX_CTRL && p.serviceCommand == pingCmd) {
+        if (
+            p.serviceIndex == JD_SERVICE_INDEX_CTRL &&
+            p.serviceCommand == pingCmd
+        ) {
             numrecv++
-            if (!done)
-                await ask()
+            if (!done) await ask()
         }
     }
 }
