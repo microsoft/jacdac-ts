@@ -1,1 +1,1 @@
-modules.characterScreen.start();
+modules.characterScreen1.start();

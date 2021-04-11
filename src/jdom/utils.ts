@@ -596,12 +596,16 @@ export function arrayShuffle<T>(a: T[]): T[] {
     return a
 }
 
-export function uniqueName(names: string[], name: string): string {
+export function uniqueName(
+    names: string[],
+    name: string,
+    separator = ""
+): string {
     if (names.indexOf(name) < 0) return name
     // allocate names
     let count = 2
-    while (names.indexOf(`${name}${count}`) > -1) count++
-    return `${name}${count}`
+    while (names.indexOf(`${name}${separator}${count}`) > -1) count++
+    return `${name}${separator}${count}`
 }
 
 export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]> {
