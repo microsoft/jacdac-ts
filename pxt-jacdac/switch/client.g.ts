@@ -77,6 +77,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const switch_ = new SwitchClient("switch");
+    //% fixedInstance whenUsed block="switch 1"
+    export const switch_1 = new SwitchClient("switch1");
 }

@@ -53,6 +53,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const potentiometer = new PotentiometerClient("potentiometer");
+    //% fixedInstance whenUsed block="potentiometer 1"
+    export const potentiometer1 = new PotentiometerClient("potentiometer1");
 }

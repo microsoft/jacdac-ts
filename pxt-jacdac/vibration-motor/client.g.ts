@@ -56,6 +56,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const vibrationMotor = new VibrationMotorClient("vibration Motor");
+    //% fixedInstance whenUsed block="vibration motor 1"
+    export const vibrationMotor1 = new VibrationMotorClient("vibration Motor1");
 }

@@ -95,6 +95,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const compass = new CompassClient("compass");
+    //% fixedInstance whenUsed block="compass 1"
+    export const compass1 = new CompassClient("compass1");
 }

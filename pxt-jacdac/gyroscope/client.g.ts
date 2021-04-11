@@ -96,6 +96,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const gyroscope = new GyroscopeClient("gyroscope");
+    //% fixedInstance whenUsed block="gyroscope 1"
+    export const gyroscope1 = new GyroscopeClient("gyroscope1");
 }

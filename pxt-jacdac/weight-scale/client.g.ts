@@ -187,6 +187,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const weightScale = new WeightScaleClient("weight Scale");
+    //% fixedInstance whenUsed block="weight scale 1"
+    export const weightScale1 = new WeightScaleClient("weight Scale1");
 }

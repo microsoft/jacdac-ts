@@ -53,6 +53,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const soilMoisture = new SoilMoistureClient("soil Moisture");
+    //% fixedInstance whenUsed block="soil moisture 1"
+    export const soilMoisture1 = new SoilMoistureClient("soil Moisture1");
 }

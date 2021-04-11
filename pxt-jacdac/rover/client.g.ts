@@ -84,6 +84,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const rover = new RoverClient("rover");
+    //% fixedInstance whenUsed block="rover 1"
+    export const rover1 = new RoverClient("rover1");
 }

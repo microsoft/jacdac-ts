@@ -240,6 +240,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const servo = new ServoClient("servo");
+    //% fixedInstance whenUsed block="servo 1"
+    export const servo1 = new ServoClient("servo1");
 }

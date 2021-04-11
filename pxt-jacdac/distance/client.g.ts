@@ -81,6 +81,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const distance = new DistanceClient("distance");
+    //% fixedInstance whenUsed block="distance 1"
+    export const distance1 = new DistanceClient("distance1");
 }

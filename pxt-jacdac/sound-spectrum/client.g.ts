@@ -170,6 +170,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const soundSpectrum = new SoundSpectrumClient("sound Spectrum");
+    //% fixedInstance whenUsed block="sound spectrum 1"
+    export const soundSpectrum1 = new SoundSpectrumClient("sound Spectrum1");
 }

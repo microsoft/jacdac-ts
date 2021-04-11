@@ -53,6 +53,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const lightLevel = new LightLevelClient("light Level");
+    //% fixedInstance whenUsed block="light level 1"
+    export const lightLevel1 = new LightLevelClient("light Level1");
 }

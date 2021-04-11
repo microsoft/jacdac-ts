@@ -129,6 +129,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const analogButton = new AnalogButtonClient("analog Button");
+    //% fixedInstance whenUsed block="analog button 1"
+    export const analogButton1 = new AnalogButtonClient("analog Button1");
 }

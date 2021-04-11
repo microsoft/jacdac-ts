@@ -109,6 +109,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const eCO2 = new ECO2Client("e CO2");
+    //% fixedInstance whenUsed block="e co2 1"
+    export const eCO21 = new ECO2Client("e CO21");
 }

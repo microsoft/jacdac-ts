@@ -95,6 +95,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const tvoc = new TvocClient("tvoc");
+    //% fixedInstance whenUsed block="tvoc 1"
+    export const tvoc1 = new TvocClient("tvoc1");
 }

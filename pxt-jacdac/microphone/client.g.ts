@@ -42,6 +42,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const microphone = new MicrophoneClient("microphone");
+    //% fixedInstance whenUsed block="microphone 1"
+    export const microphone1 = new MicrophoneClient("microphone1");
 }

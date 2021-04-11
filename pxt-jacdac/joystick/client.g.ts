@@ -72,6 +72,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const joystick = new JoystickClient("joystick");
+    //% fixedInstance whenUsed block="joystick 1"
+    export const joystick1 = new JoystickClient("joystick1");
 }

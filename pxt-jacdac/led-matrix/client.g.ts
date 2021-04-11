@@ -106,6 +106,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const ledMatrix = new LedMatrixClient("led Matrix");
+    //% fixedInstance whenUsed block="led matrix 1"
+    export const ledMatrix1 = new LedMatrixClient("led Matrix1");
 }

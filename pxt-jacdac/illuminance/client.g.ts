@@ -55,6 +55,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const illuminance = new IlluminanceClient("illuminance");
+    //% fixedInstance whenUsed block="illuminance 1"
+    export const illuminance1 = new IlluminanceClient("illuminance1");
 }

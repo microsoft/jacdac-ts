@@ -144,6 +144,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const characterScreen = new CharacterScreenClient("character Screen");
+    //% fixedInstance whenUsed block="character screen 1"
+    export const characterScreen1 = new CharacterScreenClient("character Screen1");
 }

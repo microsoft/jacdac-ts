@@ -1,6 +1,6 @@
 {
     "name": "jacdac-potentiometer",
-    "version": "0.4.43",
+    "version": "0.4.44",
     "description": "Jacdac potentiometer service",
     "dependencies": {
         "core": "*",

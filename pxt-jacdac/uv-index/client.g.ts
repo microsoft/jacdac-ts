@@ -67,6 +67,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const uvIndex = new UvIndexClient("uv Index");
+    //% fixedInstance whenUsed block="uv index 1"
+    export const uvIndex1 = new UvIndexClient("uv Index1");
 }

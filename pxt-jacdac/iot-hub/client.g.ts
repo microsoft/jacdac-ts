@@ -196,6 +196,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const iotHub = new IotHubClient("iot Hub");
+    //% fixedInstance whenUsed block="iot hub 1"
+    export const iotHub1 = new IotHubClient("iot Hub1");
 }

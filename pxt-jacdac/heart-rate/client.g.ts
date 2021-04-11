@@ -70,6 +70,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const heartRate = new HeartRateClient("heart Rate");
+    //% fixedInstance whenUsed block="heart rate 1"
+    export const heartRate1 = new HeartRateClient("heart Rate1");
 }

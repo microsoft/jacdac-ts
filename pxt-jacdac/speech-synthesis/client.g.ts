@@ -181,6 +181,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const speechSynthesis = new SpeechSynthesisClient("speech Synthesis");
+    //% fixedInstance whenUsed block="speech synthesis 1"
+    export const speechSynthesis1 = new SpeechSynthesisClient("speech Synthesis1");
 }

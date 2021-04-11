@@ -14,6 +14,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const tcp = new TcpClient("tcp");
+    //% fixedInstance whenUsed block="tcp 1"
+    export const tcp1 = new TcpClient("tcp1");
 }

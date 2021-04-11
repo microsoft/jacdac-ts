@@ -56,6 +56,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const color = new ColorClient("color");
+    //% fixedInstance whenUsed block="color 1"
+    export const color1 = new ColorClient("color1");
 }

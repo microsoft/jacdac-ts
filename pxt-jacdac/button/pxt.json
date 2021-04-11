@@ -1,6 +1,6 @@
 {
     "name": "jacdac-button",
-    "version": "0.4.43",
+    "version": "0.4.44",
     "description": "A push-button, which returns to inactive position when not operated anymore.",
     "files": [
         "constants.ts",

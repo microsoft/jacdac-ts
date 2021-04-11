@@ -250,6 +250,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const power = new PowerClient("power");
+    //% fixedInstance whenUsed block="power 1"
+    export const power1 = new PowerClient("power1");
 }

@@ -122,6 +122,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const roleManager = new RoleManagerClient("role Manager");
+    //% fixedInstance whenUsed block="role manager 1"
+    export const roleManager1 = new RoleManagerClient("role Manager1");
 }

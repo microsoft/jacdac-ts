@@ -53,6 +53,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const rainGauge = new RainGaugeClient("rain Gauge");
+    //% fixedInstance whenUsed block="rain gauge 1"
+    export const rainGauge1 = new RainGaugeClient("rain Gauge1");
 }

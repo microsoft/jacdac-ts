@@ -158,6 +158,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const sevenSegmentDisplay = new SevenSegmentDisplayClient("seven Segment Display");
+    //% fixedInstance whenUsed block="seven segment display 1"
+    export const sevenSegmentDisplay1 = new SevenSegmentDisplayClient("seven Segment Display1");
 }

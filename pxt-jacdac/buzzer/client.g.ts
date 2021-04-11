@@ -62,6 +62,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const buzzer = new BuzzerClient("buzzer");
+    //% fixedInstance whenUsed block="buzzer 1"
+    export const buzzer1 = new BuzzerClient("buzzer1");
 }

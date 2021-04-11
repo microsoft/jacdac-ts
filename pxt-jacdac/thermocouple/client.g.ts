@@ -95,6 +95,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const thermocouple = new ThermocoupleClient("thermocouple");
+    //% fixedInstance whenUsed block="thermocouple 1"
+    export const thermocouple1 = new ThermocoupleClient("thermocouple1");
 }

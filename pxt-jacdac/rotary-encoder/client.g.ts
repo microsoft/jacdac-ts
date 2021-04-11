@@ -54,6 +54,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const rotaryEncoder = new RotaryEncoderClient("rotary Encoder");
+    //% fixedInstance whenUsed block="rotary encoder 1"
+    export const rotaryEncoder1 = new RotaryEncoderClient("rotary Encoder1");
 }

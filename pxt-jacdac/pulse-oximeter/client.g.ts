@@ -55,6 +55,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const pulseOximeter = new PulseOximeterClient("pulse Oximeter");
+    //% fixedInstance whenUsed block="pulse oximeter 1"
+    export const pulseOximeter1 = new PulseOximeterClient("pulse Oximeter1");
 }

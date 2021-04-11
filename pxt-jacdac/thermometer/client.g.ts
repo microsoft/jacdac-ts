@@ -95,6 +95,6 @@ namespace modules {
 
     
     }
-    //% fixedInstance whenUsed
-    export const thermometer = new ThermometerClient("thermometer");
+    //% fixedInstance whenUsed block="thermometer 1"
+    export const thermometer1 = new ThermometerClient("thermometer1");
 }

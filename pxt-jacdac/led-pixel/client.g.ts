@@ -253,6 +253,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed
-    export const ledPixel = new LedPixelClient("led Pixel");
+    //% fixedInstance whenUsed block="led pixel 1"
+    export const ledPixel1 = new LedPixelClient("led Pixel1");
 }
