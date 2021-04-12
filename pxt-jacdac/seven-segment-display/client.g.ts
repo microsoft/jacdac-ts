@@ -99,6 +99,7 @@ namespace modules {
         //% weight=97
         //% value.min=0
         //% value.max=100
+        //% value.defl=100
         setBrightness(value: number) {
             this.start();
             const values = this._brightness.values as any[];

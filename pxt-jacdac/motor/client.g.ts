@@ -47,6 +47,7 @@ namespace modules {
         //% weight=99
         //% value.min=-100
         //% value.max=100
+        //% value.defl=100
         setDuty(value: number) {
             this.start();
             const values = this._duty.values as any[];

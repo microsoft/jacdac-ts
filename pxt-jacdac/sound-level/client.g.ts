@@ -142,6 +142,7 @@ namespace modules {
         //% weight=92
         //% value.min=0
         //% value.max=100
+        //% value.defl=100
         setLoudThreshold(value: number) {
             this.start();
             const values = this._loudThreshold.values as any[];
@@ -168,6 +169,7 @@ namespace modules {
         //% weight=90
         //% value.min=0
         //% value.max=100
+        //% value.defl=100
         setQuietThreshold(value: number) {
             this.start();
             const values = this._quietThreshold.values as any[];

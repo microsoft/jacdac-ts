@@ -50,6 +50,7 @@ namespace modules {
         //% weight=98
         //% value.min=0
         //% value.max=100
+        //% value.defl=100
         setInactiveThreshold(value: number) {
             this.start();
             const values = this._inactiveThreshold.values as any[];
@@ -76,6 +77,7 @@ namespace modules {
         //% weight=96
         //% value.min=0
         //% value.max=100
+        //% value.defl=100
         setActiveThreshold(value: number) {
             this.start();
             const values = this._activeThreshold.values as any[];
