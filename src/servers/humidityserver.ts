@@ -1,12 +1,15 @@
 import { SRV_HUMIDITY } from "../jdom/constants"
-import SensorServer from "./sensorserver"
+import SensorServer, { SensorServiceOptions } from "./sensorserver"
 
 export default class HumidityServer extends SensorServer<[number]> {
-    constructor() {
+    constructor(options?: SensorServiceOptions<[number]>) {
         super(SRV_HUMIDITY, {
-            readingValues: [40],
-            readingError: [0.1],
-            streamingInterval: 1000,
+            ...{
+                readingValues: [40],
+                readingError: [0.1],
+                streamingInterval: 1000,
+            },
+            ...options,
         })
     }
 }
