@@ -37,7 +37,7 @@ namespace jacdac {
          * const [precision] = jdunpack<[number]>(buf, "u16.16")
          * ```
          */
-        Precision = 0x180,
+        Precision = 0x181,
 
         /**
          * Constant Variant (uint8_t). The type of physical clock used by the sensor.

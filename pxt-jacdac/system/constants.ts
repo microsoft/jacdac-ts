@@ -71,6 +71,24 @@ namespace jacdac {
         Value = 0x2,
 
         /**
+         * Constant int32_t. The lowest value that can be reported for the value register.
+         *
+         * ```
+         * const [minValue] = jdunpack<[number]>(buf, "i32")
+         * ```
+         */
+        MinValue = 0x110,
+
+        /**
+         * Constant int32_t. The highest value that can be reported for the value register.
+         *
+         * ```
+         * const [maxValue] = jdunpack<[number]>(buf, "i32")
+         * ```
+         */
+        MaxValue = 0x111,
+
+        /**
          * Read-write mA uint16_t. Limit the power drawn by the service, in mA.
          *
          * ```

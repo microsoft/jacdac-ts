@@ -30,13 +30,13 @@ namespace jacdac {
         Offset = 0x81,
 
         /**
-         * Read-write ° i16.16 (int32_t). Lowest angle that can be set.
+         * Constant ° i16.16 (int32_t). Lowest angle that can be set.
          *
          * ```
          * const [minAngle] = jdunpack<[number]>(buf, "i16.16")
          * ```
          */
-        MinAngle = 0x82,
+        MinAngle = 0x110,
 
         /**
          * Read-write μs uint16_t. The length of pulse corresponding to lowest angle.
@@ -48,13 +48,13 @@ namespace jacdac {
         MinPulse = 0x83,
 
         /**
-         * Read-write ° i16.16 (int32_t). Highest angle that can be set.
+         * Constant ° i16.16 (int32_t). Highest angle that can be set.
          *
          * ```
          * const [maxAngle] = jdunpack<[number]>(buf, "i16.16")
          * ```
          */
-        MaxAngle = 0x84,
+        MaxAngle = 0x111,
 
         /**
          * Read-write μs uint16_t. The length of pulse corresponding to highest angle.

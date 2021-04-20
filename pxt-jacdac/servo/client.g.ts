@@ -127,24 +127,11 @@ namespace modules {
         }
 
         /**
-        * Lowest angle that can be set.
-        */
-        //% group="Servo"
-        //% weight=93
-        //% value.defl=-90
-        setMinAngle(value: number) {
-            this.start();
-            const values = this._minAngle.values as any[];
-            values[0] = value;
-            this._minAngle.values = values as [number];
-        }
-
-        /**
         * The length of pulse corresponding to lowest angle.
         */
         //% callInDebugger
         //% group="Servo"
-        //% weight=92
+        //% weight=93
         minPulse(): number {
             this.start();            
             const values = this._minPulse.pauseUntilValues() as any[];
@@ -155,7 +142,7 @@ namespace modules {
         * The length of pulse corresponding to lowest angle.
         */
         //% group="Servo"
-        //% weight=91
+        //% weight=92
         //% value.defl=500
         setMinPulse(value: number) {
             this.start();
@@ -169,7 +156,7 @@ namespace modules {
         */
         //% callInDebugger
         //% group="Servo"
-        //% weight=90
+        //% weight=91
         maxAngle(): number {
             this.start();            
             const values = this._maxAngle.pauseUntilValues() as any[];
@@ -177,24 +164,11 @@ namespace modules {
         }
 
         /**
-        * Highest angle that can be set.
-        */
-        //% group="Servo"
-        //% weight=89
-        //% value.defl=90
-        setMaxAngle(value: number) {
-            this.start();
-            const values = this._maxAngle.values as any[];
-            values[0] = value;
-            this._maxAngle.values = values as [number];
-        }
-
-        /**
         * The length of pulse corresponding to highest angle.
         */
         //% callInDebugger
         //% group="Servo"
-        //% weight=88
+        //% weight=90
         maxPulse(): number {
             this.start();            
             const values = this._maxPulse.pauseUntilValues() as any[];
@@ -205,7 +179,7 @@ namespace modules {
         * The length of pulse corresponding to highest angle.
         */
         //% group="Servo"
-        //% weight=87
+        //% weight=89
         //% value.defl=2500
         setMaxPulse(value: number) {
             this.start();
@@ -219,7 +193,7 @@ namespace modules {
         */
         //% callInDebugger
         //% group="Servo"
-        //% weight=86
+        //% weight=88
         stallTorque(): number {
             this.start();            
             const values = this._stallTorque.pauseUntilValues() as any[];
@@ -231,7 +205,7 @@ namespace modules {
         */
         //% callInDebugger
         //% group="Servo"
-        //% weight=85
+        //% weight=87
         responseSpeed(): number {
             this.start();            
             const values = this._responseSpeed.pauseUntilValues() as any[];

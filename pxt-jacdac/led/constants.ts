@@ -46,7 +46,7 @@ namespace jacdac {
          * const [ledCount] = jdunpack<[number]>(buf, "u16")
          * ```
          */
-        LedCount = 0x180,
+        LedCount = 0x183,
 
         /**
          * Constant nm uint16_t. If monochrome LED, specifies the wave length of the LED.
