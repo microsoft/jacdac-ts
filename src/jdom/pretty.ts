@@ -211,7 +211,7 @@ export function decodeMember(
                 let curr = numValue
                 for (const key of Object.keys(enumInfo.members)) {
                     const val = enumInfo.members[key]
-                    if (curr & val) {
+                    if ((curr & val) == val) {
                         if (humanValue) humanValue += " | "
                         humanValue += key
                         curr &= ~val
