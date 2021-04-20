@@ -2,10 +2,9 @@ import { JDBus } from "../jdom/bus"
 import { JDClient } from "../jdom/client"
 import {
     ArcadeGamepadButton,
-    JD_DEVICE_DISCONNECTED_DELAY,
 } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
-import ArcadeGamepadServer, { defaultButtons } from "./arcadegamepadserver"
+import ArcadeGamepadServer from "./arcadegamepadserver"
 
 const standardButtons = [
     ArcadeGamepadButton.Left,
@@ -19,8 +18,8 @@ const standardButtons = [
 ]
 
 export default class GamepadHostManager extends JDClient {
-    private hosts: {
-        deviceHost: JDServiceProvider
+    private providers: {
+        deviceProvider: JDServiceProvider
         service: ArcadeGamepadServer
         timestamp: number
     }[] = []
@@ -76,6 +75,7 @@ export default class GamepadHostManager extends JDClient {
         )
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private handleGamepadConnected(event: GamepadEvent) {
         console.log("gamepad connected")
         if (!this.ticking) this.tick()
@@ -85,10 +85,10 @@ export default class GamepadHostManager extends JDClient {
         console.log("gamepad disconnected")
         const { gamepad } = event
         const { index } = gamepad
-        const host = this.hosts[index]
-        if (host) {
-            this.bus.removeServiceProvider(host.deviceHost)
-            this.hosts[index] = undefined
+        const provider = this.providers[index]
+        if (provider) {
+            this.bus.removeServiceProvider(provider.deviceProvider)
+            this.providers[index] = undefined
         }
         if (!this.ticking) this.tick()
     }
@@ -110,12 +110,12 @@ export default class GamepadHostManager extends JDClient {
             const gamepad = gamepads[i]
             if (!gamepad) continue
             // allocated host if needed
-            let host = this.hosts[i]
+            let host = this.providers[i]
             if (!host) {
                 const service = new ArcadeGamepadServer(standardButtons)
                 const deviceHost = new JDServiceProvider([service])
                 this.bus.addServiceProvider(deviceHost)
-                this.hosts[i] = host = { service, deviceHost, timestamp: now }
+                this.providers[i] = host = { service, deviceProvider: deviceHost, timestamp: now }
             }
             // update state
             host.timestamp = now
@@ -126,7 +126,7 @@ export default class GamepadHostManager extends JDClient {
     private tick() {
         this.ticking = true
         this.update()
-        if (this.hosts.some(h => h !== undefined))
+        if (this.providers.some(h => h !== undefined))
             window.requestAnimationFrame(() => this.tick())
         else this.ticking = false
     }

@@ -74,6 +74,17 @@ export default class JDServiceProvider extends JDEventSource {
         this.emit(CHANGE)
     }
 
+    removeService(service: JDServiceServer) {
+        if (service?.device !== this)
+            return; // not in this device;
+        const newServices = this._services.slice(1);
+        const index = newServices.indexOf(service);
+        if (index > -1) {
+            newServices.splice(index, 1);
+            this.updateServices(newServices)
+        }
+    }
+
     get bus() {
         return this._bus
     }

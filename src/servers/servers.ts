@@ -116,6 +116,7 @@ import BitRadioServer from "./bitradioserver"
 import PowerServer from "./powerserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
+    instanceName: "indoor",
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -5,
@@ -124,6 +125,7 @@ const indoorThermometerOptions: AnalogSensorServerOptions = {
     variant: ThermometerVariant.Indoor,
 }
 const outdoorThermometerOptions: AnalogSensorServerOptions = {
+    instanceName: "outdoor",
     readingValues: [21.5],
     streamingInterval: 1000,
     minReading: -40,
@@ -132,6 +134,7 @@ const outdoorThermometerOptions: AnalogSensorServerOptions = {
     variant: ThermometerVariant.Outdoor,
 }
 const medicalThermometerOptions: AnalogSensorServerOptions = {
+    instanceName: "medical",
     readingValues: [37.5],
     streamingInterval: 1000,
     minReading: 35,
@@ -140,6 +143,7 @@ const medicalThermometerOptions: AnalogSensorServerOptions = {
     variant: ThermometerVariant.Body,
 }
 const barometerOptions: AnalogSensorServerOptions = {
+    instanceName: "pressure",
     readingValues: [1013],
 }
 const sonarOptions: AnalogSensorServerOptions = {
@@ -459,7 +463,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_E_CO2, SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_E_CO2, CO2Options),
-            new HumidityServer(),
+            new HumidityServer({ instanceName: "humidity" }),
             new AnalogSensorServer(SRV_THERMOMETER, indoorThermometerOptions),
         ],
     },
@@ -493,7 +497,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new HumidityServer(),
+            new HumidityServer({ instanceName: "humidity" }),
         ],
     },
     {
@@ -501,7 +505,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         serviceClasses: [SRV_HUMIDITY, SRV_THERMOMETER, SRV_BAROMETER],
         services: () => [
             new AnalogSensorServer(SRV_THERMOMETER, outdoorThermometerOptions),
-            new HumidityServer(),
+            new HumidityServer({ instanceName: "humidity" }),
             new AnalogSensorServer(SRV_BAROMETER, barometerOptions),
         ],
     },
