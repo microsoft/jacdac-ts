@@ -57,6 +57,8 @@ export class CMSISProto implements Proto {
     private error(msg: string) {
         this.stopRecvToLoop()
         this.io?.error(msg)
+        // clear state
+        this.xchgAddr = null
     }
 
     onJDMessage(f: (buf: Uint8Array) => void): void {
@@ -432,10 +434,14 @@ export class CMSISProto implements Proto {
     async postConnectAsync() {
         this.startRecvToLoop()
         const devid = await this.talkStringAsync(0x80)
-        if (/^9902/.test(devid))
+        if (/^9902/.test(devid)) {
             this.error(`micro:bit v1 is not supported. sorry.`)
-        if (!/^990[3456789]/.test(devid))
+            return
+        }
+        if (!/^990[3456789]/.test(devid)) {
             this.error(`Invalid Vendor0 response: ` + devid)
+            return
+        }
 
         this.io.log("DAPLink v" + (await this.talkStringAsync(0x00, 0x04)))
 
@@ -472,11 +478,17 @@ export class CMSISProto implements Proto {
         await delay(1000) // the actual minimum until mbbridge starts seems to be 700ms; give it some more time just in case
 
         const xchg = await this.findExchange()
+        if (xchg === null) {
+            this.error(`exchange address not found; add jacdac to your project`)
+            return
+        }
         this.xchgAddr = xchg
         const info = await this.readBytes(xchg, 16)
         this.irqn = info[8]
-        if (info[12 + 2] != 0xff)
+        if (info[12 + 2] != 0xff) {
             this.error("invalid memory; try power-cycling the micro:bit")
+            return
+        }
         // clear initial lock
         await this.writeWord(xchg + 12, 0)
         this.io.log(
