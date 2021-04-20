@@ -159,6 +159,8 @@ export const SG90_RESPONSE_SPEED = 0.12 // deg/60deg
 const microServoOptions = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
     responseSpeed: SG90_RESPONSE_SPEED, // s/60deg
+    minAngle: -90,
+    maxAngle: 90,
 }
 const microServo270Options = {
     stallTorque: SG90_STALL_TORQUE, // kg/cm
