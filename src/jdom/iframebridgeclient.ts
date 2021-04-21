@@ -1,7 +1,7 @@
 import { JDBus } from "./bus"
 import {
     CHANGE,
-    DEVICE_CHANGE,
+    DEVICE_ANNOUNCE,
     EMBED_MIN_ASPECT_RATIO,
     PACKET_PROCESS,
     PACKET_SEND,
@@ -98,16 +98,29 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         console.debug(`jdiframe: listening for packets`)
         this.mount(this.bus.subscribe(PACKET_PROCESS, this.postPacket))
         this.mount(this.bus.subscribe(PACKET_SEND, this.postPacket))
-        this.mount(this.bus.subscribe(DEVICE_CHANGE, this.handleResize))
+        this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, this.handleResize))
         // force compute add blocks button
-        this.mount(this.bus.subscribe(DEVICE_CHANGE, () => this.emit(CHANGE)))
-        const id = setInterval(this.handleResize, 500)
+        this.mount(this.bus.subscribe(DEVICE_ANNOUNCE, () => this.emit(CHANGE)))
+        const id = setInterval(this.handleResize, 1000)
         this.mount(() => clearInterval(id))
 
         window.addEventListener("message", this.handleMessage, false)
         this.mount(() =>
             window.removeEventListener("message", this.handleMessage, false)
         )
+
+        if (window.parent && window.parent !== window) {
+            const frameid = window.location.hash.slice(1)
+            console.debug({ frameid })
+            // notify makecode we are ready
+            window.parent.postMessage(
+                {
+                    type: "ready",
+                    frameid,
+                },
+                "*"
+            )
+        }
     }
 
     private handleMessage(event: MessageEvent) {
@@ -141,7 +154,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private handleResize() {
-        const { body } = document;
+        const { body } = document
         const size = body.getBoundingClientRect()
         const ar = size.width / (size.height + 12)
         const value = roundWithPrecision(
@@ -212,8 +225,10 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     get candidateExtensions(): string[] {
-        if (!this._runOptions)
-            return [];
+        if (!this._runOptions) {
+            console.log(`no run options`)
+            return []
+        }
 
         const devices = this.bus
             .devices({ announced: true, ignoreSelf: true })

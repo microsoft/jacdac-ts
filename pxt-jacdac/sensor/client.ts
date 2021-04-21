@@ -28,13 +28,6 @@ namespace jacdac {
                 this.setReg(jacdac.SystemReg.StreamingInterval, "u32", [interval])
         }
 
-        /**
-         * Requests the sensor to calibrate
-         */
-        public calibrate() {
-            this.sendCommand(JDPacket.onlyHeader(jacdac.SystemCmd.Calibrate))
-        }
-
         public onStateChanged(handler: () => void) {
             this._reading.onDataChanged(handler);
             this.setStreaming(true);
