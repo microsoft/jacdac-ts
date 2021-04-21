@@ -39,10 +39,10 @@ function jdpackTest() {
 // pins.A9.digitalWrite(false)
 
 jacdac.consolePriority = ConsolePriority.Log;
-jacdac.roleManager.start()
+jacdac.roleManagerServer.start()
 jacdac.protoTestServer.start()
 jacdac.start()
-jacdac.logger.log("test started")
+jacdac.loggerServer.log("test started")
 modules.identify();
 
 jdpackTest()

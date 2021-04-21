@@ -60,5 +60,5 @@ namespace jacdac {
     }
 
     //% whenUsed
-    export const logger = new LoggerServer()
+    export const loggerServer = new LoggerServer()
 }

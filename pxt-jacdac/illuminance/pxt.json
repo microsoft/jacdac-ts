@@ -1,6 +1,6 @@
 {
     "name": "jacdac-illuminance",
-    "version": "0.4.45",
+    "version": "0.4.46",
     "description": "Detects the amount of light falling onto a given surface area.\n\nNote that this is different from *luminance*, the amount of light that passes through, emits from, or reflects off an object.",
     "files": [
         "constants.ts",

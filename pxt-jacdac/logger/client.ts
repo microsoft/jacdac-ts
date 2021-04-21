@@ -5,17 +5,18 @@ namespace jacdac {
         onMessageReceived: (priority: number, dev: Device, message: string) => void;
 
         constructor() {
-            super(jacdac.SRV_LOGGER, "logger");
+            super(jacdac.SRV_LOGGER, "log");
             this.broadcast = true
-            onAnnounce(() => {
-                // on every announce, if we're listening to anything, tell
-                // everyone to log
-                if (this.minPriority < jacdac.LoggerPriority.Silent) {
-                    const SetMinPriority = 0x2000 | jacdac.LoggerReg.MinPriority
-                    JDPacket.jdpacked(SetMinPriority, "i32", [this.minPriority])
-                        .sendAsMultiCommand(this.serviceClass)
-                }
-            })
+        }
+
+        private sendLogPriority() {
+            // on every announce, if we're listening to anything, 
+            // tell everyone to log
+            if (this.minPriority < jacdac.LoggerPriority.Silent) {
+                const SetMinPriority = 0x2000 | jacdac.LoggerReg.MinPriority
+                JDPacket.jdpacked(SetMinPriority, "i32", [this.minPriority])
+                    .sendAsMultiCommand(this.serviceClass)
+            }
         }
 
         handlePacket(packet: JDPacket) {
@@ -37,10 +38,10 @@ namespace jacdac {
                 }
                 if (this.onMessageReceived)
                     this.onMessageReceived(pri, this.currentDevice, innerMsg);
-
             }
         }
-
     }
 
+    //% fixedInstance whenUsed block="logger" weight=0
+    export const loggerClient = new LoggerClient()
 }

@@ -396,6 +396,8 @@ namespace jacdac {
         protected advertisementData: Buffer
         private handlers: SMap<(idx?: number) => void>
         protected systemActive = false
+        private _onConnected: () => void;
+        private _onDisconnected: () => void;
 
         protected readonly config: ClientPacketQueue
         private readonly registers: RegisterClient<PackSimpleDataType[]>[] = []
@@ -432,8 +434,38 @@ namespace jacdac {
             return devices().filter(d => d.clients.indexOf(this) >= 0)
         }
 
+        /**
+         * Indicates if the client is bound to a server
+         */
+        //% blockId=jd_client_is_connected block="is %client connected"
+        //% group="Connection" weight=50
+        //% blockNamespace="modules"
         isConnected() {
-            return !!this.device
+            return this.broadcast || !!this.device
+        }
+
+        /**
+         * Raised when a server is connected.
+         */
+        //% blockId=jd_client_on_connected block="on %client connected"
+        //% group="Connection" weight=49
+        //% blockNamespace="modules"
+        onConnected(handler: () => void) {
+            this._onConnected = handler
+            if (this._onConnected && this.isConnected())
+                this._onConnected()
+        }
+
+        /**
+         * Raised when a server is connected.
+         */
+        //% blockId=jd_client_on_disconnected block="on %client disconnected"
+        //% group="Connection" weight=48
+        //% blockNamespace="modules"
+        onDisconnected(handler: () => void) {
+            this._onDisconnected = handler
+            if (this._onDisconnected && !this.isConnected())
+                this._onDisconnected()
         }
 
         requestAdvertisementData() {
@@ -473,6 +505,8 @@ namespace jacdac {
             dev.clients.push(this)
             this.onAttach()
             this.config.resend()
+            if (this._onConnected)
+                this._onConnected()
             return true
         }
 
@@ -486,6 +520,8 @@ namespace jacdac {
                 clearAttachCache()
             }
             this.onDetach()
+            if (this._onDisconnected)
+                this._onDisconnected()
         }
 
         protected onAttach() {}
@@ -749,7 +785,7 @@ namespace jacdac {
 
     function doNothing() {}
 
-    class ControlService extends Server {
+    class ControlServer extends Server {
         constructor() {
             super("ctrl", 0)
         }
@@ -885,14 +921,14 @@ namespace jacdac {
         // only try autoBind, proxy we see some devices online
         if (_devices.length > 1) {
             // check for proxy mode
-            jacdac.roleManager.checkProxy()
+            jacdac.roleManagerServer.checkProxy()
             // auto bind
             if (autoBind) {
                 autoBindCnt++
                 // also, only do it every two announces (TBD)
                 if (autoBindCnt >= 2) {
                     autoBindCnt = 0
-                    jacdac.roleManager.autoBind()
+                    jacdac.roleManagerServer.autoBind()
                 }
             }
         }
@@ -1166,8 +1202,8 @@ namespace jacdac {
         log("jacdac starting")
         options = options || {}
 
-        const controlService = new ControlService()
-        controlService.start()
+        const controlServer = new ControlServer()
+        controlServer.start()
         _unattachedClients = []
         _allClients = []
         //jacdac.__physStart();
@@ -1208,13 +1244,13 @@ namespace jacdac {
 
         if (!options.disableLogger) {
             console.addListener(function (pri, msg) {
-                if (msg[0] != ":") jacdac.logger.add(pri as number, msg)
+                if (msg[0] != ":") jacdac.loggerServer.add(pri as number, msg)
             })
-            jacdac.logger.start()
+            jacdac.loggerServer.start()
         }
         if (!options.disableRoleManager) {
-            roleManager.start()
-            controlService.sendUptime()
+            roleManagerServer.start()
+            controlServer.sendUptime()
         }
         // and we're done
         log("jacdac started")
