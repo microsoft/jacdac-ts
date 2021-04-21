@@ -867,7 +867,13 @@ namespace jacdac {
     function queueAnnounce() {
         const ids = _hostServices.map(h => (h.running ? h.serviceClass : -1))
         if (restartCounter < 0xf) restartCounter++
-        ids[0] = restartCounter | 0x100
+        ids[0] =
+            restartCounter |
+            ((ControlAnnounceFlags.IsClient |
+                ControlAnnounceFlags.SupportsACK |
+                ControlAnnounceFlags.SupportsBroadcast |
+                ControlAnnounceFlags.SupportsFrames) <<
+                8)
         const buf = Buffer.create(ids.length * 4)
         for (let i = 0; i < ids.length; ++i)
             buf.setNumber(NumberFormat.UInt32LE, i * 4, ids[i])
