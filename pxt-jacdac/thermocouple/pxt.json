@@ -1,6 +1,6 @@
 {
     "name": "jacdac-thermocouple",
-    "version": "0.4.46",
+    "version": "0.4.47",
     "description": "A thermocouple using a heat probe to gather temperatures.",
     "files": [
         "constants.ts",

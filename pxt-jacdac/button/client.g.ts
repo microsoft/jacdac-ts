@@ -3,7 +3,7 @@ namespace modules {
      * A push-button, which returns to inactive position when not operated anymore.
      **/
     //% fixedInstances blockGap=8
-    export class ButtonClient extends jacdac.SensorClient<[boolean]> {
+    export class ButtonClient extends jacdac.SensorClient {
             
 
         constructor(role: string) {

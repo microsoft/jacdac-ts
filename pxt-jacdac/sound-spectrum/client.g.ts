@@ -3,7 +3,7 @@ namespace modules {
      * A microphone that analyzes the sound specturm
      **/
     //% fixedInstances blockGap=8
-    export class SoundSpectrumClient extends jacdac.SensorClient<[Buffer]> {
+    export class SoundSpectrumClient extends jacdac.SensorClient {
 
         private readonly _enabled : jacdac.RegisterClient<[boolean]>;
         private readonly _fftPow2Size : jacdac.RegisterClient<[number]>;

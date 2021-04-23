@@ -3,7 +3,7 @@ namespace modules {
      * A sensor, typically PIR, that detects object motion within a certain range
      **/
     //% fixedInstances blockGap=8
-    export class MotionClient extends jacdac.SensorClient<[boolean]> {
+    export class MotionClient extends jacdac.SensorClient {
 
         private readonly _maxDistance : jacdac.RegisterClient<[number]>;
         private readonly _angle : jacdac.RegisterClient<[number]>;

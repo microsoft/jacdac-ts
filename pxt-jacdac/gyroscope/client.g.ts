@@ -3,7 +3,7 @@ namespace modules {
      * A 3-axis gyroscope.
      **/
     //% fixedInstances blockGap=8
-    export class GyroscopeClient extends jacdac.SensorClient<[number,number,number]> {
+    export class GyroscopeClient extends jacdac.SensorClient {
 
         private readonly _rotationRatesError : jacdac.RegisterClient<[number]>;
         private readonly _maxRate : jacdac.RegisterClient<[number]>;            

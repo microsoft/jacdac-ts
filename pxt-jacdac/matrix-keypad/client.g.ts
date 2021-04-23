@@ -3,7 +3,7 @@ namespace modules {
      * A matrix of buttons connected as a keypad
      **/
     //% fixedInstances blockGap=8
-    export class MatrixKeypadClient extends jacdac.SensorClient<[number[]]> {
+    export class MatrixKeypadClient extends jacdac.SensorClient {
 
         private readonly _rows : jacdac.RegisterClient<[number]>;
         private readonly _columns : jacdac.RegisterClient<[number]>;

@@ -3,7 +3,7 @@ namespace modules {
      * A two axis directional joystick
      **/
     //% fixedInstances blockGap=8
-    export class JoystickClient extends jacdac.SensorClient<[number,number]> {
+    export class JoystickClient extends jacdac.SensorClient {
 
         private readonly _variant : jacdac.RegisterClient<[jacdac.JoystickVariant]>;
         private readonly _digital : jacdac.RegisterClient<[boolean]>;            

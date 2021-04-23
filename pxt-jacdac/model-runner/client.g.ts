@@ -7,7 +7,7 @@ namespace modules {
      * Multiple instances of this service may be present, if more than one model format is supported by a device.
      **/
     //% fixedInstances blockGap=8
-    export class ModelRunnerClient extends jacdac.SensorClient<[number[]]> {
+    export class ModelRunnerClient extends jacdac.SensorClient {
 
         private readonly _autoInvokeEvery : jacdac.RegisterClient<[number]>;
         private readonly _inputShape : jacdac.RegisterClient<[number[]]>;

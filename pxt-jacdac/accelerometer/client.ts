@@ -1,6 +1,6 @@
 namespace modules {
     //% fixedInstances
-    export class AccelerometerClient extends jacdac.BufferedSensorClient<[number, number, number]> {
+    export class AccelerometerClient extends jacdac.BufferedSensorClient {
         constructor(role: string) {
             super(jacdac.SRV_ACCELEROMETER, role, "i6.10 i6.10 i6.10");
         }
@@ -76,6 +76,6 @@ namespace modules {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="accelerometer 1"
     export const accelerometer = new AccelerometerClient("accelerometer");
 }

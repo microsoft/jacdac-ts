@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     //% weight=1
-    export class SensorClient<TReading extends PackSimpleDataType[]> extends Client {
-        protected readonly _reading: RegisterClient<TReading>
+    export class SensorClient extends Client {
+        protected readonly _reading: RegisterClient<PackSimpleDataType[]>
 
         public isStreaming = false
 
@@ -34,8 +34,8 @@ namespace jacdac {
         }
     }
 
-    export class BufferedSensorClient<TReading extends (string | number | Buffer)[]> extends SensorClient<TReading> {
-        protected _samples: TReading[]
+    export class BufferedSensorClient extends SensorClient {
+        protected _samples: any[]
         protected _numSamples: number
         protected _interval: number
         protected _lastTimestamp: number
@@ -59,7 +59,7 @@ namespace jacdac {
 
         handlePacket(packet: JDPacket) {
             if (this._samples && packet.serviceCommand == (CMD_GET_REG | jacdac.SystemReg.Reading)) {
-                const v = jdunpack(packet.data, this._reading.packFormat) as TReading;
+                const v = jdunpack(packet.data, this._reading.packFormat) as any[];
                 if (v != null) {
                     let num = 1
                     if (this._lastTimestamp != undefined) {
@@ -80,7 +80,7 @@ namespace jacdac {
     }
 
     //% fixedInstances
-    export class SimpleSensorClient extends SensorClient<[number]> {
+    export class SimpleSensorClient extends SensorClient {
         constructor(deviceClass: number, role: string, stateFormat: string) {
             super(deviceClass, role, stateFormat);
         }
@@ -97,7 +97,7 @@ namespace jacdac {
 
             let last: number = this.reading()
             this.onStateChanged(() => {
-                const [current] = this._reading.values
+                const [current] = this._reading.values as any[] as [number]
                 if (current == null)
                     return; // ignore missing data
 

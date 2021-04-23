@@ -4,7 +4,7 @@ namespace modules {
      */
     //% fixedInstances
     //% blockGap=8
-    export class MultiTouchClient extends jacdac.SensorClient<number[]> {
+    export class MultiTouchClient extends jacdac.SensorClient {
         constructor(role: string) {
             super(jacdac.SRV_MULTITOUCH, role, "i32[]");
         }
@@ -17,7 +17,7 @@ namespace modules {
         value(index: number): number {
             if (!this._reading.hasValues())
                 pauseUntil(() => this._reading.hasValues(), 2000)
-            const values = this._reading.values;
+            const values = this._reading.values as number[];
             const value = values[index >> 0];
             return value != null ? value : -1;
         }

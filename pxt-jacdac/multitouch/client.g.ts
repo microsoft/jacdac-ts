@@ -3,7 +3,7 @@ namespace modules {
      * A capacitive touch sensor with multiple inputs.
      **/
     //% fixedInstances blockGap=8
-    export class MultitouchClient extends jacdac.SensorClient<[number[]]> {
+    export class MultitouchClient extends jacdac.SensorClient {
             
 
         constructor(role: string) {

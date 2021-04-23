@@ -4,7 +4,7 @@ namespace modules {
      * (often used as input to machine learning models on the same device, see model runner service).
      **/
     //% fixedInstances blockGap=8
-    export class SensorAggregatorClient extends jacdac.SensorClient<[Buffer]> {
+    export class SensorAggregatorClient extends jacdac.SensorClient {
 
         private readonly _inputs : jacdac.RegisterClient<[number,number,([Buffer, number, number, number, jacdac.SensorAggregatorSampleType, number])[]]>;
         private readonly _numSamples : jacdac.RegisterClient<[number]>;

@@ -3,7 +3,7 @@ namespace modules {
      * Senses RGB colors
      **/
     //% fixedInstances blockGap=8
-    export class ColorClient extends jacdac.SensorClient<[number,number,number]> {
+    export class ColorClient extends jacdac.SensorClient {
             
 
         constructor(role: string) {

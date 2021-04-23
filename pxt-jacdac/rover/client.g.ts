@@ -3,7 +3,7 @@ namespace modules {
      * A roving robot.
      **/
     //% fixedInstances blockGap=8
-    export class RoverClient extends jacdac.SensorClient<[number,number,number,number,number]> {
+    export class RoverClient extends jacdac.SensorClient {
             
 
         constructor(role: string) {
