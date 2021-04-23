@@ -555,6 +555,7 @@ export class JDBus extends JDNode {
         serviceName?: string
         serviceClass?: number
         specification?: boolean
+        ignoreSelf?: boolean
     }): JDService[] {
         return arrayConcatMany(
             this.devices(options).map(d => d.services(options))
