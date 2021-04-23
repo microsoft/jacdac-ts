@@ -99,10 +99,7 @@ class USBTransport extends JDTransport {
             await this.hf2.disconnectAsync()
         }
         const transport = new Transport(this.options)
-        transport.onError = e => {
-            this.errorHandler(USB_TRANSPORT, e)
-            this.disconnect()
-        }
+        transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
         const onJDMessage = (buf: Uint8Array) => {
             if (!this.hf2) console.warn("hf2: receiving on disconnected hf2")
             const pkts = Packet.fromFrame(buf, this.bus.timestamp)
