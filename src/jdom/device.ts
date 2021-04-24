@@ -276,12 +276,16 @@ export class JDDevice extends JDNode {
         return r
     }
 
-    private initServices() {
+    private initServices(force?: boolean) {
+        if (force)
+            this._services = undefined
+
         if (!this._services && this._servicesData) {
             const n = this.serviceLength
             const s = []
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
             this._services = s
+            this.lastServiceUpdate = this.bus.timestamp
         }
     }
 
@@ -339,25 +343,26 @@ export class JDDevice extends JDNode {
             : 0
         const w1 = getNumber(pkt.data, NumberFormat.UInt32LE, 0)
 
+        // compare service data
+        const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
+        this._servicesData = pkt.data
+
+        // check for restart
         if (
             w1 &&
             (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
         ) {
+            this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
             changed = true
         }
 
-        // compare service data
-        const servicesChanged = !bufferEq(pkt.data, this._servicesData, 4)
-        this._servicesData = pkt.data
-
         // notify that services got updated
         if (servicesChanged) {
-            this._services = undefined // respawn services
-            this.initServices()
-            this.lastServiceUpdate = pkt.timestamp
+            if (!changed)
+                this.initServices(true)
             this.bus.emit(DEVICE_ANNOUNCE, this)
             this.emit(ANNOUNCE)
             changed = true

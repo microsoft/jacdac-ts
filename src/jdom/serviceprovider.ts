@@ -75,12 +75,11 @@ export default class JDServiceProvider extends JDEventSource {
     }
 
     removeService(service: JDServiceServer) {
-        if (service?.device !== this)
-            return; // not in this device;
-        const newServices = this._services.slice(1);
-        const index = newServices.indexOf(service);
+        if (service?.device !== this) return // not in this device;
+        const newServices = this._services.slice(1)
+        const index = newServices.indexOf(service)
         if (index > -1) {
-            newServices.splice(index, 1);
+            newServices.splice(index, 1)
             this.updateServices(newServices)
         }
     }
@@ -255,6 +254,7 @@ export default class JDServiceProvider extends JDEventSource {
         this.clearResetTimer()
         this._restartCounter = 0
         this._packetCount = 0
+        this._services?.forEach(srv => srv.reset())
         this.emit(RESET)
     }
 

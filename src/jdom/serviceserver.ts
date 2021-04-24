@@ -124,6 +124,10 @@ export default class JDServiceServer extends JDEventSource {
         return reg
     }
 
+    reset() {
+        this.registers.forEach(reg => reg.reset())
+    }
+
     protected addCommand(identifier: number, handler: (pkt: Packet) => void) {
         this.commands[identifier] = handler
     }

@@ -65,6 +65,7 @@ export default class JDRegisterServer<
     TValues extends PackedValues
 > extends JDEventSource {
     data: Uint8Array
+    private readonly resetData: Uint8Array
     readonly specification: jdspec.PacketInfo
     readOnly: boolean
     errorRegister: JDRegisterServer<TValues>
@@ -87,6 +88,9 @@ export default class JDRegisterServer<
         if (v !== undefined && !v.some(vi => vi === undefined)) {
             this.data = jdpack(this.packFormat, v)
         }
+
+        // keep a copy to handle reset
+        this.resetData = this.data?.slice(0);
 
         // don't check boundaries if there are none
         this.skipBoundaryCheck = !this.specification?.fields.some(
@@ -126,6 +130,10 @@ export default class JDRegisterServer<
             this.data = d
             if (!skipChangeEvent) this.emit(CHANGE)
         }
+    }
+
+    reset() {
+        this.data = this.resetData?.slice(0)
     }
 
     async sendGetAsync() {

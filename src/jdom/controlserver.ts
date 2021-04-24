@@ -14,7 +14,7 @@ export default class ControlServer extends JDServiceServer {
     readonly mcuTemperature: JDRegisterServer<[number]>
     readonly resetIn: JDRegisterServer<[number]>
     readonly uptime: JDRegisterServer<[number]>
-    readonly startTime: number
+    private startTime: number
 
     constructor() {
         super(SRV_CTRL)
@@ -57,7 +57,8 @@ export default class ControlServer extends JDServiceServer {
 
         await this.sendPacketAsync(pkt)
 
-        this.uptime.setValues([Date.now() - this.startTime], true)
+        // micros
+        this.uptime.setValues([(Date.now() - this.startTime) * 100], true)
     }
 
     async identify() {
@@ -65,6 +66,7 @@ export default class ControlServer extends JDServiceServer {
     }
 
     private handleReset() {
+        this.startTime = Date.now()
         this.device.reset()
     }
 
