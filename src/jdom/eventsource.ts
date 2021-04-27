@@ -18,7 +18,19 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
     return eventNames
 }
 
-export class JDEventSource {
+export interface IEventSource {
+    /**
+     * Subscribes to an event and returns the unsubscription handler
+     * @param eventName
+     * @param next
+     */
+     subscribe<T>(
+        eventName: string | string[],
+        next: (value: T) => void
+    ): () => void;
+}
+
+export class JDEventSource implements IEventSource {
     private readonly listeners: SMap<Listener[]> = {}
     readonly eventStats: SMap<number> = {}
     newListenerStats: SMap<number> = undefined
