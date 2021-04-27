@@ -19,6 +19,8 @@ function normalizeEventNames(eventNames: string | string[]): string[] {
 }
 
 export interface IEventSource {
+    changeId: number;
+    
     /**
      * Subscribes to an event and returns the unsubscription handler
      * @param eventName
