@@ -371,14 +371,13 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             return [button, config]
         },
     },
-    /*
     {
         name: "capacitive button (6x)",
         serviceClasses: [SRV_BUTTON],
         services: () =>
             Array(6)
                 .fill(0)
-                .map((_, i) => new ButtonServer(`C${i}`, 0xffff >> 1)),
+                .map((_, i) => new ButtonServer(`C${i}`, true)),
     },
     {
         name: "capacitive button (12x)",
@@ -386,9 +385,8 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () =>
             Array(12)
                 .fill(0)
-                .map((_, i) => new ButtonServer(`C${i}`, 0xffff >> 1)),
+                .map((_, i) => new ButtonServer(`C${i}`, true)),
     },
-    */
     {
         name: "character screen (LDC, 16x2)",
         serviceClasses: [SRV_CHARACTER_SCREEN],

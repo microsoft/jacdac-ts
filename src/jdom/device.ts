@@ -41,7 +41,7 @@ import { JDNode } from "./node"
 import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import { QualityOfService } from "./qualityofservice"
-import { isConfigurationService } from "../../jacdac-spec/spectool/jdutils"
+import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 
 export interface PipeInfo {
     pipeType?: string
@@ -58,22 +58,21 @@ interface AckAwaiter {
 
 export interface JDServiceGroup {
     service: JDService
-    configurations: JDService[]
+    mixins: JDService[]
 }
 
 export function groupServices(services: JDService[]): JDServiceGroup[] {
-    if (!services?.length)
-        return [];
+    if (!services?.length) return []
 
     const groups: JDServiceGroup[] = []
     let group: JDServiceGroup
     for (let i = 0; i < services.length; ++i) {
         const service = services[i]
         const { serviceClass } = service
-        if (isConfigurationService(serviceClass)) {
-            if (group) group.configurations.push(service)
+        if (isMixinService(serviceClass)) {
+            if (group) group.mixins.push(service)
         } else {
-            groups.push((group = { service, configurations: [] }))
+            groups.push((group = { service, mixins: [] }))
         }
     }
     return groups

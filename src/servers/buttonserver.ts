@@ -1,4 +1,10 @@
-import { ButtonEvent, REFRESH, SRV_BUTTON } from "../jdom/constants"
+import {
+    ButtonEvent,
+    ButtonReg,
+    CHANGE,
+    REFRESH,
+    SRV_BUTTON,
+} from "../jdom/constants"
 import SensorServer from "./sensorserver"
 import RegisterServer from "../jdom/registerserver"
 
@@ -10,25 +16,35 @@ export default class ButtonServer extends SensorServer<[number]> {
     private _downTime: number
     private _nextHold: number
 
-    public threshold: RegisterServer<[number]>
+    readonly analog: RegisterServer<[boolean]>
+    private _threshold: RegisterServer<[number]>
 
-    constructor(instanceName?: string) {
+    constructor(instanceName?: string, analog?: boolean) {
         super(SRV_BUTTON, {
             instanceName,
             readingValues: [INACTIVE_VALUE],
             streamingInterval: 50,
         })
+        this.analog = this.addRegister(ButtonReg.Analog, [!!analog])
         this.on(REFRESH, this.handleRefresh.bind(this))
     }
 
-    get isAnalog() {
-        return !!this.threshold
+    get threshold() {
+        return this._threshold
+    }
+
+    set threshold(value: RegisterServer<[number]>) {
+        if (value !== this._threshold) {
+            this._threshold = value
+            this.analog.setValues([!!this._threshold])
+            this.emit(CHANGE)
+        }
     }
 
     private isActive() {
         // TODO: debouncing
         const [v] = this.reading.values()
-        const t = this.threshold?.values()?.[0] || 0xff / 0xffff
+        const t = this.threshold?.values()?.[0] || 0.5
 
         return v > t
     }
