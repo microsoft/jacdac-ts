@@ -210,12 +210,6 @@ const microbitSounds: SoundPlayerSound[] = [
     [0, "twinkle"],
     [0, "yawn"],
 ]
-const touchButton: AnalogSensorServerOptions = {
-    lowThreshold: 0.3,
-    highThreshold: 0.8,
-    readingValues: [0],
-    variant: AnalogButtonVariant.Capacitive,
-}
 const soundLevel: AnalogSensorServerOptions = {
     readingValues: [0],
     lowThreshold: 10,
@@ -368,38 +362,24 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     },
     {
         name: "capacitive button",
-        serviceClasses: [SRV_ANALOG_BUTTON],
-        services: () => [
-            new AnalogSensorServer(SRV_ANALOG_BUTTON, touchButton),
-        ],
+        serviceClasses: [SRV_BUTTON],
+        services: () => [new ButtonServer("C0", 0xffff >> 1)],
     },
     {
         name: "capacitive button (6x)",
-        serviceClasses: [SRV_ANALOG_BUTTON],
+        serviceClasses: [SRV_BUTTON],
         services: () =>
             Array(6)
                 .fill(0)
-                .map(
-                    (_, i) =>
-                        new AnalogSensorServer(SRV_ANALOG_BUTTON, {
-                            ...touchButton,
-                            ...{ instanceName: `C${i}` },
-                        })
-                ),
+                .map((_, i) => new ButtonServer(`C${i}`, 0xffff >> 1)),
     },
     {
         name: "capacitive button (12x)",
-        serviceClasses: [SRV_ANALOG_BUTTON],
+        serviceClasses: [SRV_BUTTON],
         services: () =>
             Array(12)
                 .fill(0)
-                .map(
-                    (_, i) =>
-                        new AnalogSensorServer(SRV_ANALOG_BUTTON, {
-                            ...touchButton,
-                            ...{ instanceName: `C${i}` },
-                        })
-                ),
+                .map((_, i) => new ButtonServer(`C${i}`, 0xffff >> 1)),
     },
     {
         name: "character screen (LDC, 16x2)",
