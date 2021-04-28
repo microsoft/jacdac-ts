@@ -1,5 +1,5 @@
 import JDServiceServer from "./serviceserver"
-import { jdpack, jdunpack, PackedValues } from "./pack"
+import { jdpack, jdunpack, PackedSimpleValue, PackedValues } from "./pack"
 import Packet from "./packet"
 import { bufferEq, isSet, pick } from "./utils"
 import { JDEventSource } from "./eventsource"
@@ -11,8 +11,8 @@ import {
 } from "./constants"
 import { isRegister } from "./spec"
 
-function defaultFieldPayload(specification: jdspec.PacketMember) {
-    let r: any = undefined
+function defaultFieldPayload(specification: jdspec.PacketMember): PackedSimpleValue {
+    let r: PackedSimpleValue = undefined
     switch (specification.type) {
         case "bool":
             r = 0

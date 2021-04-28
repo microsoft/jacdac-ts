@@ -63,8 +63,6 @@ import {
     SRV_PULSE_OXIMETER,
     SRV_WEIGHT_SCALE,
     WeightScaleVariant,
-    SRV_ANALOG_BUTTON,
-    AnalogButtonVariant,
     SRV_LED_MATRIX,
     SRV_RNG,
     SRV_COMPASS,
