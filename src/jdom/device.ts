@@ -32,7 +32,7 @@ import {
     PACKET_ANNOUNCE,
     BLUETOOTH_TRANSPORT,
 } from "./constants"
-import { read32, SMap, bufferEq, assert, setAckError, delay } from "./utils"
+import { read32, SMap, bufferEq, setAckError, delay } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus } from "./bus"
 import { JDService } from "./service"
@@ -44,6 +44,7 @@ import { QualityOfService } from "./qualityofservice"
 
 export interface PipeInfo {
     pipeType?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     localPipe?: any
 }
 
@@ -53,6 +54,12 @@ interface AckAwaiter {
     okCb: () => void
     errCb: () => void
 }
+
+export interface JDServiceGroup {
+    service: JDService
+    mixins: JDService[]
+}
+
 export class JDDevice extends JDNode {
     connected: boolean
     private _source: string
@@ -277,8 +284,7 @@ export class JDDevice extends JDNode {
     }
 
     private initServices(force?: boolean) {
-        if (force)
-            this._services = undefined
+        if (force) this._services = undefined
 
         if (!this._services && this._servicesData) {
             const n = this.serviceLength
@@ -301,6 +307,7 @@ export class JDDevice extends JDNode {
         serviceName?: string
         serviceClass?: number
         specification?: boolean
+        mixins?: boolean
     }): JDService[] {
         if (!this.announced) return []
 
@@ -314,10 +321,13 @@ export class JDDevice extends JDNode {
         if (sc === undefined) sc = -1
 
         this.initServices()
-        let r = this._services.slice()
+        let r = this._services?.slice() || []
         if (sc > -1) r = r.filter(s => s.serviceClass == sc)
 
         if (options?.specification) r = r.filter(s => !!s.specification)
+
+        const mixins = options?.mixins
+        if (mixins !== undefined) r = r.filter(s => s.isMixin === mixins)
 
         return r
     }
@@ -361,8 +371,7 @@ export class JDDevice extends JDNode {
 
         // notify that services got updated
         if (servicesChanged) {
-            if (!changed)
-                this.initServices(true)
+            if (!changed) this.initServices(true)
             this.bus.emit(DEVICE_ANNOUNCE, this)
             this.emit(ANNOUNCE)
             changed = true

@@ -3,8 +3,8 @@ namespace jacdac {
 
     export const enum SystemReadingThreshold { // uint8_t
         Neutral = 0x1,
-        Low = 0x2,
-        High = 0x3,
+        Inactive = 0x2,
+        Active = 0x3,
     }
 
 
@@ -163,22 +163,22 @@ namespace jacdac {
         ReadingResolution = 0x108,
 
         /**
-         * Read-write int32_t. Threshold when reading data gets low and triggers a ``low``.
+         * Read-write int32_t. Threshold when reading data gets inactive and triggers a ``inactive``.
          *
          * ```
-         * const [lowThreshold] = jdunpack<[number]>(buf, "i32")
+         * const [inactiveThreshold] = jdunpack<[number]>(buf, "i32")
          * ```
          */
-        LowThreshold = 0x5,
+        InactiveThreshold = 0x5,
 
         /**
-         * Read-write int32_t. Thresholds when reading data gets high and triggers a ``high`` event.
+         * Read-write int32_t. Thresholds when reading data gets active and triggers a ``active`` event.
          *
          * ```
-         * const [highThreshold] = jdunpack<[number]>(buf, "i32")
+         * const [activeThreshold] = jdunpack<[number]>(buf, "i32")
          * ```
          */
-        HighThreshold = 0x6,
+        ActiveThreshold = 0x6,
 
         /**
          * Constant ms uint32_t. Preferred default streaming interval for sensor in milliseconds.
@@ -249,18 +249,6 @@ namespace jacdac {
          */
         //% block="status code changed"
         StatusCodeChanged = 0x4,
-
-        /**
-         * Notifies that the low threshold has been crossed
-         */
-        //% block="low"
-        Low = 0x5,
-
-        /**
-         * Notifies that the high threshold has been crossed
-         */
-        //% block="high"
-        High = 0x6,
 
         /**
          * Notifies that the threshold is back between ``low`` and ``high``.

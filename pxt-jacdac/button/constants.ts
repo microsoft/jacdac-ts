@@ -3,24 +3,33 @@ namespace jacdac {
     export const SRV_BUTTON = 0x1473a263
     export const enum ButtonReg {
         /**
-         * Read-only bool (uint8_t). Indicates whether the button is currently active (pressed).
+         * Read-only ratio u0.16 (uint16_t). Indicates the pressure state of the button, where ``0`` is open and ``0xffff`` is fully pressed.
          *
          * ```
-         * const [pressed] = jdunpack<[number]>(buf, "u8")
+         * const [pressure] = jdunpack<[number]>(buf, "u0.16")
          * ```
          */
-        Pressed = 0x101,
+        Pressure = 0x101,
+
+        /**
+         * Constant bool (uint8_t). Indicates if the button provides analog ``pressure`` readings.
+         *
+         * ```
+         * const [analog] = jdunpack<[number]>(buf, "u8")
+         * ```
+         */
+        Analog = 0x180,
     }
 
     export const enum ButtonEvent {
         /**
-         * Emitted when button goes from inactive (`pressed == 0`) to active.
+         * Emitted when button goes from inactive to active.
          */
         //% block="down"
         Down = 0x1,
 
         /**
-         * Argument: time ms uint32_t. Emitted when button goes from active (`pressed == 1`) to inactive. The 'time' parameter
+         * Argument: time ms uint32_t. Emitted when button goes from active to inactive. The 'time' parameter
          * records the amount of time between the down and up events.
          *
          * ```

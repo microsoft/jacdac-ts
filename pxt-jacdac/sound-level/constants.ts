@@ -68,13 +68,13 @@ namespace jacdac {
          * Raised when a loud sound is detected
          */
         //% block="loud"
-        Loud = 0x6,
+        Loud = 0x1,
 
         /**
          * Raised when a period of quietness is detected
          */
         //% block="quiet"
-        Quiet = 0x5,
+        Quiet = 0x2,
     }
 
 }

@@ -34,6 +34,7 @@ import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
+import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 
 export class JDService extends JDNode {
     private _role: string
@@ -115,6 +116,24 @@ export class JDService extends JDNode {
 
     get reports() {
         return this._reports.slice(0)
+    }
+
+    get mixins() {
+        // find all 0x2 services follow this service
+        const r = []
+        const { serviceClasses, serviceLength } = this.device
+        for (
+            let i = this.serviceIndex + 1;
+            i < serviceLength && isMixinService(serviceClasses[i]);
+            ++i
+        ) {
+            r.push(this.device.service(i))
+        }
+        return r
+    }
+
+    get isMixin() {
+        return isMixinService(this.serviceClass)
     }
 
     private _readingRegister: JDRegister
