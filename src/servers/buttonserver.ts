@@ -35,26 +35,31 @@ export default class ButtonServer extends SensorServer<[number]> {
 
     private async handleRefresh() {
         if (this.isActive()) {
-            if (this.device.bus.timestamp > this._nextHold) {
+            // down event
+            if (this._downTime === undefined) {
+                this._downTime = this.device.bus.timestamp
+                this._nextHold = this._downTime + HOLD_TIME
+                await this.sendEvent(ButtonEvent.Down)
+                // hold
+            } else if (this.device.bus.timestamp > this._nextHold) {
                 this._nextHold = this.device.bus.timestamp + HOLD_TIME
                 await this.sendEvent(ButtonEvent.Hold)
+            }
+        } else {
+            // up event
+            if (this._downTime !== undefined) {
+                this._downTime = undefined
+                this._nextHold = undefined
+                await this.sendEvent(ButtonEvent.Up)
             }
         }
     }
 
     async down() {
-        if (this.isActive()) return
-
-        this._downTime = this.device.bus.timestamp
-        this._nextHold = this._downTime + HOLD_TIME
         this.reading.setValues([ACTIVE_VALUE])
-        await this.sendEvent(ButtonEvent.Down)
     }
 
     async up() {
-        if (!this.isActive()) return
-
         this.reading.setValues([INACTIVE_VALUE])
-        await this.sendEvent(ButtonEvent.Up)
     }
 }
