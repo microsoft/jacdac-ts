@@ -8,16 +8,16 @@ export class LevelDetector extends JDClient {
     constructor(readonly service: AnalogSensorServer) {
         super()
         this.reset()
-        if (this.service.lowThreshold)
+        if (this.service.inactiveThreshold)
             this.mount(
-                this.service.lowThreshold.subscribe(
+                this.service.inactiveThreshold.subscribe(
                     CHANGE,
                     this.reset.bind(this)
                 )
             )
-        if (this.service.highThreshold)
+        if (this.service.activeThreshold)
             this.mount(
-                this.service.highThreshold.subscribe(
+                this.service.activeThreshold.subscribe(
                     CHANGE,
                     this.reset.bind(this)
                 )
@@ -38,15 +38,15 @@ export class LevelDetector extends JDClient {
             return
         }
 
-        const [high] = this.service.highThreshold?.values()
-        if (high !== undefined && level >= high) {
-            this.setState(SystemReadingThreshold.High)
+        const [active] = this.service.activeThreshold?.values()
+        if (active !== undefined && level >= active) {
+            this.setState(SystemReadingThreshold.Active)
             return
         }
 
-        const [low] = this.service.lowThreshold?.values()
-        if (low !== undefined && level <= low) {
-            this.setState(SystemReadingThreshold.Low)
+        const [inactive] = this.service.inactiveThreshold?.values()
+        if (inactive !== undefined && level <= inactive) {
+            this.setState(SystemReadingThreshold.Inactive)
             return
         }
 
@@ -59,11 +59,11 @@ export class LevelDetector extends JDClient {
 
         this._state = state
         switch (state) {
-            case SystemReadingThreshold.High:
-                this.service.sendEvent(SystemEvent.High)
+            case SystemReadingThreshold.Active:
+                this.service.sendEvent(SystemEvent.Active)
                 break
-            case SystemReadingThreshold.Low:
-                this.service.sendEvent(SystemEvent.Low)
+            case SystemReadingThreshold.Inactive:
+                this.service.sendEvent(SystemEvent.Inactive)
                 break
             case SystemReadingThreshold.Neutral:
                 this.service.sendEvent(SystemEvent.Neutral)

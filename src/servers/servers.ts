@@ -63,8 +63,6 @@ import {
     SRV_PULSE_OXIMETER,
     SRV_WEIGHT_SCALE,
     WeightScaleVariant,
-    SRV_ANALOG_BUTTON,
-    AnalogButtonVariant,
     SRV_LED_MATRIX,
     SRV_RNG,
     SRV_COMPASS,
@@ -114,6 +112,7 @@ import CompassServer from "./compassserver"
 import DMXServer from "./dmxserver"
 import BitRadioServer from "./bitradioserver"
 import PowerServer from "./powerserver"
+import CapacitiveButtonServer from "./capacitivebuttonserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -212,16 +211,10 @@ const microbitSounds: SoundPlayerSound[] = [
     [0, "twinkle"],
     [0, "yawn"],
 ]
-const touchButton: AnalogSensorServerOptions = {
-    lowThreshold: 0.3,
-    highThreshold: 0.8,
-    readingValues: [0],
-    variant: AnalogButtonVariant.Capacitive,
-}
 const soundLevel: AnalogSensorServerOptions = {
     readingValues: [0],
-    lowThreshold: 10,
-    highThreshold: 70,
+    inactiveThreshold: 10,
+    activeThreshold: 70,
     intensityValues: [false],
     registerValues: [
         {
@@ -370,38 +363,29 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     },
     {
         name: "capacitive button",
-        serviceClasses: [SRV_ANALOG_BUTTON],
-        services: () => [
-            new AnalogSensorServer(SRV_ANALOG_BUTTON, touchButton),
-        ],
+        serviceClasses: [SRV_BUTTON],
+        services: () => {
+            const button = new ButtonServer()
+            const config = new CapacitiveButtonServer()
+            button.threshold = config.threshold
+            return [button, config]
+        },
     },
     {
         name: "capacitive button (6x)",
-        serviceClasses: [SRV_ANALOG_BUTTON],
+        serviceClasses: [SRV_BUTTON],
         services: () =>
             Array(6)
                 .fill(0)
-                .map(
-                    (_, i) =>
-                        new AnalogSensorServer(SRV_ANALOG_BUTTON, {
-                            ...touchButton,
-                            ...{ instanceName: `C${i}` },
-                        })
-                ),
+                .map((_, i) => new ButtonServer(`C${i}`, true)),
     },
     {
         name: "capacitive button (12x)",
-        serviceClasses: [SRV_ANALOG_BUTTON],
+        serviceClasses: [SRV_BUTTON],
         services: () =>
             Array(12)
                 .fill(0)
-                .map(
-                    (_, i) =>
-                        new AnalogSensorServer(SRV_ANALOG_BUTTON, {
-                            ...touchButton,
-                            ...{ instanceName: `C${i}` },
-                        })
-                ),
+                .map((_, i) => new ButtonServer(`C${i}`, true)),
     },
     {
         name: "character screen (LDC, 16x2)",
