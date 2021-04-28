@@ -112,6 +112,7 @@ import CompassServer from "./compassserver"
 import DMXServer from "./dmxserver"
 import BitRadioServer from "./bitradioserver"
 import PowerServer from "./powerserver"
+import CapacitiveButtonServer from "./capacitivebuttonserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -212,8 +213,8 @@ const microbitSounds: SoundPlayerSound[] = [
 ]
 const soundLevel: AnalogSensorServerOptions = {
     readingValues: [0],
-    lowThreshold: 10,
-    highThreshold: 70,
+    inactiveThreshold: 10,
+    activeThreshold: 70,
     intensityValues: [false],
     registerValues: [
         {
@@ -363,8 +364,14 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "capacitive button",
         serviceClasses: [SRV_BUTTON],
-        services: () => [new ButtonServer("C0", 0xffff >> 1)],
+        services: () => {
+            const button = new ButtonServer()
+            const config = new CapacitiveButtonServer()
+            button.threshold = config.threshold
+            return [button, config]
+        },
     },
+    /*
     {
         name: "capacitive button (6x)",
         serviceClasses: [SRV_BUTTON],
@@ -381,6 +388,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
                 .fill(0)
                 .map((_, i) => new ButtonServer(`C${i}`, 0xffff >> 1)),
     },
+    */
     {
         name: "character screen (LDC, 16x2)",
         serviceClasses: [SRV_CHARACTER_SCREEN],

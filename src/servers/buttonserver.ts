@@ -1,8 +1,10 @@
-import { ButtonEvent, REFRESH, SRV_BUTTON, SystemReg } from "../jdom/constants"
+import { ButtonEvent, REFRESH, SRV_BUTTON } from "../jdom/constants"
 import SensorServer from "./sensorserver"
 import RegisterServer from "../jdom/registerserver"
 
 const HOLD_TIME = 500
+const INACTIVE_VALUE = 0
+const ACTIVE_VALUE = 1
 
 export default class ButtonServer extends SensorServer<[number]> {
     private _downTime: number
@@ -10,16 +12,12 @@ export default class ButtonServer extends SensorServer<[number]> {
 
     public threshold: RegisterServer<[number]>
 
-    constructor(instanceName?: string, threshold?: number) {
+    constructor(instanceName?: string) {
         super(SRV_BUTTON, {
             instanceName,
-            readingValues: [0],
+            readingValues: [INACTIVE_VALUE],
             streamingInterval: 50,
         })
-        if (threshold)
-            this.threshold = this.addRegister(SystemReg.ActiveThreshold, [
-                threshold,
-            ])
         this.on(REFRESH, this.handleRefresh.bind(this))
     }
 
@@ -30,7 +28,8 @@ export default class ButtonServer extends SensorServer<[number]> {
     private isActive() {
         // TODO: debouncing
         const [v] = this.reading.values()
-        const t = this.threshold?.values()?.[0] || 0xff
+        const t = this.threshold?.values()?.[0] || 0xff / 0xffff
+
         return v > t
     }
 
@@ -48,14 +47,14 @@ export default class ButtonServer extends SensorServer<[number]> {
 
         this._downTime = this.device.bus.timestamp
         this._nextHold = this._downTime + HOLD_TIME
-        this.reading.setValues([0xffff])
+        this.reading.setValues([ACTIVE_VALUE])
         await this.sendEvent(ButtonEvent.Down)
     }
 
     async up() {
         if (!this.isActive()) return
 
-        this.reading.setValues([0])
+        this.reading.setValues([INACTIVE_VALUE])
         await this.sendEvent(ButtonEvent.Up)
     }
 }

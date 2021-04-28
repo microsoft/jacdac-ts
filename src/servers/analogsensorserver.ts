@@ -7,14 +7,14 @@ export interface AnalogSensorServerOptions
     extends SensorServiceOptions<[number]> {
     minReading?: number
     maxReading?: number
-    lowThreshold?: number
-    highThreshold?: number
+    inactiveThreshold?: number
+    activeThreshold?: number
     readingResolution?: number
 }
 
 export default class AnalogSensorServer extends SensorServer<[number]> {
-    readonly lowThreshold: JDRegisterServer<[number]>
-    readonly highThreshold: JDRegisterServer<[number]>
+    readonly inactiveThreshold: JDRegisterServer<[number]>
+    readonly activeThreshold: JDRegisterServer<[number]>
     readonly levelDetector: LevelDetector
 
     constructor(serviceClass: number, options?: AnalogSensorServerOptions) {
@@ -22,8 +22,8 @@ export default class AnalogSensorServer extends SensorServer<[number]> {
         const {
             minReading,
             maxReading,
-            lowThreshold,
-            highThreshold,
+            inactiveThreshold,
+            activeThreshold,
             readingResolution,
         } = options || {}
         if (minReading !== undefined)
@@ -34,16 +34,19 @@ export default class AnalogSensorServer extends SensorServer<[number]> {
             this.addRegister<[number]>(SystemReg.ReadingResolution, [
                 readingResolution,
             ])
-        if (lowThreshold !== undefined || this.highThreshold !== undefined) {
-            if (lowThreshold !== undefined)
-                this.lowThreshold = this.addRegister<[number]>(
-                    SystemReg.LowThreshold,
-                    [lowThreshold]
+        if (
+            inactiveThreshold !== undefined ||
+            this.activeThreshold !== undefined
+        ) {
+            if (inactiveThreshold !== undefined)
+                this.inactiveThreshold = this.addRegister<[number]>(
+                    SystemReg.InactiveThreshold,
+                    [inactiveThreshold]
                 )
-            if (highThreshold !== undefined)
-                this.highThreshold = this.addRegister<[number]>(
-                    SystemReg.HighThreshold,
-                    [highThreshold]
+            if (activeThreshold !== undefined)
+                this.activeThreshold = this.addRegister<[number]>(
+                    SystemReg.ActiveThreshold,
+                    [activeThreshold]
                 )
             this.levelDetector = new LevelDetector(this)
         }
