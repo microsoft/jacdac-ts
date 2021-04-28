@@ -14,7 +14,7 @@ namespace microbit {
         }
         public serializeState(): Buffer {
             let pressed = input.buttonIsPressed(this.button);
-            return jacdac.jdpack("u8", [ pressed ? 1 : 0]);
+            return jacdac.jdpack("u16", [ pressed ? 0xffff : 0]);
         }
     }
 
