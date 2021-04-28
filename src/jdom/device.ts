@@ -62,6 +62,9 @@ export interface JDServiceGroup {
 }
 
 export function groupServices(services: JDService[]): JDServiceGroup[] {
+    if (!services?.length)
+        return [];
+
     const groups: JDServiceGroup[] = []
     let group: JDServiceGroup
     for (let i = 0; i < services.length; ++i) {
