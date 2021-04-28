@@ -41,7 +41,6 @@ import { JDNode } from "./node"
 import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import { QualityOfService } from "./qualityofservice"
-import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 
 export interface PipeInfo {
     pipeType?: string
@@ -59,23 +58,6 @@ interface AckAwaiter {
 export interface JDServiceGroup {
     service: JDService
     mixins: JDService[]
-}
-
-export function groupServices(services: JDService[]): JDServiceGroup[] {
-    if (!services?.length) return []
-
-    const groups: JDServiceGroup[] = []
-    let group: JDServiceGroup
-    for (let i = 0; i < services.length; ++i) {
-        const service = services[i]
-        const { serviceClass } = service
-        if (isMixinService(serviceClass)) {
-            if (group) group.mixins.push(service)
-        } else {
-            groups.push((group = { service, mixins: [] }))
-        }
-    }
-    return groups
 }
 
 export class JDDevice extends JDNode {
@@ -325,6 +307,7 @@ export class JDDevice extends JDNode {
         serviceName?: string
         serviceClass?: number
         specification?: boolean
+        mixins?: boolean
     }): JDService[] {
         if (!this.announced) return []
 
@@ -338,10 +321,13 @@ export class JDDevice extends JDNode {
         if (sc === undefined) sc = -1
 
         this.initServices()
-        let r = this._services.slice()
+        let r = this._services?.slice() || []
         if (sc > -1) r = r.filter(s => s.serviceClass == sc)
 
         if (options?.specification) r = r.filter(s => !!s.specification)
+
+        const mixins = options?.mixins
+        if (mixins !== undefined) r = r.filter(s => s.isMixin === mixins)
 
         return r
     }
