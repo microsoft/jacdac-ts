@@ -64,7 +64,7 @@ import {
 import JDServiceProvider from "./serviceprovider"
 import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import { JDTransport } from "./transport"
+import { JDTransport } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"

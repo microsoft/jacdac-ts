@@ -1,54 +1,10 @@
-import { Proto, Transport } from "../jdom/hf2"
+import TransportProxy from "./transportproxy"
+import { USBTransportProxy } from "./usbtransportproxy"
 
-const { log, debug, info, error } = console
+const { info } = console
 
 info(`jdsw: starting...`)
-
-let hf2: Proto
-
-const transportConnectAsync = async () => {
-    log(`jdsw: connect`)
-    if (hf2) {
-        debug(`jdsw: cleanup hf2`)
-        await hf2.disconnectAsync()
-        hf2 = undefined
-    }
-    const transport = new Transport({
-        getDevices: () => navigator.usb.getDevices(),
-    })
-    transport.onError = e => {
-        error(e)
-        postMessage(
-            {
-                type: "error",
-                error: {
-                    message: e.message,
-                },
-            },
-            "*"
-        )
-    }
-    const onJDMessage = (buf: Uint8Array) =>
-        postMessage(
-            {
-                type: "frame",
-                payload: buf,
-            },
-            "*"
-        )
-    hf2 = await transport.connectAsync(true)
-    hf2.onJDMessage(onJDMessage)
-}
-const transportSendPacketAsync = async (data: { payload: Uint8Array }) => {
-    const { payload } = data
-    await hf2?.sendJDMessageAsync(payload)
-}
-const transportDisconnectAsync = async () => {
-    log(`jdsw: disconnect`)
-    const h = hf2
-    hf2 = undefined
-    if (h) await h.disconnectAsync()
-}
+let proxy: TransportProxy
 
 onmessage = async event => {
     const { data } = event
@@ -56,13 +12,22 @@ onmessage = async event => {
     console.debug(`jdsw onmessage`, data)
     switch (type) {
         case "connect":
-            await transportConnectAsync()
+            if (proxy) await proxy.disconnect()
+            //const { transport } = data
+            info(`jdsw: connecting`)
+            proxy = new USBTransportProxy()
+            await proxy.connect()
+            postMessage(data, "*")
             break
-        case "frame":
-            await transportSendPacketAsync(data)
+        case "packet":
+            info(`jdsw: send`)
+            proxy?.send(data)
+            // don't wait or acknowledge
             break
         case "disconnect":
-            await transportDisconnectAsync()
+            info(`jdsw: disconnecting`)
+            await proxy?.disconnect()
+            postMessage(data, "*")
             break
     }
 }

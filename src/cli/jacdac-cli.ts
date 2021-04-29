@@ -2,7 +2,7 @@
 const cli = require("cli")
 const fs = require("fs-extra")
 import { PACKET_PROCESS } from "../jdom/constants"
-import { createUSBTransport } from "../jdom/usb"
+import { createUSBTransport } from "../jdom/transport/usb"
 import { getDevices, requestDevice } from "../node/nodewebusb"
 import {
     deviceSpecificationToDTDL,

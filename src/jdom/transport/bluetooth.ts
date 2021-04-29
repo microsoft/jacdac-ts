@@ -1,10 +1,10 @@
-import Packet from "./packet"
-import Flags from "./flags"
+import Packet from "../packet"
+import Flags from "../flags"
 import {
     BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC,
     BLUETOOTH_JACDAC_SERVICE,
     BLUETOOTH_TRANSPORT,
-} from "./constants"
+} from "../constants"
 import { JDTransport } from "./transport"
 
 export function isWebBluetoothEnabled(): boolean {

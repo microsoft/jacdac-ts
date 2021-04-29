@@ -1,4 +1,4 @@
-import { JDBus } from "./bus"
+import { JDBus } from "../bus"
 import {
     CHANGE,
     CONNECT,
@@ -8,9 +8,9 @@ import {
     DISCONNECTING,
     ERROR,
     PACKET_SEND_DISCONNECT,
-} from "./constants"
-import { JDEventSource } from "./eventsource"
-import Packet from "./packet"
+} from "../constants"
+import { JDEventSource } from "../eventsource"
+import Packet from "../packet"
 
 export enum ConnectionState {
     Connected = "connected",
@@ -188,6 +188,20 @@ export abstract class JDTransport extends JDEventSource {
             console.debug(`disconnect with existing promise`)
         }
         return this._disconnectPromise
+    }
+
+    protected handlePacket(payload: Uint8Array) {
+        const pkt = Packet.fromBinary(payload, this.bus.timestamp)
+        pkt.sender = this.type
+        this.bus.processPacket(pkt)
+    }
+
+    protected handleFrame(payload: Uint8Array) {
+        const pkts = Packet.fromFrame(payload, this.bus.timestamp)
+        for (const pkt of pkts) {
+            pkt.sender = this.type
+            this.bus.processPacket(pkt)
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
