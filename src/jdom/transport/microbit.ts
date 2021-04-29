@@ -11,6 +11,7 @@ import {
     bufferConcat,
     fromUTF8,
 } from "../utils"
+import Flags from "../flags"
 
 interface SendItem {
     buf: Uint8Array
@@ -175,13 +176,13 @@ export class CMSISProto implements Proto {
         let currSend: SendItem
         while (this.io) {
             const now = Date.now()
-            /*if (
+            if (
                 Flags.diagnostics &&
                 this.lastXchg &&
                 now - this.lastXchg > 50
             ) {
                 console.warn("slow xchg: " + (now - this.lastXchg) + "ms")
-            }*/
+            }
             this.lastXchg = now
 
             let numev = 0
