@@ -1,27 +1,10 @@
 import { Proto, Transport } from "../jdom/hf2"
 
-const { log, debug, error } = console
+const { log, debug, info, error } = console
 
-log(`starting jacdac service worker`)
+info(`jdsw: starting...`)
 
 let hf2: Proto
-
-onmessage = async event => {
-    const { data } = event
-    const { type } = data
-    console.debug(`jdsw onmessage`, data)
-    switch (type) {
-        case "connect":
-            await transportConnectAsync()
-            break
-        case "frame":
-            await transportSendPacketAsync(data)
-            break
-        case "disconnect":
-            await transportDisconnectAsync()
-            break
-    }
-}
 
 const transportConnectAsync = async () => {
     log(`jdsw: connect`)
@@ -66,3 +49,22 @@ const transportDisconnectAsync = async () => {
     hf2 = undefined
     if (h) await h.disconnectAsync()
 }
+
+onmessage = async event => {
+    const { data } = event
+    const { type } = data
+    console.debug(`jdsw onmessage`, data)
+    switch (type) {
+        case "connect":
+            await transportConnectAsync()
+            break
+        case "frame":
+            await transportSendPacketAsync(data)
+            break
+        case "disconnect":
+            await transportDisconnectAsync()
+            break
+    }
+}
+
+info(`jdsw: ready...`)
