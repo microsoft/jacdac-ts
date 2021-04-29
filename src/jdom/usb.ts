@@ -1,4 +1,4 @@
-import { Transport, Proto, USBOptions } from "./hf2"
+import { Transport, USBOptions } from "./hf2"
 import Packet from "./packet"
 import { EventTargetObservable } from "./eventtargetobservable"
 import Flags from "./flags"
@@ -6,7 +6,7 @@ import { USB_TRANSPORT } from "./constants"
 import { JDTransport } from "./transport"
 import { JDBus } from "./bus"
 import { delay } from "./utils"
-
+import Proto from "./proto"
 
 export function isWebUSBEnabled(): boolean {
     return !!Flags.webUSB

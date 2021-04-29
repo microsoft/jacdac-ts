@@ -1,5 +1,6 @@
 import { CMSISProto } from "./microbit"
 import { Observable } from "./observable"
+import Proto from "./proto"
 import {
     throwError,
     delay,
@@ -376,13 +377,6 @@ export class Transport {
         this.ready = true
         this.readLoop()
     }
-}
-
-export interface Proto {
-    onJDMessage(f: (buf: Uint8Array) => void): void
-    sendJDMessageAsync(buf: Uint8Array): Promise<void>
-    postConnectAsync(): Promise<void>
-    disconnectAsync(): Promise<void>
 }
 
 class HF2Proto implements Proto {

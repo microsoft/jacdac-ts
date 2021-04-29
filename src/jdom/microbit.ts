@@ -1,4 +1,5 @@
-import { Proto, Transport } from "./hf2"
+import { Transport } from "./hf2"
+import Proto from "./proto"
 import {
     delay,
     PromiseQueue,
