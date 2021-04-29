@@ -489,7 +489,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "joystick (thumbstick)",
+        name: "joystick (stick)",
         serviceClasses: [SRV_JOYSTICK],
         services: () => [
             new JoystickServer({
@@ -498,7 +498,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "joystick (thumbstick+button)",
+        name: "joystick (stick+A)",
         serviceClasses: [SRV_JOYSTICK],
         services: () => [
             new JoystickServer({
@@ -508,7 +508,17 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "joystick (all buttons)",
+        name: "joystick (stick+AB)",
+        serviceClasses: [SRV_JOYSTICK],
+        services: () => [
+            new JoystickServer({
+                variant: JoystickVariant.Thumb,
+                buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
+            }),
+        ],
+    },    
+    {
+        name: "joystick (Dpad + all buttons)",
         serviceClasses: [SRV_JOYSTICK],
         services: () => [
             new JoystickServer({
