@@ -16,7 +16,7 @@ export function isWebBluetoothSupported(): boolean {
         return (
             typeof navigator !== "undefined" &&
             !!navigator.bluetooth &&
-            !!navigator.bluetooth.requestDevice
+            !!navigator.bluetooth.getDevices
         )
     } catch (e) {
         return false
@@ -30,7 +30,7 @@ function bleRequestDevice(
     if (!Flags.webUSB) return Promise.resolve(undefined)
 
     try {
-        return navigator?.bluetooth?.requestDevice(options)
+        return navigator?.bluetooth?.requestDevice?.(options)
     } catch (e) {
         if (Flags.diagnostics) console.warn(e)
         return undefined

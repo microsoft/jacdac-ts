@@ -10,6 +10,7 @@ import progress from 'rollup-plugin-progress';
 
 export default [
     { libraryName: "jacdac", dir: "", watch: "src/**" },
+    { libraryName: "jacdac-serviceworker", dir: "serviceworder", watch: "src/serviceworker/**" },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
         libraryName: "jacdac-node",

@@ -9,7 +9,7 @@ import { JDBus } from "./bus"
 import { delay } from "./utils"
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>
-    requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
+    requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
     connectObservable?: Observable<USBConnectionEvent>
     disconnectObservable?: Observable<USBConnectionEvent>
 }
@@ -23,7 +23,7 @@ export function isWebUSBSupported(): boolean {
         return (
             typeof navigator !== "undefined" &&
             !!navigator.usb &&
-            !!navigator.usb.requestDevice
+            !!navigator.usb.getDevices
         )
     } catch (e) {
         return false
@@ -37,7 +37,7 @@ function usbRequestDevice(
     if (!Flags.webUSB) return Promise.resolve(undefined)
 
     try {
-        return navigator?.usb?.requestDevice(options)
+        return navigator?.usb?.requestDevice?.(options)
     } catch (e) {
         if (Flags.diagnostics) console.warn(e)
         return undefined
@@ -97,6 +97,7 @@ class USBTransport extends JDTransport {
         if (this.hf2) {
             console.log(`cleanup hf2`)
             await this.hf2.disconnectAsync()
+            this.hf2 = undefined
         }
         const transport = new Transport(this.options)
         transport.onError = e => this.errorHandler(USB_TRANSPORT, e)

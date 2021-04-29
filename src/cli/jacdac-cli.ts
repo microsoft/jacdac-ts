@@ -10,7 +10,7 @@ import {
 } from "../azure-iot/dtdl"
 import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
 import { JDBus } from "../jdom/bus"
-import { create } from "node:domain"
+
 
 cli.setApp("jacdac", "1.0.6")
 cli.enable("version")
