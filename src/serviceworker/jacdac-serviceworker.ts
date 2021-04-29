@@ -1,10 +1,25 @@
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
-const { info } = console
+const { info, error } = console
 
 info(`jdsw: starting...`)
 let proxy: TransportProxy
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleCommand(resp: any, handler: () => Promise<void>) {
+    try {
+        await handler()
+        postMessage(resp)
+    } catch (e) {
+        postMessage({
+            ...resp,
+            error: {
+                message: e.message,
+            },
+        })
+    }
+}
 
 onmessage = async event => {
     const { data } = event
@@ -16,18 +31,21 @@ onmessage = async event => {
             //const { transport } = data
             info(`jdsw: connecting`)
             proxy = new USBTransportProxy()
-            await proxy.connect()
-            postMessage(data, "*")
+            await handleCommand(data, () => proxy.connect())
             break
         case "packet":
             info(`jdsw: send`)
-            proxy?.send(data)
+            proxy?.send(data).then(
+                () => {},
+                e => error(e)
+            )
             // don't wait or acknowledge
             break
         case "disconnect":
-            info(`jdsw: disconnecting`)
-            await proxy?.disconnect()
-            postMessage(data, "*")
+            if (proxy) {
+                info(`jdsw: disconnecting`)
+                await handleCommand(data, () => proxy.disconnect())
+            }
             break
     }
 }

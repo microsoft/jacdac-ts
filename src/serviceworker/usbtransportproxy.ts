@@ -19,24 +19,18 @@ export class USBTransportProxy implements TransportProxy {
         })
         io.onError = e => {
             error(e)
-            postMessage(
-                {
-                    type: "error",
-                    error: {
-                        message: e.message,
-                    },
+            postMessage({
+                type: "error",
+                error: {
+                    message: e.message,
                 },
-                "*"
-            )
+            })
         }
         const onJDMessage = (buf: Uint8Array) =>
-            postMessage(
-                {
-                    type: "frame",
-                    payload: buf,
-                },
-                "*"
-            )
+            postMessage({
+                type: "frame",
+                payload: buf,
+            })
         this.hf2 = await io.connectAsync(true)
         this.hf2.onJDMessage(onJDMessage)
     }
