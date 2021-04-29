@@ -1,6 +1,5 @@
 import resolve from "rollup-plugin-node-resolve"
 import sourceMaps from "rollup-plugin-sourcemaps"
-import camelCase from "lodash.camelcase"
 import typescript from "rollup-plugin-typescript2"
 import json from "rollup-plugin-json"
 import filesize from "rollup-plugin-filesize"
@@ -8,7 +7,7 @@ import visualizer from "rollup-plugin-visualizer"
 import progress from "rollup-plugin-progress"
 
 export default [
-    { libraryName: "jacdac", dir: "", watch: "src/**", umd: true, cjs: true },
+    { libraryName: "jacdac", dir: "", watch: "src/**", umd: true },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
         libraryName: "jacdac-node",
@@ -34,24 +33,13 @@ export default [
         external: [],
         umd: false,
         cjs: false,
-        tsconfig: "src/serviceworker/tsconfig.json"
+        tsconfig: "src/serviceworker/tsconfig.json",
     },
-].map(({ libraryName, dir, external, watch, umd, cjs, tsconfig }) => {
+].map(({ libraryName, dir, external, watch, tsconfig }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
         output: [
-            umd && {
-                file: `dist/${libraryName}.umd.js`,
-                name: camelCase(libraryName),
-                format: "umd",
-                sourcemap: true,
-            },
             { file: `dist/${libraryName}.js`, format: "es", sourcemap: true },
-            cjs && {
-                file: `dist/${libraryName}.cjs.js`,
-                format: "cjs",
-                sourcemap: true,
-            },
         ].filter(o => !!o),
         // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
         external: external || [],
@@ -64,7 +52,7 @@ export default [
             // Compile TypeScript files
             typescript({
                 useTsconfigDeclarationDir: true,
-                tsconfig
+                tsconfig,
             }),
             // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
             //commonjs(),
