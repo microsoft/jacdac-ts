@@ -1,6 +1,5 @@
 import { JDBus } from "../jdom/bus"
 import {
-    ArcadeGamepadButton,
     CharacterScreenTextDirection,
     CharacterScreenVariant,
     DistanceVariant,
@@ -9,7 +8,6 @@ import {
     RelayReg,
     RelayVariant,
     SRV_ACCELEROMETER,
-    SRV_ARCADE_GAMEPAD,
     SRV_BAROMETER,
     SRV_BUTTON,
     SRV_BUZZER,
@@ -77,16 +75,21 @@ import {
     SRV_BIT_RADIO,
     SRV_POWER,
     CHANGE,
+    JoystickButtons,
 } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
 import ProtocolTestServer from "../jdom/protocoltestserver"
 import JDServiceServer from "../jdom/serviceserver"
-import ArcadeGamepadServer from "./arcadegamepadserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
 import CharacterScreenServer from "./characterserver"
 import HumidityServer from "./humidityserver"
-import JoystickSensorServer from "./joystickserver"
+import JoystickServer, {
+    JOYSTICK_ARCADE_BUTTONS,
+    JOYSTICK_DPAD_AB_BUTTONS,
+    JOYSTICK_DPAD_A_BUTTONS,
+    JOYSTICK_DPAD_BUTTONS,
+} from "./joystickserver"
 import LEDMatrixServer from "./ledmatrixserver"
 import LedPixelServer from "./ledpixelserver"
 import MatrixKeypadServer from "./matrixkeypadserver"
@@ -308,25 +311,6 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "arcade gamepad (all buttons)",
-        serviceClasses: [SRV_ARCADE_GAMEPAD],
-        services: () => [new ArcadeGamepadServer()],
-    },
-    {
-        name: "arcade gamepad (only DPad+A/B)",
-        serviceClasses: [SRV_ARCADE_GAMEPAD],
-        services: () => [
-            new ArcadeGamepadServer([
-                ArcadeGamepadButton.Left,
-                ArcadeGamepadButton.Right,
-                ArcadeGamepadButton.Up,
-                ArcadeGamepadButton.Down,
-                ArcadeGamepadButton.A,
-                ArcadeGamepadButton.B,
-            ]),
-        ],
-    },
-    {
         name: "barometer",
         serviceClasses: [SRV_BAROMETER],
         services: () => [
@@ -507,13 +491,40 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "joystick (thumbstick)",
         serviceClasses: [SRV_JOYSTICK],
-        services: () => [new JoystickSensorServer(JoystickVariant.Thumb)],
+        services: () => [
+            new JoystickServer({
+                variant: JoystickVariant.Thumb,
+            }),
+        ],
     },
     {
-        name: "joystick (arcade stick digital)",
+        name: "joystick (thumbstick+button)",
         serviceClasses: [SRV_JOYSTICK],
         services: () => [
-            new JoystickSensorServer(JoystickVariant.ArcadeStick, true),
+            new JoystickServer({
+                variant: JoystickVariant.Thumb,
+                buttonsAvailable: JoystickButtons.A,
+            }),
+        ],
+    },
+    {
+        name: "joystick (all buttons)",
+        serviceClasses: [SRV_JOYSTICK],
+        services: () => [
+            new JoystickServer({
+                variant: JoystickVariant.Gamepad,
+                buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
+            }),
+        ],
+    },
+    {
+        name: "joystick (only DPad+A/B)",
+        serviceClasses: [SRV_JOYSTICK],
+        services: () => [
+            new JoystickServer({
+                variant: JoystickVariant.Gamepad,
+                buttonsAvailable: JOYSTICK_DPAD_AB_BUTTONS,
+            }),
         ],
     },
     {

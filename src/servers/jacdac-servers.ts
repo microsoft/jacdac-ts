@@ -1,5 +1,4 @@
 export * from "./analogsensorserver"
-export * from "./arcadegamepadserver"
 export * from "./buttonserver"
 export * from "./buzzerserver"
 export * from "./characterserver"
