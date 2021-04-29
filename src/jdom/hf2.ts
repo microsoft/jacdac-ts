@@ -142,7 +142,7 @@ export class Transport {
     }
 
     private mkProto(): Proto {
-        return this.isMicrobit ? new CMSISProto(this) : new HF2Proto(this)
+        return this.isMicrobit() ? new CMSISProto(this) : new HF2Proto(this)
     }
 
     private clearDev() {
@@ -271,7 +271,7 @@ export class Transport {
             })
     }
 
-    get isMicrobit() {
+    private isMicrobit() {
         return (
             this.dev && this.dev.productId == 516 && this.dev.vendorId == 3368
         )
@@ -288,7 +288,7 @@ export class Transport {
                 this.dev.productName
         )
         // resolve interfaces
-        const subcl = this.isMicrobit ? 0 : HF2_DEVICE_MAJOR
+        const subcl = this.isMicrobit() ? 0 : HF2_DEVICE_MAJOR
         for (const iface of this.dev.configuration.interfaces) {
             const alt = iface.alternates[0]
             if (alt.interfaceClass == 0xff && alt.interfaceSubclass == subcl) {
@@ -297,7 +297,7 @@ export class Transport {
                 break
             }
         }
-        if (this.isMicrobit) this.rawMode = true
+        if (this.isMicrobit()) this.rawMode = true
         return !!this.iface
     }
 
