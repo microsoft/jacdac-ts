@@ -11,9 +11,10 @@ import {
 } from "./constants"
 import Packet from "./packet"
 import { JDBus } from "./bus"
-import { randomUInt, signal, fromHex, throwError, warn, toHex } from "./utils"
+import { signal, fromHex, throwError, warn, toHex } from "./utils"
 import { JDClient } from "./client"
 import { jdpack } from "./pack"
+import { randomUInt } from "./random"
 
 export class OutPipe {
     private _count = 0

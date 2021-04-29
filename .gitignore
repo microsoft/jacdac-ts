@@ -12,3 +12,4 @@ temp
 .lighthouseci
 package-lock.json
 stats.html
+src/**/*.js
