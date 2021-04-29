@@ -1,18 +1,12 @@
-import { Transport, Proto } from "./hf2"
+import { Transport, Proto, USBOptions } from "./hf2"
 import Packet from "./packet"
-import { Observable } from "./observable"
 import { EventTargetObservable } from "./eventtargetobservable"
 import Flags from "./flags"
 import { USB_TRANSPORT } from "./constants"
 import { JDTransport } from "./transport"
 import { JDBus } from "./bus"
 import { delay } from "./utils"
-export interface USBOptions {
-    getDevices: () => Promise<USBDevice[]>
-    requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
-    connectObservable?: Observable<USBConnectionEvent>
-    disconnectObservable?: Observable<USBConnectionEvent>
-}
+
 
 export function isWebUSBEnabled(): boolean {
     return !!Flags.webUSB

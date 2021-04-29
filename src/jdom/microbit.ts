@@ -1,4 +1,3 @@
-import Flags from "./flags"
 import { Proto, Transport } from "./hf2"
 import {
     delay,

@@ -1,5 +1,5 @@
 import { CMSISProto } from "./microbit"
-import { USBOptions } from "./usb"
+import { Observable } from "./observable"
 import {
     throwError,
     delay,
@@ -109,6 +109,13 @@ export const HF2_EV_MASK = 0x800000
 export const HF2_CMD_JDS_CONFIG = 0x0020
 export const HF2_CMD_JDS_SEND = 0x0021
 export const HF2_EV_JDS_PACKET = 0x800020
+
+export interface USBOptions {
+    getDevices: () => Promise<USBDevice[]>
+    requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
+    connectObservable?: Observable<USBConnectionEvent>
+    disconnectObservable?: Observable<USBConnectionEvent>
+}
 
 export class Transport {
     dev: USBDevice

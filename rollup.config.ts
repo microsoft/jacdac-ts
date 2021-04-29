@@ -6,11 +6,15 @@ import typescript from "rollup-plugin-typescript2"
 import json from "rollup-plugin-json"
 import filesize from "rollup-plugin-filesize"
 import visualizer from "rollup-plugin-visualizer"
-import progress from 'rollup-plugin-progress';
+import progress from "rollup-plugin-progress"
 
 export default [
     { libraryName: "jacdac", dir: "", watch: "src/**" },
-    { libraryName: "jacdac-serviceworker", dir: "serviceworder", watch: "src/serviceworker/**" },
+    {
+        libraryName: "jacdac-serviceworker",
+        dir: "serviceworder",
+        watch: "src/serviceworker/**",
+    },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
         libraryName: "jacdac-node",
@@ -21,14 +25,9 @@ export default [
     {
         libraryName: "jacdac-cli",
         dir: "cli",
-        external: [
-            "jacdac",
-            "jacdac-node",
-            "webusb",
-        ],
+        external: ["jacdac", "jacdac-node", "webusb"],
         watch: "src/**",
     },
-
 ].map(({ libraryName, dir, external, watch }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
@@ -68,7 +67,7 @@ export default [
             sourceMaps(),
             progress(),
             filesize(),
-            visualizer()
+            visualizer({ template: "network" }),
         ],
     }
 })
