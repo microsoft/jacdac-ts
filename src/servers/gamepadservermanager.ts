@@ -1,26 +1,13 @@
 import { JDBus } from "../jdom/bus"
 import { JDClient } from "../jdom/client"
-import {
-    ArcadeGamepadButton,
-} from "../jdom/constants"
+import { JoystickVariant } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
-import ArcadeGamepadServer from "./arcadegamepadserver"
-
-const standardButtons = [
-    ArcadeGamepadButton.Left,
-    ArcadeGamepadButton.Right,
-    ArcadeGamepadButton.Up,
-    ArcadeGamepadButton.Down,
-    ArcadeGamepadButton.A,
-    ArcadeGamepadButton.B,
-    ArcadeGamepadButton.Select,
-    ArcadeGamepadButton.Menu,
-]
+import JoystickServer, { JOYSTICK_ARCADE_BUTTONS } from "./joystickserver"
 
 export default class GamepadHostManager extends JDClient {
     private providers: {
         deviceProvider: JDServiceProvider
-        service: ArcadeGamepadServer
+        service: JoystickServer
         timestamp: number
     }[] = []
     private ticking = false
@@ -112,10 +99,17 @@ export default class GamepadHostManager extends JDClient {
             // allocated host if needed
             let host = this.providers[i]
             if (!host) {
-                const service = new ArcadeGamepadServer(standardButtons)
+                const service = new JoystickServer({
+                    variant: JoystickVariant.Gamepad,
+                    buttonsAvailable: JOYSTICK_ARCADE_BUTTONS,
+                })
                 const deviceHost = new JDServiceProvider([service])
                 this.bus.addServiceProvider(deviceHost)
-                this.providers[i] = host = { service, deviceProvider: deviceHost, timestamp: now }
+                this.providers[i] = host = {
+                    service,
+                    deviceProvider: deviceHost,
+                    timestamp: now,
+                }
             }
             // update state
             host.timestamp = now
