@@ -12,7 +12,7 @@ export default [
     { libraryName: "jacdac", dir: "", watch: "src/**" },
     {
         libraryName: "jacdac-serviceworker",
-        dir: "serviceworder",
+        dir: "serviceworker",
         watch: "src/serviceworker/**",
     },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
