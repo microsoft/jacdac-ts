@@ -23,8 +23,8 @@ async function handleCommand(resp: any, handler: () => Promise<void>) {
 
 onmessage = async event => {
     const { data } = event
-    const { type } = data
-    console.debug(`jdsw onmessage`, data)
+    const { type, payload } = data
+    //console.debug(`jdsw, onmessage ${type}`, data)
     switch (type) {
         case "connect":
             if (proxy) await proxy.disconnect()
@@ -34,8 +34,8 @@ onmessage = async event => {
             await handleCommand(data, () => proxy.connect())
             break
         case "packet":
-            info(`jdsw: send`)
-            proxy?.send(data).then(
+            //info(`jdsw: send`)
+            proxy?.send(payload).then(
                 () => {},
                 e => error(e)
             )

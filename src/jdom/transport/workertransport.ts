@@ -4,6 +4,7 @@ import { Observable } from "../observable"
 import Packet from "../packet"
 import { delay } from "../utils"
 import { JDTransport } from "./transport"
+import { TransportConnectMessage, TransportMessage, TransportPacketMessage } from "./transportmessages"
 import { isWebUSBEnabled, usbRequestDevice } from "./usb"
 import { USB_FILTERS } from "./usbio"
 
@@ -55,8 +56,8 @@ class WorkerTransport extends JDTransport {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private postMessageAsync<T>(msg: any) {
-        const id = (msg.id = Math.random())
+    private postMessageAsync<T>(msg: TransportMessage) {
+        const id = (msg.id = "" + Math.random())
         const p = new Promise<T>((resolve, reject) => {
             this.worker.postMessage(msg)
             this.pending[id] = { resolve, reject }
@@ -65,22 +66,28 @@ class WorkerTransport extends JDTransport {
     }
 
     private handleMessage(ev: MessageEvent) {
-        const { data } = ev
-        const { type, payload } = data || {}
+        const data: TransportMessage = ev.data
+        const { type } = data || {}
         switch (type) {
-            case "packet":
+            case "packet": {
+                const { payload } = data as TransportPacketMessage
+                //debug(`wt: packet`, payload)
                 this.handlePacket(payload)
                 break
-            case "frame":
+            }
+            case "frame": {
+                const { payload } = data as TransportPacketMessage
+                //debug(`wt: frame`, payload)
                 this.handleFrame(payload)
                 break
+            }
             case "connect":
             case "disconnect": {
-                const { id, error, response } = data
+                const { id, error } = data
                 const { resolve, reject } = this.pending[id] || {}
                 if (resolve) {
                     if (error) reject(error)
-                    else resolve(response)
+                    else resolve(undefined)
                 }
                 break
             }
@@ -93,7 +100,7 @@ class WorkerTransport extends JDTransport {
         this.worker.postMessage({
             type: "packet",
             payload: buf,
-        })
+        } as TransportPacketMessage)
     }
 
     protected async transportConnectAsync(background?: boolean) {
@@ -106,7 +113,7 @@ class WorkerTransport extends JDTransport {
         await this.postMessageAsync<void>({
             type: "connect",
             background,
-        })
+        } as TransportConnectMessage)
     }
 
     protected transportDisconnectAsync(): Promise<void> {

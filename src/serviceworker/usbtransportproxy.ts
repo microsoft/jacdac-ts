@@ -26,11 +26,13 @@ export class USBTransportProxy implements TransportProxy {
                 },
             })
         }
-        const onJDMessage = (buf: Uint8Array) =>
+        const onJDMessage = (buf: Uint8Array) => {
+            //debug(`jdsw: frame`, buf)
             postMessage({
                 type: "frame",
                 payload: buf,
             })
+        }
         this.hf2 = await io.connectAsync(true)
         this.hf2.onJDMessage(onJDMessage)
     }
