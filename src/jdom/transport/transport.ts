@@ -10,7 +10,9 @@ import {
     PACKET_SEND_DISCONNECT,
 } from "../constants"
 import { JDEventSource } from "../eventsource"
+import { Observable } from "../observable"
 import Packet from "../packet"
+import { delay } from "../utils"
 
 export enum ConnectionState {
     Connected = "connected",
@@ -19,15 +21,36 @@ export enum ConnectionState {
     Disconnected = "disconnected",
 }
 
+export interface JDTransportOptions {
+    connectObservable?: Observable<void>
+    disconnectObservable?: Observable<void>
+}
+
 /**
  * A transport marshalls Jacdac packets between a physical device on the TypeScript bus.
  */
 export abstract class JDTransport extends JDEventSource {
     public bus: JDBus
     protected disposed = false
+    private _cleanups: (() => void)[]
 
-    constructor(readonly type: string) {
+    constructor(readonly type: string, options?: JDTransportOptions) {
         super()
+        this._cleanups = [
+            options?.connectObservable?.subscribe({
+                next: async () => {
+                    if (this.bus.disconnected) {
+                        await delay(500)
+                        if (this.bus.disconnected) this.connect(true)
+                    }
+                },
+            })?.unsubscribe,
+            options?.disconnectObservable?.subscribe({
+                next: () => {
+                    this.disconnect()
+                },
+            })?.unsubscribe,
+        ].filter(c => !!c)
     }
 
     private _connectionState = ConnectionState.Disconnected
@@ -220,5 +243,7 @@ export abstract class JDTransport extends JDEventSource {
 
     dispose() {
         this.disposed = true
+        this._cleanups.forEach(c => c())
+        this._cleanups = []
     }
 }

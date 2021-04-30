@@ -27,8 +27,8 @@ const controlTransferInReport = 0x100
 export interface USBOptions {
     getDevices: () => Promise<USBDevice[]>
     requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
-    connectObservable?: Observable<USBConnectionEvent>
-    disconnectObservable?: Observable<USBConnectionEvent>
+    connectObservable?: Observable<void>
+    disconnectObservable?: Observable<void>
 }
 
 export default class USBIO {
