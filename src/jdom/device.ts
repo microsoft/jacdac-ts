@@ -31,8 +31,9 @@ import {
     IDENTIFY_DURATION,
     PACKET_ANNOUNCE,
     BLUETOOTH_TRANSPORT,
+    ERROR,
 } from "./constants"
-import { read32, SMap, bufferEq, setAckError, delay } from "./utils"
+import { read32, SMap, bufferEq, setAckError, delay, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
 import { JDBus } from "./bus"
 import { JDService } from "./service"
@@ -41,6 +42,7 @@ import { JDNode } from "./node"
 import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import { QualityOfService } from "./qualityofservice"
+import LEDController from "./ledcontroller"
 
 export interface PipeInfo {
     pipeType?: string
@@ -66,6 +68,7 @@ export class JDDevice extends JDNode {
     private _replay: boolean
     private _lost: boolean
     private _servicesData: Uint8Array
+    private _statusLight: LEDController
     lastSeen: number
     lastServiceUpdate: number
     private _shortId: string
@@ -156,12 +159,20 @@ export class JDDevice extends JDNode {
         return !!this._servicesData?.length
     }
 
-    get restartCounter(): number {
-        return this._servicesData?.[0] || 0
+    get announceFlags(): ControlAnnounceFlags {
+        return this._servicesData ? read16(this._servicesData, 0) : 0
     }
 
-    get announceFlags(): ControlAnnounceFlags {
-        return this._servicesData?.[1] || 0
+    get restartCounter(): number {
+        return this.announceFlags & ControlAnnounceFlags.RestartCounterSteady
+    }
+
+    get statusLightFlags(): ControlAnnounceFlags {
+        return this.announceFlags & ControlAnnounceFlags.StatusLightRgbFade
+    }
+
+    get isClient() {
+        return !!(this.announceFlags & ControlAnnounceFlags.IsClient)
     }
 
     get packetCount(): number {
@@ -287,6 +298,7 @@ export class JDDevice extends JDNode {
         if (force) this._services = undefined
 
         if (!this._services && this._servicesData) {
+            this._statusLight = undefined
             const n = this.serviceLength
             const s = []
             for (let i = 0; i < n; ++i) s.push(new JDService(this, i))
@@ -405,18 +417,33 @@ export class JDDevice extends JDNode {
         this.emit(CHANGE)
     }
 
+    get statusLight(): LEDController {
+        if (
+            !this._statusLight &&
+            this.statusLightFlags !== ControlAnnounceFlags.StatusLightNone
+        )
+            this._statusLight = new LEDController(
+                this.service(0),
+                ControlCmd.SetStatusLight
+            )
+        return this._statusLight
+    }
+
     async identify() {
         if (this._identifying) return
 
         try {
             this._identifying = true
             this.emit(CHANGE)
-
-            const ctrl = this.service(0)
-            await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, false)
-
-            // wait half second
-            await delay(IDENTIFY_DURATION)
+            const statusLight = this.statusLight
+            if (statusLight) await statusLight.blink(0x0000ff, 0, 262, 4)
+            else {
+                const ctrl = this.service(0)
+                await ctrl.sendCmdAsync(ControlCmd.Identify, undefined, false)
+                await delay(IDENTIFY_DURATION)
+            }
+        } catch (e) {
+            this.emit(ERROR, e)
         } finally {
             this._identifying = false
             this.emit(CHANGE)
