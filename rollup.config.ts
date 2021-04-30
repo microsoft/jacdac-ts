@@ -7,7 +7,7 @@ import visualizer from "rollup-plugin-visualizer"
 import progress from "rollup-plugin-progress"
 
 export default [
-    { libraryName: "jacdac", dir: "", watch: "src/**", umd: true },
+    { libraryName: "jacdac", dir: "", watch: "src/**", umd: true, cjs: true },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
         libraryName: "jacdac-node",
@@ -35,11 +35,16 @@ export default [
         cjs: false,
         tsconfig: "src/serviceworker/tsconfig.json",
     },
-].map(({ libraryName, dir, external, watch, tsconfig }) => {
+].map(({ libraryName, dir, external, watch, tsconfig, cjs }) => {
     return {
         input: dir ? `src/${dir}/${libraryName}.ts` : `src/${libraryName}.ts`,
         output: [
             { file: `dist/${libraryName}.js`, format: "es", sourcemap: true },
+            cjs && {
+                file: `dist/${libraryName}.cjs.js`,
+                format: "cjs",
+                sourcemap: true,
+            },
         ].filter(o => !!o),
         // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
         external: external || [],
