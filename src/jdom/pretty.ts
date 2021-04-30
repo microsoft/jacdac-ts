@@ -72,6 +72,7 @@ export function prettyUnit(u: jdspec.Unit): string {
         case "K":
             return "°K"
         case "/":
+        case "#":
             return ""
         default:
             return u
@@ -240,9 +241,10 @@ export function decodeMember(
             humanValue = v + prettyUnit(member.unit)
         } else {
             humanValue = scaledValue + ""
-            if ((scaledValue | 0) == scaledValue && scaledValue >= 15)
-                humanValue += " (" + hexNum(scaledValue) + ")"
-            else if (scaledValue && member.storage == 8) {
+            if ((scaledValue | 0) == scaledValue && (!member.unit || scaledValue >= 15)) {
+                if (!member.unit) humanValue = hexNum(scaledValue)
+                else humanValue += " (" + hexNum(scaledValue) + ")"
+            } else if (scaledValue && member.storage == 8) {
                 const did = toHex(pkt.data.slice(offset, offset + 8))
                 humanValue += ` (${did} / ${shortDeviceId(did)})`
             }
