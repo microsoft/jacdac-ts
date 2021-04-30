@@ -1,10 +1,12 @@
 import {
+    CHANGE,
     ControlAnnounceFlags,
     ControlCmd,
     ControlReg,
     IDENTIFY,
     SRV_CTRL,
 } from "./constants"
+import { jdunpack } from "./pack"
 import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import JDServiceServer from "./serviceserver"
@@ -15,6 +17,8 @@ export default class ControlServer extends JDServiceServer {
     readonly resetIn: JDRegisterServer<[number]>
     readonly uptime: JDRegisterServer<[number]>
     private startTime: number
+
+    statusLightColor: number = undefined
 
     constructor() {
         super(SRV_CTRL)
@@ -43,17 +47,20 @@ export default class ControlServer extends JDServiceServer {
 
     async announce() {
         // restartCounter, flags, packetCount, serviceClass
-        const pkt = Packet.jdpacked<
-            [number, ControlAnnounceFlags, number, number[]]
-        >(ControlCmd.Services, "u8 u8 u8 x[1] u32[]", [
-            this.device.restartCounter,
-            ControlAnnounceFlags.SupportsACK,
-            this.device.packetCount + 1,
-            this.device
-                .services()
-                .slice(1)
-                .map(srv => srv.serviceClass),
-        ])
+        const pkt = Packet.jdpacked<[ControlAnnounceFlags, number, number[]]>(
+            ControlCmd.Services,
+            "u16 u8 x[1] u32[]",
+            [
+                this.device.restartCounter |
+                    ControlAnnounceFlags.StatusLightRgbNoFade |
+                    ControlAnnounceFlags.SupportsACK,
+                this.device.packetCount + 1,
+                this.device
+                    .services()
+                    .slice(1)
+                    .map(srv => srv.serviceClass),
+            ]
+        )
 
         await this.sendPacketAsync(pkt)
 
@@ -71,6 +78,10 @@ export default class ControlServer extends JDServiceServer {
     }
 
     private handleSetStatusLight(pkt: Packet) {
-        // TODO
+        const [toRed, toGreen, toBlue] = jdunpack<
+            [number, number, number, number]
+        >(pkt.data, "u8 u8 u8 u8")
+        this.statusLightColor = (toRed << 16) | (toGreen << 8) | toBlue
+        this.emit(CHANGE)
     }
 }

@@ -251,6 +251,10 @@ export class PromiseQueue {
     }
 }
 
+export function rgbToHtmlColor(rgb: number) {
+    return `#${("000000" + rgb.toString(16)).slice(-6)}`
+}
+
 export function toHex(bytes: ArrayLike<number>) {
     if (!bytes) return undefined
     let r = ""
