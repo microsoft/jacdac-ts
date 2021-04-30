@@ -127,6 +127,11 @@ export function prettyDuration(ms: number) {
     return r
 }
 
+export function prettyMicroDuration(us: number) {
+    if (us < 1000) return `${us}${prettyUnit("us")}`
+    else return prettyDuration(us / 1000)
+}
+
 // 2 letter + 2 digit ID; 1.8%/0.3%/0.07%/0.015% collision probability among 50/20/10/5 devices
 export function shortDeviceId(devid: string) {
     const h = hash(fromHex(devid), 30)
@@ -167,7 +172,6 @@ export function decodeMember(
         else if (Math.abs(value) < 1000) humanValue = value.toFixed(3)
         else if (Math.abs(value) < 100000) humanValue = value.toFixed(2)
         else humanValue = "" + value
-
         if (member.unit) humanValue += prettyUnit(member.unit)
     } else if (!isInt) {
         const buf = size
@@ -227,7 +231,9 @@ export function decodeMember(
         } else if (member.type == "bool") {
             value = !!numValue
             humanValue = value ? "true" : "false"
-        } else if (member.unit || scaledValue != numValue) {
+        } else if (member.unit === "ms") humanValue = prettyDuration(value)
+        else if (member.unit === "us") humanValue = prettyMicroDuration(value)
+        else if (member.unit || scaledValue != numValue) {
             // don't show so much digits
             let v = scaledValue
             if (member.unit) v = roundWithPrecision(v, 3)
