@@ -522,7 +522,7 @@ export default class LedPixelServer extends JDServiceServer {
             if (cmd == LIGHT_PROG_SHOW) {
                 const k = this.prog_fetch_num(50)
                 this.dirty = true
-                setInterval(this.animationFrame.bind(this), k)
+                setTimeout(this.animationFrame.bind(this), k)
                 // check data is still current;
                 return data === this.prog_data
             }
