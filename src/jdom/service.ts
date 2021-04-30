@@ -267,13 +267,13 @@ export class JDService extends JDNode {
         return event
     }
 
-    sendPacketAsync(pkt: Packet, ack?: boolean) {
+    async sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device
         pkt.serviceIndex = this.serviceIndex
         if (ack !== undefined) pkt.requiresAck = !!ack
+        if (pkt.requiresAck) await this.device.sendPktWithAck(pkt)
+        else await pkt.sendCmdAsync(this.device)
         this.emit(PACKET_SEND, pkt)
-        if (pkt.requiresAck) return this.device.sendPktWithAck(pkt)
-        else return pkt.sendCmdAsync(this.device)
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {

@@ -4,7 +4,7 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../../jacdac-spec/dist/specconstants"
-import { CHANGE } from "./constants"
+import { CHANGE, PACKET_RECEIVE, PACKET_SEND } from "./constants"
 import JDServiceProvider from "./serviceprovider"
 import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
@@ -12,10 +12,15 @@ import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
 import { delay } from "./utils"
 import { PackedValues } from "./pack"
+import { JDService } from "./service"
 
 const CALIBRATION_DELAY = 5000
 export interface ServerOptions {
     instanceName?: string
+    /**
+     * This server instance is a twin of a physical device and should not emit any packet
+     */
+    twin?: JDService
     valueValues?: PackedValues
     intensityValues?: PackedValues
     variant?: number
@@ -35,6 +40,7 @@ export default class JDServiceServer extends JDEventSource {
     } = {}
     readonly statusCode: JDRegisterServer<[SystemStatusCodes, number]>
     readonly instanceName: JDRegisterServer<[string]>
+    private _twin: JDService
 
     constructor(public readonly serviceClass: number, options?: ServerOptions) {
         super()
@@ -90,6 +96,39 @@ export default class JDServiceServer extends JDEventSource {
                 true
             )
         }
+
+        this.handleTwinChange = this.handleTwinChange.bind(this)
+        this.handleTwinPacket = this.handleTwinPacket.bind(this)
+    }
+
+    get twin() {
+        return this._twin
+    }
+
+    set twin(service: JDService) {
+        if (this._twin) {
+            this._twin.off(PACKET_RECEIVE, this.handleTwinChange)
+            this._twin.off(PACKET_SEND, this.handleTwinPacket)
+        }
+        this._twin = service
+        if (this._twin) {
+            this._twin.on(PACKET_RECEIVE, this.handleTwinChange)
+            this._twin.on(PACKET_SEND, this.handleTwinPacket)
+        }
+    }
+
+    private handleTwinPacket(pkt: Packet) {
+        console.log(`twin ${pkt}`, { pkt })
+        this.handlePacket(pkt)
+    }
+
+    private handleTwinChange() {
+        console.log(`twin change`)
+        this.twin?.registers().forEach(twinReg => {
+            const reg = this.register(twinReg.code)
+            reg?.setValues(twinReg.unpackedValue, true)
+        })
+        this.emit(CHANGE)
     }
 
     get registers() {
@@ -97,10 +136,10 @@ export default class JDServiceServer extends JDEventSource {
     }
 
     register<TValues extends PackedValues = PackedValues>(
-        identifier: number
+        code: number
     ): JDRegisterServer<TValues> {
         return this._registers.find(
-            reg => reg.identifier === identifier
+            reg => reg.identifier === code
         ) as JDRegisterServer<TValues>
     }
 
@@ -152,11 +191,15 @@ export default class JDServiceServer extends JDEventSource {
     }
 
     async sendPacketAsync(pkt: Packet) {
+        if (this.twin) return
+
         pkt.serviceIndex = this.serviceIndex
         await this.device.sendPacketAsync(pkt)
     }
 
     async sendEvent(eventCode: number, data?: Uint8Array) {
+        if (this.twin) return
+
         const { device } = this
         const { bus } = device
         if (!bus) return
