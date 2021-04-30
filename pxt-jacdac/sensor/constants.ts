@@ -2,7 +2,7 @@ namespace jacdac {
     // Service: Sensor
     export const enum SensorReg {
         /**
-         * Read-write uint8_t. Asks device to stream a given number of samples
+         * Read-write # uint8_t. Asks device to stream a given number of samples
          * (clients will typically write `255` to this register every second or so, while streaming is required).
          *
          * ```

@@ -42,7 +42,7 @@ namespace jacdac {
         SampleSize = 0x181,
 
         /**
-         * Read-write uint32_t. When set to `N`, will stream `N` samples as `current_sample` reading.
+         * Read-write # uint32_t. When set to `N`, will stream `N` samples as `current_sample` reading.
          *
          * ```
          * const [streamingSamples] = jdunpack<[number]>(buf, "u32")
