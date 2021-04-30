@@ -39,6 +39,7 @@ export abstract class JDTransport extends JDEventSource {
         this._cleanups = [
             options?.connectObservable?.subscribe({
                 next: async () => {
+                    console.debug(`${this.type}: on connect`)
                     if (this.bus.disconnected) {
                         await delay(500)
                         if (this.bus.disconnected) this.connect(true)
@@ -47,6 +48,7 @@ export abstract class JDTransport extends JDEventSource {
             })?.unsubscribe,
             options?.disconnectObservable?.subscribe({
                 next: () => {
+                    console.debug(`${this.type}: on disconnect`)
                     this.disconnect()
                 },
             })?.unsubscribe,
