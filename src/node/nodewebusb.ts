@@ -1,4 +1,4 @@
-import { HF2_DEVICE_MAJOR } from "../jdom/hf2"
+import { HF2_DEVICE_MAJOR } from "../jdom/transport/hf2"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const USB = require("webusb").USB

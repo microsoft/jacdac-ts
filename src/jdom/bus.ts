@@ -1,6 +1,6 @@
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import { debounceAsync, strcmp, arrayConcatMany, randomDeviceId } from "./utils"
+import { debounceAsync, strcmp, arrayConcatMany } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -64,11 +64,12 @@ import {
 import JDServiceProvider from "./serviceprovider"
 import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import { JDTransport } from "./transport"
+import { JDTransport } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
 import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"
 import IFrameBridgeClient from "./iframebridgeclient"
+import { randomDeviceId } from "./random"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number

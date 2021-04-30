@@ -1,18 +1,12 @@
-import { Transport, Proto } from "./hf2"
-import Packet from "./packet"
-import { Observable } from "./observable"
-import { EventTargetObservable } from "./eventtargetobservable"
-import Flags from "./flags"
-import { USB_TRANSPORT } from "./constants"
+import Packet from "../packet"
+import { EventTargetObservable } from "../eventtargetobservable"
+import Flags from "../flags"
+import { USB_TRANSPORT } from "../constants"
 import { JDTransport } from "./transport"
-import { JDBus } from "./bus"
-import { delay } from "./utils"
-export interface USBOptions {
-    getDevices: () => Promise<USBDevice[]>
-    requestDevice: (options: USBDeviceRequestOptions) => Promise<USBDevice>
-    connectObservable?: Observable<USBConnectionEvent>
-    disconnectObservable?: Observable<USBConnectionEvent>
-}
+import { JDBus } from "../bus"
+import { delay } from "../utils"
+import Proto from "./proto"
+import USBIO, { USBOptions } from "./usbio"
 
 export function isWebUSBEnabled(): boolean {
     return !!Flags.webUSB
@@ -23,21 +17,21 @@ export function isWebUSBSupported(): boolean {
         return (
             typeof navigator !== "undefined" &&
             !!navigator.usb &&
-            !!navigator.usb.requestDevice
+            !!navigator.usb.getDevices
         )
     } catch (e) {
         return false
     }
 }
 
-function usbRequestDevice(
+export function usbRequestDevice(
     options?: USBDeviceRequestOptions
 ): Promise<USBDevice> {
     // disabled
     if (!Flags.webUSB) return Promise.resolve(undefined)
 
     try {
-        return navigator?.usb?.requestDevice(options)
+        return navigator?.usb?.requestDevice?.(options)
     } catch (e) {
         if (Flags.diagnostics) console.warn(e)
         return undefined
@@ -56,7 +50,7 @@ function usbGetDevices(): Promise<USBDevice[]> {
     }
 }
 
-class USBTransport extends JDTransport {
+class WebUSBTransport extends JDTransport {
     private hf2: Proto
 
     private _cleanups: (() => void)[]
@@ -97,8 +91,9 @@ class USBTransport extends JDTransport {
         if (this.hf2) {
             console.log(`cleanup hf2`)
             await this.hf2.disconnectAsync()
+            this.hf2 = undefined
         }
-        const transport = new Transport(this.options)
+        const transport = new USBIO(this.options)
         transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
         const onJDMessage = (buf: Uint8Array) => {
             if (!this.hf2) console.warn("hf2: receiving on disconnected hf2")
@@ -125,25 +120,26 @@ class USBTransport extends JDTransport {
     }
 }
 
-export function createUSBTransport(options?: USBOptions): JDTransport {
-    if (!options) {
-        if (isWebUSBSupported()) {
-            console.debug(`register usb events`)
-            options = {
-                getDevices: usbGetDevices,
-                requestDevice: usbRequestDevice,
-                connectObservable: new EventTargetObservable(
-                    navigator.usb,
-                    "connect"
-                ),
-                disconnectObservable: new EventTargetObservable(
-                    navigator.usb,
-                    "disconnect"
-                ),
-            }
+function defaultOptions(): USBOptions {
+    return (
+        isWebUSBSupported() && {
+            getDevices: usbGetDevices,
+            requestDevice: usbRequestDevice,
+            connectObservable: new EventTargetObservable(
+                navigator.usb,
+                "connect"
+            ),
+            disconnectObservable: new EventTargetObservable(
+                navigator.usb,
+                "disconnect"
+            ),
         }
-    }
-    return options && new USBTransport(options)
+    )
+}
+
+export function createUSBTransport(options?: USBOptions): JDTransport {
+    if (!options) options = defaultOptions()
+    return options && new WebUSBTransport(options)
 }
 
 export function createUSBBus(options?: USBOptions) {
