@@ -97,7 +97,6 @@ export default class JDServiceServer extends JDEventSource {
             )
         }
 
-        this.handleTwinChange = this.handleTwinChange.bind(this)
         this.handleTwinPacket = this.handleTwinPacket.bind(this)
     }
 
@@ -106,29 +105,30 @@ export default class JDServiceServer extends JDEventSource {
     }
 
     set twin(service: JDService) {
+        if (service === this._twin)
+            return;
+        
         if (this._twin) {
-            this._twin.off(PACKET_RECEIVE, this.handleTwinChange)
+            this._twin.off(PACKET_RECEIVE, this.handleTwinPacket)
             this._twin.off(PACKET_SEND, this.handleTwinPacket)
         }
         this._twin = service
         if (this._twin) {
-            this._twin.on(PACKET_RECEIVE, this.handleTwinChange)
+            console.log(`new twin`)
+            this._twin.on(PACKET_RECEIVE, this.handleTwinPacket)
             this._twin.on(PACKET_SEND, this.handleTwinPacket)
+            this._twin.registers().forEach(twinReg => {
+                const reg = this.register(twinReg.code)
+                reg?.setValues(twinReg.unpackedValue, true)
+            })
         }
+
+        this.emit(CHANGE)
     }
 
     private handleTwinPacket(pkt: Packet) {
         console.log(`twin ${pkt}`, { pkt })
         this.handlePacket(pkt)
-    }
-
-    private handleTwinChange() {
-        console.log(`twin change`)
-        this.twin?.registers().forEach(twinReg => {
-            const reg = this.register(twinReg.code)
-            reg?.setValues(twinReg.unpackedValue, true)
-        })
-        this.emit(CHANGE)
     }
 
     get registers() {

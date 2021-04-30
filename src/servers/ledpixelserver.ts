@@ -216,17 +216,17 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private get numpixels(): number {
-        const [r] = this.numPixels.values()
+        const [r] = this.numPixels.values() || [0]
         return r
     }
 
     private get requested_intensity(): number {
-        const [r] = this.brightness.values()
+        const [r] = this.brightness.values() || [0]
         return r
     }
 
     private get intensity(): number {
-        const [r] = this.actualBrightness.values()
+        const [r] = this.actualBrightness.values() || [0]
         return r
     }
 
