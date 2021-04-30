@@ -1,5 +1,5 @@
-import Flags from "./flags"
-import { Proto, Transport } from "./hf2"
+import Proto from "./proto"
+import USBIO from "./usbio"
 import {
     delay,
     PromiseQueue,
@@ -10,7 +10,8 @@ import {
     fromHex,
     bufferConcat,
     fromUTF8,
-} from "./utils"
+} from "../utils"
+import Flags from "../flags"
 
 interface SendItem {
     buf: Uint8Array
@@ -30,7 +31,7 @@ export class CMSISProto implements Proto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _lastInterval: any
 
-    constructor(private io: Transport) {
+    constructor(private io: USBIO) {
         console.log(`micro:bit: start proto`)
     }
 
@@ -175,13 +176,13 @@ export class CMSISProto implements Proto {
         let currSend: SendItem
         while (this.io) {
             const now = Date.now()
-            /*if (
+            if (
                 Flags.diagnostics &&
                 this.lastXchg &&
                 now - this.lastXchg > 50
             ) {
                 console.warn("slow xchg: " + (now - this.lastXchg) + "ms")
-            }*/
+            }
             this.lastXchg = now
 
             let numev = 0

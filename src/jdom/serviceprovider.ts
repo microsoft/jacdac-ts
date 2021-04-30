@@ -2,7 +2,7 @@ import { JDBus } from "./bus"
 import JDServiceServer from "./serviceserver"
 import Packet from "./packet"
 import { shortDeviceId } from "./pretty"
-import { anyRandomUint32, isBufferEmpty, toHex } from "./utils"
+import { isBufferEmpty, toHex } from "./utils"
 import ControlServer from "./controlserver"
 import { JDEventSource } from "./eventsource"
 import {
@@ -18,6 +18,7 @@ import {
     RESET,
     SELF_ANNOUNCE,
 } from "./constants"
+import { anyRandomUint32 } from "./random"
 
 export default class JDServiceProvider extends JDEventSource {
     private _bus: JDBus

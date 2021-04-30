@@ -2,7 +2,7 @@
 const cli = require("cli")
 const fs = require("fs-extra")
 import { PACKET_PROCESS } from "../jdom/constants"
-import { createUSBTransport } from "../jdom/usb"
+import { createUSBTransport } from "../jdom/transport/usb"
 import { getDevices, requestDevice } from "../node/nodewebusb"
 import {
     deviceSpecificationToDTDL,
@@ -10,7 +10,7 @@ import {
 } from "../azure-iot/dtdl"
 import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
 import { JDBus } from "../jdom/bus"
-import { create } from "node:domain"
+
 
 cli.setApp("jacdac", "1.0.6")
 cli.enable("version")

@@ -73,6 +73,6 @@
     "regenerator-runtime": "^0.13.7",
     "rollup-plugin-filesize": "^9.1.1",
     "rollup-plugin-progress": "^1.1.2",
-    "rollup-plugin-visualizer": "^5.3.0"
+    "rollup-plugin-visualizer": "^5.4.1"
   }
 }
