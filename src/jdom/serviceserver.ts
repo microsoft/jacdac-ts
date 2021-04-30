@@ -11,16 +11,17 @@ import Packet from "./packet"
 import JDRegisterServer from "./registerserver"
 import { isRegister, serviceSpecificationFromClassIdentifier } from "./spec"
 import { delay } from "./utils"
+import { PackedValues } from "./pack"
 
 const CALIBRATION_DELAY = 5000
 export interface ServerOptions {
     instanceName?: string
-    valueValues?: any[]
-    intensityValues?: any[]
+    valueValues?: PackedValues
+    intensityValues?: PackedValues
     variant?: number
     registerValues?: {
         code: number
-        values: any[]
+        values: PackedValues
     }[]
 }
 
@@ -28,7 +29,7 @@ export default class JDServiceServer extends JDEventSource {
     public serviceIndex = -1 // set by device
     public device: JDServiceProvider
     public readonly specification: jdspec.ServiceSpec
-    private readonly _registers: JDRegisterServer<any[]>[] = []
+    private readonly _registers: JDRegisterServer<PackedValues>[] = []
     private readonly commands: {
         [identifier: number]: (pkt: Packet) => void
     } = {}
@@ -63,7 +64,7 @@ export default class JDServiceServer extends JDEventSource {
 
         // any extra
         registerValues?.forEach(({ code, values }) =>
-            this.addRegister<any[]>(code, values)
+            this.addRegister<PackedValues>(code, values)
         )
 
         // emit event when status code changes
@@ -95,7 +96,7 @@ export default class JDServiceServer extends JDEventSource {
         return this._registers.slice(0)
     }
 
-    register<TValues extends any[] = any[]>(
+    register<TValues extends PackedValues = PackedValues>(
         identifier: number
     ): JDRegisterServer<TValues> {
         return this._registers.find(
@@ -103,7 +104,7 @@ export default class JDServiceServer extends JDEventSource {
         ) as JDRegisterServer<TValues>
     }
 
-    protected addRegister<TValues extends any[] = any[]>(
+    protected addRegister<TValues extends PackedValues = PackedValues>(
         identifier: number,
         defaultValue?: TValues
     ): JDRegisterServer<TValues> {
