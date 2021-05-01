@@ -126,7 +126,6 @@ export default class JDServiceServer extends JDEventSource {
     }
 
     private handleTwinPacket(pkt: Packet) {
-        console.log(`twin ${pkt}`, { pkt })
         this.handlePacket(pkt)
     }
 
