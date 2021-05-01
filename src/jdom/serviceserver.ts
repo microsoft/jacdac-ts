@@ -114,12 +114,11 @@ export default class JDServiceServer extends JDEventSource {
         }
         this._twin = service
         if (this._twin) {
-            console.log(`new twin`)
             this._twin.on(PACKET_RECEIVE, this.handleTwinPacket)
             this._twin.on(PACKET_SEND, this.handleTwinPacket)
             this._twin.registers().forEach(twinReg => {
                 const reg = this.register(twinReg.code)
-                reg?.setValues(twinReg.unpackedValue, true)
+                reg?.setValues(twinReg.unpackedValue)
             })
         }
 
