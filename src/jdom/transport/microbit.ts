@@ -93,6 +93,11 @@ export class CMSISProto implements Proto {
 
     private recvAsync() {
         return new Promise<Uint8Array>((resolve, reject) => {
+            // io may have been cleared
+            if (!this.io) {
+                reject(new Error("USB disconnected"))
+                return
+            }
             this.io.recvPacketAsync().then(
                 v => {
                     const f = resolve
