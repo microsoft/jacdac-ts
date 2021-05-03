@@ -1,18 +1,24 @@
 {
-    "name": "jacdac-tcp",
+    "name": "jacdac-power",
     "version": "0.4.50",
-    "description": "MakeCode support for Jacdac TCP service",
+    "description": "A power-provider service.",
     "files": [
         "constants.ts",
-        "client.ts"
+        "client.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
     ],
     "supportedTargets": [
         "arcade",
+        "microbit",
         "maker"
     ],
     "dependencies": {
         "core": "*",
-        "net": "*",
         "jacdac": "github:microsoft/pxt-jacdac"
+    },
+    "testDependencies": {
+        "nucleo-f411re": "*"
     }
 }

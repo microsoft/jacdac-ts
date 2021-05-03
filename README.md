@@ -1,13 +1,14 @@
 # Jacdac TypeScript
 
-**Jacdac** is a bus-based plug-and-play hardware and software stack for microcontrollers and their peripherals such as sensors and actuators. Jacdac is primarily designed for “modular electronics” scenarios that support rapid prototyping, creative exploration, making and learning through physical computing. Jacdac is designed to be cheap, flexible and extensible.
+**Jacdac** is a bus-based plug-and-play hardware/software stack 
+for **microcontrollers** and their peripherals (sensors/actuators), 
+with applications to rapid prototyping, making, and physical computing. 
 
 This repository contains a **TypeScript/JavaScript** client library for the [Jacdac](https://aka.ms/jacdac) protocol.
 
-The following resources may be useful:
-* the full **[Jacdac Documentation](https://aka.ms/jacdac/)**;
-* discussions at https://github.com/microsoft/jacdac/discussions;
-* issues tracked on https://github.com/microsoft/jacdac/issues.
+* **[Jacdac Documentation](https://aka.ms/jacdac/)**
+* Discussions at https://github.com/microsoft/jacdac/discussions
+* Issues are tracked on https://github.com/microsoft/jacdac/issues
 
 The rest of this page is for developers of the jacdac-ts library.
 
@@ -121,7 +122,7 @@ The releases are automatically created by the build system based on the title of
 * ``patch:...`` or ``fix:...``  patch
 * ``minor:...`` or ``feature:...`` minor
 
-## Microsoft open source code of conduct
+## Microsoft Open Source Code of Conduct
 
 This project is hosted at https://github.com/microsoft/jacdac-ts. 
 This project has adopted the 
