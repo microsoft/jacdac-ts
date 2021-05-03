@@ -1,6 +1,6 @@
 {
     "name": "jacdac-compass",
-    "version": "0.4.50",
+    "version": "0.4.53",
     "description": "A sensor that measures the heading.",
     "files": [
         "constants.ts",

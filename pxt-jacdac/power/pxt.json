@@ -1,13 +1,10 @@
 {
     "name": "jacdac-power",
-    "version": "0.4.50",
+    "version": "0.4.53",
     "description": "A power-provider service.",
     "files": [
         "constants.ts",
         "client.g.ts"
-    ],
-    "testFiles": [
-        "test.ts"
     ],
     "supportedTargets": [
         "arcade",
