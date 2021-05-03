@@ -58,13 +58,12 @@ interface SimulatorRunOptions {
     single?: boolean
 }
 
-// hide the makecode device itself and power devices
+// hide the makecode device itself
 const ignoredServices = [
     SRV_CONTROL,
     SRV_LOGGER,
     SRV_SETTINGS,
     SRV_ROLE_MANAGER,
-    SRV_POWER,
     SRV_PROTO_TEST,
 ]
 
