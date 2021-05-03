@@ -194,7 +194,18 @@ export class JDRegister extends JDServiceMemberNode {
         )
     }
 
-    processReport(pkt: Packet) {
+    processPacket(pkt: Packet) {
+        if (pkt.isRegisterGet)
+            this.processReport(pkt)
+        else if (pkt.isRegisterSet) {
+            // another device sent a set packet to this register
+            // so most likely it's value changed
+            // clear any data caching to force updating the value
+            this._lastGetTimestamp = -Infinity
+        }
+    }
+
+    private processReport(pkt: Packet) {
         const updated = !bufferEq(this.data, pkt.data)
         this._lastReportPkt = pkt
         this._lastGetAttempts = 0 // reset counter

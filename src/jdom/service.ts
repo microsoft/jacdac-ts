@@ -315,7 +315,7 @@ export class JDService extends JDNode {
             if (pkt.isRegisterGet) {
                 const id = pkt.registerIdentifier
                 const reg = this.register(id)
-                if (reg) reg.processReport(pkt)
+                if (reg) reg.processPacket(pkt)
             } else if (pkt.isEvent) {
                 const ev = this.event(pkt.eventCode)
                 if (ev) ev.processEvent(pkt)
@@ -323,6 +323,10 @@ export class JDService extends JDNode {
                 // this is a report...
                 console.log("cmd report", { pkt })
             }
+        } else if (pkt.isRegisterSet) {
+            const id = pkt.registerIdentifier
+            const reg = this.register(id)
+            if (reg) reg.processPacket(pkt)
         }
     }
 
