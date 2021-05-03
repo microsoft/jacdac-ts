@@ -1,8 +1,6 @@
 # Jacdac TypeScript
 
-**Jacdac** is a bus-based plug-and-play hardware/software stack 
-for **microcontrollers** and their peripherals (sensors/actuators), 
-with applications to rapid prototyping, making, and physical computing. 
+**Jacdac** is a bus-based plug-and-play hardware and software stack for microcontrollers and their peripherals (sensors/actuators). Jacdac is primarily designed for “modular electronics” scenarios, where electronic components and/or PCBs with different functionality are connected together to support rapid prototyping, learning and making through physical computing, or creative exploration. Jacdac is designed to be cheap, flexible and extensible.
 
 This repository contains a **TypeScript/JavaScript** client library for the [Jacdac](https://aka.ms/jacdac) protocol.
 
