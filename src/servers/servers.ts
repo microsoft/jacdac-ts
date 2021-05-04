@@ -87,8 +87,6 @@ import HumidityServer from "./humidityserver"
 import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
     JOYSTICK_DPAD_AB_BUTTONS,
-    JOYSTICK_DPAD_A_BUTTONS,
-    JOYSTICK_DPAD_BUTTONS,
 } from "./joystickserver"
 import LEDMatrixServer from "./ledmatrixserver"
 import LedPixelServer from "./ledpixelserver"
@@ -516,7 +514,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
                 buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
             }),
         ],
-    },    
+    },
     {
         name: "joystick (Dpad + all buttons)",
         serviceClasses: [SRV_JOYSTICK],
