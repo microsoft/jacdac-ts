@@ -26,13 +26,14 @@ onmessage = async event => {
     const { type, payload } = data
     //console.debug(`jdsw, onmessage ${type}`, data)
     switch (type) {
-        case "connect":
+        case "connect": {
             if (proxy) await proxy.disconnect()
-            //const { transport } = data
+            const { deviceId } = data
             info(`jdsw: connecting`)
             proxy = new USBTransportProxy()
-            await handleCommand(data, () => proxy.connect())
+            await handleCommand(data, () => proxy.connect(deviceId))
             break
+        }
         case "packet":
             //info(`jdsw: send`)
             proxy?.send(payload).then(

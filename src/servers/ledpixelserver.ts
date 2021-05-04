@@ -206,12 +206,12 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private get maxpower(): number {
-        const [r] = this.maxPower.values()
+        const [r] = this.maxPower.values() || [0]
         return r
     }
 
     private get maxpixels(): number {
-        const [r] = this.maxPixels.values()
+        const [r] = this.maxPixels.values() || [0]
         return r
     }
 
@@ -243,10 +243,10 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private allocRxBuffer() {
-        if (this.numpixels > this.maxpixels)
-            this.numPixels.setValues([this.maxpixels])
-        const n = this.numpixels * 3 // don't need to prealloc here
-        if (n !== this.pxbuffer.length) this.pxbuffer = new Uint8Array(n)
+        const { numpixels = 0, maxpixels = 0, pxbuffer } = this
+        if (numpixels > maxpixels) this.numPixels.setValues([this.maxpixels])
+        const n = numpixels * 3 // don't need to prealloc here
+        if (pxbuffer || n !== pxbuffer.length) this.pxbuffer = new Uint8Array(n)
     }
 
     private reset_range() {
