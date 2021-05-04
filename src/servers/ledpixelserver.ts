@@ -206,12 +206,12 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private get maxpower(): number {
-        const [r] = this.maxPower.values() || [0]
+        const [r] = this.maxPower.values() || [200]
         return r
     }
 
     private get maxpixels(): number {
-        const [r] = this.maxPixels.values() || [0]
+        const [r] = this.maxPixels.values()
         return r
     }
 
@@ -243,8 +243,9 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private allocRxBuffer() {
-        const { numpixels = 0, maxpixels = 0, pxbuffer } = this
-        if (numpixels > maxpixels) this.numPixels.setValues([this.maxpixels])
+        const { numpixels = 0, maxpixels, pxbuffer } = this
+        if (maxpixels !== undefined && numpixels > maxpixels)
+            this.numPixels.setValues([this.maxpixels])
         const n = numpixels * 3 // don't need to prealloc here
         if (pxbuffer || n !== pxbuffer.length) this.pxbuffer = new Uint8Array(n)
     }
@@ -293,17 +294,14 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private limit_intensity() {
-        const numpixels = this.numpixels
-        const requested_intensity = this.requested_intensity
-        const maxpower = this.maxpower
-        const pxbuffer = this.pxbuffer
+        const { numpixels, requested_intensity, maxpower, pxbuffer } = this
 
         let n = numpixels * 3
         const prev_intensity = this.intensity
         let intensity = this.intensity
 
         intensity += 1 + (intensity >> 5)
-        if (intensity > requested_intensity) intensity = requested_intensity
+        if (requested_intensity !== undefined && intensity > requested_intensity) intensity = requested_intensity
 
         let current_full = 0
         let current = 0
