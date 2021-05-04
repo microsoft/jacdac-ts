@@ -211,7 +211,7 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private get maxpixels(): number {
-        const [r] = this.maxPixels.values()
+        const [r] = this.maxPixels.values() || []
         return r
     }
 
