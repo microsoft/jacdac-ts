@@ -1,16 +1,15 @@
 {
   "name": "jacdac-ts",
-  "version": "1.7.17",
+  "version": "1.13.3",
   "description": "",
   "keywords": [],
-  "main": "dist/jacdac.jdom.umd.js",
-  "module": "dist/jacdac.jdom.js",
-  "typings": "dist/types/src/jacdac.dom.d.ts",
+  "main": "dist/jacdac.umd.js",
+  "module": "dist/jacdac.js",
+  "typings": "dist/types/src/jacdac.d.ts",
   "files": [
     "dist",
     "jacdac-spec",
     "service",
-    "etc",
     "src"
   ],
   "author": "Microsoft Corporation",
@@ -24,144 +23,56 @@
   },
   "scripts": {
     "pullsubmodules": "git submodule update --init --recursive",
-    "lint": "node node_modules/eslint/bin/eslint.js src/**/*.ts docs/src/**/*.ts docs/src/**/*.tsx",
+    "lint": "node node_modules/eslint/bin/eslint.js src/**/*.ts",
+    "prettier": "prettier --write src/**/*.ts",
     "predist": "rm -rf dist",
     "dist": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts",
-    "predistdocs": "cd docs && node node_modules/gatsby/cli.js clean && cd .. && node ./tools/prepare.js",
-    "distdocs": "cd docs && node node_modules/gatsby/cli.js build --prefix-paths --no-uglify",
     "watch": "node node_modules/rollup/dist/bin/rollup -c rollup.config.ts -w",
     "test": "cd tests && node ../node_modules/mocha/bin/mocha --require ts-node/register --watch-extensions ts,tsx -p ./tsconfig.json **/*.spec.ts",
     "tools": "npx http-server . -c-1",
-    "installdocs": "cd docs && npm install --force",
-    "installdev": "npm install && npm run installdocs",
-    "cleandocs": "cd docs && node node_modules/gatsby/cli.js clean",
-    "docs": "npm run dist && cd docs && node node_modules/gatsby/cli.js develop",
-    "docsbuild": "cd docs && node node_modules/gatsby/cli.js build",
-    "docsserve": "cd docs && node node_modules/gatsby/cli.js serve",
-    "dockerdocs": "cd docs && node node_modules/gatsby/cli.js develop --host:0.0.0.0",
+    "disttools": "cd tools && node ./prepare.js",
     "buildspecs": "cd jacdac-spec/spectool && sh build.sh && cd ../.. && cp -r jacdac-spec/services/generated/makecode/* pxt-jacdac",
     "builddtdl": "node dist/jacdac-cli.js --dtdl dist/dtdl --rm=on",
     "buildpxt": "cd pxt-jacdac && sh mk.sh"
-  },
-  "release": {
-    "branch": "main",
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "angular",
-          "releaseRules": [
-            {
-              "type": "doc",
-              "release": "patch"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "patch",
-              "release": "patch"
-            },
-            {
-              "type": "minor",
-              "release": "minor"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "feature",
-              "release": "minor"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator"
-      ],
-      [
-        "@semantic-release/exec",
-        {
-          "prepareCmd": "node ./tools/prepare.js ${nextRelease.version}"
-        }
-      ],
-      [
-        "@semantic-release/github",
-        {
-          "successComment": false,
-          "failComment": false
-        }
-      ],
-      [
-        "@semantic-release/npm"
-      ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json",
-            "package-lock.json",
-            "etc/jacdac-ts.api.json",
-            "etc/jacdac-ts.api.md"
-          ]
-        }
-      ]
-    ]
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
-    },
-    "testEnvironment": "node",
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ]
   },
   "devDependencies": {
     "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
     "@types/expect": "^24.3.0",
-    "@types/mocha": "^8.2.1",
-    "@typescript-eslint/eslint-plugin": "^4.15.2",
-    "@typescript-eslint/parser": "^4.15.2",
+    "@types/mocha": "^8.2.2",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "cli": "^1.0.1",
     "colors": "^1.4.0",
     "cross-env": "^7.0.3",
-    "eslint": "^7.20.0",
-    "eslint-plugin-react": "^7.22.0",
+    "eslint": "^7.23.0",
+    "eslint-plugin-react": "^7.23.2",
+    "jsep": "^0.4.0",
     "lodash.camelcase": "^4.3.0",
-    "mocha": "^8.3.0",
+    "mocha": "^8.3.2",
     "prettier": "2.2.1",
     "prompt": "^1.1.0",
     "replace-in-file": "^6.2.0",
-    "rollup": "^2.38.5",
+    "rollup": "^2.45.0",
     "rollup-plugin-commonjs": "^9.1.8",
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-typescript2": "^0.29.0",
-    "semantic-release": "^17.3.8",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "semantic-release": "^17.4.2",
     "shelljs": "^0.8.4",
-    "ts-node": "^7.0.1",
-    "typescript": "^4.1.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4",
     "webusb": "^2.2.0"
   },
   "dependencies": {
-    "@types/node": "^14.14.25",
+    "@types/node": "^14.14.37",
     "@types/w3c-web-usb": "^1.0.4",
+    "@types/web-bluetooth": "^0.0.9",
     "fs-extra": "^9.1.0",
-    "regenerator-runtime": "^0.13.7"
+    "regenerator-runtime": "^0.13.7",
+    "rollup-plugin-filesize": "^9.1.1",
+    "rollup-plugin-progress": "^1.1.2",
+    "rollup-plugin-visualizer": "^5.4.1"
   }
 }

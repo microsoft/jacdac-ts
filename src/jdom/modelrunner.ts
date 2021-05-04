@@ -1,9 +1,6 @@
 import * as U from "./utils"
 import Packet from "./packet"
-import {
-    REPORT_RECEIVE,
-    SRV_MODEL_RUNNER
-} from "./constants"
+import { REPORT_RECEIVE, SRV_MODEL_RUNNER } from "./constants"
 import { JDService } from "./service"
 import { ModelRunnerCmd, ModelRunnerReg } from "./constants"
 import { bufferToArray, NumberFormat } from "./buffer"
@@ -37,16 +34,20 @@ import { jdunpack } from "./pack"
 */
 
 export function isMLModelSupported(model: Uint8Array, formatRegValue: number) {
-    return U.read32(model, 0) == formatRegValue || U.read32(model, 4) == formatRegValue
+    return (
+        U.read32(model, 0) == formatRegValue ||
+        U.read32(model, 4) == formatRegValue
+    )
 }
 
 export function getMLModelFormatName(model: Uint8Array) {
-    const map = serviceSpecificationFromClassIdentifier(SRV_MODEL_RUNNER).enums["ModelFormat"].members
+    const map = serviceSpecificationFromClassIdentifier(SRV_MODEL_RUNNER).enums[
+        "ModelFormat"
+    ].members
     const m0 = U.read32(model, 0)
     const m1 = U.read32(model, 4)
     for (const v of Object.keys(map)) {
-        if (map[v] == m0 || map[v] == m1)
-            return v
+        if (map[v] == m0 || map[v] == m1) return v
     }
     return "0x" + U.toHex(model.slice(0, 8))
 }
@@ -73,11 +74,13 @@ export class ModelRunnerClient extends JDServiceClient {
 
     async deployModel(model: Uint8Array, onProgress?: (p: number) => void) {
         onProgress?.(0)
-        const resp = await this.service.sendCmdAwaitResponseAsync(Packet.jdpacked(ModelRunnerCmd.SetModel, "u32", [model.length]), 3000)
+        const resp = await this.service.sendCmdAwaitResponseAsync(
+            Packet.jdpacked(ModelRunnerCmd.SetModel, "u32", [model.length]),
+            3000
+        )
         onProgress?.(0.05)
         const [pipePort] = jdunpack<[number]>(resp.data, "u16")
-        if (!pipePort)
-            throw new Error("wrong port " + pipePort)
+        if (!pipePort) throw new Error("wrong port " + pipePort)
         const pipe = new OutPipe(this.service.device, pipePort)
         const chunkSize = 224 // has to be divisible by 8
         for (let i = 0; i < model.length; i += chunkSize) {
@@ -93,7 +96,9 @@ export class ModelRunnerClient extends JDServiceClient {
     }
 
     async autoInvoke(everySamples = 1) {
-        await this.service.register(ModelRunnerReg.AutoInvokeEvery).sendSetPackedAsync("u16", [everySamples])
+        await this.service
+            .register(ModelRunnerReg.AutoInvokeEvery)
+            .sendSetPackedAsync("u16", [everySamples])
     }
 
     private async getReg(id: ModelRunnerReg, f: (v: JDRegister) => any) {
@@ -104,11 +109,20 @@ export class ModelRunnerClient extends JDServiceClient {
 
     async modelStats(): Promise<TFModelStats> {
         const info: any = {
-            "modelSize": this.getReg(ModelRunnerReg.ModelSize, r => r.intValue),
-            "arenaSize": this.getReg(ModelRunnerReg.AllocatedArenaSize, r => r.intValue),
-            "inputShape": this.getReg(ModelRunnerReg.InputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
-            "outputShape": this.getReg(ModelRunnerReg.OutputShape, r => bufferToArray(r.data, NumberFormat.UInt16LE)),
-            "lastError": this.getReg(ModelRunnerReg.LastError, r => U.uint8ArrayToString(r.data)),
+            modelSize: this.getReg(ModelRunnerReg.ModelSize, r => r.intValue),
+            arenaSize: this.getReg(
+                ModelRunnerReg.AllocatedArenaSize,
+                r => r.intValue
+            ),
+            inputShape: this.getReg(ModelRunnerReg.InputShape, r =>
+                bufferToArray(r.data, NumberFormat.UInt16LE)
+            ),
+            outputShape: this.getReg(ModelRunnerReg.OutputShape, r =>
+                bufferToArray(r.data, NumberFormat.UInt16LE)
+            ),
+            lastError: this.getReg(ModelRunnerReg.LastError, r =>
+                U.uint8ArrayToString(r.data)
+            ),
         }
         for (const id of Object.keys(info)) {
             info[id] = await info[id]
@@ -118,11 +132,11 @@ export class ModelRunnerClient extends JDServiceClient {
 }
 
 export interface TFModelStats {
-    "modelSize": number;
-    "arenaSize": number;
-    "inputShape": number[];
-    "outputShape": number[];
-    "lastError": string;
+    modelSize: number
+    arenaSize: number
+    inputShape: number[]
+    outputShape: number[]
+    lastError: string
 }
 
 /*

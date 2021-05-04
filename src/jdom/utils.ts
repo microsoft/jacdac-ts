@@ -251,6 +251,10 @@ export class PromiseQueue {
     }
 }
 
+export function rgbToHtmlColor(rgb: number) {
+    return `#${("000000" + rgb.toString(16)).slice(-6)}`
+}
+
 export function toHex(bytes: ArrayLike<number>) {
     if (!bytes) return undefined
     let r = ""
@@ -499,27 +503,6 @@ export function debounceAsync(
     }
 }
 
-export function cryptoRandomUint32(length: number): Uint32Array {
-    if (typeof window === "undefined") return undefined // not supported
-    const vals = new Uint32Array(length)
-    window.crypto.getRandomValues(vals)
-    return vals
-}
-
-export function anyRandomUint32(length: number): Uint32Array {
-    let r = cryptoRandomUint32(length)
-    if (!r) {
-        r = new Uint32Array(length)
-        for (let i = 0; i < r.length; ++i)
-            r[i] = (Math.random() * 0x1_0000_0000) >>> 0
-    }
-    return r
-}
-
-export function randomUInt(max: number) {
-    const arr = anyRandomUint32(1)
-    return arr[0] % max
-}
 
 export function JSONTryParse(src: string) {
     if (src === undefined || src === null) return src
@@ -590,12 +573,16 @@ export function arrayShuffle<T>(a: T[]): T[] {
     return a
 }
 
-export function uniqueName(names: string[], name: string): string {
+export function uniqueName(
+    names: string[],
+    name: string,
+    separator = ""
+): string {
     if (names.indexOf(name) < 0) return name
     // allocate names
     let count = 2
-    while (names.indexOf(`${name}${count}`) > -1) count++
-    return `${name}${count}`
+    while (names.indexOf(`${name}${separator}${count}`) > -1) count++
+    return `${name}${separator}${count}`
 }
 
 export function groupBy<T>(list: T[], key: (value: T) => string): SMap<T[]> {

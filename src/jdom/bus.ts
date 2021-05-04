@@ -1,12 +1,6 @@
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import {
-    debounceAsync,
-    strcmp,
-    arrayConcatMany,
-    anyRandomUint32,
-    toHex,
-} from "./utils"
+import { debounceAsync, strcmp, arrayConcatMany } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -14,8 +8,6 @@ import {
     PACKET_SEND,
     ERROR,
     CONNECTING,
-    CONNECT,
-    DISCONNECT,
     DEVICE_CONNECT,
     DEVICE_DISCONNECT,
     PACKET_RECEIVE,
@@ -23,8 +15,6 @@ import {
     PACKET_EVENT,
     PACKET_REPORT,
     PACKET_PROCESS,
-    CONNECTION_STATE,
-    DISCONNECTING,
     DEVICE_CHANGE,
     CHANGE,
     FIRMWARE_BLOBS_CHANGE,
@@ -40,8 +30,6 @@ import {
     SELF_ANNOUNCE,
     TIMEOUT,
     LATE,
-    PACKET_SEND_DISCONNECT,
-    TIMEOUT_DISCONNECT,
     REPORT_UPDATE,
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
@@ -49,12 +37,15 @@ import {
     PACKET_PRE_PROCESS,
     STREAMING_DEFAULT_INTERVAL,
     REGISTER_POLL_FIRST_REPORT_INTERVAL,
-    DEVICE_HOST_ADDED,
-    DEVICE_HOST_REMOVED,
+    SERVICE_PROVIDER_ADDED,
+    SERVICE_PROVIDER_REMOVED,
     REFRESH,
+    ROLE_MANAGER_CHANGE,
+    TIMEOUT_DISCONNECT,
+    REGISTER_POLL_STREAMING_INTERVAL,
 } from "./constants"
 import { serviceClass } from "./pretty"
-import { JDNode, Log, LogLevel } from "./node"
+import { JDNode } from "./node"
 import {
     FirmwareBlob,
     scanFirmwares,
@@ -63,31 +54,22 @@ import {
 import { JDService } from "./service"
 import { isConstRegister, isReading, isSensor } from "./spec"
 import {
-    ControlReg,
     LoggerPriority,
     LoggerReg,
     SensorReg,
-    SRV_CONTROL,
     SRV_LOGGER,
     SRV_REAL_TIME_CLOCK,
     SystemReg,
-} from "../../jacdac-spec/dist/specconstants"
-import DeviceHost from "./devicehost"
-import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
-import { JDEventSource } from "./eventsource"
-
-export interface IDeviceNameSettings {
-    resolve(device: JDDevice): string
-    // notify namer that the device was renamed
-    notifyUpdate(device: JDDevice, name: string): void
-}
-
-export interface PacketTransport {
-    sendPacketAsync?: (p: Packet) => Promise<void>
-    connectAsync?: (background?: boolean) => Promise<void>
-    disconnectAsync?: () => Promise<void>
-}
-
+} from "../../src/jdom/constants"
+import JDServiceProvider from "./serviceprovider"
+import RealTimeClockServer from "../servers/realtimeclockserver"
+import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
+import { JDTransport } from "./transport/transport"
+import { BusStatsMonitor } from "./busstats"
+import { RoleManagerClient } from "./rolemanagerclient"
+import JDBridge from "./bridge"
+import IFrameBridgeClient from "./iframebridgeclient"
+import { randomDeviceId } from "./random"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -96,46 +78,13 @@ export interface BusOptions {
     parentOrigin?: string
 }
 
-export interface BusHost {
-    log?: Log
-    deviceNameSettings?: IDeviceNameSettings
-}
-
 export interface Error {
     context: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     exception: any
 }
 
-export enum BusState {
-    Connected = "connected",
-    Connecting = "connecting",
-    Disconnecting = "disconnecting",
-    Disconnected = "disconnected",
-}
-
 const SCAN_FIRMWARE_INTERVAL = 30000
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-function log(level: LogLevel, message: any, optionalArgs?: any[]): void {
-    switch (level) {
-        case "error":
-            console.error(message, optionalArgs || "")
-            break
-        case "warn":
-            console.warn(message, optionalArgs || "")
-            break
-        case "info":
-            console.info(message, optionalArgs || "")
-            break
-        case "debug":
-            console.debug(message, optionalArgs || "")
-            break
-        default:
-            console.log(message, optionalArgs || "")
-            break
-    }
-}
 
 export interface DeviceFilter {
     serviceName?: string
@@ -144,99 +93,15 @@ export interface DeviceFilter {
     announced?: boolean
     ignoreSimulators?: boolean
     firmwareIdentifier?: boolean
-}
-export interface BusStats {
-    packets: number
-    announce: number
-    acks: number
-    bytes: number
-}
-
-export class BusStatsMonitor extends JDEventSource {
-    private readonly _prev: BusStats[] = Array(10)
-        .fill(0)
-        .map(() => ({
-            packets: 0,
-            announce: 0,
-            acks: 0,
-            bytes: 0,
-        }))
-    private _previ = 0
-    private _temp: BusStats = {
-        packets: 0,
-        announce: 0,
-        acks: 0,
-        bytes: 0,
-    }
-
-    constructor(readonly bus: JDBus) {
-        super()
-        this.bus.on(PACKET_SEND, this.handlePacketSend.bind(this))
-        this.bus.on(PACKET_PROCESS, this.handlePacketProcess.bind(this))
-        this.bus.on(SELF_ANNOUNCE, this.handleSelfAnnounce.bind(this))
-    }
-
-    get current(): BusStats {
-        const r: BusStats = {
-            packets: 0,
-            announce: 0,
-            acks: 0,
-            bytes: 0,
-        }
-        const n = this._prev.length
-        for (let i = 0; i < this._prev.length; ++i) {
-            const p = this._prev[i]
-            r.packets += p.packets
-            r.announce += p.announce
-            r.acks += p.acks
-            r.bytes += p.bytes
-        }
-        // announce every 500ms
-        const n2 = n / 2
-        r.packets /= n2
-        r.announce /= n2
-        r.acks /= n2
-        r.bytes /= n2
-        return r
-    }
-
-    private accumulate(pkt: Packet) {
-        this._temp.packets++
-        this._temp.bytes += (pkt.header?.length || 0) + (pkt.data?.length || 0)
-        if (pkt.isCRCAck) this._temp.acks++
-    }
-
-    private handleSelfAnnounce() {
-        const changed =
-            JSON.stringify(this._prev) !== JSON.stringify(this._temp)
-        this._prev[this._previ] = this._temp
-        this._previ = (this._previ + 1) % this._prev.length
-        this._temp = {
-            packets: 0,
-            announce: 0,
-            acks: 0,
-            bytes: 0,
-        }
-        if (changed) this.emit(CHANGE)
-    }
-
-    private handlePacketSend(pkt: Packet) {
-        this.accumulate(pkt)
-    }
-
-    private handlePacketProcess(pkt: Packet) {
-        this.accumulate(pkt)
-    }
+    physical?: boolean
 }
 
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
-    private _connectionState = BusState.Disconnected
-    private _connectPromise: Promise<void>
-    private _disconnectPromise: Promise<void>
-
+    private readonly _transports: JDTransport[] = []
+    private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
     private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -247,34 +112,29 @@ export class JDBus extends JDNode {
     private _safeBootInterval: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
+    private _roleManagerClient: RoleManagerClient
+
     private _minLoggerPriority = LoggerPriority.Log
     private _firmwareBlobs: FirmwareBlob[]
     private _announcing = false
     private _gcDevicesEnabled = 0
 
-    private _deviceHosts: DeviceHost[] = []
-
-    public readonly host: BusHost = {
-        log,
-    }
+    private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
+    public iframeBridge: IFrameBridgeClient;
 
     /**
      * Creates the bus with the given transport
      * @param sendPacket
      */
-    constructor(
-        public readonly transport: PacketTransport,
-        public options?: BusOptions
-    ) {
+    constructor(transports?: JDTransport[], public options?: BusOptions) {
         super()
+
+        transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
+
         this.options = this.options || {}
-        if (!this.options.deviceId) {
-            const devId = anyRandomUint32(8)
-            for (let i = 0; i < 8; ++i) devId[i] &= 0xff
-            this.options.deviceId = toHex(devId)
-        }
+        if (!this.options.deviceId) this.options.deviceId = randomDeviceId()
 
         this.stats = new BusStatsMonitor(this)
         this.resetTime()
@@ -286,9 +146,77 @@ export class JDBus extends JDNode {
         )
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
+        // grab the default role manager
+        this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
 
         // start all timers
         this.start()
+    }
+
+    get transports() {
+        return this._transports.slice(0)
+    }
+
+    addTransport(transport: JDTransport) {
+        if (this._transports.indexOf(transport) > -1) return // already added
+
+        this._transports.push(transport)
+        transport.bus = this
+        transport.bus.on(CONNECTING, () => this.preConnect(transport))
+    }
+
+    get bridges() {
+        return this._bridges.slice(0)
+    }
+
+    addBridge(bridge: JDBridge): () => void {
+        if (this._bridges.indexOf(bridge) < 0) {
+            console.debug(`add bridge`, { bridge })
+            this._bridges.push(bridge)
+            this.emit(CHANGE)
+        }
+        return () => this.removeBridge(bridge)
+    }
+
+    private removeBridge(bridge: JDBridge) {
+        const i = this._bridges.indexOf(bridge)
+        if (i > -1) {
+            console.debug(`remove bridge`, { bridge })
+            this._bridges.splice(i, 1)
+            this.emit(CHANGE)
+        }
+    }
+
+    private preConnect(transport: JDTransport) {
+        console.debug(`preconnect ${transport.type}`, { transport })
+        return Promise.all(
+            this._transports
+                .filter(t => t !== transport)
+                .map(t => t.disconnect())
+        )
+    }
+
+    async connect(background?: boolean) {
+        if (this.connected) return
+
+        console.debug(`bus: connect start`, { background })
+        for (const transport of this._transports) {
+            // start connection
+            console.debug(`bus: connect ${transport.type}`, { transport })
+            await transport.connect(background)
+            console.log(
+                `bus: connect ${transport.type} ${transport.connectionState}`,
+                { transport }
+            )
+            // keep going if not connected
+            if (transport.connected) break
+        }
+    }
+
+    async disconnect() {
+        for (const transport of this._transports) {
+            await transport.disconnect()
+        }
     }
 
     start() {
@@ -309,7 +237,8 @@ export class JDBus extends JDNode {
             )
     }
 
-    stop() {
+    async stop() {
+        await this.disconnect()
         if (this._announceInterval) {
             clearInterval(this._announceInterval)
             this._announceInterval = undefined
@@ -323,6 +252,12 @@ export class JDBus extends JDNode {
             clearInterval(this._gcInterval)
             this._gcInterval = undefined
         }
+    }
+
+    async dispose() {
+        console.debug(`${this.id}: disposing.`)
+        await this.stop()
+        this._transports.forEach(transport => transport.dispose())
     }
 
     get safeBoot() {
@@ -344,38 +279,22 @@ export class JDBus extends JDNode {
         }
     }
 
-    /**
-     * Gets the bus connection state.
-     */
-    get connectionState(): BusState {
-        return this._connectionState
+    get connected() {
+        return this._transports.some(t => t.connected)
     }
 
-    private setConnectionState(state: BusState) {
-        if (this._connectionState !== state) {
-            this.log("debug", `${this._connectionState} -> ${state}`)
-            this._connectionState = state
-            this.emit(CONNECTION_STATE, this._connectionState)
-            switch (this._connectionState) {
-                case BusState.Connected:
-                    this.emit(CONNECT)
-                    break
-                case BusState.Connecting:
-                    this.emit(CONNECTING)
-                    break
-                case BusState.Disconnecting:
-                    this.emit(DISCONNECTING)
-                    break
-                case BusState.Disconnected:
-                    this.clear()
-                    this.emit(DISCONNECT)
-                    break
-            }
-            this.emit(CHANGE)
-        }
+    get disconnected() {
+        return this._transports.every(t => t.disconnected)
     }
 
     clear() {
+        // clear hosts
+        if (this._serviceProviders?.length) {
+            this._serviceProviders.forEach(host => (host.bus = undefined))
+            this._serviceProviders = []
+        }
+
+        // clear devices
         const devs = this._devices
         if (devs?.length) {
             this._devices = []
@@ -411,6 +330,32 @@ export class JDBus extends JDNode {
         return BUS_NODE_NAME
     }
 
+    get roleManager(): RoleManagerClient {
+        return this._roleManagerClient
+    }
+
+    setRoleManagerService(service: JDService) {
+        //console.log(`set role manager`, { service })
+        // clean if needed
+        if (
+            this._roleManagerClient &&
+            this._roleManagerClient.service !== service
+        ) {
+            console.debug("unmount role manager")
+            this._roleManagerClient.unmount()
+            this._roleManagerClient = undefined
+        }
+
+        // allocate new manager
+        if (service && service !== this._roleManagerClient?.service) {
+            console.debug("mount role manager")
+            this._roleManagerClient = new RoleManagerClient(service)
+            this.emit(ROLE_MANAGER_CHANGE)
+            this.emit(CHANGE)
+            this._roleManagerClient.startRefreshRoles()
+        }
+    }
+
     toString(): string {
         return this.id
     }
@@ -431,18 +376,18 @@ export class JDBus extends JDNode {
                 case BUS_NODE_NAME:
                     return this
                 case DEVICE_NODE_NAME:
-                    return this.device(dev)
+                    return this.device(dev, true)
                 case SERVICE_NODE_NAME:
-                    return this.device(dev)?.service(srv)
+                    return this.device(dev, true)?.service(srv)
                 case REGISTER_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.register(reg)
+                    return this.device(dev, true)?.service(srv)?.register(reg)
                 case EVENT_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.event(reg)
+                    return this.device(dev, true)?.service(srv)?.event(reg)
                 case FIELD_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.register(reg)
+                    return this.device(dev, true)?.service(srv)?.register(reg)
                         ?.fields[idx]
             }
-            this.log("info", `node ${id} not found`)
+            console.info(`node ${id} not found`)
             return undefined
         }
         const node = resolve()
@@ -473,10 +418,6 @@ export class JDBus extends JDNode {
         return undefined
     }
 
-    protected get logger(): Log {
-        return this.host.log
-    }
-
     private async pingLoggers() {
         if (this._minLoggerPriority < LoggerPriority.Silent) {
             const pkt = Packet.jdpacked<[LoggerPriority]>(
@@ -490,36 +431,23 @@ export class JDBus extends JDNode {
     private async handleRealTimeClockSync(device: JDDevice) {
         // tell time to the RTC clocks
         if (device.hasService(SRV_REAL_TIME_CLOCK))
-            await RealTimeClockServiceHost.syncTime(this)
+            await RealTimeClockServer.syncTime(this)
     }
 
-    sendPacketAsync(p: Packet) {
+    private handleRoleManager() {
+        if (this.roleManager) return
+
+        const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
+        this.setRoleManagerService(service)
+    }
+
+    async sendPacketAsync(p: Packet) {
         p.timestamp = this.timestamp
         this.emit(PACKET_SEND, p)
 
-        if (!this.connected) {
-            this.emit(PACKET_SEND_DISCONNECT, p)
-            return Promise.resolve()
-        }
-        const spa = this.transport?.sendPacketAsync
-        if (!spa) return Promise.resolve()
-        return spa(p)
-    }
-
-    get connecting() {
-        return this.connectionState == BusState.Connecting
-    }
-
-    get disconnecting() {
-        return this.connectionState == BusState.Disconnecting
-    }
-
-    get connected() {
-        return this._connectionState == BusState.Connected
-    }
-
-    get disconnected() {
-        return this._connectionState == BusState.Disconnected
+        await Promise.all(
+            this._transports.map(transport => transport.sendPacketAsync(p))
+        )
     }
 
     get firmwareBlobs() {
@@ -530,101 +458,6 @@ export class JDBus extends JDNode {
         this._firmwareBlobs = blobs
         this.emit(FIRMWARE_BLOBS_CHANGE)
         this.emit(CHANGE)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    errorHandler(context: string, exception: any) {
-        this.log(
-            "error",
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
-        this.emit(ERROR, { context, exception })
-        this.emit(CHANGE)
-    }
-
-    connectAsync(background?: boolean): Promise<void> {
-        // already connected
-        if (this.connectionState == BusState.Connected) {
-            this.log("debug", `already connected`)
-            return Promise.resolve()
-        }
-
-        // connecting
-        if (!this._connectPromise) {
-            // already disconnecting, retry when disconnected
-            if (this._disconnectPromise) {
-                this.log("debug", `queuing connect after disconnecting`)
-                const p = this._disconnectPromise
-                this._disconnectPromise = undefined
-                this._connectPromise = p.then(() => this.connectAsync())
-            } else {
-                // starting a fresh connection
-                this.log("debug", `connecting`)
-                this._connectPromise = Promise.resolve()
-                this.setConnectionState(BusState.Connecting)
-                if (this.transport?.connectAsync)
-                    this._connectPromise = this._connectPromise.then(() =>
-                        this.transport.connectAsync(background)
-                    )
-                const p = (this._connectPromise = this._connectPromise
-                    .then(() => {
-                        if (p == this._connectPromise) {
-                            this._connectPromise = undefined
-                            this.setConnectionState(BusState.Connected)
-                        } else {
-                            this.log("debug", `connection aborted in flight`)
-                        }
-                    })
-                    .catch(e => {
-                        if (p == this._connectPromise) {
-                            this._connectPromise = undefined
-                            this.setConnectionState(BusState.Disconnected)
-                            this.errorHandler(CONNECT, e)
-                        } else {
-                            this.log(
-                                "debug",
-                                `connection error aborted in flight`
-                            )
-                        }
-                    }))
-            }
-        } else {
-            this.log("debug", `connect with existing promise`)
-        }
-        return this._connectPromise
-    }
-
-    disconnectAsync(): Promise<void> {
-        // already disconnected
-        if (this.connectionState == BusState.Disconnected)
-            return Promise.resolve()
-
-        if (!this._disconnectPromise) {
-            // connection in progress, wait and disconnect when done
-            if (this._connectPromise) {
-                this.log("debug", `cancelling connection and disconnect`)
-                this._connectPromise = undefined
-            }
-            this.log("debug", `disconnecting`)
-            this._disconnectPromise = Promise.resolve()
-            this.setConnectionState(BusState.Disconnecting)
-            if (this.transport?.disconnectAsync)
-                this._disconnectPromise = this._disconnectPromise.then(() =>
-                    this.transport.disconnectAsync()
-                )
-            this._disconnectPromise = this._disconnectPromise
-                .catch(e => {
-                    this._disconnectPromise = undefined
-                    this.errorHandler(DISCONNECT, e)
-                })
-                .finally(() => {
-                    this._disconnectPromise = undefined
-                    this.setConnectionState(BusState.Disconnected)
-                })
-        } else {
-            this.log("debug", `disconnect with existing promise`)
-        }
-        return this._disconnectPromise
     }
 
     /**
@@ -644,55 +477,55 @@ export class JDBus extends JDNode {
             r = r.filter(s => s.deviceId !== this.selfDeviceId)
         if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
-            r = r.filter(r => !this.deviceHost(r.deviceId))
+            r = r.filter(r => !this.findServiceProvider(r.deviceId))
         if (options?.firmwareIdentifier)
             r = r.filter(r => !!r.firmwareIdentifier)
+        if (options?.physical) r = r.filter(r => !!r.physical)
         return r
     }
 
     /**
-     * Gets the current list of device hosts on the bus
+     * Gets the current list of service providers on the bus
      */
-    deviceHosts(): DeviceHost[] {
-        return this._deviceHosts.slice(0)
+    serviceProviders(): JDServiceProvider[] {
+        return this._serviceProviders.slice(0)
     }
 
     /**
-     * Get a device host for a given device
+     * Get a service providers for a given device
      * @param deviceId
      */
-    deviceHost(deviceId: string) {
-        return this._deviceHosts.find(d => d.deviceId === deviceId)
+    findServiceProvider(deviceId: string) {
+        return this._serviceProviders.find(d => d.deviceId === deviceId)
     }
 
     /**
-     * Adds the device host to the bus
-     * @param deviceHost
+     * Adds the service provider to the bus
      */
-    addDeviceHost(deviceHost: DeviceHost) {
-        if (deviceHost && this._deviceHosts.indexOf(deviceHost) < 0) {
-            this._deviceHosts.push(deviceHost)
-            deviceHost.bus = this
+    addServiceProvider(provider: JDServiceProvider) {
+        if (provider && this._serviceProviders.indexOf(provider) < 0) {
+            this._serviceProviders.push(provider)
+            provider.bus = this
 
-            this.emit(DEVICE_HOST_ADDED)
+            this.emit(SERVICE_PROVIDER_ADDED)
             this.emit(CHANGE)
         }
 
-        return this.device(deviceHost.deviceId)
+        return this.device(provider.deviceId)
     }
 
     /**
-     * Adds the device host to the bus
-     * @param deviceHost
+     * Adds the service provider to the bus
+     * @param provider
      */
-    removeDeviceHost(deviceHost: DeviceHost) {
-        if (!deviceHost) return
+    removeServiceProvider(provider: JDServiceProvider) {
+        if (!provider) return
 
-        const i = this._deviceHosts.indexOf(deviceHost)
+        const i = this._serviceProviders.indexOf(provider)
         if (i > -1) {
             // remove device as well
             const devi = this._devices.findIndex(
-                d => d.deviceId === deviceHost.deviceId
+                d => d.deviceId === provider.deviceId
             )
             if (devi > -1) {
                 const dev = this._devices[devi]
@@ -703,9 +536,9 @@ export class JDBus extends JDNode {
             }
 
             // remove host
-            this._deviceHosts.splice(i, 1)
-            deviceHost.bus = undefined
-            this.emit(DEVICE_HOST_REMOVED)
+            this._serviceProviders.splice(i, 1)
+            provider.bus = undefined
+            this.emit(SERVICE_PROVIDER_REMOVED)
 
             // removed host
             this.emit(CHANGE)
@@ -722,6 +555,8 @@ export class JDBus extends JDNode {
     services(options?: {
         serviceName?: string
         serviceClass?: number
+        specification?: boolean
+        ignoreSelf?: boolean
     }): JDService[] {
         return arrayConcatMany(
             this.devices(options).map(d => d.services(options))
@@ -732,19 +567,20 @@ export class JDBus extends JDNode {
      * Gets a device on the bus
      * @param id
      */
-    device(id: string) {
+    device(id: string, skipCreate?: boolean, pkt?: Packet) {
+        if (id === "0000000000000000" && !skipCreate) {
+            console.warn("jadac: trying to access device 0000000000000000")
+            return undefined
+        }
         let d = this._devices.find(d => d.deviceId == id)
-        if (!d) {
-            this.log("info", `new device ${id}`)
+        if (!d && !skipCreate) {
             if (this.devicesFrozen) {
-                this.log(`info`, `devices frozen, dropping ${id}`)
+                console.debug(`info`, `devices frozen, dropping ${id}`)
                 return undefined
             }
-            d = new JDDevice(this, id)
-            if (this.host.deviceNameSettings)
-                d.name = this.host.deviceNameSettings.resolve(d)
-            if (!d.name && id === this.selfDeviceId) d.name = "self"
+            d = new JDDevice(this, id, pkt)
             this._devices.push(d)
+            console.debug(`new device ${d.shortId} (${id})`)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
             this.emit(DEVICE_CONNECT, d)
@@ -762,8 +598,8 @@ export class JDBus extends JDNode {
         if (enabled) {
             if (!this._debouncedScanFirmwares) {
                 this._debouncedScanFirmwares = debounceAsync(async () => {
-                    if (this.connected) {
-                        this.log("info", `scanning firmwares`)
+                    if (this._transports.some(tr => tr.connected)) {
+                        console.info(`scanning firmwares`)
                         await scanFirmwares(this)
                     }
                 }, SCAN_FIRMWARE_INTERVAL)
@@ -771,7 +607,7 @@ export class JDBus extends JDNode {
             }
         } else {
             if (this._debouncedScanFirmwares) {
-                this.log("debug", `disabling background firmware scans`)
+                console.debug(`disabling background firmware scans`)
                 const d = this._debouncedScanFirmwares
                 this._debouncedScanFirmwares = undefined
                 this.off(DEVICE_ANNOUNCE, d)
@@ -793,7 +629,7 @@ export class JDBus extends JDNode {
 
     private gcDevices() {
         if (this.devicesFrozen) {
-            this.log("debug", "devices frozen")
+            console.debug("devices frozen")
             return
         }
 
@@ -834,7 +670,7 @@ export class JDBus extends JDNode {
      */
     processPacket(pkt: Packet) {
         if (!pkt.isMultiCommand && !pkt.device) {
-            pkt.device = this.device(pkt.deviceIdentifier)
+            pkt.device = this.device(pkt.deviceIdentifier, false, pkt)
             // check if devices are frozen
             if (!pkt.device) return
         }
@@ -929,15 +765,6 @@ export class JDBus extends JDNode {
                                         reg.code === SystemReg.ReadingError
                                     )
                             )
-                            // double double-query status light
-                            .filter(
-                                reg =>
-                                    !reg.data ||
-                                    !(
-                                        service.serviceClass === SRV_CONTROL &&
-                                        reg.code === ControlReg.StatusLight
-                                    )
-                            )
                             // stop asking optional registers
                             .filter(
                                 reg =>
@@ -971,9 +798,19 @@ export class JDBus extends JDNode {
                         SensorReg.StreamingPreferredInterval
                     )
                     interval = preferredInterval?.intValue
-                    if (intervalRegister)
+                    // if no interval, poll interval value
+                    if (
+                        interval === undefined &&
+                        intervalRegister &&
+                        intervalRegister.lastGetTimestamp - this.timestamp >
+                            REGISTER_POLL_STREAMING_INTERVAL
+                    ) {
                         // all async
-                        intervalRegister.sendGetAsync()
+                        if (!intervalRegister.data)
+                            intervalRegister.sendGetAsync()
+                        if (!preferredInterval.data)
+                            preferredInterval.sendGetAsync()
+                    }
                 }
                 // still no interval data use from spec or default
                 if (interval === undefined)
@@ -985,13 +822,13 @@ export class JDBus extends JDNode {
                 )
                 const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp
                 if (samplesLastSetTimesamp !== undefined) {
-                    const age =
+                    const samplesAge =
                         this.timestamp - samplesRegister.lastSetTimestamp
                     // need to figure out when we asked for streaming
-                    const midAge = (interval * 0xff) / 2
+                    const midSamplesAge = (interval * 0xff) / 2
                     // compute if half aged
-                    if (age > midAge) {
-                        //console.log(`auto-refresh - restream`, register)
+                    if (samplesAge > midSamplesAge) {
+                        //console.debug({ samplesAge, midSamplesAge, interval })
                         samplesRegister.sendSetPackedAsync("u8", [0xff])
                     }
                 }
@@ -1014,8 +851,8 @@ export class JDBus extends JDNode {
             }
         }
 
-        // apply streaming samples to device hosts
-        this._deviceHosts.map(host => host.emit(REFRESH))
+        // apply streaming samples to service provider
+        this._serviceProviders.map(host => host.emit(REFRESH))
     }
 
     /**
@@ -1029,7 +866,7 @@ export class JDBus extends JDNode {
             const tid = setTimeout(() => {
                 if (!done) {
                     done = true
-                    if (!this.connected) {
+                    if (!this._transports.some(tr => tr.connected)) {
                         // the bus got disconnected so all operation will
                         // time out going further
                         this.emit(TIMEOUT_DISCONNECT)

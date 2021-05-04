@@ -1,6 +1,11 @@
 name: Build
 
-on: [push]
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -9,31 +14,29 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
 
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: true
+          submodules: recursive
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
       - uses: bahmutov/npm-install@v1
-      - run: npm run lint
-      - run: npm run dist
-      - run: npm run test
-      - run: npm run installdocs
-      - run: npm run distdocs
-      - run: npm run builddtdl
+      - run: yarn dist
+      - run: yarn test
       - run: npx semantic-release
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: yarn disttools
       - name: github pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/public
+          enable_jekyll: true
+          publish_dir: .

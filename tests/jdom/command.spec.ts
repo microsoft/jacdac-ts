@@ -17,6 +17,5 @@ suite('packArguments', () => {
     test("c32", () => testOne(ProtoTestCmd.CU32, [42]));
     test("cString", () => testOne(ProtoTestCmd.CString, ["hi"]));
     test("cI8U8U16I32", () => testOne(ProtoTestCmd.CI8U8U16I32, [-1, 2, 3, 4]));
-    // failing test
-    //it("cU8String", () => testOne(ProtoTestCmd.CU8String, [42, "hi"]));
+    test("cU8String", () => testOne(ProtoTestCmd.CU8String, [42, "hi"]));
 })

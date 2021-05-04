@@ -10,6 +10,7 @@ import {
     SERVICE_CLIENT_ADDED,
     SERVICE_CLIENT_REMOVED,
     CHANGE,
+    ROLE_CHANGE,
 } from "./constants"
 import { JDNode } from "./node"
 import {
@@ -33,8 +34,10 @@ import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
+import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 
 export class JDService extends JDNode {
+    private _role: string
     private _registers: JDRegister[]
     private _events: JDEvent[]
     private _reports: Packet[] = []
@@ -95,12 +98,42 @@ export class JDService extends JDNode {
         return this.device
     }
 
+    get role(): string {
+        return this._role
+    }
+
+    set role(value: string) {
+        if (value !== this._role) {
+            this._role = value
+            this.emit(ROLE_CHANGE)
+            this.emit(CHANGE)
+        }
+    }
+
     report(identifier: number) {
         return this._reports.find(r => r.registerIdentifier === identifier)
     }
 
     get reports() {
         return this._reports.slice(0)
+    }
+
+    get mixins() {
+        // find all 0x2 services follow this service
+        const r = []
+        const { serviceClasses, serviceLength } = this.device
+        for (
+            let i = this.serviceIndex + 1;
+            i < serviceLength && isMixinService(serviceClasses[i]);
+            ++i
+        ) {
+            r.push(this.device.service(i))
+        }
+        return r
+    }
+
+    get isMixin() {
+        return isMixinService(this.serviceClass)
     }
 
     private _readingRegister: JDRegister
@@ -190,9 +223,11 @@ export class JDService extends JDNode {
                     pkt => isRegister(pkt) && pkt.identifier === registerCode
                 )
             ) {
-                if (Flags.diagnostics &&  !isOptionalReadingRegisterCode(registerCode))
-                    this.log(
-                        `debug`,
+                if (
+                    Flags.diagnostics &&
+                    !isOptionalReadingRegisterCode(registerCode)
+                )
+                    console.debug(
                         `attempting to access register ${
                             SystemReg[registerCode] ||
                             `0x${registerCode.toString(16)}`
@@ -219,8 +254,7 @@ export class JDService extends JDNode {
                 )
             ) {
                 if (Flags.diagnostics)
-                    this.log(
-                        `debug`,
+                    console.debug(
                         `attempting to access event ${
                             SystemEvent[eventCode] ||
                             `0x${eventCode.toString(16)}`
@@ -233,13 +267,13 @@ export class JDService extends JDNode {
         return event
     }
 
-    sendPacketAsync(pkt: Packet, ack?: boolean) {
+    async sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device
         pkt.serviceIndex = this.serviceIndex
         if (ack !== undefined) pkt.requiresAck = !!ack
+        if (pkt.requiresAck) await this.device.sendPktWithAck(pkt)
+        else await pkt.sendCmdAsync(this.device)
         this.emit(PACKET_SEND, pkt)
-        if (pkt.requiresAck) return this.device.sendPktWithAck(pkt)
-        else return pkt.sendCmdAsync(this.device)
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
@@ -281,7 +315,7 @@ export class JDService extends JDNode {
             if (pkt.isRegisterGet) {
                 const id = pkt.registerIdentifier
                 const reg = this.register(id)
-                if (reg) reg.processReport(pkt)
+                if (reg) reg.processPacket(pkt)
             } else if (pkt.isEvent) {
                 const ev = this.event(pkt.eventCode)
                 if (ev) ev.processEvent(pkt)
@@ -289,6 +323,10 @@ export class JDService extends JDNode {
                 // this is a report...
                 console.log("cmd report", { pkt })
             }
+        } else if (pkt.isRegisterSet) {
+            const id = pkt.registerIdentifier
+            const reg = this.register(id)
+            if (reg) reg.processPacket(pkt)
         }
     }
 

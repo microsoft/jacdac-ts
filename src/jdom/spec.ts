@@ -6,7 +6,6 @@
 import { NumberFormat } from "./buffer"
 import serviceSpecificationData from "../../jacdac-spec/dist/services.json"
 import deviceRegistryData from "../../jacdac-spec/dist/devices.json"
-import serviceTestData from "../../jacdac-spec/dist/services-tests.json"
 import { fromHex, SMap, toHex } from "./utils"
 import {
     SystemReg,
@@ -19,12 +18,9 @@ import {
     SRV_POWER,
     SRV_PROTO_TEST,
 } from "./constants"
-import makecodeServicesData from "../../jacdac-spec/services/makecode-extensions.json"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _serviceSpecifications: jdspec.ServiceSpec[] = serviceSpecificationData as any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _serviceTests: jdtest.ServiceTest[] = serviceTestData as any
 let _customServiceSpecifications: SMap<jdspec.ServiceSpec> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _deviceRegistry: jdspec.DeviceSpec[] = deviceRegistryData as any
@@ -93,15 +89,6 @@ export function deviceSpecifications(): jdspec.DeviceSpec[] {
     return _deviceRegistry.slice(0)
 }
 
-export function imageDeviceOf(spec: jdspec.DeviceSpec): string {
-    return (
-        spec &&
-        `https://raw.githubusercontent.com/microsoft/jacdac/main/devices/${identifierToUrlPath(
-            spec.id
-        )}.jpg`
-    )
-}
-
 export function identifierToUrlPath(id: string) {
     return id?.replace(/-/g, "/")
 }
@@ -146,26 +133,6 @@ export function isInfrastructure(spec: jdspec.ServiceSpec) {
     )
 }
 
-export function makeCodeServices(): jdspec.MakeCodeServiceInfo[] {
-    return (makecodeServicesData as jdspec.MakeCodeServiceInfo[]).slice(0)
-}
-
-export function resolveMakecodeService(service: jdspec.ServiceSpec) {
-    return (
-        service &&
-        (makecodeServicesData as jdspec.MakeCodeServiceInfo[]).find(
-            mk => mk.service === service.shortId
-        )
-    )
-}
-
-export function resolveMakecodeServiceFromClassIdentifier(
-    serviceClass: number
-) {
-    const srv = serviceSpecificationFromClassIdentifier(serviceClass)
-    return srv && resolveMakecodeService(srv)
-}
-
 /**
  * Looks up a service specification by name
  * @param name
@@ -196,21 +163,6 @@ export function serviceSpecificationFromClassIdentifier(
         _serviceSpecifications.find(
             s => s.classIdentifier === classIdentifier
         ) || _customServiceSpecifications[classIdentifier]
-    )
-}
-
-/**
- * Given a service specification, see if it has a test
- * @param spec
- */
-export function serviceTestFromServiceSpec(
-    spec: jdspec.ServiceSpec
-): jdtest.ServiceTest {
-    return (
-        !!spec &&
-        _serviceTests.find(
-            test => test.serviceClassIdentifier === spec.classIdentifier
-        )
     )
 }
 
