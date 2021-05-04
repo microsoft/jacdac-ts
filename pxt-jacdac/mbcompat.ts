@@ -24,7 +24,7 @@ function identifyAnimation() {
 
     identifyAnimationRunning = true;
     const sc = led.screenshot()
-    control.inBackground(() => {
+    control.runInParallel(() => {
         led.stopAnimation();
         basic.showAnimation(
        `0###0 00000 0###0  00000 0###0  00000

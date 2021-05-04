@@ -14,7 +14,7 @@ namespace jacdac {
     export function delayedSend(pkt: JDPacket, timestamp: number) {
         if (!delayedPackets) {
             delayedPackets = []
-            control.runInBackground(processDelayedPackets)
+            control.runInParallel(processDelayedPackets)
         }
         const dp = new DelayedPacket(timestamp, pkt)
         for (let i = 0; i < delayedPackets.length; ++i) {

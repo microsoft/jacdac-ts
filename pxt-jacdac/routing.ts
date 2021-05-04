@@ -453,7 +453,7 @@ namespace jacdac {
         onConnected(handler: () => void) {
             this._onConnected = handler
             if (this._onConnected && this.isConnected())
-                this._onConnected()
+                this.handleConnected()
         }
 
         /**
@@ -504,10 +504,33 @@ namespace jacdac {
             )
             dev.clients.push(this)
             this.onAttach()
+            this.handleConnected()
+            return true
+        }
+
+        private handleConnected() {
+            // refresh registers
             this.config.resend()
+            if (this.device.announceflags & ControlAnnounceFlags.StatusLightRgbFade) {
+                control.runInParallel(function() {
+                    // When the brain connects the device to its role manager, the device will blink green quickly three times (75ms on, 75ms off).
+                    const green = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, 0xff, 0, 0]))
+                    green.serviceIndex = 0
+                    const off = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, 0, 0, 0]))
+                    off.serviceIndex = 0
+                    const interval = 75
+                    const repeat = 3
+                    for(let i = 0; i < repeat; ++i) {
+                        green._sendCmd(this.device)
+                        pause(interval)
+                        off._sendCmd(this.device)
+                        pause(interval)
+                    }
+                })
+            }
+            // user handler
             if (this._onConnected)
                 this._onConnected()
-            return true
         }
 
         _detach() {
@@ -637,12 +660,12 @@ namespace jacdac {
             _devices.push(this)
         }
 
-        get flags(): ControlAnnounceFlags {
+        get announceflags(): ControlAnnounceFlags {
             return this.services ? this.services.getNumber(NumberFormat.UInt16LE, 0) : 0
         }
 
         get resetCount() {
-            return this.flags & ControlAnnounceFlags.RestartCounterSteady
+            return this.announceflags & ControlAnnounceFlags.RestartCounterSteady
         }
 
         get packetCount() {

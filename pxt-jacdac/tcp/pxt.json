@@ -1,6 +1,6 @@
 {
     "name": "jacdac-tcp",
-    "version": "0.4.54",
+    "version": "0.4.55",
     "description": "MakeCode support for Jacdac TCP service",
     "files": [
         "constants.ts",
