@@ -34,6 +34,7 @@ import { JDServiceClient } from "./serviceclient"
 import { InPipeReader } from "./pipes"
 import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
+import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
 
 export class JDService extends JDNode {
     private _role: string
@@ -115,6 +116,24 @@ export class JDService extends JDNode {
 
     get reports() {
         return this._reports.slice(0)
+    }
+
+    get mixins() {
+        // find all 0x2 services follow this service
+        const r = []
+        const { serviceClasses, serviceLength } = this.device
+        for (
+            let i = this.serviceIndex + 1;
+            i < serviceLength && isMixinService(serviceClasses[i]);
+            ++i
+        ) {
+            r.push(this.device.service(i))
+        }
+        return r
+    }
+
+    get isMixin() {
+        return isMixinService(this.serviceClass)
     }
 
     private _readingRegister: JDRegister
@@ -248,13 +267,13 @@ export class JDService extends JDNode {
         return event
     }
 
-    sendPacketAsync(pkt: Packet, ack?: boolean) {
+    async sendPacketAsync(pkt: Packet, ack?: boolean) {
         pkt.device = this.device
         pkt.serviceIndex = this.serviceIndex
         if (ack !== undefined) pkt.requiresAck = !!ack
+        if (pkt.requiresAck) await this.device.sendPktWithAck(pkt)
+        else await pkt.sendCmdAsync(this.device)
         this.emit(PACKET_SEND, pkt)
-        if (pkt.requiresAck) return this.device.sendPktWithAck(pkt)
-        else return pkt.sendCmdAsync(this.device)
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
@@ -296,7 +315,7 @@ export class JDService extends JDNode {
             if (pkt.isRegisterGet) {
                 const id = pkt.registerIdentifier
                 const reg = this.register(id)
-                if (reg) reg.processReport(pkt)
+                if (reg) reg.processPacket(pkt)
             } else if (pkt.isEvent) {
                 const ev = this.event(pkt.eventCode)
                 if (ev) ev.processEvent(pkt)
@@ -304,6 +323,10 @@ export class JDService extends JDNode {
                 // this is a report...
                 console.log("cmd report", { pkt })
             }
+        } else if (pkt.isRegisterSet) {
+            const id = pkt.registerIdentifier
+            const reg = this.register(id)
+            if (reg) reg.processPacket(pkt)
         }
     }
 

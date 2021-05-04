@@ -27,7 +27,7 @@
 </head>
 
 <body>
-    <h1>JACDAC/Devices</h1>
+    <h1>Jacdac/Devices</h1>
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
@@ -35,15 +35,15 @@
     <div id="devices">
     </div>
 
-    <script src="/dist/jacdac-jdom.umd.js"></script>
+    <script src="/dist/jacdac.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
-        jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
+        const floodTest = /flood/.test(document.location.search)
         const speedTest = /speed/.test(document.location.search)
-        jd.on(jacdac.DEVICE_CONNECT, dev => {
-            console.log(`connect ${dev}`)
+        jd.on(jacdac.DEVICE_CHANGE, dev => {
+            console.log(`change ${dev}`)
             connectDevice(dev)
         })
         jd.on(jacdac.DEVICE_DISCONNECT, dev => disconnectDevice(dev))
@@ -52,8 +52,8 @@
 
         async function scan() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             render()
             log('started')
         }
@@ -79,15 +79,27 @@
                 div.className = "device";
                 devicesDiv.append(div);
             }
-            div.innerText = `${device.toString()} - ${device.deviceId}: ${printServices(device)}`;
+            div.innerText = `${device.describe()}`;
             if (speedTest) {
-                const speedRes = document.createElement("div")
+                const speedRes = document.createElement("span")
                 const speedBtn = document.createElement("button")
                 speedBtn.innerText = "Speed test"
                 speedBtn.onclick = async () => {
                     speedRes.innerText = "Testing..."
                     const res = await jacdac.packetSpeedTest(device)
                     speedRes.innerText += res.msg
+                }
+                div.appendChild(speedRes)
+                div.appendChild(speedBtn)
+            }
+            if (floodTest) {
+                const speedRes = document.createElement("span")
+                const speedBtn = document.createElement("button")
+                speedBtn.innerText = "Flood test"
+                speedBtn.onclick = async () => {
+                    speedRes.innerText = "Flood..."
+                    await device.floodPing()
+                    speedRes.innerText = "Done"
                 }
                 div.appendChild(speedRes)
                 div.appendChild(speedBtn)
@@ -109,15 +121,15 @@
         const connect = document.getElementById("connect");
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         function updateConnectionState() {
             connect.classList.remove('active');
             disconnect.classList.remove('active');
             switch (jd.connectionState) {
-                case jacdac.BusState.Connected:
+                case jacdac.ConnectionState.Connected:
                     disconnect.classList.add('active'); break;
-                case jacdac.BusState.Disconnected:
+                case jacdac.ConnectionState.Disconnected:
                     connect.classList.add('active'); break;
             }
         }

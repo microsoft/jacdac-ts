@@ -36,7 +36,7 @@
 </head>
 
 <body>
-    <h1>JACDAC/Streaming</h1>
+    <h1>Jacdac/Streaming</h1>
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
@@ -44,7 +44,7 @@
     <div id="devices" class="segment"></div>
     <div id="streams" class="segment"></div>
 
-    <script src="/dist/jacdac-jdom.umd.js"></script>
+    <script src="/dist/jacdac.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
         const jd = jacdac.createUSBBus()
@@ -70,15 +70,15 @@
 
         async function sniff() {
             console.log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             console.log('started')
         }
 
         const connect = document.getElementById("connect");
         connect.onclick = sniff;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         function slider(pkt) {
             const id = pkt.device_identifier + ":" + pkt.service_index;
@@ -113,9 +113,9 @@
             connect.classList.remove('active');
             disconnect.classList.remove('active');
             switch (jd.connectionState) {
-                case jacdac.BusState.Connected:
+                case jacdac.ConnectionState.Connected:
                     disconnect.classList.add('active'); break;
-                case jacdac.BusState.Disconnected:
+                case jacdac.ConnectionState.Disconnected:
                     connect.classList.add('active'); break;
             }
         }        

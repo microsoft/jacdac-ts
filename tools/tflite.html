@@ -27,7 +27,7 @@
 </head>
 
 <body>
-    <h1>JACDAC/TFLite test</h1>
+    <h1>Jacdac/TFLite test</h1>
     <div>
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
@@ -36,11 +36,10 @@
     <div id="devices">
     </div>
 
-    <script src="/dist/jacdac-jdom.umd.js"></script>
+    <script src="/dist/jacdac.umd.js"></script>
     <script>
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
-        jacdac = jacdacJdom;
         const jd = jacdac.createUSBBus()
         jd.on(jacdac.DEVICE_CONNECT, dev => {
             console.log(`connect ${dev}`)
@@ -51,8 +50,8 @@
 
         async function scan() {
             log('starting')
-            await jd.disconnectAsync();
-            await jd.connectAsync();
+            await jd.disconnect();
+            await jd.connect();
             log('started')
         }
 
@@ -89,7 +88,7 @@
         const connect = document.getElementById("connect");
         connect.onclick = scan;
         const disconnect = document.getElementById("disconnect");
-        disconnect.onclick = () => jd.disconnectAsync()
+        disconnect.onclick = () => jd.disconnect()
 
         const tftest = document.getElementById("tftest");
         tftest.onclick = () => {
@@ -101,9 +100,9 @@
             connect.classList.remove('active');
             disconnect.classList.remove('active');
             switch (jd.connectionState) {
-                case jacdac.BusState.Connected:
+                case jacdac.ConnectionState.Connected:
                     disconnect.classList.add('active'); break;
-                case jacdac.BusState.Disconnected:
+                case jacdac.ConnectionState.Disconnected:
                     connect.classList.add('active'); break;
             }
         }

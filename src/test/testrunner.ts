@@ -1,8 +1,8 @@
 import {
-    Commands,
-    testCommandFunctions,
+    getTestCommandFunctions,
+    JDTestFunctions,
 } from "../../jacdac-spec/spectool/jdtestfuns"
-import { getExpressionsOfType } from "../../jacdac-spec/spectool/jdutils"
+import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 
 import { CHANGE, EVENT } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
@@ -10,7 +10,12 @@ import { JDService } from "../jdom/service"
 import { JDRegister } from "../jdom/register"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
-import { isEvent, isRegister, serviceSpecificationFromClassIdentifier } from "../jdom/spec"
+import {
+    isEvent,
+    isRegister,
+    serviceSpecificationFromClassIdentifier,
+} from "../jdom/spec"
+import { roundWithPrecision } from "../jdom/utils"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -44,22 +49,26 @@ function commandStatusToTestStatus(status: JDTestCommandStatus) {
 
 function cmdToTestFunction(cmd: jdtest.TestCommandSpec) {
     const id = (<jsep.Identifier>cmd.call.callee).name
-    return testCommandFunctions.find(t => t.id == id)
+    return getTestCommandFunctions().find(t => t.id == id)
 }
 
 function unparse(e: jsep.Expression): string {
     switch (e.type) {
         case "ArrayExpression": {
             const ae = e as jsep.ArrayExpression
-            return `[${ae.elements
-                .map(unparse)
-                .join(", ")}]`
+            return `[${ae.elements.map(unparse).join(", ")}]`
         }
         case "CallExpression": {
             const caller = e as jsep.CallExpression
             return `${unparse(caller.callee)}(${caller.arguments
                 .map(unparse)
                 .join(", ")})`
+        }
+        case "MemberExpression": {
+            const root = e as jsep.MemberExpression
+            return root.computed
+                ? `${unparse(root.object)}[${unparse(root.property)}]`
+                : `${unparse(root.object)}.${unparse(root.property)}`
         }
         case "BinaryExpression":
         case "LogicalExpression": {
@@ -82,12 +91,17 @@ function unparse(e: jsep.Expression): string {
 }
 
 type SMap<T> = { [v: string]: T }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StartMap = { e: jsep.Expression; v: any }[]
 
+type GetValue = (root: string, fld: string) => any
+
 class JDExprEvaluator {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exprStack: any[] = []
 
-    constructor(private env: SMap<any>, private start: StartMap) {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(private env: GetValue, private start: StartMap) {}
 
     private tos() {
         return this.exprStack[this.exprStack.length - 1]
@@ -97,6 +111,10 @@ class JDExprEvaluator {
         this.exprStack = []
         this.visitExpression(e)
         return this.exprStack.pop()
+    }
+
+    private getStartVal(e: jsep.Expression) {
+        return this.start.find(r => r.e === e).v
     }
 
     private visitExpression(e: jsep.Expression) {
@@ -110,11 +128,23 @@ class JDExprEvaluator {
                 const caller = <jsep.CallExpression>e
                 const callee = <jsep.Identifier>caller.callee
                 switch (callee.name) {
-                    case "start":
+                    case "start": {
                         this.exprStack.push(
-                            this.start.find(r => r.e === caller).v
+                            this.getStartVal(caller.arguments[0])
                         )
                         return
+                    }
+                    case "closeTo": {
+                        const args = caller.arguments
+                        const goal = this.getStartVal(args[1])
+                        const error = this.getStartVal(args[2])
+                        this.visitExpression(args[0])
+                        const ev = this.exprStack.pop()
+                        this.exprStack.push(
+                            ev >= goal - error && ev <= goal + error
+                        )
+                        break
+                    }
                     default: // ERROR
                 }
                 break
@@ -189,7 +219,27 @@ class JDExprEvaluator {
                 break
             }
 
-            case "UnaryExpression":
+            case "UnaryExpression": {
+                const ue = <jsep.UnaryExpression>e
+                this.visitExpression(ue.argument)
+                const top = this.exprStack.pop()
+                switch (ue.operator) {
+                    case "!":
+                        this.exprStack.push(!top)
+                        return
+                    case "~":
+                        this.exprStack.push(~top)
+                        return
+                    case "-":
+                        this.exprStack.push(-top)
+                        return
+                    case "+":
+                        this.exprStack.push(+top)
+                        return
+                }
+                break
+            }
+
             case "LogicalExpression": {
                 const le = <jsep.LogicalExpression>e
                 this.visitExpression(le.left)
@@ -197,25 +247,34 @@ class JDExprEvaluator {
                     case "||":
                         if (this.tos()) return
                         else this.visitExpression(le.right)
-                        break
+                        return
                     case "&&":
                         if (!this.tos()) return
                         else this.visitExpression(le.right)
-                        break
+                        return
                     default:
                 }
                 break
             }
-
+            case "MemberExpression": {
+                // member expressions are of form [register|event].field
+                const root = e as jsep.MemberExpression
+                const lhs = root.object as jsep.Identifier
+                const rhs = root.property as jsep.Identifier
+                const val = this.env(lhs.name, rhs.name)
+                // console.log(`${lhs.name}.${rhs.name} = ${val}`)
+                this.exprStack.push(val)
+                return
+            }
             case "Identifier": {
                 const id = <jsep.Identifier>e
-                this.exprStack.push(this.env[id.name])
-                break
+                this.exprStack.push(this.env(id.name, ""))
+                return
             }
             case "Literal": {
                 const lit = <jsep.Literal>e
                 this.exprStack.push(lit.value)
-                break
+                return
             }
             default:
         }
@@ -229,10 +288,9 @@ class JDCommandEvaluator {
     private _startExpressions: StartMap = []
     private _rangeComplete: number = undefined
     private _eventsComplete: string[] = undefined
-    private _eventsQueue: string[] = undefined
 
     constructor(
-        private readonly env: SMap<any>,
+        private readonly testRunner: JDTestRunner,
         private readonly command: jdtest.TestCommandSpec
     ) {}
 
@@ -246,16 +304,32 @@ class JDCommandEvaluator {
         return this._progress
     }
 
+    private get env() {
+        return (root: string, fld = "") => {
+            return this.testRunner.serviceTestRunner.lookup(root, fld)
+        }
+    }
+
+    // TODO: define an interface between test runner and command evaluator
+    // TODO: so this all can be done modularly
     public start() {
         this._startExpressions = []
         const testFun = cmdToTestFunction(this.command)
         const args = this.command.call.arguments
-        let startExprs: jsep.Expression[] = []
-        switch (testFun.id as Commands) {
-            case "check": {
-                startExprs = (<jsep.CallExpression[]>getExpressionsOfType(args,'CallExpression'))
-                    .filter(ce => (<jsep.Identifier>ce.callee).name === "start")
-                    .map(ce => ce.arguments[0])
+        const startExprs: jsep.Expression[] = []
+        switch (testFun.id as JDTestFunctions) {
+            case "check":
+            case "awaitEvent":
+            case "nextEvent": {
+                exprVisitor(null, args, (p, ce: jsep.CallExpression) => {
+                    if (ce.type !== "CallExpression") return
+                    if ((<jsep.Identifier>ce.callee).name === "start")
+                        startExprs.push(ce.arguments[0])
+                    else if ((<jsep.Identifier>ce.callee).name === "closeTo") {
+                        startExprs.push(ce.arguments[1])
+                        startExprs.push(ce.arguments[2])
+                    }
+                })
                 break
             }
             case "changes":
@@ -265,17 +339,28 @@ class JDCommandEvaluator {
                 break
             }
             case "increasesBy":
-            case "decreasesBy": 
+            case "decreasesBy":
             case "stepsUpTo":
             case "stepsDownTo": {
                 startExprs.push(args[0])
                 startExprs.push(args[1])
                 break
             }
+            case "closeTo": {
+                startExprs.push(args[1])
+                startExprs.push(args[2])
+                break
+            }
+            case "assign": {
+                startExprs.push(args[1])
+                break
+            }
             case "events": {
-                const eventList = this.command.call.arguments[0] as jsep.ArrayExpression
-                this._eventsComplete = (eventList.elements as jsep.Identifier[]).map(id => id.name)
-                this._eventsQueue = []
+                const eventList = this.command.call
+                    .arguments[0] as jsep.ArrayExpression
+                this._eventsComplete = (eventList.elements as jsep.Identifier[]).map(
+                    id => id.name
+                )
                 break
             }
         }
@@ -295,54 +380,84 @@ class JDCommandEvaluator {
     private createPrompt() {
         const testFun = cmdToTestFunction(this.command)
         const replaceId = this.command.call.arguments.map((a, i) => {
-            return [`{${i + 1}}`, unparse(a) ]
+            return [`{${i + 1}}`, unparse(a)]
         })
         const replaceVal = this.command.call.arguments.map((a, i) => {
             const aStart = this._startExpressions.find(r => r.e === a)
-            return [`{${i + 1}:val}`, aStart && aStart.v ? aStart.v.toString() : "NA" ]
+            return [
+                `{${i + 1}:val}`,
+                aStart && aStart.v
+                    ? roundWithPrecision(aStart.v, 3).toString()
+                    : unparse(a),
+            ]
         })
         this._prompt =
             testFun.id === "ask" || testFun.id === "say"
                 ? this.command.prompt.slice(0)
                 : testFun.prompt.slice(0)
-        replaceId.forEach(p => (this._prompt = this._prompt.replace(p[0], p[1])))
-        replaceVal.forEach(p => (this._prompt = this._prompt.replace(p[0], p[1])))
+        replaceId.forEach(
+            p => (this._prompt = this._prompt.replace(p[0], p[1]))
+        )
+        replaceVal.forEach(
+            p => (this._prompt = this._prompt.replace(p[0], p[1]))
+        )
     }
 
-    public setEvent(ev: string) {
-        this._eventsQueue.push(ev)
+    public setEvent(ev: string) {}
+
+    private checkExpression(e: jsep.Expression) {
+        const expr = new JDExprEvaluator(this.env, this._startExpressions)
+        return expr.eval(e)
+            ? JDTestCommandStatus.Passed
+            : JDTestCommandStatus.Active
+    }
+
+    private getStart(e: jsep.Expression) {
+        return this._startExpressions.find(r => r.e === e)
     }
 
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
+        const args = this.command.call.arguments
         this._status = JDTestCommandStatus.Active
         this._progress = ""
-        switch (testFun.id as Commands) {
+        switch (testFun.id as JDTestFunctions) {
             case "ask": {
                 this._status = JDTestCommandStatus.RequiresUserInput
                 break
             }
             case "check": {
+                this._status = this.checkExpression(args[0])
+                break
+            }
+            case "closeTo": {
+                const goal = this.getStart(args[1])
+                const error = this.getStart(args[2])
                 const expr = new JDExprEvaluator(
                     this.env,
                     this._startExpressions
                 )
-                const ev = expr.eval(this.command.call.arguments[0])
-                this._status = ev
-                    ? JDTestCommandStatus.Passed
-                    : JDTestCommandStatus.Active
+                const ev = expr.eval(args[0]) as number
+                if (Math.abs(ev - goal.v) <= error.v)
+                    this._status = JDTestCommandStatus.Passed
+                this._progress = `current: ${pretify(ev)}; goal: ${pretify(
+                    goal.v
+                )}; error: ${pretify(error.v)}`
                 break
             }
             case "changes":
             case "increases":
             case "decreases": {
-                const reg = this.command.call.arguments[0]
-                const regSaved = this._startExpressions.find(r => r.e === reg)
-                const regValue = this.env[unparse(reg)]
+                const regSaved = this._startExpressions.find(
+                    r => r.e === args[0]
+                )
+                const regValue = this.env(unparse(args[0]))
                 const status =
-                    (testFun.id === "changes" && regValue !== regSaved.v) ||
-                    (testFun.id === "increases" && regValue > regSaved.v) ||
-                    (testFun.id === "decreases" && regValue < regSaved.v)
+                    regValue &&
+                    regSaved.v &&
+                    ((testFun.id === "changes" && regValue !== regSaved.v) ||
+                        (testFun.id === "increases" && regValue > regSaved.v) ||
+                        (testFun.id === "decreases" && regValue < regSaved.v))
                         ? JDTestCommandStatus.Passed
                         : JDTestCommandStatus.Active
                 this._status = status
@@ -351,25 +466,25 @@ class JDCommandEvaluator {
             }
             case "increasesBy":
             case "decreasesBy": {
-                const reg = this.command.call.arguments[0]
-                const regSaved = this._startExpressions.find(r => r.e === reg)
-                const amt = this.command.call.arguments[1]
-                const amtSaved = this._startExpressions.find(r => r.e === amt)
-                const regValue = this.env[unparse(reg)]
+                const regSaved = this.getStart(args[0])
+                const amtSaved = this.getStart(args[1])
+                const regValue = this.env(unparse(args[0]))
                 if (testFun.id === "increasesBy") {
-                    if (regValue === regSaved.v + amtSaved.v) {
+                    if (regValue >= regSaved.v + amtSaved.v) {
                         this._status = JDTestCommandStatus.Passed
                     } else if (
                         regValue >= regSaved.v &&
                         regValue < regSaved.v + amtSaved.v
                     ) {
                         this._status = JDTestCommandStatus.Active
-                        this._progress = `current: ${regValue}, goal: ${regSaved.v + amtSaved.v}`
+                        this._progress = `current: ${pretify(
+                            regValue
+                        )}, goal: ${pretify(regSaved.v + amtSaved.v)}`
                     } else {
                         this._status = JDTestCommandStatus.Active
                     }
                 } else {
-                    if (regValue === regSaved.v - amtSaved.v) {
+                    if (regValue <= regSaved.v - amtSaved.v) {
                         this._status = JDTestCommandStatus.Passed
                         this._progress = "completed"
                     } else if (
@@ -377,7 +492,9 @@ class JDCommandEvaluator {
                         regValue > regSaved.v - amtSaved.v
                     ) {
                         this._status = JDTestCommandStatus.Active
-                        this._progress = `current: ${regValue} goal: ${regSaved.v - amtSaved.v}`
+                        this._progress = `current: ${pretify(
+                            regValue
+                        )} goal: ${pretify(regSaved.v - amtSaved.v)}`
                     } else {
                         this._status = JDTestCommandStatus.Active
                     }
@@ -387,35 +504,43 @@ class JDCommandEvaluator {
             case "stepsUpTo":
             case "stepsDownTo": {
                 this._status = JDTestCommandStatus.Active
-                const reg = this.command.call.arguments[0]
-                const regValue = this.env[unparse(reg)]
-                const beginSaved = this._startExpressions.find(r => r.e === reg)
-                const end = this.command.call.arguments[1]
-                const endSaved = this._startExpressions.find(r => r.e === end)
+                const regValue = this.env(unparse(args[0]))
+                const beginSaved = this.getStart(args[0])
+                const endSaved = this.getStart(args[1])
                 if (this._rangeComplete === undefined) {
                     this._rangeComplete = regValue
                 } else {
-                    if (regValue === this._rangeComplete + (testFun.id == 'stepsUpTo' ? 1 : -1))
+                    if (
+                        regValue ===
+                        this._rangeComplete +
+                            (testFun.id == "stepsUpTo" ? 1 : -1)
+                    )
                         this._rangeComplete = regValue
                     if (this._rangeComplete === endSaved.v) {
-                        this._status =  JDTestCommandStatus.Passed
+                        this._status = JDTestCommandStatus.Passed
                     }
                 }
                 if (this._rangeComplete != undefined) {
-                    this._progress = 
-                        testFun.id == 'stepsUpTo' 
-                            ? `from ${(beginSaved.v)} up to ${this._rangeComplete}`
-                            : `from ${(beginSaved.v)} down to ${this._rangeComplete}`
+                    this._progress =
+                        testFun.id == "stepsUpTo"
+                            ? `from ${pretify(beginSaved.v)} up to ${pretify(
+                                  this._rangeComplete
+                              )}`
+                            : `from ${pretify(beginSaved.v)} down to ${pretify(
+                                  this._rangeComplete
+                              )}`
                 }
                 break
             }
             case "events": {
-                if (this._eventsQueue?.length > 0 && this._eventsComplete?.length > 0) {
-                    const ev = this._eventsQueue.pop()
+                if (this.testRunner.hasEvent) {
+                    const ev = this.testRunner.consumeEvent()
                     if (ev === this._eventsComplete[0]) {
                         this._eventsComplete.shift()
                         if (this._eventsComplete.length === 0)
                             this._status = JDTestCommandStatus.Passed
+                    } else {
+                        this._status = JDTestCommandStatus.Failed
                     }
                     this._progress = `got event ${ev}; remaining = [${this._eventsComplete}]`
                 } else {
@@ -423,6 +548,47 @@ class JDCommandEvaluator {
                 }
                 break
             }
+            case "awaitEvent":
+            case "nextEvent": {
+                const event = args[0] as jsep.Identifier
+                this._progress = `waiting for event ${event.name}`
+                if (this.testRunner.hasEvent) {
+                    const ev = this.testRunner.consumeEvent()
+                    if (ev !== event.name) {
+                        if (testFun.id === "nextEvent")
+                            this._status = JDTestCommandStatus.Failed
+                    } else {
+                        // this._status = JDTestCommandStatus.Passed
+                        this._status = this.checkExpression(
+                            this.command.call.arguments[1]
+                        )
+                    }
+                } else {
+                    this._progress = `no events received; ${this._progress}`
+                }
+                break
+            }
+            case "assign": {
+                const reg = args[0] as jsep.Identifier
+                const jdreg = this.testRunner.serviceTestRunner.registers[
+                    reg.name
+                ]
+                const expr = new JDExprEvaluator(
+                    this.env,
+                    this._startExpressions
+                )
+                const ev = expr.eval(args[1])
+                if (jdreg) {
+                    const fmt = jdreg.specification?.packFormat
+                    jdreg.sendSetPackedAsync(fmt, [ev])
+                    this._status = JDTestCommandStatus.Passed
+                    this._progress = `wrote ${ev} to register ${reg.name}`
+                }
+            }
+        }
+
+        function pretify(v: number) {
+            return roundWithPrecision(v, 3)
         }
     }
 }
@@ -435,13 +601,10 @@ export interface JDCommandOutput {
 export class JDTestCommandRunner extends JDEventSource {
     private _status = JDTestCommandStatus.NotReady
     private _output: JDCommandOutput = { message: "", progress: "" }
-    private readonly _timeOut = 5000 // timeout
-    private _timeLeft = 5000
     private _commmandEvaluator: JDCommandEvaluator = null
 
     constructor(
         private readonly testRunner: JDTestRunner,
-        private readonly env: SMap<any>,
         private readonly command: jdtest.TestCommandSpec
     ) {
         super()
@@ -465,6 +628,13 @@ export class JDTestCommandRunner extends JDEventSource {
         )
     }
 
+    get isActive(): boolean {
+        return (
+            this.status === JDTestCommandStatus.Active ||
+            this.status === JDTestCommandStatus.RequiresUserInput
+        )
+    }
+
     get output() {
         return this._output
     }
@@ -481,37 +651,36 @@ export class JDTestCommandRunner extends JDEventSource {
     }
 
     reset() {
-        this.output = { message: "", progress: "" }
         this.status = JDTestCommandStatus.NotReady
+        this.output = { message: "", progress: "" }
         this._commmandEvaluator = null
     }
 
     start() {
         this.status = JDTestCommandStatus.Active
-        this._commmandEvaluator = new JDCommandEvaluator(this.env, this.command)
+        this._commmandEvaluator = new JDCommandEvaluator(
+            this.testRunner,
+            this.command
+        )
         this._commmandEvaluator.start()
-        this.envChange(false)
-        this.envChange(true)
+        this.envChange()
     }
 
-    envChange(finish = true) {
-        if (this._commmandEvaluator) {
+    envChange() {
+        if (this.isActive) {
             this._commmandEvaluator.evaluate()
             const newOutput: JDCommandOutput = {
                 message: this._commmandEvaluator.prompt,
                 progress: this._commmandEvaluator.progress,
             }
             this.output = newOutput
-            if (this._commmandEvaluator.status === JDTestCommandStatus.RequiresUserInput)
-                this.status= JDTestCommandStatus.RequiresUserInput
-            else if (finish) 
-                this.finish(this._commmandEvaluator.status)
+            if (
+                this._commmandEvaluator.status ===
+                JDTestCommandStatus.RequiresUserInput
+            )
+                this.status = JDTestCommandStatus.RequiresUserInput
+            else this.finish(this._commmandEvaluator.status)
         }
-    }
-
-    eventChange(event: string) {
-        this._commmandEvaluator.setEvent(event)
-        this.envChange()
     }
 
     cancel() {
@@ -520,9 +689,9 @@ export class JDTestCommandRunner extends JDEventSource {
 
     finish(s: JDTestCommandStatus) {
         if (
-            (s === JDTestCommandStatus.Failed || s === JDTestCommandStatus.Passed) &&
-            (this.status === JDTestCommandStatus.Active ||
-                this.status === JDTestCommandStatus.RequiresUserInput)
+            this.isActive &&
+            (s === JDTestCommandStatus.Failed ||
+                s === JDTestCommandStatus.Passed)
         ) {
             this.status = s
             this.testRunner.finishCommand()
@@ -533,23 +702,24 @@ export class JDTestCommandRunner extends JDEventSource {
 export class JDTestRunner extends JDEventSource {
     private _status = JDTestStatus.NotReady
     private _commandIndex: number
+    private _currentEvent: string
     public readonly commands: JDTestCommandRunner[]
 
     constructor(
-        private readonly serviceTestRunner: JDServiceTestRunner,
-        private readonly env: SMap<any>,
+        public readonly serviceTestRunner: JDServiceTestRunner,
         private readonly testSpec: jdtest.TestSpec
     ) {
         super()
         this.commands = testSpec.testCommands.map(
-            c => new JDTestCommandRunner(this, this.env, c)
+            c => new JDTestCommandRunner(this, c)
         )
     }
 
-    reset() {
+    public reset() {
         if (this.status !== JDTestStatus.NotReady) {
             this._status = JDTestStatus.NotReady
             this._commandIndex = undefined
+            this._currentEvent = undefined
             this.commands.forEach(t => t.reset())
             this.emit(CHANGE)
         }
@@ -559,6 +729,7 @@ export class JDTestRunner extends JDEventSource {
         this.reset()
         this.status = JDTestStatus.Active
         this.commandIndex = 0
+        this.serviceTestRunner.refreshEnvironment()
     }
 
     next() {
@@ -614,17 +785,31 @@ export class JDTestRunner extends JDEventSource {
     }
 
     public envChange() {
-        this.currentCommand?.envChange()
+        if (this.status === JDTestStatus.Active) {
+            this.currentCommand?.envChange()
+        }
     }
 
     public eventChange(event: string) {
-        this.currentCommand?.eventChange(event)
+        if (this.status === JDTestStatus.Active) {
+            this._currentEvent = event
+            this.envChange()
+        }
+    }
+
+    public get hasEvent() {
+        return this._currentEvent != undefined
+    }
+
+    public consumeEvent() {
+        const ret = this._currentEvent
+        this._currentEvent = undefined
+        return ret
     }
 
     public finishCommand() {
         if (this.commandIndex === this.commands.length - 1)
             this.finish(commandStatusToTestStatus(this.currentCommand.status))
-        // (this.commandIndex < this.commands.length)
         else this.commandIndex++
     }
 
@@ -633,11 +818,22 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
+async function refresh_env(registers: SMap<JDRegister>) {
+    for (const k in registers) {
+        const register = registers[k]
+        let retry = 0
+        let val: any = undefined
+        do {
+            await register.refresh()
+            val = register.unpackedValue?.[0]
+        } while (val === undefined && retry++ < 2)
+    }
+}
+
 export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
-    private registers: SMap<JDRegister> = {}
-    private events: SMap<JDEvent> = {}
-    private environment: SMap<number> = {}
+    private _registers: SMap<JDRegister> = {}
+    private _events: SMap<JDEvent> = {}
     public readonly tests: JDTestRunner[]
 
     constructor(
@@ -645,9 +841,7 @@ export class JDServiceTestRunner extends JDServiceClient {
         service: JDService
     ) {
         super(service)
-        this.tests = this.testSpec.tests.map(
-            t => new JDTestRunner(this, this.environment, t)
-        )
+        this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         const serviceSpec = serviceSpecificationFromClassIdentifier(
             service.serviceClass
         )
@@ -667,16 +861,14 @@ export class JDServiceTestRunner extends JDServiceClient {
                 }
             })
             t.registers.forEach(regName => {
-                if (!this.registers[regName]) {
+                if (!this._registers[regName]) {
                     const pkt = serviceSpec.packets.find(
                         pkt => isRegister(pkt) && pkt.name === regName
                     )
                     const register = service.register(pkt.identifier)
-                    this.registers[regName] = register
-                    this.environment[regName] = register.intValue
+                    this._registers[regName] = register
                     this.mount(
                         register.subscribe(CHANGE, () => {
-                            this.environment[regName] = register.intValue
                             this.currentTest?.envChange()
                         })
                     )
@@ -684,6 +876,35 @@ export class JDServiceTestRunner extends JDServiceClient {
             })
         })
         this.start()
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public lookup(root: string, fld = ""): any {
+        if (root in this.registers) {
+            if (!fld) return this.registers[root].unpackedValue?.[0]
+            else {
+                const field = this.registers[root].fields.find(
+                    f => f.name === fld
+                )
+                return field?.value
+            }
+        } else if (root in this.events) {
+            const field = this.events[root].fields?.find(f => f.name === fld)
+            return field?.value
+        }
+        return undefined
+    }
+
+    public refreshEnvironment() {
+        refresh_env(this.registers)
+    }
+
+    public get registers() {
+        return this._registers
+    }
+
+    public get events() {
+        return this._events
     }
 
     private get testIndex() {

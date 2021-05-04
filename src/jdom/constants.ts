@@ -85,8 +85,8 @@ export const READING_SENT = "readingSent"
 export const ROLE_CHANGE = "roleChange"
 export const ROLE_MANAGER_CHANGE = "roleManagerChange"
 
-export const DEVICE_HOST_ADDED = `deviceHostAdded`
-export const DEVICE_HOST_REMOVED = `deviceHostRemoved`
+export const SERVICE_PROVIDER_ADDED = `serviceProviderAdded`
+export const SERVICE_PROVIDER_REMOVED = `serviceProviderRemoved`
 
 export const IDENTIFY = "identify"
 export const IDENTIFY_DURATION = 2000
@@ -136,6 +136,7 @@ export const REPORT_NODE_NAME = "report"
 export const CONST_NODE_NAME = "const"
 export const EVENT_NODE_NAME = "event"
 export const SERVICE_NODE_NAME = "service"
+export const SERVICE_MIXIN_NODE_NAME = "serviceMixin"
 export const DEVICE_NODE_NAME = "device"
 export const VIRTUAL_DEVICE_NODE_NAME = "virtualdevice"
 export const BUS_NODE_NAME = "bus"
@@ -149,11 +150,14 @@ export const SERVICE_TEST_NODE_NAME = "service_test"
 export const REGISTER_REFRESH_TIMEOUT = 150
 export const REGISTER_REFRESH_RETRY_0 = 30
 export const REGISTER_REFRESH_RETRY_1 = 80
+export const REGISTER_POLL_STREAMING_INTERVAL = 5000
 export const REGISTER_POLL_FIRST_REPORT_INTERVAL = 400
 export const REGISTER_POLL_REPORT_INTERVAL = 5001
 export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
 export const STREAMING_DEFAULT_INTERVAL = 50
+
+export const ROLE_MANAGER_POLL = 1500
 
 export const USB_TRANSPORT = "USB"
 export const BLUETOOTH_TRANSPORT = "Bluetooth"
@@ -164,7 +168,10 @@ export const META_ACK_FAILED = "ACK_FAILED"
 export const META_PIPE = "PIPE"
 export const META_GET = "GET"
 
+export const REGISTER_PRE_GET = "registerPreGet"
+
 export const TRACE_FILTER_HORIZON = 100
+export const EMBED_MIN_ASPECT_RATIO = 1.22
 
 export const BLUETOOTH_JACDAC_SERVICE = "f8530001-a97f-49f5-a554-3e373fbea2d5"
 export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC = "f8530002-a97f-49f5-a554-3e373fbea2d5"

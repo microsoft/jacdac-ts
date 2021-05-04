@@ -40,12 +40,6 @@
         ],
         ["@semantic-release/release-notes-generator"],
         [
-            "@semantic-release/exec",
-            {
-                "prepareCmd": "node ./tools/prepare.js ${nextRelease.version}"
-            }
-        ],
-        [
             "@semantic-release/github",
             {
                 "successComment": false,
@@ -57,12 +51,9 @@
             "@semantic-release/git",
             {
                 "assets": [
-                    "package.json",
-                    "package-lock.json",
-                    "etc/jacdac-ts.api.json",
-                    "etc/jacdac-ts.api.md"
+                    "package.json"
                 ]
             }
-        ]
+        ]        
     ]
 }

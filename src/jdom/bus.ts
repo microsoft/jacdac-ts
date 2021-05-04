@@ -1,13 +1,6 @@
 import Packet from "./packet"
 import { JDDevice } from "./device"
-import {
-    debounceAsync,
-    strcmp,
-    arrayConcatMany,
-    anyRandomUint32,
-    toHex,
-    fromHex,
-} from "./utils"
+import { debounceAsync, strcmp, arrayConcatMany } from "./utils"
 import {
     JD_SERVICE_INDEX_CTRL,
     CMD_ADVERTISEMENT_DATA,
@@ -15,8 +8,6 @@ import {
     PACKET_SEND,
     ERROR,
     CONNECTING,
-    CONNECT,
-    DISCONNECT,
     DEVICE_CONNECT,
     DEVICE_DISCONNECT,
     PACKET_RECEIVE,
@@ -24,8 +15,6 @@ import {
     PACKET_EVENT,
     PACKET_REPORT,
     PACKET_PROCESS,
-    CONNECTION_STATE,
-    DISCONNECTING,
     DEVICE_CHANGE,
     CHANGE,
     FIRMWARE_BLOBS_CHANGE,
@@ -41,7 +30,6 @@ import {
     SELF_ANNOUNCE,
     TIMEOUT,
     LATE,
-    PACKET_SEND_DISCONNECT,
     REPORT_UPDATE,
     REGISTER_POLL_REPORT_INTERVAL,
     REGISTER_POLL_REPORT_MAX_INTERVAL,
@@ -49,12 +37,12 @@ import {
     PACKET_PRE_PROCESS,
     STREAMING_DEFAULT_INTERVAL,
     REGISTER_POLL_FIRST_REPORT_INTERVAL,
-    DEVICE_HOST_ADDED,
-    DEVICE_HOST_REMOVED,
+    SERVICE_PROVIDER_ADDED,
+    SERVICE_PROVIDER_REMOVED,
     REFRESH,
-    EVENT,
     ROLE_MANAGER_CHANGE,
     TIMEOUT_DISCONNECT,
+    REGISTER_POLL_STREAMING_INTERVAL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -66,26 +54,22 @@ import {
 import { JDService } from "./service"
 import { isConstRegister, isReading, isSensor } from "./spec"
 import {
-    ControlReg,
     LoggerPriority,
     LoggerReg,
-    RoleManagerCmd,
     SensorReg,
-    SRV_CONTROL,
     SRV_LOGGER,
     SRV_REAL_TIME_CLOCK,
-    SystemEvent,
     SystemReg,
 } from "../../src/jdom/constants"
-import DeviceHost from "./devicehost"
-import RealTimeClockServiceHost from "../hosts/realtimeclockservicehost"
-import { JDEventSource } from "./eventsource"
-import { JDServiceClient } from "./serviceclient"
-import { InPipeReader } from "./pipes"
-import { jdpack, jdunpack } from "./pack"
+import JDServiceProvider from "./serviceprovider"
+import RealTimeClockServer from "../servers/realtimeclockserver"
 import { SRV_ROLE_MANAGER } from "../../src/jdom/constants"
-import { JDTransport } from "./transport"
+import { JDTransport } from "./transport/transport"
 import { BusStatsMonitor } from "./busstats"
+import { RoleManagerClient } from "./rolemanagerclient"
+import JDBridge from "./bridge"
+import IFrameBridgeClient from "./iframebridgeclient"
+import { randomDeviceId } from "./random"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -111,200 +95,13 @@ export interface DeviceFilter {
     firmwareIdentifier?: boolean
     physical?: boolean
 }
-export interface Role {
-    deviceId: string
-    serviceClass: number
-    serviceIndex: number
-    role: string
-}
-
-export class BusRoleManagerClient extends JDServiceClient {
-    private _roles: Role[] = []
-    private _needRefresh = true
-
-    public readonly startRefreshRoles: () => void
-
-    constructor(service: JDService) {
-        super(service)
-        const changeEvent = service.event(SystemEvent.Change)
-
-        // always debounce refresh roles
-        this.startRefreshRoles = debounceAsync(
-            this.refreshRoles.bind(this),
-            200
-        )
-
-        // role manager emits change events
-        this.mount(changeEvent.subscribe(EVENT, this.handleChange.bind(this)))
-        // assign roles when need device enter the bus
-        this.mount(
-            this.bus.subscribe(DEVICE_ANNOUNCE, this.assignRoles.bind(this))
-        )
-        // unmount when device is removed
-        this.mount(
-            service.device.subscribe(DISCONNECT, () => {
-                if (this.bus.roleManager?.service === this.service)
-                    this.bus.setRoleManagerService(undefined)
-            })
-        )
-        // clear on unmount
-        this.mount(this.clearRoles.bind(this))
-        // retry to get roles on every self-announce
-        this.mount(
-            this.bus.subscribe(
-                SELF_ANNOUNCE,
-                this.handleSelfAnnounce.bind(this)
-            )
-        )
-    }
-
-    private handleSelfAnnounce() {
-        if (this._needRefresh) {
-            console.debug("self announce refresh")
-            this.startRefreshRoles()
-        }
-    }
-
-    get roles() {
-        return this._roles
-    }
-
-    private async handleChange() {
-        console.debug(`role manager change event`)
-        this.startRefreshRoles()
-    }
-
-    private async refreshRoles() {
-        if (this.unmounted) return
-
-        this._needRefresh = false
-        await this.collectRoles()
-
-        if (this.unmounted) return
-        this.assignRoles()
-    }
-
-    private async collectRoles() {
-        console.debug("query roles")
-        try {
-            const inp = new InPipeReader(this.bus)
-            await this.service.sendPacketAsync(
-                inp.openCommand(RoleManagerCmd.ListRequiredRoles),
-                true
-            )
-            // collect all roles
-            const roles: Role[] = []
-            for (const buf of await inp.readData()) {
-                const [devidbuf, serviceClass, serviceIndex, role] = jdunpack<
-                    [Uint8Array, number, number, string]
-                >(buf, "b[8] u32 u8 s")
-                const deviceId = toHex(devidbuf)
-                roles.push({ deviceId, serviceClass, serviceIndex, role })
-            }
-            // store result
-            this._roles = roles
-            console.debug(`updated roles`, { roles: this._roles })
-        } catch (e) {
-            this._needRefresh = true
-            console.debug(`refresh failed`, { refresh: this._needRefresh })
-            console.error(e)
-        }
-    }
-
-    static unroledSrvs = [SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER]
-
-    private assignRoles() {
-        console.debug("assign roles", { roles: this._roles })
-        this.bus
-            .services()
-            .filter(
-                srv =>
-                    BusRoleManagerClient.unroledSrvs.indexOf(srv.serviceClass) <
-                    0
-            )
-            .forEach(srv => this.assignRole(srv))
-    }
-
-    private assignRole(service: JDService) {
-        const deviceId = service.device.deviceId
-        const serviceIndex = service.serviceIndex
-        const role = this._roles.find(
-            r => r.deviceId === deviceId && r.serviceIndex === serviceIndex
-        )
-        console.debug(`role ${service.id} -> ${role?.role}`, { service })
-        service.role = role?.role
-    }
-
-    private clearRoles() {
-        this.bus.services().forEach(srv => (srv.role = undefined))
-    }
-
-    hasRoleForService(service: JDService) {
-        const { serviceClass } = service
-        return !!this._roles.find(r => r.serviceClass === serviceClass)
-    }
-
-    compatibleRoles(service: JDService): Role[] {
-        const { serviceClass } = service
-        return this._roles.filter(r => r.serviceClass === serviceClass)
-    }
-
-    role(name: string): Role {
-        return this._roles.find(r => r.serviceIndex > 0 && r.role === name)
-    }
-
-    async setRole(service: JDService, role: string) {
-        const { device, serviceIndex } = service
-        const { deviceId } = device
-        console.debug(`set role ${deviceId}:${serviceIndex} to ${role}`)
-
-        const previous = role && this._roles.find(r => r.role === role)
-        if (
-            previous &&
-            previous.deviceId === deviceId &&
-            previous.serviceIndex === serviceIndex
-        ) {
-            // nothing todo
-            console.debug(`role unmodified, skipping`)
-            return
-        }
-
-        // set new role assignment
-        {
-            const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
-                fromHex(deviceId),
-                serviceIndex,
-                role || "",
-            ])
-            await this.service.sendPacketAsync(
-                Packet.from(RoleManagerCmd.SetRole, data),
-                true
-            )
-        }
-
-        // clear previous role assignment
-        if (previous) {
-            console.debug(
-                `clear role ${previous.deviceId}:${previous.serviceIndex}`
-            )
-            const data = jdpack<[Uint8Array, number, string]>("b[8] u8 s", [
-                fromHex(previous.deviceId),
-                previous.serviceIndex,
-                "",
-            ])
-            await this.service.sendPacketAsync(
-                Packet.from(RoleManagerCmd.SetRole, data),
-                true
-            )
-        }
-    }
-}
 
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
 export class JDBus extends JDNode {
     private readonly _transports: JDTransport[] = []
+    private _bridges: JDBridge[] = []
     private _devices: JDDevice[] = []
     private _startTime: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -315,37 +112,29 @@ export class JDBus extends JDNode {
     private _safeBootInterval: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
-    private _roleManagerClient: BusRoleManagerClient
+    private _roleManagerClient: RoleManagerClient
 
     private _minLoggerPriority = LoggerPriority.Log
     private _firmwareBlobs: FirmwareBlob[]
     private _announcing = false
     private _gcDevicesEnabled = 0
 
-    private _deviceHosts: DeviceHost[] = []
+    private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
+    public iframeBridge: IFrameBridgeClient;
 
     /**
      * Creates the bus with the given transport
      * @param sendPacket
      */
-    constructor(transports: JDTransport[], public options?: BusOptions) {
+    constructor(transports?: JDTransport[], public options?: BusOptions) {
         super()
 
-        this._transports = transports.filter(tr => !!tr)
-        this._transports.forEach(tr => {
-            tr.bus = this
-            // disconnect all transprots when one starts connecting
-            tr.on(CONNECTING, () => this.preConnect(tr))
-        })
+        transports?.filter(tr => !!tr).map(tr => this.addTransport(tr))
 
         this.options = this.options || {}
-        if (!this.options.deviceId) {
-            const devId = anyRandomUint32(8)
-            for (let i = 0; i < 8; ++i) devId[i] &= 0xff
-            this.options.deviceId = toHex(devId)
-        }
+        if (!this.options.deviceId) this.options.deviceId = randomDeviceId()
 
         this.stats = new BusStatsMonitor(this)
         this.resetTime()
@@ -358,13 +147,48 @@ export class JDBus extends JDNode {
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
         // grab the default role manager
-        this.on(DEVICE_ANNOUNCE, this.handleRoleManager.bind(this))
+        this.on(DEVICE_CHANGE, this.handleRoleManager.bind(this))
 
         // start all timers
         this.start()
     }
 
+    get transports() {
+        return this._transports.slice(0)
+    }
+
+    addTransport(transport: JDTransport) {
+        if (this._transports.indexOf(transport) > -1) return // already added
+
+        this._transports.push(transport)
+        transport.bus = this
+        transport.bus.on(CONNECTING, () => this.preConnect(transport))
+    }
+
+    get bridges() {
+        return this._bridges.slice(0)
+    }
+
+    addBridge(bridge: JDBridge): () => void {
+        if (this._bridges.indexOf(bridge) < 0) {
+            console.debug(`add bridge`, { bridge })
+            this._bridges.push(bridge)
+            this.emit(CHANGE)
+        }
+        return () => this.removeBridge(bridge)
+    }
+
+    private removeBridge(bridge: JDBridge) {
+        const i = this._bridges.indexOf(bridge)
+        if (i > -1) {
+            console.debug(`remove bridge`, { bridge })
+            this._bridges.splice(i, 1)
+            this.emit(CHANGE)
+        }
+    }
+
     private preConnect(transport: JDTransport) {
+        console.debug(`preconnect ${transport.type}`, { transport })
         return Promise.all(
             this._transports
                 .filter(t => t !== transport)
@@ -372,9 +196,19 @@ export class JDBus extends JDNode {
         )
     }
 
-    async connect() {
+    async connect(background?: boolean) {
+        if (this.connected) return
+
+        console.debug(`bus: connect start`, { background })
         for (const transport of this._transports) {
-            await transport.connect()
+            // start connection
+            console.debug(`bus: connect ${transport.type}`, { transport })
+            await transport.connect(background)
+            console.log(
+                `bus: connect ${transport.type} ${transport.connectionState}`,
+                { transport }
+            )
+            // keep going if not connected
             if (transport.connected) break
         }
     }
@@ -403,7 +237,8 @@ export class JDBus extends JDNode {
             )
     }
 
-    stop() {
+    async stop() {
+        await this.disconnect()
         if (this._announceInterval) {
             clearInterval(this._announceInterval)
             this._announceInterval = undefined
@@ -419,8 +254,10 @@ export class JDBus extends JDNode {
         }
     }
 
-    get transports() {
-        return this._transports.slice(0)
+    async dispose() {
+        console.debug(`${this.id}: disposing.`)
+        await this.stop()
+        this._transports.forEach(transport => transport.dispose())
     }
 
     get safeBoot() {
@@ -452,9 +289,9 @@ export class JDBus extends JDNode {
 
     clear() {
         // clear hosts
-        if (this._deviceHosts?.length) {
-            this._deviceHosts.forEach(host => (host.bus = undefined))
-            this._deviceHosts = []
+        if (this._serviceProviders?.length) {
+            this._serviceProviders.forEach(host => (host.bus = undefined))
+            this._serviceProviders = []
         }
 
         // clear devices
@@ -493,12 +330,12 @@ export class JDBus extends JDNode {
         return BUS_NODE_NAME
     }
 
-    get roleManager() {
+    get roleManager(): RoleManagerClient {
         return this._roleManagerClient
     }
 
     setRoleManagerService(service: JDService) {
-        console.log(`set role manager`, { service })
+        //console.log(`set role manager`, { service })
         // clean if needed
         if (
             this._roleManagerClient &&
@@ -512,7 +349,7 @@ export class JDBus extends JDNode {
         // allocate new manager
         if (service && service !== this._roleManagerClient?.service) {
             console.debug("mount role manager")
-            this._roleManagerClient = new BusRoleManagerClient(service)
+            this._roleManagerClient = new RoleManagerClient(service)
             this.emit(ROLE_MANAGER_CHANGE)
             this.emit(CHANGE)
             this._roleManagerClient.startRefreshRoles()
@@ -539,15 +376,15 @@ export class JDBus extends JDNode {
                 case BUS_NODE_NAME:
                     return this
                 case DEVICE_NODE_NAME:
-                    return this.device(dev)
+                    return this.device(dev, true)
                 case SERVICE_NODE_NAME:
-                    return this.device(dev)?.service(srv)
+                    return this.device(dev, true)?.service(srv)
                 case REGISTER_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.register(reg)
+                    return this.device(dev, true)?.service(srv)?.register(reg)
                 case EVENT_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.event(reg)
+                    return this.device(dev, true)?.service(srv)?.event(reg)
                 case FIELD_NODE_NAME:
-                    return this.device(dev)?.service(srv)?.register(reg)
+                    return this.device(dev, true)?.service(srv)?.register(reg)
                         ?.fields[idx]
             }
             console.info(`node ${id} not found`)
@@ -594,17 +431,14 @@ export class JDBus extends JDNode {
     private async handleRealTimeClockSync(device: JDDevice) {
         // tell time to the RTC clocks
         if (device.hasService(SRV_REAL_TIME_CLOCK))
-            await RealTimeClockServiceHost.syncTime(this)
+            await RealTimeClockServer.syncTime(this)
     }
 
-    private handleRoleManager(device: JDDevice) {
-        // auto allocate the first role manager
-        if (!this._roleManagerClient && device.hasService(SRV_ROLE_MANAGER)) {
-            const [service] = device.services({
-                serviceClass: SRV_ROLE_MANAGER,
-            })
-            this.setRoleManagerService(service)
-        }
+    private handleRoleManager() {
+        if (this.roleManager) return
+
+        const service = this.services({ serviceClass: SRV_ROLE_MANAGER })[0]
+        this.setRoleManagerService(service)
     }
 
     async sendPacketAsync(p: Packet) {
@@ -643,57 +477,55 @@ export class JDBus extends JDNode {
             r = r.filter(s => s.deviceId !== this.selfDeviceId)
         if (options?.announced) r = r.filter(s => s.announced)
         if (options?.ignoreSimulators)
-            r = r.filter(r => !this.deviceHost(r.deviceId))
+            r = r.filter(r => !this.findServiceProvider(r.deviceId))
         if (options?.firmwareIdentifier)
             r = r.filter(r => !!r.firmwareIdentifier)
-        if (options?.physical)
-            r = r.filter(r => !!r.physical)
+        if (options?.physical) r = r.filter(r => !!r.physical)
         return r
     }
 
     /**
-     * Gets the current list of device hosts on the bus
+     * Gets the current list of service providers on the bus
      */
-    deviceHosts(): DeviceHost[] {
-        return this._deviceHosts.slice(0)
+    serviceProviders(): JDServiceProvider[] {
+        return this._serviceProviders.slice(0)
     }
 
     /**
-     * Get a device host for a given device
+     * Get a service providers for a given device
      * @param deviceId
      */
-    deviceHost(deviceId: string) {
-        return this._deviceHosts.find(d => d.deviceId === deviceId)
+    findServiceProvider(deviceId: string) {
+        return this._serviceProviders.find(d => d.deviceId === deviceId)
     }
 
     /**
-     * Adds the device host to the bus
-     * @param deviceHost
+     * Adds the service provider to the bus
      */
-    addDeviceHost(deviceHost: DeviceHost) {
-        if (deviceHost && this._deviceHosts.indexOf(deviceHost) < 0) {
-            this._deviceHosts.push(deviceHost)
-            deviceHost.bus = this
+    addServiceProvider(provider: JDServiceProvider) {
+        if (provider && this._serviceProviders.indexOf(provider) < 0) {
+            this._serviceProviders.push(provider)
+            provider.bus = this
 
-            this.emit(DEVICE_HOST_ADDED)
+            this.emit(SERVICE_PROVIDER_ADDED)
             this.emit(CHANGE)
         }
 
-        return this.device(deviceHost.deviceId)
+        return this.device(provider.deviceId)
     }
 
     /**
-     * Adds the device host to the bus
-     * @param deviceHost
+     * Adds the service provider to the bus
+     * @param provider
      */
-    removeDeviceHost(deviceHost: DeviceHost) {
-        if (!deviceHost) return
+    removeServiceProvider(provider: JDServiceProvider) {
+        if (!provider) return
 
-        const i = this._deviceHosts.indexOf(deviceHost)
+        const i = this._serviceProviders.indexOf(provider)
         if (i > -1) {
             // remove device as well
             const devi = this._devices.findIndex(
-                d => d.deviceId === deviceHost.deviceId
+                d => d.deviceId === provider.deviceId
             )
             if (devi > -1) {
                 const dev = this._devices[devi]
@@ -704,9 +536,9 @@ export class JDBus extends JDNode {
             }
 
             // remove host
-            this._deviceHosts.splice(i, 1)
-            deviceHost.bus = undefined
-            this.emit(DEVICE_HOST_REMOVED)
+            this._serviceProviders.splice(i, 1)
+            provider.bus = undefined
+            this.emit(SERVICE_PROVIDER_REMOVED)
 
             // removed host
             this.emit(CHANGE)
@@ -724,6 +556,7 @@ export class JDBus extends JDNode {
         serviceName?: string
         serviceClass?: number
         specification?: boolean
+        ignoreSelf?: boolean
     }): JDService[] {
         return arrayConcatMany(
             this.devices(options).map(d => d.services(options))
@@ -734,20 +567,20 @@ export class JDBus extends JDNode {
      * Gets a device on the bus
      * @param id
      */
-    device(id: string, skipCreate?: boolean) {
+    device(id: string, skipCreate?: boolean, pkt?: Packet) {
         if (id === "0000000000000000" && !skipCreate) {
             console.warn("jadac: trying to access device 0000000000000000")
             return undefined
         }
         let d = this._devices.find(d => d.deviceId == id)
         if (!d && !skipCreate) {
-            console.info(`new device ${id}`)
             if (this.devicesFrozen) {
-                console.info(`info`, `devices frozen, dropping ${id}`)
+                console.debug(`info`, `devices frozen, dropping ${id}`)
                 return undefined
             }
-            d = new JDDevice(this, id)
+            d = new JDDevice(this, id, pkt)
             this._devices.push(d)
+            console.debug(`new device ${d.shortId} (${id})`)
             // stable sort
             this._devices.sort((l, r) => strcmp(l.deviceId, r.deviceId))
             this.emit(DEVICE_CONNECT, d)
@@ -837,7 +670,7 @@ export class JDBus extends JDNode {
      */
     processPacket(pkt: Packet) {
         if (!pkt.isMultiCommand && !pkt.device) {
-            pkt.device = this.device(pkt.deviceIdentifier)
+            pkt.device = this.device(pkt.deviceIdentifier, false, pkt)
             // check if devices are frozen
             if (!pkt.device) return
         }
@@ -932,15 +765,6 @@ export class JDBus extends JDNode {
                                         reg.code === SystemReg.ReadingError
                                     )
                             )
-                            // double double-query status light
-                            .filter(
-                                reg =>
-                                    !reg.data ||
-                                    !(
-                                        service.serviceClass === SRV_CONTROL &&
-                                        reg.code === ControlReg.StatusLight
-                                    )
-                            )
                             // stop asking optional registers
                             .filter(
                                 reg =>
@@ -974,9 +798,19 @@ export class JDBus extends JDNode {
                         SensorReg.StreamingPreferredInterval
                     )
                     interval = preferredInterval?.intValue
-                    if (intervalRegister)
+                    // if no interval, poll interval value
+                    if (
+                        interval === undefined &&
+                        intervalRegister &&
+                        intervalRegister.lastGetTimestamp - this.timestamp >
+                            REGISTER_POLL_STREAMING_INTERVAL
+                    ) {
                         // all async
-                        intervalRegister.sendGetAsync()
+                        if (!intervalRegister.data)
+                            intervalRegister.sendGetAsync()
+                        if (!preferredInterval.data)
+                            preferredInterval.sendGetAsync()
+                    }
                 }
                 // still no interval data use from spec or default
                 if (interval === undefined)
@@ -988,13 +822,13 @@ export class JDBus extends JDNode {
                 )
                 const samplesLastSetTimesamp = samplesRegister?.lastSetTimestamp
                 if (samplesLastSetTimesamp !== undefined) {
-                    const age =
+                    const samplesAge =
                         this.timestamp - samplesRegister.lastSetTimestamp
                     // need to figure out when we asked for streaming
-                    const midAge = (interval * 0xff) / 2
+                    const midSamplesAge = (interval * 0xff) / 2
                     // compute if half aged
-                    if (age > midAge) {
-                        //console.log(`auto-refresh - restream`, register)
+                    if (samplesAge > midSamplesAge) {
+                        //console.debug({ samplesAge, midSamplesAge, interval })
                         samplesRegister.sendSetPackedAsync("u8", [0xff])
                     }
                 }
@@ -1017,8 +851,8 @@ export class JDBus extends JDNode {
             }
         }
 
-        // apply streaming samples to device hosts
-        this._deviceHosts.map(host => host.emit(REFRESH))
+        // apply streaming samples to service provider
+        this._serviceProviders.map(host => host.emit(REFRESH))
     }
 
     /**

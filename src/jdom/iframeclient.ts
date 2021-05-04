@@ -1,5 +1,5 @@
-import { JDBus } from "./bus";
-import { JDClient } from "./client";
+import { JDBus } from "./bus"
+import { JDClient } from "./client"
 
 export default class JDIFrameClient extends JDClient {
     constructor(readonly bus: JDBus) {
@@ -7,19 +7,18 @@ export default class JDIFrameClient extends JDClient {
     }
 
     get origin() {
-        return this.bus.options?.parentOrigin || "*";
+        return this.bus.options?.parentOrigin || "*"
     }
 
     protected isOriginValid(msg: MessageEvent) {
-        return this.origin === "*" || msg.origin === this.origin;
+        return this.origin === "*" || msg.origin === this.origin
     }
 }
 
 export function inIFrame() {
     try {
-        return typeof window !== "undefined"
-            && window.self !== window.top
+        return typeof window !== "undefined" && window.self !== window.top
     } catch (e) {
-        return typeof window !== "undefined";
+        return typeof window !== "undefined"
     }
 }
