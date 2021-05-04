@@ -31,7 +31,7 @@ import {
 import Packet from "../jdom/packet"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
-import { isBufferEmpty, toHex } from "../jdom/utils"
+import { isBufferEmpty } from "../jdom/utils"
 
 const PROG_EOF = 0
 const PROG_CMD = 1
@@ -301,7 +301,11 @@ export default class LedPixelServer extends JDServiceServer {
         let intensity = this.intensity
 
         intensity += 1 + (intensity >> 5)
-        if (requested_intensity !== undefined && intensity > requested_intensity) intensity = requested_intensity
+        if (
+            requested_intensity !== undefined &&
+            intensity > requested_intensity
+        )
+            intensity = requested_intensity
 
         let current_full = 0
         let current = 0
@@ -616,8 +620,6 @@ export default class LedPixelServer extends JDServiceServer {
     }
 
     private handleRun(pkt: Packet) {
-        console.log("run", { data: toHex(pkt.data) })
-
         this.prog_data = pkt.data
         this.prog_size = this.prog_data.length
         this.prog_ptr = 0

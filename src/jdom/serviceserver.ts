@@ -4,7 +4,7 @@ import {
     SystemReg,
     SystemStatusCodes,
 } from "../../jacdac-spec/dist/specconstants"
-import { CHANGE, PACKET_RECEIVE, PACKET_SEND } from "./constants"
+import { CHANGE, PACKET_RECEIVE, PACKET_SEND, REPORT_UPDATE } from "./constants"
 import JDServiceProvider from "./serviceprovider"
 import { JDEventSource } from "./eventsource"
 import Packet from "./packet"
@@ -41,6 +41,7 @@ export default class JDServiceServer extends JDEventSource {
     readonly statusCode: JDRegisterServer<[SystemStatusCodes, number]>
     readonly instanceName: JDRegisterServer<[string]>
     private _twin: JDService
+    private _twinCleanup: (() => void)[]
 
     constructor(public readonly serviceClass: number, options?: ServerOptions) {
         super()
@@ -105,20 +106,29 @@ export default class JDServiceServer extends JDEventSource {
     }
 
     set twin(service: JDService) {
-        if (service === this._twin)
-            return;
-        
+        if (service === this._twin) return
+
         if (this._twin) {
             this._twin.off(PACKET_RECEIVE, this.handleTwinPacket)
             this._twin.off(PACKET_SEND, this.handleTwinPacket)
+            this._twinCleanup.forEach(tw => tw())
+            // unsubscribe
         }
         this._twin = service
+        this._twinCleanup = service ? [] : undefined
         if (this._twin) {
             this._twin.on(PACKET_RECEIVE, this.handleTwinPacket)
             this._twin.on(PACKET_SEND, this.handleTwinPacket)
             this._twin.registers().forEach(twinReg => {
                 const reg = this.register(twinReg.code)
-                reg?.setValues(twinReg.unpackedValue)
+                if (reg) {
+                    reg?.setValues(twinReg.unpackedValue)
+                    this._twinCleanup.push(
+                        twinReg.subscribe(REPORT_UPDATE, () =>
+                            reg.setValues(twinReg.unpackedValue)
+                        )
+                    )
+                }
             })
         }
 

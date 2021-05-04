@@ -35,6 +35,7 @@ import { InPipeReader } from "./pipes"
 import { jdunpack, PackedValues } from "./pack"
 import Flags from "./flags"
 import { isMixinService } from "../../jacdac-spec/spectool/jdutils"
+import JDServiceServer from "./serviceserver"
 
 export class JDService extends JDNode {
     private _role: string
@@ -45,6 +46,8 @@ export class JDService extends JDNode {
     // packets received since last announce
     public registersUseAcks = false
     private readonly _clients: JDServiceClient[] = []
+
+    private _twin: JDServiceServer
 
     constructor(
         public readonly device: JDDevice,
@@ -134,6 +137,19 @@ export class JDService extends JDNode {
 
     get isMixin() {
         return isMixinService(this.serviceClass)
+    }
+
+    get twin(): JDServiceServer {
+        return this._twin
+    }
+
+    set twin(server: JDServiceServer) {
+        if (this._twin === server) return
+
+        if (this._twin) this._twin.twin = undefined
+        this._twin = server
+        server.twin = this
+        this.emit(CHANGE)
     }
 
     private _readingRegister: JDRegister
