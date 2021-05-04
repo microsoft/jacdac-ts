@@ -7,8 +7,8 @@ const { debug, error } = console
 export class USBTransportProxy implements TransportProxy {
     private hf2: Proto
     constructor() {}
-    async connect() {
-        debug(`jdsw: connect`)
+    async connect(deviceId: string) {
+        debug(`jdsw: connect`, { deviceId })
         if (this.hf2) {
             debug(`jdsw: cleanup hf2`)
             await this.hf2.disconnectAsync()
@@ -33,7 +33,7 @@ export class USBTransportProxy implements TransportProxy {
                 payload: buf,
             })
         }
-        this.hf2 = await io.connectAsync(true)
+        this.hf2 = await io.connectAsync(true, deviceId)
         this.hf2.onJDMessage(onJDMessage)
     }
     async send(payload: Uint8Array) {

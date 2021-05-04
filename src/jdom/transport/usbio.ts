@@ -215,10 +215,12 @@ export default class USBIO {
         return !!this.iface
     }
 
-    private async tryReconnectAsync() {
+    private async tryReconnectAsync(deviceId?: string) {
         try {
             const devices = await this.options.getDevices()
-            this.dev = devices[0]
+            this.dev = deviceId
+                ? devices.find(dev => dev.serialNumber === deviceId)
+                : devices[0]
         } catch (e) {
             console.log(e)
             this.dev = undefined
@@ -234,8 +236,8 @@ export default class USBIO {
         }
     }
 
-    async connectAsync(background: boolean) {
-        await this.tryReconnectAsync()
+    async connectAsync(background: boolean, deviceId?: string) {
+        await this.tryReconnectAsync(deviceId)
         if (!this.dev && !background) await this.requestDeviceAsync()
         // background call and no device, just give up for now
         if (!this.dev && background) throwError("device not paired", true)

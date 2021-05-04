@@ -13,5 +13,6 @@ export interface TransportPacketMessage extends TransportMessage {
 
 export interface TransportConnectMessage extends TransportMessage {
     type: "connect"
+    deviceId?: string
     background?: boolean
 }

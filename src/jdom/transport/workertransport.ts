@@ -25,7 +25,7 @@ class WorkerTransport extends JDTransport {
         public readonly type: string,
         public readonly worker: Worker,
         public readonly options: {
-            requestDevice: () => Promise<void>
+            requestDevice: () => Promise<string>
         } & JDTransportOptions
     ) {
         super(type, options)
@@ -81,14 +81,16 @@ class WorkerTransport extends JDTransport {
     }
 
     protected async transportConnectAsync(background?: boolean) {
+        let deviceId: string;
         if (!background) {
             // request permission first
-            await this.options.requestDevice()
+            deviceId = await this.options.requestDevice()
         }
 
         // try connect
         await this.postMessageAsync<void>({
             type: "connect",
+            deviceId,
             background,
         } as TransportConnectMessage)
     }
@@ -104,7 +106,7 @@ export function createUSBWorkerTransport(worker: Worker) {
     return (
         isWebUSBEnabled() &&
         new WorkerTransport(USB_TRANSPORT, worker, {
-            requestDevice: () => usbRequestDevice(USB_FILTERS).then(() => {}),
+            requestDevice: () => usbRequestDevice(USB_FILTERS).then(dev => dev?.serialNumber),
             connectObservable: new EventTargetObservable(
                 navigator.usb,
                 "connect"
