@@ -139,7 +139,7 @@ namespace jacdac {
         }
 
         get regCode() {
-            return this.serviceCommand & 0xfff
+            return this.serviceCommand & CMD_REG_MASK
         }
 
         get data(): Buffer {

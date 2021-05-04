@@ -637,6 +637,18 @@ namespace jacdac {
             _devices.push(this)
         }
 
+        get flags(): ControlAnnounceFlags {
+            return this.services ? this.services.getNumber(NumberFormat.UInt16LE, 0) : 0
+        }
+
+        get resetCount() {
+            return this.flags & ControlAnnounceFlags.RestartCounterSteady
+        }
+
+        get packetCount() {
+            return this.services ? this.services[3] : 0
+        }
+
         get isConnected() {
             return this.clients != null
         }
@@ -663,6 +675,16 @@ namespace jacdac {
         private lookupQuery(reg: number) {
             if (!this.queries) this.queries = []
             return this.queries.find(q => q.reg == reg)
+        }
+
+        get serviceClassLength() {
+            return !this.services ? 0 : this.services.length >> 2
+        }
+
+        serviceClassAt(serviceIndex: number) {
+            return serviceIndex == 0  ? 0
+                : this.services ? this.services.getNumber(NumberFormat.UInt32LE, serviceIndex << 2) 
+                : 0
         }
 
         queryInt(reg: number, refreshRate = 1000) {
@@ -722,8 +744,8 @@ namespace jacdac {
         }
 
         handleCtrlReport(pkt: JDPacket) {
-            if ((pkt.serviceCommand & CMD_TYPE_MASK) == CMD_GET_REG) {
-                const reg = pkt.serviceCommand & CMD_REG_MASK
+            if (pkt.isRegGet) {
+                const reg = pkt.regCode
                 const q = this.lookupQuery(reg)
                 if (q) {
                     q.value = pkt.data
@@ -733,13 +755,11 @@ namespace jacdac {
         }
 
         hasService(serviceClass: number) {
-            for (let i = 4; i < this.services.length; i += 4)
-                if (
-                    this.services.getNumber(NumberFormat.UInt32LE, i) ==
-                    serviceClass
-                )
-                    return true
-            return false
+            const n = this.serviceClassLength
+            for (let i = 0; i < n; ++i)
+                if (this.serviceClassAt(i) === serviceClass)
+                    return true;
+            return false;
         }
 
         clientAtServiceIndex(serviceIndex: number) {
@@ -905,11 +925,10 @@ namespace jacdac {
         if (restartCounter < 0xf) restartCounter++
         ids[0] =
             restartCounter |
-            ((ControlAnnounceFlags.IsClient |
-                ControlAnnounceFlags.SupportsACK |
-                ControlAnnounceFlags.SupportsBroadcast |
-                ControlAnnounceFlags.SupportsFrames) <<
-                8)
+            ControlAnnounceFlags.IsClient |
+            ControlAnnounceFlags.SupportsACK |
+            ControlAnnounceFlags.SupportsBroadcast |
+            ControlAnnounceFlags.SupportsFrames
         const buf = Buffer.create(ids.length * 4)
         for (let i = 0; i < ids.length; ++i)
             buf.setNumber(NumberFormat.UInt32LE, i * 4, ids[i])
@@ -1046,7 +1065,7 @@ namespace jacdac {
 
             if (pkt.serviceIndex == JD_SERVICE_INDEX_CTRL) {
                 if (pkt.serviceCommand == SystemCmd.Announce) {
-                    if (dev && (dev.services[0] & 0xf) > (pkt.data[0] & 0xf)) {
+                    if (dev && dev.resetCount > (pkt.data[0] & 0xf)) {
                         // if the reset counter went down, it means the device resetted; treat it as new device
                         log(`device ${dev.shortId} resetted`)
                         _devices.removeElement(dev)
@@ -1082,10 +1101,7 @@ namespace jacdac {
 
             dev.lastSeen = control.millis()
 
-            const serviceClass = dev.services.getNumber(
-                NumberFormat.UInt32LE,
-                pkt.serviceIndex << 2
-            )
+            const serviceClass = dev.serviceClassAt(pkt.serviceIndex)
             if (!serviceClass || serviceClass == 0xffffffff) return
 
             if (pkt.isEvent) {

@@ -53,12 +53,12 @@ function addClient(cls: number, name: string) {
 }
 addClient(0x1f140409, "left_leg/acc1")
 addClient(0x1473a263, "btn1")
-//addClient(0x16c810b8, "small/hum")
+addClient(0x16c810b8, "small/hum")
 addClient(0x1421bac7, "small/temp")
 addClient(0x169c9dc6, "big/eco2")
-//addClient(0x16c810b8, "big/hum")
+addClient(0x16c810b8, "big/hum")
 addClient(0x1421bac7, "big/temp")
-//addClient(0x16c810b8, "xsmall/hum")
+addClient(0x16c810b8, "xsmall/hum")
 addClient(0x1421bac7, "xsmall/temp")
 
 jacdac._rolemgr.clearRoles()

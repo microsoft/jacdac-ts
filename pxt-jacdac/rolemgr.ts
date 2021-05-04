@@ -190,7 +190,7 @@ namespace jacdac._rolemgr {
         checkProxy() {
             const now = control.micros()
             const self = jacdac.selfDevice();
-            const devs = jacdac.devices().filter(d => d !== self && d.hasService(SRV_ROLE_MANAGER));
+            const devs = jacdac.devices().filter(d => d !== self && !!(d.flags & ControlAnnounceFlags.IsClient));
             if (!devs.length)
                 return; // nothing to do here
 
