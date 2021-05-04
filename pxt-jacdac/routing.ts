@@ -511,6 +511,7 @@ namespace jacdac {
         private handleConnected() {
             // refresh registers
             this.config.resend()
+            // if the device has any status light (StatusLightRgbFade is 0b..11.. mask)
             if (this.device.announceflags & ControlAnnounceFlags.StatusLightRgbFade) {
                 control.runInParallel(function() {
                     // When the brain connects the device to its role manager, the device will blink green quickly three times (75ms on, 75ms off).
@@ -669,7 +670,7 @@ namespace jacdac {
         }
 
         get packetCount() {
-            return this.services ? this.services[3] : 0
+            return this.services ? this.services[2] : 0
         }
 
         get isConnected() {
