@@ -512,26 +512,40 @@ namespace jacdac {
             // refresh registers
             this.config.resend()
             // if the device has any status light (StatusLightRgbFade is 0b..11.. mask)
-            if (this.device.announceflags & ControlAnnounceFlags.StatusLightRgbFade) {
-                control.runInParallel(function() {
-                    // When the brain connects the device to its role manager, the device will blink green quickly three times (75ms on, 75ms off).
-                    const green = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, 0xff, 0, 0]))
-                    green.serviceIndex = 0
-                    const off = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, 0, 0, 0]))
-                    off.serviceIndex = 0
-                    const interval = 75
-                    const repeat = 3
-                    for(let i = 0; i < repeat; ++i) {
-                        green._sendCmd(this.device)
-                        pause(interval)
-                        off._sendCmd(this.device)
-                        pause(interval)
-                    }
-                })
-            }
+            if (this.device.announceflags & ControlAnnounceFlags.StatusLightRgbFade) 
+                control.runInParallel(() => this.connectedBlink())
             // user handler
             if (this._onConnected)
                 this._onConnected()
+        }
+
+        private connectedBlink() {
+            // double quick blink, pause, 4x
+            const g = 0xff >> 2
+            const og = 0x01
+            const tgreen = 96
+            const tgreenoff = 192
+            const toff = 512
+            const greenRepeat = 2
+            const repeat = 3
+
+            const green = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, g, 0, 0]))
+            green.serviceIndex = 0
+            const greenoff = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, og, 0, 0]))
+            greenoff.serviceIndex = 0
+            const off = JDPacket.from(ControlCmd.SetStatusLight, jdpack<[number, number, number, number]>("u8 u8 u8 u8", [0, 0, 0, 0]))
+            off.serviceIndex = 0
+
+            for(let i = 0; i < repeat; ++i) {
+                for(let j = 0; j < greenRepeat; ++j) {
+                    green._sendCmd(this.device)
+                    pause(tgreen)
+                    greenoff._sendCmd(this.device)
+                    pause(tgreenoff)
+                }
+                pause(toff - tgreenoff)
+            }
+            off._sendCmd(this.device)
         }
 
         _detach() {

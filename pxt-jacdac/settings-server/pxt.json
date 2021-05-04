@@ -1,6 +1,6 @@
 {
     "name": "jacdac-settings-server",
-    "version": "0.4.56",
+    "version": "0.4.57",
     "description": "MakeCode support for Jacdac Settings server",
     "files": [
         "server.ts"
