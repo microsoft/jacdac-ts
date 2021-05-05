@@ -564,6 +564,7 @@ export async function flashFirmwareBlob(
     bus: JDBus,
     blob: FirmwareBlob,
     updateCandidates: FirmwareInfo[],
+    ignoreFirmwareCheck: boolean,
     progress?: (perc: number) => void
 ) {
     if (!updateCandidates?.length) return
@@ -574,9 +575,11 @@ export async function flashFirmwareBlob(
         log(`resetting ${device}`)
         await device.sendCtrlCommand(ControlCmd.Reset)
     }
-    const flashers = (await scanCore(bus, 10, true, true)).flashers.filter(
-        f => f.dev_class == blob.firmwareIdentifier
+    const allFlashers = (await scanCore(bus, 10, true, true)).flashers
+    const flashers = allFlashers.filter(
+        f => !!ignoreFirmwareCheck || f.dev_class == blob.firmwareIdentifier
     )
+    console.log({ allFlashers, flashers })
     if (!flashers.length) throw new Error("no devices to flash")
     if (flashers.length != updateCandidates.length) {
         console.log(flashers, blob)
