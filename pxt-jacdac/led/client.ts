@@ -142,14 +142,16 @@ namespace modules {
         //% block="animate %led to %color at speed %speed"
         //% weight=91
         //% color.shadow="colorNumberPicker"
+        //% speed.min=0
+        //% speed.max=100
         animate(color: number, speed: number): void {
             this.start();
-            const r = (color << 16) & 0xff
-            const g = (color << 8) & 0xff
+            const r = (color >> 16) & 0xff
+            const g = (color >> 8) & 0xff
             const b = color & 0xff
-            this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.LedCmd.Animate, "u8 u8 u8 u8", [r, g, b, speed]))
-        }
-    
+            const s = speed <= 0 ? 0x01 : speed >= 100 ? 0 : ((speed / 100 * 0xff) | 0)
+            this.sendCommand(jacdac.JDPacket.jdpacked(jacdac.LedCmd.Animate, "u8 u8 u8 u8", [r, g, b, s]))
+        }    
     }
     //% fixedInstance whenUsed block="led 1"
     export const led1 = new LedClient("led1");

@@ -1,6 +1,6 @@
 {
     "name": "jacdac-sensor-aggregator",
-    "version": "0.4.57",
+    "version": "0.4.59",
     "description": "MakeCode support for Jacdac Sensor aggregator service",
     "dependencies": {
         "core": "*",
