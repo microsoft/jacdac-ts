@@ -170,6 +170,8 @@ namespace modules {
         */
         //% group="Sensor Aggregator"
         //% weight=89
+        //% value.min=0
+        //% value.max=255
         setInputsServiceNum(value: undefined) {
             this.start();
             const values = this._inputs.values as any[];
@@ -196,6 +198,8 @@ namespace modules {
         */
         //% group="Sensor Aggregator"
         //% weight=87
+        //% value.min=0
+        //% value.max=255
         setInputsSampleSize(value: undefined) {
             this.start();
             const values = this._inputs.values as any[];

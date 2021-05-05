@@ -65,6 +65,8 @@ namespace modules {
         */
         //% group="Bit:radio"
         //% weight=97
+        //% value.min=0
+        //% value.max=255
         setGroup(value: number) {
             this.start();
             const values = this._group.values as any[];

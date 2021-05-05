@@ -262,6 +262,8 @@ namespace modules {
         */
         //% group="Protocol Test"
         //% weight=82
+        //% value.min=0
+        //% value.max=255
         setRwI8U8U16I32U8(value: number) {
             this.start();
             const values = this._rwI8U8U16I32.values as any[];
@@ -382,6 +384,8 @@ namespace modules {
         */
         //% group="Protocol Test"
         //% weight=72
+        //% value.min=0
+        //% value.max=255
         setRwU8StringU8(value: number) {
             this.start();
             const values = this._rwU8String.values as any[];

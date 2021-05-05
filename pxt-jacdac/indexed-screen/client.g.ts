@@ -84,6 +84,8 @@ namespace modules {
         */
         //% group="Indexed screen"
         //% weight=97
+        //% value.min=0
+        //% value.max=255
         setPaletteBlue(value: ([number, number, number])[]) {
             this.start();
             const values = this._palette.values as any[];
@@ -112,6 +114,8 @@ namespace modules {
         */
         //% group="Indexed screen"
         //% weight=95
+        //% value.min=0
+        //% value.max=255
         setPaletteGreen(value: undefined) {
             this.start();
             const values = this._palette.values as any[];
@@ -140,6 +144,8 @@ namespace modules {
         */
         //% group="Indexed screen"
         //% weight=93
+        //% value.min=0
+        //% value.max=255
         setPaletteRed(value: undefined) {
             this.start();
             const values = this._palette.values as any[];
@@ -168,6 +174,8 @@ namespace modules {
         */
         //% group="Indexed screen"
         //% weight=91
+        //% value.min=0
+        //% value.max=255
         setPalettePadding(value: undefined) {
             this.start();
             const values = this._palette.values as any[];
@@ -267,6 +275,8 @@ namespace modules {
         */
         //% group="Indexed screen"
         //% weight=84
+        //% value.min=0
+        //% value.max=255
         setUpSampling(value: number) {
             this.start();
             const values = this._upSampling.values as any[];
