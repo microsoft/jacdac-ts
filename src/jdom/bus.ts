@@ -113,7 +113,6 @@ export class JDBus extends JDNode {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
     private _roleManagerClient: RoleManagerClient
-
     private _minLoggerPriority = LoggerPriority.Log
     private _firmwareBlobs: FirmwareBlob[]
     private _announcing = false
