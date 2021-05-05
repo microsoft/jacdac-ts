@@ -68,7 +68,19 @@ class WorkerTransport extends JDTransport {
                 }
                 break
             }
+            case "error": {
+                const { error } = data
+                console.error(error)
+                this.handleError()
+                break
+            }
         }
+    }
+
+    private async handleError() {
+        console.debug(`webusb: error, reconnect...`)
+        await this.disconnect()
+        await this.connect(true)
     }
 
     protected async transportSendPacketAsync(p: Packet): Promise<void> {
@@ -81,7 +93,7 @@ class WorkerTransport extends JDTransport {
     }
 
     protected async transportConnectAsync(background?: boolean) {
-        let deviceId: string;
+        let deviceId: string
         if (!background) {
             // request permission first
             deviceId = await this.options.requestDevice()
@@ -106,7 +118,8 @@ export function createUSBWorkerTransport(worker: Worker) {
     return (
         isWebUSBEnabled() &&
         new WorkerTransport(USB_TRANSPORT, worker, {
-            requestDevice: () => usbRequestDevice(USB_FILTERS).then(dev => dev?.serialNumber),
+            requestDevice: () =>
+                usbRequestDevice(USB_FILTERS).then(dev => dev?.serialNumber),
             connectObservable: new EventTargetObservable(
                 navigator.usb,
                 "connect"
