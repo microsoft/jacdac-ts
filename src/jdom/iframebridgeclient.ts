@@ -138,7 +138,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     private handleDriverMessage(msg: { type: string }) {
-        console.log("pxt message", msg)
+        //console.log("pxt message", msg)
         switch (msg.type) {
             case "run": {
                 // simulation is starting
