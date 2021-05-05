@@ -16,7 +16,7 @@ export function isWebBluetoothSupported(): boolean {
         return (
             typeof navigator !== "undefined" &&
             !!navigator.bluetooth &&
-            !!navigator.bluetooth.getDevices
+            !!navigator.bluetooth.requestDevice
         )
     } catch (e) {
         return false
