@@ -253,7 +253,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
         if (dependencies?.length > 0) {
             // remove all needed extenions that are already in the dependencies
             extensions = extensions.filter(extension => {
-                console.log(`check ext`, { extension })
+                //console.log(`check ext`, { extension })
                 return dependencies.indexOf(extension) < 0
             })
         }
