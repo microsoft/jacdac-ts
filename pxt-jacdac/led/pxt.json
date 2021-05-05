@@ -4,7 +4,7 @@
     "description": "A controller for 1 or more monochrome or RGB LEDs connected in parallel.",
     "files": [
         "constants.ts",
-        "client.g.ts"
+        "client.ts"
     ],
     "testFiles": [
         "test.ts"
