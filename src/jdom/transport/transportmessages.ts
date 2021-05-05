@@ -1,5 +1,5 @@
 export interface TransportMessage {
-    type: "connect" | "disconnect" | "send" | "packet" | "frame"
+    type: "connect" | "disconnect" | "send" | "packet" | "frame" | "error"
     id?: string
     error?: {
         message?: string
