@@ -1,5 +1,5 @@
 namespace jacdac {
-    export const SETTINGS_PREFIX = "jdsts:"
+    export const SETTINGS_PREFIX = "jd:"
     export class SettingsServer extends Server {
         constructor(name: string) {
             super(name, jacdac.SRV_SETTINGS);

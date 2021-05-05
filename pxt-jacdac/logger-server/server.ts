@@ -4,7 +4,7 @@ namespace jacdac {
         minPriority = jacdac.LoggerPriority.Silent;
 
         constructor() {
-            super("conh", jacdac.SRV_LOGGER);
+            super("logger", jacdac.SRV_LOGGER);
             this._lastListenerTime = 0;
         }
 

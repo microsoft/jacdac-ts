@@ -1,6 +1,6 @@
 {
     "name": "jacdac",
-    "version": "0.4.59",
+    "version": "0.4.60",
     "description": "Jacdac for MakeCode",
     "dependencies": {
         "core": "*",
@@ -37,6 +37,9 @@
         "logger/constants.ts",
         "logger/client.ts",
         "logger-server/server.ts",
+        "settings/constants.ts",
+        "settings/client.ts",
+        "settings-server/server.ts",
         "sensor/constants.ts",
         "sensor/client.ts",
         "sensor/server.ts",

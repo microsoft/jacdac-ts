@@ -1,6 +1,6 @@
 namespace modules {
     /**
-     * Non-volatile key-value storage interface for storing settings.
+     * Persistent key-value storage interface for storing settings.
      **/
     //% fixedInstances blockGap=8
     export class SettingsClient extends jacdac.Client {
@@ -17,7 +17,7 @@ namespace modules {
          */
         //% group="Settings"
         //% blockId=jacdac_on_settings_change
-        //% block="on %settings change"
+        //% block="on $settings change"
         //% weight=100
         onChange(handler: () => void): void {
             this.registerEvent(jacdac.SettingsEvent.Change, handler);
@@ -28,7 +28,7 @@ namespace modules {
         */
         //% group="Settings"
         //% blockId=jacdac_settings_get_cmd
-        //% block="%settings get"
+        //% block="get from $settings at $key"
         //% weight=99
         get(key: string): void {
             this.start();
@@ -40,7 +40,7 @@ namespace modules {
         */
         //% group="Settings"
         //% blockId=jacdac_settings_set_cmd
-        //% block="%settings set"
+        //% block="set $settings $key to $value"
         //% weight=98
         set(key: string, value: Buffer): void {
             this.start();
@@ -52,7 +52,7 @@ namespace modules {
         */
         //% group="Settings"
         //% blockId=jacdac_settings_delete_cmd
-        //% block="%settings delete"
+        //% block="delete $settings value at $key"
         //% weight=97
         delete(key: string): void {
             this.start();
@@ -64,7 +64,7 @@ namespace modules {
         */
         //% group="Settings"
         //% blockId=jacdac_settings_clear_cmd
-        //% block="%settings clear"
+        //% block="clear %settings"
         //% weight=96
         clear(): void {
             this.start();

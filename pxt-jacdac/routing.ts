@@ -1246,7 +1246,8 @@ namespace jacdac {
      */
     export function start(options?: {
         disableLogger?: boolean
-        disableRoleManager?: boolean
+        disableRoleManager?: boolean,
+        disableSettings?: boolean
     }): void {
         if (_hostServices) return // already started
 
@@ -1304,8 +1305,11 @@ namespace jacdac {
         }
         if (!options.disableRoleManager) {
             roleManagerServer.start()
-            controlServer.sendUptime()
         }
+        if (!options.disableSettings) {
+            jacdac.settingsServer.start()
+        }
+        controlServer.sendUptime()
         // and we're done
         log("jacdac started")
     }
