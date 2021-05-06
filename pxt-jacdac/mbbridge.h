@@ -8,7 +8,8 @@ extern void (*sendJDFrame)(const uint8_t *data);
 } // namespace pxt
 namespace jacdac {
 void mbbridge_init();
-}
+void jdble_init();
+} // namespace jacdac
 #endif
 
 namespace jacdac {

@@ -1,0 +1,32 @@
+{
+    "name": "jacdac-ble-transport",
+    "version": "0.0.0",
+    "description": "Support for sending Jacdac packets over BLE.",
+    "dependencies": {
+        "core": "*",
+        "jacdac": "file:../"
+    },
+    "yotta": {
+        "config": {
+            "DEVICE_BLE": 1,
+            "JACDAC_BLE_TRANSPORT": 1,
+            "SOFTDEVICE_PRESENT": 1,
+            "MICROBIT_BLE_ENABLED" : 1,
+            "MICROBIT_BLE_PAIRING_MODE": 0,
+            "MICROBIT_BLE_DFU_SERVICE": 1,
+            "MICROBIT_BLE_DEVICE_INFORMATION_SERVICE": 1,
+            "MICROBIT_BLE_EVENT_SERVICE" : 1,
+            "MICROBIT_BLE_PARTIAL_FLASHING" : 0,
+            "MICROBIT_BLE_OPEN":1,
+            "MICROBIT_BLE_SECURITY_MODE":2
+        }
+    },
+    "files": [
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "microbit"
+    ]
+}
