@@ -4,19 +4,12 @@ import {
 } from "../../jacdac-spec/spectool/jdtestfuns"
 import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 
-import { CHANGE, EVENT } from "../jdom/constants"
+import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
-import { JDRegister } from "../jdom/register"
-import { JDEvent } from "../jdom/event"
-import { JDServiceClient } from "../jdom/serviceclient"
-import {
-    isEvent,
-    isRegister,
-    serviceSpecificationFromClassIdentifier,
-} from "../jdom/spec"
 import { roundWithPrecision } from "../jdom/utils"
-import { unparse, StartMap, JDExprEvaluator, CallEvaluator } from "../vm/vm"
+import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/vm"
+import { VMClient } from "../vm/vmclient"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -51,12 +44,6 @@ function commandStatusToTestStatus(status: JDTestCommandStatus) {
 function cmdToTestFunction(cmd: jdtest.TestCommandSpec) {
     const id = (<jsep.Identifier>cmd.call.callee).name
     return getTestCommandFunctions().find(t => t.id == id)
-}
-
-type SMap<T> = { [v: string]: T }
-
-class JDTestCommandClosure {
-
 }
 
 class JDCommandEvaluator {
@@ -371,18 +358,13 @@ class JDCommandEvaluator {
                 break
             }
             case "assign": {
-                const reg = args[0] as jsep.Identifier
-                const jdreg = this.testRunner.serviceTestRunner.registers[
-                    reg.name
-                ]
                 const expr = new JDExprEvaluator(
                     this.env,
                     this.callEval(this._startExpressions)
                 )
                 const ev = expr.eval(args[1])
-                if (jdreg) {
-                    const fmt = jdreg.specification?.packFormat
-                    jdreg.sendSetPackedAsync(fmt, [ev])
+                const reg = args[0] as jsep.Identifier
+                if (this.testRunner.serviceTestRunner.writeRegister(reg.name, ev)) {
                     this._status = JDTestCommandStatus.Passed
                     this._progress = `wrote ${ev} to register ${reg.name}`
                 }
@@ -620,93 +602,40 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
-async function refresh_env(registers: SMap<JDRegister>) {
-    for (const k in registers) {
-        const register = registers[k]
-        let retry = 0
-        let val: any = undefined
-        do {
-            await register.refresh()
-            val = register.unpackedValue?.[0]
-        } while (val === undefined && retry++ < 2)
-    }
-}
-
-export class JDServiceTestRunner extends JDServiceClient {
+export class JDServiceTestRunner {
     private _testIndex = -1
-    private _registers: SMap<JDRegister> = {}
-    private _events: SMap<JDEvent> = {}
+    private _vmClient: VMClient;
     public readonly tests: JDTestRunner[]
 
     constructor(
         public readonly testSpec: jdtest.ServiceTestSpec,
         service: JDService
     ) {
-        super(service)
+        this._vmClient = new VMClient(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
-        const serviceSpec = serviceSpecificationFromClassIdentifier(
-            service.serviceClass
-        )
         this.testSpec.tests.forEach(t => {
             t.events.forEach(eventName => {
-                if (!this.events[eventName]) {
-                    const pkt = serviceSpec.packets.find(
-                        pkt => isEvent(pkt) && pkt.name === eventName
-                    )
-                    const event = service.event(pkt.identifier)
-                    this.events[eventName] = event
-                    this.mount(
-                        event.subscribe(EVENT, () => {
-                            this.currentTest?.eventChange(eventName)
-                        })
-                    )
-                }
+                this._vmClient.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
             })
             t.registers.forEach(regName => {
-                if (!this._registers[regName]) {
-                    const pkt = serviceSpec.packets.find(
-                        pkt => isRegister(pkt) && pkt.name === regName
-                    )
-                    const register = service.register(pkt.identifier)
-                    this._registers[regName] = register
-                    this.mount(
-                        register.subscribe(CHANGE, () => {
-                            this.currentTest?.envChange()
-                        })
-                    )
-                }
+                this._vmClient.registerRegister(regName, () => { this.currentTest?.envChange() })
             })
         })
         this.start()
     }
 
+    public refreshEnvironment() {
+        this._vmClient.refreshEnvironment();
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(root: string, fld = ""): any {
-        if (root in this.registers) {
-            if (!fld) return this.registers[root].unpackedValue?.[0]
-            else {
-                const field = this.registers[root].fields.find(
-                    f => f.name === fld
-                )
-                return field?.value
-            }
-        } else if (root in this.events) {
-            const field = this.events[root].fields?.find(f => f.name === fld)
-            return field?.value
-        }
-        return undefined
+        return this._vmClient.lookup(root, fld)
     }
 
-    public refreshEnvironment() {
-        refresh_env(this.registers)
-    }
-
-    public get registers() {
-        return this._registers
-    }
-
-    public get events() {
-        return this._events
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public writeRegister(regName: string, val: any) {
+        return this._vmClient.writeRegister(regName, val)
     }
 
     private get testIndex() {
@@ -722,10 +651,9 @@ export class JDServiceTestRunner extends JDServiceClient {
                     ct.cancel()
                 }
             }
-
             // update test
             this._testIndex = index
-            this.emit(CHANGE)
+            this._vmClient.emit(CHANGE)
         }
     }
 

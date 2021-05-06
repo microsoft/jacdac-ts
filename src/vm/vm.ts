@@ -1,13 +1,26 @@
 
-// TODO:
-// VM executes a set of handlers
-// each handler is a sequence of commands, usually starting with a wait command
-// each command has a closure to keep state it needs for its execution
-// - start
-// - executeOnChange
-// - finish
-// state persisted across commands
+/*
+The JD-VM runs a program, which is a set of handlers. Each handler is of the form
+•	wait on event/condition, followed by a
+•	sequence of guarded commands – the sequence is executed atomically (though may suspend if it contains a wait)
+After a handler finishes executing, it restarts (there is an implicit event loop around all the handlers, as usual). 
+ 
+We will have a small key-value store to keep program state (perhaps we will have the ability to store lists of values as well as basic values) across the handler executions.
+ 
+Commands can talk to JD services (probably via roles), as well as read/write program state, and wait on events/expressions. Any command can be guarded by an expression, for conditional execution.
+ 
+Expressions can be against service registers (as in the test case) and program state.
+ 
+*/
 
+export type SMap<T> = { [v: string]: T }
+
+export type GetValue = (root: string, fld: string) => any
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type StartMap = { e: jsep.Expression; v: any }[]
+
+export type CallEvaluator = (ce: jsep.CallExpression, ee: JDExprEvaluator) => any
 
 export function unparse(e: jsep.Expression): string {
     switch (e.type) {
@@ -46,13 +59,6 @@ export function unparse(e: jsep.Expression): string {
             return "TODO"
     }
 }
-
-
-export type GetValue = (root: string, fld: string) => any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type StartMap = { e: jsep.Expression; v: any }[]
-
-export type CallEvaluator = (ce: jsep.CallExpression, ee: JDExprEvaluator) => any
 
 export class JDExprEvaluator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
