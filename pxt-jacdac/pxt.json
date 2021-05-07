@@ -18,6 +18,9 @@
         "hw.h",
         "mbbridge.h",
         "mbbridge.cpp",
+        "JacdacBLE.h",
+        "JacdacBLE.cpp",
+        "jdble.cpp",
         "mbcompat.ts",
         "commands.ts",
         "config.ts",
@@ -54,7 +57,6 @@
         "test.ts"
     ],
     "testDependencies": {
-        "radio": "*"
     },
     "fileDependencies": {
         "mbcompat.ts": "target:microbit",

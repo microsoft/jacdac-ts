@@ -65,6 +65,7 @@ export default class JDRegisterServer<
     TValues extends PackedValues
 > extends JDEventSource {
     data: Uint8Array
+    lastSetTime: number
     private readonly resetData: Uint8Array
     readonly specification: jdspec.PacketInfo
     readOnly: boolean
@@ -170,6 +171,7 @@ export default class JDRegisterServer<
                 this.data = d
                 changed = true
             }
+            this.lastSetTime = this.service.device.bus.timestamp
             this.emit(REPORT_RECEIVE)
             if (changed) this.emit(CHANGE)
         }

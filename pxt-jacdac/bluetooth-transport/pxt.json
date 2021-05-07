@@ -1,0 +1,25 @@
+{
+    "name": "jacdac-bluetooth-transport",
+    "version": "0.0.0",
+    "description": "Support for sending Jacdac packets over BLE.",
+    "dependencies": {
+        "core": "*",
+        "jacdac": "file:../"
+    },
+    "yotta": {
+        "config": {
+            "DEVICE_BLE": 1,
+            "JACDAC_BLE_TRANSPORT": 1,
+            "SOFTDEVICE_PRESENT": 1,
+            "MICROBIT_BLE_ENABLED" : 1
+        }
+    },
+    "files": [
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "microbit"
+    ]
+}

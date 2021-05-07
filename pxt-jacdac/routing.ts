@@ -21,6 +21,7 @@ namespace jacdac {
     let _pktCallbacks: ((p: JDPacket) => void)[]
     let restartCounter = 0
     let autoBindCnt = 0
+    let resetIn = 2000000 // 2s
     export let autoBind = true
 
     function log(msg: string) {
@@ -974,6 +975,11 @@ namespace jacdac {
         _announceCallbacks.forEach(f => f())
         for (const cl of _allClients) cl.announceCallback()
         gcDevices()
+
+        // send resetin to whoever wants to listen for it
+        if (resetIn)
+            JDPacket.from(ControlReg.ResetIn | CMD_SET_REG, jdpack("u32", [resetIn]))
+            .sendAsMultiCommand(SRV_CONTROL)
 
         // only try autoBind, proxy we see some devices online
         if (_devices.length > 1) {
