@@ -1,6 +1,6 @@
 {
     "name": "jacdac",
-    "version": "0.4.63",
+    "version": "0.4.64",
     "description": "Jacdac for MakeCode",
     "dependencies": {
         "core": "*",
@@ -56,8 +56,7 @@
         "test.microbit.ts",
         "test.ts"
     ],
-    "testDependencies": {
-    },
+    "testDependencies": {},
     "fileDependencies": {
         "mbcompat.ts": "target:microbit",
         "test.microbit.ts": "target:microbit"

@@ -1,6 +1,6 @@
 {
     "name": "jacdac-motor",
-    "version": "0.4.63",
+    "version": "0.4.64",
     "description": "MakeCode support for Jacdac Motor service",
     "dependencies": {
         "core": "*",
