@@ -34,6 +34,7 @@ function bleRequestDevice(
     if (!Flags.webUSB) return Promise.resolve(undefined)
 
     try {
+        console.debug(`bluetooth request`, { options })
         return navigator?.bluetooth?.requestDevice?.(options)
     } catch (e) {
         if (Flags.diagnostics) console.warn(e)
