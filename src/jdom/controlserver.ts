@@ -32,7 +32,6 @@ export default class ControlServer extends JDServiceServer {
             ControlReg.McuTemperature,
             [25]
         )
-        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn)
         this.uptime = this.addRegister<[number]>(ControlReg.Uptime)
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this))
