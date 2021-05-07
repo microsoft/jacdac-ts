@@ -71,16 +71,10 @@ class WorkerTransport extends JDTransport {
             case "error": {
                 const { error } = data
                 console.error(error)
-                this.handleError()
+                this.errorHandler("worker", error)
                 break
             }
         }
-    }
-
-    private async handleError() {
-        console.debug(`webusb: error, reconnect...`)
-        await this.disconnect()
-        await this.connect(true)
     }
 
     protected async transportSendPacketAsync(p: Packet): Promise<void> {
