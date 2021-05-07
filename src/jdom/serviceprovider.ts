@@ -27,8 +27,6 @@ export default class JDServiceProvider extends JDEventSource {
     public readonly shortId: string
     public readonly controlService: ControlServer
     private _restartCounter = 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _resetTimeOut: any
     private _packetCount = 0
     private _eventCounter: number = undefined
     private _delayedPackets: {
@@ -40,10 +38,11 @@ export default class JDServiceProvider extends JDEventSource {
         services: JDServiceServer[],
         options?: {
             deviceId?: string
+            resetIn?: boolean
         }
     ) {
         super()
-        this.controlService = new ControlServer()
+        this.controlService = new ControlServer(options)
         this._services = []
         this.deviceId = options?.deviceId
         if (!this.deviceId) {
@@ -56,10 +55,6 @@ export default class JDServiceProvider extends JDEventSource {
         this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this)
         this.handlePacket = this.handlePacket.bind(this)
 
-        this.controlService.resetIn.on(
-            REPORT_RECEIVE,
-            this.handleResetIn.bind(this)
-        )
         this.on(REFRESH, this.refreshRegisters.bind(this))
     }
 
@@ -252,23 +247,9 @@ export default class JDServiceProvider extends JDEventSource {
     }
 
     reset() {
-        this.clearResetTimer()
         this._restartCounter = 0
         this._packetCount = 0
         this._services?.forEach(srv => srv.reset())
         this.emit(RESET)
-    }
-
-    private clearResetTimer() {
-        if (this._resetTimeOut) {
-            clearTimeout(this._resetTimeOut)
-            this._resetTimeOut = undefined
-        }
-    }
-
-    private handleResetIn() {
-        const [t] = this.controlService.resetIn.values()
-        if (this._resetTimeOut) clearTimeout(this._resetTimeOut)
-        if (t) this._resetTimeOut = setTimeout(() => this.reset(), t)
     }
 }
