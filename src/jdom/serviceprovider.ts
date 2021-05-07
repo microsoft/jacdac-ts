@@ -103,7 +103,6 @@ export default class JDServiceProvider extends JDEventSource {
 
     private stop() {
         this._delayedPackets = undefined
-        this.clearResetTimer()
         if (!this._bus) return
 
         this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
