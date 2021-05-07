@@ -12,8 +12,6 @@ uint64_t current_time_us() {
 }
 } // namespace pxt
 
-#if CONFIG_ENABLED(DEVICE_BLE) && CONFIG_ENABLED(JACDAC_BLE_TRANSPORT)
-#else
 namespace jacdac {
 
 #define MAX_LOGQ 10
@@ -101,5 +99,5 @@ void mbbridge_init() {
 }
 
 } // namespace jacdac
-#endif
+
 #endif

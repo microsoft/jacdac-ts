@@ -2,6 +2,7 @@
     "targetWebsite": "https://makecode.microbit.org/beta",
     "overrides": {
         "testDependencies": {
+            "radio": "*"
         }
     },
     "links": {

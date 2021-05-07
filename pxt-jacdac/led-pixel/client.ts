@@ -257,17 +257,23 @@ namespace modules {
         runProgram(prog: Buffer) {
             this.start()
             this.currAnimation++
-            this.sendCommandWithAck(jacdac.JDPacket.from(jacdac.LedPixelCmd.Run, prog))
+            this.sendCommand(jacdac.JDPacket.from(jacdac.LedPixelCmd.Run, prog))
         }
 
         runEncoded(prog: string, args?: number[]) {
-            if (!args) args = []
-            this.currAnimation++
-            this.sendCommand(jacdac.JDPacket.from(jacdac.LedPixelCmd.Run, jacdac.lightEncode(prog, args)))
+            const encoded = jacdac.lightEncode(prog, args)
+            this.runProgram(encoded)
         }
 
-        set(idx: number, rgb: number) {
-            this.runEncoded("setone % # wait 1", [idx, rgb])
+        /**
+         * Set a single of the pixels on the strip to one RGB color.
+         * @param rgb RGB color of the LED
+         */
+        //% blockId="jdlight_set_pixel_color" block="set %strip color at %index pixels to %rgb=colorNumberPicker"
+        //% weight=81 blockGap=8
+        //% group="LED Pixel"
+        setPixel(index: number, rgb: number) {
+            this.runEncoded("setone % # wait 1", [index, rgb])
         }
 
         /**
@@ -348,13 +354,15 @@ namespace modules {
 
     export namespace ledPixelAnimations {
         //% fixedInstances
-        export abstract class Animation {
+        export class Animation {
             protected length: number
             protected step: number
             protected color = 0xffffff
             constructor() { }
 
-            abstract create(length: number): Animation;
+            create(length: number): Animation {
+                return undefined
+            }
 
             clear() {
                 this.step = 0

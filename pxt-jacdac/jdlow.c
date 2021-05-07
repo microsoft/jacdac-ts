@@ -205,7 +205,8 @@ void jd_line_falling() {
     uart_start_rx(rxFrame, sizeof(*rxFrame));
     // log_pin_set(1, 0);
 
-    tim_set_timer(200, setup_rx_timeout);
+    // 200us max delay according to spec, +50us to get the first 4 bytes of data
+    tim_set_timer(250, setup_rx_timeout);
 
     // target_enable_irq();
 }
