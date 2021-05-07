@@ -6,7 +6,7 @@ import {
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
-import { SMap } from "./vm"
+import { SMap } from "./expr"
 import { JDService } from "../jdom/service"
 import { CHANGE, EVENT } from "../jdom/constants"
 
@@ -22,7 +22,7 @@ export async function refresh_env(registers: SMap<JDRegister>) {
     }
 }
 
-export class VMClient extends JDServiceClient {
+export class SymbolTable extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
     private _serviceSpec: jdspec.ServiceSpec;

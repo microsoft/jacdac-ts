@@ -8,8 +8,8 @@ import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
 import { roundWithPrecision } from "../jdom/utils"
-import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/vm"
-import { VMClient } from "../vm/vmclient"
+import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
+import { SymbolTable } from "../vm/symtab"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -604,38 +604,38 @@ export class JDTestRunner extends JDEventSource {
 
 export class JDServiceTestRunner {
     private _testIndex = -1
-    private _vmClient: VMClient;
+    private _symtab: SymbolTable;
     public readonly tests: JDTestRunner[]
 
     constructor(
         public readonly testSpec: jdtest.ServiceTestSpec,
         service: JDService
     ) {
-        this._vmClient = new VMClient(service)
+        this._symtab = new SymbolTable(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {
             t.events.forEach(eventName => {
-                this._vmClient.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
+                this._symtab.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
             })
             t.registers.forEach(regName => {
-                this._vmClient.registerRegister(regName, () => { this.currentTest?.envChange() })
+                this._symtab.registerRegister(regName, () => { this.currentTest?.envChange() })
             })
         })
         this.start()
     }
 
     public refreshEnvironment() {
-        this._vmClient.refreshEnvironment();
+        this._symtab.refreshEnvironment();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(root: string, fld = ""): any {
-        return this._vmClient.lookup(root, fld)
+        return this._symtab.lookup(root, fld)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public writeRegister(regName: string, val: any) {
-        return this._vmClient.writeRegister(regName, val)
+        return this._symtab.writeRegister(regName, val)
     }
 
     private get testIndex() {
@@ -653,7 +653,7 @@ export class JDServiceTestRunner {
             }
             // update test
             this._testIndex = index
-            this._vmClient.emit(CHANGE)
+            this._symtab.emit(CHANGE)
         }
     }
 
