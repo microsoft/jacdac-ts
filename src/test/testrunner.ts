@@ -9,7 +9,7 @@ import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
 import { roundWithPrecision } from "../jdom/utils"
 import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
-import { SymbolTable } from "../vm/symtab"
+import { VMEnvironment } from "../vm/environment"
 
 export enum JDTestCommandStatus {
     NotReady,
@@ -81,7 +81,6 @@ class JDCommandEvaluator {
                 return start.find(r => r.e === e).v
             }
             const callee = <jsep.Identifier>caller.callee
-            // TODO: abstract
             switch (callee.name) {
                 case "start": 
                     return getStartVal(caller.arguments[0]);
@@ -604,38 +603,38 @@ export class JDTestRunner extends JDEventSource {
 
 export class JDServiceTestRunner {
     private _testIndex = -1
-    private _symtab: SymbolTable;
+    private _env: VMEnvironment;
     public readonly tests: JDTestRunner[]
 
     constructor(
         public readonly testSpec: jdtest.ServiceTestSpec,
         service: JDService
     ) {
-        this._symtab = new SymbolTable(service)
+        this._env = new VMEnvironment(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {
             t.events.forEach(eventName => {
-                this._symtab.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
+                this._env.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
             })
             t.registers.forEach(regName => {
-                this._symtab.registerRegister(regName, () => { this.currentTest?.envChange() })
+                this._env.registerRegister(regName, () => { this.currentTest?.envChange() })
             })
         })
         this.start()
     }
 
     public refreshEnvironment() {
-        this._symtab.refreshEnvironment();
+        this._env.refreshEnvironment();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(root: string, fld = ""): any {
-        return this._symtab.lookup(root, fld)
+        return this._env.lookup(root, fld)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public writeRegister(regName: string, val: any) {
-        return this._symtab.writeRegister(regName, val)
+        return this._env.writeRegister(regName, val)
     }
 
     private get testIndex() {
@@ -653,7 +652,7 @@ export class JDServiceTestRunner {
             }
             // update test
             this._testIndex = index
-            this._symtab.emit(CHANGE)
+            this._env.emit(CHANGE)
         }
     }
 

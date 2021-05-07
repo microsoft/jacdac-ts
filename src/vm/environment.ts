@@ -22,7 +22,7 @@ export async function refresh_env(registers: SMap<JDRegister>) {
     }
 }
 
-export class SymbolTable extends JDServiceClient {
+export class VMEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
     private _serviceSpec: jdspec.ServiceSpec;
