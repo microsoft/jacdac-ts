@@ -10,11 +10,12 @@ import {
     CMD_EVENT_COUNTER_MASK,
     CMD_EVENT_COUNTER_POS,
     CMD_EVENT_MASK,
+    ERROR,
     JD_SERVICE_INDEX_CRC_ACK,
+    MAX_SERVICES_LENGTH,
     PACKET_PROCESS,
     PACKET_SEND,
     REFRESH,
-    REPORT_RECEIVE,
     RESET,
     SELF_ANNOUNCE,
 } from "./constants"
@@ -67,6 +68,14 @@ export default class JDServiceProvider extends JDEventSource {
             srv.device = this
             srv.serviceIndex = i
         })
+        if (this._services.length >= MAX_SERVICES_LENGTH) {
+            this.emit(
+                ERROR,
+                `too many services (${this._services.length}) > ${MAX_SERVICES_LENGTH}`
+            )
+            console.warn(`jacdac: dropping services to ${MAX_SERVICES_LENGTH}`)
+            this._services = this._services.slice(0, MAX_SERVICES_LENGTH)
+        }
         this.emit(CHANGE)
     }
 
