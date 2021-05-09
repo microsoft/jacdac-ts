@@ -3,14 +3,13 @@ const cli = require("cli")
 const fs = require("fs-extra")
 import { PACKET_PROCESS } from "../jdom/constants"
 import { createUSBTransport } from "../jdom/transport/usb"
-import { getDevices, requestDevice } from "../node/nodewebusb"
+import { createNodeUSBOptions } from "../node/nodewebusb"
 import {
     deviceSpecificationToDTDL,
     serviceSpecificationToDTDL,
 } from "../azure-iot/dtdl"
 import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
 import { JDBus } from "../jdom/bus"
-
 
 cli.setApp("jacdac", "1.0.6")
 cli.enable("version")
@@ -73,12 +72,9 @@ if (options.dtdl) {
 
 // USB
 if (options.usb) {
-    const bus = new JDBus([
-        createUSBTransport({
-            getDevices,
-            requestDevice,
-        }),
-    ])
+    const opts = createNodeUSBOptions()
+    const transport = createUSBTransport(opts)
+    const bus = new JDBus([transport])
     // start listening to bus
     if (options.pkt) bus.on(PACKET_PROCESS, pkt => cli.debug(pkt))
     const run = async () => {

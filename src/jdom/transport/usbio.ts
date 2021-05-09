@@ -25,8 +25,8 @@ const controlTransferOutReport = 0x200
 const controlTransferInReport = 0x100
 
 export interface USBOptions {
-    getDevices: () => Promise<USBDevice[]>
     requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
+    getDevices: (options: USBDeviceRequestOptions) => Promise<USBDevice[]>
     connectObservable?: Observable<void>
     disconnectObservable?: Observable<void>
 }
@@ -217,7 +217,7 @@ export default class USBIO {
 
     private async tryReconnectAsync(deviceId?: string) {
         try {
-            const devices = await this.options.getDevices()
+            const devices = await this.options.getDevices(USB_FILTERS)
             this.dev = deviceId
                 ? devices.find(dev => dev.serialNumber === deviceId)
                 : devices[0]
