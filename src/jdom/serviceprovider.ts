@@ -64,10 +64,6 @@ export default class JDServiceProvider extends JDEventSource {
         this._services?.slice(1).forEach(srv => (srv.device = undefined))
         // store new services
         this._services = [this.controlService, ...services]
-        this._services.forEach((srv, i) => {
-            srv.device = this
-            srv.serviceIndex = i
-        })
         if (this._services.length >= MAX_SERVICES_LENGTH) {
             this.emit(
                 ERROR,
@@ -76,6 +72,10 @@ export default class JDServiceProvider extends JDEventSource {
             console.warn(`jacdac: dropping services to ${MAX_SERVICES_LENGTH}`)
             this._services = this._services.slice(0, MAX_SERVICES_LENGTH)
         }
+        this._services.forEach((srv, i) => {
+            srv.device = this
+            srv.serviceIndex = i
+        })
         this.emit(CHANGE)
     }
 
