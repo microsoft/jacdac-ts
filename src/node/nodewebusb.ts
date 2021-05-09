@@ -1,3 +1,4 @@
+import { USBOptions } from "../jdom/jacdac-jdom"
 import { HF2_DEVICE_MAJOR } from "../jdom/transport/hf2"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -24,7 +25,8 @@ function findDevice(devices: USBDevice[]) {
 const usb = new USB({
     devicesFound: async (devices: USBDevice[]) => findDevice(devices),
 })
-export async function requestDevice(
+
+async function requestDevice(
     options: USBDeviceRequestOptions
 ): Promise<USBDevice> {
     console.log(`requesting device...`)
@@ -36,7 +38,16 @@ export async function requestDevice(
         return undefined
     }
 }
-export async function getDevices(): Promise<USBDevice[]> {
-    const devices = await usb.getDevices()
-    return devices
+
+async function getDevices(
+    options: USBDeviceRequestOptions
+): Promise<USBDevice[]> {
+    //const devices = await usb.getDevices()
+    //return devices
+    const dev = await requestDevice(options)
+    return dev ? [dev] : []
+}
+
+export function createNodeUSBOptions(): USBOptions {
+    return { getDevices, requestDevice }
 }
