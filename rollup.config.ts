@@ -10,11 +10,6 @@ export default [
     { libraryName: "jacdac", dir: "", watch: "src/**", umd: true, cjs: true },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
-        libraryName: "jacdac-node",
-        dir: "node",
-        external: ["jacdac", "webusb"],
-    },
-    {
         libraryName: "jacdac-embed",
         dir: "embed",
         external: ["jacdac"],
