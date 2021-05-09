@@ -5,12 +5,6 @@ import {
     EMBED_MIN_ASPECT_RATIO,
     PACKET_PROCESS,
     PACKET_SEND,
-    SRV_CONTROL,
-    SRV_LOGGER,
-    SRV_POWER,
-    SRV_PROTO_TEST,
-    SRV_ROLE_MANAGER,
-    SRV_SETTINGS,
 } from "./constants"
 import { JDDevice } from "./device"
 import JDIFrameClient from "./iframeclient"
@@ -35,12 +29,12 @@ export interface PacketMessage {
 interface SimulatorRunOptions {
     debug?: boolean
     trace?: boolean
-    boardDefinition?: any //pxsim.BoardDefinition;
+    boardDefinition?: unknown //pxsim.BoardDefinition;
     parts?: string[]
     builtinParts?: string[]
-    fnArgs?: any
+    fnArgs?: unknown
     aspectRatio?: number
-    partDefinitions?: SMap<any> // SMap<PartDefinition>;
+    partDefinitions?: SMap<unknown> // SMap<PartDefinition>;
     mute?: boolean
     highContrast?: boolean
     light?: boolean
@@ -50,22 +44,13 @@ interface SimulatorRunOptions {
     version?: string
     clickTrigger?: boolean
     breakOnStart?: boolean
-    storedState?: SMap<any>
+    storedState?: SMap<unknown>
     autoRun?: boolean
     ipc?: boolean
     dependencies?: SMap<string> // Map<string>;
     // single iframe, no message simulators
     single?: boolean
 }
-
-// hide the makecode device itself
-const ignoredServices = [
-    SRV_CONTROL,
-    SRV_LOGGER,
-    SRV_SETTINGS,
-    SRV_ROLE_MANAGER,
-    SRV_PROTO_TEST,
-]
 
 /**
  * A client that bridges received and sent packets to a parent iframe
@@ -218,9 +203,7 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     deviceFilter(device: JDDevice) {
-        return !!device.serviceClasses.filter(
-            sc => ignoredServices.indexOf(sc) < 0
-        ).length
+        return !device.isClient
     }
 
     get candidateExtensions(): string[] {

@@ -50,7 +50,6 @@ jacdac.onStatusEvent = function (event) {
             . . # # .
             . . . . .
             `)
-            led.toggle(1, 3);
             break;
         case jacdac.StatusEvent.Identify:
             identifyAnimation();
