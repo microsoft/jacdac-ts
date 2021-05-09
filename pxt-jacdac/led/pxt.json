@@ -1,6 +1,6 @@
 {
     "name": "jacdac-led",
-    "version": "0.4.64",
+    "version": "0.4.65",
     "description": "A controller for 1 or more monochrome or RGB LEDs connected in parallel.",
     "files": [
         "constants.ts",
