@@ -121,7 +121,7 @@ export class JDBus extends JDNode {
     private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
-    public iframeBridge: IFrameBridgeClient;
+    public iframeBridge: IFrameBridgeClient
 
     /**
      * Creates the bus with the given transport
@@ -198,15 +198,9 @@ export class JDBus extends JDNode {
     async connect(background?: boolean) {
         if (this.connected) return
 
-        console.debug(`bus: connect start`, { background })
         for (const transport of this._transports) {
             // start connection
-            console.debug(`bus: connect ${transport.type}`, { transport })
             await transport.connect(background)
-            console.log(
-                `bus: connect ${transport.type} ${transport.connectionState}`,
-                { transport }
-            )
             // keep going if not connected
             if (transport.connected) break
         }

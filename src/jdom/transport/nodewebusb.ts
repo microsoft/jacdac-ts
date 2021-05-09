@@ -1,7 +1,9 @@
-import { USBOptions } from "../jacdac-jdom"
+import { EventTargetObservable } from "../eventtargetobservable"
 import { HF2_DEVICE_MAJOR } from "./hf2"
+import { USBOptions } from "./usbio"
 
 export function createNodeUSBOptions(): USBOptions {
+    console.debug(`jacdac: creating usb transport`)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const USB = require("webusb").USB
 
@@ -30,9 +32,10 @@ export function createNodeUSBOptions(): USBOptions {
     async function requestDevice(
         options: USBDeviceRequestOptions
     ): Promise<USBDevice> {
-        console.log(`requesting device...`)
+        console.debug(`requesting device...`)
         try {
             const device = await usb.requestDevice(options)
+            console.debug(`Device`, { device })
             return device
         } catch (e) {
             console.debug(e)
@@ -49,5 +52,13 @@ export function createNodeUSBOptions(): USBOptions {
         return dev ? [dev] : []
     }
 
-    return { getDevices, requestDevice }
+    const connectObservable = new EventTargetObservable(usb, "connect")
+    const disconnectObservable = new EventTargetObservable(usb, "disconnect")
+
+    return {
+        getDevices,
+        requestDevice,
+        connectObservable,
+        disconnectObservable,
+    }
 }
