@@ -6,6 +6,7 @@ import {
     CHANGE,
     DEVICE_ANNOUNCE,
     DISCONNECT,
+    ERROR,
     EVENT,
     RoleManagerCmd,
     ROLE_MANAGER_POLL,
@@ -91,7 +92,6 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private async handleChange() {
-        console.debug(`role manager change event`)
         this.startRefreshRoles()
     }
 
@@ -106,7 +106,6 @@ export class RoleManagerClient extends JDServiceClient {
     }
 
     private async collectRoles() {
-        console.debug("query roles")
         this._lastRefreshAttempt = this.bus.timestamp
         const previousRolesHash = JSON.stringify(this._roles)
         try {
@@ -127,20 +126,17 @@ export class RoleManagerClient extends JDServiceClient {
             // store result if changed
             if (JSON.stringify(roles) !== previousRolesHash) {
                 this._roles = roles
-                console.debug(`updated roles`, { roles: this._roles })
                 this.emit(CHANGE)
             }
         } catch (e) {
             this._needRefresh = true
-            console.debug(`refresh failed`, { refresh: this._needRefresh })
-            console.error(e)
+            this.emit(ERROR, e)
         }
     }
 
     static unroledSrvs = [SRV_CONTROL, SRV_ROLE_MANAGER, SRV_LOGGER]
 
     private assignRoles() {
-        console.debug("assign roles", { roles: this._roles })
         this.bus
             .services()
             .filter(
