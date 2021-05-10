@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const cli = require("cli")
 const fs = require("fs-extra")
-import { PACKET_PROCESS } from "../jdom/constants"
+import { DEVICE_ANNOUNCE, PACKET_PROCESS } from "../jdom/constants"
 import { createUSBTransport } from "../jdom/transport/usb"
 import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
@@ -75,8 +75,8 @@ if (options.usb) {
     const opts = createNodeUSBOptions()
     const transport = createUSBTransport(opts)
     const bus = new JDBus([transport])
-    // start listening to bus
-    if (options.pkt) bus.on(PACKET_PROCESS, pkt => cli.debug(pkt))
+    bus.on(DEVICE_ANNOUNCE, dev => console.debug(`new device ${dev}`))
+    if (options.pkt) bus.on(PACKET_PROCESS, pkt => console.debug(pkt))
     const run = async () => {
         await bus.connect()
     }
