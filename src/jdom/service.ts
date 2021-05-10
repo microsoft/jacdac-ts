@@ -192,6 +192,11 @@ export class JDService extends JDNode {
         return this._statusCodeRegister
     }
 
+    get instanceName() {
+        const r = this.register(SystemReg.InstanceName)
+        return r?.stringValue
+    }
+
     /**
      * Gets the specification of the service. Undefined if unknown
      */
