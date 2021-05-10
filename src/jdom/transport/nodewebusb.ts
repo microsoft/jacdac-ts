@@ -4,8 +4,6 @@ import { USBOptions } from "./usbio"
 
 export function createNodeUSBOptions(): USBOptions {
     console.debug(`jacdac: creating usb transport`)
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const USB = require("webusb").USB
 
     function findDevice(devices: USBDevice[]) {
         for (const device of devices) {
@@ -25,6 +23,8 @@ export function createNodeUSBOptions(): USBOptions {
         return undefined
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const USB = require("webusb").USB
     const usb = new USB({
         devicesFound: async (devices: USBDevice[]) => findDevice(devices),
     })
