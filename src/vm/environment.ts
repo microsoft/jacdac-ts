@@ -8,8 +8,8 @@ import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
 import { SMap } from "./expr"
 import { JDService } from "../jdom/service"
-import { CHANGE, EVENT } from "../jdom/constants"
-import { RoleManagerClient } from "../jdom/rolemanagerclient"
+import { CHANGE, EVENT, ROLE_MANAGER_CHANGE, ROLE_CHANGE } from "../jdom/constants"
+import { Role } from "../jdom/rolemanagerclient"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -23,7 +23,7 @@ export async function refresh_env(registers: SMap<JDRegister>) {
     }
 }
 
-export class VMEnvironment extends JDServiceClient {
+export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
     private _serviceSpec: jdspec.ServiceSpec;
@@ -93,5 +93,40 @@ export class VMEnvironment extends JDServiceClient {
     
     public refreshEnvironment() {
         refresh_env(this._registers)
+    }
+}
+
+export class VMRoleManagerEnvironment extends JDServiceClient{
+    private _roles: SMap<Role> = {}
+    private _roles2services: SMap<JDService> = {}
+    constructor(service: JDService) {
+        super(service)
+        this.subscribe(ROLE_MANAGER_CHANGE, () => { 
+            // clear the caches
+        })
+        this.subscribe(ROLE_CHANGE, () => { 
+            // which one?
+        })
+    }
+
+    private registerRole(roleName: string, handler: () => void ) {
+        if (!this._roles[roleName]) {
+            const rm = this.bus.roleManager
+            const role = rm?.roles.find(r => r.name === roleName)
+            if (role) {
+                this._roles[roleName] = role
+                // role.deviceId
+                // role.serviceClass
+                // don't need to populate anything else until lookup??
+            }
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public lookup(e: jsep.MemberExpression | string): any {
+        let role = typeof(e) === "string" ? e : (e.object as jsep.Identifier).name
+        // lookup the role, register if needed
+        // get the service
+        // deal with the rest of it 
     }
 }
