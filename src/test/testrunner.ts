@@ -7,6 +7,7 @@ import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
 import { CHANGE } from "../jdom/constants"
 import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
+import { JDServiceClient } from "../jdom/serviceclient"
 import { roundWithPrecision } from "../jdom/utils"
 import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
 import { VMEnvironment } from "../vm/environment"
@@ -601,7 +602,7 @@ export class JDTestRunner extends JDEventSource {
     }
 }
 
-export class JDServiceTestRunner {
+export class JDServiceTestRunner extends JDServiceClient {
     private _testIndex = -1
     private _env: VMEnvironment;
     public readonly tests: JDTestRunner[]
@@ -610,6 +611,7 @@ export class JDServiceTestRunner {
         public readonly testSpec: jdtest.ServiceTestSpec,
         service: JDService
     ) {
+        super(service)
         this._env = new VMEnvironment(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {

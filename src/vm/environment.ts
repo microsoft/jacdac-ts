@@ -9,6 +9,7 @@ import { JDRegister } from "../jdom/register"
 import { SMap } from "./expr"
 import { JDService } from "../jdom/service"
 import { CHANGE, EVENT } from "../jdom/constants"
+import { RoleManagerClient } from "../jdom/rolemanagerclient"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -42,7 +43,7 @@ export class VMEnvironment extends JDServiceClient {
             const register = this.service.register(pkt.identifier)
             this._registers[regName] = register
             this.mount(
-                register.subscribe(CHANGE, handler)
+                register.subscribe(CHANGE, handler )
             )
         }
     }
@@ -55,7 +56,7 @@ export class VMEnvironment extends JDServiceClient {
             const event = this.service.event(pkt.identifier)
             this._events[eventName] = event
             this.mount(
-                event.subscribe(EVENT, handler)
+                event.subscribe(EVENT, handler )
             )
         }
     }
