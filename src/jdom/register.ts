@@ -124,7 +124,12 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     get objectValue(): PackedObject {
-        return unpackedToObject(this.unpackedValue, this.specification?.fields)
+        const { specification } = this
+        return unpackedToObject(
+            this.unpackedValue,
+            specification?.fields,
+            specification.name
+        )
     }
 
     get intValue(): number {

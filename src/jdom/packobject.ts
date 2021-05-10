@@ -12,7 +12,8 @@ export interface PackedObject {
  */
 export function unpackedToObject(
     data: PackedValues,
-    fields: jdspec.PacketMember[]
+    fields: jdspec.PacketMember[],
+    defaultName?: string
 ): PackedObject {
     if (!data || !fields) return undefined
     const r: PackedObject = {}
@@ -20,6 +21,7 @@ export function unpackedToObject(
         const field = fields[i]
         const value = data[i]
         const { name, startRepeats } = field
+        const prettyName = name === "_" && defaultName ? defaultName : name
 
         if (startRepeats) {
             const repeatData = data.slice(i)
@@ -28,7 +30,7 @@ export function unpackedToObject(
                 unpackedToObject(rdata, repeatFields)
             )
             break
-        } else r[name] = value
+        } else r[prettyName] = value
     }
     return r
 }
