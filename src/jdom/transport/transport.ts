@@ -71,6 +71,7 @@ export abstract class JDTransport extends JDEventSource {
             console.debug(`${this._connectionState} -> ${state}`)
             this._connectionState = state
             this.emit(CONNECTION_STATE, this._connectionState)
+            this.bus.emit(CONNECTION_STATE)
             switch (this._connectionState) {
                 case ConnectionState.Connected:
                     this.emit(CONNECT)
