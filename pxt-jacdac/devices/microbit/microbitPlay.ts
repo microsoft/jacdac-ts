@@ -55,8 +55,10 @@ namespace microbit {
 
         private handlePlayCommand(pkt: jacdac.JDPacket) {
             const [name] = pkt.jdunpack<[string]>("s")
-            const exp = new SoundExpression(name)
-            exp.play()
+            if (name) {
+                const exp = new SoundExpression(name)
+                exp.play()
+            }
         }
 
         private handleListSoundsCommand(pkt: jacdac.JDPacket) {

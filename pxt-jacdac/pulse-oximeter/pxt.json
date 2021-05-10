@@ -1,6 +1,6 @@
 {
     "name": "jacdac-pulseoximeter",
-    "version": "0.4.65",
+    "version": "0.4.66",
     "description": "A sensor approximating the oxygen level. \n\n**Jacdac is not suitable for medical devices and should NOT be used in any kind of device to diagnose or treat any medical conditions.**",
     "files": [
         "constants.ts",
