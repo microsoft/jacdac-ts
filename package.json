@@ -1,10 +1,10 @@
 {
   "name": "jacdac-ts",
-  "version": "1.13.7",
+  "version": "1.13.8",
   "description": "",
   "keywords": [],
   "main": "dist/jacdac.js",
-  "module": "dist/jacdac.js",
+  "module": "dist/jacdac.cjs.js",
   "typings": "dist/types/src/jacdac.d.ts",
   "files": [
     "dist",
