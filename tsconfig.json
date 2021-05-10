@@ -10,6 +10,7 @@
       "dom"
     ],
     "strict": false,
+    "strictNullChecks": false,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
