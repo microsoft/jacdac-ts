@@ -43,6 +43,7 @@ import {
     ROLE_MANAGER_CHANGE,
     TIMEOUT_DISCONNECT,
     REGISTER_POLL_STREAMING_INTERVAL,
+    REPORT_RECEIVE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -747,7 +748,11 @@ export class JDBus extends JDNode {
                         service
                             .registers()
                             // someone is listening for reports
-                            .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
+                            .filter(
+                                reg =>
+                                    reg.listenerCount(REPORT_RECEIVE) > 0 ||
+                                    reg.listenerCount(REPORT_UPDATE) > 0
+                            )
                             // ask if data is missing or non-const/status code
                             .filter(
                                 reg =>
