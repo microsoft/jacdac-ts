@@ -1,5 +1,5 @@
 import { HF2Proto, HF2_DEVICE_MAJOR } from "./hf2"
-import { CMSISProto } from "./microbit"
+import { CMSISProto, MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "./microbit"
 import { Observable } from "../observable"
 import Proto from "./proto"
 import { assert, delay, throwError } from "../utils"
@@ -13,8 +13,8 @@ export const USB_FILTERS = {
         },
         {
             // micro:bit v2
-            vendorId: 3368,
-            productId: 516,
+            vendorId: MICROBIT_V2_VENDOR_ID,
+            productId: MICROBIT_V2_PRODUCT_ID,
         },
     ],
 }
@@ -25,8 +25,8 @@ const controlTransferOutReport = 0x200
 const controlTransferInReport = 0x100
 
 export interface USBOptions {
-    getDevices: () => Promise<USBDevice[]>
     requestDevice?: (options: USBDeviceRequestOptions) => Promise<USBDevice>
+    getDevices: (options: USBDeviceRequestOptions) => Promise<USBDevice[]>
     connectObservable?: Observable<void>
     disconnectObservable?: Observable<void>
 }
@@ -217,7 +217,7 @@ export default class USBIO {
 
     private async tryReconnectAsync(deviceId?: string) {
         try {
-            const devices = await this.options.getDevices()
+            const devices = await this.options.getDevices(USB_FILTERS)
             this.dev = deviceId
                 ? devices.find(dev => dev.serialNumber === deviceId)
                 : devices[0]
