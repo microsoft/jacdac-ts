@@ -2,7 +2,6 @@ import { PackedSimpleValue, PackedValues } from "./pack"
 
 export interface PackedObject {
     [index: string]: PackedSimpleValue | PackedObject | PackedObject[]
-    repeat?: PackedObject[]
 }
 
 /**
@@ -25,7 +24,7 @@ export function unpackedToObject(
         if (startRepeats) {
             const repeatData = data.slice(i)
             const repeatFields = fields.slice(i)
-            r.repeat = repeatData.map(rdata =>
+            r["repeat"] = repeatData.map(rdata =>
                 unpackedToObject(rdata, repeatFields)
             )
             break
