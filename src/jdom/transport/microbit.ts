@@ -13,6 +13,9 @@ import {
 } from "../utils"
 import Flags from "../flags"
 
+export const MICROBIT_V2_VENDOR_ID = 3368
+export const MICROBIT_V2_PRODUCT_ID = 516
+
 interface SendItem {
     buf: Uint8Array
     cb: () => void
