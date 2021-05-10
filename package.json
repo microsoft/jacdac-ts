@@ -5,6 +5,12 @@
   "keywords": [],
   "main": "dist/jacdac.js",
   "module": "dist/jacdac.cjs.js",
+  "exports": {
+    ".": {
+        "import": "./dist/jacdac.js",
+        "require": "./dist/jacdac.cjs.js"
+      }
+  },
   "typings": "dist/types/src/jacdac.d.ts",
   "files": [
     "dist",
