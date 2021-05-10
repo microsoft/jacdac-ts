@@ -7,7 +7,14 @@ import visualizer from "rollup-plugin-visualizer"
 import progress from "rollup-plugin-progress"
 
 export default [
-    { libraryName: "jacdac", dir: "", watch: "src/**", umd: true, cjs: true },
+    {
+        libraryName: "jacdac",
+        dir: "",
+        watch: "src/**",
+        external: ["usb", "webusb"],
+        umd: true,
+        cjs: true,
+    },
     { libraryName: "jacdac-test", dir: "test", external: ["jacdac"] },
     {
         libraryName: "jacdac-embed",
