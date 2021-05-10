@@ -71,8 +71,8 @@ class JDCommandEvaluator {
     }
 
     private get env() {
-        return (root: string, fld = "") => {
-            return this.testRunner.serviceTestRunner.lookup(root, fld)
+        return (e: jsep.MemberExpression | string) => {
+            return this.testRunner.serviceTestRunner.lookup(e)
         }
     }
 
@@ -630,8 +630,8 @@ export class JDServiceTestRunner extends JDServiceClient {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public lookup(root: string, fld = ""): any {
-        return this._env.lookup(root, fld)
+    public lookup(e: jsep.MemberExpression | string): any {
+        return this._env.lookup(e)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

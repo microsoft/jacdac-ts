@@ -73,7 +73,9 @@ export class VMEnvironment extends JDServiceClient {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public lookup(root: string, fld = ""): any {
+    public lookup(e: jsep.MemberExpression | string): any {
+        let root = typeof(e) === "string" ? e : (e.object as jsep.Identifier).name
+        let fld = typeof(e) === "string" ? undefined : (e.property as jsep.Identifier).name
         if (root in this._registers) {
             if (!fld) return this._registers[root].unpackedValue?.[0]
             else {

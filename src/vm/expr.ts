@@ -15,7 +15,7 @@ Expressions can be against service registers (as in the test case) and program s
 
 export type SMap<T> = { [v: string]: T }
 
-export type GetValue = (root: string, fld: string) => any
+export type GetValue = (e: jsep.MemberExpression | string) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type StartMap = { e: jsep.Expression; v: any }[]
@@ -204,17 +204,14 @@ export class JDExprEvaluator {
             }
             case "MemberExpression": {
                 // member expressions are of form [register|event].field
-                const root = e as jsep.MemberExpression
-                const lhs = root.object as jsep.Identifier
-                const rhs = root.property as jsep.Identifier
-                const val = this.env(lhs.name, rhs.name)
+                const val = this.env(e as jsep.MemberExpression)
                 // console.log(`${lhs.name}.${rhs.name} = ${val}`)
                 this.exprStack.push(val)
                 return
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
-                this.exprStack.push(this.env(id.name, ""))
+                this.exprStack.push(this.env(id.name))
                 return
             }
             case "Literal": {
