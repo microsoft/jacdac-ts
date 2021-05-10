@@ -1,5 +1,5 @@
 import { HF2Proto, HF2_DEVICE_MAJOR } from "./hf2"
-import { CMSISProto } from "./microbit"
+import { CMSISProto, MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "./microbit"
 import { Observable } from "../observable"
 import Proto from "./proto"
 import { assert, delay, throwError } from "../utils"
@@ -13,8 +13,8 @@ export const USB_FILTERS = {
         },
         {
             // micro:bit v2
-            vendorId: 3368,
-            productId: 516,
+            vendorId: MICROBIT_V2_VENDOR_ID,
+            productId: MICROBIT_V2_PRODUCT_ID,
         },
     ],
 }
