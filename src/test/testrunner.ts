@@ -654,7 +654,7 @@ export class JDServiceTestRunner extends JDServiceClient {
             }
             // update test
             this._testIndex = index
-            this._env.emit(CHANGE)
+            this.emit(CHANGE)
         }
     }
 
