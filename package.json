@@ -3,7 +3,7 @@
   "version": "1.13.5",
   "description": "",
   "keywords": [],
-  "main": "dist/jacdac.umd.js",
+  "main": "dist/jacdac.js",
   "module": "dist/jacdac.js",
   "typings": "dist/types/src/jacdac.d.ts",
   "files": [
