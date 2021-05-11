@@ -52,20 +52,23 @@ function usbGetDevices(): Promise<USBDevice[]> {
 class WebUSBTransport extends JDTransport {
     private hf2: Proto
     constructor(public readonly options: USBOptions) {
-        super(USB_TRANSPORT, options)
+        super(USB_TRANSPORT, { ...options, checkPulse: true })
     }
+
     protected async transportConnectAsync(background: boolean) {
         const transport = new USBIO(this.options)
         transport.onError = e => this.errorHandler(USB_TRANSPORT, e)
         this.hf2 = await transport.connectAsync(background)
         this.hf2.onJDMessage(this.handleFrame.bind(this))
     }
+
     protected async transportSendPacketAsync(p: Packet) {
         if (!this.hf2) throw new Error("hf2 transport disconnected")
 
         const buf = p.toBuffer()
         await this.hf2.sendJDMessageAsync(buf)
     }
+
     protected async transportDisconnectAsync() {
         const h = this.hf2
         this.hf2 = undefined

@@ -112,6 +112,7 @@ export function createUSBWorkerTransport(worker: Worker) {
     return (
         isWebUSBEnabled() &&
         new WorkerTransport(USB_TRANSPORT, worker, {
+            checkPulse: true,
             requestDevice: () =>
                 usbRequestDevice(USB_FILTERS).then(dev => dev?.serialNumber),
             connectObservable: new EventTargetObservable(
