@@ -375,6 +375,10 @@ export class JDDevice extends JDNode {
             (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
         ) {
+            console.debug(`${this} restart detected`, {
+                new: w1 & JD_ADVERTISEMENT_0_COUNTER_MASK,
+                old: w0 & JD_ADVERTISEMENT_0_COUNTER_MASK,
+            })
             this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)
