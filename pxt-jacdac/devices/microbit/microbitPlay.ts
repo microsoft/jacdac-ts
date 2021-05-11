@@ -56,6 +56,7 @@ namespace microbit {
         private handlePlayCommand(pkt: jacdac.JDPacket) {
             const [name] = pkt.jdunpack<[string]>("s")
             if (name) {
+                music.stopAllSounds()
                 const exp = new SoundExpression(name)
                 exp.play()
             }

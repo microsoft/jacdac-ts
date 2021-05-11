@@ -16,8 +16,6 @@ namespace modules {
          * Notifies that some setting have been modified.
          */
         //% group="Settings"
-        //% blockId=jacdac_on_settings_change
-        //% block="on $settings change"
         //% weight=100
         onChange(handler: () => void): void {
             this.registerEvent(jacdac.SettingsEvent.Change, handler);
@@ -27,8 +25,6 @@ namespace modules {
         * Get the value of given setting. If no such entry exists, the value returned is empty.
         */
         //% group="Settings"
-        //% blockId=jacdac_settings_get_cmd
-        //% block="get from $settings at $key"
         //% weight=99
         get(key: string): void {
             this.start();
@@ -39,8 +35,6 @@ namespace modules {
         * Set the value of a given setting.
         */
         //% group="Settings"
-        //% blockId=jacdac_settings_set_cmd
-        //% block="set $settings $key to $value"
         //% weight=98
         set(key: string, value: Buffer): void {
             this.start();
@@ -51,8 +45,6 @@ namespace modules {
         * Delete a given setting.
         */
         //% group="Settings"
-        //% blockId=jacdac_settings_delete_cmd
-        //% block="delete $settings value at $key"
         //% weight=97
         delete(key: string): void {
             this.start();
@@ -63,8 +55,6 @@ namespace modules {
         * Clears all keys.
         */
         //% group="Settings"
-        //% blockId=jacdac_settings_clear_cmd
-        //% block="clear %settings"
         //% weight=96
         clear(): void {
             this.start();
@@ -72,6 +62,6 @@ namespace modules {
         }
     
     }
-    //% fixedInstance whenUsed block="settings 1"
-    export const settings1 = new SettingsClient("settings1");
+    //% fixedInstance whenUsed
+    export const settings = new SettingsClient("settings");
 }

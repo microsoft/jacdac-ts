@@ -49,6 +49,7 @@ namespace microbit {
         private handlePlayToneCommand(pkt: jacdac.JDPacket) {
             const [period, duty, duration] = pkt.jdunpack<[number, number, number]>("u16 u16 u16")
             const frequency = 1000000 / period;
+            music.stopAllSounds()
             music.playTone(frequency, duration)
         }
     }

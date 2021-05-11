@@ -43,7 +43,6 @@ jacdac.roleManagerServer.start()
 jacdac.protoTestServer.start()
 jacdac.start()
 jacdac.loggerServer.log("test started")
-modules.identify();
 
 jdpackTest()
 
