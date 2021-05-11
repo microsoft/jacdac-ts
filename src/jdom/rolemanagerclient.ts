@@ -116,7 +116,7 @@ export class RoleManagerClient extends JDServiceClient {
             )
             // collect all roles
             const roles: Role[] = []
-            for (const buf of await inp.readData()) {
+            for (const buf of await inp.readData(1000)) {
                 const [devidbuf, serviceClass, serviceIndex, name] = jdunpack<
                     [Uint8Array, number, number, string]
                 >(buf, "b[8] u32 u8 s")
