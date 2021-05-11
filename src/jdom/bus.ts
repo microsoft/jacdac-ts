@@ -335,14 +335,14 @@ export class JDBus extends JDNode {
             this._roleManagerClient &&
             this._roleManagerClient.service !== service
         ) {
-            console.debug("unmount role manager")
+            //console.debug("unmount role manager")
             this._roleManagerClient.unmount()
             this._roleManagerClient = undefined
         }
 
         // allocate new manager
         if (service && service !== this._roleManagerClient?.service) {
-            console.debug("mount role manager")
+            //console.debug("mount role manager")
             this._roleManagerClient = new RoleManagerClient(service)
             this.emit(ROLE_MANAGER_CHANGE)
             this.emit(CHANGE)
