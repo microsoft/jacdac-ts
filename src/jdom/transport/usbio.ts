@@ -1,8 +1,13 @@
 import { HF2Proto, HF2_DEVICE_MAJOR } from "./hf2"
-import { CMSISProto, MICROBIT_V2_PRODUCT_ID, MICROBIT_V2_VENDOR_ID } from "./microbit"
+import {
+    CMSISProto,
+    MICROBIT_V2_PRODUCT_ID,
+    MICROBIT_V2_VENDOR_ID,
+} from "./microbit"
 import { Observable } from "../observable"
 import Proto from "./proto"
 import { assert, delay, throwError } from "../utils"
+import Flags from "../flags"
 
 export const USB_FILTERS = {
     filters: [
@@ -51,8 +56,10 @@ export default class USBIO {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(msg: string, v?: any) {
-        if (v != undefined) console.log("usb: " + msg, v)
-        else console.log("usb: " + msg)
+        if (Flags.diagnostics) {
+            if (v != undefined) console.debug("usb: " + msg, v)
+            else console.debug("usb: " + msg)
+        }
     }
 
     private mkProto(): Proto {

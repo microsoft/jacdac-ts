@@ -64,7 +64,7 @@ class BluetoothTransport extends JDTransport {
     private _rxChunkCounter: number
 
     constructor() {
-        super(BLUETOOTH_TRANSPORT)
+        super(BLUETOOTH_TRANSPORT, { checkPulse: true })
 
         this.handleDisconnected = this.handleDisconnected.bind(this)
         this.handleCharacteristicChanged = this.handleCharacteristicChanged.bind(
