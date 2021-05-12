@@ -39,11 +39,13 @@ export class VMServiceEnvironment extends JDServiceClient {
             const pkt = this._serviceSpec.packets.find(
                 pkt => isRegister(pkt) && pkt.name === regName
             )
-            const register = this.service.register(pkt.identifier)
-            this._registers[regName] = register
-            this.mount(
-                register.subscribe(CHANGE, handler )
-            )
+            if (pkt) {
+                const register = this.service.register(pkt.identifier)
+                this._registers[regName] = register
+                this.mount(
+                    register.subscribe(CHANGE, handler )
+                )
+            }
         }
     }
 
@@ -52,11 +54,13 @@ export class VMServiceEnvironment extends JDServiceClient {
             const pkt = this._serviceSpec.packets.find(
                 pkt => isEvent(pkt) && pkt.name === eventName
             )
-            const event = this.service.event(pkt.identifier)
-            this._events[eventName] = event
-            this.mount(
-                event.subscribe(EVENT, handler )
-            )
+            if (pkt) {
+                const event = this.service.event(pkt.identifier)
+                this._events[eventName] = event
+                this.mount(
+                    event.subscribe(EVENT, handler )
+                )
+            }
         }
     }
 
@@ -95,10 +99,13 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 }
 
+
 export class VMRoleManagerEnvironment extends JDServiceClient{
+    private _currentEvent: string = undefined
     private _roles: SMap<VMServiceEnvironment> = {}
-    
-    constructor(service: JDService) {
+    private _locals: SMap<string> = {}
+
+    constructor(service: JDService, private readonly notifyOnChange: () => void) {
         super(service)
         this.subscribe(ROLE_MANAGER_CHANGE, () => { 
             Object.values(this._roles).forEach(r => r.unmount())
@@ -110,10 +117,14 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         })
     }
 
-    private getService(e: jsep.MemberExpression | string) {
-        if (typeof(e) === "string" || e.type !== "MemberExpression")
+    private getRoleName(e: jsep.MemberExpression | string) {
+        if (!e || typeof(e) === "string" || e.type !== "MemberExpression")
             return undefined
-        let roleName = (e.object as jsep.Identifier).name
+        return (e.object as jsep.Identifier).name
+    }
+
+    private getService(e: jsep.MemberExpression | string) {
+        const roleName = this.getRoleName(e)
         if (!roleName)
             return undefined;
         if (!this._roles[roleName]) {
@@ -123,9 +134,14 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
                 const device = this.bus.device(role.deviceId)
                 const service = device.service(role.serviceIndex)
                 this._roles[roleName] = new VMServiceEnvironment(service)
-            }
+            } else  
+                return undefined
         }
         return this._roles[roleName]
+    }
+
+    public refreshEnvironment() {
+        Object.values(this._roles).forEach(s => s.refreshEnvironment())
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,24 +149,51 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         let serviceEnv = this.getService(e)
         if (!serviceEnv)
             return undefined
-        // TODO: register on demand
-        return serviceEnv.lookup(e)
+        let me = e as jsep.MemberExpression
+        if (serviceEnv && me.property.type === "Identifier") {
+            const reg = (me.property as jsep.Identifier).name
+            serviceEnv.registerRegister(reg, this.notifyOnChange);
+            return serviceEnv.lookup(reg)
+        }
+        return undefined
     }
 
     public writeRegister(e: jsep.MemberExpression | string, ev: any) {
         let serviceEnv = this.getService(e)
         let me = e as jsep.MemberExpression;
         if (serviceEnv && me.property.type === "Identifier") {
-            return serviceEnv.writeRegister((me.property as jsep.Identifier).name, ev);
+            const reg = (me.property as jsep.Identifier).name
+            serviceEnv.registerRegister(reg, this.notifyOnChange);
+            return serviceEnv.writeRegister(reg, ev);
         }
         return false
     }
 
     public writeLocal(e: jsep.MemberExpression | string) {
+        const roleName = this.getRoleName(e)
+        if (!roleName || roleName !== "$")
+            return undefined;
+        // $.x for write to local state x
+        // need to generate an event to wake up listeners
         return false;
     }
 
+    public consumeEvent() {
+        this._currentEvent = undefined
+    }
+
     public hasEvent(e: jsep.MemberExpression | string) {
+        let serviceEnv = this.getService(e)
+        if (!serviceEnv)
+            return false
+        let me = e as jsep.MemberExpression;
+        if (serviceEnv && me.property.type === "Identifier") {
+            const event = (me.property as jsep.Identifier).name
+            serviceEnv.registerEvent(event, () => {
+                this._currentEvent = event
+            });
+            return this._currentEvent === event
+        }
         return false
     }
 }

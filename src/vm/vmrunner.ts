@@ -146,6 +146,7 @@ class IT4HandlerRunner {
 
     public reset() {
         this._commandIndex = undefined
+        this._currentCommand = undefined
         this.stopped = false
     }
 
@@ -157,11 +158,11 @@ class IT4HandlerRunner {
         this.stopped = true
     }
 
-    // run-to-complete semantics
+    // run-to-completion semantics
     step() {
-        if (!this._commandIndex)
+        if (this._commandIndex === undefined)
             return;
-        if (!this._currentCommand)
+        if (this._currentCommand === undefined)
             this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
         this._currentCommand.step()
         while (this._currentCommand.status === VMStatus.Completed &&
@@ -176,26 +177,23 @@ class IT4HandlerRunner {
 export class IT4ProgramRunner {
     private _handlers: IT4HandlerRunner[]
     private _env: VMRoleManagerEnvironment
-    private _runQueue: IT4HandlerRunner[] = []
     private _waitQueue: IT4HandlerRunner[] = []
 
-    // TODO: propagate status of handler up for visibility
-    // TODO: hook into notifications
-
-    constructor(private readonly program: IT4Program) {
-        this._env = new VMRoleManagerEnvironment(undefined)
+    constructor(program: IT4Program) {
+        this._env = new VMRoleManagerEnvironment(undefined, () => {
+            this.run()
+        })
         this._handlers = program.handlers.map(h => new IT4HandlerRunner(this._env, h))
-        // TODO: initialize the queues
-        // TODO: kick things off
+        this._waitQueue = this._handlers.slice(0)
     }
 
     run() {
+        if (this._waitQueue.length > 0) {
+            // give everyone a chance to run
+            // collect up new queue of handlers that haven't stopped
 
+        } else {
+            // program is done
+        }
     }
-
-    // TODO:
-    // - scheduler
-    //   - only one handler runs at a time
-    // - when we get an event, need to inform each handler that is waiting of the event
-    //   and get a chance to be unblocked
 }
