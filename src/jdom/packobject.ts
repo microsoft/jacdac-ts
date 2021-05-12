@@ -35,34 +35,46 @@ export function unpackedToObject(
     return r
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function objectToPacked(pkt: jdspec.PacketInfo, msg: any): Uint8Array {
-    if (!msg) return new Uint8Array(0)
+export function objectToUnpacked(
+    pkt: jdspec.PacketInfo,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    msg: any
+): PackedValues {
+    if (!msg) return []
 
-    const { fields } = pkt
-    const r: PackedValues = []
-    for (let i = 0; i < fields.length; ++i) {
-        const field = fields[i]
-        const name = field.name === "_" ? pkt.name : field.name
-        const value = msg[name]
-        if (field.startRepeats) {
-            const repeatFields = fields.slice(i)
-            r.push(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (value as any[]).map(vrow => {
-                    const arow: PackedSimpleValue[] = []
-                    for (let j = 0; j < repeatFields.length; ++j) {
-                        const rfield = repeatFields[j]
-                        const rname = rfield.name
-                        arow.push(vrow[rname])
-                    }
-                    return arow
-                })
-            )
-            break
-        } else {
-            r.push(value)
+    if (typeof msg === "number" || typeof msg === "string")
+        return [msg as number]
+    else if (typeof msg === "boolean") return [msg ? 1 : 0]
+    else if (Array.isArray(msg)) {
+        // assume a packaged layout
+        return msg as PackedValues
+    } else {
+        const { fields } = pkt
+        const r: PackedValues = []
+        for (let i = 0; i < fields.length; ++i) {
+            const field = fields[i]
+            const name = field.name === "_" ? pkt.name : field.name
+            const value = msg[name]
+            if (field.startRepeats) {
+                const repeatFields = fields.slice(i)
+                r.push(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (value as any[]).map(vrow => {
+                        const arow: PackedSimpleValue[] = []
+                        for (let j = 0; j < repeatFields.length; ++j) {
+                            const rfield = repeatFields[j]
+                            const rname = rfield.name
+                            arow.push(vrow[rname])
+                        }
+                        return arow
+                    })
+                )
+                break
+            } else {
+                r.push(value)
+            }
         }
+
+        return r
     }
-    return jdpack(pkt.packFormat, r)
 }
