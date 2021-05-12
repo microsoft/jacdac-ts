@@ -192,6 +192,11 @@ export class JDService extends JDNode {
         return this._statusCodeRegister
     }
 
+    get instanceName() {
+        const r = this.register(SystemReg.InstanceName)
+        return r?.stringValue
+    }
+
     /**
      * Gets the specification of the service. Undefined if unknown
      */
@@ -375,12 +380,13 @@ export class JDService extends JDNode {
 
     async receiveWithInPipe<TValues extends PackedValues>(
         cmd: number,
-        packFormat: string
+        packFormat: string,
+        timeout?: number
     ) {
         const inp = new InPipeReader(this.device.bus)
         await this.sendPacketAsync(inp.openCommand(cmd), true)
         const recv: TValues[] = []
-        for (const buf of await inp.readData()) {
+        for (const buf of await inp.readData(timeout)) {
             const values = jdunpack<TValues>(buf, packFormat)
             recv.push(values)
         }

@@ -1,9 +1,9 @@
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
-const { info, error } = console
+const { debug, error } = console
 
-info(`jdsw: starting...`)
+debug(`jdsw: starting...`)
 let proxy: TransportProxy
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +29,7 @@ onmessage = async event => {
         case "connect": {
             if (proxy) await proxy.disconnect()
             const { deviceId } = data
-            info(`jdsw: connecting`)
+            debug(`jdsw: connecting`)
             proxy = new USBTransportProxy()
             await handleCommand(data, () => proxy.connect(deviceId))
             break
@@ -44,11 +44,11 @@ onmessage = async event => {
             break
         case "disconnect":
             if (proxy) {
-                info(`jdsw: disconnecting`)
-                await handleCommand(data, () => proxy.disconnect())
+                debug(`jdsw: disconnecting`)
+                await handleCommand(data, () => proxy?.disconnect())
             }
             break
     }
 }
 
-info(`jdsw: ready...`)
+debug(`jdsw: ready...`)
