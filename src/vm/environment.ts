@@ -100,14 +100,19 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
     constructor(service: JDService) {
         super(service)
         this.subscribe(ROLE_MANAGER_CHANGE, () => { 
+            Object.values(this._roles).forEach(r => r.unmount())
             this._roles = {}
         })
         this.subscribe(ROLE_CHANGE, () => { 
+            Object.values(this._roles).forEach(r => r.unmount())
             this._roles = {}
         })
     }
 
-    private getService(roleName: string) {
+    private getService(e: jsep.MemberExpression | string) {
+        if (typeof(e) === "string" || e.type !== "MemberExpression")
+            return undefined
+        let roleName = (e.object as jsep.Identifier).name
         if (!roleName)
             return undefined;
         if (!this._roles[roleName]) {
@@ -124,12 +129,26 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        if (typeof(e) === "string")
-            return undefined
-        let role = (e.object as jsep.Identifier).name
-        let serviceEnv = this.getService(role)
+        let serviceEnv = this.getService(e)
         if (!serviceEnv)
             return undefined
+        // TODO: register on demand
         return serviceEnv.lookup(e)
+    }
+
+    public writeRegister(e: jsep.MemberExpression | string) {
+        let serviceEnv = this.getService(e)
+        if (serviceEnv) {
+
+        }
+        return false
+    }
+
+    public writeLocal(e: jsep.MemberExpression | string) {
+        return false;
+    }
+
+    public hasEvent(e: jsep.MemberExpression | string) {
+        return false
     }
 }

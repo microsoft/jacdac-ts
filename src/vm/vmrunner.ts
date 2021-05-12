@@ -1,29 +1,80 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
 import { VMRoleManagerEnvironment} from "./environment"
+import { JDExprEvaluator } from "./expr"
 
 export enum VMCommandStatus {
     NotReady,
     Active,
-    RequiresUserInput,
-    Passed,
-    Failed,
+    Completed,
+    Stopped
+}
+
+interface Environment {
+    lookup: (e: jsep.MemberExpression | string) => any
+    writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
+    writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
+    hasEvent: (e: jsep.MemberExpression | string) => boolean
 }
 
 class IT4Evaluator {
-    constructor(private readonly gc: IT4GuardedCommand) {
+    private _status = VMCommandStatus.NotReady
+    constructor(
+        private readonly env: Environment,
+        private readonly gc: IT4GuardedCommand) {
 
     }
 
-    public get inst() {
+    get status() {
+        return this._status
+    }
+
+    private get inst() {
         return (this.gc.command.callee as jsep.Identifier).name
     }
 
+    private checkExpression(e: jsep.Expression) {
+        const expr = new JDExprEvaluator(this.env.lookup, undefined)
+        return expr.eval(e)
+            ? VMCommandStatus.Completed
+            : VMCommandStatus.Active
+    }
+
     public evaluate() {
+        this._status = VMCommandStatus.Active
+        const args = this.gc.command.arguments
         switch(this.inst) {
-            case "awaitEvent":
-            case "awaitCondition":
-            case "writeRegister":
-            case "writeLocal":
+            case "awaitEvent": {
+                const event = args[0] as jsep.MemberExpression
+                if (this.env.hasEvent(event)) {
+                    this._status = this.checkExpression(args[1])
+                }
+                break
+            }
+            case "awaitCondition": {
+                this._status = this.checkExpression(args[0])
+                break
+            }
+            case "writeRegister": 
+            case "writeLocal": 
+            {
+                const expr = new JDExprEvaluator(
+                    this.env.lookup,
+                    undefined
+                )
+                const ev = expr.eval(args[1])
+                const reg = args[0] as jsep.MemberExpression
+                if (this.inst === "writeRegister" && this.env.writeRegister(reg, ev) ||
+                    this.inst === "writeLocal" && this.env.writeLocal(reg, ev)
+                ) {
+                    this._status = VMCommandStatus.Completed
+                }
+                this._status = VMCommandStatus.Completed
+                break
+            }
+            case "halt": {
+                this._status = VMCommandStatus.Stopped
+                break
+            }
         }
     }
 
@@ -31,9 +82,10 @@ class IT4Evaluator {
 
 class  IT4CommandRunner {
     private _status = VMCommandStatus.NotReady
-    constructor(private readonly env: VMRoleManagerEnvironment,
+    private _eval: IT4Evaluator;
+    constructor(private readonly env: Environment,
                 private readonly gc: IT4GuardedCommand) {
-
+        this._eval = new IT4Evaluator(env, gc)
     }
 
     start() {
@@ -63,23 +115,21 @@ class  IT4CommandRunner {
 
     envChange() {
         if (this.isActive) {
-            // this._commmandEvaluator.evaluate()
-            // this.finish(this._commmandEvaluator.status)
+            this._eval.evaluate()
+            this.finish(this._eval.status)
         }
     }
 
     cancel() {
-        this.finish(VMCommandStatus.Failed)
+        this.finish(VMCommandStatus.Stopped)
     }
 
     finish(s: VMCommandStatus) {
         if (
             this.isActive &&
-            (s === VMCommandStatus.Failed ||
-                s === VMCommandStatus.Passed)
+            s === VMCommandStatus.Completed
         ) {
             this.status = s
-            // this.testRunner.finishCommand()
         }
     }
 }
@@ -91,7 +141,7 @@ class IT4HandlerRunner {
     private _currentCommand: IT4CommandRunner;
 
     constructor(
-        public readonly env: VMRoleManagerEnvironment,
+        public readonly env: Environment,
         private readonly handler: IT4Handler
     ) {
         
@@ -112,7 +162,7 @@ class IT4HandlerRunner {
     }
 
     cancel() {
-        this.finish(VMCommandStatus.Failed)
+        this.finish(VMCommandStatus.Stopped)
     }
 
     get status() {
@@ -141,12 +191,14 @@ class IT4HandlerRunner {
             this._commandIndex = index
             this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[index])
             this._currentCommand.start()
+            // check status
         }
     }
 
     public envChange() {
         if (this.status === VMCommandStatus.Active) {
-            // this.currentCommand?.envChange()
+            this.currentCommand?.envChange()
+            // check status
         }
     }
 
