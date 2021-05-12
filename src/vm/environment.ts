@@ -9,7 +9,6 @@ import { JDRegister } from "../jdom/register"
 import { SMap } from "./expr"
 import { JDService } from "../jdom/service"
 import { CHANGE, EVENT, ROLE_MANAGER_CHANGE, ROLE_CHANGE } from "../jdom/constants"
-import { Role } from "../jdom/rolemanagerclient"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -73,9 +72,9 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public lookup(e: jsep.MemberExpression | string): any {
-        let root = typeof(e) === "string" ? e : (e.object as jsep.Identifier).name
-        let fld = typeof(e) === "string" ? undefined : (e.property as jsep.Identifier).name
+    public lookup(e: jsep.MemberExpression | jsep.Identifier | string): any {
+        let root = typeof(e) === "string" ? e : (e.type === "Identifier" ? e.name : (e.object as jsep.Identifier).name)
+        let fld = typeof(e) === "string" ? undefined : (e.type === "Identifier" ? undefined : (e.property as jsep.Identifier).name)
         if (root in this._registers) {
             if (!fld) return this._registers[root].unpackedValue?.[0]
             else {
@@ -97,36 +96,40 @@ export class VMServiceEnvironment extends JDServiceClient {
 }
 
 export class VMRoleManagerEnvironment extends JDServiceClient{
-    private _roles: SMap<Role> = {}
-    private _roles2services: SMap<JDService> = {}
+    private _roles: SMap<VMServiceEnvironment> = {}
     constructor(service: JDService) {
         super(service)
         this.subscribe(ROLE_MANAGER_CHANGE, () => { 
-            // clear the caches
+            this._roles = {}
         })
         this.subscribe(ROLE_CHANGE, () => { 
-            // which one?
+            this._roles = {}
         })
     }
 
-    private registerRole(roleName: string, handler: () => void ) {
+    private getService(roleName: string) {
+        if (!roleName)
+            return undefined;
         if (!this._roles[roleName]) {
             const rm = this.bus.roleManager
             const role = rm?.roles.find(r => r.name === roleName)
             if (role) {
-                this._roles[roleName] = role
-                // role.deviceId
-                // role.serviceClass
-                // don't need to populate anything else until lookup??
+                const device = this.bus.device(role.deviceId)
+                const service = device.service(role.serviceIndex)
+                this._roles[roleName] = new VMServiceEnvironment(service)
             }
         }
+        return this._roles[roleName]
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        let role = typeof(e) === "string" ? e : (e.object as jsep.Identifier).name
-        // lookup the role, register if needed
-        // get the service
-        // deal with the rest of it 
+        if (typeof(e) === "string")
+            return undefined
+        let role = (e.object as jsep.Identifier).name
+        let serviceEnv = this.getService(role)
+        if (!serviceEnv)
+            return undefined
+        return serviceEnv.lookup(e)
     }
 }

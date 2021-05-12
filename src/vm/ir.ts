@@ -5,7 +5,6 @@ export interface IT4GuardedCommand {
 
 export interface IT4Handler {
     description: string
-    wait: IT4GuardedCommand
     commands: IT4GuardedCommand[]
 }
 
@@ -17,7 +16,10 @@ export interface IT4Program {
 
 export type JDIT4Functions =
     | "awaitEvent"
-    | "assign"
+    | "awaitCondition"
+    | "writeRegister"
+    | "writeLocal"
+    | "halt"
 
 export const IT4Functions: jdtest.TestFunctionDescription[] = [
     {
@@ -27,9 +29,27 @@ export const IT4Functions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
-        id: "assign",
+        id: "awaitCondition",
+        args: ["boolean"],
+        prompt: `wait for condition {1}`,
+        context: "command",
+    },
+    {
+        id: "writeRegister",
         args: ["register", "number"],
         prompt: `write value {2:val} to {1}`,
+        context: "command",
+    },
+    {
+        id: "writeLocal",
+        args: ["register", "number"],
+        prompt: `write value {2:val} to {1}`,
+        context: "command",
+    },
+    {
+        id: "halt",
+        args: [],
+        prompt: `terminates the current handler`,
         context: "command",
     },
 ]

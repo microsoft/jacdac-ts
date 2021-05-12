@@ -96,7 +96,6 @@ export function parseITTTMarkdownToJSON(
                 error(`every handler must have a description (via ##)`)
             currentHandler = {
                 description: handlerHeading,
-                wait: undefined,
                 commands: []
             }
             handlerHeading = ""
@@ -111,7 +110,10 @@ export function parseITTTMarkdownToJSON(
         const [, callee] = call
         const cmdIndex = IT4Functions.findIndex(r => callee == r.id)
         if (cmdIndex < 0) {
-            error(`${callee} is not a registered ITTT command function.`)
+            error(`${callee} is not a registered ITTT function.`)
+            return
+        } else if (currentHandler.commands.length === 0 && callee !== "awaitEvent" && callee !== "awaitCondition") {
+            error(`An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`)
             return
         }
         const root: jsep.CallExpression = <jsep.CallExpression>jsep(expanded)
