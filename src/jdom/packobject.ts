@@ -43,7 +43,8 @@ export function objectToPacked(pkt: jdspec.PacketInfo, msg: any): Uint8Array {
     const r: PackedValues = []
     for (let i = 0; i < fields.length; ++i) {
         const field = fields[i]
-        const value = msg[field.name]
+        const name = field.name === "_" ? pkt.name : field.name
+        const value = msg[name]
         if (field.startRepeats) {
             const repeatFields = fields.slice(i)
             r.push(
@@ -52,7 +53,8 @@ export function objectToPacked(pkt: jdspec.PacketInfo, msg: any): Uint8Array {
                     const arow: PackedSimpleValue[] = []
                     for (let j = 0; j < repeatFields.length; ++j) {
                         const rfield = repeatFields[j]
-                        arow.push(vrow[rfield.name])
+                        const rname = rfield.name
+                        arow.push(vrow[rname])
                     }
                     return arow
                 })
