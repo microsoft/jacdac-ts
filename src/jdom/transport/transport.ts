@@ -134,7 +134,7 @@ export abstract class JDTransport extends JDEventSource {
     protected abstract transportConnectAsync(
         background?: boolean
     ): Promise<void>
-    protected abstract transportDisconnectAsync(): Promise<void>
+    protected abstract transportDisconnectAsync(background?: boolean): Promise<void>
 
     private async checkPulse() {
         assert(this._checkPulse)
@@ -223,7 +223,7 @@ export abstract class JDTransport extends JDEventSource {
         return this._connectPromise
     }
 
-    disconnect(): Promise<void> {
+    disconnect(background?: boolean): Promise<void> {
         // already disconnected
         if (this.connectionState == ConnectionState.Disconnected)
             return Promise.resolve()
@@ -238,7 +238,7 @@ export abstract class JDTransport extends JDEventSource {
             this._disconnectPromise = Promise.resolve()
             this.setConnectionState(ConnectionState.Disconnecting)
             this._disconnectPromise = this._disconnectPromise.then(() =>
-                this.transportDisconnectAsync()
+                this.transportDisconnectAsync(background)
             )
             this._disconnectPromise = this._disconnectPromise
                 .catch(e => {
@@ -256,7 +256,7 @@ export abstract class JDTransport extends JDEventSource {
     }
 
     async reconnect() {
-        await this.disconnect()
+        await this.disconnect(true)
         await this.connect(true)
     }
 
@@ -281,13 +281,11 @@ export abstract class JDTransport extends JDEventSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {
         const wasConnected = this.connected
-        console.error(
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
         this.emit(ERROR, { context, exception })
+        this.bus.emit(ERROR, { transport: this, context, exception })
         this.emit(CHANGE)
 
-        this.disconnect()
+        this.disconnect(true)
             // retry connect
             .then(() => wasConnected && this.connect(true))
     }
