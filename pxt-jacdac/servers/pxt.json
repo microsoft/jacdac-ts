@@ -1,6 +1,6 @@
 {
     "name": "jacdac-servers",
-    "version": "0.4.74",
+    "version": "0.4.76",
     "description": "MakeCode support for Jacdac servers",
     "dependencies": {
         "core": "*",

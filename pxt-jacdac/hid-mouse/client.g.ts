@@ -1,8 +1,6 @@
 namespace modules {
     /**
-     * Controls a HID mouse. 
-     * 
-     * This service cannot be simulated.
+     * Controls a HID mouse.
      **/
     //% fixedInstances blockGap=8
     export class HidMouseClient extends jacdac.Client {
