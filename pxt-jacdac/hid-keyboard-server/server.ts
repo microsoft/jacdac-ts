@@ -1,4 +1,4 @@
-namespace jacdac {
+namespace servers {
     export class HIDKeyboardServer extends jacdac.Server {
         constructor(dev: string) {
             super(dev, jacdac.SRV_HID_KEYBOARD)
@@ -6,11 +6,11 @@ namespace jacdac {
             // todo events
         }
 
-        handleClearCommand(packet: JDPacket) {
+        handleClearCommand(packet: jacdac.JDPacket) {
             keyboard.clearAllKeys()
         }
 
-        handleKeyCommand(packet: JDPacket) {
+        handleKeyCommand(packet: jacdac.JDPacket) {
             let upacked = packet.jdunpack<number[]>("r: u16 u8 u8")
 
             // each key press is represented by 32 bits, unpacked into three "numbers"
@@ -31,7 +31,7 @@ namespace jacdac {
                         case jacdac.HidKeyboardModifiers.LeftAlt:
                             mapped = KeyboardModifierKey.Alt
                             break
-                        case jacdac.HidKeyboardModifiers.LeftGUID:
+                        case jacdac.HidKeyboardModifiers.LeftGUI:
                             mapped = KeyboardModifierKey.Meta
                             break
                         case jacdac.HidKeyboardModifiers.RightControl:
@@ -43,7 +43,7 @@ namespace jacdac {
                         case jacdac.HidKeyboardModifiers.RightAlt:
                             mapped = KeyboardModifierKey.RightAlt
                             break
-                        case jacdac.HidKeyboardModifiers.RightGUID:
+                        case jacdac.HidKeyboardModifiers.RightGUI:
                             mapped = KeyboardModifierKey.RightMeta
                             break
                     }
@@ -53,7 +53,7 @@ namespace jacdac {
             }
         }
 
-        handlePacket(packet: JDPacket) {
+        handlePacket(packet: jacdac.JDPacket) {
             switch (packet.serviceCommand) {
                 case jacdac.HidKeyboardCmd.Clear:
                     this.handleClearCommand(packet)
@@ -64,4 +64,7 @@ namespace jacdac {
             }
         }
     }
+
+    //% fixedInstance whenUsed block="keyboard"
+    export const hidKeyboardServer = new HIDKeyboardServer("keyboard")
 }
