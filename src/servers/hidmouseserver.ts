@@ -1,4 +1,5 @@
 import {
+    CHANGE,
     HidMouseButton,
     HidMouseButtonEvent,
     HidMouseCmd,
@@ -8,6 +9,8 @@ import Packet from "../jdom/packet"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
 export default class HIDMouseServer extends JDServiceServer {
+    private _lastCommand: string
+
     constructor(options?: ServerOptions) {
         super(SRV_HID_MOUSE, options)
 
@@ -16,22 +19,38 @@ export default class HIDMouseServer extends JDServiceServer {
         this.addCommand(HidMouseCmd.Wheel, this.handleWheel.bind(this))
     }
 
+    get lastCommand() {
+        return this._lastCommand
+    }
+
+    setLastCommand(s: string) {
+        if (this._lastCommand !== s) {
+            this._lastCommand = s
+            this.emit(CHANGE)
+        }
+    }
+
     private handleMove(pkt: Packet) {
-        const [dx, dy, time] = pkt.jdunpack<[number, number, number]>(
-            "i16 i16 u16"
-        )
-        console.log({ dx, dy, time })
+        const [dx, dy] = pkt.jdunpack<[number, number, number]>("i16 i16 u16")
+        this.setLastCommand(`move ${dx} ${dy}`)
     }
 
     private handleSetButton(pkt: Packet) {
         const [buttons, event] = pkt.jdunpack<
             [HidMouseButton, HidMouseButtonEvent]
         >("u16 u8")
-        console.log({ buttons, event })
+        const btns = [
+            buttons & HidMouseButton.Left ? "left" : "",
+            buttons & HidMouseButton.Right ? "right" : "",
+            buttons & HidMouseButton.Middle ? "middle" : "",
+        ]
+            .filter(b => !!b)
+            .join(", ")
+        this.setLastCommand(`set buttons ${btns} ${HidMouseButtonEvent[event]}`)
     }
 
     private handleWheel(pkt: Packet) {
-        const [dy, time] = pkt.jdunpack<[number, number]>("i16 u16")
-        console.log({ dy, time })
+        const [dy] = pkt.jdunpack<[number, number]>("i16 u16")
+        this.setLastCommand(`wheel ${dy}`)
     }
 }
