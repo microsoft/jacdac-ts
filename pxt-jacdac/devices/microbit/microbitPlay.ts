@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     // Service: Sound player
     const SRV_SOUND_PLAYER = 0x1403d338
     const enum SoundPlayerReg {
@@ -81,6 +81,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="sound player"
     export const soundPlayerServer = new SoundPlayerServer()
 }

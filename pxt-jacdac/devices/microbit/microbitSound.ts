@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     // Service: Sound level
     const SRV_SOUND_LEVEL = 0x14ad1a5d
     const enum SoundLevelReg {
@@ -131,6 +131,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="sound level"
     export const soundLevelServer = new SoundLevelServer()
 }

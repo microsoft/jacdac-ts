@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     // Service: Compass
     const SRV_COMPASS = 0x15b7b9bf
     const enum CompassReg {
@@ -72,6 +72,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="compass"
     export const compassServer = new CompassServer()
 }

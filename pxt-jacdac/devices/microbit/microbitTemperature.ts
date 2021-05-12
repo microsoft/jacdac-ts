@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     // Service: Thermometer
     const SRV_THERMOMETER = 0x1421bac7
 
@@ -75,6 +75,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="thermometer"
     export const thermometerServer = new ThermometerServer()
 }

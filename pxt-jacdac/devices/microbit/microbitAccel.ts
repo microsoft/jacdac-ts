@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     const SRV_ACCELEROMETER = 0x1f140409
     export class AccelerometerServer extends jacdac.SensorServer {
         private lastEvent: number = -1;
@@ -22,7 +22,7 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="accelerometer"
     export const accelerometerServer = new AccelerometerServer()
 }
 

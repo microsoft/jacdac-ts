@@ -59,6 +59,6 @@ namespace jacdac {
         }
     }
 
-    //% whenUsed
+    //% whenUsed block="logger"
     export const loggerServer = new LoggerServer()
 }

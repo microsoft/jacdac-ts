@@ -5,6 +5,9 @@
         "jacdac-settings": "./settings",
         "jacdac-tcp": "./tcp",
         "jacdac-button": "./button",
-        "jacdac-accelerometer": "./accelerometer"
+        "jacdac-accelerometer": "./accelerometer",
+        "jacdac-hid-keyboard": "./hid-keyboard",
+        "jacdac-hid-mouse": "./hid-mouse",
+        "jacdac-servers": "./servers"
     }
 }

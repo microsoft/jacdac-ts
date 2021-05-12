@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     const SRV_BUTTON = 0x1473a263
     export class MButton extends jacdac.SensorServer {
         constructor(dev: string, private button: number) {
@@ -20,11 +20,11 @@ namespace microbit {
     }
 
     //% fixedInstance whenUsed block="button A"
-    export const buttonA = new microbit.MButton("A", Button.A);
+    export const buttonA = new servers.MButton("A", Button.A);
     //% fixedInstance whenUsed block="button B"
-    export const buttonB = new microbit.MButton("B", Button.B);
+    export const buttonB = new servers.MButton("B", Button.B);
     //% fixedInstance whenUsed block="button AB"
-    export const buttonAB = new microbit.MButton("A+B", Button.AB);
+    export const buttonAB = new servers.MButton("A+B", Button.AB);
     //% fixedInstance whenUsed block="button logo"
-    export const buttonLogo = new microbit.MButton("Logo", DAL.MICROBIT_ID_LOGO);
+    export const buttonLogo = new servers.MButton("Logo", DAL.MICROBIT_ID_LOGO);
 }

@@ -18,7 +18,6 @@ namespace pins {
 
 let identifyAnimationRunning = false
 function identifyAnimation() {
-    console.log(`identify ` + identifyAnimationRunning)
     if (identifyAnimationRunning)
         return
 

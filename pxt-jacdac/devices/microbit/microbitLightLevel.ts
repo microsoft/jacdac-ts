@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     const SRV_LIGHT_LEVEL = 0x17dc9a1c
     export class LightLevelServer extends jacdac.SensorServer {
         constructor() {
@@ -10,6 +10,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="light level"
     export const lightLevelServer = new LightLevelServer()
 }

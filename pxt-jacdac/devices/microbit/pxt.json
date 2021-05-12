@@ -6,7 +6,8 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "jacdac": "github:microsoft/pxt-jacdac"
+        "jacdac": "github:microsoft/pxt-jacdac",
+        "jacdac-servers": "github:microsoft/pxt-jacdac/servers"
     },
     "files": [
         "README.md",
@@ -19,7 +20,8 @@
         "microbitTemperature.ts",
         "microbitCompass.ts",
         "microbitRadio.ts",
-        "microbitBuzzer.ts"
+        "microbitBuzzer.ts",
+        "main.ts"
     ],
     "testFiles": [
         "test.ts"

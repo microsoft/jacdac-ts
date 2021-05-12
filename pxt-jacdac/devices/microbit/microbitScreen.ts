@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     export class ScreenServer extends jacdac.Server {
         constructor() {
             super("screen", 0x110d154b)
@@ -36,6 +36,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="screen"
     export const screenServer = new ScreenServer()
 }

@@ -1,6 +1,6 @@
 {
     "name": "jacdac-button-host",
-    "version": "0.4.68",
+    "version": "0.4.72",
     "description": "MakeCode support for Jacdac Button server",
     "dependencies": {
         "core": "*",

@@ -1,4 +1,4 @@
-namespace microbit {
+namespace servers {
     // Service: Buzzer
     const SRV_BUZZER = 0x1b57b1d7
     const enum BuzzerReg {
@@ -54,6 +54,6 @@ namespace microbit {
         }
     }
 
-    //% fixedInstance whenUsed
+    //% fixedInstance whenUsed block="buzzer"
     export const buzzerServer = new BuzzerServer()
 }
