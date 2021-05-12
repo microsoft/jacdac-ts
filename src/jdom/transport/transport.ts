@@ -281,10 +281,8 @@ export abstract class JDTransport extends JDEventSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {
         const wasConnected = this.connected
-        console.error(
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
         this.emit(ERROR, { context, exception })
+        this.bus.emit(ERROR, { transport: this, context, exception })
         this.emit(CHANGE)
 
         this.disconnect()

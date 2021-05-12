@@ -6,6 +6,7 @@ namespace modules {
      * 
      * The codes for the key (selectors) is defined in the [HID Keyboard
      * specification](https://usb.org/sites/default/files/hut1_21.pdf), chapter 10 Keyboard/Keypad Page, page 81.
+     * Modifiers are in page 87.
      * 
      * The device keeps tracks of the key state and is able to clear it all with the clear command.
      **/
