@@ -1,6 +1,6 @@
 {
     "name": "jacdac-hid-keyboard-server",
-    "version": "0.4.76",
+    "version": "0.4.77",
     "description": "MakeCode support for Jacdac keyboard hid server",
     "dependencies": {
         "core": "*",
@@ -15,6 +15,14 @@
     "testFiles": [
         "test.ts"
     ],
+    "testDependencies": {
+        "device": "*",
+        "game": "*"
+    },
+    "targetVersions": {
+        "target": "1.5.12",
+        "targetId": "arcade"
+    },
     "supportedTargets": [
         "arcade",
         "maker"
