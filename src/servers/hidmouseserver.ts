@@ -31,7 +31,9 @@ export default class HIDMouseServer extends JDServiceServer {
     }
 
     private handleMove(pkt: Packet) {
-        const [dx, dy, time] = pkt.jdunpack<[number, number, number]>("i16 i16 u16")
+        const [dx, dy, time] = pkt.jdunpack<[number, number, number]>(
+            "i16 i16 u16"
+        )
         this.setLastCommand(`move ${dx} ${dy} ${time}`)
     }
 
@@ -46,7 +48,11 @@ export default class HIDMouseServer extends JDServiceServer {
         ]
             .filter(b => !!b)
             .join(", ")
-        this.setLastCommand(`set buttons ${btns} ${HidMouseButtonEvent[event]}`)
+        this.setLastCommand(
+            `set buttons ${btns || "?"} ${(
+                HidMouseButtonEvent[event] || "?"
+            ).toLocaleLowerCase()}`
+        )
     }
 
     private handleWheel(pkt: Packet) {
