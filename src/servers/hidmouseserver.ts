@@ -31,8 +31,8 @@ export default class HIDMouseServer extends JDServiceServer {
     }
 
     private handleMove(pkt: Packet) {
-        const [dx, dy] = pkt.jdunpack<[number, number, number]>("i16 i16 u16")
-        this.setLastCommand(`move ${dx} ${dy}`)
+        const [dx, dy, time] = pkt.jdunpack<[number, number, number]>("i16 i16 u16")
+        this.setLastCommand(`move ${dx} ${dy} ${time}`)
     }
 
     private handleSetButton(pkt: Packet) {
@@ -50,7 +50,7 @@ export default class HIDMouseServer extends JDServiceServer {
     }
 
     private handleWheel(pkt: Packet) {
-        const [dy] = pkt.jdunpack<[number, number]>("i16 u16")
-        this.setLastCommand(`wheel ${dy}`)
+        const [dy, time] = pkt.jdunpack<[number, number]>("i16 u16")
+        this.setLastCommand(`wheel ${dy} ${time}`)
     }
 }
