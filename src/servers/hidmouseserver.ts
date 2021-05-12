@@ -8,6 +8,17 @@ import {
 import Packet from "../jdom/packet"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
+export function renderHidMouseButtons(buttons: HidMouseButton) {
+    const btns = [
+        buttons & HidMouseButton.Left ? "left" : "",
+        buttons & HidMouseButton.Right ? "right" : "",
+        buttons & HidMouseButton.Middle ? "middle" : "",
+    ]
+        .filter(b => !!b)
+        .join(", ")
+    return btns
+}
+
 export default class HIDMouseServer extends JDServiceServer {
     private _lastCommand: string
 
@@ -41,13 +52,7 @@ export default class HIDMouseServer extends JDServiceServer {
         const [buttons, event] = pkt.jdunpack<
             [HidMouseButton, HidMouseButtonEvent]
         >("u16 u8")
-        const btns = [
-            buttons & HidMouseButton.Left ? "left" : "",
-            buttons & HidMouseButton.Right ? "right" : "",
-            buttons & HidMouseButton.Middle ? "middle" : "",
-        ]
-            .filter(b => !!b)
-            .join(", ")
+        const btns = renderHidMouseButtons(buttons)
         this.setLastCommand(
             `set buttons ${btns || "?"} ${(
                 HidMouseButtonEvent[event] || "?"
