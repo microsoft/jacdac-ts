@@ -69,7 +69,8 @@ class WebUSBTransport extends JDTransport {
         await this.hf2.sendJDMessageAsync(buf)
     }
 
-    protected async transportDisconnectAsync() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected async transportDisconnectAsync(background?: boolean) {
         const h = this.hf2
         this.hf2 = undefined
         if (h) await h.disconnectAsync()
