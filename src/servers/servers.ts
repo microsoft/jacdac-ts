@@ -76,6 +76,7 @@ import {
     SRV_POWER,
     CHANGE,
     JoystickButtons,
+    SRV_HID_KEYBOARD,
 } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
 import ProtocolTestServer from "../jdom/protocoltestserver"
@@ -114,6 +115,7 @@ import DMXServer from "./dmxserver"
 import BitRadioServer from "./bitradioserver"
 import PowerServer from "./powerserver"
 import CapacitiveButtonServer from "./capacitivebuttonserver"
+import HIDKeyboardServer from "./hidkeyboardserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -1299,6 +1301,11 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             return dev
         },
     },
+    {
+        name: "HID keyboard",
+        serviceClasses: [SRV_HID_KEYBOARD],
+        services: () => [new HIDKeyboardServer()]
+    }
 ]
 
 export default function serviceProviderDefinitions() {
