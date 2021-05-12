@@ -11,14 +11,7 @@ import { JDServiceClient } from "../jdom/serviceclient"
 import { roundWithPrecision } from "../jdom/utils"
 import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
 import { VMServiceEnvironment } from "../vm/environment"
-
-export enum JDTestCommandStatus {
-    NotReady,
-    Active,
-    RequiresUserInput,
-    Passed,
-    Failed,
-}
+import { VMCommandStatus} from "../vm/vmrunner"
 
 export enum JDTestStatus {
     NotReady,
@@ -27,17 +20,17 @@ export enum JDTestStatus {
     Failed,
 }
 
-function commandStatusToTestStatus(status: JDTestCommandStatus) {
+function commandStatusToTestStatus(status: VMCommandStatus) {
     switch (status) {
-        case JDTestCommandStatus.Active:
+        case VMCommandStatus.Active:
             return JDTestStatus.Active
-        case JDTestCommandStatus.Passed:
+        case VMCommandStatus.Passed:
             return JDTestStatus.Passed
-        case JDTestCommandStatus.Failed:
+        case VMCommandStatus.Failed:
             return JDTestStatus.Failed
-        case JDTestCommandStatus.NotReady:
+        case VMCommandStatus.NotReady:
             return JDTestStatus.NotReady
-        case JDTestCommandStatus.RequiresUserInput:
+        case VMCommandStatus.RequiresUserInput:
             return JDTestStatus.Active
     }
 }
@@ -50,7 +43,7 @@ function cmdToTestFunction(cmd: jdtest.TestCommandSpec) {
 class JDCommandEvaluator {
     private _prompt = ""
     private _progress = ""
-    private _status = JDTestCommandStatus.Active
+    private _status = VMCommandStatus.Active
     private _startExpressions: StartMap = []
     private _rangeComplete: number = undefined
     private _eventsComplete: string[] = undefined
@@ -197,8 +190,8 @@ class JDCommandEvaluator {
     private checkExpression(e: jsep.Expression) {
         const expr = new JDExprEvaluator(this.env, this.callEval(this._startExpressions))
         return expr.eval(e)
-            ? JDTestCommandStatus.Passed
-            : JDTestCommandStatus.Active
+            ? VMCommandStatus.Passed
+            : VMCommandStatus.Active
     }
 
     private getStart(e: jsep.Expression) {
@@ -208,11 +201,11 @@ class JDCommandEvaluator {
     public evaluate() {
         const testFun = cmdToTestFunction(this.command)
         const args = this.command.call.arguments
-        this._status = JDTestCommandStatus.Active
+        this._status = VMCommandStatus.Active
         this._progress = ""
         switch (testFun.id as JDTestFunctions) {
             case "ask": {
-                this._status = JDTestCommandStatus.RequiresUserInput
+                this._status = VMCommandStatus.RequiresUserInput
                 break
             }
             case "check": {
@@ -228,7 +221,7 @@ class JDCommandEvaluator {
                 )
                 const ev = expr.eval(args[0]) as number
                 if (Math.abs(ev - goal.v) <= error.v)
-                    this._status = JDTestCommandStatus.Passed
+                    this._status = VMCommandStatus.Passed
                 this._progress = `current: ${pretify(ev)}; goal: ${pretify(
                     goal.v
                 )}; error: ${pretify(error.v)}`
@@ -247,8 +240,8 @@ class JDCommandEvaluator {
                     ((testFun.id === "changes" && regValue !== regSaved.v) ||
                         (testFun.id === "increases" && regValue > regSaved.v) ||
                         (testFun.id === "decreases" && regValue < regSaved.v))
-                        ? JDTestCommandStatus.Passed
-                        : JDTestCommandStatus.Active
+                        ? VMCommandStatus.Passed
+                        : VMCommandStatus.Active
                 this._status = status
                 regSaved.v = regValue
                 break
@@ -260,39 +253,39 @@ class JDCommandEvaluator {
                 const regValue = this.env(unparse(args[0]))
                 if (testFun.id === "increasesBy") {
                     if (regValue >= regSaved.v + amtSaved.v) {
-                        this._status = JDTestCommandStatus.Passed
+                        this._status = VMCommandStatus.Passed
                     } else if (
                         regValue >= regSaved.v &&
                         regValue < regSaved.v + amtSaved.v
                     ) {
-                        this._status = JDTestCommandStatus.Active
+                        this._status = VMCommandStatus.Active
                         this._progress = `current: ${pretify(
                             regValue
                         )}, goal: ${pretify(regSaved.v + amtSaved.v)}`
                     } else {
-                        this._status = JDTestCommandStatus.Active
+                        this._status = VMCommandStatus.Active
                     }
                 } else {
                     if (regValue <= regSaved.v - amtSaved.v) {
-                        this._status = JDTestCommandStatus.Passed
+                        this._status = VMCommandStatus.Passed
                         this._progress = "completed"
                     } else if (
                         regValue <= regSaved.v &&
                         regValue > regSaved.v - amtSaved.v
                     ) {
-                        this._status = JDTestCommandStatus.Active
+                        this._status = VMCommandStatus.Active
                         this._progress = `current: ${pretify(
                             regValue
                         )} goal: ${pretify(regSaved.v - amtSaved.v)}`
                     } else {
-                        this._status = JDTestCommandStatus.Active
+                        this._status = VMCommandStatus.Active
                     }
                 }
                 break
             }
             case "stepsUpTo":
             case "stepsDownTo": {
-                this._status = JDTestCommandStatus.Active
+                this._status = VMCommandStatus.Active
                 const regValue = this.env(unparse(args[0]))
                 const beginSaved = this.getStart(args[0])
                 const endSaved = this.getStart(args[1])
@@ -306,7 +299,7 @@ class JDCommandEvaluator {
                     )
                         this._rangeComplete = regValue
                     if (this._rangeComplete === endSaved.v) {
-                        this._status = JDTestCommandStatus.Passed
+                        this._status = VMCommandStatus.Passed
                     }
                 }
                 if (this._rangeComplete != undefined) {
@@ -327,9 +320,9 @@ class JDCommandEvaluator {
                     if (ev === this._eventsComplete[0]) {
                         this._eventsComplete.shift()
                         if (this._eventsComplete.length === 0)
-                            this._status = JDTestCommandStatus.Passed
+                            this._status = VMCommandStatus.Passed
                     } else {
-                        this._status = JDTestCommandStatus.Failed
+                        this._status = VMCommandStatus.Failed
                     }
                     this._progress = `got event ${ev}; remaining = [${this._eventsComplete}]`
                 } else {
@@ -345,7 +338,7 @@ class JDCommandEvaluator {
                     const ev = this.testRunner.consumeEvent()
                     if (ev !== event.name) {
                         if (testFun.id === "nextEvent")
-                            this._status = JDTestCommandStatus.Failed
+                            this._status = VMCommandStatus.Failed
                     } else {
                         // this._status = JDTestCommandStatus.Passed
                         this._status = this.checkExpression(
@@ -365,7 +358,7 @@ class JDCommandEvaluator {
                 const ev = expr.eval(args[1])
                 const reg = args[0] as jsep.Identifier
                 if (this.testRunner.serviceTestRunner.writeRegister(reg.name, ev)) {
-                    this._status = JDTestCommandStatus.Passed
+                    this._status = VMCommandStatus.Passed
                     this._progress = `wrote ${ev} to register ${reg.name}`
                 }
             }
@@ -383,7 +376,7 @@ export interface JDCommandOutput {
 }
 
 export class JDTestCommandRunner extends JDEventSource {
-    private _status = JDTestCommandStatus.NotReady
+    private _status = VMCommandStatus.NotReady
     private _output: JDCommandOutput = { message: "", progress: "" }
     private _commmandEvaluator: JDCommandEvaluator = null
 
@@ -398,7 +391,7 @@ export class JDTestCommandRunner extends JDEventSource {
         return this._status
     }
 
-    set status(s: JDTestCommandStatus) {
+    set status(s: VMCommandStatus) {
         if (s != this._status) {
             this._status = s
             this.emit(CHANGE)
@@ -407,15 +400,15 @@ export class JDTestCommandRunner extends JDEventSource {
 
     get indeterminate(): boolean {
         return (
-            this.status !== JDTestCommandStatus.Failed &&
-            this.status !== JDTestCommandStatus.Passed
+            this.status !== VMCommandStatus.Failed &&
+            this.status !== VMCommandStatus.Passed
         )
     }
 
     get isActive(): boolean {
         return (
-            this.status === JDTestCommandStatus.Active ||
-            this.status === JDTestCommandStatus.RequiresUserInput
+            this.status === VMCommandStatus.Active ||
+            this.status === VMCommandStatus.RequiresUserInput
         )
     }
 
@@ -435,13 +428,13 @@ export class JDTestCommandRunner extends JDEventSource {
     }
 
     reset() {
-        this.status = JDTestCommandStatus.NotReady
+        this.status = VMCommandStatus.NotReady
         this.output = { message: "", progress: "" }
         this._commmandEvaluator = null
     }
 
     start() {
-        this.status = JDTestCommandStatus.Active
+        this.status = VMCommandStatus.Active
         this._commmandEvaluator = new JDCommandEvaluator(
             this.testRunner,
             this.command
@@ -460,22 +453,22 @@ export class JDTestCommandRunner extends JDEventSource {
             this.output = newOutput
             if (
                 this._commmandEvaluator.status ===
-                JDTestCommandStatus.RequiresUserInput
+                VMCommandStatus.RequiresUserInput
             )
-                this.status = JDTestCommandStatus.RequiresUserInput
+                this.status = VMCommandStatus.RequiresUserInput
             else this.finish(this._commmandEvaluator.status)
         }
     }
 
     cancel() {
-        this.finish(JDTestCommandStatus.Failed)
+        this.finish(VMCommandStatus.Failed)
     }
 
-    finish(s: JDTestCommandStatus) {
+    finish(s: VMCommandStatus) {
         if (
             this.isActive &&
-            (s === JDTestCommandStatus.Failed ||
-                s === JDTestCommandStatus.Passed)
+            (s === VMCommandStatus.Failed ||
+                s === VMCommandStatus.Passed)
         ) {
             this.status = s
             this.testRunner.finishCommand()
