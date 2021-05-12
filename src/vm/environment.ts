@@ -97,6 +97,7 @@ export class VMServiceEnvironment extends JDServiceClient {
 
 export class VMRoleManagerEnvironment extends JDServiceClient{
     private _roles: SMap<VMServiceEnvironment> = {}
+    
     constructor(service: JDService) {
         super(service)
         this.subscribe(ROLE_MANAGER_CHANGE, () => { 
@@ -136,10 +137,11 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         return serviceEnv.lookup(e)
     }
 
-    public writeRegister(e: jsep.MemberExpression | string) {
+    public writeRegister(e: jsep.MemberExpression | string, ev: any) {
         let serviceEnv = this.getService(e)
-        if (serviceEnv) {
-
+        let me = e as jsep.MemberExpression;
+        if (serviceEnv && me.property.type === "Identifier") {
+            return serviceEnv.writeRegister((me.property as jsep.Identifier).name, ev);
         }
         return false
     }

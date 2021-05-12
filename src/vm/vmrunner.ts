@@ -1,10 +1,10 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
-import { VMRoleManagerEnvironment} from "./environment"
+import { VMRoleManagerEnvironment, VMServiceEnvironment} from "./environment"
 import { JDExprEvaluator } from "./expr"
 
-export enum VMCommandStatus {
-    NotReady,
-    Active,
+export enum VMStatus {
+    Paused,
+    Waiting,
     Completed,
     Stopped
 }
@@ -16,8 +16,8 @@ interface Environment {
     hasEvent: (e: jsep.MemberExpression | string) => boolean
 }
 
-class IT4Evaluator {
-    private _status = VMCommandStatus.NotReady
+class IT4CommandEvaluator {
+    private _status = VMStatus.Paused
     constructor(
         private readonly env: Environment,
         private readonly gc: IT4GuardedCommand) {
@@ -34,24 +34,22 @@ class IT4Evaluator {
 
     private checkExpression(e: jsep.Expression) {
         const expr = new JDExprEvaluator(this.env.lookup, undefined)
-        return expr.eval(e)
-            ? VMCommandStatus.Completed
-            : VMCommandStatus.Active
+        return expr.eval(e) ? true : false
     }
 
     public evaluate() {
-        this._status = VMCommandStatus.Active
+        this._status = VMStatus.Waiting
         const args = this.gc.command.arguments
         switch(this.inst) {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
-                    this._status = this.checkExpression(args[1])
+                    this._status = this.checkExpression(args[1]) ? VMStatus.Completed : VMStatus.Waiting;
                 }
                 break
             }
             case "awaitCondition": {
-                this._status = this.checkExpression(args[0])
+                this._status = this.checkExpression(args[0]) ? VMStatus.Completed : VMStatus.Waiting;
                 break
             }
             case "writeRegister": 
@@ -66,13 +64,13 @@ class IT4Evaluator {
                 if (this.inst === "writeRegister" && this.env.writeRegister(reg, ev) ||
                     this.inst === "writeLocal" && this.env.writeLocal(reg, ev)
                 ) {
-                    this._status = VMCommandStatus.Completed
+                    this._status = VMStatus.Completed
                 }
-                this._status = VMCommandStatus.Completed
+                this._status = VMStatus.Completed
                 break
             }
             case "halt": {
-                this._status = VMCommandStatus.Stopped
+                this._status = VMStatus.Stopped
                 break
             }
         }
@@ -81,53 +79,48 @@ class IT4Evaluator {
 }
 
 class  IT4CommandRunner {
-    private _status = VMCommandStatus.NotReady
-    private _eval: IT4Evaluator;
-    constructor(private readonly env: Environment,
-                private readonly gc: IT4GuardedCommand) {
-        this._eval = new IT4Evaluator(env, gc)
-    }
-
-    start() {
-        this.status = VMCommandStatus.Active
-        this.envChange()
+    private _status = VMStatus.Paused
+    private _eval: IT4CommandEvaluator;
+    constructor(env: Environment, gc: IT4GuardedCommand) {
+        this._eval = new IT4CommandEvaluator(env, gc)
     }
 
     get status() {
         return this._status
     }
 
-    set status(s: VMCommandStatus) {
+    set status(s: VMStatus) {
         if (s != this._status) {
             this._status = s
         }
     }
 
-    get isActive(): boolean {
+    get isReady(): boolean {
         return (
-            this.status === VMCommandStatus.Active
+            this.status === VMStatus.Waiting ||
+            this.status === VMStatus.Paused
         )
     }
 
     reset() {
-        this.status = VMCommandStatus.NotReady
+        this.status = VMStatus.Paused
     }
 
-    envChange() {
-        if (this.isActive) {
+    step() {
+        if (this.isReady) {
             this._eval.evaluate()
             this.finish(this._eval.status)
         }
     }
 
     cancel() {
-        this.finish(VMCommandStatus.Stopped)
+        this.finish(VMStatus.Stopped)
     }
 
-    finish(s: VMCommandStatus) {
+    private finish(s: VMStatus) {
         if (
-            this.isActive &&
-            s === VMCommandStatus.Completed
+            this.isReady &&
+            s === VMStatus.Completed || s === VMStatus.Stopped
         ) {
             this.status = s
         }
@@ -135,108 +128,74 @@ class  IT4CommandRunner {
 }
 
 class IT4HandlerRunner {
-    private _status = VMCommandStatus.NotReady
     private _commandIndex: number
-    private _currentEvent: string
     private _currentCommand: IT4CommandRunner;
+    private stopped: boolean = false;
 
     constructor(
         public readonly env: Environment,
         private readonly handler: IT4Handler
     ) {
-        
-    }
-
-    public reset() {
-        if (this.status !== VMCommandStatus.NotReady) {
-            this._status = VMCommandStatus.NotReady
-            this._commandIndex = undefined
-            this._currentEvent = undefined
-        }
-    }
-
-    start() {
         this.reset()
-        this.status = VMCommandStatus.Active
-        this.commandIndex = 0
-    }
-
-    cancel() {
-        this.finish(VMCommandStatus.Stopped)
     }
 
     get status() {
-        return this._status
+        return this.stopped ? VMStatus.Stopped :
+            this._currentCommand === undefined ? VMStatus.Paused : this._currentCommand.status
     }
 
-    set status(s: VMCommandStatus) {
-        if (s != this._status) {
-            this._status = s
+    public reset() {
+        this._commandIndex = undefined
+        this.stopped = false
+    }
+
+    start() {
+        this._commandIndex = 0
+    }
+
+    cancel() {
+        this.stopped = true
+    }
+
+    // run-to-complete semantics
+    step() {
+        if (!this._commandIndex)
+            return;
+        if (!this._currentCommand)
+            this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
+        this._currentCommand.step()
+        while (this._currentCommand.status === VMStatus.Completed &&
+               this._commandIndex < this.handler.commands.length - 1) {
+                this._commandIndex++
+                this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
+                this._currentCommand.step()
         }
-    }
-
-    finish(newStatus: VMCommandStatus) {
-        if (this.status === VMCommandStatus.Active) {
-            this.status = newStatus
-            // TODO: if finished
-        }
-    }
-
-    private get commandIndex() {
-        return this._commandIndex
-    }
-
-    private set commandIndex(index: number) {
-        if (this._commandIndex !== index) {
-            this._commandIndex = index
-            this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[index])
-            this._currentCommand.start()
-            // check status
-        }
-    }
-
-    public envChange() {
-        if (this.status === VMCommandStatus.Active) {
-            this.currentCommand?.envChange()
-            // check status
-        }
-    }
-
-    public eventChange(event: string) {
-        if (this.status === VMCommandStatus.Active) {
-            this._currentEvent = event
-            this.envChange()
-        }
-    }
-
-    public get hasEvent() {
-        return this._currentEvent != undefined
-    }
-
-    public consumeEvent() {
-        const ret = this._currentEvent
-        this._currentEvent = undefined
-        return ret
-    }
-
-    public finishCommand() {
-        if (this.commandIndex === this.handler.commands.length -1)
-            this.finish(this.currentCommand.status)
-        else 
-            this.commandIndex++
-    }
-
-    get currentCommand(): any {
-        return this._currentCommand
     }
 }
 
 export class IT4ProgramRunner {
-    private _handlers: IT4HandlerRunner[];
+    private _handlers: IT4HandlerRunner[]
+    private _env: VMRoleManagerEnvironment
+    private _runQueue: IT4HandlerRunner[] = []
+    private _waitQueue: IT4HandlerRunner[] = []
 
-    constructor(private env: VMRoleManagerEnvironment, private readonly program: IT4Program) {
-        // start all the handlers (in parallel)
-        this._handlers = program.handlers.map(h => new IT4HandlerRunner(env, h))
-        this._handlers.forEach(h => h.start())
+    // TODO: propagate status of handler up for visibility
+    // TODO: hook into notifications
+
+    constructor(private readonly program: IT4Program) {
+        this._env = new VMRoleManagerEnvironment(undefined)
+        this._handlers = program.handlers.map(h => new IT4HandlerRunner(this._env, h))
+        // TODO: initialize the queues
+        // TODO: kick things off
     }
+
+    run() {
+
+    }
+
+    // TODO:
+    // - scheduler
+    //   - only one handler runs at a time
+    // - when we get an event, need to inform each handler that is waiting of the event
+    //   and get a chance to be unblocked
 }
