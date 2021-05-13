@@ -26,8 +26,9 @@ export async function refresh_env(registers: SMap<JDRegister>) {
     }
 }
 
-async function writeReg(reg: JDRegister, fmt: string, newValue: any) {
-    await reg.sendSetPackedAsync(fmt, [newValue], true)
+// TODO: you want [ev] to be PackedValues and handle the arrays yourself.
+async function writeReg(reg: JDRegister, fmt: string, ev: any) {
+    await reg.sendSetPackedAsync(fmt, [ev], true)
 }
 
 export class VMServiceEnvironment extends JDServiceClient {
