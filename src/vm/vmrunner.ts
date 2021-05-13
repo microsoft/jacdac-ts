@@ -1,6 +1,8 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
 import { VMRoleManagerEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
+import { JDService } from "../jdom/service"
+import { JDServiceClient } from "../jdom/serviceclient"
 
 export enum VMStatus {
     Paused,
@@ -174,13 +176,14 @@ class IT4HandlerRunner {
     }
 }
 
-export class IT4ProgramRunner {
+export class IT4ProgramRunner extends JDServiceClient  {
     private _handlers: IT4HandlerRunner[]
     private _env: VMRoleManagerEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
 
-    constructor(program: IT4Program) {
-        this._env = new VMRoleManagerEnvironment(undefined, () => {
+    constructor(program: IT4Program, rolemanager: JDService) {
+        super(rolemanager)
+        this._env = new VMRoleManagerEnvironment(rolemanager, () => {
             this.run()
         })
         this._handlers = program.handlers.map(h => new IT4HandlerRunner(this._env, h))
