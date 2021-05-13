@@ -11,33 +11,139 @@ namespace servers {
         }
 
         private selectorToKey(selector: number) {
-            if (selector >= 0x04 && selector <= 0x1d) // a-z
-                return String.fromCharCode("a".charCodeAt(0) + (selector - 0x04))
-            if (selector >= 0x1e && selector <= 0x26) // 1-9
-                return String.fromCharCode("1".charCodeAt(0) + (selector - 0x1e))
+            // a-z
+            if (selector >= 0x04 && selector <= 0x1d)
+                return String.fromCharCode(
+                    "a".charCodeAt(0) + (selector - 0x04)
+                )
+            // 1-9
+            if (selector >= 0x1e && selector <= 0x26)
+                return String.fromCharCode(
+                    "1".charCodeAt(0) + (selector - 0x1e)
+                )
+
             switch (selector) {
-                case 0x27: return "0"
+                case 0x27:
+                    return "0"
             }
             return ""
         }
 
         private selectorToFunction(selector: number): KeyboardFunctionKey {
-            if (selector >= 0x28 && selector <= 0x73)
-                return selector
-            else
-                return 0
+            switch (selector) {
+                case KeyboardFunctionKey.F1Key:
+                case KeyboardFunctionKey.F2Key:
+                case KeyboardFunctionKey.F3Key:
+                case KeyboardFunctionKey.F4Key:
+                case KeyboardFunctionKey.F5Key:
+                case KeyboardFunctionKey.F6Key:
+                case KeyboardFunctionKey.F7Key:
+                case KeyboardFunctionKey.F8Key:
+                case KeyboardFunctionKey.F9Key:
+                case KeyboardFunctionKey.F10Key:
+                case KeyboardFunctionKey.F11Key:
+                case KeyboardFunctionKey.F12Key:
+                case KeyboardFunctionKey.F13Key:
+                case KeyboardFunctionKey.F14Key:
+                case KeyboardFunctionKey.F15Key:
+                case KeyboardFunctionKey.F16Key:
+                case KeyboardFunctionKey.F17Key:
+                case KeyboardFunctionKey.F18Key:
+                case KeyboardFunctionKey.F19Key:
+                case KeyboardFunctionKey.F20Key:
+                case KeyboardFunctionKey.F21Key:
+                case KeyboardFunctionKey.F22Key:
+                case KeyboardFunctionKey.F23Key:
+                case KeyboardFunctionKey.F24Key:
+                case KeyboardFunctionKey.Enter:
+                case KeyboardFunctionKey.Esc:
+                case KeyboardFunctionKey.Backspace:
+                case KeyboardFunctionKey.Tab:
+                case KeyboardFunctionKey.CapsLock:
+                case KeyboardFunctionKey.NumLock:
+                case KeyboardFunctionKey.KeypadSlash:
+                case KeyboardFunctionKey.KeypadAsterisk:
+                case KeyboardFunctionKey.KeypadMinus:
+                case KeyboardFunctionKey.KeypadPlus:
+                case KeyboardFunctionKey.KeypadEnter:
+                case KeyboardFunctionKey.Keypad1:
+                case KeyboardFunctionKey.Keypad2:
+                case KeyboardFunctionKey.Keypad3:
+                case KeyboardFunctionKey.Keypad4:
+                case KeyboardFunctionKey.Keypad5:
+                case KeyboardFunctionKey.Keypad6:
+                case KeyboardFunctionKey.Keypad7:
+                case KeyboardFunctionKey.Keypad8:
+                case KeyboardFunctionKey.Keypad9:
+                case KeyboardFunctionKey.Keypad0:
+                case KeyboardFunctionKey.KeypadDot:
+                case KeyboardFunctionKey.Compose:
+                case KeyboardFunctionKey.Power:
+                case KeyboardFunctionKey.KeypadEqual:
+                case KeyboardFunctionKey.Open:
+                case KeyboardFunctionKey.Help:
+                case KeyboardFunctionKey.Props:
+                case KeyboardFunctionKey.Front:
+                case KeyboardFunctionKey.Stop:
+                case KeyboardFunctionKey.Again:
+                case KeyboardFunctionKey.Undo:
+                case KeyboardFunctionKey.Cut:
+                case KeyboardFunctionKey.Copy:
+                case KeyboardFunctionKey.Paste:
+                case KeyboardFunctionKey.Find:
+                case KeyboardFunctionKey.Mute:
+                case KeyboardFunctionKey.VolumeUp:
+                case KeyboardFunctionKey.VolumeDown:
+                case KeyboardFunctionKey.KeypadComma:
+                case KeyboardFunctionKey.KeypadJumpComma:
+                case KeyboardFunctionKey.KeypadLeftParenthesis:
+                case KeyboardFunctionKey.KeypadRightParenthesis:
+                case KeyboardFunctionKey.PrintScreen:
+                case KeyboardFunctionKey.ScrollLock:
+                case KeyboardFunctionKey.Pause:
+                case KeyboardFunctionKey.Insert:
+                case KeyboardFunctionKey.Home:
+                case KeyboardFunctionKey.PageUp:
+                case KeyboardFunctionKey.DeleteForward:
+                case KeyboardFunctionKey.End:
+                case KeyboardFunctionKey.PageDown:
+                case KeyboardFunctionKey.RightArrow:
+                case KeyboardFunctionKey.LeftArrow:
+                case KeyboardFunctionKey.DownArrow:
+                case KeyboardFunctionKey.UpArrow:
+                    return selector
+                default:
+                    return 0
+            }
         }
 
         private selectorToMedia(selector: number): KeyboardMediaKey {
-            if (selector >= 0x74 && selector <= 0x81)
-                return selector
-            else
-                return 0
+            switch (selector) {
+                case KeyboardMediaKey.Mute:
+                case KeyboardMediaKey.VolumeUp:
+                case KeyboardMediaKey.VolumeDown:
+                case KeyboardMediaKey.PlayPause:
+                case KeyboardMediaKey.Stop:
+                case KeyboardMediaKey.PreviousTrack:
+                case KeyboardMediaKey.NextTrack:
+                case KeyboardMediaKey.Mail:
+                case KeyboardMediaKey.Calculator:
+                case KeyboardMediaKey.WebSearch:
+                case KeyboardMediaKey.WebHome:
+                case KeyboardMediaKey.WebFavourites:
+                case KeyboardMediaKey.WebRefresh:
+                case KeyboardMediaKey.WebStop:
+                case KeyboardMediaKey.WebForward:
+                case KeyboardMediaKey.WebBack:
+                    return selector
+                default:
+                    return 0
+            }
         }
 
         private sendModifiers(modifiers: number, action: KeyboardKeyEvent) {
             let i = 0
-            for(let i = 0; i < 8; ++i) {
+            for (let i = 0; i < 8; ++i) {
                 const bit = modifiers & (1 << i)
                 const flag = 1 << i
                 if (bit == flag) {
@@ -58,26 +164,28 @@ namespace servers {
                 const modifiers = upacked[i + 1]
                 const action = upacked[i + 2]
 
-                const key = this.selectorToKey(selector)
                 const fcn = this.selectorToFunction(selector)
                 const media = this.selectorToMedia(selector)
+                const key = this.selectorToKey(selector)
 
                 if (action === jacdac.HidKeyboardAction.Press) {
                     this.sendModifiers(modifiers, KeyboardKeyEvent.Down)
-                    if (key) keyboard.key(key, KeyboardKeyEvent.Down)
                     if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Down)
-                    if (media) keyboard.mediaKey(media, KeyboardKeyEvent.Down)
+                    else if (media)
+                        keyboard.mediaKey(media, KeyboardKeyEvent.Down)
+                    else if (key) keyboard.key(key, KeyboardKeyEvent.Down)
                     pause(REPORT_DELAY)
-                    if (key) keyboard.key(key, KeyboardKeyEvent.Up)
                     if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Up)
-                    if (media) keyboard.mediaKey(media, KeyboardKeyEvent.Up)
+                    else if (media)
+                        keyboard.mediaKey(media, KeyboardKeyEvent.Up)
+                    else if (key) keyboard.key(key, KeyboardKeyEvent.Up)
                     pause(REPORT_DELAY)
                     this.sendModifiers(modifiers, KeyboardKeyEvent.Up)
                 } else {
                     this.sendModifiers(modifiers, action)
-                    if (key) keyboard.key(key, action)
                     if (fcn) keyboard.functionKey(fcn, action)
-                    if (media) keyboard.mediaKey(media, action)
+                    else if (media) keyboard.mediaKey(media, action)
+                    else if (key) keyboard.key(key, action)
                     pause(REPORT_DELAY)
                 }
             }
