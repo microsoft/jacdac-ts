@@ -65,7 +65,7 @@ function packNumberCore(buf: Uint8Array, offset: number, num: number) {
 /**
  * Unpacks a buffer into a number array.
  */
-export function unpackNumberArray(buf: Uint8Array, offset = 0): number[] {
+export function unpackNumberArray(buf: Uint8Array, offset = 0): number[] | null {
     const res: number[] = []
 
     while (offset < buf.length) {

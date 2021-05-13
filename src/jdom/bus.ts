@@ -43,6 +43,7 @@ import {
     ROLE_MANAGER_CHANGE,
     TIMEOUT_DISCONNECT,
     REGISTER_POLL_STREAMING_INTERVAL,
+    REPORT_RECEIVE,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -121,7 +122,7 @@ export class JDBus extends JDNode {
     private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
-    public iframeBridge: IFrameBridgeClient;
+    public iframeBridge: IFrameBridgeClient
 
     /**
      * Creates the bus with the given transport
@@ -198,15 +199,9 @@ export class JDBus extends JDNode {
     async connect(background?: boolean) {
         if (this.connected) return
 
-        console.debug(`bus: connect start`, { background })
         for (const transport of this._transports) {
             // start connection
-            console.debug(`bus: connect ${transport.type}`, { transport })
             await transport.connect(background)
-            console.log(
-                `bus: connect ${transport.type} ${transport.connectionState}`,
-                { transport }
-            )
             // keep going if not connected
             if (transport.connected) break
         }
@@ -340,14 +335,14 @@ export class JDBus extends JDNode {
             this._roleManagerClient &&
             this._roleManagerClient.service !== service
         ) {
-            console.debug("unmount role manager")
+            //console.debug("unmount role manager")
             this._roleManagerClient.unmount()
             this._roleManagerClient = undefined
         }
 
         // allocate new manager
         if (service && service !== this._roleManagerClient?.service) {
-            console.debug("mount role manager")
+            //console.debug("mount role manager")
             this._roleManagerClient = new RoleManagerClient(service)
             this.emit(ROLE_MANAGER_CHANGE)
             this.emit(CHANGE)
@@ -753,7 +748,11 @@ export class JDBus extends JDNode {
                         service
                             .registers()
                             // someone is listening for reports
-                            .filter(reg => reg.listenerCount(REPORT_UPDATE) > 0)
+                            .filter(
+                                reg =>
+                                    reg.listenerCount(REPORT_RECEIVE) > 0 ||
+                                    reg.listenerCount(REPORT_UPDATE) > 0
+                            )
                             // ask if data is missing or non-const/status code
                             .filter(
                                 reg =>

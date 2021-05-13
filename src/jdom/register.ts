@@ -20,6 +20,7 @@ import { JDField } from "./field"
 import { JDServiceMemberNode } from "./servicemembernode"
 import { JDNode } from "./node"
 import { jdpack, jdunpack, PackedValues } from "./pack"
+import { PackedObject, unpackedToObject } from "./packobject"
 
 export class JDRegister extends JDServiceMemberNode {
     private _lastReportPkt: Packet
@@ -122,6 +123,15 @@ export class JDRegister extends JDServiceMemberNode {
         return d && fmt && jdunpack(this.data, fmt)
     }
 
+    get objectValue(): PackedObject {
+        const { specification } = this
+        return unpackedToObject(
+            this.unpackedValue,
+            specification?.fields,
+            specification.name
+        )
+    }
+
     get intValue(): number {
         const d = this.data
         return d && intOfBuffer(d)
@@ -195,8 +205,7 @@ export class JDRegister extends JDServiceMemberNode {
     }
 
     processPacket(pkt: Packet) {
-        if (pkt.isRegisterGet)
-            this.processReport(pkt)
+        if (pkt.isRegisterGet) this.processReport(pkt)
         else if (pkt.isRegisterSet) {
             // another device sent a set packet to this register
             // so most likely it's value changed

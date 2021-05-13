@@ -1,10 +1,16 @@
 {
   "name": "jacdac-ts",
-  "version": "1.13.3",
+  "version": "1.13.26",
   "description": "",
   "keywords": [],
-  "main": "dist/jacdac.umd.js",
-  "module": "dist/jacdac.js",
+  "main": "dist/jacdac.js",
+  "module": "dist/jacdac.cjs.js",
+  "exports": {
+    ".": {
+      "import": "./dist/jacdac.js",
+      "require": "./dist/jacdac.cjs.js"
+    }
+  },
   "typings": "dist/types/src/jacdac.d.ts",
   "files": [
     "dist",
@@ -55,12 +61,12 @@
     "replace-in-file": "^6.2.0",
     "rollup": "^2.47.0",
     "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-filesize": "^9.1.1",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-progress": "^1.1.2",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.30.0",
-    "rollup-plugin-filesize": "^9.1.1",
-    "rollup-plugin-progress": "^1.1.2",
     "rollup-plugin-visualizer": "^5.5.0",
     "semantic-release": "^17.4.2",
     "shelljs": "^0.8.4",

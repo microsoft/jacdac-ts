@@ -1,5 +1,6 @@
 import { USB_TRANSPORT } from "../constants"
 import { EventTargetObservable } from "../eventtargetobservable"
+import Flags from "../flags"
 import Packet from "../packet"
 import { JDTransport, JDTransportOptions } from "./transport"
 import {
@@ -69,9 +70,9 @@ class WorkerTransport extends JDTransport {
                 break
             }
             case "error": {
-                const { error } = data
-                console.error(error)
-                this.errorHandler("worker", error)
+                const { error, background, type } = data as TransportMessage
+                if (Flags.diagnostics) console.debug(data)
+                if (!background) this.errorHandler(type, error)
                 break
             }
         }
@@ -101,9 +102,10 @@ class WorkerTransport extends JDTransport {
         } as TransportConnectMessage)
     }
 
-    protected transportDisconnectAsync(): Promise<void> {
+    protected transportDisconnectAsync(background?: boolean): Promise<void> {
         return this.postMessageAsync<void>({
             type: "disconnect",
+            background,
         })
     }
 }
@@ -112,6 +114,7 @@ export function createUSBWorkerTransport(worker: Worker) {
     return (
         isWebUSBEnabled() &&
         new WorkerTransport(USB_TRANSPORT, worker, {
+            checkPulse: true,
             requestDevice: () =>
                 usbRequestDevice(USB_FILTERS).then(dev => dev?.serialNumber),
             connectObservable: new EventTargetObservable(
