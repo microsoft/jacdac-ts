@@ -92,5 +92,5 @@ namespace modules {
     }
 
     //% fixedInstance whenUsed block="servo 1"
-    export const servo = new ServoClient("servo");
+    export const servo1 = new ServoClient("servo1");
 }
