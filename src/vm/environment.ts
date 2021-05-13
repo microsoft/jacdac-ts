@@ -6,12 +6,12 @@ import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
 import { SMap } from "../jdom/utils"
+import { JDBus } from "../jdom/bus"
 import { JDService } from "../jdom/service"
+import { JDEventSource } from "../jdom/eventsource"
 import { 
     CHANGE, 
-    EVENT, 
-    ROLE_MANAGER_CHANGE, 
-    ROLE_CHANGE 
+    EVENT,
 } from "../jdom/constants"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
@@ -100,24 +100,19 @@ export class VMServiceEnvironment extends JDServiceClient {
 }
 
 
-export class VMRoleManagerEnvironment extends JDServiceClient{
+export class VMEnvironment extends JDEventSource  {
     private _currentEvent: string = undefined
     private _roles: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(service: JDService, private readonly notifyOnChange: () => void) {
-        super(service)
-        this.subscribe(ROLE_MANAGER_CHANGE, () => { 
-            Object.values(this._roles).forEach(r => r.unmount())
-            this._roles = {}
-        })
-        this.subscribe(ROLE_CHANGE, () => { 
-            Object.values(this._roles).forEach(r => r.unmount())
-            this._roles = {}
+    constructor(private readonly bus: JDBus, private readonly notifyOnChange: () => void) {
+        super()
+        this.subscribe(CHANGE, () => { 
+
         })
     }
 
-    private getRoleName(e: jsep.MemberExpression | string) {
+    private getRootName(e: jsep.MemberExpression | string) {
         if (!e || typeof(e) === "string" || e.type !== "MemberExpression")
             return undefined
         return (e.object as jsep.Identifier).name
@@ -127,23 +122,25 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         const cn1 = n1.slice(0).toLowerCase().replace("_"," ").trim()
         const cn2 = n2.slice(0).toLowerCase().replace("_"," ").trim()
         return cn1 === cn2
-    }   
+    }
+    
+    private getServiceFromName(root: string): JDService {
+        // policy for resolution goes here
+        return undefined
+    }
 
     private getService(e: jsep.MemberExpression | string) {
-        const roleName = this.getRoleName(e)
-        if (!roleName)
+        const root = this.getRootName(e)
+        if (!root)
             return undefined;
-        if (!this._roles[roleName]) {
-            const rm = this.bus.roleManager
-            const role = rm?.roles.find(r => this.nameMatch(r.name, roleName))
-            if (role) {
-                const device = this.bus.device(role.deviceId)
-                const service = device.service(role.serviceIndex)
-                this._roles[roleName] = new VMServiceEnvironment(service)
+        if (!this._roles[root]) {
+            const service = this.getServiceFromName(root);
+            if (service) {
+                this._roles[root] = new VMServiceEnvironment(service)
             } else  
                 return undefined
         }
-        return this._roles[roleName]
+        return this._roles[root]
     }
 
     public refreshEnvironment() {
@@ -152,7 +149,7 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        const roleName = this.getRoleName(e)
+        const roleName = this.getRootName(e)
         if (roleName === "$") {
             let me = e as jsep.MemberExpression
             if (me.property.type === "Identifier") {
@@ -173,6 +170,7 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         return undefined
     }
 
+    // TODO: need do a notify
     public writeRegister(e: jsep.MemberExpression | string, ev: any) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression;
@@ -185,7 +183,7 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
     }
 
     public writeLocal(e: jsep.MemberExpression | string, ev: any) {
-        const roleName = this.getRoleName(e)
+        const roleName = this.getRootName(e)
         if (!roleName || roleName !== "$")
             return undefined;
             const me = e as jsep.MemberExpression;
@@ -206,11 +204,12 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         const serviceEnv = this.getService(e)
         if (!serviceEnv)
             return false
-            const me = e as jsep.MemberExpression;
+        const me = e as jsep.MemberExpression;
         if (serviceEnv && me.property.type === "Identifier") {
             const event = (me.property as jsep.Identifier).name
             serviceEnv.registerEvent(event, () => {
                 this._currentEvent = event
+                this.notifyOnChange()
             });
             return this._currentEvent === event
         }

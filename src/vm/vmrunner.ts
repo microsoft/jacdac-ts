@@ -1,8 +1,8 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
-import { VMRoleManagerEnvironment } from "./environment"
+import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
-import { JDService } from "../jdom/service"
-import { JDServiceClient } from "../jdom/serviceclient"
+import { JDBus } from "../jdom/bus"
+import { JDEventSource } from "../jdom/eventsource";
 
 export enum VMStatus {
     Paused,
@@ -183,15 +183,14 @@ class IT4HandlerRunner {
     }
 }
 
-export class IT4ProgramRunner extends JDServiceClient  {
+export class IT4ProgramRunner extends JDEventSource {
     private _handlers: IT4HandlerRunner[]
-    private _env: VMRoleManagerEnvironment
+    private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
 
-    constructor(program: IT4Program, rolemanager: JDService) {
-        super(rolemanager)
-        // console.log(program)
-        this._env = new VMRoleManagerEnvironment(rolemanager, () => {
+    constructor(program: IT4Program, private bus: JDBus) {
+        super()
+        this._env = new VMEnvironment(bus, () => {
             this.run()
         })
         this._handlers = program.handlers.map(h => new IT4HandlerRunner(this._env, h))
@@ -213,6 +212,7 @@ export class IT4ProgramRunner extends JDServiceClient  {
 
     start() {
         this._waitQueue.forEach(h => h.start())
+        this.run()
     }
 
     run() {
