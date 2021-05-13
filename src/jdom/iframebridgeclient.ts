@@ -17,6 +17,7 @@ import { JDDevice } from "./device"
 import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
+import { JDService } from "./service"
 import {
     arrayConcatMany,
     debounce,
@@ -220,7 +221,11 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     deviceFilter(device: JDDevice) {
         return device
             .services()
-            .some(srv => ignoredServices.indexOf(srv.serviceClass) < 1)
+            .some(srv => this.serviceFilter(srv))
+    }
+
+    serviceFilter(srv: JDService) {
+        return ignoredServices.indexOf(srv.serviceClass) < 1
     }
 
     get candidateExtensions(): string[] {
