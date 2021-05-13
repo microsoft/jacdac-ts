@@ -126,7 +126,7 @@ export class VMEnvironment extends JDEventSource  {
     
     private getServiceFromName(root: string): JDService {
         // policy for resolution goes here
-        return undefined
+        return this.bus.services().find(s => this.nameMatch(s.specification.shortName, root))
     }
 
     private getService(e: jsep.MemberExpression | string) {

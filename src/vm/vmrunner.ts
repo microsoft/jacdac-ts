@@ -36,7 +36,7 @@ class IT4CommandEvaluator {
     }
 
     private checkExpression(e: jsep.Expression) {
-        const expr = new JDExprEvaluator(this.env.lookup, undefined)
+        const expr = new JDExprEvaluator((e) => this.env.lookup(e), undefined)
         return expr.eval(e) ? true : false
     }
 
@@ -60,7 +60,7 @@ class IT4CommandEvaluator {
             case "writeLocal": 
             {
                 const expr = new JDExprEvaluator(
-                    this.env.lookup,
+                    (e) => this.env.lookup(e),
                     undefined
                 )
                 const ev = expr.eval(args[1])
@@ -79,7 +79,6 @@ class IT4CommandEvaluator {
             }
         }
     }
-
 }
 
 class  IT4CommandRunner {
@@ -176,9 +175,9 @@ class IT4HandlerRunner {
         this._currentCommand.step()
         while (this._currentCommand.status === VMStatus.Completed &&
                this._commandIndex < this.handler.commands.length - 1) {
-                this._commandIndex++
-                this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
-                this._currentCommand.step()
+            this._commandIndex++
+            this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
+            this._currentCommand.step()
         }
     }
 }
