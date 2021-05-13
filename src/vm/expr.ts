@@ -13,8 +13,6 @@ Expressions can be against service registers (as in the test case) and program s
  
 */
 
-export type SMap<T> = { [v: string]: T }
-
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,10 +87,11 @@ export class JDExprEvaluator {
             }
 
             case "CallExpression": {
-                let ret = this.callEval(<jsep.CallExpression>e, this);
-                if (ret) {
+                if (this.callEval) {
+                    let ret = this.callEval(<jsep.CallExpression>e, this);
                     this.exprStack.push(ret)
-                }
+                } else
+                    this.exprStack.push(undefined)
                 break
             }
 
@@ -203,9 +202,9 @@ export class JDExprEvaluator {
                 break
             }
             case "MemberExpression": {
-                // member expressions are of form [register|event].field
+                // for now, we don't support evaluation of obj or prop 
+                // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
-                // console.log(`${lhs.name}.${rhs.name} = ${val}`)
                 this.exprStack.push(val)
                 return
             }

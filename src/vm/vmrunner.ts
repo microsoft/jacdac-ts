@@ -1,5 +1,5 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
-import { VMRoleManagerEnvironment, VMServiceEnvironment} from "./environment"
+import { VMRoleManagerEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 
 export enum VMStatus {
@@ -189,11 +189,19 @@ export class IT4ProgramRunner {
 
     run() {
         if (this._waitQueue.length > 0) {
-            // give everyone a chance to run
-            // collect up new queue of handlers that haven't stopped
-
+            let nextTime: IT4HandlerRunner[] = []
+            this._waitQueue.forEach(h => {
+                h.step()
+                if (h.status !== VMStatus.Stopped) {
+                    if (h.status === VMStatus.Completed)
+                        h.reset()
+                    nextTime.push(h)
+                }
+            })
+            this._waitQueue = nextTime
+            this._env.consumeEvent()
         } else {
-            // program is done
+            // program is done, unmount
         }
     }
 }

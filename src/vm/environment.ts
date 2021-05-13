@@ -1,14 +1,18 @@
 import {
     isEvent,
-    isRegister,
-    serviceSpecificationFromClassIdentifier,
+    isRegister
 } from "../jdom/spec"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
-import { SMap } from "./expr"
+import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
-import { CHANGE, EVENT, ROLE_MANAGER_CHANGE, ROLE_CHANGE } from "../jdom/constants"
+import { 
+    CHANGE, 
+    EVENT, 
+    ROLE_MANAGER_CHANGE, 
+    ROLE_CHANGE 
+} from "../jdom/constants"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -25,18 +29,14 @@ export async function refresh_env(registers: SMap<JDRegister>) {
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
-    private _serviceSpec: jdspec.ServiceSpec;
 
     constructor(service: JDService) {
         super(service)
-        this._serviceSpec = serviceSpecificationFromClassIdentifier(
-            service.serviceClass
-        )
     }
 
     public registerRegister(regName: string, handler: () => void ) {
         if (!this._registers[regName]) {
-            const pkt = this._serviceSpec.packets.find(
+            const pkt = this.service.specification.packets.find(
                 pkt => isRegister(pkt) && pkt.name === regName
             )
             if (pkt) {
@@ -51,7 +51,7 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     public registerEvent(eventName: string, handler: () => void ) {
         if (!this._events[eventName]) {
-            const pkt = this._serviceSpec.packets.find(
+            const pkt = this.service.specification.packets.find(
                 pkt => isEvent(pkt) && pkt.name === eventName
             )
             if (pkt) {
@@ -146,10 +146,19 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        let serviceEnv = this.getService(e)
+        const roleName = this.getRoleName(e)
+        if (roleName === "$") {
+            let me = e as jsep.MemberExpression
+            if (me.property.type === "Identifier") {
+                const local = (me.property as jsep.Identifier).name
+                return this._locals[local]
+            }
+            return undefined;
+        }
+        const serviceEnv = this.getService(e)
         if (!serviceEnv)
             return undefined
-        let me = e as jsep.MemberExpression
+        const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
             serviceEnv.registerRegister(reg, this.notifyOnChange);
@@ -159,8 +168,8 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
     }
 
     public writeRegister(e: jsep.MemberExpression | string, ev: any) {
-        let serviceEnv = this.getService(e)
-        let me = e as jsep.MemberExpression;
+        const serviceEnv = this.getService(e)
+        const me = e as jsep.MemberExpression;
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
             serviceEnv.registerRegister(reg, this.notifyOnChange);
@@ -169,12 +178,16 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         return false
     }
 
-    public writeLocal(e: jsep.MemberExpression | string) {
+    public writeLocal(e: jsep.MemberExpression | string, ev: any) {
         const roleName = this.getRoleName(e)
         if (!roleName || roleName !== "$")
             return undefined;
-        // $.x for write to local state x
-        // need to generate an event to wake up listeners
+            const me = e as jsep.MemberExpression;
+        if (me.property.type === "Identifier") {
+            const local = (me.property as jsep.Identifier).name
+            this._locals[local] = ev
+            return true
+        }
         return false;
     }
 
@@ -183,10 +196,10 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
     }
 
     public hasEvent(e: jsep.MemberExpression | string) {
-        let serviceEnv = this.getService(e)
+        const serviceEnv = this.getService(e)
         if (!serviceEnv)
             return false
-        let me = e as jsep.MemberExpression;
+            const me = e as jsep.MemberExpression;
         if (serviceEnv && me.property.type === "Identifier") {
             const event = (me.property as jsep.Identifier).name
             serviceEnv.registerEvent(event, () => {
