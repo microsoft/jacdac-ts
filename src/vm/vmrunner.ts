@@ -42,6 +42,7 @@ class IT4CommandEvaluator {
     }
 
     public evaluate() {
+        console.log(unparse(this.gc.command))
         this._status = VMStatus.Waiting
         const args = this.gc.command.arguments
         switch(this.inst) {
