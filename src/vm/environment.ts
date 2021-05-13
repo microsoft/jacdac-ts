@@ -26,6 +26,10 @@ export async function refresh_env(registers: SMap<JDRegister>) {
     }
 }
 
+async function writeReg(reg: JDRegister, fmt: string, newValue: any) {
+    await reg.sendSetPackedAsync(fmt, [newValue], true)
+}
+
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
@@ -66,10 +70,9 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public writeRegister(regName: string, ev: any) {
-        const jdreg = this._registers[ regName] 
+        const jdreg = this._registers[ regName ] 
         if (jdreg) {
-            const fmt = jdreg.specification?.packFormat
-            jdreg.sendSetPackedAsync(fmt, [ev])
+            writeReg(jdreg, jdreg.specification?.packFormat, ev)
             return true
         }
         return false
@@ -102,14 +105,11 @@ export class VMServiceEnvironment extends JDServiceClient {
 
 export class VMEnvironment extends JDEventSource  {
     private _currentEvent: string = undefined
-    private _roles: SMap<VMServiceEnvironment> = {}
+    private _services: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
     constructor(private readonly bus: JDBus, private readonly notifyOnChange: () => void) {
         super()
-        this.subscribe(CHANGE, () => { 
-
-        })
     }
 
     private getRootName(e: jsep.MemberExpression | string) {
@@ -133,18 +133,18 @@ export class VMEnvironment extends JDEventSource  {
         const root = this.getRootName(e)
         if (!root)
             return undefined;
-        if (!this._roles[root]) {
+        if (!this._services[root]) {
             const service = this.getServiceFromName(root);
             if (service) {
-                this._roles[root] = new VMServiceEnvironment(service)
+                this._services[root] = new VMServiceEnvironment(service)
             } else  
                 return undefined
         }
-        return this._roles[root]
+        return this._services[root]
     }
 
     public refreshEnvironment() {
-        Object.values(this._roles).forEach(s => s.refreshEnvironment())
+        Object.values(this._services).forEach(s => s.refreshEnvironment())
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,7 +200,6 @@ export class VMEnvironment extends JDEventSource  {
     }
 
     public hasEvent(e: jsep.MemberExpression | string) {
-        console.log("hasEvent", e)
         const serviceEnv = this.getService(e)
         if (!serviceEnv)
             return false
@@ -214,5 +213,9 @@ export class VMEnvironment extends JDEventSource  {
             return this._currentEvent === event
         }
         return false
+    }
+
+    public unsubscribe() {
+        Object.values(this._services).forEach(vs => vs.unmount())
     }
 }

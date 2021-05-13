@@ -1,11 +1,11 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
 import { VMEnvironment } from "./environment"
-import { JDExprEvaluator } from "./expr"
+import { JDExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource";
 
 export enum VMStatus {
-    Paused,
+    Ready,
     Waiting,
     Completed,
     Stopped
@@ -17,10 +17,11 @@ interface Environment {
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     refreshEnvironment: () => void
+    unsubscribe: () => void
 }
 
 class IT4CommandEvaluator {
-    private _status = VMStatus.Paused
+    private _status: VMStatus;
     constructor(
         private readonly env: Environment,
         private readonly gc: IT4GuardedCommand) {
@@ -45,7 +46,6 @@ class IT4CommandEvaluator {
         const args = this.gc.command.arguments
         switch(this.inst) {
             case "awaitEvent": {
-                console.log("awaitEvent")
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
                     this._status = this.checkExpression(args[1]) ? VMStatus.Completed : VMStatus.Waiting;
@@ -82,7 +82,7 @@ class IT4CommandEvaluator {
 }
 
 class  IT4CommandRunner {
-    private _status = VMStatus.Paused
+    private _status = VMStatus.Waiting
     private _eval: IT4CommandEvaluator;
     constructor(env: Environment, gc: IT4GuardedCommand) {
         this._eval = new IT4CommandEvaluator(env, gc)
@@ -98,20 +98,18 @@ class  IT4CommandRunner {
         }
     }
 
-    get isReady(): boolean {
+    get isWaiting(): boolean {
         return (
-            this.status === VMStatus.Waiting ||
-            this.status === VMStatus.Paused
+            this.status === VMStatus.Waiting
         )
     }
 
     reset() {
-        this.status = VMStatus.Paused
+        this.status = VMStatus.Waiting
     }
 
     step() {
-        console.log("IT4CommandRunner.step")
-        if (this.isReady) {
+        if (this.isWaiting) {
             this._eval.evaluate()
             this.finish(this._eval.status)
         }
@@ -123,7 +121,7 @@ class  IT4CommandRunner {
 
     private finish(s: VMStatus) {
         if (
-            this.isReady &&
+            this.isWaiting &&
             s === VMStatus.Completed || s === VMStatus.Stopped
         ) {
             this.status = s
@@ -137,6 +135,7 @@ class IT4HandlerRunner {
     private stopped: boolean = false;
 
     constructor(
+        public readonly id: number, 
         public readonly env: Environment,
         private readonly handler: IT4Handler
     ) {
@@ -145,7 +144,7 @@ class IT4HandlerRunner {
 
     get status() {
         return this.stopped ? VMStatus.Stopped :
-            this._currentCommand === undefined ? VMStatus.Paused : this._currentCommand.status
+            this._currentCommand === undefined ? VMStatus.Ready : this._currentCommand.status
     }
 
     public reset() {
@@ -154,30 +153,34 @@ class IT4HandlerRunner {
         this.stopped = false
     }
 
-    start() {
-        this._commandIndex = 0
-        this.env.refreshEnvironment()
-    }
-
     cancel() {
         this.stopped = true
+        this.env.unsubscribe();
+    }
+    
+    private post_process() {
+        if (this._currentCommand.status === VMStatus.Stopped)
+            this.stopped = true
     }
 
     // run-to-completion semantics
     step() {
-        console.log("IT4HandlerRunner.step")
         if (this.stopped)
             return
-        if (this._commandIndex === undefined)
-            return
-        if (this._currentCommand === undefined)
+        if (this._commandIndex === undefined) {
+            this._commandIndex = 0
             this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
+        }
         this._currentCommand.step()
+        this.post_process()
+        console.log(`IT4HandlerRunner${this.id}.step: ${this._commandIndex}`)
         while (this._currentCommand.status === VMStatus.Completed &&
                this._commandIndex < this.handler.commands.length - 1) {
             this._commandIndex++
             this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
             this._currentCommand.step()
+            this.post_process()
+            console.log(`IT4HandlerRunner${this.id}.step: ${this._commandIndex}`)
         }
     }
 }
@@ -186,36 +189,39 @@ export class IT4ProgramRunner extends JDEventSource {
     private _handlers: IT4HandlerRunner[]
     private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
+    private _running = false
 
-    constructor(program: IT4Program, private bus: JDBus) {
+    constructor(program: IT4Program, bus: JDBus) {
         super()
-        this._env = new VMEnvironment(bus, () => {
-            this.run()
-        })
-        this._handlers = program.handlers.map(h => new IT4HandlerRunner(this._env, h))
+        this._env = new VMEnvironment(bus, () => { this.run() })
+        this._handlers = program.handlers.map((h,index) => new IT4HandlerRunner(index, this._env, h))
         this._waitQueue = this._handlers.slice(0)
     }
 
     get status() {
-        return this._waitQueue.length > 0 ? VMStatus.Paused : VMStatus.Completed 
+        return this._running === false ? VMStatus.Ready :
+            this._waitQueue.length > 0 ? VMStatus.Waiting : VMStatus.Completed 
     }
 
     cancel() {
-        this._waitQueue = []
-    }
-
-    reset() {
+        console.log("VM stop")
+        this._running = false
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
+        console.log(this._running)
     }
 
     start() {
-        this._waitQueue.forEach(h => h.start())
+        console.log("VM start")
+        this._running = true
         this.run()
     }
 
     run() {
+        if (!this._running)
+            return
         console.log("run")
+        this._env.refreshEnvironment()
         if (this._waitQueue.length > 0) {
             let nextTime: IT4HandlerRunner[] = []
             this._waitQueue.forEach(h => {
