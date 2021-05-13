@@ -55,7 +55,6 @@ export const JD_DEVICE_LOST_DELAY = 1500
 // time without seeing a packet to be considered "disconnected"
 export const JD_DEVICE_DISCONNECTED_DELAY = 5000
 
-export const SRV_CTRL = 0
 export const MAX_SERVICES_LENGTH = 59
 
 export const NEW_LISTENER = "newListener"
