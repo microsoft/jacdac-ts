@@ -45,6 +45,7 @@ class IT4CommandEvaluator {
         const args = this.gc.command.arguments
         switch(this.inst) {
             case "awaitEvent": {
+                console.log("awaitEvent")
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
                     this._status = this.checkExpression(args[1]) ? VMStatus.Completed : VMStatus.Waiting;
@@ -110,6 +111,7 @@ class  IT4CommandRunner {
     }
 
     step() {
+        console.log("IT4CommandRunner.step")
         if (this.isReady) {
             this._eval.evaluate()
             this.finish(this._eval.status)
@@ -164,6 +166,7 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
+        console.log("IT4HandlerRunner.step")
         if (this.stopped)
             return
         if (this._commandIndex === undefined)
@@ -187,6 +190,7 @@ export class IT4ProgramRunner extends JDServiceClient  {
 
     constructor(program: IT4Program, rolemanager: JDService) {
         super(rolemanager)
+        // console.log(program)
         this._env = new VMRoleManagerEnvironment(rolemanager, () => {
             this.run()
         })
@@ -207,7 +211,12 @@ export class IT4ProgramRunner extends JDServiceClient  {
         this._waitQueue.forEach(h => h.reset())
     }
 
+    start() {
+        this._waitQueue.forEach(h => h.start())
+    }
+
     run() {
+        console.log("run")
         if (this._waitQueue.length > 0) {
             let nextTime: IT4HandlerRunner[] = []
             this._waitQueue.forEach(h => {

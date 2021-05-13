@@ -123,13 +123,19 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
         return (e.object as jsep.Identifier).name
     }
 
+    private nameMatch(n1: string, n2: string) {
+        const cn1 = n1.slice(0).toLowerCase().replace("_"," ").trim()
+        const cn2 = n2.slice(0).toLowerCase().replace("_"," ").trim()
+        return cn1 === cn2
+    }   
+
     private getService(e: jsep.MemberExpression | string) {
         const roleName = this.getRoleName(e)
         if (!roleName)
             return undefined;
         if (!this._roles[roleName]) {
             const rm = this.bus.roleManager
-            const role = rm?.roles.find(r => r.name === roleName)
+            const role = rm?.roles.find(r => this.nameMatch(r.name, roleName))
             if (role) {
                 const device = this.bus.device(role.deviceId)
                 const service = device.service(role.serviceIndex)
@@ -196,6 +202,7 @@ export class VMRoleManagerEnvironment extends JDServiceClient{
     }
 
     public hasEvent(e: jsep.MemberExpression | string) {
+        console.log("hasEvent", e)
         const serviceEnv = this.getService(e)
         if (!serviceEnv)
             return false
