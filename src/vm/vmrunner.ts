@@ -16,6 +16,7 @@ interface Environment {
     writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
+    refreshEnvironment: () => void
 }
 
 class IT4CommandEvaluator {
@@ -154,6 +155,7 @@ class IT4HandlerRunner {
 
     start() {
         this._commandIndex = 0
+        this.env.refreshEnvironment()
     }
 
     cancel() {
@@ -162,8 +164,10 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
+        if (this.stopped)
+            return
         if (this._commandIndex === undefined)
-            return;
+            return
         if (this._currentCommand === undefined)
             this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
         this._currentCommand.step()
@@ -190,6 +194,19 @@ export class IT4ProgramRunner extends JDServiceClient  {
         this._waitQueue = this._handlers.slice(0)
     }
 
+    get status() {
+        return this._waitQueue.length > 0 ? VMStatus.Paused : VMStatus.Completed 
+    }
+
+    cancel() {
+        this._waitQueue = []
+    }
+
+    reset() {
+        this._waitQueue = this._handlers.slice(0)
+        this._waitQueue.forEach(h => h.reset())
+    }
+
     run() {
         if (this._waitQueue.length > 0) {
             let nextTime: IT4HandlerRunner[] = []
@@ -203,8 +220,6 @@ export class IT4ProgramRunner extends JDServiceClient  {
             })
             this._waitQueue = nextTime
             this._env.consumeEvent()
-        } else {
-            // program is done, unmount
         }
     }
 }
