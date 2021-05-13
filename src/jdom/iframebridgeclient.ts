@@ -1,3 +1,10 @@
+import {
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_PROTO_TEST,
+    SRV_ROLE_MANAGER,
+    SRV_SETTINGS,
+} from "../../jacdac-spec/dist/specconstants"
 import { JDBus } from "./bus"
 import {
     CHANGE,
@@ -10,6 +17,7 @@ import { JDDevice } from "./device"
 import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
+import { JDService } from "./service"
 import {
     arrayConcatMany,
     debounce,
@@ -51,6 +59,14 @@ interface SimulatorRunOptions {
     // single iframe, no message simulators
     single?: boolean
 }
+
+const ignoredServices = [
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_SETTINGS,
+    SRV_ROLE_MANAGER,
+    SRV_PROTO_TEST
+]
 
 /**
  * A client that bridges received and sent packets to a parent iframe
@@ -203,7 +219,13 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     deviceFilter(device: JDDevice) {
-        return !device.isClient
+        return device
+            .services()
+            .some(srv => this.serviceFilter(srv))
+    }
+
+    serviceFilter(srv: JDService) {
+        return ignoredServices.indexOf(srv.serviceClass) < 1
     }
 
     get candidateExtensions(): string[] {
