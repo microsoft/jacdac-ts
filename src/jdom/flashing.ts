@@ -6,7 +6,7 @@ import {
     BootloaderCmd,
     ControlCmd,
     SRV_BOOTLOADER,
-    SRV_CTRL,
+    SRV_CONTROL,
     CMD_ADVERTISEMENT_DATA,
     CMD_GET_REG,
     CMD_REG_MASK,
@@ -446,7 +446,7 @@ async function scanCore(
                     ControlReg.DeviceDescription,
                 ]) {
                     const pkt = Packet.onlyHeader(CMD_GET_REG | reg)
-                    await pkt.sendAsMultiCommandAsync(bus, SRV_CTRL)
+                    await pkt.sendAsMultiCommandAsync(bus, SRV_CONTROL)
                     await delay(10)
                 }
             }

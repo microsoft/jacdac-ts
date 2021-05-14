@@ -10,11 +10,12 @@ import {
     CMD_EVENT_COUNTER_MASK,
     CMD_EVENT_COUNTER_POS,
     CMD_EVENT_MASK,
+    ERROR,
     JD_SERVICE_INDEX_CRC_ACK,
+    MAX_SERVICES_LENGTH,
     PACKET_PROCESS,
     PACKET_SEND,
     REFRESH,
-    REPORT_RECEIVE,
     RESET,
     SELF_ANNOUNCE,
 } from "./constants"
@@ -27,8 +28,6 @@ export default class JDServiceProvider extends JDEventSource {
     public readonly shortId: string
     public readonly controlService: ControlServer
     private _restartCounter = 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _resetTimeOut: any
     private _packetCount = 0
     private _eventCounter: number = undefined
     private _delayedPackets: {
@@ -40,10 +39,11 @@ export default class JDServiceProvider extends JDEventSource {
         services: JDServiceServer[],
         options?: {
             deviceId?: string
+            resetIn?: boolean
         }
     ) {
         super()
-        this.controlService = new ControlServer()
+        this.controlService = new ControlServer(options)
         this._services = []
         this.deviceId = options?.deviceId
         if (!this.deviceId) {
@@ -56,10 +56,6 @@ export default class JDServiceProvider extends JDEventSource {
         this.handleSelfAnnounce = this.handleSelfAnnounce.bind(this)
         this.handlePacket = this.handlePacket.bind(this)
 
-        this.controlService.resetIn.on(
-            REPORT_RECEIVE,
-            this.handleResetIn.bind(this)
-        )
         this.on(REFRESH, this.refreshRegisters.bind(this))
     }
 
@@ -68,6 +64,14 @@ export default class JDServiceProvider extends JDEventSource {
         this._services?.slice(1).forEach(srv => (srv.device = undefined))
         // store new services
         this._services = [this.controlService, ...services]
+        if (this._services.length >= MAX_SERVICES_LENGTH) {
+            this.emit(
+                ERROR,
+                `too many services (${this._services.length}) > ${MAX_SERVICES_LENGTH}`
+            )
+            console.warn(`jacdac: dropping services to ${MAX_SERVICES_LENGTH}`)
+            this._services = this._services.slice(0, MAX_SERVICES_LENGTH)
+        }
         this._services.forEach((srv, i) => {
             srv.device = this
             srv.serviceIndex = i
@@ -108,7 +112,6 @@ export default class JDServiceProvider extends JDEventSource {
 
     private stop() {
         this._delayedPackets = undefined
-        this.clearResetTimer()
         if (!this._bus) return
 
         this._bus.off(SELF_ANNOUNCE, this.handleSelfAnnounce)
@@ -252,23 +255,9 @@ export default class JDServiceProvider extends JDEventSource {
     }
 
     reset() {
-        this.clearResetTimer()
         this._restartCounter = 0
         this._packetCount = 0
         this._services?.forEach(srv => srv.reset())
         this.emit(RESET)
-    }
-
-    private clearResetTimer() {
-        if (this._resetTimeOut) {
-            clearTimeout(this._resetTimeOut)
-            this._resetTimeOut = undefined
-        }
-    }
-
-    private handleResetIn() {
-        const [t] = this.controlService.resetIn.values()
-        if (this._resetTimeOut) clearTimeout(this._resetTimeOut)
-        if (t) this._resetTimeOut = setTimeout(() => this.reset(), t)
     }
 }

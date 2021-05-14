@@ -1,3 +1,10 @@
+import {
+    SRV_CONTROL,
+    SRV_LOGGER,
+    SRV_PROTO_TEST,
+    SRV_ROLE_MANAGER,
+    SRV_SETTINGS,
+} from "../../jacdac-spec/dist/specconstants"
 import { JDBus } from "./bus"
 import {
     CHANGE,
@@ -5,17 +12,12 @@ import {
     EMBED_MIN_ASPECT_RATIO,
     PACKET_PROCESS,
     PACKET_SEND,
-    SRV_CONTROL,
-    SRV_LOGGER,
-    SRV_POWER,
-    SRV_PROTO_TEST,
-    SRV_ROLE_MANAGER,
-    SRV_SETTINGS,
 } from "./constants"
 import { JDDevice } from "./device"
 import JDIFrameClient from "./iframeclient"
 import { resolveMakecodeServiceFromClassIdentifier } from "./makecode"
 import Packet from "./packet"
+import { JDService } from "./service"
 import {
     arrayConcatMany,
     debounce,
@@ -35,12 +37,12 @@ export interface PacketMessage {
 interface SimulatorRunOptions {
     debug?: boolean
     trace?: boolean
-    boardDefinition?: any //pxsim.BoardDefinition;
+    boardDefinition?: unknown //pxsim.BoardDefinition;
     parts?: string[]
     builtinParts?: string[]
-    fnArgs?: any
+    fnArgs?: unknown
     aspectRatio?: number
-    partDefinitions?: SMap<any> // SMap<PartDefinition>;
+    partDefinitions?: SMap<unknown> // SMap<PartDefinition>;
     mute?: boolean
     highContrast?: boolean
     light?: boolean
@@ -50,7 +52,7 @@ interface SimulatorRunOptions {
     version?: string
     clickTrigger?: boolean
     breakOnStart?: boolean
-    storedState?: SMap<any>
+    storedState?: SMap<unknown>
     autoRun?: boolean
     ipc?: boolean
     dependencies?: SMap<string> // Map<string>;
@@ -58,13 +60,12 @@ interface SimulatorRunOptions {
     single?: boolean
 }
 
-// hide the makecode device itself
 const ignoredServices = [
     SRV_CONTROL,
     SRV_LOGGER,
     SRV_SETTINGS,
     SRV_ROLE_MANAGER,
-    SRV_PROTO_TEST,
+    SRV_PROTO_TEST
 ]
 
 /**
@@ -218,9 +219,13 @@ export default class IFrameBridgeClient extends JDIFrameClient {
     }
 
     deviceFilter(device: JDDevice) {
-        return !!device.serviceClasses.filter(
-            sc => ignoredServices.indexOf(sc) < 0
-        ).length
+        return device
+            .services()
+            .some(srv => this.serviceFilter(srv))
+    }
+
+    serviceFilter(srv: JDService) {
+        return ignoredServices.indexOf(srv.serviceClass) < 1
     }
 
     get candidateExtensions(): string[] {

@@ -4,7 +4,7 @@ import {
     ControlCmd,
     ControlReg,
     IDENTIFY,
-    SRV_CTRL,
+    SRV_CONTROL,
 } from "./constants"
 import { jdunpack } from "./pack"
 import Packet from "./packet"
@@ -20,11 +20,10 @@ export default class ControlServer extends JDServiceServer {
 
     statusLightColor: number = undefined
 
-    constructor() {
-        super(SRV_CTRL)
-
+    constructor(options?: { resetIn?: boolean }) {
+        super(SRV_CONTROL)
+        const { resetIn } = options || {}
         this.startTime = Date.now()
-        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0])
         this.deviceDescription = this.addRegister<[string]>(
             ControlReg.DeviceDescription
         )
@@ -32,8 +31,9 @@ export default class ControlServer extends JDServiceServer {
             ControlReg.McuTemperature,
             [25]
         )
-        this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn)
         this.uptime = this.addRegister<[number]>(ControlReg.Uptime)
+        if (resetIn)
+            this.resetIn = this.addRegister<[number]>(ControlReg.ResetIn, [0])
 
         this.addCommand(ControlCmd.Services, this.announce.bind(this))
         this.addCommand(ControlCmd.Identify, this.identify.bind(this))
@@ -66,6 +66,23 @@ export default class ControlServer extends JDServiceServer {
 
         // micros
         this.uptime.setValues([(Date.now() - this.startTime) * 100], true)
+
+        // check if we need to reset
+        if (this.resetIn) {
+            const [resetIn] = this.resetIn.values()
+            if (resetIn) {
+                const resetTimestamp = resetIn / 1000 + this.resetIn.lastSetTime
+                if (resetTimestamp < this.device.bus.timestamp) {
+                    // reset in expired
+                    console.debug(`${this} reset in expired`, {
+                        resetIn,
+                        lastSet: this.resetIn.lastSetTime,
+                        resetTimestamp,
+                    })
+                    this.device.reset()
+                }
+            }
+        }
     }
 
     async identify() {

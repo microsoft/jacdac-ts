@@ -76,6 +76,8 @@ import {
     SRV_POWER,
     CHANGE,
     JoystickButtons,
+    SRV_HID_KEYBOARD,
+    SRV_HID_MOUSE,
 } from "../jdom/constants"
 import JDServiceProvider from "../jdom/serviceprovider"
 import ProtocolTestServer from "../jdom/protocoltestserver"
@@ -114,6 +116,8 @@ import DMXServer from "./dmxserver"
 import BitRadioServer from "./bitradioserver"
 import PowerServer from "./powerserver"
 import CapacitiveButtonServer from "./capacitivebuttonserver"
+import HIDKeyboardServer from "./hidkeyboardserver"
+import HIDMouseServer from "./hidmouseserver"
 
 const indoorThermometerOptions: AnalogSensorServerOptions = {
     instanceName: "indoor",
@@ -255,6 +259,7 @@ export interface ServiceProviderDefinition {
     name: string
     serviceClasses: number[]
     services: () => JDServiceServer[]
+    resetIn?: boolean
     factory?: (services: JDServiceServer[]) => JDServiceProvider
 }
 
@@ -803,6 +808,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "motor",
         serviceClasses: [SRV_MOTOR],
         services: () => [new MotorServer()],
+        resetIn: true,
     },
     {
         name: "protocol test",
@@ -914,20 +920,24 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         name: "servo",
         serviceClasses: [SRV_SERVO],
         services: () => [new ServoServer(microServoOptions)],
+        resetIn: true,
     },
     {
         name: "servo (270°)",
         serviceClasses: [SRV_SERVO],
         services: () => [new ServoServer(microServo270Options)],
+        resetIn: true,
     },
     {
         name: "servo (360°)",
         serviceClasses: [SRV_SERVO],
         services: () => [new ServoServer(microServo360Options)],
+        resetIn: true,
     },
     {
         name: "servo x 2",
         serviceClasses: [SRV_SERVO],
+        resetIn: true,
         services: () =>
             Array(2)
                 .fill(0)
@@ -942,6 +952,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "servo x 4",
         serviceClasses: [SRV_SERVO],
+        resetIn: true,
         services: () =>
             Array(4)
                 .fill(0)
@@ -956,6 +967,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "servo x 6",
         serviceClasses: [SRV_SERVO],
+        resetIn: true,
         services: () =>
             Array(6)
                 .fill(0)
@@ -970,6 +982,7 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "servo x 16",
         serviceClasses: [SRV_SERVO],
+        resetIn: true,
         services: () =>
             Array(16)
                 .fill(0)
@@ -1290,6 +1303,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             return dev
         },
     },
+    {
+        name: "HID keyboard",
+        serviceClasses: [SRV_HID_KEYBOARD],
+        services: () => [new HIDKeyboardServer()]
+    },
+    {
+        name: "HID mouse",
+        serviceClasses: [SRV_HID_MOUSE],
+        services: () => [new HIDMouseServer()]
+    }
 ]
 
 export default function serviceProviderDefinitions() {
@@ -1301,7 +1324,12 @@ export function addServiceProvider(
     definition: ServiceProviderDefinition
 ) {
     const services = definition.services()
-    const d = definition.factory?.(services) || new JDServiceProvider(services)
+    const options = {
+        resetIn: definition.resetIn,
+    }
+    const d =
+        definition.factory?.(services) ||
+        new JDServiceProvider(services, options)
     bus.addServiceProvider(d)
     return d
 }

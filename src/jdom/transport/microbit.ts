@@ -13,6 +13,9 @@ import {
 } from "../utils"
 import Flags from "../flags"
 
+export const MICROBIT_V2_VENDOR_ID = 3368
+export const MICROBIT_V2_PRODUCT_ID = 516
+
 interface SendItem {
     buf: Uint8Array
     cb: () => void
@@ -32,7 +35,6 @@ export class CMSISProto implements Proto {
     private _lastInterval: any
 
     constructor(private io: USBIO) {
-        console.log(`micro:bit: start proto`)
     }
 
     private startRecvToLoop() {
@@ -127,14 +129,12 @@ export class CMSISProto implements Proto {
     private talkAsync(cmds: ArrayLike<number>) {
         return this.q.enqueue("talk", async () => {
             if (!this.io) {
-                console.debug(`micro:bit disconnected, skip send`, { cmds })
                 this.error("micro:bit disconnected")
                 return // disconnected
             }
             //console.log("TALK", cmds)
             await this.io.sendPacketAsync(new Uint8Array(cmds))
             if (!this.io) {
-                console.debug(`micro:bit disconnected, skip response`, { cmds })
                 this.error("micro:bit disconnected")
                 return // disconnected
             }
@@ -323,6 +323,10 @@ export class CMSISProto implements Proto {
                 if (ch) {
                     req[2] = ch
                     req.set(dataBytes.slice(ptrTX * 4, (ptrTX + ch) * 4), 5)
+                    if (!this.io) {
+                        this.error("disconnected")
+                        return
+                    }
                     await this.io.sendPacketAsync(
                         ch == MAX ? req : req.slice(0, 5 + 4 * ch)
                     )
@@ -365,18 +369,28 @@ export class CMSISProto implements Proto {
                 if (ch > 0) {
                     req[2] = ch
                     numPending++
+                    if (!this.io) {
+                        this.error("disconnected")
+                        return
+                    }
                     await this.io.sendPacketAsync(req)
                     ptrTX += ch
                 }
                 if (overhang-- > 0) continue
                 const buf = await this.recvAsync()
                 numPending--
-                if (buf[0] != req[0]) this.error("bad response")
+                if (buf[0] != req[0]) {
+                    this.error("bad response")
+                    return
+                }
                 const len = buf[1]
                 const words = new Uint32Array(
                     buf.slice(4, (1 + len) * 4).buffer
                 )
-                if (words.length != len) this.error("bad response2")
+                if (words.length != len) {
+                    this.error("bad response2")
+                    return
+                }
                 res.set(words, ptr)
                 // limit transfer, according to JD frame size
                 if (jdmode && ptr == 0) {

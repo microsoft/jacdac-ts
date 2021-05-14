@@ -35,7 +35,7 @@ export function warn(msg: string, v?: any) {
     else console.log("JD-WARN: " + msg, v)
 }
 
-export function delay<T>(millis: number, value?: T): Promise<T> {
+export function delay<T>(millis: number, value?: T): Promise<T | undefined> {
     return new Promise(resolve => setTimeout(() => resolve(value), millis))
 }
 
@@ -198,7 +198,7 @@ export class PromiseBuffer<T> {
         if (this.available.length > 0) {
             const v = this.available.shift()
             if (v instanceof Error) return Promise.reject<T>(v)
-            else return Promise.resolve<T>(v)
+            else return Promise.resolve<T | undefined>(v)
         } else
             return new Promise<T>((resolve, reject) => {
                 const f = (v: T | Error) => {
@@ -392,7 +392,7 @@ export function assert(cond: boolean, msg = "Assertion failed") {
     }
 }
 
-export function flatClone<T extends unknown>(obj: T): T {
+export function flatClone<T extends unknown>(obj: T | null): T {
     if (obj == null) return null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const r: any = {}

@@ -1,6 +1,7 @@
 export interface TransportMessage {
-    type: "connect" | "disconnect" | "send" | "packet" | "frame"
+    type: "connect" | "disconnect" | "send" | "packet" | "frame" | "error"
     id?: string
+    background?: boolean
     error?: {
         message?: string
     }
@@ -14,5 +15,4 @@ export interface TransportPacketMessage extends TransportMessage {
 export interface TransportConnectMessage extends TransportMessage {
     type: "connect"
     deviceId?: string
-    background?: boolean
 }

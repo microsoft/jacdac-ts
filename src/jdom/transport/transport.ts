@@ -7,12 +7,16 @@ import {
     DISCONNECT,
     DISCONNECTING,
     ERROR,
+    LOST,
     PACKET_SEND_DISCONNECT,
+    SELF_ANNOUNCE,
+    TRANSPORT_CONNECT_RETRY_DELAY,
+    TRANSPORT_PULSE_TIMEOUT,
 } from "../constants"
 import { JDEventSource } from "../eventsource"
 import { Observable } from "../observable"
 import Packet from "../packet"
-import { delay } from "../utils"
+import { assert, delay } from "../utils"
 
 export enum ConnectionState {
     Connected = "connected",
@@ -22,6 +26,8 @@ export enum ConnectionState {
 }
 
 export interface JDTransportOptions {
+    // if no packets is received within the pulse interval, disconnect/reconnect
+    checkPulse?: boolean
     connectObservable?: Observable<void>
     disconnectObservable?: Observable<void>
 }
@@ -30,29 +36,42 @@ export interface JDTransportOptions {
  * A transport marshalls Jacdac packets between a physical device on the TypeScript bus.
  */
 export abstract class JDTransport extends JDEventSource {
-    public bus: JDBus
+    private _bus: JDBus
+    private _checkPulse: boolean
+    private _lastReceivedTime: number
     protected disposed = false
     private _cleanups: (() => void)[]
 
     constructor(readonly type: string, options?: JDTransportOptions) {
         super()
+        this._checkPulse = !!options?.checkPulse
         this._cleanups = [
             options?.connectObservable?.subscribe({
                 next: async () => {
-                    console.debug(`${this.type}: on connect`)
-                    if (this.bus.disconnected) {
-                        await delay(500)
-                        if (this.bus.disconnected) this.connect(true)
+                    if (this.bus?.disconnected) {
+                        await delay(TRANSPORT_CONNECT_RETRY_DELAY)
+                        if (this.bus?.disconnected) this.connect(true)
                     }
                 },
             })?.unsubscribe,
             options?.disconnectObservable?.subscribe({
                 next: () => {
-                    console.debug(`${this.type}: on disconnect`)
                     this.disconnect()
                 },
             })?.unsubscribe,
         ].filter(c => !!c)
+    }
+
+    get bus() {
+        return this._bus
+    }
+
+    set bus(bus: JDBus) {
+        assert(!this._bus && !!bus)
+        this._bus = bus
+        if (this._checkPulse) {
+            this._bus.on(SELF_ANNOUNCE, this.checkPulse.bind(this))
+        }
     }
 
     private _connectionState = ConnectionState.Disconnected
@@ -69,8 +88,13 @@ export abstract class JDTransport extends JDEventSource {
     private setConnectionState(state: ConnectionState) {
         if (this._connectionState !== state) {
             console.debug(`${this._connectionState} -> ${state}`)
+            this._lastReceivedTime =
+                state === ConnectionState.Connected
+                    ? this._bus.timestamp
+                    : undefined
             this._connectionState = state
             this.emit(CONNECTION_STATE, this._connectionState)
+            this.bus.emit(CONNECTION_STATE)
             switch (this._connectionState) {
                 case ConnectionState.Connected:
                     this.emit(CONNECT)
@@ -110,7 +134,23 @@ export abstract class JDTransport extends JDEventSource {
     protected abstract transportConnectAsync(
         background?: boolean
     ): Promise<void>
-    protected abstract transportDisconnectAsync(): Promise<void>
+    protected abstract transportDisconnectAsync(background?: boolean): Promise<void>
+
+    private async checkPulse() {
+        assert(this._checkPulse)
+        if (!this.connected) return // ignore while connected
+        if (this.bus.safeBoot) return // don't mess with flashing bootloaders
+        const devices = this.bus.devices()
+        if (devices.some(dev => dev.flashing)) // don't mess with flashing
+            return
+
+        // detect if the proxy device is lost
+        const t = this.bus.timestamp - this._lastReceivedTime
+        if (t > TRANSPORT_PULSE_TIMEOUT) {
+            this.emit(LOST)
+            await this.reconnect()
+        }
+    }
 
     async sendPacketAsync(p: Packet) {
         if (!this.connected) {
@@ -183,7 +223,7 @@ export abstract class JDTransport extends JDEventSource {
         return this._connectPromise
     }
 
-    disconnect(): Promise<void> {
+    disconnect(background?: boolean): Promise<void> {
         // already disconnected
         if (this.connectionState == ConnectionState.Disconnected)
             return Promise.resolve()
@@ -198,7 +238,7 @@ export abstract class JDTransport extends JDEventSource {
             this._disconnectPromise = Promise.resolve()
             this.setConnectionState(ConnectionState.Disconnecting)
             this._disconnectPromise = this._disconnectPromise.then(() =>
-                this.transportDisconnectAsync()
+                this.transportDisconnectAsync(background)
             )
             this._disconnectPromise = this._disconnectPromise
                 .catch(e => {
@@ -215,14 +255,23 @@ export abstract class JDTransport extends JDEventSource {
         return this._disconnectPromise
     }
 
+    async reconnect() {
+        await this.disconnect(true)
+        await this.connect(true)
+    }
+
     protected handlePacket(payload: Uint8Array) {
-        const pkt = Packet.fromBinary(payload, this.bus.timestamp)
+        const { timestamp } = this.bus
+        this._lastReceivedTime = timestamp
+        const pkt = Packet.fromBinary(payload, timestamp)
         pkt.sender = this.type
         this.bus.processPacket(pkt)
     }
 
     protected handleFrame(payload: Uint8Array) {
-        const pkts = Packet.fromFrame(payload, this.bus.timestamp)
+        const { timestamp } = this.bus
+        this._lastReceivedTime = timestamp
+        const pkts = Packet.fromFrame(payload, timestamp)
         for (const pkt of pkts) {
             pkt.sender = this.type
             this.bus.processPacket(pkt)
@@ -232,13 +281,11 @@ export abstract class JDTransport extends JDEventSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {
         const wasConnected = this.connected
-        console.error(
-            `error ${context} ${exception?.message}\n${exception?.stack}`
-        )
         this.emit(ERROR, { context, exception })
+        this.bus.emit(ERROR, { transport: this, context, exception })
         this.emit(CHANGE)
 
-        this.disconnect()
+        this.disconnect(true)
             // retry connect
             .then(() => wasConnected && this.connect(true))
     }

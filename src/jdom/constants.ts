@@ -55,7 +55,7 @@ export const JD_DEVICE_LOST_DELAY = 1500
 // time without seeing a packet to be considered "disconnected"
 export const JD_DEVICE_DISCONNECTED_DELAY = 5000
 
-export const SRV_CTRL = 0
+export const MAX_SERVICES_LENGTH = 59
 
 export const NEW_LISTENER = "newListener"
 export const REMOVE_LISTENER = "removeListener"
@@ -171,11 +171,14 @@ export const META_GET = "GET"
 export const REGISTER_PRE_GET = "registerPreGet"
 
 export const TRACE_FILTER_HORIZON = 100
-
-export const BLUETOOTH_JACDAC_SERVICE = "f8538af2-a97f-49f5-a554-3e373fbea2d5"
-export const BLUETOOTH_JACDAC_PACKET_CHARACTERISTIC =
-    "3ec08ed9-39b5-4f55-b2df-44691a6ac952"
-
 export const EMBED_MIN_ASPECT_RATIO = 1.22
+
+export const BLUETOOTH_JACDAC_SERVICE = "f8530001-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_RX_CHARACTERISTIC = "f8530002-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC = "f8530003-a97f-49f5-a554-3e373fbea2d5"
+export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC = "f8530004-a97f-49f5-a554-3e373fbea2d5"
+
+export const TRANSPORT_CONNECT_RETRY_DELAY = 500
+export const TRANSPORT_PULSE_TIMEOUT = JD_DEVICE_DISCONNECTED_DELAY
 
 export * from "../../jacdac-spec/dist/specconstants"
