@@ -3,10 +3,13 @@ import { VMEnvironment } from "./environment"
 import { JDExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource";
+import { 
+    CHANGE, 
+} from "../jdom/constants"
 
 export enum VMStatus {
     Ready,
-    Waiting,
+    Running,
     Completed,
     Stopped
 }
@@ -42,19 +45,19 @@ class IT4CommandEvaluator {
     }
 
     public evaluate() {
-        console.log(unparse(this.gc.command))
-        this._status = VMStatus.Waiting
+        // console.log(unparse(this.gc.command))
+        this._status = VMStatus.Running
         const args = this.gc.command.arguments
         switch(this.inst) {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
-                    this._status = this.checkExpression(args[1]) ? VMStatus.Completed : VMStatus.Waiting;
+                    this._status = this.checkExpression(args[1]) ? VMStatus.Completed : VMStatus.Running;
                 }
                 break
             }
             case "awaitCondition": {
-                this._status = this.checkExpression(args[0]) ? VMStatus.Completed : VMStatus.Waiting;
+                this._status = this.checkExpression(args[0]) ? VMStatus.Completed : VMStatus.Running;
                 break
             }
             case "writeRegister": 
@@ -83,7 +86,7 @@ class IT4CommandEvaluator {
 }
 
 class  IT4CommandRunner {
-    private _status = VMStatus.Waiting
+    private _status = VMStatus.Running
     private _eval: IT4CommandEvaluator;
     constructor(env: Environment, gc: IT4GuardedCommand) {
         this._eval = new IT4CommandEvaluator(env, gc)
@@ -101,12 +104,12 @@ class  IT4CommandRunner {
 
     get isWaiting(): boolean {
         return (
-            this.status === VMStatus.Waiting
+            this.status === VMStatus.Running
         )
     }
 
     reset() {
-        this.status = VMStatus.Waiting
+        this.status = VMStatus.Running
     }
 
     step() {
@@ -160,6 +163,7 @@ class IT4HandlerRunner {
     }
     
     private post_process() {
+        // console.log(`IT4HandlerRunner${this.id}.step: ${this._commandIndex}`)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
     }
@@ -174,14 +178,12 @@ class IT4HandlerRunner {
         }
         this._currentCommand.step()
         this.post_process()
-        console.log(`IT4HandlerRunner${this.id}.step: ${this._commandIndex}`)
         while (this._currentCommand.status === VMStatus.Completed &&
                this._commandIndex < this.handler.commands.length - 1) {
             this._commandIndex++
             this._currentCommand = new IT4CommandRunner(this.env, this.handler.commands[this._commandIndex])
             this._currentCommand.step()
             this.post_process()
-            console.log(`IT4HandlerRunner${this.id}.step: ${this._commandIndex}`)
         }
     }
 }
@@ -200,8 +202,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     get status() {
-        return this._running === false ? VMStatus.Ready :
-            this._waitQueue.length > 0 ? VMStatus.Waiting : VMStatus.Completed 
+        return this._running === false ? VMStatus.Stopped :
+            this._waitQueue.length > 0 ? VMStatus.Running : VMStatus.Completed 
     }
 
     cancel() {
@@ -209,19 +211,19 @@ export class IT4ProgramRunner extends JDEventSource {
         this._running = false
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
-        console.log(this._running)
+        this.emit(CHANGE)
     }
 
     start() {
         console.log("VM start")
         this._running = true
+        this.emit(CHANGE)
         this.run()
     }
 
     run() {
         if (!this._running)
             return
-        console.log("run")
         this._env.refreshEnvironment()
         if (this._waitQueue.length > 0) {
             let nextTime: IT4HandlerRunner[] = []
@@ -235,6 +237,8 @@ export class IT4ProgramRunner extends JDEventSource {
             })
             this._waitQueue = nextTime
             this._env.consumeEvent()
+        } else {
+            this.emit(CHANGE)
         }
     }
 }
