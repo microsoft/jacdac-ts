@@ -30,6 +30,7 @@ namespace servers {
         }
 
         private selectorToFunction(selector: number): KeyboardFunctionKey {
+            // KeyboardFunctionKey uses HID values directly
             switch (selector) {
                 case KeyboardFunctionKey.F1Key:
                 case KeyboardFunctionKey.F2Key:
@@ -118,39 +119,28 @@ namespace servers {
         }
 
         private selectorToMedia(selector: number): KeyboardMediaKey {
+            // KeyboardMediaKey is an enum starting at 0
             switch (selector) {
-                case KeyboardMediaKey.Mute:
-                case KeyboardMediaKey.VolumeUp:
-                case KeyboardMediaKey.VolumeDown:
-                case KeyboardMediaKey.PlayPause:
-                case KeyboardMediaKey.Stop:
-                case KeyboardMediaKey.PreviousTrack:
-                case KeyboardMediaKey.NextTrack:
-                case KeyboardMediaKey.Mail:
-                case KeyboardMediaKey.Calculator:
-                case KeyboardMediaKey.WebSearch:
-                case KeyboardMediaKey.WebHome:
-                case KeyboardMediaKey.WebFavourites:
-                case KeyboardMediaKey.WebRefresh:
-                case KeyboardMediaKey.WebStop:
-                case KeyboardMediaKey.WebForward:
-                case KeyboardMediaKey.WebBack:
-                    return selector
+                case DAL.KEY_MUTE: return KeyboardMediaKey.Mute
+                case DAL.KEY_VOLUMEUP: return KeyboardMediaKey.VolumeUp
+                case DAL.KEY_VOLUMEDOWN: return KeyboardMediaKey.VolumeUp
+                case DAL.KEY_MEDIA_PLAYPAUSE: return KeyboardMediaKey.PlayPause
+                case DAL.KEY_MEDIA_STOP: return KeyboardMediaKey.Stop
+                case DAL.KEY_MEDIA_PREVIOUSSONG: return KeyboardMediaKey.PreviousTrack
+                case DAL.KEY_MEDIA_NEXTSONG: return KeyboardMediaKey.NextTrack
+                /*
+                case DAL.KEY_Mail:
+                case DAL.KEY_Calculator:
+                case DAL.KEY_WebSearch:
+                case DAL.KEY_WebHome:
+                case DAL.KEY_WebFavourites:
+                case DAL.KEY_WebRefresh:
+                case DAL.KEY_WebStop:
+                case DAL.KEY_WebForward:
+                case DAL.KEY_WebBack:
+                */
                 default:
                     return 0
-            }
-        }
-
-        private sendModifiers(modifiers: number, action: KeyboardKeyEvent) {
-            let i = 0
-            for (let i = 0; i < 8; ++i) {
-                const bit = modifiers & (1 << i)
-                const flag = 1 << i
-                if (bit == flag) {
-                    const hidmod = 0xe0 + i
-                    keyboard.modifierKey(hidmod, action)
-                    pause(REPORT_DELAY)
-                }
             }
         }
 
@@ -168,8 +158,14 @@ namespace servers {
                 const media = this.selectorToMedia(selector)
                 const key = this.selectorToKey(selector)
 
+                this.log(["press", "down", "up"][action]);
+                if (modifiers) this.log(`mods ${modifiers}`)
+                if (fcn) this.log(`fcn ${fcn}`)
+                if (media) this.log(`media ${media}`)
+                if (key) this.log(`key ${key}`)
+
                 if (action === jacdac.HidKeyboardAction.Press) {
-                    this.sendModifiers(modifiers, KeyboardKeyEvent.Down)
+                    keyboard.modifierKey(modifiers, KeyboardKeyEvent.Down)
                     if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Down)
                     else if (media)
                         keyboard.mediaKey(media, KeyboardKeyEvent.Down)
@@ -180,9 +176,12 @@ namespace servers {
                         keyboard.mediaKey(media, KeyboardKeyEvent.Up)
                     else if (key) keyboard.key(key, KeyboardKeyEvent.Up)
                     pause(REPORT_DELAY)
-                    this.sendModifiers(modifiers, KeyboardKeyEvent.Up)
+                    keyboard.modifierKey(modifiers, KeyboardKeyEvent.Up)
+                    pause(REPORT_DELAY)
+                    // just to make sure
+                    keyboard.clearAllKeys()
                 } else {
-                    this.sendModifiers(modifiers, action)
+                    keyboard.modifierKey(modifiers, action)
                     if (fcn) keyboard.functionKey(fcn, action)
                     else if (media) keyboard.mediaKey(media, action)
                     else if (key) keyboard.key(key, action)
