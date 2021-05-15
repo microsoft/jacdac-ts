@@ -202,12 +202,12 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     get status() {
-        return this._running === false ? VMStatus.Stopped :
+        const ret = this._running === false ? VMStatus.Stopped :
             this._waitQueue.length > 0 ? VMStatus.Running : VMStatus.Completed 
+        return ret
     }
 
     cancel() {
-        console.log("VM stop")
         this._running = false
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
@@ -215,7 +215,6 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     start() {
-        console.log("VM start")
         this._running = true
         this.emit(CHANGE)
         this.run()
