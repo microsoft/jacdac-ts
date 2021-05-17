@@ -912,14 +912,17 @@ namespace jacdac {
                         queueAnnounce()
                         break
                     case ControlCmd.Identify:
+                        this.log("identify")
                         if (onIdentifyRequest)
                             control.runInParallel(onIdentifyRequest)
                         if (onStatusEvent) onStatusEvent(StatusEvent.Identify)
                         break
                     case ControlCmd.Reset:
+                        this.log("reset requested")
                         control.reset()
                         break
                     case ControlCmd.FloodPing:
+                        this.log("flood")
                         this.handleFloodPing(pkt)
                         break
                 }

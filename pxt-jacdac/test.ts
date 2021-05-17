@@ -194,7 +194,7 @@ namespace modules {
 modules.humidity.start()
 forever(() => {
     const h = modules.humidity.humidity()
-    console.debug(`debug message`)
-    console.log(`humidity: ${h} (this is a log message)`)
+   // console.debug(`debug message`)
+   // console.log(`humidity: ${h} (this is a log message)`)
     pause(1000)
 })
