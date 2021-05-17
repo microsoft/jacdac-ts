@@ -418,7 +418,6 @@ export class JDBus extends JDNode {
             this.devices({ ignoreSelf: true, serviceClass: SRV_LOGGER })
                 .length > 0
         ) {
-            console.debug(`ping loggers ${this.minLoggerPriority}`)
             this._lastPingLoggerTime = this.timestamp
             const pkt = Packet.jdpacked<[LoggerPriority]>(
                 CMD_SET_REG | LoggerReg.MinPriority,
