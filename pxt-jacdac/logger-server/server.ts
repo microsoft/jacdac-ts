@@ -54,7 +54,7 @@ namespace jacdac {
             }
 
             for (const buf of Buffer.chunkedFromUTF8(message, JD_SERIAL_MAX_PAYLOAD_SIZE)) {
-                this.sendReport(JDPacket.from(jacdac.LoggerPriority.Debug + priority, buf))
+                this.sendReport(JDPacket.from(LoggerCmd.Debug + priority, buf))
             }
         }
     }

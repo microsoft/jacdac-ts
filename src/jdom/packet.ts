@@ -378,7 +378,7 @@ export class Packet {
 
     // helpers
     get friendlyDeviceName(): string {
-        if (this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+        if (this.isMultiCommand)
             return "*"
         return this.device?.friendlyName || this.deviceIdentifier
     }
@@ -412,6 +412,15 @@ export class Packet {
             const code = this.eventCode
             const pkt = spec.packets.find(
                 pkt => pkt.kind === "event" && pkt.identifier === code
+            )
+            cmdname = pkt?.name
+        } else if (this.isReport) {
+            const spec = serviceSpecificationFromClassIdentifier(
+                this.serviceClass
+            )
+            const code = this.serviceCommand & ~CMD_GET_REG
+            const pkt = spec.packets.find(
+                pkt => pkt.kind === "report" && pkt.identifier === code
             )
             cmdname = pkt?.name
         } else {
