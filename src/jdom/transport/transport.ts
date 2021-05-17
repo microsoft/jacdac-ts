@@ -134,14 +134,17 @@ export abstract class JDTransport extends JDEventSource {
     protected abstract transportConnectAsync(
         background?: boolean
     ): Promise<void>
-    protected abstract transportDisconnectAsync(background?: boolean): Promise<void>
+    protected abstract transportDisconnectAsync(
+        background?: boolean
+    ): Promise<void>
 
     private async checkPulse() {
         assert(this._checkPulse)
         if (!this.connected) return // ignore while connected
         if (this.bus.safeBoot) return // don't mess with flashing bootloaders
         const devices = this.bus.devices()
-        if (devices.some(dev => dev.flashing)) // don't mess with flashing
+        if (devices.some(dev => dev.flashing))
+            // don't mess with flashing
             return
 
         // detect if the proxy device is lost
@@ -197,11 +200,7 @@ export abstract class JDTransport extends JDEventSource {
                                 old: this._connectPromise,
                                 new: p,
                             })
-                            if (!background)
-                                this.errorHandler(
-                                    CONNECT,
-                                    new Error("connection aborted in flight")
-                                )
+                            // already reported
                         }
                     })
                     .catch(e => {
@@ -281,13 +280,19 @@ export abstract class JDTransport extends JDEventSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected errorHandler(context: string, exception: any) {
         const wasConnected = this.connected
+        //const code = errorCode(exception)
         this.emit(ERROR, { context, exception })
         this.bus.emit(ERROR, { transport: this, context, exception })
         this.emit(CHANGE)
 
         this.disconnect(true)
             // retry connect
-            .then(() => wasConnected && this.connect(true))
+            .then(() => {
+                if (wasConnected) {
+                    console.debug(`reconnect after error`)
+                    wasConnected && this.connect(true)
+                }
+            })
     }
 
     dispose() {

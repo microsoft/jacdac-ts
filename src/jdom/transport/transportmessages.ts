@@ -4,6 +4,8 @@ export interface TransportMessage {
     background?: boolean
     error?: {
         message?: string
+        stack?: string
+        code?: string
     }
 }
 
