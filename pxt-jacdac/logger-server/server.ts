@@ -17,12 +17,13 @@ namespace jacdac {
                     const now = control.millis()
                     // lower the priority immediately, but tighten it only when no one 
                     // was asking for lower one for some time
-                    const d = packet.intData
+                    const d = packet.jdunpack("u8")[0]
                     const elapsed = now - this._lastListenerTime
                     if (d <= this.minPriority ||
                         elapsed > 1500) {
                         this.minPriority = d
                         this._lastListenerTime = now
+                        console.minPriority = d
                     }
                     break;
                 }
@@ -43,6 +44,7 @@ namespace jacdac {
         }
 
         add(priority: jacdac.LoggerPriority, message: string): void {
+            if (!this.running) return; // nothing to do
             if (!message || !message.length || priority < this.minPriority
                 || !this._lastListenerTime)
                 return;
@@ -50,6 +52,7 @@ namespace jacdac {
             // no one listening?
             if (control.millis() - this._lastListenerTime > 3000) {
                 this._lastListenerTime = 0;
+                console.minPriority = ConsolePriority.Silent
                 return;
             }
 

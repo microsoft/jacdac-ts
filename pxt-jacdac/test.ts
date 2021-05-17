@@ -38,7 +38,7 @@ function jdpackTest() {
 
 // pins.A9.digitalWrite(false)
 
-jacdac.consolePriority = ConsolePriority.Log;
+jacdac.logPriority = jacdac.LoggerPriority.Log;
 jacdac.roleManagerServer.start()
 jacdac.protoTestServer.start()
 jacdac.start()
@@ -194,6 +194,7 @@ namespace modules {
 modules.humidity.start()
 forever(() => {
     const h = modules.humidity.humidity()
-    console.log(`humidity: ${h}`)
-    pause(5000)
+    console.debug(`debug message`)
+    console.log(`humidity: ${h} (this is a log message)`)
+    pause(1000)
 })

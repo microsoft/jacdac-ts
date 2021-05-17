@@ -62,7 +62,7 @@
     },
     "public": true,
     "targetVersions": {
-        "target": "3.1.79",
+        "target": "3.1.81",
         "targetId": "microbit"
     },
     "supportedTargets": [

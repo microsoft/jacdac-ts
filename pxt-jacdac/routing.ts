@@ -7,7 +7,7 @@ namespace jacdac {
     export let onStatusEvent: (event: StatusEvent) => void
 
     // common logging level for jacdac services
-    export let consolePriority = ConsolePriority.Debug
+    export let logPriority = LoggerPriority.Debug
 
     let _hostServices: Server[]
     export let _unattachedClients: Client[]
@@ -25,7 +25,7 @@ namespace jacdac {
     export let autoBind = true
 
     function log(msg: string) {
-        console.add(consolePriority, msg)
+        jacdac.loggerServer.add(logPriority, msg)
     }
 
     function mkEventCmd(evCode: number) {
@@ -51,7 +51,7 @@ namespace jacdac {
         private _statusCode = 0 // u16, u16
 
         constructor(
-            public readonly name: string,
+            public readonly instanceName: string,
             public readonly serviceClass: number
         ) {}
 
@@ -129,7 +129,7 @@ namespace jacdac {
         }
 
         private handleInstanceName(pkt: JDPacket) {
-            this.handleRegValue(pkt, SystemReg.InstanceName, "s", this.name)
+            this.handleRegValue(pkt, SystemReg.InstanceName, "s", this.instanceName)
         }
 
         protected handleRegFormat<T extends any[]>(
@@ -266,11 +266,16 @@ namespace jacdac {
         }
 
         protected log(text: string) {
-            if (this.supressLog || consolePriority < console.minPriority) return
+            // check if logging is needed
+            if (this.supressLog) return
+            const loggerMinPriority = jacdac.loggerServer.minPriority
+            if (jacdac.logPriority < loggerMinPriority) return
+
+            // log things up!
             const dev = selfDevice().toString()
-            console.add(
-                consolePriority,
-                `${dev}[${this.serviceIndex}]>${this.name}>${text}`
+            jacdac.loggerServer.add(
+                logPriority,
+                `${dev}${this.instanceName ? `.${this.instanceName}` : `[${this.serviceIndex}]`}>${text}`
             )
         }
     }
@@ -618,11 +623,11 @@ namespace jacdac {
         }
 
         protected log(text: string) {
-            if (this.supressLog || consolePriority < console.minPriority) return
+            if (this.supressLog || logPriority < jacdac.loggerServer.minPriority) return
             let dev = selfDevice().toString()
             let other = this.device ? this.device.toString() : "<unbound>"
-            console.add(
-                consolePriority,
+            jacdac.loggerServer.add(
+                logPriority,
                 `${dev}/${other}:${this.serviceClass}>${this.role}>${text}`
             )
         }
