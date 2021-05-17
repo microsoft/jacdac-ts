@@ -1,3 +1,4 @@
+import errorCode from "../jdom/error"
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
@@ -7,17 +8,25 @@ debug(`jdsw: starting...`)
 let proxy: TransportProxy
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleError(resp: any, e: Error) {
+    const code = errorCode(e)
+    postMessage({
+        ...resp,
+        error: {
+            message: e.message,
+            stack: e.stack,
+            code,
+        },
+    })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleCommand(resp: any, handler: () => Promise<void>) {
     try {
         await handler()
         postMessage(resp)
     } catch (e) {
-        postMessage({
-            ...resp,
-            error: {
-                message: e.message,
-            },
-        })
+        handleError(resp, e)
     }
 }
 
@@ -38,7 +47,7 @@ onmessage = async event => {
             //info(`jdsw: send`)
             proxy?.send(payload).then(
                 () => {},
-                e => error(e)
+                e => handleError(payload, e)
             )
             // don't wait or acknowledge
             break
