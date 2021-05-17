@@ -44,6 +44,8 @@ import {
     TIMEOUT_DISCONNECT,
     REGISTER_POLL_STREAMING_INTERVAL,
     REPORT_RECEIVE,
+    CMD_SET_REG,
+    PING_LOGGERS_POLL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -113,12 +115,12 @@ export class JDBus extends JDNode {
     private _safeBootInterval: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
+    private _lastPingLoggerTime = 0
     private _roleManagerClient: RoleManagerClient
     private _minLoggerPriority = LoggerPriority.Log
     private _firmwareBlobs: FirmwareBlob[]
     private _announcing = false
     private _gcDevicesEnabled = 0
-
     private _serviceProviders: JDServiceProvider[] = []
 
     public readonly stats: BusStatsMonitor
@@ -139,11 +141,8 @@ export class JDBus extends JDNode {
         this.stats = new BusStatsMonitor(this)
         this.resetTime()
 
-        // tell loggers to send data
-        this.on(
-            DEVICE_ANNOUNCE,
-            debounceAsync(this.pingLoggers.bind(this), 1000)
-        )
+        // tell loggers to send data, every now and then
+        this.on(SELF_ANNOUNCE, this.pingLoggers.bind(this))
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
         // grab the default role manager
@@ -413,10 +412,17 @@ export class JDBus extends JDNode {
     }
 
     private async pingLoggers() {
-        if (this._minLoggerPriority < LoggerPriority.Silent) {
+        if (
+            this._minLoggerPriority < LoggerPriority.Silent &&
+            this.timestamp - this._lastPingLoggerTime > PING_LOGGERS_POLL &&
+            this.devices({ ignoreSelf: true, serviceClass: SRV_LOGGER })
+                .length > 0
+        ) {
+            console.debug(`ping loggers ${this.minLoggerPriority}`)
+            this._lastPingLoggerTime = this.timestamp
             const pkt = Packet.jdpacked<[LoggerPriority]>(
-                0x2000 | LoggerReg.MinPriority,
-                "i32",
+                CMD_SET_REG | LoggerReg.MinPriority,
+                "u8",
                 [this._minLoggerPriority]
             )
             await pkt.sendAsMultiCommandAsync(this, SRV_LOGGER)
