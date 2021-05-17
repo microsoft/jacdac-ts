@@ -117,7 +117,7 @@ export class JDBus extends JDNode {
     private _refreshRegistersInterval: any
     private _lastPingLoggerTime = 0
     private _roleManagerClient: RoleManagerClient
-    private _minLoggerPriority = LoggerPriority.Log
+    private _minLoggerPriority = LoggerPriority.Debug
     private _firmwareBlobs: FirmwareBlob[]
     private _announcing = false
     private _gcDevicesEnabled = 0
