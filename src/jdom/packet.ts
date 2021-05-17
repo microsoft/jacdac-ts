@@ -410,7 +410,7 @@ export class Packet {
                 this.serviceClass
             )
             const code = this.eventCode
-            const pkt = spec.packets.find(
+            const pkt = spec?.packets.find(
                 pkt => pkt.kind === "event" && pkt.identifier === code
             )
             cmdname = pkt?.name
@@ -419,7 +419,7 @@ export class Packet {
                 this.serviceClass
             )
             const code = this.serviceCommand & ~CMD_GET_REG
-            const pkt = spec.packets.find(
+            const pkt = spec?.packets.find(
                 pkt => pkt.kind === "report" && pkt.identifier === code
             )
             cmdname = pkt?.name
