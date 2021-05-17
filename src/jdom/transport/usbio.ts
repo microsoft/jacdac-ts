@@ -126,10 +126,10 @@ export default class USBIO {
     }
 
     error(msg: string, code?: string) {
-        const e = new Error(
-            `device ${this.dev ? this.dev.productName : "n/a"} (${msg})`
+        const e = new JDError(
+            `device ${this.dev ? this.dev.productName : "n/a"} (${msg})`,
+            code
         )
-        if (code !== undefined) (e as JDError).code = code
         this.onError(e)
     }
 

@@ -1,21 +1,22 @@
-import errorCode from "../jdom/error"
+import { JACDAC_ERROR, JDError } from "../jdom/error"
 import TransportProxy from "./transportproxy"
 import { USBTransportProxy } from "./usbtransportproxy"
 
-const { debug, error } = console
+const { debug } = console
 
 debug(`jdsw: starting...`)
 let proxy: TransportProxy
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleError(resp: any, e: Error) {
-    const code = errorCode(e)
     postMessage({
         ...resp,
         error: {
             message: e.message,
             stack: e.stack,
-            code,
+            name: e.name,
+            jacdacName:
+                e.name === JACDAC_ERROR ? (e as JDError).jacdacName : undefined,
         },
     })
 }

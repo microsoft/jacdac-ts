@@ -1,4 +1,4 @@
-import errorCode from "../jdom/error"
+import { JACDAC_ERROR, JDError } from "../jdom/error"
 import Proto from "../jdom/transport/proto"
 import USBIO from "../jdom/transport/usbio"
 import TransportProxy from "./transportproxy"
@@ -25,7 +25,9 @@ export class USBTransportProxy implements TransportProxy {
                 error: {
                     message: e.message,
                     stack: e.stack,
-                    code: errorCode(e),
+                    name: e.name,
+                    jacdacName:
+                        e.name === JACDAC_ERROR ? (e as JDError).jacdacName : undefined,
                 },
             })
         }
