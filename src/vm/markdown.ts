@@ -126,6 +126,7 @@ export function parseITTTMarkdownToJSON(
 
             if (currentHandler.commands.length === 0) {
                 if (command.id === "role") {
+                    // TODO: check
                     let role = (root.arguments[0] as jsep.Identifier).name
                     let serviceShortName = (root.arguments[1] as jsep.Identifier).name
                     let service =  serviceSpecificationFromName(serviceShortName)
@@ -151,7 +152,8 @@ export function parseITTTMarkdownToJSON(
     }
 
     function finishHandler() {
-        info.handlers.push(currentHandler)
+        if (currentHandler.commands.length > 0)
+            info.handlers.push(currentHandler)
         currentHandler = null
     }
 
