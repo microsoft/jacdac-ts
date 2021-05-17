@@ -1,6 +1,6 @@
 import jsep from "jsep"
 
-import { exprVisitor, SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
+import { SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
 import { IT4Program, IT4Handler, IT4Functions } from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
@@ -48,6 +48,7 @@ export function parseITTTMarkdownToJSON(
             }
         }, 
         supportedExpressions,
+        jsep,
         (e) => error(e)
     )
 
