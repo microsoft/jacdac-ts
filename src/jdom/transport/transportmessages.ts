@@ -5,7 +5,8 @@ export interface TransportMessage {
     error?: {
         message?: string
         stack?: string
-        code?: string
+        name?: string
+        jacdacName?: string
     }
 }
 
