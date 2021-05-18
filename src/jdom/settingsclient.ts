@@ -44,21 +44,25 @@ export default class SettingsClient extends JDServiceClient {
             .filter(kv => !!kv)
     }
 
-    async setValue(key: string, value: string) {
+    async setValue(key: string, value: Uint8Array) {
         key = key.trim()
         if (value === undefined) {
             await this.deleteValue(key)
         } else {
             const pkt = Packet.from(
                 SettingsCmd.Set,
-                jdpack("z b", [key, stringToBuffer(value)])
+                jdpack("z b", [key, value])
             )
             await this.service.sendPacketAsync(pkt)
             this.emit(CHANGE)
         }
     }
 
-    async getValue(key: string): Promise<string> {
+    async setStringValue(key: string, value: string) {
+        await this.setValue(key, value ? stringToBuffer(value) : undefined)
+    }
+
+    async getValue(key: string): Promise<Uint8Array> {
         if (!key) return undefined
 
         key = key.trim()
@@ -71,7 +75,12 @@ export default class SettingsClient extends JDServiceClient {
             )
             return undefined
         }
-        return bufferToString(value)
+        return value
+    }
+
+    async getStringValue(key: string) {
+        const value = await this.getValue(key)
+        return value && bufferToString(value)
     }
 
     async deleteValue(key: string) {
