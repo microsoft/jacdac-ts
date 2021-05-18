@@ -99,6 +99,14 @@ export interface DeviceFilter {
     physical?: boolean
 }
 
+export interface ServiceFilter {
+    serviceIndex?: number
+    serviceName?: string
+    serviceClass?: number
+    specification?: boolean
+    mixins?: boolean
+}
+
 /**
  * A Jacdac bus manager. This instance maintains the list of devices on the bus.
  */
@@ -551,12 +559,7 @@ export class JDBus extends JDNode {
     /**
      * Gets the current list of services from all the known devices on the bus
      */
-    services(options?: {
-        serviceName?: string
-        serviceClass?: number
-        specification?: boolean
-        ignoreSelf?: boolean
-    }): JDService[] {
+    services(options?: ServiceFilter & DeviceFilter): JDService[] {
         return arrayConcatMany(
             this.devices(options).map(d => d.services(options))
         )
