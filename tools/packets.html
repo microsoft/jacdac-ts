@@ -45,7 +45,7 @@
         <div>waiting for message...</div>
     </div>
     <script type="module">
-        import * as jacdac from "/dist/jacdac.js"    
+        import * as jacdac from "https://cdn.jsdelivr.net/npm/jacdac-ts@1.13.32/dist/jacdac.js"    
         // webusb
         let jd = jacdac.createUSBBus()
         jd.on(jacdac.PACKET_PROCESS, pkt => log(jacdac.printPacket(pkt)))
