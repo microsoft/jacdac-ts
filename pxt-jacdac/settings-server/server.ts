@@ -17,8 +17,8 @@ namespace jacdac {
         }
 
         private handleClearCommand(packet: JDPacket) {
-            console.log(`clear`)
-            settings.clear();
+            settings.list(SETTINGS_PREFIX)
+                .forEach(k => settings.remove(k));
             this.sendChangeEvent();
         }
 
