@@ -44,8 +44,8 @@
     <div id="devices" class="segment"></div>
     <div id="streams" class="segment"></div>
 
-    <script src="/dist/jacdac.umd.js"></script>
-    <script>
+    <script type="module">
+        import * as jacdac from "https://cdn.jsdelivr.net/npm/jacdac-ts@1.13.32/dist/jacdac.js"
         const devicesDiv = document.getElementById("devices");
         const jd = jacdac.createUSBBus()
         jd.on(jacdac.DEVICE_ANNOUNCE, d => {

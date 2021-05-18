@@ -35,8 +35,8 @@
     <div id="devices">
     </div>
 
-    <script src="/dist/jacdac.umd.js"></script>
-    <script>
+    <script type="module">
+        import * as jacdac from "https://cdn.jsdelivr.net/npm/jacdac-ts@1.13.32/dist/jacdac.js"
         const devicesDiv = document.getElementById("devices");
         const log = console.log;
         const jd = jacdac.createUSBBus()
