@@ -492,6 +492,16 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
+        name: "joystick (stick + A + B)",
+        serviceClasses: [SRV_JOYSTICK],
+        services: () => [
+            new JoystickServer({
+                variant: JoystickVariant.Thumb,
+                buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
+            }),
+        ],
+    },
+    {
         name: "joystick (stick)",
         serviceClasses: [SRV_JOYSTICK],
         services: () => [
@@ -507,16 +517,6 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
             new JoystickServer({
                 variant: JoystickVariant.Thumb,
                 buttonsAvailable: JoystickButtons.A,
-            }),
-        ],
-    },
-    {
-        name: "joystick (stick+AB)",
-        serviceClasses: [SRV_JOYSTICK],
-        services: () => [
-            new JoystickServer({
-                variant: JoystickVariant.Thumb,
-                buttonsAvailable: JoystickButtons.A | JoystickButtons.B,
             }),
         ],
     },
@@ -1306,13 +1306,13 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
     {
         name: "HID keyboard",
         serviceClasses: [SRV_HID_KEYBOARD],
-        services: () => [new HIDKeyboardServer()]
+        services: () => [new HIDKeyboardServer()],
     },
     {
         name: "HID mouse",
         serviceClasses: [SRV_HID_MOUSE],
-        services: () => [new HIDMouseServer()]
-    }
+        services: () => [new HIDMouseServer()],
+    },
 ]
 
 export default function serviceProviderDefinitions() {
