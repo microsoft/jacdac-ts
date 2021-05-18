@@ -8,11 +8,15 @@ import { JDRegister } from "../jdom/register"
 import { SMap } from "../jdom/utils"
 import { JDBus } from "../jdom/bus"
 import { JDService } from "../jdom/service"
+import { serviceSpecificationFromName } from "../jdom/spec"
 import { JDEventSource } from "../jdom/eventsource"
 import { 
     CHANGE, 
     EVENT,
 } from "../jdom/constants"
+import servers, {
+    addServiceProvider,
+} from "../../src/servers/servers"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -114,9 +118,13 @@ export class VMEnvironment extends JDEventSource  {
     }
 
     private getRootName(e: jsep.MemberExpression | string) {
-        if (!e || typeof(e) === "string" || e.type !== "MemberExpression")
+        if (!e)
             return undefined
-        return (e.object as jsep.Identifier).name
+        if (typeof(e) === "string")
+            return e
+        if (e.type === "MemberExpression")
+            return (e.object as jsep.Identifier).name
+        return undefined
     }
 
     private nameMatch(n1: string, n2: string) {
@@ -142,6 +150,25 @@ export class VMEnvironment extends JDEventSource  {
                 return undefined
         }
         return this._services[root]
+    }
+
+    public instantiateService(role:string, serviceShortName: string) {
+        let ret = this.getService(wrapIt())
+        if (!ret) {
+             // spin up a simulator
+             let service = serviceSpecificationFromName(serviceShortName)
+             const provider = servers().find(h => h.serviceClasses.includes(service.classIdentifier))
+             addServiceProvider(this.bus, provider)
+             ret = this.getService(serviceShortName)
+         }
+         return ret
+
+        function wrapIt(): jsep.MemberExpression {
+            return { type: "MemberExpression", computed: false, 
+                     object: { type: "Identifier", name: role } as jsep.Identifier,
+                     property: { type: "Identifier", name: serviceShortName } as jsep.Identifier
+                    }
+        }
     }
 
     public refreshEnvironment() {
