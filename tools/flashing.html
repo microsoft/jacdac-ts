@@ -42,8 +42,8 @@
         <div>waiting for message...</div>
     </div>
 
-    <script src="/dist/jacdac.umd.js"></script>
-    <script>
+    <script type="module">
+        import * as jacdac from "/dist/jacdac.js"
         // webusb
         const jd = jacdac.createUSBBus()
         // jd.on(jacdac.PACKET_RECEIVE, pkt => log(jacdac.printPacket(pkt)))
