@@ -27,7 +27,7 @@ export default class SettingsClient extends JDServiceClient {
         return keys.filter(k => !!k)
     }
 
-    async list(): Promise<{ key: string; value?: string }[]> {
+    async list(): Promise<{ key: string; value?: Uint8Array }[]> {
         const inp = new InPipeReader(this.bus)
         await this.service.sendPacketAsync(
             inp.openCommand(SettingsCmd.List),
@@ -36,9 +36,7 @@ export default class SettingsClient extends JDServiceClient {
         const { output } = await inp.readAll()
         return output
             .map(pkt => {
-                const [key, valueb] = pkt.jdunpack<[string, Uint8Array]>("z b")
-                const value =
-                    valueb.length > 0 ? bufferToString(valueb) : undefined
+                const [key, value] = pkt.jdunpack<[string, Uint8Array]>("z b")
                 return key && { key, value }
             })
             .filter(kv => !!kv)
