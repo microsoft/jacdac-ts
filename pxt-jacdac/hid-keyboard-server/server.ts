@@ -144,6 +144,36 @@ namespace servers {
             }
         }
 
+        key(selector: number, modifiers: KeyboardModifierKey, action: KeyboardKeyEvent) {
+            const fcn = this.selectorToFunction(selector)
+            const media = this.selectorToMedia(selector)
+            const key = this.selectorToKey(selector)
+
+            if (action === KeyboardKeyEvent.Press) {
+                keyboard.modifierKey(modifiers, KeyboardKeyEvent.Down)
+                if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Down)
+                else if (media)
+                    keyboard.mediaKey(media, KeyboardKeyEvent.Down)
+                else if (key) keyboard.key(key, KeyboardKeyEvent.Down)
+                pause(REPORT_DELAY)
+                if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Up)
+                else if (media)
+                    keyboard.mediaKey(media, KeyboardKeyEvent.Up)
+                else if (key) keyboard.key(key, KeyboardKeyEvent.Up)
+                pause(REPORT_DELAY)
+                keyboard.modifierKey(modifiers, KeyboardKeyEvent.Up)
+                pause(REPORT_DELAY)
+                // just to make sure
+                keyboard.clearAllKeys()
+            } else {
+                keyboard.modifierKey(modifiers, action)
+                if (fcn) keyboard.functionKey(fcn, action)
+                else if (media) keyboard.mediaKey(media, action)
+                else if (key) keyboard.key(key, action)
+                pause(REPORT_DELAY)
+            }
+        }
+
         handleKeyCommand(packet: jacdac.JDPacket) {
             const [keys] = packet.jdunpack<number[][][]>("r: u16 u8 u8")
 
@@ -153,40 +183,7 @@ namespace servers {
                 const selector = upacked[i]
                 const modifiers = upacked[i + 1]
                 const action = upacked[i + 2]
-
-                const fcn = this.selectorToFunction(selector)
-                const media = this.selectorToMedia(selector)
-                const key = this.selectorToKey(selector)
-
-                this.log(["press", "down", "up"][action]);
-                if (modifiers) this.log(`mods ${modifiers}`)
-                if (fcn) this.log(`fcn ${fcn}`)
-                if (media) this.log(`media ${media}`)
-                if (key) this.log(`key ${key}`)
-
-                if (action === jacdac.HidKeyboardAction.Press) {
-                    keyboard.modifierKey(modifiers, KeyboardKeyEvent.Down)
-                    if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Down)
-                    else if (media)
-                        keyboard.mediaKey(media, KeyboardKeyEvent.Down)
-                    else if (key) keyboard.key(key, KeyboardKeyEvent.Down)
-                    pause(REPORT_DELAY)
-                    if (fcn) keyboard.functionKey(fcn, KeyboardKeyEvent.Up)
-                    else if (media)
-                        keyboard.mediaKey(media, KeyboardKeyEvent.Up)
-                    else if (key) keyboard.key(key, KeyboardKeyEvent.Up)
-                    pause(REPORT_DELAY)
-                    keyboard.modifierKey(modifiers, KeyboardKeyEvent.Up)
-                    pause(REPORT_DELAY)
-                    // just to make sure
-                    keyboard.clearAllKeys()
-                } else {
-                    keyboard.modifierKey(modifiers, action)
-                    if (fcn) keyboard.functionKey(fcn, action)
-                    else if (media) keyboard.mediaKey(media, action)
-                    else if (key) keyboard.key(key, action)
-                    pause(REPORT_DELAY)
-                }
+                this.key(selector, modifiers, action)
             }
         }
 

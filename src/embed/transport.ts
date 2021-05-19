@@ -77,7 +77,7 @@ export class IFrameTransport extends JDIFrameClient implements ITransport {
             const ack = msg as IAckMessage
             const awaiter = this.ackAwaiters[ack.ackId]
             delete this.ackAwaiters[ack.ackId]
-            awaiter?.(msg)
+            if (awaiter) awaiter(msg)
         } else {
             this.emit(`message:${msg.type}`, msg)
         }

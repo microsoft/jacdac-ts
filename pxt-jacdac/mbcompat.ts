@@ -3,7 +3,12 @@ namespace control {
      * Used internally
      */
     //% flags.defl=0 shim=control::onEvent
-    export declare function internalOnEvent(src: number, value: number, handler: () => void, flags?: number): void;
+    export declare function internalOnEvent(
+        src: number,
+        value: number,
+        handler: () => void,
+        flags?: number
+    ): void
 
     export function getConfigValue(key: number, defl: number): number {
         return defl
@@ -18,54 +23,57 @@ namespace pins {
 
 let identifyAnimationRunning = false
 function identifyAnimation() {
-    if (identifyAnimationRunning)
-        return
+    if (identifyAnimationRunning) return
 
-    identifyAnimationRunning = true;
+    identifyAnimationRunning = true
     const sc = led.screenshot()
     control.runInParallel(() => {
-        led.stopAnimation();
+        led.stopAnimation()
         basic.showAnimation(
-       `0###0 00000 0###0  00000 0###0  00000
+            `0###0 00000 0###0  00000 0###0  00000
         0###0 00000 0###0  00000 0###0  00000 
         0###0 00000 0###0  00000 0###0  00000 
         00##0 00000 00##0  00000 00##0  00000 
-        00000 00000 00000  00000 00000  00000`, 250);
+        00000 00000 00000  00000 00000  00000`,
+            250
+        )
         sc.plotFrame(0)
-        identifyAnimationRunning = false;
+        identifyAnimationRunning = false
     })
 }
 
-jacdac.onStatusEvent = function (event) {
+function handleStatusEvent(event: jacdac.StatusEvent) {
     switch (event) {
         case jacdac.StatusEvent.ProxyStarted:
             identifyAnimation()
-            break;
+            break
         case jacdac.StatusEvent.ProxyPacketReceived:
             basic.plotLeds(`
-            . # # # .
-            . # # # .
-            . # # # .
-            . . # # .
-            . . . . .
-            `)
-            break;
+                . # # # .
+                . # # # .
+                . # # # .
+                . . # # .
+                . . . . .
+                `)
+            break
         case jacdac.StatusEvent.Identify:
-            identifyAnimation();
-            break;
+            identifyAnimation()
+            break
     }
 }
 
-// don't use jacdac.JACDAC_PROXY_SETTING - it isn't initialized here yet in sim (pxt bug)
-if (settings.exists("__jacdac_proxy")) {
-    input.onButtonPressed(Button.A, () => control.reset())
-    input.onButtonPressed(Button.B, () => control.reset())
+// don't use any jacdac static - it isn't initialized here yet in sim (pxt bug)
+jacdac.onPlatformStart = function () {
+    jacdac.bus.on(jacdac.STATUS_EVENT, handleStatusEvent)
+    if (settings.exists(jacdac.JACDAC_PROXY_SETTING)) {
+        input.onButtonPressed(Button.A, () => control.reset())
+        input.onButtonPressed(Button.B, () => control.reset())
+    }
 }
 
 /**
  * force v2.
  */
 //% parts=v2
-function useV2() {
-}
-useV2();
+function useV2() {}
+useV2()

@@ -31,7 +31,7 @@ namespace jacdac {
                 }
 
             this.log(`new player ${(address)}`);
-            const devices = jacdac.devices();
+            const devices = jacdac.bus.devices;
             const players = controller.players();
             const ids: number[] = [0, 0, 0, 0, 0]; // player 0 is not used
             players.forEach(p => ids[p.playerIndex] = 1);
@@ -102,7 +102,7 @@ namespace jacdac {
             if (this.prompting) return;
             // so there's another server on the bus,
             // if we haven't done so yet, prompt the user if he wants to join the game
-            const device = jacdac.devices().find(d => d.deviceId == address);
+            const device = jacdac.bus.devices.find(d => d.deviceId == address);
             if (!device) // can't find any device at that address
                 return;
 
@@ -138,7 +138,7 @@ namespace jacdac {
                 // server got joined
                 || this.hasPlayers()
                 // other driver dissapeared
-                || !jacdac.devices().find(d => d.deviceId == device.deviceId)
+                || !jacdac.bus.devices.find(d => d.deviceId == device.deviceId)
             );
             // wait until we have an answer or the service
             control.popEventContext();
@@ -150,7 +150,7 @@ namespace jacdac {
             // check that we haven't been join by then
             return !!answer
                 && !this.hasPlayers()
-                && !!jacdac.devices().find(d => d.deviceId == device.deviceId);
+                && !!jacdac.bus.devices.find(d => d.deviceId == device.deviceId);
         }
 
         private processClientButtons(address: string, data: Buffer): void {

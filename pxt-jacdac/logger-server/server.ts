@@ -44,7 +44,7 @@ namespace jacdac {
         }
 
         add(priority: jacdac.LoggerPriority, message: string): void {
-            if (!this.running || !message || !message.length) return; // nothing to do
+            if (!this.running || !message || !message.length || !jacdac.bus.running) return; // nothing to do
             if (priority < this.minPriority || !this._lastListenerTime)
                 return;
 

@@ -23,18 +23,6 @@ export function isAckError(e: Error) {
     return !!(e as any)?.__ack
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function log(msg: string, v?: any) {
-    if (v === undefined) console.log("JD: " + msg)
-    else console.log("JD: " + msg, v)
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function warn(msg: string, v?: any) {
-    if (v === undefined) console.log("JD-WARN: " + msg)
-    else console.log("JD-WARN: " + msg, v)
-}
-
 export function delay<T>(millis: number, value?: T): Promise<T | undefined> {
     return new Promise(resolve => setTimeout(() => resolve(value), millis))
 }

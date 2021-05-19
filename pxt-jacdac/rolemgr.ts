@@ -3,6 +3,7 @@ namespace jacdac._rolemgr {
 
     export function clearRoles() {
         settings.list(roleSettingPrefix).forEach(settings.remove)
+        jacdac.bus.clearAttachCache()
     }
 
     export function getRole(devid: string, servIdx: number) {
@@ -15,7 +16,7 @@ namespace jacdac._rolemgr {
             settings.writeString(key, role)
         else
             settings.remove(key)
-        Device.clearNameCache()
+        jacdac.bus.clearAttachCache()
     }
 
     class DeviceWrapper {
@@ -127,18 +128,19 @@ namespace jacdac._rolemgr {
 
     export class RoleManagerServer extends Server {
         private _oldBindingsHash: number;
+        public autoBind = true
 
         constructor() {
             super("rolemgr", jacdac.SRV_ROLE_MANAGER)
         }
 
         public handlePacket(packet: JDPacket) {
-            jacdac.autoBind = this.handleRegBool(packet, jacdac.RoleManagerReg.AutoBind, jacdac.autoBind)
+            this.autoBind = this.handleRegBool(packet, jacdac.RoleManagerReg.AutoBind, this.autoBind)
 
             switch (packet.serviceCommand) {
                 case jacdac.RoleManagerReg.AllRolesAllocated | CMD_GET_REG:
                     this.sendReport(JDPacket.jdpacked(jacdac.RoleManagerReg.AllRolesAllocated | CMD_GET_REG,
-                        "u8", [_allClients.every(c => c.broadcast || !!c.device) ? 1 : 0]))
+                        "u8", [jacdac.bus.allClients.every(c => c.broadcast || !!c.device) ? 1 : 0]))
                     break
                 case jacdac.RoleManagerCmd.GetRole:
                     if (packet.data.length == 9) {
@@ -162,7 +164,7 @@ namespace jacdac._rolemgr {
                     })
                     break
                 case jacdac.RoleManagerCmd.ListRequiredRoles:
-                    OutPipe.respondForEach(packet, _allClients, packName)
+                    OutPipe.respondForEach(packet, jacdac.bus.allClients, packName)
                     break
                 case jacdac.RoleManagerCmd.ClearAllRoles:
                     clearRoles()
@@ -178,9 +180,9 @@ namespace jacdac._rolemgr {
 
         private bindingHash() {
             let r = ""
-            const n = _allClients.length
-            for(let i = 0; i < n; ++i) {
-                const client = _allClients[i];
+            const n = jacdac.bus.allClients.length
+            for (let i = 0; i < n; ++i) {
+                const client = jacdac.bus.allClients[i];
                 r += `${client.role || ""}:${client.broadcast || (client.device && client.device.deviceId) || ""}:${client.serviceIndex}`
             }
             const buf = Buffer.fromUTF8(r)
@@ -188,14 +190,16 @@ namespace jacdac._rolemgr {
         }
 
         checkProxy() {
+            if (!this.running)
+                return
             const now = control.micros()
-            const self = jacdac.selfDevice();
-            const devs = jacdac.devices().filter(d => d !== self && !!(d.announceflags & ControlAnnounceFlags.IsClient));
+            const self = jacdac.bus.selfDevice;
+            const devs = jacdac.bus.devices.filter(d => d !== self && !!(d.announceflags & ControlAnnounceFlags.IsClient));
             if (!devs.length)
                 return; // nothing to do here
 
             this.log(`check proxy self ${((now / 100000) | 0) / 10}s`)
-            for(const device of devs) {
+            for (const device of devs) {
                 const uptime = device.uptime;
                 if (uptime === undefined) {
                     this.log(`check proxy ${device.shortId}: no uptime`)
@@ -211,17 +215,19 @@ namespace jacdac._rolemgr {
             }
         }
 
-        autoBind() {
-            this.log(`autobind: devs=${_devices.length} clients=${_unattachedClients.length}`)
-            if (_devices.length == 0 || _unattachedClients.length == 0) {
+        bindRoles() {
+            if (!this.running)
+                return
+            this.log(`autobind: devs=${bus.devices.length} clients=${jacdac.bus.unattachedClients.length}`)
+            if (bus.devices.length == 0 || jacdac.bus.unattachedClients.length == 0) {
                 this.checkChanges();
                 return
             }
 
             const bindings: RoleBinding[] = []
-            const wraps = _devices.map(d => new DeviceWrapper(d))
+            const wraps = bus.devices.map(d => new DeviceWrapper(d))
 
-            for (const cl of _allClients) {
+            for (const cl of jacdac.bus.allClients) {
                 if (!cl.broadcast && cl.role) {
                     const b = new RoleBinding(cl.role, cl.serviceClass)
                     if (cl.device) {
@@ -306,74 +312,4 @@ namespace jacdac {
 
     //% fixedInstance whenUsed block="role manager"
     export const roleManagerServer = new _rolemgr.RoleManagerServer()
-
-    /*
-
-    function addRequested(devs: RoleBinding[], name: string, service_class: number,
-        parent: RoleManagerClient) {
-        let r = devs.find(d => d.role == name)
-        if (!r)
-            devs.push(r = new RoleBinding(parent, name))
-        r.serviceClasses.push(service_class)
-        return r
-    }
-
-    export class RoleManagerClient extends Client {
-        public remoteRequestedDevices: RoleBinding[] = []
-
-        constructor(role: string) {
-            super("rolemgrc", SRV_ROLE_MANAGER, role)
-
-            onNewDevice(() => {
-                recomputeCandidates(this.remoteRequestedDevices)
-            })
-
-            onAnnounce(() => {
-                if (this.isConnected())
-                    control.runInParallel(() => this.scanCore())
-            })
-        }
-
-        private scanCore() {
-            const inp = new InPipe()
-            this.sendCommand(inp.openCommand(RoleManagerCmd.ListRequiredRoles))
-
-            const localDevs = devices()
-            const devs: RoleBinding[] = []
-
-            inp.readList(buf => {
-                const [devidbuf, service_class, name] = jdunpack<[Buffer, number, string]>(buf, "b[8] u32 s")
-                if (!name)
-                    return
-                const devid = devidbuf.toHex();
-                const r = addRequested(devs, name, service_class, this)
-                const dev = localDevs.find(d => d.deviceId == devid)
-                if (dev)
-                    r.boundTo = dev
-            })
-
-            devs.sort((a, b) => a.role.compare(b.role))
-
-            this.remoteRequestedDevices = devs
-            recomputeCandidates(this.remoteRequestedDevices)
-        }
-
-        scan() {
-            pauseUntil(() => this.isConnected())
-            this.scanCore()
-        }
-
-        clearNames() {
-            this.sendCommandWithAck(JDPacket.onlyHeader(RoleManagerCmd.ClearAllRoles))
-        }
-
-        setName(sd: ServiceDescriptor, name: string) {
-            this.sendCommandWithAck(JDPacket.from(RoleManagerCmd.SetRole,
-                Buffer.fromHex(dev.deviceId).concat(Buffer.fromUTF8(name))))
-        }
-
-        handlePacket(pkt: JDPacket) {
-        }
-    }
-    */
 }

@@ -27,7 +27,7 @@ namespace modules {
             if (!ms) ms = 0
             this.lastSet = control.millis()
             if (this.autoOff === undefined)
-                jacdac.onAnnounce(() => {
+                jacdac.bus.on(jacdac.SELF_ANNOUNCE, () => {
                     if (this.pulse != null && this.autoOff && control.millis() - this.lastSet > this.autoOff) {
                         this.turnOff()
                     }

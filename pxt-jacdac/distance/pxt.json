@@ -1,6 +1,6 @@
 {
     "name": "jacdac-distance",
-    "version": "0.4.83",
+    "version": "0.4.85",
     "description": "A sensor that determines the distance of an object without any physical contact involved.",
     "files": [
         "constants.ts",

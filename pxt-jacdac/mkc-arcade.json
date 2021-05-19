@@ -13,6 +13,7 @@
         "jacdac-button": "./button",
         "jacdac-accelerometer": "./accelerometer",
         "jacdac-hid-keyboard": "./hid-keyboard",
+        "jacdac-hid-keyboard-server": "./hid-keyboard-server",
         "jacdac-hid-mouse": "./hid-mouse",
         "jacdac-servers": "./servers"
     }

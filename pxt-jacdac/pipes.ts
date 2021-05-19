@@ -6,7 +6,7 @@ namespace jacdac {
 
     let pipes: InPipe[]
     function handlePipeData(pkt: JDPacket) {
-        if (pkt.serviceIndex != JD_SERVICE_INDEX_PIPE || pkt.deviceIdentifier != selfDevice().deviceId)
+        if (pkt.serviceIndex != JD_SERVICE_INDEX_PIPE || pkt.deviceIdentifier != bus.selfDevice.deviceId)
             return
         const port = pkt.serviceCommand >> PORT_SHIFT
         const s = pipes.find(s => s.port == port)
@@ -25,7 +25,7 @@ namespace jacdac {
             this.inQ = []
             if (!pipes) {
                 pipes = []
-                jacdac.onRawPacket(handlePipeData)
+                jacdac.bus.on(PACKET_PROCESS, handlePipeData)
             }
             while (true) {
                 this.port = Math.randomRange(1, 511)
@@ -37,7 +37,7 @@ namespace jacdac {
 
         openCommand(cmd: number) {
             const b = jdpack<[Buffer, number, number]>("b[8] u16 u16",
-                [Buffer.fromHex(selfDevice().deviceId), this.port, 0])
+                [Buffer.fromHex(bus.selfDevice.deviceId), this.port, 0])
             return JDPacket.from(cmd, b)
         }
 

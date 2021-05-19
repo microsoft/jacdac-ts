@@ -1,6 +1,6 @@
 {
     "name": "jacdac",
-    "version": "0.4.83",
+    "version": "0.4.85",
     "description": "Jacdac for MakeCode",
     "dependencies": {
         "core": "*",
@@ -49,7 +49,8 @@
         "rolemgr.ts",
         "proto-test/constants.ts",
         "proto-test/server.ts",
-        "routing.ts"
+        "routing.ts",
+        "eventsource.ts"
     ],
     "testFiles": [
         "test.microbit.ts",

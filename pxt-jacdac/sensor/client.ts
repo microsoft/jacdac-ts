@@ -29,7 +29,7 @@ namespace jacdac {
         }
 
         public onStateChanged(handler: () => void) {
-            this._reading.onDataChanged(handler);
+            this.on(REPORT_UPDATE, handler)
             this.setStreaming(true);
         }
     }
