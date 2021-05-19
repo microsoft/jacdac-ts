@@ -8,7 +8,7 @@ import { JDService } from "../jdom/service"
 import { JDDevice } from "../jdom/device"
 import { serviceSpecificationFromName } from "../jdom/spec"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, EVENT, DEVICE_CHANGE } from "../jdom/constants"
+import { CHANGE, EVENT, DEVICE_CHANGE, DEVICE_LOST } from "../jdom/constants"
 import {
     addServiceProvider,
     serviceProviderDefinitionFromServiceClass,
@@ -117,9 +117,7 @@ export class MyRoleManager extends JDEventSource {
         private readonly bus: JDBus,
     ) {
         super()
-        // TODO: deal with losing a service
         this.bus.on(DEVICE_CHANGE, (dev: JDDevice) => {
-            // go through its services
             dev.services().forEach(s => {
                 Object.keys(this._roles).forEach(key => {
                     if (typeof(this._roles[key]) === "string" && 
@@ -130,6 +128,17 @@ export class MyRoleManager extends JDEventSource {
                     }
                 })
             })
+        })
+        this.bus.on(DEVICE_LOST, (dev: JDDevice) => {
+            if (this._devices.indexOf(dev) >= 0) {
+                this._devices = this._devices.filter(d => d !== dev)
+                Object.keys(this._roles).forEach(key => {
+                    if (typeof(this._roles[key]) !== "string" &&
+                        dev.services().indexOf(this._roles[key] as JDService) >= 0) {
+                        this._roles[key] = (this._roles[key] as JDService).specification.shortName
+                    }
+                })
+            }
         })
     }
     
@@ -197,9 +206,14 @@ export class VMEnvironment extends JDEventSource {
             const service = this.roleManager.getService(root)
             if (service) {
                 this._envs[root] = new VMServiceEnvironment(service)
-            } else return undefined
+            } else 
+                return undefined
         } else {
-            // TODO: probe the role manager to make sure that the JDService is still there
+            const service = this.roleManager.getService(root)
+            if (!service || service != this._envs[root].service) {
+                this._envs[root].unmount()
+                this._envs[root] = new VMServiceEnvironment(service)
+            }
         }
         return this._envs[root]
     }

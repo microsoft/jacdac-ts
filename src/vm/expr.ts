@@ -1,4 +1,3 @@
-
 /*
 The JD-VM runs a program, which is a set of handlers. Each handler is of the form
 •	wait on event/condition, followed by a
@@ -18,7 +17,10 @@ export type GetValue = (e: jsep.MemberExpression | string) => any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type StartMap = { e: jsep.Expression; v: any }[]
 
-export type CallEvaluator = (ce: jsep.CallExpression, ee: JDExprEvaluator) => any
+export type CallEvaluator = (
+    ce: jsep.CallExpression,
+    ee: JDExprEvaluator
+) => any
 
 export function unparse(e: jsep.Expression): string {
     switch (e.type) {
@@ -88,10 +90,9 @@ export class JDExprEvaluator {
 
             case "CallExpression": {
                 if (this.callEval) {
-                    let ret = this.callEval(<jsep.CallExpression>e, this);
+                    let ret = this.callEval(<jsep.CallExpression>e, this)
                     this.exprStack.push(ret)
-                } else
-                    this.exprStack.push(undefined)
+                } else this.exprStack.push(undefined)
                 break
             }
 
@@ -202,7 +203,7 @@ export class JDExprEvaluator {
                 break
             }
             case "MemberExpression": {
-                // for now, we don't support evaluation of obj or prop 
+                // for now, we don't support evaluation of obj or prop
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
                 this.exprStack.push(val)

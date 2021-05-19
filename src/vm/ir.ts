@@ -1,5 +1,5 @@
 export interface IT4GuardedCommand {
-    guard?: jsep.Expression;
+    guard?: jsep.Expression
     command: jsep.CallExpression
 }
 
@@ -10,12 +10,12 @@ export interface IT4Handler {
 
 export interface IT4Role {
     role: string
-    serviceShortName: string;
+    serviceShortName: string
 }
 
 export interface IT4Program {
     description: string
-    roles: IT4Role[];
+    roles: IT4Role[]
     handlers: IT4Handler[]
     errors?: jdspec.Diagnostic[]
 }
@@ -37,7 +37,7 @@ export const IT4Functions: jdtest.TestFunctionDescription[] = [
     },
     {
         id: "awaitEvent",
-        args: ["event", ["boolean", true] ],
+        args: ["event", ["boolean", true]],
         prompt: `wait for event {1} and then check {2} (other events ignored)`,
         context: "command",
     },

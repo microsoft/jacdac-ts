@@ -18,7 +18,6 @@ export function parseITTTMarkdownToJSON(
     filecontent: string,
     filename = ""
 ): IT4Program {
-
     filecontent = (filecontent || "").replace(/\r/g, "")
     const info: IT4Program = {
         description: "",
@@ -29,9 +28,10 @@ export function parseITTTMarkdownToJSON(
     let backticksType = ""
     const errors: jdspec.Diagnostic[] = []
     let lineNo = 0
-    let currentHandler: IT4Handler= null
+    let currentHandler: IT4Handler = null
     let handlerHeading = ""
-    const symbolResolver = new SpecSymbolResolver(undefined, 
+    const symbolResolver = new SpecSymbolResolver(
+        undefined,
         (role: string) => {
             // lookup in roles first
             let shortId = info.roles.find(pair => pair.role === role)
@@ -39,17 +39,17 @@ export function parseITTTMarkdownToJSON(
                 // must succeed
                 return serviceSpecificationFromName(shortId.serviceShortName)
             } else {
-                let service =  serviceSpecificationFromName(role)
+                let service = serviceSpecificationFromName(role)
                 if (!service) {
                     error(`can't find service with shortId=${role}`)
                     return undefined
                 }
                 return service
             }
-        }, 
+        },
         supportedExpressions,
         jsep,
-        (e) => error(e)
+        e => error(e)
     )
 
     try {
@@ -82,7 +82,7 @@ export function parseITTTMarkdownToJSON(
         }
 
         const interpret =
-            backticksType == "default" || 
+            backticksType == "default" ||
             line.slice(0, 4) == "    " ||
             /^\t/.exec(line)
 
@@ -92,10 +92,8 @@ export function parseITTTMarkdownToJSON(
                 handlerHeading = ""
                 const [, hd, cont] = m
                 if (hd == "#") {
-                    if (!info.description)
-                        info.description = cont.trim()
-                    else 
-                        error("use ## to start a handler, not #")
+                    if (!info.description) info.description = cont.trim()
+                    else error("use ## to start a handler, not #")
                 } else if (hd == "##") {
                     if (currentHandler) finishHandler()
                     handlerHeading = cont.trim()
@@ -114,13 +112,13 @@ export function parseITTTMarkdownToJSON(
                 error(`every handler must have a description (via ##)`)
             currentHandler = {
                 description: handlerHeading,
-                commands: []
+                commands: [],
             }
             handlerHeading = ""
         }
-    
-        const ret = symbolResolver.processLine(expanded, IT4Functions);
-        
+
+        const ret = symbolResolver.processLine(expanded, IT4Functions)
+
         if (ret) {
             const [command, root] = ret
 
@@ -128,17 +126,28 @@ export function parseITTTMarkdownToJSON(
                 if (command.id === "role") {
                     // TODO: check
                     let role = (root.arguments[0] as jsep.Identifier).name
-                    let serviceShortName = (root.arguments[1] as jsep.Identifier).name
-                    let service =  serviceSpecificationFromName(serviceShortName)
-                    if (!service) 
-                        error(`can't find service with shortId=${serviceShortName}`)
+                    let serviceShortName = (root
+                        .arguments[1] as jsep.Identifier).name
+                    let service = serviceSpecificationFromName(serviceShortName)
+                    if (!service)
+                        error(
+                            `can't find service with shortId=${serviceShortName}`
+                        )
                     else if (info.roles.find(pair => pair.role === role))
                         error(`role with name ${role} already declared`)
                     else
-                        info.roles.push({role: role, serviceShortName: serviceShortName})
+                        info.roles.push({
+                            role: role,
+                            serviceShortName: serviceShortName,
+                        })
                     return
-                } else if (command.id !== "awaitEvent" && command.id !== "awaitCondition") {
-                    error(`An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`)
+                } else if (
+                    command.id !== "awaitEvent" &&
+                    command.id !== "awaitCondition"
+                ) {
+                    error(
+                        `An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`
+                    )
                     return
                 }
             } else {
@@ -146,7 +155,7 @@ export function parseITTTMarkdownToJSON(
                     error(`roles must be declared at beginning of handler`)
                 }
             }
-        
+
             currentHandler.commands.push({ guard: undefined, command: root })
         }
     }
