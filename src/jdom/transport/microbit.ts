@@ -12,6 +12,7 @@ import {
     fromUTF8,
 } from "../utils"
 import Flags from "../flags"
+import { ERROR_MICROBIT_INVALID_MEMORY, ERROR_MICROBIT_JACDAC_MISSING, ERROR_MICROBIT_UNKNOWN, ERROR_MICROBIT_V1 } from "../constants"
 
 export const MICROBIT_V2_VENDOR_ID = 3368
 export const MICROBIT_V2_PRODUCT_ID = 516
@@ -57,9 +58,9 @@ export class CMSISProto implements Proto {
         }
     }
 
-    private error(msg: string) {
+    private error(msg: string, code?: string) {
         this.stopRecvToLoop()
-        this.io?.error(msg)
+        this.io?.error(msg, code)
         // clear state
         this.xchgAddr = null
     }
@@ -455,11 +456,11 @@ export class CMSISProto implements Proto {
         this.startRecvToLoop()
         const devid = await this.talkStringAsync(0x80)
         if (/^9902/.test(devid)) {
-            this.error(`micro:bit v1 is not supported. sorry.`)
+            this.error(`micro:bit v1 is not supported. sorry.`, ERROR_MICROBIT_V1)
             return
         }
         if (!/^990[3456789]/.test(devid)) {
-            this.error(`Invalid Vendor0 response: ` + devid)
+            this.error(`Invalid Vendor0 response: ` + devid, ERROR_MICROBIT_UNKNOWN)
             return
         }
 
@@ -499,14 +500,14 @@ export class CMSISProto implements Proto {
 
         const xchg = await this.findExchange()
         if (xchg === null) {
-            this.error(`exchange address not found; add jacdac to your project`)
+            this.error(`exchange address not found; add jacdac to your project`, ERROR_MICROBIT_JACDAC_MISSING)
             return
         }
         this.xchgAddr = xchg
         const info = await this.readBytes(xchg, 16)
         this.irqn = info[8]
         if (info[12 + 2] != 0xff) {
-            this.error("invalid memory; try power-cycling the micro:bit")
+            this.error("invalid memory; try power-cycling the micro:bit", ERROR_MICROBIT_INVALID_MEMORY)
             return
         }
         // clear initial lock

@@ -1,8 +1,9 @@
+import { JACDAC_ERROR, JDError } from "../jdom/error"
 import Proto from "../jdom/transport/proto"
 import USBIO from "../jdom/transport/usbio"
 import TransportProxy from "./transportproxy"
 
-const { debug, error } = console
+const { debug } = console
 
 export class USBTransportProxy implements TransportProxy {
     private hf2: Proto
@@ -18,11 +19,15 @@ export class USBTransportProxy implements TransportProxy {
             getDevices: () => navigator.usb.getDevices(),
         })
         io.onError = e => {
-            error(e)
+            debug(`jdsw: error`, e)
             postMessage({
                 type: "error",
                 error: {
                     message: e.message,
+                    stack: e.stack,
+                    name: e.name,
+                    jacdacName:
+                        e.name === JACDAC_ERROR ? (e as JDError).jacdacName : undefined,
                 },
             })
         }

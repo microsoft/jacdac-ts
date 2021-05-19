@@ -4,6 +4,9 @@ export interface TransportMessage {
     background?: boolean
     error?: {
         message?: string
+        stack?: string
+        name?: string
+        jacdacName?: string
     }
 }
 

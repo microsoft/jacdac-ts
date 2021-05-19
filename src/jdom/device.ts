@@ -32,10 +32,12 @@ import {
     PACKET_ANNOUNCE,
     BLUETOOTH_TRANSPORT,
     ERROR,
+    SRV_CONTROL,
+    SRV_LOGGER,
 } from "./constants"
 import { read32, SMap, bufferEq, setAckError, delay, read16 } from "./utils"
 import { getNumber, NumberFormat } from "./buffer"
-import { JDBus } from "./bus"
+import { JDBus, ServiceFilter } from "./bus"
 import { JDService } from "./service"
 import { serviceClass, shortDeviceId } from "./pretty"
 import { JDNode } from "./node"
@@ -43,6 +45,7 @@ import { isInstanceOf } from "./spec"
 import { FirmwareInfo } from "./flashing"
 import { QualityOfService } from "./qualityofservice"
 import LEDController from "./ledcontroller"
+import { SRV_ROLE_MANAGER } from "../../jacdac-spec/dist/specconstants"
 
 export interface PipeInfo {
     pipeType?: string
@@ -96,13 +99,16 @@ export class JDDevice extends JDNode {
     }
 
     describe() {
+        const ignoredServices = [SRV_CONTROL, SRV_LOGGER]
         return (
             this.toString() +
             (this.physical ? "" : " (sim)") +
             ": " +
             this.services()
+                .filter(srv => ignoredServices.indexOf(srv.serviceClass) < 0)
                 .map(
                     s =>
+                        s.instanceName ||
                         s.specification?.camelName ||
                         s.serviceClass.toString(16)
                 )
@@ -314,13 +320,7 @@ export class JDDevice extends JDNode {
         return this._services && this._services[service_number]
     }
 
-    services(options?: {
-        serviceIndex?: number
-        serviceName?: string
-        serviceClass?: number
-        specification?: boolean
-        mixins?: boolean
-    }): JDService[] {
+    services(options?: ServiceFilter): JDService[] {
         if (!this.announced) return []
 
         if (options?.serviceIndex >= 0)
@@ -375,10 +375,10 @@ export class JDDevice extends JDNode {
             (w1 & JD_ADVERTISEMENT_0_COUNTER_MASK) <
                 (w0 & JD_ADVERTISEMENT_0_COUNTER_MASK)
         ) {
-            console.debug(`${this} restart detected`, {
-                new: w1 & JD_ADVERTISEMENT_0_COUNTER_MASK,
-                old: w0 & JD_ADVERTISEMENT_0_COUNTER_MASK,
-            })
+            //console.debug(`${this} restart detected`, {
+            //    new: w1 & JD_ADVERTISEMENT_0_COUNTER_MASK,
+            //    old: w0 & JD_ADVERTISEMENT_0_COUNTER_MASK,
+            //})
             this.initServices(true)
             this.bus.emit(DEVICE_RESTART, this)
             this.emit(RESTART)

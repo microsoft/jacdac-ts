@@ -81,7 +81,7 @@ export class JDService extends JDNode {
     }
 
     get name() {
-        return serviceName(this.serviceClass)
+        return serviceName(this.serviceClass)?.toLowerCase()
     }
 
     get friendlyName() {

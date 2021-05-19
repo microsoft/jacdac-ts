@@ -4,7 +4,7 @@ import {
     SRV_PROTO_TEST,
     SRV_ROLE_MANAGER,
     SRV_SETTINGS,
-} from "../../jacdac-spec/dist/specconstants"
+} from "../jdom/constants"
 import { JDBus } from "./bus"
 import {
     CHANGE,

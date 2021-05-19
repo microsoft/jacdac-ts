@@ -157,6 +157,7 @@ export const REGISTER_POLL_REPORT_MAX_INTERVAL = 60000
 export const REGISTER_OPTIONAL_POLL_COUNT = 3
 export const STREAMING_DEFAULT_INTERVAL = 50
 
+export const PING_LOGGERS_POLL = 2400
 export const ROLE_MANAGER_POLL = 1500
 
 export const USB_TRANSPORT = "USB"
@@ -180,5 +181,10 @@ export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC = "f8530004-a97f-49f5-a554-3e3
 
 export const TRANSPORT_CONNECT_RETRY_DELAY = 500
 export const TRANSPORT_PULSE_TIMEOUT = JD_DEVICE_DISCONNECTED_DELAY
+
+export const ERROR_MICROBIT_V1 = "microbit/v1-not-supported"
+export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"
+export const ERROR_MICROBIT_JACDAC_MISSING = "microbit/jacdac-missing"
+export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
 
 export * from "../../jacdac-spec/dist/specconstants"
