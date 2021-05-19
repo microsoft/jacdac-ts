@@ -1,5 +1,5 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand, IT4Role } from "./ir"
-import { VMEnvironment } from "./environment"
+import { VMEnvironment, MyRoleManager } from "./environment"
 import { JDExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource";
@@ -192,18 +192,14 @@ export class IT4ProgramRunner extends JDEventSource {
     private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
     private _running = false
-    private _unboundRoles: IT4Role[]
+    private _rm: MyRoleManager
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
-        this._env = new VMEnvironment(bus, () => { this.run() })
+        this._rm = new MyRoleManager(bus)
+        this._env = new VMEnvironment(this._rm, () => { this.run() })
         this._handlers = program.handlers.map((h,index) => new IT4HandlerRunner(index, this._env, h))
         this._waitQueue = this._handlers.slice(0)
-        this._unboundRoles = []
-    }
-
-    unboundRoles() {
-        return this._unboundRoles
     }
 
     get status() {
@@ -221,9 +217,7 @@ export class IT4ProgramRunner extends JDEventSource {
 
     start() {
         this.program.roles.forEach(role => {
-            let hasService = this._env.instantiateService(role.role, role.serviceShortName)
-            if (!hasService)
-                this._unboundRoles.push(role)
+            this._rm.addRoleService(role.role, role.serviceShortName)
         })
         this._running = true
         this.emit(CHANGE)
