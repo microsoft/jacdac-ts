@@ -514,7 +514,7 @@ export class JDBus extends JDNode {
             this._serviceProviders.push(provider)
             provider.bus = this
 
-            this.emit(SERVICE_PROVIDER_ADDED)
+            this.emit(SERVICE_PROVIDER_ADDED, provider)
             this.emit(CHANGE)
         }
 
