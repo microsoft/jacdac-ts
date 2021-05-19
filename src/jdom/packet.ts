@@ -1,5 +1,4 @@
 import {
-    warn,
     crc,
     ALIGN,
     write16,
@@ -49,6 +48,8 @@ import {
 import { SystemCmd } from "../../jacdac-spec/dist/specconstants"
 import { jdpack, jdunpack, PackedValues } from "./pack"
 import { serviceSpecificationFromClassIdentifier } from "./spec"
+
+const { warn } = console
 
 export class Packet {
     private _header: Uint8Array
