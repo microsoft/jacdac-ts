@@ -160,8 +160,8 @@ export class VMEnvironment extends JDEventSource  {
              const provider = servers().find(h => h.serviceClasses.includes(service.classIdentifier))
              addServiceProvider(this.bus, provider)
              ret = this.getService(serviceShortName)
-         }
-         return ret
+        }
+        return ret
 
         function wrapIt(): jsep.MemberExpression {
             return { type: "MemberExpression", computed: false, 
