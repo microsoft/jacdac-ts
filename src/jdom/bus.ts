@@ -522,7 +522,7 @@ export class JDBus extends JDNode {
     }
 
     /**
-     * Adds the service provider to the bus
+     * Removes the service provider from the bus
      * @param provider
      */
     removeServiceProvider(provider: JDServiceProvider) {
@@ -545,7 +545,7 @@ export class JDBus extends JDNode {
             // remove host
             this._serviceProviders.splice(i, 1)
             provider.bus = undefined
-            this.emit(SERVICE_PROVIDER_REMOVED)
+            this.emit(SERVICE_PROVIDER_REMOVED, provider)
 
             // removed host
             this.emit(CHANGE)
