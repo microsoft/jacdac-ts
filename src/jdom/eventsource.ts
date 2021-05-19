@@ -64,9 +64,9 @@ export class JDEventSource implements IEventSource {
         eventName: string,
         handler: EventHandler,
         once: boolean
-    ) {
+    ): void {
         if (!eventName || !handler) {
-            return this
+            return
         }
 
         const eventListeners =
