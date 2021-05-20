@@ -1,18 +1,11 @@
-import {
-    isEvent,
-    isRegister
-} from "../jdom/spec"
+import { isEvent, isRegister } from "../jdom/spec"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
 import { SMap } from "../jdom/utils"
-import { JDBus } from "../jdom/bus"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
-import { 
-    CHANGE, 
-    EVENT,
-} from "../jdom/constants"
+import { CHANGE, EVENT } from "../jdom/constants"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -39,7 +32,7 @@ export class VMServiceEnvironment extends JDServiceClient {
         super(service)
     }
 
-    public registerRegister(regName: string, handler: () => void ) {
+    public registerRegister(regName: string, handler: () => void) {
         if (!this._registers[regName]) {
             const pkt = this.service.specification.packets.find(
                 pkt => isRegister(pkt) && pkt.name === regName
@@ -47,14 +40,12 @@ export class VMServiceEnvironment extends JDServiceClient {
             if (pkt) {
                 const register = this.service.register(pkt.identifier)
                 this._registers[regName] = register
-                this.mount(
-                    register.subscribe(CHANGE, handler )
-                )
+                this.mount(register.subscribe(CHANGE, handler))
             }
         }
     }
 
-    public registerEvent(eventName: string, handler: () => void ) {
+    public registerEvent(eventName: string, handler: () => void) {
         if (!this._events[eventName]) {
             const pkt = this.service.specification.packets.find(
                 pkt => isEvent(pkt) && pkt.name === eventName
@@ -62,16 +53,14 @@ export class VMServiceEnvironment extends JDServiceClient {
             if (pkt) {
                 const event = this.service.event(pkt.identifier)
                 this._events[eventName] = event
-                this.mount(
-                    event.subscribe(EVENT, handler )
-                )
+                this.mount(event.subscribe(EVENT, handler))
             }
         }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public writeRegister(regName: string, ev: any) {
-        const jdreg = this._registers[ regName ] 
+        const jdreg = this._registers[regName]
         if (jdreg) {
             writeReg(jdreg, jdreg.specification?.packFormat, ev)
             return true
@@ -81,8 +70,18 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | jsep.Identifier | string): any {
-        let root = typeof(e) === "string" ? e : (e.type === "Identifier" ? e.name : (e.object as jsep.Identifier).name)
-        let fld = typeof(e) === "string" ? undefined : (e.type === "Identifier" ? undefined : (e.property as jsep.Identifier).name)
+        let root =
+            typeof e === "string"
+                ? e
+                : e.type === "Identifier"
+                ? e.name
+                : (e.object as jsep.Identifier).name
+        let fld =
+            typeof e === "string"
+                ? undefined
+                : e.type === "Identifier"
+                ? undefined
+                : (e.property as jsep.Identifier).name
         if (root in this._registers) {
             if (!fld) return this._registers[root].unpackedValue?.[0]
             else {
@@ -97,55 +96,66 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
         return undefined
     }
-    
+
     public refreshEnvironment() {
         refresh_env(this._registers)
     }
 }
 
-
-export class VMEnvironment extends JDEventSource  {
+export class VMEnvironment extends JDEventSource {
     private _currentEvent: string = undefined
-    private _services: SMap<VMServiceEnvironment> = {}
+    private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(private readonly bus: JDBus, private readonly notifyOnChange: () => void) {
+    constructor(
+        private readonly notifyOnChange: () => void
+    ) {
         super()
     }
 
-    private getRootName(e: jsep.MemberExpression | string) {
-        if (!e || typeof(e) === "string" || e.type !== "MemberExpression")
-            return undefined
-        return (e.object as jsep.Identifier).name
+    public serviceChanged(role: string, service: JDService, added: boolean) {
+        if (this._envs[role]) {
+            this._envs[role].unmount()
+            this._envs[role] = undefined
+        }
+        if (added) {
+            this._envs[role] = new VMServiceEnvironment(service)
+        }
     }
 
-    private nameMatch(n1: string, n2: string) {
-        const cn1 = n1.slice(0).toLowerCase().replace("_"," ").trim()
-        const cn2 = n2.slice(0).toLowerCase().replace("_"," ").trim()
-        return cn1 === cn2
+    public registerRegister(role: string, reg: string) {
+        const serviceEnv = this.getService(role)
+        if (serviceEnv) {
+            serviceEnv.registerRegister(reg, this.notifyOnChange)
+        }
     }
-    
-    private getServiceFromName(root: string): JDService {
-        // policy for resolution goes here
-        return this.bus.services().find(s => this.nameMatch(s.specification.shortName, root))
+
+    public registerEvent(role: string, ev: string) {
+        const serviceEnv = this.getService(role)
+        if (serviceEnv) {
+            serviceEnv.registerEvent(ev, () => {
+                this._currentEvent = `${role}.${ev}`
+                this.notifyOnChange()
+            })
+        }
+    }
+
+    private getRootName(e: jsep.MemberExpression | string) {
+        if (!e) return undefined
+        if (typeof e === "string") return e
+        if (e.type === "MemberExpression")
+            return (e.object as jsep.Identifier).name
+        return undefined
     }
 
     private getService(e: jsep.MemberExpression | string) {
         const root = this.getRootName(e)
-        if (!root)
-            return undefined;
-        if (!this._services[root]) {
-            const service = this.getServiceFromName(root);
-            if (service) {
-                this._services[root] = new VMServiceEnvironment(service)
-            } else  
-                return undefined
-        }
-        return this._services[root]
+        if (!root) return undefined
+        return this._envs[root]
     }
 
     public refreshEnvironment() {
-        Object.values(this._services).forEach(s => s.refreshEnvironment())
+        Object.values(this._envs).forEach(s => s?.refreshEnvironment())
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,43 +167,38 @@ export class VMEnvironment extends JDEventSource  {
                 const local = (me.property as jsep.Identifier).name
                 return this._locals[local]
             }
-            return undefined;
+            return undefined
         }
         const serviceEnv = this.getService(e)
-        if (!serviceEnv)
-            return undefined
+        if (!serviceEnv) return undefined
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            serviceEnv.registerRegister(reg, this.notifyOnChange);
             return serviceEnv.lookup(reg)
         }
         return undefined
     }
 
-    // TODO: need do a notify
     public writeRegister(e: jsep.MemberExpression | string, ev: any) {
         const serviceEnv = this.getService(e)
-        const me = e as jsep.MemberExpression;
+        const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            serviceEnv.registerRegister(reg, this.notifyOnChange);
-            return serviceEnv.writeRegister(reg, ev);
+            return serviceEnv.writeRegister(reg, ev)
         }
         return false
     }
 
     public writeLocal(e: jsep.MemberExpression | string, ev: any) {
         const roleName = this.getRootName(e)
-        if (!roleName || roleName !== "$")
-            return undefined;
-            const me = e as jsep.MemberExpression;
+        if (!roleName || roleName !== "$") return undefined
+        const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const local = (me.property as jsep.Identifier).name
             this._locals[local] = ev
             return true
         }
-        return false;
+        return false
     }
 
     public consumeEvent() {
@@ -201,22 +206,18 @@ export class VMEnvironment extends JDEventSource  {
     }
 
     public hasEvent(e: jsep.MemberExpression | string) {
+        const roleName = this.getRootName(e)
         const serviceEnv = this.getService(e)
-        if (!serviceEnv)
-            return false
-        const me = e as jsep.MemberExpression;
-        if (serviceEnv && me.property.type === "Identifier") {
+        if (!serviceEnv) return false
+        const me = e as jsep.MemberExpression
+        if (me.property.type === "Identifier") {
             const event = (me.property as jsep.Identifier).name
-            serviceEnv.registerEvent(event, () => {
-                this._currentEvent = event
-                this.notifyOnChange()
-            });
-            return this._currentEvent === event
+            return this._currentEvent === `${roleName}.${event}`
         }
         return false
     }
 
     public unsubscribe() {
-        Object.values(this._services).forEach(vs => vs.unmount())
+        Object.values(this._envs).forEach(vs => vs.unmount())
     }
 }

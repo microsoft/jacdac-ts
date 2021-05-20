@@ -615,10 +615,12 @@ export class JDServiceTestRunner extends JDServiceClient {
         this._env = new VMServiceEnvironment(service)
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {
-            t.events.forEach(eventName => {
+            t.events.forEach(s => {
+                let eventName = s.substr(s.indexOf(".")+1)
                 this._env.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
             })
-            t.registers.forEach(regName => {
+            t.registers.forEach(s => {
+                let regName = s.substr(s.indexOf(".")+1)
                 this._env.registerRegister(regName, () => { this.currentTest?.envChange() })
             })
         })
