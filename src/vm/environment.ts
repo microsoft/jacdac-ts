@@ -8,7 +8,7 @@ import { JDService } from "../jdom/service"
 import { JDDevice } from "../jdom/device"
 import { serviceSpecificationFromName } from "../jdom/spec"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, EVENT, DEVICE_CHANGE, DEVICE_LOST } from "../jdom/constants"
+import { CHANGE, EVENT, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../jdom/constants"
 import {
     addServiceProvider,
     serviceProviderDefinitionFromServiceClass,
@@ -117,29 +117,36 @@ export class MyRoleManager extends JDEventSource {
         private readonly bus: JDBus,
     ) {
         super()
-        this.bus.on(DEVICE_CHANGE, (dev: JDDevice) => {
-            dev.services().forEach(s => {
-                Object.keys(this._roles).forEach(key => {
-                    if (typeof(this._roles[key]) === "string" && 
-                        this.nameMatch(this._roles[key] as string, s.specification.shortName)) {
+        this.bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => this.addServices(dev))
+        this.bus.on(DEVICE_DISCONNECT, (dev: JDDevice) => this.removeServices(dev))
+    }
+
+    private addServices(dev: JDDevice) {
+        dev.services().forEach(s => {
+            Object.keys(this._roles).forEach(key => {
+                if (typeof(this._roles[key]) === "string" && 
+                    this.nameMatch(this._roles[key] as string, s.specification.shortName)) {
+                    if (this._devices.indexOf(dev) === -1) {
                         this._roles[key] = s
-                        if (this._devices.indexOf(dev) === -1)
-                            this._devices.push(dev)
+                        this._devices.push(dev)
+                        console.log("add", s)
                     }
-                })
+                }
             })
         })
-        this.bus.on(DEVICE_LOST, (dev: JDDevice) => {
-            if (this._devices.indexOf(dev) >= 0) {
-                this._devices = this._devices.filter(d => d !== dev)
-                Object.keys(this._roles).forEach(key => {
-                    if (typeof(this._roles[key]) !== "string" &&
-                        dev.services().indexOf(this._roles[key] as JDService) >= 0) {
+    }
+
+    private removeServices(dev: JDDevice) {
+        if (this._devices.indexOf(dev) >= 0) {
+            this._devices = this._devices.filter(d => d !== dev)
+            Object.keys(this._roles).forEach(key => {
+                if (typeof(this._roles[key]) !== "string" &&
+                    dev.services().indexOf(this._roles[key] as JDService) >= 0) {
+                        console.log("remove", this._roles[key])
                         this._roles[key] = (this._roles[key] as JDService).specification.shortName
-                    }
-                })
-            }
-        })
+                }
+            })
+        }
     }
     
     public getService(role: string): JDService {
@@ -210,9 +217,13 @@ export class VMEnvironment extends JDEventSource {
                 return undefined
         } else {
             const service = this.roleManager.getService(root)
-            if (!service || service != this._envs[root].service) {
+            if (!service || service !== this._envs[root].service) {
+                console.log("unmount")
                 this._envs[root].unmount()
-                this._envs[root] = new VMServiceEnvironment(service)
+                if (service)
+                    this._envs[root] = new VMServiceEnvironment(service)
+                else
+                    this._envs[root] = undefined
             }
         }
         return this._envs[root]
