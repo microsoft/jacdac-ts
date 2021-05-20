@@ -6,7 +6,8 @@
         "hidevents.ts"
     ],
     "supportedTargets": [
-        "maker"
+        "maker",
+        "arcade"
     ],
     "dependencies": {
         "core": "*",

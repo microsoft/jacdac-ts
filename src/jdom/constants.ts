@@ -180,7 +180,7 @@ export const BLUETOOTH_JACDAC_TX_CHARACTERISTIC = "f8530003-a97f-49f5-a554-3e373
 export const BLUETOOTH_JACDAC_DIAG_CHARACTERISTIC = "f8530004-a97f-49f5-a554-3e373fbea2d5"
 
 export const TRANSPORT_CONNECT_RETRY_DELAY = 500
-export const TRANSPORT_PULSE_TIMEOUT = JD_DEVICE_DISCONNECTED_DELAY
+export const TRANSPORT_PULSE_TIMEOUT = 15000 // don't interfere with manual flashing of devices
 
 export const ERROR_MICROBIT_V1 = "microbit/v1-not-supported"
 export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"

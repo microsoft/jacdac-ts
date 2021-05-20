@@ -34,9 +34,15 @@ jobs:
       - run: makecode -u -j --mono-repo -c mkc-arcade.json
       - run: makecode -c mkc.json
       - run: makecode -c mkc-maker.json
-      - run: makecode -c mkc-arcade.json --hw F4
-      - run: makecode -c mkc-arcade.json --hw D5
-      - run: makecode -c mkc-arcade.json --hw N4
-      - run: makecode -c mkc-arcade.json --hw N3
-
-
+      - run: makecode -c mkc-arcade.json --hw F4,D5,N4,N3
+      - run: cd tools/multitool && makecode --hw F4,D5,N4,N3
+      - name: Upload UF2
+        uses: actions/upload-artifact@v1
+        with:
+          name: multitool-f4-d5-n4.uf2
+          path: tools/multitool/built/combined.uf2
+      - name: Upload HEX
+        uses: actions/upload-artifact@v1
+        with:
+          name: multitool-microbit.hex
+          path: tools/multitool/built/n3/binary.hex
