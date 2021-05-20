@@ -98,10 +98,13 @@ export class MyRoleManager extends JDEventSource {
         if (existingInstance || ret.length === 0) {
             // spin up a new simulator
             let service = serviceSpecificationFromName(serviceShortName)
-            let provider = serviceProviderDefinitionFromServiceClass(
-                service.classIdentifier
-            )
-            addServiceProvider(this.bus, provider)
+            if (service) {
+                let provider = serviceProviderDefinitionFromServiceClass(
+                    service?.classIdentifier
+                )
+                if (provider)
+                    addServiceProvider(this.bus, provider)
+            }
         } else {
             this._roles[role] = ret[0]
         }
