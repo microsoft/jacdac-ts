@@ -76,7 +76,7 @@ export class MyRoleManager extends JDEventSource {
         return cn1 === cn2
     }
 
-    private getServiceFromName(root: string): JDService[] {
+    private getServicesFromName(root: string): JDService[] {
         return this.bus
             .services()
             .filter(s => this.nameMatch(s.specification.shortName, root))
@@ -86,7 +86,7 @@ export class MyRoleManager extends JDEventSource {
         const s = this._roles[role]
         if (s && typeof(s) !== "string") 
             return
-        let existingInstance = Object.values(this._roles).findIndex(
+        let existingInstance = Object.values(this._roles).find(
             r =>
                 (typeof r === "string" &&
                     this.nameMatch(r, serviceShortName)) ||
@@ -94,7 +94,7 @@ export class MyRoleManager extends JDEventSource {
                     this.nameMatch(r.specification.shortName, serviceShortName))
         )
         this._roles[role] = serviceShortName
-        let ret = this.getServiceFromName(serviceShortName)
+        let ret = this.getServicesFromName(serviceShortName)
         if (existingInstance || ret.length === 0) {
             // spin up a new simulator
             let service = serviceSpecificationFromName(serviceShortName)

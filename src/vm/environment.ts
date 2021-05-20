@@ -134,7 +134,7 @@ export class VMEnvironment extends JDEventSource {
         const serviceEnv = this.getService(role)
         if (serviceEnv) {
             serviceEnv.registerEvent(ev, () => {
-                this._currentEvent = ev
+                this._currentEvent = `${role}.${ev}`
                 this.notifyOnChange()
             })
         }
@@ -206,12 +206,13 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public hasEvent(e: jsep.MemberExpression | string) {
+        const roleName = this.getRootName(e)
         const serviceEnv = this.getService(e)
         if (!serviceEnv) return false
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const event = (me.property as jsep.Identifier).name
-            return this._currentEvent === event
+            return this._currentEvent === `${roleName}.${event}`
         }
         return false
     }
