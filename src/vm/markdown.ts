@@ -1,7 +1,10 @@
 import jsep from "jsep"
 
-import { exprVisitor } from "../../jacdac-spec/spectool/jdutils"
+import { SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
 import { IT4Program, IT4Handler, IT4Functions } from "./ir"
+import { serviceSpecificationFromName } from "../jdom/spec"
+import { SystemReg } from "../jdom/constants"
+import { intOfBuffer } from "../jdom/buffer"
 
 const supportedExpressions: jsep.ExpressionType[] = [
     "MemberExpression",
@@ -17,18 +20,41 @@ export function parseITTTMarkdownToJSON(
     filecontent: string,
     filename = ""
 ): IT4Program {
-
     filecontent = (filecontent || "").replace(/\r/g, "")
     const info: IT4Program = {
         description: "",
+        roles: [],
+        registers: [],
+        events: [],
         handlers: [],
     }
 
     let backticksType = ""
     const errors: jdspec.Diagnostic[] = []
     let lineNo = 0
-    let currentHandler: IT4Handler= null
+    let currentHandler: IT4Handler = null
     let handlerHeading = ""
+    const symbolResolver = new SpecSymbolResolver(
+        undefined,
+        (role: string) => {
+            // lookup in roles first
+            let shortId = info.roles.find(pair => pair.role === role)
+            if (shortId) {
+                // must succeed
+                return serviceSpecificationFromName(shortId.serviceShortName)
+            } else {
+                let service = serviceSpecificationFromName(role)
+                if (!service) {
+                    error(`can't find service with shortId=${role}`)
+                    return undefined
+                }
+                return service
+            }
+        },
+        supportedExpressions,
+        jsep,
+        e => error(e)
+    )
 
     try {
         for (const line of filecontent.split(/\n/)) {
@@ -39,7 +65,7 @@ export function parseITTTMarkdownToJSON(
         error("exception: " + e.message)
     }
 
-    if (currentHandler) finishHandler()
+    if (currentHandler) finishHandler(symbolResolver)
 
     if (errors.length) info.errors = errors
 
@@ -60,7 +86,7 @@ export function parseITTTMarkdownToJSON(
         }
 
         const interpret =
-            backticksType == "default" || 
+            backticksType == "default" ||
             line.slice(0, 4) == "    " ||
             /^\t/.exec(line)
 
@@ -70,12 +96,10 @@ export function parseITTTMarkdownToJSON(
                 handlerHeading = ""
                 const [, hd, cont] = m
                 if (hd == "#") {
-                    if (!info.description)
-                        info.description = cont.trim()
-                    else 
-                        error("use ## to start a handler, not #")
+                    if (!info.description) info.description = cont.trim()
+                    else error("use ## to start a handler, not #")
                 } else if (hd == "##") {
-                    if (currentHandler) finishHandler()
+                    if (currentHandler) finishHandler(symbolResolver)
                     handlerHeading = cont.trim()
                 }
             }
@@ -86,84 +110,66 @@ export function parseITTTMarkdownToJSON(
         }
     }
 
-    function argsRequiredOptional(args: any[], optional: boolean = false) {
-        return args.filter(a => !optional && typeof(a) === "string" || optional && typeof(a) === "object")
-    }
-
     function processCommand(expanded: string) {
         if (!currentHandler) {
             if (!handlerHeading)
                 error(`every handler must have a description (via ##)`)
             currentHandler = {
                 description: handlerHeading,
-                commands: []
+                commands: [],
             }
             handlerHeading = ""
         }
-        const call = /^([a-zA-Z]\w*)\(.*\)$/.exec(expanded)
-        if (!call) {
-            error(
-                `a command must be a call to a registered ITTT function (JavaScript syntax)`
-            )
-            return
-        }
-        const [, callee] = call
-        const cmdIndex = IT4Functions.findIndex(r => callee == r.id)
-        if (cmdIndex < 0) {
-            error(`${callee} is not a registered ITTT function.`)
-            return
-        } else if (currentHandler.commands.length === 0 && callee !== "awaitEvent" && callee !== "awaitCondition") {
-            error(`An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`)
-            return
-        }
-        const root: jsep.CallExpression = <jsep.CallExpression>jsep(expanded)
-        if (
-            !root ||
-            !root.type ||
-            root.type != "CallExpression" ||
-            !root.callee ||
-            !root.arguments
-        ) {
-            error(`a command must be a call expression in JavaScript syntax`)
-        } else {
-            // check for unsupported expression types
-            exprVisitor(null, root, (p, c) => {
-                if (supportedExpressions.indexOf(c.type) < 0)
-                    error(`Expression of type ${c.type} not currently supported`)
-            })
-            // check arguments
-            const command = IT4Functions[cmdIndex]
-            const minArgs = argsRequiredOptional(command.args).length
-            const maxArgs = command.args.length
-            if (root.arguments.length < minArgs)
-                error(
-                    `${callee} expects at least ${minArgs} arguments; got ${root.arguments.length}`
-                )
-            else if (root.arguments.length > maxArgs) {
-                error(
-                    `${callee} expects at most ${maxArgs} arguments; got ${root.arguments.length}`
-                )
-            }
-            else {
-                // deal with optional arguments
-                let newExpressions: jsep.Expression[] = []
-                for(let i = root.arguments.length; i<command.args.length;i++) {
-                    let [name, def] = command.args[i] as [string, any] 
-                    const lit: jsep.Literal = {
-                        type: "Literal",
-                        value: def,
-                        raw: def.toString(),
-                    }
-                    newExpressions.push(lit)
+
+        const ret = symbolResolver.processLine(expanded, IT4Functions)
+
+        if (ret) {
+            const [command, root] = ret
+
+            if (currentHandler.commands.length === 0) {
+                if (command.id === "role") {
+                    // TODO: check
+                    let role = (root.arguments[0] as jsep.Identifier).name
+                    let serviceShortName = (root
+                        .arguments[1] as jsep.Identifier).name
+                    let service = serviceSpecificationFromName(serviceShortName)
+                    if (!service)
+                        error(
+                            `can't find service with shortId=${serviceShortName}`
+                        )
+                    else if (info.roles.find(pair => pair.role === role))
+                        error(`role with name ${role} already declared`)
+                    else
+                        info.roles.push({
+                            role: role,
+                            serviceShortName: serviceShortName,
+                        })
+                    return
+                } else if (
+                    command.id !== "awaitEvent" &&
+                    command.id !== "awaitCondition"
+                ) {
+                    error(
+                        `An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`
+                    )
+                    return
                 }
-                root.arguments = root.arguments.concat(newExpressions)
+            } else {
+                if (command.id === "role") {
+                    error(`roles must be declared at beginning of handler`)
+                }
             }
+
             currentHandler.commands.push({ guard: undefined, command: root })
         }
     }
 
-    function finishHandler() {
-        info.handlers.push(currentHandler)
+    function finishHandler(sym: SpecSymbolResolver) {
+        if (currentHandler.commands.length > 0)
+            info.handlers.push(currentHandler)
+        sym.registers.forEach(r => { if (info.registers.indexOf(r) < 0) info.registers.push(r) })
+        sym.events.forEach(e => { if (info.events.indexOf(e) < 0) info.events.push(e) })
+        sym.reset();
         currentHandler = null
     }
 
