@@ -13,9 +13,12 @@ export interface IT4Role {
     serviceShortName: string
 }
 
+
 export interface IT4Program {
     description: string
     roles: IT4Role[]
+    registers: string[]
+    events: string[]
     handlers: IT4Handler[]
     errors?: jdspec.Diagnostic[]
 }

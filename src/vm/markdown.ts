@@ -3,6 +3,8 @@ import jsep from "jsep"
 import { SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
 import { IT4Program, IT4Handler, IT4Functions } from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
+import { SystemReg } from "../jdom/constants"
+import { intOfBuffer } from "../jdom/buffer"
 
 const supportedExpressions: jsep.ExpressionType[] = [
     "MemberExpression",
@@ -22,6 +24,8 @@ export function parseITTTMarkdownToJSON(
     const info: IT4Program = {
         description: "",
         roles: [],
+        registers: [],
+        events: [],
         handlers: [],
     }
 
@@ -61,7 +65,7 @@ export function parseITTTMarkdownToJSON(
         error("exception: " + e.message)
     }
 
-    if (currentHandler) finishHandler()
+    if (currentHandler) finishHandler(symbolResolver)
 
     if (errors.length) info.errors = errors
 
@@ -95,7 +99,7 @@ export function parseITTTMarkdownToJSON(
                     if (!info.description) info.description = cont.trim()
                     else error("use ## to start a handler, not #")
                 } else if (hd == "##") {
-                    if (currentHandler) finishHandler()
+                    if (currentHandler) finishHandler(symbolResolver)
                     handlerHeading = cont.trim()
                 }
             }
@@ -160,9 +164,12 @@ export function parseITTTMarkdownToJSON(
         }
     }
 
-    function finishHandler() {
+    function finishHandler(sym: SpecSymbolResolver) {
         if (currentHandler.commands.length > 0)
             info.handlers.push(currentHandler)
+        sym.registers.forEach(r => { if (info.registers.indexOf(r) < 0) info.registers.push(r) })
+        sym.events.forEach(e => { if (info.events.indexOf(e) < 0) info.events.push(e) })
+        sym.reset();
         currentHandler = null
     }
 

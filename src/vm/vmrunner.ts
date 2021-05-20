@@ -206,8 +206,26 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
-        this._rm = new MyRoleManager(bus)
-        this._env = new VMEnvironment(this._rm, () => {
+        this._rm = new MyRoleManager(bus, (role, service, added) => {
+            this._env.serviceChanged(role, service, added)
+            console.log(role, service, added)
+            if (added) {
+                this.program.registers.forEach(r => {
+                    let [root, reg] = r.split(".")
+                    if (root === role) {
+                        this._env.registerRegister(role, reg)
+                    }
+                })
+                this.program.events.forEach(e => {
+                    let [root, ev] = e.split(".")
+                    if (root === role) {
+                        this._env.registerEvent(role, ev)
+                    }
+                })
+            }
+        })
+        this._env = new VMEnvironment(() => {
+            console.log("CHANGE")
             this.run()
         })
         this._handlers = program.handlers.map(
