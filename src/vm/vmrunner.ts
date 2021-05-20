@@ -1,6 +1,7 @@
-import { IT4Program, IT4Handler, IT4GuardedCommand, IT4Role } from "./ir"
-import { VMEnvironment, MyRoleManager } from "./environment"
-import { JDExprEvaluator, unparse } from "./expr"
+import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
+import { MyRoleManager } from "./rolemanager"
+import { VMEnvironment } from "./environment"
+import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE } from "../jdom/constants"
@@ -208,7 +209,6 @@ export class IT4ProgramRunner extends JDEventSource {
         super()
         this._rm = new MyRoleManager(bus, (role, service, added) => {
             this._env.serviceChanged(role, service, added)
-            console.log(role, service, added)
             if (added) {
                 this.program.registers.forEach(r => {
                     let [root, reg] = r.split(".")
@@ -225,7 +225,6 @@ export class IT4ProgramRunner extends JDEventSource {
             }
         })
         this._env = new VMEnvironment(() => {
-            console.log("CHANGE")
             this.run()
         })
         this._handlers = program.handlers.map(
