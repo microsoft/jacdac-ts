@@ -27,6 +27,16 @@ sh mk.sh
 
 To refresh the ``constants.ts`` files, build jacdac-spec (``yarn buildspecs`` from jacdac-ts) from https://github.com/microsoft/jacdac-ts .
 
+### Building local projects
+
+Typically you can do ```makecode`` from any subproject to build for micro:bit. To use another config, for example arcade,
+
+```
+makecode -c ../mkc-arcade.json
+```
+
+You can also add ``--hw d5`` or ``--hw d5,f4,...`` to build for specific hardware profiles.
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
