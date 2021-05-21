@@ -210,18 +210,18 @@ export class IT4ProgramRunner extends JDEventSource {
         this._rm = new MyRoleManager(bus, (role, service, added) => {
             this._env.serviceChanged(role, service, added)
             if (added) {
-                this.program.registers.forEach(r => {
+                this.program.handlers.forEach(h => h.registers.forEach(r => {
                     let [root, reg] = r.split(".")
                     if (root === role) {
                         this._env.registerRegister(role, reg)
                     }
-                })
-                this.program.events.forEach(e => {
+                }))
+                this.program.handlers.forEach(h => h.events.forEach(e => {
                     let [root, ev] = e.split(".")
                     if (root === role) {
                         this._env.registerEvent(role, ev)
                     }
-                })
+                }))
             }
         })
         this._env = new VMEnvironment(() => {

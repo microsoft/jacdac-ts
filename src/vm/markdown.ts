@@ -24,8 +24,6 @@ export function parseITTTMarkdownToJSON(
     const info: IT4Program = {
         description: "",
         roles: [],
-        registers: [],
-        events: [],
         handlers: [],
     }
 
@@ -116,6 +114,8 @@ export function parseITTTMarkdownToJSON(
                 error(`every handler must have a description (via ##)`)
             currentHandler = {
                 description: handlerHeading,
+                registers: [],
+                events: [],
                 commands: [],
             }
             handlerHeading = ""
@@ -165,11 +165,12 @@ export function parseITTTMarkdownToJSON(
     }
 
     function finishHandler(sym: SpecSymbolResolver) {
-        if (currentHandler.commands.length > 0)
+        if (currentHandler.commands.length > 0) {
             info.handlers.push(currentHandler)
-        sym.registers.forEach(r => { if (info.registers.indexOf(r) < 0) info.registers.push(r) })
-        sym.events.forEach(e => { if (info.events.indexOf(e) < 0) info.events.push(e) })
-        sym.reset();
+            sym.registers.forEach(r => { if (currentHandler.registers.indexOf(r) < 0) currentHandler.registers.push(r) })
+            sym.events.forEach(e => { if (currentHandler.events.indexOf(e) < 0) currentHandler.events.push(e) })
+            sym.reset();
+        }
         currentHandler = null
     }
 

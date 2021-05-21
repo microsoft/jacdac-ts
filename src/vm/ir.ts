@@ -5,6 +5,8 @@ export interface IT4GuardedCommand {
 
 export interface IT4Handler {
     description: string
+    registers: string[]
+    events: string[]
     commands: IT4GuardedCommand[]
 }
 
@@ -17,8 +19,6 @@ export interface IT4Role {
 export interface IT4Program {
     description: string
     roles: IT4Role[]
-    registers: string[]
-    events: string[]
     handlers: IT4Handler[]
     errors?: jdspec.Diagnostic[]
 }
