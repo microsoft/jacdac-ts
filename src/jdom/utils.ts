@@ -539,6 +539,13 @@ export function uniqueMap<T, U>(
     return Object.values(r).map(converter)
 }
 
+export function toMap<T, V>(a: T[], keyConverter: (value: T, index: number) => string, valueConverter: (value: T, index: number) => V): SMap<V> {
+    const m: SMap<V> = {}
+    for(let i = 0; i < a.length; ++i)
+        m[keyConverter(a[i], i)] = valueConverter(a[i], i)
+    return m;
+}
+
 export function ellipseJoin(
     values: string[],
     maxChars: number,
