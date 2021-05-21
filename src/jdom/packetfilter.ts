@@ -102,9 +102,12 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 break
             case "reset-in":
             case "ri":
+            case "resetin":
                 resetIn = parseBoolean(value)
                 break
             case "min-priority":
+            case "minpri":
+            case "minpriority":
             case "mi":
                 minPriority = parseBoolean(value)
                 break
@@ -123,8 +126,9 @@ export function parsePacketFilter(bus: JDBus, text: string): PacketFilter {
                 // resolve device by name
                 const deviceId = bus
                     .devices()
-                    .find(d => d.shortId === value || d.name === value)
-                    ?.deviceId
+                    .find(
+                        d => d.shortId === value || d.name === value
+                    )?.deviceId
                 if (deviceId) {
                     const data =
                         devices[deviceId] ||
@@ -265,12 +269,14 @@ export function compileFilter(props: PacketFilterProps) {
             pkt =>
                 !pkt.isAnnounce || pkt.isRepeatedAnnounce === repeatedAnnounce
         )
-    if (resetIn !== undefined)
+    if (resetIn === false)
         filters.push(
             pkt =>
-                (pkt.isRegisterSet &&
-                    pkt.serviceClass == SRV_CONTROL &&
-                    pkt.registerIdentifier === ControlReg.ResetIn) === resetIn
+                !(
+                    pkt.isRegisterSet &&
+                    pkt.serviceClass === SRV_CONTROL &&
+                    pkt.registerIdentifier === ControlReg.ResetIn
+                )
         )
     if (minPriority !== undefined)
         filters.push(

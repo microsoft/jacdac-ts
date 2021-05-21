@@ -46,6 +46,7 @@ import {
     REPORT_RECEIVE,
     CMD_SET_REG,
     PING_LOGGERS_POLL,
+    RESET_IN_TIME_US,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -73,6 +74,7 @@ import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"
 import IFrameBridgeClient from "./iframebridgeclient"
 import { randomDeviceId } from "./random"
+import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -124,10 +126,11 @@ export class JDBus extends JDNode {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _refreshRegistersInterval: any
     private _lastPingLoggerTime = 0
+    private _lastResetInTime = 0
+    private _restartCounter = 0
     private _roleManagerClient: RoleManagerClient
     private _minLoggerPriority = LoggerPriority.Debug
     private _firmwareBlobs: FirmwareBlob[]
-    private _announcing = false
     private _gcDevicesEnabled = 0
     private _serviceProviders: JDServiceProvider[] = []
 
@@ -150,6 +153,9 @@ export class JDBus extends JDNode {
         this.resetTime()
 
         // tell loggers to send data, every now and then
+        // send resetin packets
+        this.on(SELF_ANNOUNCE, this.sendAnnounce.bind(this))
+        this.on(SELF_ANNOUNCE, this.sendResetIn.bind(this))
         this.on(SELF_ANNOUNCE, this.pingLoggers.bind(this))
         // tell RTC clock the computer time
         this.on(DEVICE_ANNOUNCE, this.handleRealTimeClockSync.bind(this))
@@ -363,9 +369,10 @@ export class JDBus extends JDNode {
 
     node(id: string): JDNode {
         const resolve = (): JDNode => {
-            const m = /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
-                id
-            )
+            const m =
+                /^(?<type>bus|device|service|register|event|field)(:(?<dev>\w+)(:(?<srv>\w+)(:(?<reg>\w+(:(?<idx>\w+))?))?)?)?$/.exec(
+                    id
+                )
             if (!m) return undefined
             const type = m.groups["type"]
             const dev = m.groups["dev"]
@@ -696,6 +703,12 @@ export class JDBus extends JDNode {
                 if (pkt.serviceCommand == CMD_ADVERTISEMENT_DATA) {
                     isAnnounce = true
                     pkt.device.processAnnouncement(pkt)
+                } else if (
+                    pkt.serviceCommand ==
+                    (CMD_SET_REG | ControlReg.ResetIn)
+                ) {
+                    // someone else is doing reset in
+                    this._lastResetInTime = this.timestamp
                 }
             }
             pkt.device.processPacket(pkt)
@@ -719,22 +732,29 @@ export class JDBus extends JDNode {
         return this.device(this.selfDeviceId)
     }
 
-    enableAnnounce() {
-        if (!this._announcing) return
-        this._announcing = true
-        let restartCounter = 0
-        this.on(SELF_ANNOUNCE, () => {
-            // we do not support any services (at least yet)
-            if (restartCounter < 0xf) restartCounter++
-            const pkt = Packet.jdpacked<[number]>(
-                CMD_ADVERTISEMENT_DATA,
-                "u32",
-                [restartCounter | 0x100]
-            )
-            pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
-            pkt.deviceIdentifier = this.selfDeviceId
-            pkt.sendReportAsync(this.selfDevice)
-        })
+    private sendAnnounce() {
+        // we do not support any services (at least yet)
+        if (this._restartCounter < 0xf) this._restartCounter++
+        const pkt = Packet.jdpacked<[number]>(CMD_ADVERTISEMENT_DATA, "u32", [
+            this._restartCounter | 0x100,
+        ])
+        pkt.serviceIndex = JD_SERVICE_INDEX_CTRL
+        pkt.deviceIdentifier = this.selfDeviceId
+        pkt.sendReportAsync(this.selfDevice)
+    }
+
+    private sendResetIn() {
+        if (this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3) return
+
+        this._lastResetInTime = this.timestamp
+        const rst = Packet.jdpacked<[number]>(
+            CMD_SET_REG | ControlReg.ResetIn,
+            "u32",
+            [RESET_IN_TIME_US]
+        )
+        rst.serviceIndex = JD_SERVICE_INDEX_CTRL
+        rst.deviceIdentifier = this.selfDeviceId
+        rst.sendCmdAsync(this.selfDevice)
     }
 
     /**
