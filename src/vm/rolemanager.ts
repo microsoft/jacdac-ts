@@ -31,7 +31,7 @@ export class MyRoleManager extends JDEventSource {
 
     private addServices(dev: JDDevice) {
         dev.services().forEach(s => {
-            let key = Object.keys(this._roles).find(
+            let role = Object.keys(this._roles).find(
                 k =>
                     typeof this._roles[k] === "string" &&
                     this.nameMatch(
@@ -39,10 +39,10 @@ export class MyRoleManager extends JDEventSource {
                         s.specification.shortName
                     )
             )
-            if (key && this._devices.indexOf(dev) === -1) {
-                this._roles[key] = s
+            if (role && this._devices.indexOf(dev) === -1) {
+                this._roles[role] = s
                 this._devices.push(dev)
-                if (this.notify) this.notify(key, s, true)
+                if (this.notify) this.notify(role, s, true)
             }
         })
     }
@@ -50,17 +50,17 @@ export class MyRoleManager extends JDEventSource {
     private removeServices(dev: JDDevice) {
         if (this._devices.indexOf(dev) >= 0) {
             this._devices = this._devices.filter(d => d !== dev)
-            let key = Object.keys(this._roles).find(
+            let role = Object.keys(this._roles).find(
                 k =>
                     typeof this._roles[k] !== "string" &&
                     dev.services().indexOf(this._roles[k] as JDService) >= 0
             )
-            if (key) {
-                let service = this._roles[key] as JDService
-                this._roles[key] = (this._roles[
-                    key
+            if (role) {
+                let service = this._roles[role] as JDService
+                this._roles[role] = (this._roles[
+                    role
                 ] as JDService).specification.shortName
-                if (this.notify) this.notify(key, service, false)
+                if (this.notify) this.notify(role, service, false)
             }
         }
     }
@@ -102,8 +102,9 @@ export class MyRoleManager extends JDEventSource {
                 let provider = serviceProviderDefinitionFromServiceClass(
                     service?.classIdentifier
                 )
-                if (provider)
-                    addServiceProvider(this.bus, provider)
+                if (provider) {
+                    let serviceProvider = addServiceProvider(this.bus, provider)
+                }
             }
         } else {
             this._roles[role] = ret[0]
