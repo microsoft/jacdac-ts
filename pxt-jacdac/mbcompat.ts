@@ -62,18 +62,19 @@ function handleStatusEvent(event: jacdac.StatusEvent) {
     }
 }
 
-// don't use any jacdac static - it isn't initialized here yet in sim (pxt bug)
-jacdac.onPlatformStart = function () {
-    jacdac.bus.on(jacdac.STATUS_EVENT, handleStatusEvent)
-    if (settings.exists(jacdac.JACDAC_PROXY_SETTING)) {
-        input.onButtonPressed(Button.A, () => control.reset())
-        input.onButtonPressed(Button.B, () => control.reset())
-    }
-}
-
 /**
- * force v2.
+ * Initialize Jacdac for micro:bit V2
  */
 //% parts=v2
-function useV2() {}
-useV2()
+function initPlatform() {
+    // don't use any jacdac static - it isn't initialized here yet in sim (pxt bug)
+    jacdac.onPlatformStart = function () {
+        jacdac.bus.on(jacdac.STATUS_EVENT, handleStatusEvent)
+        if (settings.exists(jacdac.JACDAC_PROXY_SETTING)) {
+            const reset = () => control.reset()
+            input.onButtonPressed(Button.A, reset)
+            input.onButtonPressed(Button.B, reset)
+        }
+    }
+}
+initPlatform()
