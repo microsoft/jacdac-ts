@@ -74,7 +74,7 @@ import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"
 import IFrameBridgeClient from "./iframebridgeclient"
 import { randomDeviceId } from "./random"
-import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
+import { ControlReg } from "../../jacdac-spec/dist/specconstants"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
