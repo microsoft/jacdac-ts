@@ -139,14 +139,9 @@ namespace menu {
 
     export function wait(ms: number, msg: string) {
         game.pushScene();
-        const dialog = new game.SplashDialog(screen.width, 35);
-        dialog.setText(msg);
-        dialog.cursor = img`.`
 
-        const s = sprites.create(dialog.image, -1);
-
-        game.onUpdate(() => {
-            dialog.update();
+        game.onPaint(() => {
+            screen.print(msg, 5, 50)
         })
 
         pause(ms)

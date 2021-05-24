@@ -5,7 +5,6 @@
     "dependencies": {
         "hw": "*",
         "device": "*",
-        "controller": "*",
         "net": "*",
         "jacdac": "github:microsoft/pxt-jacdac",
         "jacdac-accelerometer": "github:microsoft/pxt-jacdac/accelerometer",
