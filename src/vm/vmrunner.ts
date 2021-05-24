@@ -18,7 +18,7 @@ interface Environment {
     writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
-    sendCommand: (e: jsep.CallExpression) => void
+    sendCommand: (command: jsep.MemberExpression, values: any[]) => void
     refreshEnvironment: () => void
     unsubscribe: () => void
 }
@@ -49,7 +49,12 @@ class IT4CommandEvaluator {
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
-            this.env.sendCommand(this.gc.command)
+            const expr = new JDExprEvaluator(
+                e => this.env.lookup(e),
+                undefined
+            )
+            let values = this.gc.command.arguments.map(a => expr.eval(a))
+            this.env.sendCommand(this.gc.command.callee as jsep.MemberExpression, values)
             return
         }
         switch (this.inst) {

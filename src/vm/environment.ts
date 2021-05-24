@@ -59,7 +59,7 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public sendCommand(command: jsep.Identifier, args: jsep.Expression[]) {
+    public sendCommand(command: jsep.Identifier, values: any[]) {
         const commandName = command?.name
         const pkt = this.service.specification.packets.find(
             pkt => isCommand(pkt) && pkt.name === commandName
@@ -171,11 +171,11 @@ export class VMEnvironment extends JDEventSource {
         Object.values(this._envs).forEach(s => s?.refreshEnvironment())
     }
 
-    public sendCommand(e: jsep.CallExpression) {
-        let callee = e.callee as jsep.MemberExpression
-        const serviceEnv = this.getService(callee)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public sendCommand(e: jsep.MemberExpression, values: any[]) {
+        const serviceEnv = this.getService(e)
         if (serviceEnv) {
-            serviceEnv.sendCommand(callee.property as jsep.Identifier, e.arguments)
+            serviceEnv.sendCommand(e.property as jsep.Identifier, values)
         }
     }
 
