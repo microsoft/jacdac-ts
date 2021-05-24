@@ -133,7 +133,7 @@ export function parseITTTMarkdownToJSON(
             const [command, root] = ret
 
             if (currentHandler.commands.length === 0) {
-                if (command.id === "role") {
+                if (command?.id === "role") {
                     // TODO: check
                     let role = (root.arguments[0] as jsep.Identifier).name
                     let serviceShortName = (root
@@ -152,6 +152,7 @@ export function parseITTTMarkdownToJSON(
                         })
                     return
                 } else if (
+                    !command ||
                     command.id !== "awaitEvent" &&
                     command.id !== "awaitCondition"
                 ) {
@@ -161,7 +162,7 @@ export function parseITTTMarkdownToJSON(
                     return
                 }
             } else {
-                if (command.id === "role") {
+                if (command?.id === "role") {
                     error(`roles must be declared at beginning of handler`)
                 }
             }
