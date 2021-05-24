@@ -74,7 +74,7 @@ import { RoleManagerClient } from "./rolemanagerclient"
 import JDBridge from "./bridge"
 import IFrameBridgeClient from "./iframebridgeclient"
 import { randomDeviceId } from "./random"
-import { ControlReg } from "../../jacdac-spec/dist/specconstants"
+import { ControlReg, SRV_CONTROL } from "../../jacdac-spec/dist/specconstants"
 export interface BusOptions {
     deviceLostDelay?: number
     deviceDisconnectedDelay?: number
@@ -744,7 +744,8 @@ export class JDBus extends JDNode {
     }
 
     private sendResetIn() {
-        if (this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3) return
+        if (this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3)
+            return
 
         this._lastResetInTime = this.timestamp
         const rst = Packet.jdpacked<[number]>(
@@ -752,9 +753,7 @@ export class JDBus extends JDNode {
             "u32",
             [RESET_IN_TIME_US]
         )
-        rst.serviceIndex = JD_SERVICE_INDEX_CTRL
-        rst.deviceIdentifier = this.selfDeviceId
-        rst.sendCmdAsync(this.selfDevice)
+        rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
     }
 
     /**
