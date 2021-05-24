@@ -4,7 +4,7 @@ import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE } from "../jdom/constants"
+import { CHANGE, ERROR } from "../jdom/constants"
 
 export enum VMStatus {
     Ready = "ready",
@@ -18,6 +18,7 @@ interface Environment {
     writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
+    sendCommand: (command: jsep.MemberExpression, values: any[]) => void
     refreshEnvironment: () => void
     unsubscribe: () => void
 }
@@ -34,7 +35,7 @@ class IT4CommandEvaluator {
     }
 
     private get inst() {
-        return (this.gc.command.callee as jsep.Identifier).name
+        return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
     private checkExpression(e: jsep.Expression) {
@@ -43,9 +44,19 @@ class IT4CommandEvaluator {
     }
 
     public evaluate() {
-        // console.log(unparse(this.gc.command))
         this._status = VMStatus.Running
         const args = this.gc.command.arguments
+        if (this.gc.command.callee.type === "MemberExpression") {
+            // interpret as a service command (role.comand)
+            const expr = new JDExprEvaluator(
+                e => this.env.lookup(e),
+                undefined
+            )
+            let values = this.gc.command.arguments.map(a => expr.eval(a))
+            this.env.sendCommand(this.gc.command.callee as jsep.MemberExpression, values)
+            this._status = VMStatus.Completed
+            return
+        }
         switch (this.inst) {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
@@ -266,21 +277,25 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     run() {
-        if (!this._running) return
-        this._env.refreshEnvironment()
-        if (this._waitQueue.length > 0) {
-            const nextTime: IT4HandlerRunner[] = []
-            this._waitQueue.forEach(h => {
-                h.step()
-                if (h.status !== VMStatus.Stopped) {
-                    if (h.status === VMStatus.Completed) h.reset()
-                    nextTime.push(h)
-                }
-            })
-            this._waitQueue = nextTime
-            this._env.consumeEvent()
-        } else {
-            this.emit(CHANGE)
+        try {
+            if (!this._running) return
+            this._env.refreshEnvironment()
+            if (this._waitQueue.length > 0) {
+                const nextTime: IT4HandlerRunner[] = []
+                this._waitQueue.forEach(h => {
+                    h.step()
+                    if (h.status !== VMStatus.Stopped) {
+                        if (h.status === VMStatus.Completed) h.reset()
+                        nextTime.push(h)
+                    }
+                })
+                this._waitQueue = nextTime
+                this._env.consumeEvent()
+            } else {
+                this.emit(CHANGE)
+            }
+        } catch (e) {
+            this.emit(ERROR, e)
         }
     }
 }
