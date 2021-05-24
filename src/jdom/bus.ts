@@ -704,8 +704,8 @@ export class JDBus extends JDNode {
                     isAnnounce = true
                     pkt.device.processAnnouncement(pkt)
                 } else if (
-                    pkt.serviceCommand ==
-                    (CMD_SET_REG | ControlReg.ResetIn)
+                    pkt.isMultiCommand &&
+                    pkt.serviceCommand == (CMD_SET_REG | ControlReg.ResetIn)
                 ) {
                     // someone else is doing reset in
                     this._lastResetInTime = this.timestamp
@@ -744,7 +744,12 @@ export class JDBus extends JDNode {
     }
 
     private sendResetIn() {
-        if (this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3)
+        // don't send reset if already received
+        // or no devices
+        if (
+            this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3 ||
+            !this._devices?.length
+        )
             return
 
         this._lastResetInTime = this.timestamp
