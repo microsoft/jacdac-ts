@@ -4,7 +4,7 @@ import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE } from "../jdom/constants"
+import { CHANGE, ERROR } from "../jdom/constants"
 
 export enum VMStatus {
     Ready = "ready",
@@ -295,7 +295,7 @@ export class IT4ProgramRunner extends JDEventSource {
                 this.emit(CHANGE)
             }
         } catch (e) {
-            console.warn("vmrunner.ts: " + e.message)
+            this.emit(ERROR, e)
         }
     }
 }
