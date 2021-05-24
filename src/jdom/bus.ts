@@ -748,7 +748,7 @@ export class JDBus extends JDNode {
         // or no devices
         if (
             this._lastResetInTime - this.timestamp > RESET_IN_TIME_US / 3 ||
-            !this._devices?.length
+            !this.devices({ ignoreSelf: true }).length
         )
             return
 
