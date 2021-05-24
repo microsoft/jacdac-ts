@@ -6,7 +6,7 @@ import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
-import { runInThisContext } from "vm"
+import { jdpack, PackedValues } from "../jdom/pack"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -23,6 +23,10 @@ export async function refresh_env(registers: SMap<JDRegister>) {
 // TODO: you want [ev] to be PackedValues and handle the arrays yourself.
 async function writeReg(reg: JDRegister, fmt: string, ev: any) {
     await reg.sendSetPackedAsync(fmt, [ev], true)
+}
+
+async function sendCommand(service: JDService, pkt: jdspec.PacketInfo, values: PackedValues) {
+    await service.sendCmdAsync(pkt.identifier, jdpack(pkt.packFormat, values))
 }
 
 export class VMServiceEnvironment extends JDServiceClient {
@@ -59,16 +63,13 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public sendCommand(command: jsep.Identifier, values: any[]) {
+    public sendCommand(command: jsep.Identifier, values: PackedValues) {
         const commandName = command?.name
         const pkt = this.service.specification.packets.find(
-            pkt => isCommand(pkt) && pkt.name === commandName
+            p => isCommand(p) && p.name === commandName
         )
-        if (pkt) {
-            let fields = pkt.fields
-            // TODO: pack up the arguments and send
-            // this.service.sendCmdAsync
-        }
+        if (pkt)
+            sendCommand(this.service, pkt, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -172,7 +173,7 @@ export class VMEnvironment extends JDEventSource {
     }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public sendCommand(e: jsep.MemberExpression, values: any[]) {
+    public sendCommand(e: jsep.MemberExpression, values: PackedValues) {
         const serviceEnv = this.getService(e)
         if (serviceEnv) {
             serviceEnv.sendCommand(e.property as jsep.Identifier, values)

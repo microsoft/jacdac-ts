@@ -1,7 +1,7 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
 import { MyRoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
-import { CallEvaluator, JDExprEvaluator } from "./expr"
+import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE } from "../jdom/constants"
