@@ -7,10 +7,10 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE } from "../jdom/constants"
 
 export enum VMStatus {
-    Ready,
-    Running,
-    Completed,
-    Stopped,
+    Ready = "ready",
+    Running = "running",
+    Completed = "completed",
+    Stopped = "stopped",
 }
 
 interface Environment {
