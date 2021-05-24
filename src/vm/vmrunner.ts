@@ -137,7 +137,7 @@ class IT4CommandRunner {
 class IT4HandlerRunner {
     private _commandIndex: number
     private _currentCommand: IT4CommandRunner
-    private stopped: boolean = false
+    private stopped = false
 
     constructor(
         public readonly id: number,
@@ -211,13 +211,13 @@ export class IT4ProgramRunner extends JDEventSource {
             this._env.serviceChanged(role, service, added)
             if (added) {
                 this.program.registers.forEach(r => {
-                    let [root, reg] = r.split(".")
+                    const [root, reg] = r.split(".")
                     if (root === role) {
                         this._env.registerRegister(role, reg)
                     }
                 })
                 this.program.events.forEach(e => {
-                    let [root, ev] = e.split(".")
+                    const [root, ev] = e.split(".")
                     if (root === role) {
                         this._env.registerEvent(role, ev)
                     }
@@ -263,7 +263,7 @@ export class IT4ProgramRunner extends JDEventSource {
         if (!this._running) return
         this._env.refreshEnvironment()
         if (this._waitQueue.length > 0) {
-            let nextTime: IT4HandlerRunner[] = []
+            const nextTime: IT4HandlerRunner[] = []
             this._waitQueue.forEach(h => {
                 h.step()
                 if (h.status !== VMStatus.Stopped) {
