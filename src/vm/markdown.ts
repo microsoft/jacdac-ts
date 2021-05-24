@@ -1,6 +1,6 @@
 import jsep from "jsep"
 
-import { SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
+import { SpecAwareMarkDownParser, SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
 import { IT4Program, IT4Handler, IT4Functions } from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
 import { SystemReg } from "../jdom/constants"
@@ -34,6 +34,7 @@ export function parseITTTMarkdownToJSON(
     let lineNo = 0
     let currentHandler: IT4Handler = null
     let handlerHeading = ""
+
     const symbolResolver = new SpecSymbolResolver(
         undefined,
         (role: string) => {
@@ -51,6 +52,11 @@ export function parseITTTMarkdownToJSON(
                 return service
             }
         },
+        e => error(e)
+    )
+
+    const parser = new SpecAwareMarkDownParser(
+        symbolResolver,
         supportedExpressions,
         jsep,
         e => error(e)
@@ -121,13 +127,13 @@ export function parseITTTMarkdownToJSON(
             handlerHeading = ""
         }
 
-        const ret = symbolResolver.processLine(expanded, IT4Functions)
+        const ret = parser.processLine(expanded, IT4Functions)
 
         if (ret) {
             const [command, root] = ret
 
             if (currentHandler.commands.length === 0) {
-                if (command.id === "role") {
+                if (command?.id === "role") {
                     // TODO: check
                     let role = (root.arguments[0] as jsep.Identifier).name
                     let serviceShortName = (root
@@ -146,6 +152,7 @@ export function parseITTTMarkdownToJSON(
                         })
                     return
                 } else if (
+                    !command ||
                     command.id !== "awaitEvent" &&
                     command.id !== "awaitCondition"
                 ) {
@@ -155,7 +162,7 @@ export function parseITTTMarkdownToJSON(
                     return
                 }
             } else {
-                if (command.id === "role") {
+                if (command?.id === "role") {
                     error(`roles must be declared at beginning of handler`)
                 }
             }
