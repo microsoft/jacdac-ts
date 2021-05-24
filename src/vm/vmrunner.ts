@@ -44,7 +44,6 @@ class IT4CommandEvaluator {
     }
 
     public evaluate() {
-        // console.log(unparse(this.gc.command))
         this._status = VMStatus.Running
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
@@ -55,6 +54,7 @@ class IT4CommandEvaluator {
             )
             let values = this.gc.command.arguments.map(a => expr.eval(a))
             this.env.sendCommand(this.gc.command.callee as jsep.MemberExpression, values)
+            this._status = VMStatus.Completed
             return
         }
         switch (this.inst) {

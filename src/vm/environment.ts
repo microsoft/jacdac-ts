@@ -26,7 +26,8 @@ async function writeReg(reg: JDRegister, fmt: string, ev: any) {
 }
 
 async function sendCommand(service: JDService, pkt: jdspec.PacketInfo, values: PackedValues) {
-    await service.sendCmdAsync(pkt.identifier, jdpack(pkt.packFormat, values))
+    // console.log(pkt, values)
+    await service.sendCmdAsync(pkt.identifier, jdpack(pkt.packFormat, values), true)
 }
 
 export class VMServiceEnvironment extends JDServiceClient {
@@ -172,9 +173,10 @@ export class VMEnvironment extends JDEventSource {
         Object.values(this._envs).forEach(s => s?.refreshEnvironment())
     }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public sendCommand(e: jsep.MemberExpression, values: PackedValues) {
         const serviceEnv = this.getService(e)
+        console.log(serviceEnv)
         if (serviceEnv) {
             serviceEnv.sendCommand(e.property as jsep.Identifier, values)
         }
