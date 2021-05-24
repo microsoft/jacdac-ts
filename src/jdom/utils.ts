@@ -352,7 +352,9 @@ export function bufferConcatMany(bufs: Uint8Array[]) {
     return r
 }
 
-export function arrayConcatMany<T>(arrs: T[][]) {
+export function arrayConcatMany<T>(arrs: T[][]): T[] {
+    if (!arrs) return undefined
+
     let sz = 0
     for (const buf of arrs) sz += buf.length
     const r: T[] = new Array(sz)
