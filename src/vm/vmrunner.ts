@@ -173,7 +173,9 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
-        if (this.stopped) return
+        // eight stopped or empty
+        if (this.stopped || !this.handler.commands.length) return
+
         if (this._commandIndex === undefined) {
             this._commandIndex = 0
             this._currentCommand = new IT4CommandRunner(
@@ -244,6 +246,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     cancel() {
+        if (!this._running) return // nothing to cancel
+
         this._running = false
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
@@ -251,6 +255,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     start() {
+        if (this._running) return // already running
+
         this.program.roles.forEach(role => {
             this._rm.addRoleService(role.role, role.serviceShortName)
         })
