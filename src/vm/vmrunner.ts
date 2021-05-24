@@ -277,21 +277,25 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     run() {
-        if (!this._running) return
-        this._env.refreshEnvironment()
-        if (this._waitQueue.length > 0) {
-            const nextTime: IT4HandlerRunner[] = []
-            this._waitQueue.forEach(h => {
-                h.step()
-                if (h.status !== VMStatus.Stopped) {
-                    if (h.status === VMStatus.Completed) h.reset()
-                    nextTime.push(h)
-                }
-            })
-            this._waitQueue = nextTime
-            this._env.consumeEvent()
-        } else {
-            this.emit(CHANGE)
+        try {
+            if (!this._running) return
+            this._env.refreshEnvironment()
+            if (this._waitQueue.length > 0) {
+                const nextTime: IT4HandlerRunner[] = []
+                this._waitQueue.forEach(h => {
+                    h.step()
+                    if (h.status !== VMStatus.Stopped) {
+                        if (h.status === VMStatus.Completed) h.reset()
+                        nextTime.push(h)
+                    }
+                })
+                this._waitQueue = nextTime
+                this._env.consumeEvent()
+            } else {
+                this.emit(CHANGE)
+            }
+        } catch (e) {
+            console.warn("vmrunner.ts: " + e.message)
         }
     }
 }
