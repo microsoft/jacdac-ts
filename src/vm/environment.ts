@@ -1,4 +1,4 @@
-import { isEvent, isRegister } from "../jdom/spec"
+import { isEvent, isRegister, isCommand } from "../jdom/spec"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
@@ -6,6 +6,7 @@ import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
+import { runInThisContext } from "vm"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -55,6 +56,18 @@ export class VMServiceEnvironment extends JDServiceClient {
                 this._events[eventName] = event
                 this.mount(event.subscribe(EVENT, handler))
             }
+        }
+    }
+
+    public sendCommand(command: jsep.Identifier, args: jsep.Expression[]) {
+        const commandName = command?.name
+        const pkt = this.service.specification.packets.find(
+            pkt => isCommand(pkt) && pkt.name === commandName
+        )
+        if (pkt) {
+            let fields = pkt.fields
+            // TODO: pack up the arguments and send
+            // this.service.sendCmdAsync
         }
     }
 
@@ -156,6 +169,14 @@ export class VMEnvironment extends JDEventSource {
 
     public refreshEnvironment() {
         Object.values(this._envs).forEach(s => s?.refreshEnvironment())
+    }
+
+    public sendCommand(e: jsep.CallExpression) {
+        let callee = e.callee as jsep.MemberExpression
+        const serviceEnv = this.getService(callee)
+        if (serviceEnv) {
+            serviceEnv.sendCommand(callee.property as jsep.Identifier, e.arguments)
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

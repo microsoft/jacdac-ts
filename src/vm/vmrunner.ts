@@ -1,7 +1,7 @@
 import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
 import { MyRoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
-import { JDExprEvaluator } from "./expr"
+import { CallEvaluator, JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE } from "../jdom/constants"
@@ -18,6 +18,7 @@ interface Environment {
     writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
+    sendCommand: (e: jsep.CallExpression) => void
     refreshEnvironment: () => void
     unsubscribe: () => void
 }
@@ -34,7 +35,7 @@ class IT4CommandEvaluator {
     }
 
     private get inst() {
-        return (this.gc.command.callee as jsep.Identifier).name
+        return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
     private checkExpression(e: jsep.Expression) {
@@ -46,6 +47,11 @@ class IT4CommandEvaluator {
         // console.log(unparse(this.gc.command))
         this._status = VMStatus.Running
         const args = this.gc.command.arguments
+        if (this.gc.command.callee.type === "MemberExpression") {
+            // interpret as a service command (role.comand)
+            this.env.sendCommand(this.gc.command)
+            return
+        }
         switch (this.inst) {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
