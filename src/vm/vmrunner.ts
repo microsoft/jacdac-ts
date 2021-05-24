@@ -7,10 +7,10 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE } from "../jdom/constants"
 
 export enum VMStatus {
-    Ready,
-    Running,
-    Completed,
-    Stopped,
+    Ready = "ready",
+    Running = "running",
+    Completed = "completed",
+    Stopped = "stopped",
 }
 
 interface Environment {
@@ -148,7 +148,7 @@ class IT4CommandRunner {
 class IT4HandlerRunner {
     private _commandIndex: number
     private _currentCommand: IT4CommandRunner
-    private stopped: boolean = false
+    private stopped = false
 
     constructor(
         public readonly id: number,
@@ -184,7 +184,9 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
-        if (this.stopped) return
+        // eight stopped or empty
+        if (this.stopped || !this.handler.commands.length) return
+
         if (this._commandIndex === undefined) {
             this._commandIndex = 0
             this._currentCommand = new IT4CommandRunner(
@@ -222,13 +224,13 @@ export class IT4ProgramRunner extends JDEventSource {
             this._env.serviceChanged(role, service, added)
             if (added) {
                 this.program.registers.forEach(r => {
-                    let [root, reg] = r.split(".")
+                    const [root, reg] = r.split(".")
                     if (root === role) {
                         this._env.registerRegister(role, reg)
                     }
                 })
                 this.program.events.forEach(e => {
-                    let [root, ev] = e.split(".")
+                    const [root, ev] = e.split(".")
                     if (root === role) {
                         this._env.registerEvent(role, ev)
                     }
@@ -255,6 +257,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     cancel() {
+        if (!this._running) return // nothing to cancel
+
         this._running = false
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
@@ -262,6 +266,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     start() {
+        if (this._running) return // already running
+
         this.program.roles.forEach(role => {
             this._rm.addRoleService(role.role, role.serviceShortName)
         })
@@ -274,7 +280,7 @@ export class IT4ProgramRunner extends JDEventSource {
         if (!this._running) return
         this._env.refreshEnvironment()
         if (this._waitQueue.length > 0) {
-            let nextTime: IT4HandlerRunner[] = []
+            const nextTime: IT4HandlerRunner[] = []
             this._waitQueue.forEach(h => {
                 h.step()
                 if (h.status !== VMStatus.Stopped) {
