@@ -70,16 +70,8 @@ export default class LEDServer extends JDServiceServer {
         if (!this._animation) return // nothing to do
 
         // compute new color
-        const {
-            red,
-            green,
-            blue,
-            toRed,
-            toGreen,
-            toBlue,
-            speed,
-            start,
-        } = this._animation
+        const { red, green, blue, toRed, toGreen, toBlue, speed, start } =
+            this._animation
         const now = this.device.bus.timestamp
         const elapsed = now - start
         // see control.md
@@ -99,9 +91,8 @@ export default class LEDServer extends JDServiceServer {
     }
 
     private handleAnimate(pkt: Packet) {
-        const [toRed, toGreen, toBlue, speed] = pkt.jdunpack<
-            [number, number, number, number]
-        >("u8 u8 u8 u8")
+        const [toRed, toGreen, toBlue, speed] =
+            pkt.jdunpack<[number, number, number, number]>("u8 u8 u8 u8")
 
         if (speed == 0) {
             this.color.setValues([toRed, toGreen, toBlue])
