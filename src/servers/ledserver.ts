@@ -99,7 +99,6 @@ export default class LEDServer extends JDServiceServer {
             this._animation = undefined
         } else {
             const [red, green, blue] = this.color.values()
-
             this._animation = {
                 red,
                 green,
