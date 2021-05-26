@@ -102,8 +102,9 @@ class IT4CommandEvaluator {
                 const regValue = this.evalExpression(args[0])
                 if (this.inst === "awaitRegister" && regValue !== this._regSaved ||
                     this.inst === "awaitChange" &&
-                        (regValue >= this._regSaved + this._changeSaved ||
-                         regValue <= this._regSaved - this._changeSaved)) {
+                        (this._changeSaved === 0 && regValue !== this._regSaved ||
+                         this._changeSaved < 0 && regValue <= this._regSaved + this._changeSaved ||
+                         this._changeSaved > 0 && regValue >= this._regSaved + this._changeSaved)) {
                     this._status = VMStatus.Completed
                 }
                 break
