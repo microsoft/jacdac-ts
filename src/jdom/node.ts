@@ -43,6 +43,15 @@ export abstract class JDNode extends JDEventSource {
      */
     abstract get children(): JDNode[]
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    emitPropagated(event: string, ...args: any[]) {
+        let current = this as JDNode
+        while (current) {
+            current.emit(event, args)
+            current = current.parent
+        }
+    }
+
     toString() {
         return this.friendlyName
     }
