@@ -12,6 +12,8 @@ Expressions can be against service registers (as in the test case) and program s
  
 */
 
+import { exception } from "console"
+
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -206,12 +208,17 @@ export class JDExprEvaluator {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
+                if (val === undefined)
+                    throw "undefined-register"
                 this.exprStack.push(val)
                 return
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
-                this.exprStack.push(this.env(id.name))
+                const val = this.env(id.name)
+                if (val === undefined)
+                    throw "undefined-register"
+                this.exprStack.push(val)
                 return
             }
             case "Literal": {
