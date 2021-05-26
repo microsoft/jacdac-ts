@@ -15,12 +15,12 @@ export enum VMStatus {
 }
 
 interface Environment {
+    writeRegister: (e: jsep.MemberExpression | string, v: any) => Promise<boolean>
+    sendCommand: (command: jsep.MemberExpression, values: any[]) => Promise<void>
+    refreshEnvironment: () => Promise<void>
     lookup: (e: jsep.MemberExpression | string) => any
-    writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
-    sendCommand: (command: jsep.MemberExpression, values: any[]) => void
-    refreshEnvironment: () => void
     unsubscribe: () => void
 }
 
@@ -62,7 +62,7 @@ class IT4CommandEvaluator {
         }
     }
 
-    public evaluate() {
+    public async evaluate() {
         this._status = VMStatus.Running
         if (!this._started) {
             this.start()
@@ -74,7 +74,7 @@ class IT4CommandEvaluator {
             // interpret as a service command (role.comand)
             const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
             const values = this.gc.command.arguments.map(a => expr.eval(a))
-            this.env.sendCommand(
+            await this.env.sendCommand(
                 this.gc.command.callee as jsep.MemberExpression,
                 values
             )
@@ -157,10 +157,10 @@ class IT4CommandRunner {
         return this.status === VMStatus.Running
     }
 
-    step() {
+    async step() {
         if (this.isWaiting) {
             try {
-                this._eval.evaluate()
+                await this._eval.evaluate()
                 this.finish(this._eval.status)
             } catch (e) {
                 // we will try again
@@ -220,7 +220,7 @@ class IT4HandlerRunner {
     }
 
     // run-to-completion semantics
-    step() {
+    async step() {
         // handler stopped or empty
         if (this.stopped || !this.handler.commands.length) return
 
@@ -231,7 +231,7 @@ class IT4HandlerRunner {
                 this.handler.commands[this._commandIndex]
             )
         }
-        this._currentCommand.step()
+        await this._currentCommand.step()
         this.post_process()
         while (
             this._currentCommand.status === VMStatus.Completed &&
@@ -242,7 +242,7 @@ class IT4HandlerRunner {
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
-            this._currentCommand.step()
+            await this._currentCommand.step()
             this.post_process()
         }
     }
@@ -314,7 +314,7 @@ export class IT4ProgramRunner extends JDEventSource {
         this.emit(CHANGE)
     }
 
-    start() {
+    async start() {
         if (this._running) return // already running
         try {
             this.program.roles.forEach(role => {
@@ -322,20 +322,20 @@ export class IT4ProgramRunner extends JDEventSource {
             })
             this._running = true
             this.emit(CHANGE)
-            this.run()
+            await this.run()
         } catch (e) {
             this.emit(ERROR, e)
         }
     }
 
-    run() {
+    async run() {
         if (!this._running) return
         try {
-            this._env.refreshEnvironment()
+            await this._env.refreshEnvironment()
             if (this._waitQueue.length > 0) {
                 const nextTime: IT4HandlerRunner[] = []
-                this._waitQueue.forEach(h => {
-                    h.step()
+                this._waitQueue.forEach(async h => {
+                    await h.step()
                     if (h.status !== VMStatus.Stopped) {
                         if (h.status === VMStatus.Completed) h.reset()
                         nextTime.push(h)

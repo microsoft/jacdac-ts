@@ -82,10 +82,10 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public writeRegister(regName: string, ev: any) {
+    public async writeRegister(regName: string, ev: any) {
         const jdreg = this._registers[regName]
         if (jdreg) {
-            writeReg(jdreg, jdreg.specification?.packFormat, ev)
+            await writeReg(jdreg, jdreg.specification?.packFormat, ev)
             return true
         }
         return false
@@ -176,7 +176,9 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public async refreshEnvironment() {
-        Object.values(this._envs).forEach(s => await s?.refreshEnvironment())
+        Object.values(this._envs).forEach(async s => {
+            await s?.refreshEnvironment()
+        })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -206,12 +208,12 @@ export class VMEnvironment extends JDEventSource {
         return undefined
     }
 
-    public writeRegister(e: jsep.MemberExpression | string, ev: any) {
+    public async writeRegister(e: jsep.MemberExpression | string, ev: any) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            return serviceEnv.writeRegister(reg, ev)
+            return await serviceEnv.writeRegister(reg, ev)
         }
         return false
     }
