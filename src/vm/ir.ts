@@ -78,8 +78,9 @@ export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
 
 export type JDIT4Functions =
     | "awaitEvent"
-    | "awaitCondition"
     | "awaitRegister"
+    | "awaitChange"
+    | "awaitCondition"
     | "wait"
     | "writeRegister"
     | "writeLocal"
@@ -90,7 +91,13 @@ export const IT4Functions: jdtest.TestFunctionDescription[] = [
     {
         id: "awaitRegister",
         args: ["register"],
-        prompt: `wait on register {1} to change`,
+        prompt: `wait on register {1} to change value`,
+        context: "command",
+    },
+    {
+        id: "awaitChange",
+        args: ["register", "number"],
+        prompt: `wait for register {1} to change by {2}`,
         context: "command",
     },
     {
