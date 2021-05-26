@@ -643,7 +643,7 @@ export class JDServiceTestRunner extends JDServiceClient {
     }
 
     public refreshEnvironment() {
-        this._env.refreshEnvironment();
+        this._env.refreshRegistersAsync();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -653,7 +653,7 @@ export class JDServiceTestRunner extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public writeRegister(regName: string, val: any) {
-        return this._env.writeRegister(regName, val)
+        return this._env.writeRegisterAsync(regName, val)
     }
 
     private get testIndex() {

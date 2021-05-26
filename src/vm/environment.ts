@@ -8,7 +8,7 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 
-export async function refresh_env(registers: SMap<JDRegister>) {
+export async function refreshRegistersAsync(registers: SMap<JDRegister>) {
     for (const k in registers) {
         const register = registers[k]
         let retry = 0
@@ -18,24 +18,6 @@ export async function refresh_env(registers: SMap<JDRegister>) {
             val = register.unpackedValue?.[0]
         } while (val === undefined && retry++ < 2)
     }
-}
-
-// TODO: you want [ev] to be PackedValues and handle the arrays yourself.
-async function writeReg(reg: JDRegister, fmt: string, ev: any) {
-    await reg.sendSetPackedAsync(fmt, [ev], true)
-}
-
-async function sendCommand(
-    service: JDService,
-    pkt: jdspec.PacketInfo,
-    values: PackedValues
-) {
-    // console.log(pkt, values)
-    await service.sendCmdAsync(
-        pkt.identifier,
-        jdpack(pkt.packFormat, values),
-        true
-    )
 }
 
 export class VMServiceEnvironment extends JDServiceClient {
@@ -72,23 +54,23 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public async sendCommand(command: jsep.Identifier, values: PackedValues) {
+    public async sendCommandAsync(command: jsep.Identifier, values: PackedValues) {
         const commandName = command?.name
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
         )
         if (pkt) 
-            await sendCommand(this.service, pkt, values)
+            await this.service.sendCmdAsync(
+                pkt.identifier,
+                jdpack(pkt.packFormat, values),
+                true
+            )
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async writeRegister(regName: string, ev: any) {
+    public async writeRegisterAsync(regName: string, ev: any) {
         const jdreg = this._registers[regName]
-        if (jdreg) {
-            await writeReg(jdreg, jdreg.specification?.packFormat, ev)
-            return true
-        }
-        return false
+        await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,8 +102,8 @@ export class VMServiceEnvironment extends JDServiceClient {
         return undefined
     }
 
-    public async refreshEnvironment() {
-        await refresh_env(this._registers)
+    public async refreshRegistersAsync() {
+        await refreshRegistersAsync(this._registers)
     }
 }
 
@@ -175,16 +157,16 @@ export class VMEnvironment extends JDEventSource {
         return this._envs[root]
     }
 
-    public async refreshEnvironment() {
+    public async refreshRegistersAsync() {
         Object.values(this._envs).forEach(async s => {
-            await s?.refreshEnvironment()
+            await s?.refreshRegistersAsync()
         })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async sendCommand(e: jsep.MemberExpression, values: PackedValues) {
+    public async sendCommandAsync(e: jsep.MemberExpression, values: PackedValues) {
         const serviceEnv = this.getService(e)
-        await serviceEnv?.sendCommand(e.property as jsep.Identifier, values)
+        await serviceEnv?.sendCommandAsync(e.property as jsep.Identifier, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -208,14 +190,13 @@ export class VMEnvironment extends JDEventSource {
         return undefined
     }
 
-    public async writeRegister(e: jsep.MemberExpression | string, ev: any) {
+    public async writeRegisterAsync(e: jsep.MemberExpression | string, ev: any) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            return await serviceEnv.writeRegister(reg, ev)
+            await serviceEnv.writeRegisterAsync(reg, ev)
         }
-        return false
     }
 
     public writeLocal(e: jsep.MemberExpression | string, ev: any) {

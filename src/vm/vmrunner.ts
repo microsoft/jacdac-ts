@@ -15,9 +15,9 @@ export enum VMStatus {
 }
 
 interface Environment {
-    writeRegister: (e: jsep.MemberExpression | string, v: any) => Promise<boolean>
-    sendCommand: (command: jsep.MemberExpression, values: any[]) => Promise<void>
-    refreshEnvironment: () => Promise<void>
+    writeRegisterAsync: (e: jsep.MemberExpression | string, v: any) => Promise<void>
+    sendCommandAsync: (command: jsep.MemberExpression, values: any[]) => Promise<void>
+    refreshRegistersAsync: () => Promise<void>
     lookup: (e: jsep.MemberExpression | string) => any
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
@@ -74,7 +74,7 @@ class IT4CommandEvaluator {
             // interpret as a service command (role.comand)
             const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
             const values = this.gc.command.arguments.map(a => expr.eval(a))
-            await this.env.sendCommand(
+            await this.env.sendCommandAsync(
                 this.gc.command.callee as jsep.MemberExpression,
                 values
             )
@@ -120,7 +120,7 @@ class IT4CommandEvaluator {
                 const reg = args[0] as jsep.MemberExpression
                 if (
                     (this.inst === "writeRegister" &&
-                        this.env.writeRegister(reg, ev)) ||
+                        this.env.writeRegisterAsync(reg, ev)) ||
                     (this.inst === "writeLocal" && this.env.writeLocal(reg, ev))
                 ) {
                     this._status = VMStatus.Completed
@@ -331,7 +331,7 @@ export class IT4ProgramRunner extends JDEventSource {
     async run() {
         if (!this._running) return
         try {
-            await this._env.refreshEnvironment()
+            await this._env.refreshRegistersAsync()
             if (this._waitQueue.length > 0) {
                 const nextTime: IT4HandlerRunner[] = []
                 this._waitQueue.forEach(async h => {
