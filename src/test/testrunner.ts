@@ -385,7 +385,7 @@ export interface JDCommandOutput {
 export class JDTestCommandRunner extends JDEventSource {
     private _status = JDTestCommandStatus.NotReady
     private _output: JDCommandOutput = { message: "", progress: "" }
-    private _commmandEvaluator: JDCommandEvaluator = null
+    private _commandEvaluator: JDCommandEvaluator = null
 
     constructor(
         private readonly testRunner: JDTestRunner,
@@ -437,33 +437,48 @@ export class JDTestCommandRunner extends JDEventSource {
     reset() {
         this.status = JDTestCommandStatus.NotReady
         this.output = { message: "", progress: "" }
-        this._commmandEvaluator = null
+        this._commandEvaluator = null
     }
 
     start() {
         this.status = JDTestCommandStatus.Active
-        this._commmandEvaluator = new JDCommandEvaluator(
-            this.testRunner,
-            this.command
-        )
-        this._commmandEvaluator.start()
+        this._commandEvaluator = undefined
         this.envChange()
     }
 
     envChange() {
         if (this.isActive) {
-            this._commmandEvaluator.evaluate()
-            const newOutput: JDCommandOutput = {
-                message: this._commmandEvaluator.prompt,
-                progress: this._commmandEvaluator.progress,
+            if (!this._commandEvaluator) {
+                this._commandEvaluator = new JDCommandEvaluator(
+                    this.testRunner,
+                    this.command
+                )
+                try {
+                    this._commandEvaluator.start()
+                } catch (e) {
+                    // we will try again on next environment change
+                    this._commandEvaluator = undefined
+                }
+            } 
+            if (this._commandEvaluator) {
+                try {
+                    this._commandEvaluator.evaluate()
+                    const newOutput: JDCommandOutput = {
+                        message: this._commandEvaluator.prompt,
+                        progress: this._commandEvaluator.progress,
+                    }
+                    this.output = newOutput
+                    if (
+                        this._commandEvaluator.status ===
+                        JDTestCommandStatus.RequiresUserInput
+                    )
+                        this.status = JDTestCommandStatus.RequiresUserInput
+                    else 
+                        this.finish(this._commandEvaluator.status)
+                } catch (e) {
+                    // show still be in the active state
+                }
             }
-            this.output = newOutput
-            if (
-                this._commmandEvaluator.status ===
-                JDTestCommandStatus.RequiresUserInput
-            )
-                this.status = JDTestCommandStatus.RequiresUserInput
-            else this.finish(this._commmandEvaluator.status)
         }
     }
 

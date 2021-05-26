@@ -26,6 +26,9 @@ interface Environment {
 
 class IT4CommandEvaluator {
     private _status: VMStatus
+    private _regSaved: number = undefined
+    private _changeSaved: number = undefined
+    private _started = false
     constructor(
         private readonly env: Environment,
         private readonly gc: IT4GuardedCommand
@@ -39,18 +42,38 @@ class IT4CommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
-    private checkExpression(e: jsep.Expression) {
+    private evalExpression(e: jsep.Expression) {
         const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
-        return expr.eval(e) ? true : false
+        return expr.eval(e)
+    }
+
+    private checkExpression(e: jsep.Expression) {
+        return this.evalExpression(e) ? true : false
+    }
+
+    private start() {
+        if (this.gc.command.callee.type !== "MemberExpression" &&
+            (this.inst === "awaitRegister" || this.inst === "awaitChange")) {
+                // need to capture register value for awaitChange/awaitRegister
+                const args = this.gc.command.arguments
+                this._regSaved = this.evalExpression(args[0])
+                if (this.inst === "awaitChange")
+                    this._changeSaved = this.evalExpression(args[1])
+        }
     }
 
     public evaluate() {
         this._status = VMStatus.Running
+        if (!this._started) {
+            this.start()
+            this._started = true
+            return
+        }
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
             const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
-            let values = this.gc.command.arguments.map(a => expr.eval(a))
+            const values = this.gc.command.arguments.map(a => expr.eval(a))
             this.env.sendCommand(
                 this.gc.command.callee as jsep.MemberExpression,
                 values
@@ -73,6 +96,18 @@ class IT4CommandEvaluator {
                     ? VMStatus.Completed
                     : VMStatus.Running
                 break
+            }
+            case "awaitChange":
+            case "awaitRegister": {  
+                const regValue = this.evalExpression(args[0])
+                if (this.inst === "awaitRegister" && regValue !== this._regSaved ||
+                    this.inst === "awaitChange" &&
+                        (regValue >= this._regSaved + this._changeSaved ||
+                         regValue <= this._regSaved - this._changeSaved)) {
+                    this._status = VMStatus.Completed
+                }
+                break
+
             }
             case "writeRegister":
             case "writeLocal": {
@@ -121,14 +156,14 @@ class IT4CommandRunner {
         return this.status === VMStatus.Running
     }
 
-    reset() {
-        this.status = VMStatus.Running
-    }
-
     step() {
         if (this.isWaiting) {
-            this._eval.evaluate()
-            this.finish(this._eval.status)
+            try {
+                this._eval.evaluate()
+                this.finish(this._eval.status)
+            } catch (e) {
+                // we will try again
+            }
         }
     }
 
@@ -185,7 +220,7 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
-        // eight stopped or empty
+        // handler stopped or empty
         if (this.stopped || !this.handler.commands.length) return
 
         if (this._commandIndex === undefined) {
@@ -221,34 +256,42 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
-        const [regs, events] = checkProgram(program)
-        if (program.errors.length > 0) {
-            console.debug(program.errors)
-        }
-        this._rm = new MyRoleManager(bus, (role, service, added) => {
-            this._env.serviceChanged(role, service, added)
-            if (added) {
-                this.program.handlers.forEach(h => {
-                    regs.forEach(r => {
-                        if (r.role === role) {
-                            this._env.registerRegister(role, r.register)
-                        }
-                    })
-                    events.forEach(e => {
-                        if (e.role === role) {
-                            this._env.registerEvent(role, e.event)
-                        }
-                    })
-                })
+        try {
+            const [regs, events] = checkProgram(program)
+            if (program.errors.length > 0) {
+                console.debug(program.errors)
             }
-        })
-        this._env = new VMEnvironment(() => {
-            this.run()
-        })
-        this._handlers = program.handlers.map(
-            (h, index) => new IT4HandlerRunner(index, this._env, h)
-        )
-        this._waitQueue = this._handlers.slice(0)
+            this._rm = new MyRoleManager(bus, (role, service, added) => {
+                try {
+                    this._env.serviceChanged(role, service, added)
+                    if (added) {
+                        this.program.handlers.forEach(h => {
+                            regs.forEach(r => {
+                                if (r.role === role) {
+                                    this._env.registerRegister(role, r.register)
+                                }
+                            })
+                            events.forEach(e => {
+                                if (e.role === role) {
+                                    this._env.registerEvent(role, e.event)
+                                }
+                            })
+                        })
+                    }
+                } catch (e) {
+                    this.emit(ERROR, e)
+                }
+            })
+            this._env = new VMEnvironment(() => {
+                this.run()
+            })
+            this._handlers = program.handlers.map(
+                (h, index) => new IT4HandlerRunner(index, this._env, h)
+            )
+            this._waitQueue = this._handlers.slice(0)
+        } catch (e) {
+            this.emit(ERROR, e)
+        }
     }
 
     get status() {
@@ -272,18 +315,21 @@ export class IT4ProgramRunner extends JDEventSource {
 
     start() {
         if (this._running) return // already running
-
-        this.program.roles.forEach(role => {
-            this._rm.addRoleService(role.role, role.serviceShortName)
-        })
-        this._running = true
-        this.emit(CHANGE)
-        this.run()
+        try {
+            this.program.roles.forEach(role => {
+                this._rm.addRoleService(role.role, role.serviceShortName)
+            })
+            this._running = true
+            this.emit(CHANGE)
+            this.run()
+        } catch (e) {
+            this.emit(ERROR, e)
+        }
     }
 
     run() {
+        if (!this._running) return
         try {
-            if (!this._running) return
             this._env.refreshEnvironment()
             if (this._waitQueue.length > 0) {
                 const nextTime: IT4HandlerRunner[] = []
