@@ -26,6 +26,9 @@ interface Environment {
 
 class IT4CommandEvaluator {
     private _status: VMStatus
+    private _regSaved: number = undefined
+    private _changeSaved: number = undefined
+    private _started = false
     constructor(
         private readonly env: Environment,
         private readonly gc: IT4GuardedCommand
@@ -39,13 +42,33 @@ class IT4CommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
-    private checkExpression(e: jsep.Expression) {
+    private evalExpression(e: jsep.Expression) {
         const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
-        return expr.eval(e) ? true : false
+        return expr.eval(e)
+    }
+
+    private checkExpression(e: jsep.Expression) {
+        return this.evalExpression(e) ? true : false
+    }
+
+    private start() {
+        if (this.gc.command.callee.type !== "MemberExpression" &&
+            (this.inst === "awaitRegister" || this.inst === "awaitChange")) {
+                // need to capture register value for awaitChange/awaitRegister
+                const args = this.gc.command.arguments
+                this._regSaved = this.evalExpression(args[0])
+                if (this.inst === "awaitChange")
+                    this._changeSaved = this.evalExpression(args[1])
+        }
     }
 
     public evaluate() {
         this._status = VMStatus.Running
+        if (!this._started) {
+            this.start()
+            this._started = true
+            return
+        }
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
@@ -73,6 +96,18 @@ class IT4CommandEvaluator {
                     ? VMStatus.Completed
                     : VMStatus.Running
                 break
+            }
+            case "awaitChange":
+            case "awaitRegister": {  
+                const regValue = this.evalExpression(args[0])
+                if (this.inst === "awaitRegister" && regValue !== this._regSaved ||
+                    this.inst === "awaitChange" &&
+                        (regValue >= this._regSaved + this._changeSaved ||
+                         regValue <= this._regSaved - this._changeSaved)) {
+                    this._status = VMStatus.Completed
+                }
+                break
+
             }
             case "writeRegister":
             case "writeLocal": {
@@ -119,10 +154,6 @@ class IT4CommandRunner {
 
     get isWaiting(): boolean {
         return this.status === VMStatus.Running
-    }
-
-    reset() {
-        this.status = VMStatus.Running
     }
 
     step() {
