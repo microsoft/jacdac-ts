@@ -221,7 +221,7 @@ export class JDRegister extends JDServiceMemberNode {
         this._lastGetTimestamp = this.service.device.bus.timestamp // reset time counter too
         this.emit(REPORT_RECEIVE, this)
         if (updated) {
-            this.emit(REPORT_UPDATE, this)
+            this.emitPropagated(REPORT_UPDATE, this)
             this.emit(CHANGE)
         }
     }

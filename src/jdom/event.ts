@@ -78,8 +78,7 @@ export class JDEvent extends JDServiceMemberNode {
 
         this._lastReportPkt = pkt
         this._count++
-        this.emit(EVENT, this)
-        this.service.emit(EVENT, this)
+        this.emitPropagated(EVENT, this)
         this.emit(CHANGE)
 
         // update device counter
