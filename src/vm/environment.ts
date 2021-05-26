@@ -25,9 +25,17 @@ async function writeReg(reg: JDRegister, fmt: string, ev: any) {
     await reg.sendSetPackedAsync(fmt, [ev], true)
 }
 
-async function sendCommand(service: JDService, pkt: jdspec.PacketInfo, values: PackedValues) {
+async function sendCommand(
+    service: JDService,
+    pkt: jdspec.PacketInfo,
+    values: PackedValues
+) {
     // console.log(pkt, values)
-    await service.sendCmdAsync(pkt.identifier, jdpack(pkt.packFormat, values), true)
+    await service.sendCmdAsync(
+        pkt.identifier,
+        jdpack(pkt.packFormat, values),
+        true
+    )
 }
 
 export class VMServiceEnvironment extends JDServiceClient {
@@ -69,8 +77,7 @@ export class VMServiceEnvironment extends JDServiceClient {
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
         )
-        if (pkt)
-            sendCommand(this.service, pkt, values)
+        if (pkt) sendCommand(this.service, pkt, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,9 +129,7 @@ export class VMEnvironment extends JDEventSource {
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(
-        private readonly notifyOnChange: () => void
-    ) {
+    constructor(private readonly notifyOnChange: () => void) {
         super()
     }
 

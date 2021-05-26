@@ -1,6 +1,9 @@
 import jsep from "jsep"
 
-import { CheckExpression, SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
+import {
+    CheckExpression,
+    SpecSymbolResolver,
+} from "../../jacdac-spec/spectool/jdutils"
 import { IT4Program, IT4Handler, IT4Functions, getServiceFromRole } from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
@@ -32,7 +35,7 @@ export function parseITTTMarkdownToJSON(
     let handlerHeading = ""
 
     const symbolResolver = new SpecSymbolResolver(
-        undefined,  
+        undefined,
         getServiceFromRole(info),
         e => error(e)
     )
@@ -107,7 +110,7 @@ export function parseITTTMarkdownToJSON(
             }
             handlerHeading = ""
         }
-            
+
         const root = <jsep.CallExpression>jsep(expanded)
         const ret = checkExpression.check(root, IT4Functions)
 
@@ -118,8 +121,9 @@ export function parseITTTMarkdownToJSON(
                 if (command?.id === "role") {
                     // TODO: check
                     let role = (root.arguments[0] as jsep.Identifier).name
-                    let serviceShortName = (root
-                        .arguments[1] as jsep.Identifier).name
+                    let serviceShortName = (
+                        root.arguments[1] as jsep.Identifier
+                    ).name
                     let service = serviceSpecificationFromName(serviceShortName)
                     if (!service)
                         error(
@@ -135,8 +139,8 @@ export function parseITTTMarkdownToJSON(
                     return
                 } else if (
                     !command ||
-                    command.id !== "awaitEvent" &&
-                    command.id !== "awaitCondition"
+                    (command.id !== "awaitEvent" &&
+                        command.id !== "awaitCondition")
                 ) {
                     error(
                         `An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`

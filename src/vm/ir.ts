@@ -1,5 +1,8 @@
 import { serviceSpecificationFromName } from "../jdom/spec"
-import { CheckExpression, SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
+import {
+    CheckExpression,
+    SpecSymbolResolver,
+} from "../../jacdac-spec/spectool/jdutils"
 
 export interface IT4GuardedCommand {
     guard?: jsep.Expression
@@ -15,7 +18,6 @@ export interface IT4Role {
     role: string
     serviceShortName: string
 }
-
 
 export interface IT4Program {
     description?: string
@@ -37,30 +39,26 @@ export const getServiceFromRole = (info: IT4Program) => (role: string) => {
 }
 
 export interface RoleRegister {
-    role: string,
+    role: string
     register: string
 }
 
 export interface RoleEvent {
-    role: string,
+    role: string
     event: string
 }
 
-export function checkProgram(prog: IT4Program)
-    : [
-        RoleRegister[], 
-        RoleEvent[]
-    ] {
+export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
     prog.errors = []
     let errorFun = (e: string) => {
-        prog.errors.push({ file:"", line: undefined, message: e })
+        prog.errors.push({ file: "", line: undefined, message: e })
     }
     const symbolResolver = new SpecSymbolResolver(
-        undefined,  
+        undefined,
         getServiceFromRole(prog),
         errorFun
     )
-    const checker = new CheckExpression(symbolResolver, (_) => true, errorFun)
+    const checker = new CheckExpression(symbolResolver, _ => true, errorFun)
     prog.handlers.forEach(h => {
         h.commands.forEach(c => {
             checker.check(c.command, IT4Functions)
@@ -68,13 +66,13 @@ export function checkProgram(prog: IT4Program)
     })
     return [
         symbolResolver.registers.map(s => {
-            const [root,fld] = s.split(".")
-            return { role: root, register: fld}
+            const [root, fld] = s.split(".")
+            return { role: root, register: fld }
         }),
         symbolResolver.events.map(e => {
-            const [root,fld] = e.split(".")
-            return { role: root, event: fld}
-        })
+            const [root, fld] = e.split(".")
+            return { role: root, event: fld }
+        }),
     ]
 }
 

@@ -57,9 +57,9 @@ export class MyRoleManager extends JDEventSource {
             )
             if (role) {
                 let service = this._roles[role] as JDService
-                this._roles[role] = (this._roles[
-                    role
-                ] as JDService).specification.shortName
+                this._roles[role] = (
+                    this._roles[role] as JDService
+                ).specification.shortName
                 if (this.notify) this.notify(role, service, false)
             }
         }
@@ -84,8 +84,7 @@ export class MyRoleManager extends JDEventSource {
 
     public addRoleService(role: string, serviceShortName: string) {
         const s = this._roles[role]
-        if (s && typeof(s) !== "string") 
-            return
+        if (s && typeof s !== "string") return
         let existingInstance = Object.values(this._roles).find(
             r =>
                 (typeof r === "string" &&

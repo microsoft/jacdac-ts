@@ -49,12 +49,12 @@ class IT4CommandEvaluator {
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
-            const expr = new JDExprEvaluator(
-                e => this.env.lookup(e),
-                undefined
-            )
+            const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
             let values = this.gc.command.arguments.map(a => expr.eval(a))
-            this.env.sendCommand(this.gc.command.callee as jsep.MemberExpression, values)
+            this.env.sendCommand(
+                this.gc.command.callee as jsep.MemberExpression,
+                values
+            )
             this._status = VMStatus.Completed
             return
         }
@@ -221,7 +221,7 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
-        const [regs, events] = checkProgram(program) 
+        const [regs, events] = checkProgram(program)
         if (program.errors.length > 0) {
             console.debug(program.errors)
         }
