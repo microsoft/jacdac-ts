@@ -72,12 +72,13 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public sendCommand(command: jsep.Identifier, values: PackedValues) {
+    public async sendCommand(command: jsep.Identifier, values: PackedValues) {
         const commandName = command?.name
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
         )
-        if (pkt) sendCommand(this.service, pkt, values)
+        if (pkt) 
+            await sendCommand(this.service, pkt, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,8 +120,8 @@ export class VMServiceEnvironment extends JDServiceClient {
         return undefined
     }
 
-    public refreshEnvironment() {
-        refresh_env(this._registers)
+    public async refreshEnvironment() {
+        await refresh_env(this._registers)
     }
 }
 
@@ -174,16 +175,14 @@ export class VMEnvironment extends JDEventSource {
         return this._envs[root]
     }
 
-    public refreshEnvironment() {
-        Object.values(this._envs).forEach(s => s?.refreshEnvironment())
+    public async refreshEnvironment() {
+        Object.values(this._envs).forEach(s => await s?.refreshEnvironment())
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public sendCommand(e: jsep.MemberExpression, values: PackedValues) {
+    public async sendCommand(e: jsep.MemberExpression, values: PackedValues) {
         const serviceEnv = this.getService(e)
-        if (serviceEnv) {
-            serviceEnv.sendCommand(e.property as jsep.Identifier, values)
-        }
+        await serviceEnv?.sendCommand(e.property as jsep.Identifier, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
