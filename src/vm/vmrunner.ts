@@ -5,6 +5,7 @@ import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR } from "../jdom/constants"
+import { checkProgram } from "./ir"
 
 export enum VMStatus {
     Ready = "ready",
@@ -220,20 +221,24 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
+        const [regs, events] = checkProgram(program) 
+        if (program.errors.length > 0) {
+            console.debug(program.errors)
+        }
         this._rm = new MyRoleManager(bus, (role, service, added) => {
             this._env.serviceChanged(role, service, added)
             if (added) {
-                this.program.registers.forEach(r => {
-                    const [root, reg] = r.split(".")
-                    if (root === role) {
-                        this._env.registerRegister(role, reg)
-                    }
-                })
-                this.program.events.forEach(e => {
-                    const [root, ev] = e.split(".")
-                    if (root === role) {
-                        this._env.registerEvent(role, ev)
-                    }
+                this.program.handlers.forEach(h => {
+                    regs.forEach(r => {
+                        if (r.role === role) {
+                            this._env.registerRegister(role, r.register)
+                        }
+                    })
+                    events.forEach(e => {
+                        if (e.role === role) {
+                            this._env.registerEvent(role, e.event)
+                        }
+                    })
                 })
             }
         })

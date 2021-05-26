@@ -1,10 +1,8 @@
 import jsep from "jsep"
 
-import { SpecAwareMarkDownParser, SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
-import { IT4Program, IT4Handler, IT4Functions } from "./ir"
+import { CheckExpression, SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
+import { IT4Program, IT4Handler, IT4Functions, getServiceFromRole } from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
-import { SystemReg } from "../jdom/constants"
-import { intOfBuffer } from "../jdom/buffer"
 
 const supportedExpressions: jsep.ExpressionType[] = [
     "MemberExpression",
@@ -24,8 +22,6 @@ export function parseITTTMarkdownToJSON(
     const info: IT4Program = {
         description: "",
         roles: [],
-        registers: [],
-        events: [],
         handlers: [],
     }
 
@@ -36,29 +32,14 @@ export function parseITTTMarkdownToJSON(
     let handlerHeading = ""
 
     const symbolResolver = new SpecSymbolResolver(
-        undefined,
-        (role: string) => {
-            // lookup in roles first
-            let shortId = info.roles.find(pair => pair.role === role)
-            if (shortId) {
-                // must succeed
-                return serviceSpecificationFromName(shortId.serviceShortName)
-            } else {
-                let service = serviceSpecificationFromName(role)
-                if (!service) {
-                    error(`can't find service with shortId=${role}`)
-                    return undefined
-                }
-                return service
-            }
-        },
+        undefined,  
+        getServiceFromRole(info),
         e => error(e)
     )
 
-    const parser = new SpecAwareMarkDownParser(
+    const checkExpression = new CheckExpression(
         symbolResolver,
-        supportedExpressions,
-        jsep,
+        (t: jsep.ExpressionType) => supportedExpressions.indexOf(t) >= 0,
         e => error(e)
     )
 
@@ -126,8 +107,9 @@ export function parseITTTMarkdownToJSON(
             }
             handlerHeading = ""
         }
-
-        const ret = parser.processLine(expanded, IT4Functions)
+            
+        const root = <jsep.CallExpression>jsep(expanded)
+        const ret = checkExpression.check(root, IT4Functions)
 
         if (ret) {
             const [command, root] = ret
@@ -174,9 +156,6 @@ export function parseITTTMarkdownToJSON(
     function finishHandler(sym: SpecSymbolResolver) {
         if (currentHandler.commands.length > 0)
             info.handlers.push(currentHandler)
-        sym.registers.forEach(r => { if (info.registers.indexOf(r) < 0) info.registers.push(r) })
-        sym.events.forEach(e => { if (info.events.indexOf(e) < 0) info.events.push(e) })
-        sym.reset();
         currentHandler = null
     }
 
