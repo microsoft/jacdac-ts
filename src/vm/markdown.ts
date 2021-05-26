@@ -1,10 +1,11 @@
 import jsep from "jsep"
 
-import { SpecSymbolResolver } from "../../jacdac-spec/spectool/jdutils"
-import { IT4Program, IT4Handler, IT4Functions } from "./ir"
+import {
+    CheckExpression,
+    SpecSymbolResolver,
+} from "../../jacdac-spec/spectool/jdutils"
+import { IT4Program, IT4Handler, IT4Functions, getServiceFromRole } from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
-import { SystemReg } from "../jdom/constants"
-import { intOfBuffer } from "../jdom/buffer"
 
 const supportedExpressions: jsep.ExpressionType[] = [
     "MemberExpression",
@@ -22,7 +23,6 @@ export function parseITTTMarkdownToJSON(
 ): IT4Program {
     filecontent = (filecontent || "").replace(/\r/g, "")
     const info: IT4Program = {
-        description: "",
         roles: [],
         handlers: [],
     }
@@ -32,25 +32,16 @@ export function parseITTTMarkdownToJSON(
     let lineNo = 0
     let currentHandler: IT4Handler = null
     let handlerHeading = ""
+
     const symbolResolver = new SpecSymbolResolver(
         undefined,
-        (role: string) => {
-            // lookup in roles first
-            let shortId = info.roles.find(pair => pair.role === role)
-            if (shortId) {
-                // must succeed
-                return serviceSpecificationFromName(shortId.serviceShortName)
-            } else {
-                let service = serviceSpecificationFromName(role)
-                if (!service) {
-                    error(`can't find service with shortId=${role}`)
-                    return undefined
-                }
-                return service
-            }
-        },
-        supportedExpressions,
-        jsep,
+        getServiceFromRole(info),
+        e => error(e)
+    )
+
+    const checkExpression = new CheckExpression(
+        symbolResolver,
+        (t: jsep.ExpressionType) => supportedExpressions.indexOf(t) >= 0,
         e => error(e)
     )
 
@@ -114,24 +105,24 @@ export function parseITTTMarkdownToJSON(
                 error(`every handler must have a description (via ##)`)
             currentHandler = {
                 description: handlerHeading,
-                registers: [],
-                events: [],
                 commands: [],
             }
             handlerHeading = ""
         }
 
-        const ret = symbolResolver.processLine(expanded, IT4Functions)
+        const root = <jsep.CallExpression>jsep(expanded)
+        const ret = checkExpression.check(root, IT4Functions)
 
         if (ret) {
             const [command, root] = ret
 
             if (currentHandler.commands.length === 0) {
-                if (command.id === "role") {
+                if (command?.id === "role") {
                     // TODO: check
                     let role = (root.arguments[0] as jsep.Identifier).name
-                    let serviceShortName = (root
-                        .arguments[1] as jsep.Identifier).name
+                    let serviceShortName = (
+                        root.arguments[1] as jsep.Identifier
+                    ).name
                     let service = serviceSpecificationFromName(serviceShortName)
                     if (!service)
                         error(
@@ -146,8 +137,9 @@ export function parseITTTMarkdownToJSON(
                         })
                     return
                 } else if (
-                    command.id !== "awaitEvent" &&
-                    command.id !== "awaitCondition"
+                    !command ||
+                    (command.id !== "awaitEvent" &&
+                        command.id !== "awaitCondition")
                 ) {
                     error(
                         `An ITTT handler must begin with call to an await function (awaitEvent | awaitCondition)`
@@ -155,7 +147,7 @@ export function parseITTTMarkdownToJSON(
                     return
                 }
             } else {
-                if (command.id === "role") {
+                if (command?.id === "role") {
                     error(`roles must be declared at beginning of handler`)
                 }
             }
@@ -167,9 +159,6 @@ export function parseITTTMarkdownToJSON(
     function finishHandler(sym: SpecSymbolResolver) {
         if (currentHandler.commands.length > 0) {
             info.handlers.push(currentHandler)
-            sym.registers.forEach(r => { if (currentHandler.registers.indexOf(r) < 0) currentHandler.registers.push(r) })
-            sym.events.forEach(e => { if (currentHandler.events.indexOf(e) < 0) currentHandler.events.push(e) })
-            sym.reset();
         }
         currentHandler = null
     }

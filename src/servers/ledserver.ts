@@ -2,6 +2,7 @@ import {
     LedCmd,
     LedReg,
     LedVariant,
+    REFRESH,
     REGISTER_PRE_GET,
     SRV_LED,
 } from "../jdom/constants"
@@ -64,22 +65,16 @@ export default class LEDServer extends JDServiceServer {
         this.variant = this.addRegister(LedReg.Variant, [variant])
 
         this.addCommand(LedCmd.Animate, this.handleAnimate.bind(this))
+        // animation
+        this.on(REFRESH, this.updateColor.bind(this))
     }
 
     private updateColor() {
         if (!this._animation) return // nothing to do
 
         // compute new color
-        const {
-            red,
-            green,
-            blue,
-            toRed,
-            toGreen,
-            toBlue,
-            speed,
-            start,
-        } = this._animation
+        const { red, green, blue, toRed, toGreen, toBlue, speed, start } =
+            this._animation
         const now = this.device.bus.timestamp
         const elapsed = now - start
         // see control.md
@@ -88,27 +83,24 @@ export default class LEDServer extends JDServiceServer {
         const alpha = Math.min(1, progress)
         const oneAlpha = 1 - alpha
 
-        const newRed = (red * alpha + oneAlpha * toRed) | 0
-        const newGreen = (green * alpha + oneAlpha * toGreen) | 0
-        const newBlue = (blue * alpha + oneAlpha * toBlue) | 0
+        const newRed = (red * oneAlpha + alpha * toRed) | 0
+        const newGreen = (green * oneAlpha + alpha * toGreen) | 0
+        const newBlue = (blue * oneAlpha + alpha * toBlue) | 0
 
-        this.color.setValues([newRed, newGreen, newBlue], true)
-
+        this.color.setValues([newRed, newGreen, newBlue])
         // clear animation when done
         if (progress > 1) this._animation = undefined
     }
 
     private handleAnimate(pkt: Packet) {
-        const [toRed, toGreen, toBlue, speed] = pkt.jdunpack<
-            [number, number, number, number]
-        >("u8 u8 u8 u8")
+        const [toRed, toGreen, toBlue, speed] =
+            pkt.jdunpack<[number, number, number, number]>("u8 u8 u8 u8")
 
         if (speed == 0) {
             this.color.setValues([toRed, toGreen, toBlue])
             this._animation = undefined
         } else {
             const [red, green, blue] = this.color.values()
-
             this._animation = {
                 red,
                 green,

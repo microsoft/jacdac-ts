@@ -352,7 +352,9 @@ export function bufferConcatMany(bufs: Uint8Array[]) {
     return r
 }
 
-export function arrayConcatMany<T>(arrs: T[][]) {
+export function arrayConcatMany<T>(arrs: T[][]): T[] {
+    if (!arrs) return undefined
+
     let sz = 0
     for (const buf of arrs) sz += buf.length
     const r: T[] = new Array(sz)
@@ -491,7 +493,6 @@ export function debounceAsync(
     }
 }
 
-
 export function JSONTryParse(src: string) {
     if (src === undefined || src === null) return src
 
@@ -539,11 +540,16 @@ export function uniqueMap<T, U>(
     return Object.values(r).map(converter)
 }
 
-export function toMap<T, V>(a: T[], keyConverter: (value: T, index: number) => string, valueConverter: (value: T, index: number) => V): SMap<V> {
+export function toMap<T, V>(
+    a: T[],
+    keyConverter: (value: T, index: number) => string,
+    valueConverter: (value: T, index: number) => V
+): SMap<V> {
     const m: SMap<V> = {}
-    for(let i = 0; i < a.length; ++i)
-        m[keyConverter(a[i], i)] = valueConverter(a[i], i)
-    return m;
+    if (a)
+        for (let i = 0; i < a.length; ++i)
+            m[keyConverter(a[i], i)] = valueConverter(a[i], i)
+    return m
 }
 
 export function ellipseJoin(

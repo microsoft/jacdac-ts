@@ -4,13 +4,14 @@ import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE } from "../jdom/constants"
+import { CHANGE, ERROR } from "../jdom/constants"
+import { checkProgram } from "./ir"
 
 export enum VMStatus {
-    Ready,
-    Running,
-    Completed,
-    Stopped,
+    Ready = "ready",
+    Running = "running",
+    Completed = "completed",
+    Stopped = "stopped",
 }
 
 interface Environment {
@@ -18,6 +19,7 @@ interface Environment {
     writeRegister: (e: jsep.MemberExpression | string, v: any) => boolean
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
+    sendCommand: (command: jsep.MemberExpression, values: any[]) => void
     refreshEnvironment: () => void
     unsubscribe: () => void
 }
@@ -34,7 +36,7 @@ class IT4CommandEvaluator {
     }
 
     private get inst() {
-        return (this.gc.command.callee as jsep.Identifier).name
+        return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
     private checkExpression(e: jsep.Expression) {
@@ -43,9 +45,19 @@ class IT4CommandEvaluator {
     }
 
     public evaluate() {
-        // console.log(unparse(this.gc.command))
         this._status = VMStatus.Running
         const args = this.gc.command.arguments
+        if (this.gc.command.callee.type === "MemberExpression") {
+            // interpret as a service command (role.comand)
+            const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
+            let values = this.gc.command.arguments.map(a => expr.eval(a))
+            this.env.sendCommand(
+                this.gc.command.callee as jsep.MemberExpression,
+                values
+            )
+            this._status = VMStatus.Completed
+            return
+        }
         switch (this.inst) {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
@@ -137,7 +149,7 @@ class IT4CommandRunner {
 class IT4HandlerRunner {
     private _commandIndex: number
     private _currentCommand: IT4CommandRunner
-    private stopped: boolean = false
+    private stopped = false
 
     constructor(
         public readonly id: number,
@@ -173,7 +185,9 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
-        if (this.stopped) return
+        // eight stopped or empty
+        if (this.stopped || !this.handler.commands.length) return
+
         if (this._commandIndex === undefined) {
             this._commandIndex = 0
             this._currentCommand = new IT4CommandRunner(
@@ -207,21 +221,25 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
+        const [regs, events] = checkProgram(program)
+        if (program.errors.length > 0) {
+            console.debug(program.errors)
+        }
         this._rm = new MyRoleManager(bus, (role, service, added) => {
             this._env.serviceChanged(role, service, added)
             if (added) {
-                this.program.handlers.forEach(h => h.registers.forEach(r => {
-                    let [root, reg] = r.split(".")
-                    if (root === role) {
-                        this._env.registerRegister(role, reg)
-                    }
-                }))
-                this.program.handlers.forEach(h => h.events.forEach(e => {
-                    let [root, ev] = e.split(".")
-                    if (root === role) {
-                        this._env.registerEvent(role, ev)
-                    }
-                }))
+                this.program.handlers.forEach(h => {
+                    regs.forEach(r => {
+                        if (r.role === role) {
+                            this._env.registerRegister(role, r.register)
+                        }
+                    })
+                    events.forEach(e => {
+                        if (e.role === role) {
+                            this._env.registerEvent(role, e.event)
+                        }
+                    })
+                })
             }
         })
         this._env = new VMEnvironment(() => {
@@ -244,6 +262,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     cancel() {
+        if (!this._running) return // nothing to cancel
+
         this._running = false
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
@@ -251,6 +271,8 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     start() {
+        if (this._running) return // already running
+
         this.program.roles.forEach(role => {
             this._rm.addRoleService(role.role, role.serviceShortName)
         })
@@ -260,21 +282,25 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     run() {
-        if (!this._running) return
-        this._env.refreshEnvironment()
-        if (this._waitQueue.length > 0) {
-            let nextTime: IT4HandlerRunner[] = []
-            this._waitQueue.forEach(h => {
-                h.step()
-                if (h.status !== VMStatus.Stopped) {
-                    if (h.status === VMStatus.Completed) h.reset()
-                    nextTime.push(h)
-                }
-            })
-            this._waitQueue = nextTime
-            this._env.consumeEvent()
-        } else {
-            this.emit(CHANGE)
+        try {
+            if (!this._running) return
+            this._env.refreshEnvironment()
+            if (this._waitQueue.length > 0) {
+                const nextTime: IT4HandlerRunner[] = []
+                this._waitQueue.forEach(h => {
+                    h.step()
+                    if (h.status !== VMStatus.Stopped) {
+                        if (h.status === VMStatus.Completed) h.reset()
+                        nextTime.push(h)
+                    }
+                })
+                this._waitQueue = nextTime
+                this._env.consumeEvent()
+            } else {
+                this.emit(CHANGE)
+            }
+        } catch (e) {
+            this.emit(ERROR, e)
         }
     }
 }

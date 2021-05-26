@@ -1,4 +1,4 @@
-import { isEvent, isRegister } from "../jdom/spec"
+import { isEvent, isRegister, isCommand } from "../jdom/spec"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
@@ -6,6 +6,7 @@ import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
+import { jdpack, PackedValues } from "../jdom/pack"
 
 export async function refresh_env(registers: SMap<JDRegister>) {
     for (const k in registers) {
@@ -22,6 +23,19 @@ export async function refresh_env(registers: SMap<JDRegister>) {
 // TODO: you want [ev] to be PackedValues and handle the arrays yourself.
 async function writeReg(reg: JDRegister, fmt: string, ev: any) {
     await reg.sendSetPackedAsync(fmt, [ev], true)
+}
+
+async function sendCommand(
+    service: JDService,
+    pkt: jdspec.PacketInfo,
+    values: PackedValues
+) {
+    // console.log(pkt, values)
+    await service.sendCmdAsync(
+        pkt.identifier,
+        jdpack(pkt.packFormat, values),
+        true
+    )
 }
 
 export class VMServiceEnvironment extends JDServiceClient {
@@ -56,6 +70,14 @@ export class VMServiceEnvironment extends JDServiceClient {
                 this.mount(event.subscribe(EVENT, handler))
             }
         }
+    }
+
+    public sendCommand(command: jsep.Identifier, values: PackedValues) {
+        const commandName = command?.name
+        const pkt = this.service.specification.packets.find(
+            p => isCommand(p) && p.name === commandName
+        )
+        if (pkt) sendCommand(this.service, pkt, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,9 +129,7 @@ export class VMEnvironment extends JDEventSource {
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(
-        private readonly notifyOnChange: () => void
-    ) {
+    constructor(private readonly notifyOnChange: () => void) {
         super()
     }
 
@@ -156,6 +176,14 @@ export class VMEnvironment extends JDEventSource {
 
     public refreshEnvironment() {
         Object.values(this._envs).forEach(s => s?.refreshEnvironment())
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public sendCommand(e: jsep.MemberExpression, values: PackedValues) {
+        const serviceEnv = this.getService(e)
+        if (serviceEnv) {
+            serviceEnv.sendCommand(e.property as jsep.Identifier, values)
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

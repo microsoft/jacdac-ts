@@ -541,12 +541,12 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         ],
     },
     {
-        name: "LED (RGB through hole)",
+        name: "Red LED (RGB through hole)",
         serviceClasses: [SRV_LED],
         services: () => [
             new LEDServer({
                 variant: LedVariant.ThroughHole,
-                ledCount: 1,
+                ledCount: 2,
                 color: [255, 0, 0],
             }),
         ],
@@ -557,8 +557,8 @@ const _providerDefinitions: ServiceProviderDefinition[] = [
         services: () => [
             new LEDServer({
                 variant: LedVariant.ThroughHole,
-                waveLength: 624,
-                ledCount: 3,
+                waveLength: 450,
+                ledCount: 5,
                 color: [0, 0, 255],
             }),
         ],
