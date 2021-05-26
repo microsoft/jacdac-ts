@@ -50,7 +50,7 @@ class IT4CommandEvaluator {
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
             const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
-            let values = this.gc.command.arguments.map(a => expr.eval(a))
+            const values = this.gc.command.arguments.map(a => expr.eval(a))
             this.env.sendCommand(
                 this.gc.command.callee as jsep.MemberExpression,
                 values
