@@ -127,8 +127,12 @@ class IT4CommandRunner {
 
     step() {
         if (this.isWaiting) {
-            this._eval.evaluate()
-            this.finish(this._eval.status)
+            try {
+                this._eval.evaluate()
+                this.finish(this._eval.status)
+            } catch (e) {
+                // we will try again
+            }
         }
     }
 
@@ -185,7 +189,7 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     step() {
-        // eight stopped or empty
+        // handler stopped or empty
         if (this.stopped || !this.handler.commands.length) return
 
         if (this._commandIndex === undefined) {
@@ -221,34 +225,42 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
-        const [regs, events] = checkProgram(program)
-        if (program.errors.length > 0) {
-            console.debug(program.errors)
-        }
-        this._rm = new MyRoleManager(bus, (role, service, added) => {
-            this._env.serviceChanged(role, service, added)
-            if (added) {
-                this.program.handlers.forEach(h => {
-                    regs.forEach(r => {
-                        if (r.role === role) {
-                            this._env.registerRegister(role, r.register)
-                        }
-                    })
-                    events.forEach(e => {
-                        if (e.role === role) {
-                            this._env.registerEvent(role, e.event)
-                        }
-                    })
-                })
+        try {
+            const [regs, events] = checkProgram(program)
+            if (program.errors.length > 0) {
+                console.debug(program.errors)
             }
-        })
-        this._env = new VMEnvironment(() => {
-            this.run()
-        })
-        this._handlers = program.handlers.map(
-            (h, index) => new IT4HandlerRunner(index, this._env, h)
-        )
-        this._waitQueue = this._handlers.slice(0)
+            this._rm = new MyRoleManager(bus, (role, service, added) => {
+                try {
+                    this._env.serviceChanged(role, service, added)
+                    if (added) {
+                        this.program.handlers.forEach(h => {
+                            regs.forEach(r => {
+                                if (r.role === role) {
+                                    this._env.registerRegister(role, r.register)
+                                }
+                            })
+                            events.forEach(e => {
+                                if (e.role === role) {
+                                    this._env.registerEvent(role, e.event)
+                                }
+                            })
+                        })
+                    }
+                } catch (e) {
+                    this.emit(ERROR, e)
+                }
+            })
+            this._env = new VMEnvironment(() => {
+                this.run()
+            })
+            this._handlers = program.handlers.map(
+                (h, index) => new IT4HandlerRunner(index, this._env, h)
+            )
+            this._waitQueue = this._handlers.slice(0)
+        } catch (e) {
+            this.emit(ERROR, e)
+        }
     }
 
     get status() {
@@ -272,18 +284,21 @@ export class IT4ProgramRunner extends JDEventSource {
 
     start() {
         if (this._running) return // already running
-
-        this.program.roles.forEach(role => {
-            this._rm.addRoleService(role.role, role.serviceShortName)
-        })
-        this._running = true
-        this.emit(CHANGE)
-        this.run()
+        try {
+            this.program.roles.forEach(role => {
+                this._rm.addRoleService(role.role, role.serviceShortName)
+            })
+            this._running = true
+            this.emit(CHANGE)
+            this.run()
+        } catch (e) {
+            this.emit(ERROR, e)
+        }
     }
 
     run() {
+        if (!this._running) return
         try {
-            if (!this._running) return
             this._env.refreshEnvironment()
             if (this._waitQueue.length > 0) {
                 const nextTime: IT4HandlerRunner[] = []
