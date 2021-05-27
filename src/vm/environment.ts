@@ -7,6 +7,7 @@ import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
+import { JACDAC_ROLE_HAS_NO_SERVICE } from "./utils"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
@@ -94,12 +95,7 @@ export class VMServiceEnvironment extends JDServiceClient {
     public async refreshRegistersAsync() {
         for (const k in this._registers) {
             const register = this._registers[k]
-            let retry = 0
-            let val: any = undefined
-            do {
-                await register.refresh()
-                val = register.unpackedValue?.[0]
-            } while (val === undefined && retry++ < 2)
+            await register.refresh()
         }
     }
 }
@@ -151,7 +147,11 @@ export class VMEnvironment extends JDEventSource {
     private getService(e: jsep.MemberExpression | string) {
         const root = this.getRootName(e)
         if (!root) return undefined
-        return this._envs[root]
+        let s = this._envs[root]
+        if (!s) {
+            this.emit(JACDAC_ROLE_HAS_NO_SERVICE, root)
+        }
+        return s
     }
 
     public async refreshRegistersAsync() {
@@ -178,7 +178,9 @@ export class VMEnvironment extends JDEventSource {
             return undefined
         }
         const serviceEnv = this.getService(e)
-        if (!serviceEnv) return undefined
+        if (!serviceEnv) {
+            return undefined
+        }
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name

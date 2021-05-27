@@ -6,6 +6,7 @@ import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR } from "../jdom/constants"
 import { checkProgram } from "./ir"
+import { JACDAC_ROLE_SERVICE_BOUND, JACDAC_ROLE_SERVICE_UNBOUND } from "./utils"
 
 export enum VMStatus {
     Ready = "ready",
@@ -147,6 +148,7 @@ class IT4CommandRunner {
     set status(s: VMStatus) {
         if (s != this._status) {
             this._status = s
+            // TODO: emit event
         }
     }
 
@@ -263,6 +265,7 @@ export class IT4ProgramRunner extends JDEventSource {
                 try {
                     this._env.serviceChanged(role, service, added)
                     if (added) {
+                        this.emit(JACDAC_ROLE_SERVICE_BOUND, service)
                         this.program.handlers.forEach(h => {
                             regs.forEach(r => {
                                 if (r.role === role) {
@@ -275,8 +278,11 @@ export class IT4ProgramRunner extends JDEventSource {
                                 }
                             })
                         })
+                    } else {
+                        this.emit(JACDAC_ROLE_SERVICE_UNBOUND, service)
                     }
                 } catch (e) {
+                    console.debug(e)
                     this.emit(ERROR, e)
                 }
             })
@@ -284,6 +290,7 @@ export class IT4ProgramRunner extends JDEventSource {
                 try {
                     await this.run()
                 } catch (e) {
+                    console.debug(e)
                     this.emit(ERROR, e)
                 }
             })
@@ -292,6 +299,7 @@ export class IT4ProgramRunner extends JDEventSource {
             )
             this._waitQueue = this._handlers.slice(0)
         } catch (e) {
+            console.debug(e)
             this.emit(ERROR, e)
         }
     }
@@ -348,6 +356,7 @@ export class IT4ProgramRunner extends JDEventSource {
                 this.emit(CHANGE)
             }
         } catch (e) {
+            console.debug(e)
             this.emit(ERROR, e)
         }
     }
