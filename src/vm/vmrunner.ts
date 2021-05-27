@@ -160,7 +160,7 @@ class IT4CommandRunner {
                 await this._eval.evaluate()
                 this.finish(this._eval.status)
             } catch (e) {
-                // we will try again
+                console.debug(e)
             }
         }
     }
