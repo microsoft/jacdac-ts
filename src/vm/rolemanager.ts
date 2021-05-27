@@ -89,6 +89,7 @@ export class MyRoleManager extends JDEventSource {
         let existingServices = Object.values(this._roles).filter(s => typeof(s) !== "string")
         let ret = this.getServicesFromName(serviceShortName).filter(s => existingServices.indexOf(s) === -1)
         if (ret.length > 0) {
+            console.log(role, ret[0])
             this._roles[role] = ret[0]
             this.notify(role, ret[0], true)
         } else {

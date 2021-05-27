@@ -283,8 +283,12 @@ export class IT4ProgramRunner extends JDEventSource {
                     this.emit(ERROR, e)
                 }
             })
-            this._env = new VMEnvironment(() => {
-                this.run()
+            this._env = new VMEnvironment(async () => {
+                try {
+                    await this.run()
+                } catch (e) {
+                    this.emit(ERROR, e)
+                }
             })
             this._handlers = program.handlers.map(
                 (h, index) => new IT4HandlerRunner(index, this._env, h)

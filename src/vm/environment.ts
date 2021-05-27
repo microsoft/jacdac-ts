@@ -8,15 +8,9 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 
-export async function refreshRegistersAsync(registers: SMap<JDRegister>) {
-    for (const k in registers) {
-        const register = registers[k]
-        let retry = 0
-        let val: any = undefined
-        do {
-            await register.refresh()
-            val = register.unpackedValue?.[0]
-        } while (val === undefined && retry++ < 2)
+export class VMError {
+    constructor(public message: string, public id?: string) {
+
     }
 }
 
@@ -69,8 +63,12 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async writeRegisterAsync(regName: string, ev: any) {
-        const jdreg = this._registers[regName]
-        await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
+        if (ev) {
+            const jdreg = this._registers[regName]
+            await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
+        } else {
+            // TODO
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +101,15 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 
     public async refreshRegistersAsync() {
-        await refreshRegistersAsync(this._registers)
+        for (const k in this._registers) {
+            const register = this._registers[k]
+            let retry = 0
+            let val: any = undefined
+            do {
+                await register.refresh()
+                val = register.unpackedValue?.[0]
+            } while (val === undefined && retry++ < 2)
+        }
     }
 }
 

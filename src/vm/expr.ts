@@ -1,19 +1,3 @@
-/*
-The JD-VM runs a program, which is a set of handlers. Each handler is of the form
-•	wait on event/condition, followed by a
-•	sequence of guarded commands – the sequence is executed atomically (though may suspend if it contains a wait)
-After a handler finishes executing, it restarts (there is an implicit event loop around all the handlers, as usual). 
- 
-We will have a small key-value store to keep program state (perhaps we will have the ability to store lists of values as well as basic values) across the handler executions.
- 
-Commands can talk to JD services (probably via roles), as well as read/write program state, and wait on events/expressions. Any command can be guarded by an expression, for conditional execution.
- 
-Expressions can be against service registers (as in the test case) and program state.
- 
-*/
-
-import { exception } from "console"
-
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,6 +43,12 @@ export function unparse(e: jsep.Expression): string {
         }
         default:
             return "TODO"
+    }
+}
+
+export class ExprEvaluatorException {
+    constructor(public message: string) {
+
     }
 }
 
@@ -209,7 +199,7 @@ export class JDExprEvaluator {
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
                 if (val === undefined)
-                    throw "undefined-register"
+                    throw new ExprEvaluatorException(`lookup of ${unparse(e)} failed`)
                 this.exprStack.push(val)
                 return
             }
@@ -217,7 +207,7 @@ export class JDExprEvaluator {
                 const id = <jsep.Identifier>e
                 const val = this.env(id.name)
                 if (val === undefined)
-                    throw "undefined-register"
+                    throw new ExprEvaluatorException(`lookup of ${id.name} failed`)
                 this.exprStack.push(val)
                 return
             }
