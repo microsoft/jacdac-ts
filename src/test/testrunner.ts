@@ -439,7 +439,7 @@ export class JDTestCommandRunner extends JDEventSource {
         this._commandEvaluator = null
     }
 
-    async start() {
+    async startAsync() {
         this.status = JDTestCommandStatus.Active
         this._commandEvaluator = undefined
         await this.envChangeAsync()
@@ -473,7 +473,7 @@ export class JDTestCommandRunner extends JDEventSource {
                     )
                         this.status = JDTestCommandStatus.RequiresUserInput
                     else 
-                        this.finish(this._commandEvaluator.status)
+                        await this.finishAsync(this._commandEvaluator.status)
                 } catch (e) {
                     // show still be in the active state
                 }
@@ -481,18 +481,18 @@ export class JDTestCommandRunner extends JDEventSource {
         }
     }
 
-    cancel() {
-        this.finish(JDTestCommandStatus.Failed)
+    async cancelAsync() {
+        await this.finishAsync(JDTestCommandStatus.Failed)
     }
 
-    finish(s: JDTestCommandStatus) {
+    async finishAsync(s: JDTestCommandStatus) {
         if (
             this.isActive &&
             (s === JDTestCommandStatus.Failed ||
                 s === JDTestCommandStatus.Passed)
         ) {
             this.status = s
-            this.testRunner.finishCommand()
+            await this.testRunner.finishCommandAsync()
         }
     }
 }
@@ -526,7 +526,7 @@ export class JDTestRunner extends JDEventSource {
     async startAsync() {
         this.reset()
         this.status = JDTestStatus.Active
-        this.commandIndex = 0
+        this._commandIndex = 0
         await this.serviceTestRunner.refreshEnvironmentAsync()
     }
 
@@ -570,14 +570,14 @@ export class JDTestRunner extends JDEventSource {
         }
     }
 
-    private get commandIndex() {
+    private getCommandIndex() {
         return this._commandIndex
     }
 
-    private set commandIndex(index: number) {
+    private async setCommandIndex(index: number) {
         if (this._commandIndex !== index) {
             this._commandIndex = index
-            this.currentCommand?.start()
+            await this.currentCommand?.startAsync()
             this.emit(CHANGE)
         }
     }
@@ -605,10 +605,11 @@ export class JDTestRunner extends JDEventSource {
         return ret
     }
 
-    public finishCommand() {
-        if (this.commandIndex === this.commands.length - 1)
+    public async finishCommandAsync() {
+        if (this.getCommandIndex() === this.commands.length - 1)
             this.finish(commandStatusToTestStatus(this.currentCommand.status))
-        else this.commandIndex++
+        else 
+            await this.setCommandIndex(this.getCommandIndex()+1)
     }
 
     get currentCommand() {
@@ -644,9 +645,9 @@ export class JDServiceTestRunner extends JDServiceClient {
                 let regName = s.substr(s.indexOf(".")+1)
                 this._env.registerRegister(regName, async () => { 
                     try {
-                     await this.currentTest?.envChangeAsync() 
+                        await this.currentTest?.envChangeAsync() 
                     } catch(e){
-                        
+
                     }
                 })
             })
