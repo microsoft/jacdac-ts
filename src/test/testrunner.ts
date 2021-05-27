@@ -205,7 +205,7 @@ class JDCommandEvaluator {
         return this._startExpressions.find(r => r.e === e)
     }
 
-    public evaluate() {
+    public async evaluateAsync() {
         const testFun = cmdToTestFunction(this.command)
         const args = this.command.call.arguments
         this._status = JDTestCommandStatus.Active
@@ -364,10 +364,9 @@ class JDCommandEvaluator {
                 )
                 const ev = expr.eval(args[1])
                 const reg = args[0] as jsep.Identifier
-                if (this.testRunner.serviceTestRunner.writeRegister(reg.name, ev)) {
-                    this._status = JDTestCommandStatus.Passed
-                    this._progress = `wrote ${ev} to register ${reg.name}`
-                }
+                await this.testRunner.serviceTestRunner.writeRegisterAsync(reg.name, ev)
+                this._status = JDTestCommandStatus.Passed
+                this._progress = `wrote ${ev} to register ${reg.name}`
             }
         }
 
@@ -440,13 +439,13 @@ export class JDTestCommandRunner extends JDEventSource {
         this._commandEvaluator = null
     }
 
-    start() {
+    async start() {
         this.status = JDTestCommandStatus.Active
         this._commandEvaluator = undefined
-        this.envChange()
+        await this.envChangeAsync()
     }
 
-    envChange() {
+    async envChangeAsync() {
         if (this.isActive) {
             if (!this._commandEvaluator) {
                 this._commandEvaluator = new JDCommandEvaluator(
@@ -462,7 +461,7 @@ export class JDTestCommandRunner extends JDEventSource {
             } 
             if (this._commandEvaluator) {
                 try {
-                    this._commandEvaluator.evaluate()
+                    await this._commandEvaluator.evaluateAsync()
                     const newOutput: JDCommandOutput = {
                         message: this._commandEvaluator.prompt,
                         progress: this._commandEvaluator.progress,
@@ -514,7 +513,7 @@ export class JDTestRunner extends JDEventSource {
         )
     }
 
-    public reset() {
+    reset() {
         if (this.status !== JDTestStatus.NotReady) {
             this._status = JDTestStatus.NotReady
             this._commandIndex = undefined
@@ -524,11 +523,11 @@ export class JDTestRunner extends JDEventSource {
         }
     }
 
-    start() {
+    async startAsync() {
         this.reset()
         this.status = JDTestStatus.Active
         this.commandIndex = 0
-        this.serviceTestRunner.refreshEnvironment()
+        await this.serviceTestRunner.refreshEnvironmentAsync()
     }
 
     next() {
@@ -583,16 +582,16 @@ export class JDTestRunner extends JDEventSource {
         }
     }
 
-    public envChange() {
+    public async envChangeAsync() {
         if (this.status === JDTestStatus.Active) {
-            this.currentCommand?.envChange()
+            await this.currentCommand?.envChangeAsync()
         }
     }
 
-    public eventChange(event: string) {
+    public async eventChangeAsync(event: string) {
         if (this.status === JDTestStatus.Active) {
             this._currentEvent = event
-            this.envChange()
+            await this.envChangeAsync()
         }
     }
 
@@ -632,18 +631,31 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.testSpec.tests.forEach(t => {
             t.events.forEach(s => {
                 let eventName = s.substr(s.indexOf(".")+1)
-                this._env.registerEvent(eventName, () => { this.currentTest?.eventChange(eventName) })
+                this._env.registerEvent(eventName, async () => { 
+                    try {
+                        await this.currentTest?.eventChangeAsync(eventName) 
+                    } catch (e)
+                    {
+
+                    }
+                })
             })
             t.registers.forEach(s => {
                 let regName = s.substr(s.indexOf(".")+1)
-                this._env.registerRegister(regName, () => { this.currentTest?.envChange() })
+                this._env.registerRegister(regName, async () => { 
+                    try {
+                     await this.currentTest?.envChangeAsync() 
+                    } catch(e){
+                        
+                    }
+                })
             })
         })
         this.start()
     }
 
-    public refreshEnvironment() {
-        this._env.refreshRegistersAsync();
+    public async refreshEnvironmentAsync() {
+        await this._env.refreshRegistersAsync();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -652,8 +664,8 @@ export class JDServiceTestRunner extends JDServiceClient {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public writeRegister(regName: string, val: any) {
-        return this._env.writeRegisterAsync(regName, val)
+    public async writeRegisterAsync(regName: string, val: any) {
+        await this._env.writeRegisterAsync(regName, val)
     }
 
     private get testIndex() {

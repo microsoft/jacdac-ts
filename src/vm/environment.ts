@@ -53,22 +53,19 @@ export class VMServiceEnvironment extends JDServiceClient {
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
         )
-        if (pkt) 
+        if (pkt) {
             await this.service.sendCmdAsync(
                 pkt.identifier,
                 jdpack(pkt.packFormat, values),
                 true
             )
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async writeRegisterAsync(regName: string, ev: any) {
-        if (ev) {
-            const jdreg = this._registers[regName]
-            await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
-        } else {
-            // TODO
-        }
+        const jdreg = this._registers[regName]
+        await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
