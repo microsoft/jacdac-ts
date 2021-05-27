@@ -3,15 +3,10 @@ import { DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../jdom/constants"
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
-import { serviceSpecificationFromName } from "../jdom/spec"
-import {
-    addServiceProvider,
-    serviceProviderDefinitionFromServiceClass,
-} from "../../src/servers/servers"
 import { SMap } from "../jdom/utils"
 
 export class MyRoleManager extends JDEventSource {
-    private _roles: SMap<[string, JDService]> = {}
+    private _roles: SMap<{ shortName: string; service: JDService }> = {}
     private _devices: JDDevice[] = []
 
     constructor(
@@ -35,17 +30,21 @@ export class MyRoleManager extends JDEventSource {
 
     private addServices(dev: JDDevice) {
         dev.services().forEach(s => {
-            let role = Object.keys(this._roles).find(
+            let roleNeedingService = Object.keys(this._roles).find(
                 k =>
+                    !this._roles[k].service &&
                     this.nameMatch(
-                        this._roles[k][0],
+                        this._roles[k].shortName,
                         s.specification.shortName
                     )
             )
-            if (role && this._devices.indexOf(dev) === -1) {
-                this._roles[role] = [role,s]
+            if (roleNeedingService && this._devices.indexOf(dev) === -1) {
+                this._roles[roleNeedingService] = {
+                    shortName: s.specification.shortName,
+                    service: s,
+                }
                 this._devices.push(dev)
-                if (this.notify) this.notify(role, s, true)
+                if (this.notify) this.notify(roleNeedingService, s, true)
             }
         })
     }
@@ -53,19 +52,24 @@ export class MyRoleManager extends JDEventSource {
     private removeServices(dev: JDDevice) {
         if (this._devices.indexOf(dev) >= 0) {
             this._devices = this._devices.filter(d => d !== dev)
-            let role = Object.keys(this._roles).find(
-                k => dev.services().indexOf(this._roles[k][1]) >= 0
+            let rolesToUnmap = Object.keys(this._roles).filter(
+                k => dev.services().indexOf(this._roles[k].service) >= 0
             )
-            if (role) {
-                let service = this._roles[role][1]
-                this._roles[role] = [service.specification.shortName,undefined]
-                if (this.notify) this.notify(role, service, false)
+            if (rolesToUnmap.length > 0) {
+                rolesToUnmap.forEach(role => {
+                    let service = this._roles[role].service
+                    this._roles[role] = {
+                        shortName: service.specification.shortName,
+                        service: undefined,
+                    }
+                    if (this.notify) this.notify(role, service, false)
+                })
             }
         }
     }
 
     public getService(role: string): JDService {
-        return this._roles[role][1]
+        return this._roles[role].service
     }
 
     private nameMatch(n1: string, n2: string) {
@@ -80,25 +84,19 @@ export class MyRoleManager extends JDEventSource {
             .filter(s => this.nameMatch(s.specification.shortName, root))
     }
 
-    public addRoleService(role: string, serviceShortName: string) {
-        if (role in this._roles && this._roles[role][1]) return
-        this._roles[role] = [ serviceShortName, undefined]
-        let existingServices = Object.values(this._roles).filter(p => p[1]).map(p => p[1])
-        let ret = this.getServicesFromName(serviceShortName).filter(s => existingServices.indexOf(s) === -1)
+    public addRoleService(role: string, shortName: string) {
+        if (role in this._roles && this._roles[role].service) return
+        this._roles[role] = { shortName, service: undefined }
+        const existingServices = Object.values(this._roles)
+            .filter(p => p.service)
+            .map(p => p.service)
+        let ret = this.getServicesFromName(shortName).filter(
+            s => existingServices.indexOf(s) === -1
+        )
         if (ret.length > 0) {
-            this._roles[role][1] = ret[0]
+            this._roles[role].service = ret[0]
+            this._devices.push(ret[0].device)
             this.notify(role, ret[0], true)
-        } else {
-            // spin up a new simulator
-            // let service = serviceSpecificationFromName(serviceShortName)
-            // if (service) {
-            //     let provider = serviceProviderDefinitionFromServiceClass(
-            //         service?.classIdentifier
-            //     )
-            //     if (provider) {
-            //         let serviceProvider = addServiceProvider(this.bus, provider)
-            //     }
-            // }
         }
     }
 }
