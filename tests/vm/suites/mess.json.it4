@@ -1,0 +1,111 @@
+{
+  "roles": [
+    {
+      "role": "rotary encoder 1",
+      "serviceShortName": "rotaryencoder"
+    },
+    {
+      "role": "button 1",
+      "serviceShortName": "button"
+    },
+    {
+      "role": "buzzer 1",
+      "serviceShortName": "buzzer"
+    },
+    {
+      "role": "hid keyboard 1",
+      "serviceShortName": "hidkeyboard"
+    }
+  ],
+  "handlers": [
+    {
+      "commands": [
+        {
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "rotary encoder 1"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "position"
+                },
+                "computed": false
+              },
+              {
+                "type": "Literal",
+                "value": 0,
+                "raw": "0"
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "awaitChange"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "button 1"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "down"
+                },
+                "computed": false
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "awaitEvent"
+            }
+          }
+        },
+        {
+          "blocklyId": ")l;w$!B#.Bp*1^!bua=g"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "command": {
+            "type": "CallExpression",
+            "arguments": [
+              {
+                "type": "MemberExpression",
+                "object": {
+                  "type": "Identifier",
+                  "name": "button 1"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "name": "down"
+                },
+                "computed": false
+              }
+            ],
+            "callee": {
+              "type": "Identifier",
+              "name": "awaitEvent"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
