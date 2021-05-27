@@ -6,6 +6,7 @@ import {
 
 export interface IT4GuardedCommand {
     guard?: jsep.Expression
+    blocklyId?: string
     command: jsep.CallExpression
 }
 

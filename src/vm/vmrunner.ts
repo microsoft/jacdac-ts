@@ -13,7 +13,6 @@ import {
     JACDAC_VM_COMMAND_COMPLETED
 } from "./utils"
 import { unparse } from "./expr"
-import { emit } from "process"
 
 export enum VMStatus {
     Ready = "ready",
@@ -148,7 +147,7 @@ class IT4CommandEvaluator {
 class IT4CommandRunner {
     private _status = VMStatus.Running
     private _eval: IT4CommandEvaluator
-    constructor(private handlerId: number, env: Environment, private gc: IT4GuardedCommand) {
+    constructor(private handlerId: number, env: Environment, public gc: IT4GuardedCommand) {
         this._eval = new IT4CommandEvaluator(env, gc)
     }
 
@@ -229,7 +228,7 @@ class IT4HandlerRunner extends JDEventSource {
 
     private post_process() {
         if (this._currentCommand.status === VMStatus.Completed)
-            this.emit(JACDAC_VM_COMMAND_COMPLETED, (this._currentCommand as any).blocklyID)
+            this.emit(JACDAC_VM_COMMAND_COMPLETED, this._currentCommand.gc.blocklyId)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
     }
@@ -248,7 +247,7 @@ class IT4HandlerRunner extends JDEventSource {
                 this.handler.commands[this._commandIndex]
             )
         }
-        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, (this._currentCommand as any).blocklyID)
+        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.blocklyId)
         await this._currentCommand.step()
         this.post_process()
         while (
@@ -261,7 +260,7 @@ class IT4HandlerRunner extends JDEventSource {
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
-            this.emit(JACDAC_VM_COMMAND_ATTEMPTED, (this._currentCommand as any).blocklyID)
+            this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.blocklyId)
             await this._currentCommand.step()
             this.post_process()
         }
@@ -289,6 +288,7 @@ export class IT4ProgramRunner extends JDEventSource {
                     this._env.serviceChanged(role, service, added)
                     if (added) {
                         this.emit(JACDAC_ROLE_SERVICE_BOUND, service)
+                        this.emit(CHANGE)
                         this.program.handlers.forEach(h => {
                             regs.forEach(r => {
                                 if (r.role === role) {
@@ -303,6 +303,7 @@ export class IT4ProgramRunner extends JDEventSource {
                         })
                     } else {
                         this.emit(JACDAC_ROLE_SERVICE_UNBOUND, service)
+                        this.emit(CHANGE)
                     }
                 } catch (e) {
                     console.debug(e)
@@ -360,6 +361,10 @@ export class IT4ProgramRunner extends JDEventSource {
             console.debug(e)
             this.emit(ERROR, e)
         }
+    }
+
+    get roles() {
+        return this._rm.roles()
     }
 
     async run() {
