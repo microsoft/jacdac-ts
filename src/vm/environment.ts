@@ -8,12 +8,6 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 
-export class VMError {
-    constructor(public message: string, public id?: string) {
-
-    }
-}
-
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
@@ -161,9 +155,9 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public async refreshRegistersAsync() {
-        Object.values(this._envs).forEach(async s => {
+        for(const s of Object.values(this._envs)) {
             await s?.refreshRegistersAsync()
-        })
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -231,6 +225,8 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public unsubscribe() {
-        Object.values(this._envs).forEach(vs => vs.unmount())
+        for(const vs of Object.values(this._envs)) {
+            vs.unmount()
+         }
     }
 }

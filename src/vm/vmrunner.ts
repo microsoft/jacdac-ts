@@ -118,13 +118,10 @@ class IT4CommandEvaluator {
                 )
                 const ev = expr.eval(args[1])
                 const reg = args[0] as jsep.MemberExpression
-                if (
-                    (this.inst === "writeRegister" &&
-                        this.env.writeRegisterAsync(reg, ev)) ||
-                    (this.inst === "writeLocal" && this.env.writeLocal(reg, ev))
-                ) {
-                    this._status = VMStatus.Completed
-                }
+                if (this.inst === "writeRegister")
+                    await this.env.writeRegisterAsync(reg, ev)
+                else   
+                    this.env.writeLocal(reg, ev)
                 this._status = VMStatus.Completed
                 break
             }
@@ -338,13 +335,13 @@ export class IT4ProgramRunner extends JDEventSource {
             await this._env.refreshRegistersAsync()
             if (this._waitQueue.length > 0) {
                 const nextTime: IT4HandlerRunner[] = []
-                this._waitQueue.forEach(async h => {
+                for(const h of this._waitQueue) {
                     await h.step()
                     if (h.status !== VMStatus.Stopped) {
                         if (h.status === VMStatus.Completed) h.reset()
                         nextTime.push(h)
                     }
-                })
+                 }
                 this._waitQueue = nextTime
                 this._env.consumeEvent()
             } else {

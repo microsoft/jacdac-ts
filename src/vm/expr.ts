@@ -1,3 +1,5 @@
+import { JDVMError } from "./utils"
+
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,12 +45,6 @@ export function unparse(e: jsep.Expression): string {
         }
         default:
             return "TODO"
-    }
-}
-
-export class ExprEvaluatorException {
-    constructor(public message: string) {
-
     }
 }
 
@@ -199,7 +195,7 @@ export class JDExprEvaluator {
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
                 if (val === undefined)
-                    throw new ExprEvaluatorException(`lookup of ${unparse(e)} failed`)
+                    throw new JDVMError(`lookup of ${unparse(e)} failed`)
                 this.exprStack.push(val)
                 return
             }
@@ -207,7 +203,7 @@ export class JDExprEvaluator {
                 const id = <jsep.Identifier>e
                 const val = this.env(id.name)
                 if (val === undefined)
-                    throw new ExprEvaluatorException(`lookup of ${id.name} failed`)
+                    throw new JDVMError(`lookup of ${id.name} failed`)
                 this.exprStack.push(val)
                 return
             }
