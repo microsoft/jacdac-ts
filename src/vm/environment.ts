@@ -7,36 +7,7 @@ import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
-
-export async function refresh_env(registers: SMap<JDRegister>) {
-    for (const k in registers) {
-        const register = registers[k]
-        let retry = 0
-        let val: any = undefined
-        do {
-            await register.refresh()
-            val = register.unpackedValue?.[0]
-        } while (val === undefined && retry++ < 2)
-    }
-}
-
-// TODO: you want [ev] to be PackedValues and handle the arrays yourself.
-async function writeReg(reg: JDRegister, fmt: string, ev: any) {
-    await reg.sendSetPackedAsync(fmt, [ev], true)
-}
-
-async function sendCommand(
-    service: JDService,
-    pkt: jdspec.PacketInfo,
-    values: PackedValues
-) {
-    // console.log(pkt, values)
-    await service.sendCmdAsync(
-        pkt.identifier,
-        jdpack(pkt.packFormat, values),
-        true
-    )
-}
+import { JACDAC_ROLE_HAS_NO_SERVICE } from "./utils"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
@@ -72,22 +43,25 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public sendCommand(command: jsep.Identifier, values: PackedValues) {
+    public async sendCommandAsync(command: jsep.Identifier, values: PackedValues) {
         const commandName = command?.name
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
         )
-        if (pkt) sendCommand(this.service, pkt, values)
+        if (pkt) {
+            await this.service.sendCmdAsync(
+                pkt.identifier,
+                jdpack(pkt.packFormat, values),
+                true
+            )
+            console.log(this.service?.specification.shortName, command.name, values)
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public writeRegister(regName: string, ev: any) {
+    public async writeRegisterAsync(regName: string, ev: any) {
         const jdreg = this._registers[regName]
-        if (jdreg) {
-            writeReg(jdreg, jdreg.specification?.packFormat, ev)
-            return true
-        }
-        return false
+        await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,8 +93,11 @@ export class VMServiceEnvironment extends JDServiceClient {
         return undefined
     }
 
-    public refreshEnvironment() {
-        refresh_env(this._registers)
+    public async refreshRegistersAsync() {
+        for (const k in this._registers) {
+            const register = this._registers[k]
+            await register.refresh()
+        }
     }
 }
 
@@ -129,7 +106,7 @@ export class VMEnvironment extends JDEventSource {
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(private readonly notifyOnChange: () => void) {
+    constructor() {
         super()
     }
 
@@ -146,7 +123,7 @@ export class VMEnvironment extends JDEventSource {
     public registerRegister(role: string, reg: string) {
         const serviceEnv = this.getService(role)
         if (serviceEnv) {
-            serviceEnv.registerRegister(reg, this.notifyOnChange)
+            serviceEnv.registerRegister(reg, () => { this.emit(CHANGE)})
         }
     }
 
@@ -155,7 +132,7 @@ export class VMEnvironment extends JDEventSource {
         if (serviceEnv) {
             serviceEnv.registerEvent(ev, () => {
                 this._currentEvent = `${role}.${ev}`
-                this.notifyOnChange()
+                this.emit(CHANGE)
             })
         }
     }
@@ -171,19 +148,23 @@ export class VMEnvironment extends JDEventSource {
     private getService(e: jsep.MemberExpression | string) {
         const root = this.getRootName(e)
         if (!root) return undefined
-        return this._envs[root]
+        let s = this._envs[root]
+        if (!s) {
+            this.emit(JACDAC_ROLE_HAS_NO_SERVICE, root)
+        }
+        return s
     }
 
-    public refreshEnvironment() {
-        Object.values(this._envs).forEach(s => s?.refreshEnvironment())
+    public async refreshRegistersAsync() {
+        for(const s of Object.values(this._envs)) {
+            await s?.refreshRegistersAsync()
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public sendCommand(e: jsep.MemberExpression, values: PackedValues) {
+    public async sendCommandAsync(e: jsep.MemberExpression, values: PackedValues) {
         const serviceEnv = this.getService(e)
-        if (serviceEnv) {
-            serviceEnv.sendCommand(e.property as jsep.Identifier, values)
-        }
+        await serviceEnv?.sendCommandAsync(e.property as jsep.Identifier, values)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -198,7 +179,9 @@ export class VMEnvironment extends JDEventSource {
             return undefined
         }
         const serviceEnv = this.getService(e)
-        if (!serviceEnv) return undefined
+        if (!serviceEnv) {
+            return undefined
+        }
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
@@ -207,14 +190,13 @@ export class VMEnvironment extends JDEventSource {
         return undefined
     }
 
-    public writeRegister(e: jsep.MemberExpression | string, ev: any) {
+    public async writeRegisterAsync(e: jsep.MemberExpression | string, ev: any) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
-            return serviceEnv.writeRegister(reg, ev)
+            await serviceEnv.writeRegisterAsync(reg, ev)
         }
-        return false
     }
 
     public writeLocal(e: jsep.MemberExpression | string, ev: any) {
@@ -246,6 +228,8 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public unsubscribe() {
-        Object.values(this._envs).forEach(vs => vs.unmount())
+        for(const vs of Object.values(this._envs)) {
+            vs.unmount()
+         }
     }
 }
