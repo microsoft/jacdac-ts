@@ -2,6 +2,8 @@ export const JACDAC_VM_ERROR = "JacdacVMError"
 export const JACDAC_ROLE_SERVICE_BOUND = "JacdacVMRoleServiceBound"
 export const JACDAC_ROLE_SERVICE_UNBOUND = "JacdacVMRoleServiceUnbound"
 export const JACDAC_ROLE_HAS_NO_SERVICE = "JacdacVMRoleHasNoService"
+export const JACDAC_VM_COMMAND_ATTEMPTED = "JacdacVMCommandAttempted"
+export const JACDAC_VM_COMMAND_COMPLETED = "JacdacVMCommandCompleted"
 
 export class JDVMError extends Error {
     constructor(message: string, readonly jacdacName?: string) {

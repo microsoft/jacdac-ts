@@ -6,8 +6,14 @@ import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR } from "../jdom/constants"
 import { checkProgram } from "./ir"
-import { JACDAC_ROLE_SERVICE_BOUND, JACDAC_ROLE_SERVICE_UNBOUND } from "./utils"
+import { 
+    JACDAC_ROLE_SERVICE_BOUND, 
+    JACDAC_ROLE_SERVICE_UNBOUND,
+    JACDAC_VM_COMMAND_ATTEMPTED,
+    JACDAC_VM_COMMAND_COMPLETED
+} from "./utils"
 import { unparse } from "./expr"
+import { emit } from "process"
 
 export enum VMStatus {
     Ready = "ready",
@@ -188,7 +194,7 @@ class IT4CommandRunner {
     }
 }
 
-class IT4HandlerRunner {
+class IT4HandlerRunner extends JDEventSource {
     private _commandIndex: number
     private _currentCommand: IT4CommandRunner
     private stopped = false
@@ -198,6 +204,7 @@ class IT4HandlerRunner {
         public readonly env: Environment,
         private readonly handler: IT4Handler
     ) {
+        super()
         this.reset()
     }
 
@@ -221,6 +228,8 @@ class IT4HandlerRunner {
     }
 
     private post_process() {
+        if (this._currentCommand.status === VMStatus.Completed)
+            this.emit(JACDAC_VM_COMMAND_COMPLETED, (this._currentCommand as any).blocklyID)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
     }
@@ -239,11 +248,8 @@ class IT4HandlerRunner {
                 this.handler.commands[this._commandIndex]
             )
         }
-        try {
-            await this._currentCommand.step()
-        } catch (e) {
-            console.log(e)
-        }
+        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, (this._currentCommand as any).blocklyID)
+        await this._currentCommand.step()
         this.post_process()
         while (
             this._currentCommand.status === VMStatus.Completed &&
@@ -255,11 +261,8 @@ class IT4HandlerRunner {
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
-            try {
-                await this._currentCommand.step()
-            } catch (e) {
-                console.log(e)
-            }
+            this.emit(JACDAC_VM_COMMAND_ATTEMPTED, (this._currentCommand as any).blocklyID)
+            await this._currentCommand.step()
             this.post_process()
         }
         console.log(this.id, "handler-step-end")
