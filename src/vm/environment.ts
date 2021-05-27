@@ -54,6 +54,7 @@ export class VMServiceEnvironment extends JDServiceClient {
                 jdpack(pkt.packFormat, values),
                 true
             )
+            console.log(this.service?.specification.shortName, command.name, values)
         }
     }
 
@@ -105,7 +106,7 @@ export class VMEnvironment extends JDEventSource {
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(private readonly notifyOnChange: () => void) {
+    constructor() {
         super()
     }
 
@@ -122,7 +123,7 @@ export class VMEnvironment extends JDEventSource {
     public registerRegister(role: string, reg: string) {
         const serviceEnv = this.getService(role)
         if (serviceEnv) {
-            serviceEnv.registerRegister(reg, this.notifyOnChange)
+            serviceEnv.registerRegister(reg, () => { this.emit(CHANGE)})
         }
     }
 
@@ -131,7 +132,7 @@ export class VMEnvironment extends JDEventSource {
         if (serviceEnv) {
             serviceEnv.registerEvent(ev, () => {
                 this._currentEvent = `${role}.${ev}`
-                this.notifyOnChange()
+                this.emit(CHANGE)
             })
         }
     }

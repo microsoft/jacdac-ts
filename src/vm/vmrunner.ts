@@ -7,6 +7,7 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR } from "../jdom/constants"
 import { checkProgram } from "./ir"
 import { JACDAC_ROLE_SERVICE_BOUND, JACDAC_ROLE_SERVICE_UNBOUND } from "./utils"
+import { unparse } from "./expr"
 
 export enum VMStatus {
     Ready = "ready",
@@ -60,15 +61,17 @@ class IT4CommandEvaluator {
                 this._regSaved = this.evalExpression(args[0])
                 if (this.inst === "awaitChange")
                     this._changeSaved = this.evalExpression(args[1])
+            return true
         }
+        return false
     }
 
     public async evaluate() {
         this._status = VMStatus.Running
         if (!this._started) {
-            this.start()
+            const neededStart = this.start()
             this._started = true
-            return
+            if (neededStart) return
         }
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
@@ -118,10 +121,12 @@ class IT4CommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[1])
+                console.log("eval-end", unparse(args[1]))
                 const reg = args[0] as jsep.MemberExpression
-                if (this.inst === "writeRegister")
+                if (this.inst === "writeRegister") {
                     await this.env.writeRegisterAsync(reg, ev)
-                else   
+                    console.log("write-after-wait", unparse(reg), ev)
+                } else   
                     this.env.writeLocal(reg, ev)
                 this._status = VMStatus.Completed
                 break
@@ -137,7 +142,7 @@ class IT4CommandEvaluator {
 class IT4CommandRunner {
     private _status = VMStatus.Running
     private _eval: IT4CommandEvaluator
-    constructor(env: Environment, gc: IT4GuardedCommand) {
+    constructor(private handlerId: number, env: Environment, private gc: IT4GuardedCommand) {
         this._eval = new IT4CommandEvaluator(env, gc)
     }
 
@@ -159,10 +164,11 @@ class IT4CommandRunner {
     async step() {
         if (this.isWaiting) {
             try {
+                console.log(this.handlerId, unparse(this.gc.command))
                 await this._eval.evaluate()
                 this.finish(this._eval.status)
             } catch (e) {
-                console.debug(e)
+                console.log(e)
             }
         }
     }
@@ -172,6 +178,7 @@ class IT4CommandRunner {
     }
 
     private finish(s: VMStatus) {
+        console.log(this.handlerId, s)
         if (
             (this.isWaiting && s === VMStatus.Completed) ||
             s === VMStatus.Stopped
@@ -220,17 +227,23 @@ class IT4HandlerRunner {
 
     // run-to-completion semantics
     async step() {
-        // handler stopped or empty
+        // handler stopped or/ empty
         if (this.stopped || !this.handler.commands.length) return
-
+        // if (this._currentCommand?.status === VMStatus.Completed) return
+        console.log(this.id, "handler-step-begin")
         if (this._commandIndex === undefined) {
             this._commandIndex = 0
             this._currentCommand = new IT4CommandRunner(
+                this.id, 
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
         }
-        await this._currentCommand.step()
+        try {
+            await this._currentCommand.step()
+        } catch (e) {
+            console.log(e)
+        }
         this.post_process()
         while (
             this._currentCommand.status === VMStatus.Completed &&
@@ -238,12 +251,18 @@ class IT4HandlerRunner {
         ) {
             this._commandIndex++
             this._currentCommand = new IT4CommandRunner(
+                this.id, 
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
-            await this._currentCommand.step()
+            try {
+                await this._currentCommand.step()
+            } catch (e) {
+                console.log(e)
+            }
             this.post_process()
         }
+        console.log(this.id, "handler-step-end")
     }
 }
 
@@ -252,6 +271,7 @@ export class IT4ProgramRunner extends JDEventSource {
     private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
     private _running = false
+    private _in_run = false
     private _rm: MyRoleManager
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
@@ -286,9 +306,10 @@ export class IT4ProgramRunner extends JDEventSource {
                     this.emit(ERROR, e)
                 }
             })
-            this._env = new VMEnvironment(async () => {
+            this._env = new VMEnvironment()
+            this._env.subscribe(CHANGE, () => {
                 try {
-                    await this.run()
+                    this.run()
                 } catch (e) {
                     console.debug(e)
                     this.emit(ERROR, e)
@@ -323,22 +344,26 @@ export class IT4ProgramRunner extends JDEventSource {
         this.emit(CHANGE)
     }
 
-    async start() {
+    start() {
         if (this._running) return // already running
         try {
             this.program.roles.forEach(role => {
                 this._rm.addRoleService(role.role, role.serviceShortName)
             })
             this._running = true
-            this.emit(CHANGE)
-            await this.run()
+            this._in_run = false
+            this.run()
         } catch (e) {
+            console.debug(e)
             this.emit(ERROR, e)
         }
     }
 
     async run() {
         if (!this._running) return
+        if (this._in_run) return
+        this._in_run = true
+        console.log("run-BEGIN")
         try {
             await this._env.refreshRegistersAsync()
             if (this._waitQueue.length > 0) {
@@ -349,7 +374,7 @@ export class IT4ProgramRunner extends JDEventSource {
                         if (h.status === VMStatus.Completed) h.reset()
                         nextTime.push(h)
                     }
-                 }
+                }
                 this._waitQueue = nextTime
                 this._env.consumeEvent()
             } else {
@@ -359,5 +384,7 @@ export class IT4ProgramRunner extends JDEventSource {
             console.debug(e)
             this.emit(ERROR, e)
         }
+        this._in_run = false
+        console.log("run-END")
     }
 }
