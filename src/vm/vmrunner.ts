@@ -1,9 +1,7 @@
 import {
     IT4Program,
     IT4Handler,
-    IT4Base,
     IT4Command,
-    IT4IfThenElse,
 } from "./ir"
 import { MyRoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
@@ -20,6 +18,7 @@ import {
 } from "./utils"
 import { unparse } from "./expr"
 import { JDVMError } from "./utils"
+import { SMap } from "../jdom/utils"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TraceContext = any
@@ -45,6 +44,10 @@ interface Environment {
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     unsubscribe: () => void
+}
+
+class JumpException {
+    constructor(public label:string) {}
 }
 
 class IT4CommandEvaluator {
@@ -115,12 +118,17 @@ class IT4CommandEvaluator {
         }
         switch (this.inst) {
             case "breakOnCondition": {
+                const expr = this.checkExpression(args[0])
+                if (expr) {
+                    throw new JumpException((args[1] as jsep.Identifier).name)
+                }
                 break   
             }
             case "jump": {
-                break   
+                throw new JumpException((args[0] as jsep.Identifier).name) 
             }
             case "label": {
+                this._status = VMStatus.Completed
                 break   
             }
             case "awaitEvent": {
@@ -247,6 +255,7 @@ class IT4HandlerRunner extends JDEventSource {
     private _commandIndex: number
     private _currentCommand: IT4CommandRunner
     private stopped = false
+    private _labelToIndex: SMap<number> = {}
 
     constructor(
         public readonly parent: IT4ProgramRunner,
@@ -255,6 +264,14 @@ class IT4HandlerRunner extends JDEventSource {
         private readonly handler: IT4Handler
     ) {
         super()
+        // find the label commands (targets of jumps)
+        this.handler.commands.forEach((c,index) => {
+            const cmd = c as IT4Command
+            let id = cmd.command.callee as jsep.Identifier
+            if (id?.name === "label") {
+                this._labelToIndex[id.name] = index
+            }
+        })
         this.reset()
     }
 
@@ -271,24 +288,13 @@ class IT4HandlerRunner extends JDEventSource {
     }
 
     public reset() {
-        this._commandIndex = undefined
-        this._currentCommand = undefined
+        this.commandIndex = undefined
         this.stopped = false
     }
 
     cancel() {
         this.stopped = true
         this.env.unsubscribe()
-    }
-
-    private post_process() {
-        if (this._currentCommand.status === VMStatus.Completed)
-            this.emit(
-                JACDAC_VM_COMMAND_COMPLETED,
-                this._currentCommand.gc.sourceId
-            )
-        if (this._currentCommand.status === VMStatus.Stopped)
-            this.stopped = true
     }
 
     private getCommand() {
@@ -298,14 +304,33 @@ class IT4HandlerRunner extends JDEventSource {
         }
         return cmd as IT4Command
     }
-    // run-to-completion semantics
-    async step() {
-        // handler stopped or/ empty
-        if (this.stopped || !this.handler.commands.length) return
-        // if (this._currentCommand?.status === VMStatus.Completed) return
-        this.trace("step begin")
-        if (this._commandIndex === undefined) {
-            this._commandIndex = 0
+
+    private async executeCommandAsync() {
+        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
+        try {
+          await this._currentCommand.step()
+        } catch (e) {
+            if (e instanceof JumpException) {
+                const { label } = e as JumpException
+                const index = this._labelToIndex[label]
+                this.commandIndex = index;
+            }
+        }
+        if (this._currentCommand.status === VMStatus.Completed)
+            this.emit(
+                JACDAC_VM_COMMAND_COMPLETED,
+                this._currentCommand.gc.sourceId
+            )
+        if (this._currentCommand.status === VMStatus.Stopped)
+            this.stopped = true
+    }
+
+    private set commandIndex(index: number) {
+        if (index === undefined) {
+            this._currentCommand = undefined
+            this._currentCommand = undefined
+        } else if (index !== this._commandIndex) {
+            this._commandIndex = index
             this._currentCommand = new IT4CommandRunner(
                 this,
                 this.id,
@@ -313,26 +338,27 @@ class IT4HandlerRunner extends JDEventSource {
                 this.getCommand()
             )
         }
-        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
-        await this._currentCommand.step()
-        this.post_process()
+    }
+
+    private get commandIndex() {
+        return this._commandIndex
+    }
+
+    // run-to-completion semantics
+    async step() {
+        // handler stopped or/ empty
+        if (this.stopped || !this.handler.commands.length) return
+        this.trace("step begin")
+        if (this.commandIndex === undefined) {
+            this.commandIndex = 0
+        }
+        await this.executeCommandAsync()
         while (
             this._currentCommand.status === VMStatus.Completed &&
-            this._commandIndex < this.handler.commands.length - 1
+            this.commandIndex < this.handler.commands.length - 1
         ) {
             this._commandIndex++
-            this._currentCommand = new IT4CommandRunner(
-                this,
-                this.id,
-                this.env,
-                this.getCommand()
-            )
-            this.emit(
-                JACDAC_VM_COMMAND_ATTEMPTED,
-                this._currentCommand.gc.sourceId
-            )
-            await this._currentCommand.step()
-            this.post_process()
+            await this.executeCommandAsync()
         }
         this.trace("step end")
     }
