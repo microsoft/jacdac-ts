@@ -6,12 +6,16 @@ import { JDEventSource } from "./eventsource"
 import {
     CHANGE,
     CMD_GET_REG,
+    PACKET_DATA_NORMALIZE,
+    PACKET_INVALID_DATA,
     REGISTER_PRE_GET,
     REPORT_RECEIVE,
 } from "./constants"
 import { isRegister } from "./spec"
 
-function defaultFieldPayload(specification: jdspec.PacketMember): PackedSimpleValue {
+function defaultFieldPayload(
+    specification: jdspec.PacketMember
+): PackedSimpleValue {
     let r: PackedSimpleValue = undefined
     switch (specification.type) {
         case "bool":
@@ -91,7 +95,7 @@ export default class JDRegisterServer<
         }
 
         // keep a copy to handle reset
-        this.resetData = this.data?.slice(0);
+        this.resetData = this.data?.slice(0)
 
         // don't check boundaries if there are none
         this.skipBoundaryCheck = !this.specification?.fields.some(
@@ -107,10 +111,8 @@ export default class JDRegisterServer<
         return jdunpack(this.data, this.packFormat) as TValues
     }
 
-    setValues(values: TValues, skipChangeEvent?: boolean) {
-        if (this.readOnly) return
-
-        // enforce boundaries
+    private normalize(values: TValues) {
+        // enforce boundaries from spec
         if (!this.skipBoundaryCheck) {
             this.specification?.fields.forEach((field, fieldi) => {
                 if (field.isSimpleType) {
@@ -126,6 +128,20 @@ export default class JDRegisterServer<
             })
         }
 
+        // enforce other boundaries
+        this.emit(PACKET_DATA_NORMALIZE, values)
+    }
+
+    private shouldNormalize() {
+        return (
+            !this.skipBoundaryCheck || this.listenerCount(PACKET_DATA_NORMALIZE)
+        )
+    }
+
+    setValues(values: TValues, skipChangeEvent?: boolean) {
+        if (this.readOnly) return
+
+        if (this.shouldNormalize()) this.normalize(values)
         const d = jdpack(this.packFormat, values)
         if (!bufferEq(this.data, d)) {
             this.data = d
@@ -166,7 +182,22 @@ export default class JDRegisterServer<
         } else if (this.identifier >> 8 !== 0x1) {
             // set, non-const
             let changed = false
-            const d = pkt.data
+            let d = pkt.data
+
+            // unpack and check boundaries
+            if (this.shouldNormalize()) {
+                try {
+                    // unpack, apply boundaries, repack
+                    const values = jdunpack<TValues>(d, this.packFormat)
+                    this.normalize(values)
+                    d = jdpack<TValues>(this.packFormat, values)
+                } catch (e) {
+                    // invalid format, refuse
+                    this.emit(PACKET_INVALID_DATA, pkt)
+                }
+            }
+
+            // test if anything changed
             if (!bufferEq(this.data, d)) {
                 this.data = d
                 changed = true
