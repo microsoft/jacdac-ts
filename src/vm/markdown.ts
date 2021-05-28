@@ -120,11 +120,12 @@ export function parseITTTMarkdownToJSON(
             if (currentHandler.commands.length === 0) {
                 if (command?.id === "role") {
                     // TODO: check
-                    let role = (root.arguments[0] as jsep.Identifier).name
-                    let serviceShortName = (
+                    const role = (root.arguments[0] as jsep.Identifier).name
+                    const serviceShortName = (
                         root.arguments[1] as jsep.Identifier
                     ).name
-                    let service = serviceSpecificationFromName(serviceShortName)
+                    const service =
+                        serviceSpecificationFromName(serviceShortName)
                     if (!service)
                         error(
                             `can't find service with shortId=${serviceShortName}`
@@ -134,7 +135,7 @@ export function parseITTTMarkdownToJSON(
                     else
                         info.roles.push({
                             role: role,
-                            serviceShortName: serviceShortName,
+                            serviceShortId: serviceShortName,
                         })
                     return
                 } else if (

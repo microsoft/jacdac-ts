@@ -3,10 +3,11 @@ import {
     CheckExpression,
     SpecSymbolResolver,
 } from "../../jacdac-spec/spectool/jdutils"
+import { assert } from "../jdom/utils"
 
 export interface IT4GuardedCommand {
     guard?: jsep.Expression
-    blocklyId?: string
+    sourceId?: string
     command: jsep.CallExpression
 }
 
@@ -17,7 +18,7 @@ export interface IT4Handler {
 
 export interface IT4Role {
     role: string
-    serviceShortName: string
+    serviceShortId: string
 }
 
 export interface IT4Program {
@@ -29,12 +30,14 @@ export interface IT4Program {
 
 export const getServiceFromRole = (info: IT4Program) => (role: string) => {
     // lookup in roles first
-    let shortId = info.roles.find(pair => pair.role === role)
+    const shortId = info.roles.find(pair => pair.role === role)
     if (shortId) {
         // must succeed
-        return serviceSpecificationFromName(shortId.serviceShortName)
+        const def = serviceSpecificationFromName(shortId.serviceShortId)
+        assert(!!def, `service ${shortId.serviceShortId} not resolved`)
+        return def
     } else {
-        let service = serviceSpecificationFromName(role)
+        const service = serviceSpecificationFromName(role)
         return service
     }
 }
