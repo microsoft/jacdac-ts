@@ -1,11 +1,17 @@
-import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
+import {
+    IT4Program,
+    IT4Handler,
+    IT4Base,
+    IT4Command,
+    IT4IfThenElse,
+} from "./ir"
 import { MyRoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
-import { checkProgram } from "./ir"
+import { checkProgram, compileProgram } from "./ir"
 import {
     JACDAC_ROLE_SERVICE_BOUND,
     JACDAC_ROLE_SERVICE_UNBOUND,
@@ -13,6 +19,7 @@ import {
     JACDAC_VM_COMMAND_COMPLETED,
 } from "./utils"
 import { unparse } from "./expr"
+import { JDVMError } from "./utils"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TraceContext = any
@@ -48,7 +55,7 @@ class IT4CommandEvaluator {
     constructor(
         public parent: IT4CommandRunner,
         private readonly env: Environment,
-        private readonly gc: IT4GuardedCommand
+        private readonly gc: IT4Command
     ) {}
 
     trace(msg: string, context: TraceContext = {}) {
@@ -107,6 +114,15 @@ class IT4CommandEvaluator {
             return
         }
         switch (this.inst) {
+            case "breakOnCondition": {
+                break   
+            }
+            case "jump": {
+                break   
+            }
+            case "label": {
+                break   
+            }
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
@@ -176,7 +192,7 @@ class IT4CommandRunner {
         public readonly parent: IT4HandlerRunner,
         private handlerId: number,
         env: Environment,
-        public gc: IT4GuardedCommand
+        public gc: IT4Command
     ) {
         this._eval = new IT4CommandEvaluator(this, env, gc)
     }
@@ -275,6 +291,13 @@ class IT4HandlerRunner extends JDEventSource {
             this.stopped = true
     }
 
+    private getCommand() {
+        let cmd =  this.handler.commands[this._commandIndex]
+        if (cmd.type === "ite") {
+            throw new JDVMError("ite not compiled away")
+        }
+        return cmd as IT4Command
+    }
     // run-to-completion semantics
     async step() {
         // handler stopped or/ empty
@@ -287,7 +310,7 @@ class IT4HandlerRunner extends JDEventSource {
                 this,
                 this.id,
                 this.env,
-                this.handler.commands[this._commandIndex]
+                this.getCommand()
             )
         }
         this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
@@ -302,7 +325,7 @@ class IT4HandlerRunner extends JDEventSource {
                 this,
                 this.id,
                 this.env,
-                this.handler.commands[this._commandIndex]
+                this.getCommand()
             )
             this.emit(
                 JACDAC_VM_COMMAND_ATTEMPTED,
@@ -322,17 +345,19 @@ export class IT4ProgramRunner extends JDEventSource {
     private _running = false
     private _in_run = false
     private _rm: MyRoleManager
+    private _program: IT4Program
 
     trace(message: string, context: TraceContext = {}) {
         this.emit(TRACE, { message, context })
     }
 
-    constructor(private readonly program: IT4Program, bus: JDBus) {
+    constructor(prog: IT4Program, bus: JDBus) {
         super()
         try {
-            const [regs, events] = checkProgram(program)
-            if (program.errors.length > 0) {
-                console.debug(program.errors)
+            this._program = compileProgram(prog)
+            const [regs, events] = checkProgram(this._program )
+            if (this._program .errors.length > 0) {
+                console.debug(this._program .errors)
             }
             this._rm = new MyRoleManager(bus, (role, service, added) => {
                 try {
@@ -340,7 +365,7 @@ export class IT4ProgramRunner extends JDEventSource {
                     if (added) {
                         this.emit(JACDAC_ROLE_SERVICE_BOUND, service)
                         this.emit(CHANGE)
-                        this.program.handlers.forEach(h => {
+                        this._program.handlers.forEach(h => {
                             regs.forEach(r => {
                                 if (r.role === role) {
                                     this._env.registerRegister(role, r.register)
@@ -370,7 +395,7 @@ export class IT4ProgramRunner extends JDEventSource {
                     this.emit(ERROR, e)
                 }
             })
-            this._handlers = program.handlers.map(
+            this._handlers = this._program.handlers.map(
                 (h, index) => new IT4HandlerRunner(this, index, this._env, h)
             )
             this._waitQueue = this._handlers.slice(0)
@@ -404,7 +429,7 @@ export class IT4ProgramRunner extends JDEventSource {
         if (this._running) return // already running
         this.trace("start")
         try {
-            this.program.roles.forEach(role => {
+            this._program.roles.forEach(role => {
                 this._rm.addRoleService(role.role, role.serviceShortId)
             })
             this._running = true

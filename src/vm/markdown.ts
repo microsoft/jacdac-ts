@@ -1,10 +1,16 @@
 import jsep from "jsep"
 
 import {
-    CheckExpression,
+    IT4Checker,
     SpecSymbolResolver,
 } from "../../jacdac-spec/spectool/jdutils"
-import { IT4Program, IT4Handler, IT4Functions, getServiceFromRole } from "./ir"
+import {
+    IT4Program,
+    IT4Handler,
+    IT4Functions,
+    IT4Command,
+    getServiceFromRole,
+} from "./ir"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
 const supportedExpressions: jsep.ExpressionType[] = [
@@ -23,7 +29,6 @@ export function parseITTTMarkdownToJSON(
 ): IT4Program {
     filecontent = (filecontent || "").replace(/\r/g, "")
     const info: IT4Program = {
-        description: "",
         roles: [],
         handlers: [],
     }
@@ -40,7 +45,7 @@ export function parseITTTMarkdownToJSON(
         e => error(e)
     )
 
-    const checkExpression = new CheckExpression(
+    const checkExpression = new IT4Checker(
         symbolResolver,
         (t: jsep.ExpressionType) => supportedExpressions.indexOf(t) >= 0,
         e => error(e)
@@ -86,8 +91,7 @@ export function parseITTTMarkdownToJSON(
                 handlerHeading = ""
                 const [, hd, cont] = m
                 if (hd == "#") {
-                    if (!info.description) info.description = cont.trim()
-                    else error("use ## to start a handler, not #")
+                    error("use ## to start a handler, not #")
                 } else if (hd == "##") {
                     if (currentHandler) finishHandler(symbolResolver)
                     handlerHeading = cont.trim()
@@ -105,14 +109,13 @@ export function parseITTTMarkdownToJSON(
             if (!handlerHeading)
                 error(`every handler must have a description (via ##)`)
             currentHandler = {
-                description: handlerHeading,
                 commands: [],
             }
             handlerHeading = ""
         }
 
         const root = <jsep.CallExpression>jsep(expanded)
-        const ret = checkExpression.check(root, IT4Functions)
+        const ret = checkExpression.checkCommand(root, IT4Functions)
 
         if (ret) {
             const [command, root] = ret
@@ -154,7 +157,10 @@ export function parseITTTMarkdownToJSON(
                 }
             }
 
-            currentHandler.commands.push({ guard: undefined, command: root })
+            currentHandler.commands.push({
+                type: "cmd",
+                command: root,
+            } as IT4Command)
         }
     }
 

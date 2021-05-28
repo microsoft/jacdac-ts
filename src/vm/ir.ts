@@ -1,19 +1,29 @@
 import { serviceSpecificationFromName } from "../jdom/spec"
 import {
-    CheckExpression,
+    IT4Checker,
     SpecSymbolResolver,
 } from "../../jacdac-spec/spectool/jdutils"
 import { assert } from "../jdom/utils"
 
-export interface IT4GuardedCommand {
-    guard?: jsep.Expression
+export interface IT4Base {
+    type: "ite" | "cmd"
     sourceId?: string
+}
+
+export interface IT4IfThenElse extends IT4Base {
+    type: "ite"
+    expr: jsep.Expression
+    then?: IT4Base[]
+    else?: IT4Base[]
+}
+
+export interface IT4Command extends IT4Base {
+    type: "cmd"
     command: jsep.CallExpression
 }
 
 export interface IT4Handler {
-    description?: string
-    commands: IT4GuardedCommand[]
+    commands: IT4Base[]
 }
 
 export interface IT4Role {
@@ -22,7 +32,6 @@ export interface IT4Role {
 }
 
 export interface IT4Program {
-    description?: string
     roles: IT4Role[]
     handlers: IT4Handler[]
     errors?: jdspec.Diagnostic[]
@@ -52,6 +61,120 @@ export interface RoleEvent {
     event: string
 }
 
+export function toIdentifier(id: string) {
+    return {
+        type: "Identifier",
+        name: id,
+    } as jsep.Identifier
+}
+
+export function toMemberExpression(root: string, field: string | jsep.Expression) {
+    return {
+        type: "MemberExpression",
+        object: toIdentifier(root),
+        property: typeof field === "string" ? toIdentifier(field) : field,
+        computed: false,
+    } as jsep.MemberExpression
+}
+
+
+function handlerVisitor(
+    handler: IT4Handler,
+    visitITE: (ite: IT4IfThenElse, time: number) => void,
+    visitCommand: (c: IT4Command) => void
+) {
+    handler.commands.forEach(visitBase)
+
+    function visitBase(base: IT4Base) {
+        switch (base.type) {
+            case "cmd": {
+                if (visitCommand) visitCommand(base as IT4Command)
+                break
+            }
+            case "ite": {
+                const ite = base as IT4IfThenElse
+                if (visitITE) visitITE(ite, 0)
+                ite?.else.forEach(visitBase)
+                if (visitITE) visitITE(ite, 1)
+                ite?.then.forEach(visitBase)
+                if (visitITE) visitITE(ite, 2)
+            }
+        }
+    }
+}
+
+export function compileProgram(prog: IT4Program) {
+    let newProgram: IT4Program = { roles: prog.roles.slice(0), handlers: [] }
+    newProgram.handlers = prog.handlers.map(h => {
+        return { commands: removeIfThenElse(h) }
+    })
+    return newProgram
+}
+
+function removeIfThenElse(handler: IT4Handler): IT4Base[] {
+    let newSequence: IT4Command[] = []
+    let labelId = 1
+    let labels: { then: string; end: string }[] = []
+    handlerVisitor(
+        handler,
+        (ite, time) => {
+            switch (time) {
+                case 0: {
+                    // create the labels and branch instruction
+                    const then = `then_${labelId}`
+                    const end = `end_${labelId}`
+                    labels.push({ then, end })
+                    labelId++
+                    newSequence.push({
+                        type: "cmd",
+                        command: {
+                            type: "CallExpression",
+                            callee: toIdentifier("branchOnCondition"),
+                            arguments: [ ite.expr, toIdentifier(then) ]
+                        },
+                    })
+                }
+                case 1: {
+                    // insert the jump and then label
+                    let { then, end } = labels[labels.length - 1]
+                    newSequence.push({
+                        type: "cmd",
+                        command: {
+                            type: "CallExpression",
+                            callee: toIdentifier("jump"),
+                            arguments: [ toIdentifier("end") ]
+                        },
+                    })
+                    newSequence.push({
+                        type: "cmd",
+                        command: {
+                            type: "CallExpression",
+                            callee: toIdentifier("label"),
+                            arguments: [ toIdentifier("then") ]
+                        },
+                    })
+                }
+                case 2: {
+                    let { end } = labels[labels.length - 1]
+                    newSequence.push({
+                        type: "cmd",
+                        command: {
+                            type: "CallExpression",
+                            callee: toIdentifier("label"),
+                            arguments: [ toIdentifier(end) ]
+                        },
+                    })
+                    labels.pop()
+                }
+            }
+        },
+        cmd => {
+            newSequence.push(cmd)
+        }
+    )
+    return newSequence
+}
+
 export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
     prog.errors = []
     let errorFun = (e: string) => {
@@ -62,12 +185,13 @@ export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
         getServiceFromRole(prog),
         errorFun
     )
-    const checker = new CheckExpression(symbolResolver, _ => true, errorFun)
+    const checker = new IT4Checker(symbolResolver, _ => true, errorFun)
     prog.handlers.forEach(h => {
-        h.commands.forEach(c => {
-            checker.check(c.command, IT4Functions)
-        })
+        handlerVisitor(h, undefined, c =>
+            checker.checkCommand(c.command, IT4Functions)
+        )
     })
+
     return [
         symbolResolver.registers.map(s => {
             const [root, fld] = s.split(".")
@@ -89,9 +213,30 @@ export type JDIT4Functions =
     | "writeRegister"
     | "writeLocal"
     | "halt"
+    | "label"
+    | "jump"
+    | "branchOnCondition"
     | "role"
 
 export const IT4Functions: jdtest.TestFunctionDescription[] = [
+    {
+        id: "label",
+        args: ["Identifier"],
+        prompt: `label target {1}`,
+        context: "command",
+    },
+    {
+        id: "jump",
+        args: ["Identifier"],
+        prompt: `jump to label {1}`,
+        context: "command",
+    },
+    {
+        id: "branchOnCondition",
+        args: ["boolean", "Identifier"],
+        prompt: `if {1} then jump to label {2}`,
+        context: "command",
+    },
     {
         id: "awaitRegister",
         args: ["register"],
