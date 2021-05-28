@@ -4,15 +4,18 @@ import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, ERROR } from "../jdom/constants"
+import { CHANGE, ERROR, TRACE } from "../jdom/constants"
 import { checkProgram } from "./ir"
-import { 
-    JACDAC_ROLE_SERVICE_BOUND, 
+import {
+    JACDAC_ROLE_SERVICE_BOUND,
     JACDAC_ROLE_SERVICE_UNBOUND,
     JACDAC_VM_COMMAND_ATTEMPTED,
-    JACDAC_VM_COMMAND_COMPLETED
+    JACDAC_VM_COMMAND_COMPLETED,
 } from "./utils"
 import { unparse } from "./expr"
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TraceContext = any
 
 export enum VMStatus {
     Ready = "ready",
@@ -22,8 +25,14 @@ export enum VMStatus {
 }
 
 interface Environment {
-    writeRegisterAsync: (e: jsep.MemberExpression | string, v: any) => Promise<void>
-    sendCommandAsync: (command: jsep.MemberExpression, values: any[]) => Promise<void>
+    writeRegisterAsync: (
+        e: jsep.MemberExpression | string,
+        v: any
+    ) => Promise<void>
+    sendCommandAsync: (
+        command: jsep.MemberExpression,
+        values: any[]
+    ) => Promise<void>
     refreshRegistersAsync: () => Promise<void>
     lookup: (e: jsep.MemberExpression | string) => any
     writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
@@ -37,9 +46,14 @@ class IT4CommandEvaluator {
     private _changeSaved: number = undefined
     private _started = false
     constructor(
+        public parent: IT4CommandRunner,
         private readonly env: Environment,
         private readonly gc: IT4GuardedCommand
     ) {}
+
+    trace(msg: string, context: TraceContext = {}) {
+        this.parent.trace(msg, { command: this.gc.command.type, ...context })
+    }
 
     get status() {
         return this._status
@@ -59,13 +73,15 @@ class IT4CommandEvaluator {
     }
 
     private start() {
-        if (this.gc.command.callee.type !== "MemberExpression" &&
-            (this.inst === "awaitRegister" || this.inst === "awaitChange")) {
-                // need to capture register value for awaitChange/awaitRegister
-                const args = this.gc.command.arguments
-                this._regSaved = this.evalExpression(args[0])
-                if (this.inst === "awaitChange")
-                    this._changeSaved = this.evalExpression(args[1])
+        if (
+            this.gc.command.callee.type !== "MemberExpression" &&
+            (this.inst === "awaitRegister" || this.inst === "awaitChange")
+        ) {
+            // need to capture register value for awaitChange/awaitRegister
+            const args = this.gc.command.arguments
+            this._regSaved = this.evalExpression(args[0])
+            if (this.inst === "awaitChange")
+                this._changeSaved = this.evalExpression(args[1])
             return true
         }
         return false
@@ -107,17 +123,24 @@ class IT4CommandEvaluator {
                 break
             }
             case "awaitChange":
-            case "awaitRegister": {  
+            case "awaitRegister": {
                 const regValue = this.evalExpression(args[0])
-                if (this.inst === "awaitRegister" && regValue !== this._regSaved ||
-                    this.inst === "awaitChange" &&
-                        (this._changeSaved === 0 && regValue !== this._regSaved ||
-                         this._changeSaved < 0 && regValue <= this._regSaved + this._changeSaved ||
-                         this._changeSaved > 0 && regValue >= this._regSaved + this._changeSaved)) {
+                if (
+                    (this.inst === "awaitRegister" &&
+                        regValue !== this._regSaved) ||
+                    (this.inst === "awaitChange" &&
+                        ((this._changeSaved === 0 &&
+                            regValue !== this._regSaved) ||
+                            (this._changeSaved < 0 &&
+                                regValue <=
+                                    this._regSaved + this._changeSaved) ||
+                            (this._changeSaved > 0 &&
+                                regValue >=
+                                    this._regSaved + this._changeSaved)))
+                ) {
                     this._status = VMStatus.Completed
                 }
                 break
-
             }
             case "writeRegister":
             case "writeLocal": {
@@ -126,13 +149,15 @@ class IT4CommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[1])
-                console.log("eval-end", unparse(args[1]))
+                this.trace("eval-end", { expr: unparse(args[1]) })
                 const reg = args[0] as jsep.MemberExpression
                 if (this.inst === "writeRegister") {
                     await this.env.writeRegisterAsync(reg, ev)
-                    console.log("write-after-wait", unparse(reg), ev)
-                } else   
-                    this.env.writeLocal(reg, ev)
+                    this.trace("write-after-wait", {
+                        reg: unparse(reg),
+                        expr: ev,
+                    })
+                } else this.env.writeLocal(reg, ev)
                 this._status = VMStatus.Completed
                 break
             }
@@ -147,8 +172,17 @@ class IT4CommandEvaluator {
 class IT4CommandRunner {
     private _status = VMStatus.Running
     private _eval: IT4CommandEvaluator
-    constructor(private handlerId: number, env: Environment, public gc: IT4GuardedCommand) {
-        this._eval = new IT4CommandEvaluator(env, gc)
+    constructor(
+        public readonly parent: IT4HandlerRunner,
+        private handlerId: number,
+        env: Environment,
+        public gc: IT4GuardedCommand
+    ) {
+        this._eval = new IT4CommandEvaluator(this, env, gc)
+    }
+
+    trace(msg: string, context: TraceContext = {}) {
+        this.parent.trace(msg, { handler: this.handlerId, ...context })
     }
 
     get status() {
@@ -169,7 +203,7 @@ class IT4CommandRunner {
     async step() {
         if (this.isWaiting) {
             try {
-                console.log(this.handlerId, unparse(this.gc.command))
+                this.trace(unparse(this.gc.command))
                 await this._eval.evaluate()
                 this.finish(this._eval.status)
             } catch (e) {
@@ -183,7 +217,7 @@ class IT4CommandRunner {
     }
 
     private finish(s: VMStatus) {
-        console.log(this.handlerId, s)
+        this.trace(s)
         if (
             (this.isWaiting && s === VMStatus.Completed) ||
             s === VMStatus.Stopped
@@ -199,12 +233,17 @@ class IT4HandlerRunner extends JDEventSource {
     private stopped = false
 
     constructor(
+        public readonly parent: IT4ProgramRunner,
         public readonly id: number,
         public readonly env: Environment,
         private readonly handler: IT4Handler
     ) {
         super()
         this.reset()
+    }
+
+    trace(msg: string, context: TraceContext = {}) {
+        this.parent.trace(msg, { id: this.id, ...context })
     }
 
     get status() {
@@ -228,7 +267,10 @@ class IT4HandlerRunner extends JDEventSource {
 
     private post_process() {
         if (this._currentCommand.status === VMStatus.Completed)
-            this.emit(JACDAC_VM_COMMAND_COMPLETED, this._currentCommand.gc.blocklyId)
+            this.emit(
+                JACDAC_VM_COMMAND_COMPLETED,
+                this._currentCommand.gc.sourceId
+            )
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
     }
@@ -238,16 +280,17 @@ class IT4HandlerRunner extends JDEventSource {
         // handler stopped or/ empty
         if (this.stopped || !this.handler.commands.length) return
         // if (this._currentCommand?.status === VMStatus.Completed) return
-        console.log(this.id, "handler-step-begin")
+        this.trace("step begin")
         if (this._commandIndex === undefined) {
             this._commandIndex = 0
             this._currentCommand = new IT4CommandRunner(
-                this.id, 
+                this,
+                this.id,
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
         }
-        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.blocklyId)
+        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
         await this._currentCommand.step()
         this.post_process()
         while (
@@ -256,15 +299,19 @@ class IT4HandlerRunner extends JDEventSource {
         ) {
             this._commandIndex++
             this._currentCommand = new IT4CommandRunner(
-                this.id, 
+                this,
+                this.id,
                 this.env,
                 this.handler.commands[this._commandIndex]
             )
-            this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.blocklyId)
+            this.emit(
+                JACDAC_VM_COMMAND_ATTEMPTED,
+                this._currentCommand.gc.sourceId
+            )
             await this._currentCommand.step()
             this.post_process()
         }
-        console.log(this.id, "handler-step-end")
+        this.trace("step end")
     }
 }
 
@@ -275,6 +322,10 @@ export class IT4ProgramRunner extends JDEventSource {
     private _running = false
     private _in_run = false
     private _rm: MyRoleManager
+
+    trace(message: string, context: TraceContext = {}) {
+        this.emit(TRACE, { message, context })
+    }
 
     constructor(private readonly program: IT4Program, bus: JDBus) {
         super()
@@ -320,7 +371,7 @@ export class IT4ProgramRunner extends JDEventSource {
                 }
             })
             this._handlers = program.handlers.map(
-                (h, index) => new IT4HandlerRunner(index, this._env, h)
+                (h, index) => new IT4HandlerRunner(this, index, this._env, h)
             )
             this._waitQueue = this._handlers.slice(0)
         } catch (e) {
@@ -346,13 +397,15 @@ export class IT4ProgramRunner extends JDEventSource {
         this._waitQueue = this._handlers.slice(0)
         this._waitQueue.forEach(h => h.reset())
         this.emit(CHANGE)
+        this.trace("cancelled")
     }
 
     start() {
         if (this._running) return // already running
+        this.trace("start")
         try {
             this.program.roles.forEach(role => {
-                this._rm.addRoleService(role.role, role.serviceShortName)
+                this._rm.addRoleService(role.role, role.serviceShortId)
             })
             this._running = true
             this._in_run = false
@@ -364,19 +417,19 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     get roles() {
-        return this._rm.roles()
+        return this._rm?.roles()
     }
 
     async run() {
         if (!this._running) return
         if (this._in_run) return
+        this.trace("run")
         this._in_run = true
-        console.log("run-BEGIN")
         try {
             await this._env.refreshRegistersAsync()
             if (this._waitQueue.length > 0) {
                 const nextTime: IT4HandlerRunner[] = []
-                for(const h of this._waitQueue) {
+                for (const h of this._waitQueue) {
                     await h.step()
                     if (h.status !== VMStatus.Stopped) {
                         if (h.status === VMStatus.Completed) h.reset()
@@ -393,6 +446,6 @@ export class IT4ProgramRunner extends JDEventSource {
             this.emit(ERROR, e)
         }
         this._in_run = false
-        console.log("run-END")
+        this.trace("run end")
     }
 }
