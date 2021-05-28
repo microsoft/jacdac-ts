@@ -94,9 +94,9 @@ function handlerVisitor(
             case "ite": {
                 const ite = base as IT4IfThenElse
                 if (visitITE) visitITE(ite, 0)
-                ite?.else.forEach(visitBase)
+                ite?.else?.forEach(visitBase)
                 if (visitITE) visitITE(ite, 1)
-                ite?.then.forEach(visitBase)
+                ite?.then?.forEach(visitBase)
                 if (visitITE) visitITE(ite, 2)
             }
         }
@@ -112,9 +112,9 @@ export function compileProgram(prog: IT4Program) {
 }
 
 function removeIfThenElse(handler: IT4Handler): IT4Base[] {
-    let newSequence: IT4Command[] = []
+    const newSequence: IT4Command[] = []
+    const labels: { then: string; end: string }[] = []
     let labelId = 1
-    let labels: { then: string; end: string }[] = []
     handlerVisitor(
         handler,
         (ite, time) => {
@@ -133,16 +133,17 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
                             arguments: [ ite.expr, toIdentifier(then) ]
                         },
                     })
+                    break
                 }
                 case 1: {
                     // insert the jump and then label
-                    let { then, end } = labels[labels.length - 1]
+                    const { then, end } = labels[labels.length - 1]
                     newSequence.push({
                         type: "cmd",
                         command: {
                             type: "CallExpression",
                             callee: toIdentifier("jump"),
-                            arguments: [ toIdentifier("end") ]
+                            arguments: [ toIdentifier(end) ]
                         },
                     })
                     newSequence.push({
@@ -150,12 +151,14 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
                         command: {
                             type: "CallExpression",
                             callee: toIdentifier("label"),
-                            arguments: [ toIdentifier("then") ]
+                            arguments: [ toIdentifier(then) ]
                         },
                     })
+                    break
                 }
                 case 2: {
-                    let { end } = labels[labels.length - 1]
+                    assert(labels.length > 0)
+                    const { end } = labels[labels.length - 1]
                     newSequence.push({
                         type: "cmd",
                         command: {
