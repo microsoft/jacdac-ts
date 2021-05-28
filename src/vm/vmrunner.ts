@@ -313,6 +313,7 @@ class IT4HandlerRunner extends JDEventSource {
             if (e instanceof JumpException) {
                 const { label } = e as JumpException
                 const index = this._labelToIndex[label]
+                console.log(label,index)
                 this.commandIndex = index;
             } else {
                 throw e
@@ -329,7 +330,7 @@ class IT4HandlerRunner extends JDEventSource {
 
     private set commandIndex(index: number) {
         if (index === undefined) {
-            this._currentCommand = undefined
+            this._commandIndex = undefined
             this._currentCommand = undefined
         } else if (index !== this._commandIndex) {
             this._commandIndex = index
@@ -359,7 +360,7 @@ class IT4HandlerRunner extends JDEventSource {
             this._currentCommand.status === VMStatus.Completed &&
             this.commandIndex < this.handler.commands.length - 1
         ) {
-            this._commandIndex++
+            this.commandIndex++
             await this.executeCommandAsync()
         }
         this.trace("step end")
@@ -383,6 +384,7 @@ export class IT4ProgramRunner extends JDEventSource {
         super()
         try {
             this._program = compileProgram(prog)
+            console.log(this._program)
             const [regs, events] = checkProgram(this._program )
             if (this._program .errors.length > 0) {
                 console.debug(this._program .errors)
