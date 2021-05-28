@@ -1,4 +1,4 @@
-import { ServoReg, SRV_SERVO } from "../jdom/constants"
+import { PACKET_DATA_NORMALIZE, ServoReg, SRV_SERVO } from "../jdom/constants"
 import JDRegisterServer from "../jdom/registerserver"
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 
@@ -20,7 +20,12 @@ export default class ServoServer extends JDServiceServer {
         } & ServerOptions
     ) {
         super(SRV_SERVO, options)
-        const { minAngle, maxAngle, responseSpeed, stallTorque } = options || {}
+        const {
+            minAngle = -90,
+            maxAngle = 90,
+            responseSpeed,
+            stallTorque,
+        } = options || {}
 
         this.angle = this.addRegister<[number]>(ServoReg.Angle, [0])
         this.enabled = this.addRegister<[boolean]>(ServoReg.Enabled, [false])
@@ -41,5 +46,14 @@ export default class ServoServer extends JDServiceServer {
             ServoReg.StallTorque,
             stallTorque !== undefined ? [stallTorque] : undefined
         )
+
+        this.angle.on(PACKET_DATA_NORMALIZE, (values: [number]) => {
+            let angle = values[0]
+            const [minAngle] = this.minAngle.values()
+            const [maxAngle] = this.maxAngle.values()
+            if (minAngle !== undefined) angle = Math.max(minAngle, angle)
+            if (maxAngle !== undefined) angle = Math.min(maxAngle, angle)
+            values[0] = angle
+        })
     }
 }
