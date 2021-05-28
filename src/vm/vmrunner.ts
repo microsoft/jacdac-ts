@@ -314,6 +314,8 @@ class IT4HandlerRunner extends JDEventSource {
                 const { label } = e as JumpException
                 const index = this._labelToIndex[label]
                 this.commandIndex = index;
+            } else {
+                throw e
             }
         }
         if (this._currentCommand.status === VMStatus.Completed)
@@ -365,7 +367,7 @@ class IT4HandlerRunner extends JDEventSource {
 }
 
 export class IT4ProgramRunner extends JDEventSource {
-    private _handlers: IT4HandlerRunner[]
+    private _handlers: IT4HandlerRunner[] = []
     private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
     private _running = false
