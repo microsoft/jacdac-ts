@@ -118,6 +118,8 @@ export const PACKET_EVENT = "packetEvent"
 export const PACKET_REPORT = "packetReport"
 export const PACKET_ANNOUNCE = "packetAnnounce"
 export const PACKET_INVALID_CRC = "packetInvalidCrc"
+export const PACKET_INVALID_DATA = "packetInvalidData"
+export const PACKET_DATA_NORMALIZE = "packetDataNormalize"
 
 export const REPORT_RECEIVE = "reportReceive"
 export const REPORT_UPDATE = "reportUpdate"

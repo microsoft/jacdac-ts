@@ -1343,3 +1343,11 @@ export function serviceProviderDefinitionFromServiceClass(
             provider.serviceClasses[0] === serviceClass
     )
 }
+
+export function startServiceProviderFromServiceClass(
+    bus: JDBus,
+    serviceClass: number
+) {
+    const provider = serviceProviderDefinitionFromServiceClass(serviceClass)
+    if (provider) addServiceProvider(bus, provider)
+}

@@ -243,6 +243,12 @@ export function rgbToHtmlColor(rgb: number) {
     return `#${("000000" + rgb.toString(16)).slice(-6)}`
 }
 
+export function toFullHex(n: number[]) {
+    return (
+        "0x" + n.map(id => ("000000000" + id.toString(16)).slice(-8)).join("")
+    )
+}
+
 export function toHex(bytes: ArrayLike<number>) {
     if (!bytes) return undefined
     let r = ""
