@@ -15,9 +15,9 @@ import {
     JACDAC_ROLE_SERVICE_UNBOUND,
     JACDAC_VM_COMMAND_ATTEMPTED,
     JACDAC_VM_COMMAND_COMPLETED,
+    JDVMError
 } from "./utils"
 import { unparse } from "./expr"
-import { JDVMError } from "./utils"
 import { SMap } from "../jdom/utils"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,14 +117,16 @@ class IT4CommandEvaluator {
             return
         }
         switch (this.inst) {
-            case "breakOnCondition": {
+            case "branchOnCondition": {
                 const expr = this.checkExpression(args[0])
                 if (expr) {
                     throw new JumpException((args[1] as jsep.Identifier).name)
                 }
+                this._status = VMStatus.Completed
                 break   
             }
             case "jump": {
+                this._status = VMStatus.Completed
                 throw new JumpException((args[0] as jsep.Identifier).name) 
             }
             case "label": {
@@ -189,6 +191,8 @@ class IT4CommandEvaluator {
                 this._status = VMStatus.Stopped
                 break
             }
+            default:
+                throw new JDVMError(`Unknown instruction ${this.inst}`)
         }
     }
 }
@@ -226,13 +230,9 @@ class IT4CommandRunner {
 
     async step() {
         if (this.isWaiting) {
-            try {
-                this.trace(unparse(this.gc.command))
-                await this._eval.evaluate()
-                this.finish(this._eval.status)
-            } catch (e) {
-                console.log(e)
-            }
+            this.trace(unparse(this.gc.command))
+            await this._eval.evaluate()
+            this.finish(this._eval.status)
         }
     }
 
@@ -267,9 +267,10 @@ class IT4HandlerRunner extends JDEventSource {
         // find the label commands (targets of jumps)
         this.handler.commands.forEach((c,index) => {
             const cmd = c as IT4Command
-            let id = cmd.command.callee as jsep.Identifier
+            let id = cmd.command?.callee as jsep.Identifier
             if (id?.name === "label") {
-                this._labelToIndex[id.name] = index
+                const label = cmd.command.arguments[0] as jsep.Identifier
+                this._labelToIndex[label.name] = index
             }
         })
         this.reset()
@@ -313,8 +314,9 @@ class IT4HandlerRunner extends JDEventSource {
             if (e instanceof JumpException) {
                 const { label } = e as JumpException
                 const index = this._labelToIndex[label]
-                console.log(label,index)
                 this.commandIndex = index;
+                // since it's a label it executes successfully
+                this._currentCommand.status = VMStatus.Completed
             } else {
                 throw e
             }
@@ -384,7 +386,6 @@ export class IT4ProgramRunner extends JDEventSource {
         super()
         try {
             this._program = compileProgram(prog)
-            console.log(this._program)
             const [regs, events] = checkProgram(this._program )
             if (this._program .errors.length > 0) {
                 console.debug(this._program .errors)
