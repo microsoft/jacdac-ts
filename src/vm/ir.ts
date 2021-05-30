@@ -179,7 +179,8 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
 }
 
 export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
-    prog.errors = []
+    const allErrors: jdspec.Diagnostic[] = []
+    const goodHandlers: IT4Handler[] = []
     let errorFun = (e: string) => {
         prog.errors.push({ file: "", line: undefined, message: e })
     }
@@ -189,11 +190,21 @@ export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
         errorFun
     )
     const checker = new IT4Checker(symbolResolver, _ => true, errorFun)
-    prog.handlers.forEach(h => {
+    prog.handlers.forEach((h,index) => {
+        prog.errors = []
         handlerVisitor(h, undefined, c =>
             checker.checkCommand(c.command, IT4Functions)
         )
+        if (prog.errors.length) {
+            prog.errors.forEach(e => 
+                allErrors.push({file: `handler ${index}`, line:undefined, message: e.message})
+            )
+        } else {
+            goodHandlers.push(h)
+        }
     })
+    prog.handlers = goodHandlers
+    prog.errors = allErrors;
 
     return [
         symbolResolver.registers.map(s => {

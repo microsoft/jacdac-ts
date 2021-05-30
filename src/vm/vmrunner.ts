@@ -19,11 +19,13 @@ import {
 } from "./utils"
 import { unparse } from "./expr"
 import { SMap } from "../jdom/utils"
+import { timeStamp } from "console"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TraceContext = any
 
 export enum VMStatus {
+    ProgramError = "programerror",
     Ready = "ready",
     Running = "running",
     Completed = "completed",
@@ -387,8 +389,11 @@ export class IT4ProgramRunner extends JDEventSource {
         try {
             this._program = compileProgram(prog)
             const [regs, events] = checkProgram(this._program )
-            if (this._program .errors.length > 0) {
-                console.debug(this._program .errors)
+            if (this._program.errors.length > 0) {
+                if (this._program.handlers.length === 0)
+                    throw(this._program.errors)
+                else
+                    console.debug(this._program.errors)
             }
             this._rm = new MyRoleManager(bus, (role, service, added) => {
                 try {
@@ -431,6 +436,7 @@ export class IT4ProgramRunner extends JDEventSource {
             )
             this._waitQueue = this._handlers.slice(0)
         } catch (e) {
+            this._program = undefined
             console.debug(e)
             this.emit(ERROR, e)
         }
@@ -438,16 +444,18 @@ export class IT4ProgramRunner extends JDEventSource {
 
     get status() {
         const ret =
-            this._running === false
-                ? VMStatus.Stopped
-                : this._waitQueue.length > 0
-                ? VMStatus.Running
-                : VMStatus.Completed
+            this._program === undefined 
+            ? VMStatus.ProgramError
+            : this._running === false
+            ? VMStatus.Stopped
+            : this._waitQueue.length > 0
+            ? VMStatus.Running
+            : VMStatus.Completed
         return ret
     }
 
     cancel() {
-        if (!this._running) return // nothing to cancel
+        if (!this._program || !this._running) return // nothing to cancel
 
         this._running = false
         this._waitQueue = this._handlers.slice(0)
@@ -457,7 +465,7 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     start() {
-        if (this._running) return // already running
+        if (!this._program || this._running) return // already running
         this.trace("start")
         try {
             this._program.roles.forEach(role => {
@@ -473,10 +481,11 @@ export class IT4ProgramRunner extends JDEventSource {
     }
 
     get roles() {
-        return this._rm?.roles()
+        return this._program ? this._rm?.roles() : {}
     }
 
     async run() {
+        if (!this._program) return
         if (!this._running) return
         if (this._in_run) return
         this.trace("run")
