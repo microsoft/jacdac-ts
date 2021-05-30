@@ -1,14 +1,16 @@
-export const JACDAC_VM_ERROR = "JacdacVMError"
-export const JACDAC_ROLE_SERVICE_BOUND = "JacdacVMRoleServiceBound"
-export const JACDAC_ROLE_SERVICE_UNBOUND = "JacdacVMRoleServiceUnbound"
-export const JACDAC_ROLE_HAS_NO_SERVICE = "JacdacVMRoleHasNoService"
-export const JACDAC_VM_COMMAND_ATTEMPTED = "JacdacVMCommandAttempted"
-export const JACDAC_VM_COMMAND_COMPLETED = "JacdacVMCommandCompleted"
+export const VM_ERROR = "JacdacVMError"
+
+export const ROLE_SERVICE_BOUND = "roleServiceBound"
+export const ROLE_CHANGE = "roleChange"
+export const ROLE_SERVICE_UNBOUND = "roleServiceUnbound"
+export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
+export const VM_COMMAND_ATTEMPTED = "commandAttempted"
+export const VM_COMMAND_COMPLETED = "commandCompleted"
 
 export class JDVMError extends Error {
     constructor(message: string, readonly jacdacName?: string) {
         super(message)
-        this.name = JACDAC_VM_ERROR
+        this.name = VM_ERROR
     }
 }
 
