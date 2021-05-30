@@ -6,7 +6,7 @@ import { JDService } from "../jdom/service"
 import { SMap } from "../jdom/utils"
 
 export class MyRoleManager extends JDEventSource {
-    private _roles: SMap<{ shortName: string; service: JDService }> = {}
+    private _roles: SMap<{ serviceShortId: string; service: JDService }> = {}
     private _devices: JDDevice[] = []
 
     constructor(
@@ -30,17 +30,17 @@ export class MyRoleManager extends JDEventSource {
 
     private addServices(dev: JDDevice) {
         dev.services().forEach(s => {
-            let roleNeedingService = Object.keys(this._roles).find(
+            const roleNeedingService = Object.keys(this._roles).find(
                 k =>
                     !this._roles[k].service &&
                     this.nameMatch(
-                        this._roles[k].shortName,
-                        s.specification.shortName
+                        this._roles[k].serviceShortId,
+                        s.specification.shortId
                     )
             )
             if (roleNeedingService && this._devices.indexOf(dev) === -1) {
                 this._roles[roleNeedingService] = {
-                    shortName: s.specification.shortName,
+                    serviceShortId: s.specification.shortId,
                     service: s,
                 }
                 this._devices.push(dev)
@@ -52,14 +52,14 @@ export class MyRoleManager extends JDEventSource {
     private removeServices(dev: JDDevice) {
         if (this._devices.indexOf(dev) >= 0) {
             this._devices = this._devices.filter(d => d !== dev)
-            let rolesToUnmap = Object.keys(this._roles).filter(
+            const rolesToUnmap = Object.keys(this._roles).filter(
                 k => dev.services().indexOf(this._roles[k].service) >= 0
             )
             if (rolesToUnmap.length > 0) {
                 rolesToUnmap.forEach(role => {
-                    let service = this._roles[role].service
+                    const service = this._roles[role].service
                     this._roles[role] = {
-                        shortName: service.specification.shortName,
+                        serviceShortId: service.specification.shortId,
                         service: undefined,
                     }
                     if (this.notify) this.notify(role, service, false)
@@ -81,16 +81,16 @@ export class MyRoleManager extends JDEventSource {
     private getServicesFromName(root: string): JDService[] {
         return this.bus
             .services()
-            .filter(s => this.nameMatch(s.specification.shortName, root))
+            .filter(s => this.nameMatch(s.specification.shortId, root))
     }
 
-    public addRoleService(role: string, shortName: string) {
+    public addRoleService(role: string, serviceShortId: string) {
         if (role in this._roles && this._roles[role].service) return
-        this._roles[role] = { shortName, service: undefined }
+        this._roles[role] = { serviceShortId: serviceShortId, service: undefined }
         const existingServices = Object.values(this._roles)
             .filter(p => p.service)
             .map(p => p.service)
-        let ret = this.getServicesFromName(shortName).filter(
+        const ret = this.getServicesFromName(serviceShortId).filter(
             s => existingServices.indexOf(s) === -1
         )
         if (ret.length > 0) {
