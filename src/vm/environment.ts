@@ -54,7 +54,6 @@ export class VMServiceEnvironment extends JDServiceClient {
                 jdpack(pkt.packFormat, values),
                 true
             )
-            console.log(this.service?.specification.shortName, command.name, values)
         }
     }
 

@@ -64,9 +64,6 @@ export class JDExprEvaluator {
     }
 
     public eval(e: jsep.Expression) {
-        // special case for Blockly
-        if (e.type === "Identifier" && (e as jsep.Identifier).name === "%%NOCODE%%")
-            return undefined
         this.exprStack = []
         this.visitExpression(e)
         return this.exprStack.pop()

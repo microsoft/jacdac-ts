@@ -390,10 +390,7 @@ export class IT4ProgramRunner extends JDEventSource {
             this._program = compileProgram(prog)
             const [regs, events] = checkProgram(this._program )
             if (this._program.errors.length > 0) {
-                if (this._program.handlers.length === 0)
-                    throw(this._program.errors)
-                else
-                    console.debug(this._program.errors)
+                console.debug(this._program.errors)
             }
             this._rm = new MyRoleManager(bus, (role, service, added) => {
                 try {
@@ -436,7 +433,6 @@ export class IT4ProgramRunner extends JDEventSource {
             )
             this._waitQueue = this._handlers.slice(0)
         } catch (e) {
-            this._program = undefined
             console.debug(e)
             this.emit(ERROR, e)
         }
