@@ -7,7 +7,7 @@ import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
-import { JACDAC_ROLE_HAS_NO_SERVICE } from "./utils"
+import { ROLE_HAS_NO_SERVICE } from "./utils"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
@@ -149,7 +149,7 @@ export class VMEnvironment extends JDEventSource {
         if (!root) return undefined
         let s = this._envs[root]
         if (!s) {
-            this.emit(JACDAC_ROLE_HAS_NO_SERVICE, root)
+            this.emit(ROLE_HAS_NO_SERVICE, root)
         }
         return s
     }

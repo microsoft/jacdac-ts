@@ -7,10 +7,11 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./ir"
 import {
-    JACDAC_ROLE_SERVICE_BOUND,
-    JACDAC_ROLE_SERVICE_UNBOUND,
-    JACDAC_VM_COMMAND_ATTEMPTED,
-    JACDAC_VM_COMMAND_COMPLETED,
+    ROLE_CHANGE,
+    ROLE_SERVICE_BOUND,
+    ROLE_SERVICE_UNBOUND,
+    VM_COMMAND_ATTEMPTED,
+    VM_COMMAND_COMPLETED,
     JDVMError,
 } from "./utils"
 import { unparse } from "./expr"
@@ -304,7 +305,7 @@ class IT4HandlerRunner extends JDEventSource {
     }
 
     private async executeCommandAsync() {
-        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
+        this.emit(VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
         try {
             await this._currentCommand.step()
         } catch (e) {
@@ -320,7 +321,7 @@ class IT4HandlerRunner extends JDEventSource {
         }
         if (this._currentCommand.status === VMStatus.Completed)
             this.emit(
-                JACDAC_VM_COMMAND_COMPLETED,
+                VM_COMMAND_COMPLETED,
                 this._currentCommand.gc.sourceId
             )
         if (this._currentCommand.status === VMStatus.Stopped)
@@ -391,7 +392,8 @@ export class IT4ProgramRunner extends JDEventSource {
                 try {
                     this._env.serviceChanged(role, service, added)
                     if (added) {
-                        this.emit(JACDAC_ROLE_SERVICE_BOUND, service)
+                        this.emit(ROLE_SERVICE_BOUND, service)
+                        this.emit(ROLE_CHANGE)
                         this.emit(CHANGE)
                         this._program.handlers.forEach(h => {
                             regs.forEach(r => {
@@ -406,7 +408,8 @@ export class IT4ProgramRunner extends JDEventSource {
                             })
                         })
                     } else {
-                        this.emit(JACDAC_ROLE_SERVICE_UNBOUND, service)
+                        this.emit(ROLE_SERVICE_UNBOUND, service)
+                        this.emit(ROLE_CHANGE)
                         this.emit(CHANGE)
                     }
                 } catch (e) {
