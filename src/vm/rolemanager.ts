@@ -1,102 +1,126 @@
 import { JDEventSource } from "../jdom/eventsource"
-import { DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../jdom/constants"
+import { CHANGE, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../jdom/constants"
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
-import { SMap } from "../jdom/utils"
+import { ROLE_BOUND, ROLE_UNBOUND } from "./utils"
 
-export class MyRoleManager extends JDEventSource {
-    private _roles: SMap<{ serviceShortId: string; service: JDService }> = {}
-    private _devices: JDDevice[] = []
+// TODO: replicate MakeCode role manager logic
+export class RoleManager extends JDEventSource {
+    private readonly _roles: {
+        role: string
+        serviceShortId: string
+        service?: JDService
+    }[] = []
 
-    constructor(
-        private readonly bus: JDBus,
-        private readonly notify: (
-            role: string,
-            service: JDService,
-            added: boolean
-        ) => void
-    ) {
+    constructor(private readonly bus: JDBus) {
         super()
-        this.bus.on(DEVICE_ANNOUNCE, (dev: JDDevice) => this.addServices(dev))
-        this.bus.on(DEVICE_DISCONNECT, (dev: JDDevice) =>
-            this.removeServices(dev)
-        )
+
+        this.bus.on(DEVICE_ANNOUNCE, this.addServices.bind(this))
+        this.bus.on(DEVICE_DISCONNECT, this.removeServices.bind(this))
+
+        this.bus
+            .devices({ ignoreSelf: true, announced: true })
+            .forEach(dev => this.addServices(dev))
+
+        this.on(ROLE_UNBOUND, role => console.log(`role unbound`, { role }))
+        this.on(ROLE_BOUND, role => console.log(`role bound`, { role }))
     }
 
-    roles() {
-        return this._roles
+    get roles() {
+        return this._roles.slice(0)
     }
 
-    private addServices(dev: JDDevice) {
-        dev.services().forEach(s => {
-            const roleNeedingService = Object.keys(this._roles).find(
-                k =>
-                    !this._roles[k].service &&
-                    this.nameMatch(
-                        this._roles[k].serviceShortId,
-                        s.specification.shortId
-                    )
-            )
-            if (roleNeedingService && this._devices.indexOf(dev) === -1) {
-                this._roles[roleNeedingService] = {
-                    serviceShortId: s.specification.shortId,
-                    service: s,
+    get boundRoles() {
+        return this._roles.filter(r => !!r.service)
+    }
+
+    get unboundRoles() {
+        return this._roles.filter(r => !r.service)
+    }
+
+    setRoles(
+        newRoles: {
+            role: string
+            serviceShortId: string
+        }[]
+    ) {
+        const roles = this.roles
+        console.debug(`set roles`, { roles, newRoles })
+
+        // removed roles
+        for (const newRole of newRoles) {
+            const existingRole = roles.find(r => r.role === newRole.role)
+            if (!existingRole) {
+                // added role
+                this._roles.push({ ...newRole })
+            } else if (existingRole.serviceShortId !== newRole.serviceShortId) {
+                // modified type, force rebinding
+                existingRole.serviceShortId = newRole.serviceShortId
+                if (existingRole.service) {
+                    existingRole.service = undefined
+                    this.emit(ROLE_UNBOUND, newRole.role)
+                    this.emit(CHANGE)
                 }
-                this._devices.push(dev)
-                if (this.notify) this.notify(roleNeedingService, s, true)
-            }
+            } // else unmodifed role
+        }
+
+        // bound services
+        this.bindServices()
+    }
+
+    private bindServices() {
+        this.unboundRoles.forEach(binding => {
+            const boundRoles = this.boundRoles
+            const service = this.bus
+                .services({
+                    ignoreSelf: true,
+                    serviceName: binding.serviceShortId,
+                })
+                .find(srv => !boundRoles.find(b => b.service === srv))
+            binding.service = service
+            this.emit(ROLE_BOUND, binding.role)
+            this.emit(CHANGE)
         })
     }
 
+    private addServices(dev: JDDevice) {
+        if (dev === this.bus.selfDevice) return
+        this.bindServices()
+    }
+
     private removeServices(dev: JDDevice) {
-        if (this._devices.indexOf(dev) >= 0) {
-            this._devices = this._devices.filter(d => d !== dev)
-            const rolesToUnmap = Object.keys(this._roles).filter(
-                k => dev.services().indexOf(this._roles[k].service) >= 0
-            )
-            if (rolesToUnmap.length > 0) {
-                rolesToUnmap.forEach(role => {
-                    const service = this._roles[role].service
-                    this._roles[role] = {
-                        serviceShortId: service.specification.shortId,
-                        service: undefined,
-                    }
-                    if (this.notify) this.notify(role, service, false)
-                })
-            }
-        }
+        this._roles
+            .filter(r => r.service?.device === dev)
+            .forEach(r => {
+                r.service = undefined
+                this.emit(ROLE_UNBOUND, r.role)
+                this.emit(CHANGE)
+            })
     }
 
     public getService(role: string): JDService {
-        return this._roles[role].service
-    }
-
-    private nameMatch(n1: string, n2: string) {
-        const cn1 = n1.slice(0).toLowerCase().replace("_", " ").trim()
-        const cn2 = n2.slice(0).toLowerCase().replace("_", " ").trim()
-        return cn1 === cn2
-    }
-
-    private getServicesFromName(root: string): JDService[] {
-        return this.bus
-            .services()
-            .filter(s => this.nameMatch(s.specification.shortId, root))
+        return this._roles.find(r => r.role === role)?.service
     }
 
     public addRoleService(role: string, serviceShortId: string) {
-        if (role in this._roles && this._roles[role].service) return
-        this._roles[role] = { serviceShortId: serviceShortId, service: undefined }
-        const existingServices = Object.values(this._roles)
-            .filter(p => p.service)
-            .map(p => p.service)
-        const ret = this.getServicesFromName(serviceShortId).filter(
-            s => existingServices.indexOf(s) === -1
-        )
-        if (ret.length > 0) {
-            this._roles[role].service = ret[0]
-            this._devices.push(ret[0].device)
-            this.notify(role, ret[0], true)
+        let binding = this._roles.find(r => r.role === role)
+        if (!binding) {
+            binding = { role, serviceShortId }
+            this._roles.push(binding)
+        }
+        if (binding.service) return
+
+        const ret = this.bus
+            .services({ ignoreSelf: true, serviceName: serviceShortId })
+            .find(s => !this._roles.find(r => r.service === s))
+        if (ret) {
+            binding.service = ret
+            this.emit(ROLE_BOUND, role)
+            this.emit(CHANGE)
+        } else {
+            this.emit(ROLE_UNBOUND, role)
+            this.emit(CHANGE)
         }
     }
 }

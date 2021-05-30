@@ -1,5 +1,5 @@
 import { IT4Program, IT4Handler, IT4Command } from "./ir"
-import { MyRoleManager } from "./rolemanager"
+import { RoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
@@ -7,15 +7,15 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./ir"
 import {
-    ROLES_CHANGE,
-    ROLE_SERVICE_BOUND,
-    ROLE_SERVICE_UNBOUND,
+    ROLE_BOUND,
+    ROLE_UNBOUND,
     VM_COMMAND_ATTEMPTED,
     VM_COMMAND_COMPLETED,
     JDVMError,
 } from "./utils"
 import { unparse } from "./expr"
 import { SMap } from "../jdom/utils"
+import { JDClient } from "../jdom/client"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TraceContext = any
@@ -364,57 +364,55 @@ class IT4HandlerRunner extends JDEventSource {
     }
 }
 
-export class IT4ProgramRunner extends JDEventSource {
+export class IT4ProgramRunner extends JDClient {
     private _handlers: IT4HandlerRunner[] = []
     private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
     private _running = false
     private _in_run = false
-    private _rm: MyRoleManager
     private _program: IT4Program
 
     trace(message: string, context: TraceContext = {}) {
         this.emit(TRACE, { message, context })
     }
 
-    constructor(prog: IT4Program, bus: JDBus) {
+    constructor(
+        readonly bus: JDBus,
+        readonly roleManager: RoleManager,
+        prog: IT4Program
+    ) {
         super()
         this._program = compileProgram(prog)
         const [regs, events] = checkProgram(this._program)
         if (this._program.errors.length > 0) {
             console.debug(this._program.errors)
         }
-        this._rm = new MyRoleManager(bus, (role, service, added) => {
-            try {
-                this._env.serviceChanged(role, service, added)
-                if (added) {
-                    console.log(`role added`, { role, service })
-                    this._program.handlers.forEach(h => {
-                        regs.forEach(r => {
-                            if (r.role === role) {
-                                this._env.registerRegister(role, r.register)
-                            }
-                        })
-                        events.forEach(e => {
-                            if (e.role === role) {
-                                this._env.registerEvent(role, e.event)
-                            }
-                        })
+        this.mount(
+            this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
+                console.log(`role added`, { role })
+                const service = this.roleManager.getService(role)
+                this._env.serviceChanged(role, service, true)
+                this._program.handlers.forEach(h => {
+                    regs.forEach(r => {
+                        if (r.role === role) {
+                            this._env.registerRegister(role, r.register)
+                        }
                     })
-                    this.emit(ROLE_SERVICE_BOUND, service)
-                    this.emit(ROLES_CHANGE)
-                    this.emit(CHANGE)
-                } else {
-                    console.log(`role removed`, { role, service })
-                    this.emit(ROLE_SERVICE_UNBOUND, service)
-                    this.emit(ROLES_CHANGE)
-                    this.emit(CHANGE)
-                }
-            } catch (e) {
-                console.debug(e)
-                this.emit(ERROR, e)
-            }
-        })
+                    events.forEach(e => {
+                        if (e.role === role) {
+                            this._env.registerEvent(role, e.event)
+                        }
+                    })
+                })
+            })
+        )
+        this.mount(
+            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                console.log(`role removed`, { role })
+                const service = this.roleManager.getService(role)
+                this._env.serviceChanged(role, service, false)
+            })
+        )
         this._env = new VMEnvironment()
         this._env.subscribe(CHANGE, () => {
             try {
@@ -456,9 +454,7 @@ export class IT4ProgramRunner extends JDEventSource {
         if (!this._program || this._running) return // already running
         this.trace("start")
         try {
-            this._program.roles.forEach(role => {
-                this._rm.addRoleService(role.role, role.serviceShortId)
-            })
+            this.roleManager.setRoles(this._program.roles)
             this._running = true
             this._in_run = false
             this.run()
@@ -466,14 +462,6 @@ export class IT4ProgramRunner extends JDEventSource {
             console.debug(e)
             this.emit(ERROR, e)
         }
-    }
-
-    get roles() {
-        return this._program ? this._rm?.roles() : {}
-    }
-
-    resolveService(role: string) {
-        return this._program && this._rm?.getService(role)
     }
 
     async run() {

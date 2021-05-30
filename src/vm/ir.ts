@@ -68,7 +68,10 @@ export function toIdentifier(id: string) {
     } as jsep.Identifier
 }
 
-export function toMemberExpression(root: string, field: string | jsep.Expression) {
+export function toMemberExpression(
+    root: string,
+    field: string | jsep.Expression
+) {
     return {
         type: "MemberExpression",
         object: toIdentifier(root),
@@ -76,7 +79,6 @@ export function toMemberExpression(root: string, field: string | jsep.Expression
         computed: false,
     } as jsep.MemberExpression
 }
-
 
 function handlerVisitor(
     handler: IT4Handler,
@@ -130,7 +132,7 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
                         command: {
                             type: "CallExpression",
                             callee: toIdentifier("branchOnCondition"),
-                            arguments: [ ite.expr, toIdentifier(then) ]
+                            arguments: [ite.expr, toIdentifier(then)],
                         },
                     })
                     break
@@ -143,7 +145,7 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
                         command: {
                             type: "CallExpression",
                             callee: toIdentifier("jump"),
-                            arguments: [ toIdentifier(end) ]
+                            arguments: [toIdentifier(end)],
                         },
                     })
                     newSequence.push({
@@ -151,7 +153,7 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
                         command: {
                             type: "CallExpression",
                             callee: toIdentifier("label"),
-                            arguments: [ toIdentifier(then) ]
+                            arguments: [toIdentifier(then)],
                         },
                     })
                     break
@@ -164,7 +166,7 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
                         command: {
                             type: "CallExpression",
                             callee: toIdentifier("label"),
-                            arguments: [ toIdentifier(end) ]
+                            arguments: [toIdentifier(end)],
                         },
                     })
                     labels.pop()
@@ -181,7 +183,7 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
 export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
     const allErrors: jdspec.Diagnostic[] = []
     const goodHandlers: IT4Handler[] = []
-    let errorFun = (e: string) => {
+    const errorFun = (e: string) => {
         prog.errors.push({ file: "", line: undefined, message: e })
     }
     const symbolResolver = new SpecSymbolResolver(
@@ -190,21 +192,25 @@ export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
         errorFun
     )
     const checker = new IT4Checker(symbolResolver, _ => true, errorFun)
-    prog.handlers.forEach((h,index) => {
+    prog.handlers.forEach((h, index) => {
         prog.errors = []
         handlerVisitor(h, undefined, c =>
             checker.checkCommand(c.command, IT4Functions)
         )
         if (prog.errors.length) {
-            prog.errors.forEach(e => 
-                allErrors.push({file: `handler ${index}`, line:undefined, message: e.message})
+            prog.errors.forEach(e =>
+                allErrors.push({
+                    file: `handler ${index}`,
+                    line: undefined,
+                    message: e.message,
+                })
             )
         } else {
             goodHandlers.push(h)
         }
     })
     prog.handlers = goodHandlers
-    prog.errors = allErrors;
+    prog.errors = allErrors
 
     return [
         symbolResolver.registers.map(s => {
