@@ -1,18 +1,24 @@
-import { IT4Program, IT4Handler, IT4GuardedCommand } from "./ir"
+import {
+    IT4Program,
+    IT4Handler,
+    IT4Command,
+} from "./ir"
 import { MyRoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
-import { checkProgram } from "./ir"
+import { checkProgram, compileProgram } from "./ir"
 import {
     JACDAC_ROLE_SERVICE_BOUND,
     JACDAC_ROLE_SERVICE_UNBOUND,
     JACDAC_VM_COMMAND_ATTEMPTED,
     JACDAC_VM_COMMAND_COMPLETED,
+    JDVMError
 } from "./utils"
 import { unparse } from "./expr"
+import { SMap } from "../jdom/utils"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TraceContext = any
@@ -40,6 +46,10 @@ interface Environment {
     unsubscribe: () => void
 }
 
+class JumpException {
+    constructor(public label:string) {}
+}
+
 class IT4CommandEvaluator {
     private _status: VMStatus
     private _regSaved: number = undefined
@@ -48,7 +58,7 @@ class IT4CommandEvaluator {
     constructor(
         public parent: IT4CommandRunner,
         private readonly env: Environment,
-        private readonly gc: IT4GuardedCommand
+        private readonly gc: IT4Command
     ) {}
 
     trace(msg: string, context: TraceContext = {}) {
@@ -107,6 +117,22 @@ class IT4CommandEvaluator {
             return
         }
         switch (this.inst) {
+            case "branchOnCondition": {
+                const expr = this.checkExpression(args[0])
+                if (expr) {
+                    throw new JumpException((args[1] as jsep.Identifier).name)
+                }
+                this._status = VMStatus.Completed
+                break   
+            }
+            case "jump": {
+                this._status = VMStatus.Completed
+                throw new JumpException((args[0] as jsep.Identifier).name) 
+            }
+            case "label": {
+                this._status = VMStatus.Completed
+                break   
+            }
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
@@ -165,6 +191,8 @@ class IT4CommandEvaluator {
                 this._status = VMStatus.Stopped
                 break
             }
+            default:
+                throw new JDVMError(`Unknown instruction ${this.inst}`)
         }
     }
 }
@@ -176,7 +204,7 @@ class IT4CommandRunner {
         public readonly parent: IT4HandlerRunner,
         private handlerId: number,
         env: Environment,
-        public gc: IT4GuardedCommand
+        public gc: IT4Command
     ) {
         this._eval = new IT4CommandEvaluator(this, env, gc)
     }
@@ -202,13 +230,9 @@ class IT4CommandRunner {
 
     async step() {
         if (this.isWaiting) {
-            try {
-                this.trace(unparse(this.gc.command))
-                await this._eval.evaluate()
-                this.finish(this._eval.status)
-            } catch (e) {
-                console.log(e)
-            }
+            this.trace(unparse(this.gc.command))
+            await this._eval.evaluate()
+            this.finish(this._eval.status)
         }
     }
 
@@ -231,6 +255,7 @@ class IT4HandlerRunner extends JDEventSource {
     private _commandIndex: number
     private _currentCommand: IT4CommandRunner
     private stopped = false
+    private _labelToIndex: SMap<number> = {}
 
     constructor(
         public readonly parent: IT4ProgramRunner,
@@ -239,6 +264,15 @@ class IT4HandlerRunner extends JDEventSource {
         private readonly handler: IT4Handler
     ) {
         super()
+        // find the label commands (targets of jumps)
+        this.handler.commands.forEach((c,index) => {
+            const cmd = c as IT4Command
+            let id = cmd.command?.callee as jsep.Identifier
+            if (id?.name === "label") {
+                const label = cmd.command.arguments[0] as jsep.Identifier
+                this._labelToIndex[label.name] = index
+            }
+        })
         this.reset()
     }
 
@@ -255,8 +289,7 @@ class IT4HandlerRunner extends JDEventSource {
     }
 
     public reset() {
-        this._commandIndex = undefined
-        this._currentCommand = undefined
+        this.commandIndex = undefined
         this.stopped = false
     }
 
@@ -265,7 +298,29 @@ class IT4HandlerRunner extends JDEventSource {
         this.env.unsubscribe()
     }
 
-    private post_process() {
+    private getCommand() {
+        let cmd =  this.handler.commands[this._commandIndex]
+        if (cmd.type === "ite") {
+            throw new JDVMError("ite not compiled away")
+        }
+        return cmd as IT4Command
+    }
+
+    private async executeCommandAsync() {
+        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
+        try {
+          await this._currentCommand.step()
+        } catch (e) {
+            if (e instanceof JumpException) {
+                const { label } = e as JumpException
+                const index = this._labelToIndex[label]
+                this.commandIndex = index;
+                // since it's a label it executes successfully
+                this._currentCommand.status = VMStatus.Completed
+            } else {
+                throw e
+            }
+        }
         if (this._currentCommand.status === VMStatus.Completed)
             this.emit(
                 JACDAC_VM_COMMAND_COMPLETED,
@@ -275,64 +330,65 @@ class IT4HandlerRunner extends JDEventSource {
             this.stopped = true
     }
 
+    private set commandIndex(index: number) {
+        if (index === undefined) {
+            this._commandIndex = undefined
+            this._currentCommand = undefined
+        } else if (index !== this._commandIndex) {
+            this._commandIndex = index
+            this._currentCommand = new IT4CommandRunner(
+                this,
+                this.id,
+                this.env,
+                this.getCommand()
+            )
+        }
+    }
+
+    private get commandIndex() {
+        return this._commandIndex
+    }
+
     // run-to-completion semantics
     async step() {
         // handler stopped or/ empty
         if (this.stopped || !this.handler.commands.length) return
-        // if (this._currentCommand?.status === VMStatus.Completed) return
         this.trace("step begin")
-        if (this._commandIndex === undefined) {
-            this._commandIndex = 0
-            this._currentCommand = new IT4CommandRunner(
-                this,
-                this.id,
-                this.env,
-                this.handler.commands[this._commandIndex]
-            )
+        if (this.commandIndex === undefined) {
+            this.commandIndex = 0
         }
-        this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
-        await this._currentCommand.step()
-        this.post_process()
+        await this.executeCommandAsync()
         while (
             this._currentCommand.status === VMStatus.Completed &&
-            this._commandIndex < this.handler.commands.length - 1
+            this.commandIndex < this.handler.commands.length - 1
         ) {
-            this._commandIndex++
-            this._currentCommand = new IT4CommandRunner(
-                this,
-                this.id,
-                this.env,
-                this.handler.commands[this._commandIndex]
-            )
-            this.emit(
-                JACDAC_VM_COMMAND_ATTEMPTED,
-                this._currentCommand.gc.sourceId
-            )
-            await this._currentCommand.step()
-            this.post_process()
+            this.commandIndex++
+            await this.executeCommandAsync()
         }
         this.trace("step end")
     }
 }
 
 export class IT4ProgramRunner extends JDEventSource {
-    private _handlers: IT4HandlerRunner[]
+    private _handlers: IT4HandlerRunner[] = []
     private _env: VMEnvironment
     private _waitQueue: IT4HandlerRunner[] = []
     private _running = false
     private _in_run = false
     private _rm: MyRoleManager
+    private _program: IT4Program
 
     trace(message: string, context: TraceContext = {}) {
         this.emit(TRACE, { message, context })
     }
 
-    constructor(private readonly program: IT4Program, bus: JDBus) {
+    constructor(prog: IT4Program, bus: JDBus) {
         super()
         try {
-            const [regs, events] = checkProgram(program)
-            if (program.errors.length > 0) {
-                console.debug(program.errors)
+            this._program = compileProgram(prog)
+            const [regs, events] = checkProgram(this._program )
+            if (this._program .errors.length > 0) {
+                console.debug(this._program .errors)
             }
             this._rm = new MyRoleManager(bus, (role, service, added) => {
                 try {
@@ -340,7 +396,7 @@ export class IT4ProgramRunner extends JDEventSource {
                     if (added) {
                         this.emit(JACDAC_ROLE_SERVICE_BOUND, service)
                         this.emit(CHANGE)
-                        this.program.handlers.forEach(h => {
+                        this._program.handlers.forEach(h => {
                             regs.forEach(r => {
                                 if (r.role === role) {
                                     this._env.registerRegister(role, r.register)
@@ -370,7 +426,7 @@ export class IT4ProgramRunner extends JDEventSource {
                     this.emit(ERROR, e)
                 }
             })
-            this._handlers = program.handlers.map(
+            this._handlers = this._program.handlers.map(
                 (h, index) => new IT4HandlerRunner(this, index, this._env, h)
             )
             this._waitQueue = this._handlers.slice(0)
@@ -404,7 +460,7 @@ export class IT4ProgramRunner extends JDEventSource {
         if (this._running) return // already running
         this.trace("start")
         try {
-            this.program.roles.forEach(role => {
+            this._program.roles.forEach(role => {
                 this._rm.addRoleService(role.role, role.serviceShortId)
             })
             this._running = true
