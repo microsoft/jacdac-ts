@@ -1,8 +1,4 @@
-import {
-    IT4Program,
-    IT4Handler,
-    IT4Command,
-} from "./ir"
+import { IT4Program, IT4Handler, IT4Command } from "./ir"
 import { MyRoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
@@ -15,11 +11,10 @@ import {
     JACDAC_ROLE_SERVICE_UNBOUND,
     JACDAC_VM_COMMAND_ATTEMPTED,
     JACDAC_VM_COMMAND_COMPLETED,
-    JDVMError
+    JDVMError,
 } from "./utils"
 import { unparse } from "./expr"
 import { SMap } from "../jdom/utils"
-import { timeStamp } from "console"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TraceContext = any
@@ -49,7 +44,7 @@ interface Environment {
 }
 
 class JumpException {
-    constructor(public label:string) {}
+    constructor(public label: string) {}
 }
 
 class IT4CommandEvaluator {
@@ -125,15 +120,15 @@ class IT4CommandEvaluator {
                     throw new JumpException((args[1] as jsep.Identifier).name)
                 }
                 this._status = VMStatus.Completed
-                break   
+                break
             }
             case "jump": {
                 this._status = VMStatus.Completed
-                throw new JumpException((args[0] as jsep.Identifier).name) 
+                throw new JumpException((args[0] as jsep.Identifier).name)
             }
             case "label": {
                 this._status = VMStatus.Completed
-                break   
+                break
             }
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
@@ -267,9 +262,9 @@ class IT4HandlerRunner extends JDEventSource {
     ) {
         super()
         // find the label commands (targets of jumps)
-        this.handler.commands.forEach((c,index) => {
+        this.handler.commands.forEach((c, index) => {
             const cmd = c as IT4Command
-            let id = cmd.command?.callee as jsep.Identifier
+            const id = cmd.command?.callee as jsep.Identifier
             if (id?.name === "label") {
                 const label = cmd.command.arguments[0] as jsep.Identifier
                 this._labelToIndex[label.name] = index
@@ -301,7 +296,7 @@ class IT4HandlerRunner extends JDEventSource {
     }
 
     private getCommand() {
-        let cmd =  this.handler.commands[this._commandIndex]
+        const cmd = this.handler.commands[this._commandIndex]
         if (cmd.type === "ite") {
             throw new JDVMError("ite not compiled away")
         }
@@ -311,12 +306,12 @@ class IT4HandlerRunner extends JDEventSource {
     private async executeCommandAsync() {
         this.emit(JACDAC_VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
         try {
-          await this._currentCommand.step()
+            await this._currentCommand.step()
         } catch (e) {
             if (e instanceof JumpException) {
                 const { label } = e as JumpException
                 const index = this._labelToIndex[label]
-                this.commandIndex = index;
+                this.commandIndex = index
                 // since it's a label it executes successfully
                 this._currentCommand.status = VMStatus.Completed
             } else {
@@ -388,7 +383,7 @@ export class IT4ProgramRunner extends JDEventSource {
         super()
         try {
             this._program = compileProgram(prog)
-            const [regs, events] = checkProgram(this._program )
+            const [regs, events] = checkProgram(this._program)
             if (this._program.errors.length > 0) {
                 console.debug(this._program.errors)
             }
@@ -440,13 +435,13 @@ export class IT4ProgramRunner extends JDEventSource {
 
     get status() {
         const ret =
-            this._program === undefined 
-            ? VMStatus.ProgramError
-            : this._running === false
-            ? VMStatus.Stopped
-            : this._waitQueue.length > 0
-            ? VMStatus.Running
-            : VMStatus.Completed
+            this._program === undefined
+                ? VMStatus.ProgramError
+                : this._running === false
+                ? VMStatus.Stopped
+                : this._waitQueue.length > 0
+                ? VMStatus.Running
+                : VMStatus.Completed
         return ret
     }
 
@@ -478,6 +473,10 @@ export class IT4ProgramRunner extends JDEventSource {
 
     get roles() {
         return this._program ? this._rm?.roles() : {}
+    }
+
+    resolveService(role: string) {
+        return this._program && this._rm?.getService(role)
     }
 
     async run() {
