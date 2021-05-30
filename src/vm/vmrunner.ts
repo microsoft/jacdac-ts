@@ -320,10 +320,7 @@ class IT4HandlerRunner extends JDEventSource {
             }
         }
         if (this._currentCommand.status === VMStatus.Completed)
-            this.emit(
-                VM_COMMAND_COMPLETED,
-                this._currentCommand.gc.sourceId
-            )
+            this.emit(VM_COMMAND_COMPLETED, this._currentCommand.gc.sourceId)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
     }
@@ -382,58 +379,53 @@ export class IT4ProgramRunner extends JDEventSource {
 
     constructor(prog: IT4Program, bus: JDBus) {
         super()
-        try {
-            this._program = compileProgram(prog)
-            const [regs, events] = checkProgram(this._program)
-            if (this._program.errors.length > 0) {
-                console.debug(this._program.errors)
-            }
-            this._rm = new MyRoleManager(bus, (role, service, added) => {
-                try {
-                    this._env.serviceChanged(role, service, added)
-                    if (added) {
-                        this.emit(ROLE_SERVICE_BOUND, service)
-                        this.emit(ROLE_CHANGE)
-                        this.emit(CHANGE)
-                        this._program.handlers.forEach(h => {
-                            regs.forEach(r => {
-                                if (r.role === role) {
-                                    this._env.registerRegister(role, r.register)
-                                }
-                            })
-                            events.forEach(e => {
-                                if (e.role === role) {
-                                    this._env.registerEvent(role, e.event)
-                                }
-                            })
-                        })
-                    } else {
-                        this.emit(ROLE_SERVICE_UNBOUND, service)
-                        this.emit(ROLE_CHANGE)
-                        this.emit(CHANGE)
-                    }
-                } catch (e) {
-                    console.debug(e)
-                    this.emit(ERROR, e)
-                }
-            })
-            this._env = new VMEnvironment()
-            this._env.subscribe(CHANGE, () => {
-                try {
-                    this.run()
-                } catch (e) {
-                    console.debug(e)
-                    this.emit(ERROR, e)
-                }
-            })
-            this._handlers = this._program.handlers.map(
-                (h, index) => new IT4HandlerRunner(this, index, this._env, h)
-            )
-            this._waitQueue = this._handlers.slice(0)
-        } catch (e) {
-            console.debug(e)
-            this.emit(ERROR, e)
+        this._program = compileProgram(prog)
+        const [regs, events] = checkProgram(this._program)
+        if (this._program.errors.length > 0) {
+            console.debug(this._program.errors)
         }
+        this._rm = new MyRoleManager(bus, (role, service, added) => {
+            try {
+                this._env.serviceChanged(role, service, added)
+                if (added) {
+                    this.emit(ROLE_SERVICE_BOUND, service)
+                    this.emit(ROLE_CHANGE)
+                    this.emit(CHANGE)
+                    this._program.handlers.forEach(h => {
+                        regs.forEach(r => {
+                            if (r.role === role) {
+                                this._env.registerRegister(role, r.register)
+                            }
+                        })
+                        events.forEach(e => {
+                            if (e.role === role) {
+                                this._env.registerEvent(role, e.event)
+                            }
+                        })
+                    })
+                } else {
+                    this.emit(ROLE_SERVICE_UNBOUND, service)
+                    this.emit(ROLE_CHANGE)
+                    this.emit(CHANGE)
+                }
+            } catch (e) {
+                console.debug(e)
+                this.emit(ERROR, e)
+            }
+        })
+        this._env = new VMEnvironment()
+        this._env.subscribe(CHANGE, () => {
+            try {
+                this.run()
+            } catch (e) {
+                console.debug(e)
+                this.emit(ERROR, e)
+            }
+        })
+        this._handlers = this._program.handlers.map(
+            (h, index) => new IT4HandlerRunner(this, index, this._env, h)
+        )
+        this._waitQueue = this._handlers.slice(0)
     }
 
     get status() {
