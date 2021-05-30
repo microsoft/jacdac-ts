@@ -1,7 +1,7 @@
 export const VM_ERROR = "JacdacVMError"
 
 export const ROLE_SERVICE_BOUND = "roleServiceBound"
-export const ROLE_CHANGE = "roleChange"
+export const ROLES_CHANGE = "rolesChange"
 export const ROLE_SERVICE_UNBOUND = "roleServiceUnbound"
 export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
 export const VM_COMMAND_ATTEMPTED = "commandAttempted"

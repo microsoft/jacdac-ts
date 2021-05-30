@@ -7,7 +7,7 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./ir"
 import {
-    ROLE_CHANGE,
+    ROLES_CHANGE,
     ROLE_SERVICE_BOUND,
     ROLE_SERVICE_UNBOUND,
     VM_COMMAND_ATTEMPTED,
@@ -388,9 +388,7 @@ export class IT4ProgramRunner extends JDEventSource {
             try {
                 this._env.serviceChanged(role, service, added)
                 if (added) {
-                    this.emit(ROLE_SERVICE_BOUND, service)
-                    this.emit(ROLE_CHANGE)
-                    this.emit(CHANGE)
+                    console.log(`role added`, { role, service })
                     this._program.handlers.forEach(h => {
                         regs.forEach(r => {
                             if (r.role === role) {
@@ -403,9 +401,13 @@ export class IT4ProgramRunner extends JDEventSource {
                             }
                         })
                     })
+                    this.emit(ROLE_SERVICE_BOUND, service)
+                    this.emit(ROLES_CHANGE)
+                    this.emit(CHANGE)
                 } else {
+                    console.log(`role removed`, { role, service })
                     this.emit(ROLE_SERVICE_UNBOUND, service)
-                    this.emit(ROLE_CHANGE)
+                    this.emit(ROLES_CHANGE)
                     this.emit(CHANGE)
                 }
             } catch (e) {
