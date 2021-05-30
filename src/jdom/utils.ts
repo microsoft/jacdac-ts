@@ -379,8 +379,14 @@ export function jsonCopyFrom<T>(trg: T, src: T) {
         ;(trg as any)[k] = (v as any)[k]
     }
 }
-export function assert(cond: boolean, msg = "Assertion failed") {
+export function assert(
+    cond: boolean,
+    msg = "Assertion failed",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    debugData?: any
+) {
     if (!cond) {
+        if (debugData) console.debug(`assertion filed ${msg}`, debugData)
         if (Flags.diagnostics)
             // eslint-disable-next-line no-debugger
             debugger
