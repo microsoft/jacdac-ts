@@ -109,12 +109,12 @@ export class VMEnvironment extends JDEventSource {
         super()
     }
 
-    public serviceChanged(role: string, service: JDService, added: boolean) {
+    public serviceChanged(role: string, service: JDService) {
         if (this._envs[role]) {
             this._envs[role].unmount()
             this._envs[role] = undefined
         }
-        if (added) {
+        if (service) {
             this._envs[role] = new VMServiceEnvironment(service)
         }
     }

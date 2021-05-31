@@ -384,36 +384,17 @@ export class IT4ProgramRunner extends JDClient {
         super()
         this._program = compileProgram(prog)
         const { registers, events } = checkProgram(this._program)
+        console.log(registers, events)
         if (this._program.errors.length > 0) {
             console.debug(this._program.errors)
         }
-        this.mount(
-            this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
-                console.log(`role added`, { role })
-                const service = this.roleManager.getService(role)
-                this._env.serviceChanged(role, service, true)
-                this._program.handlers.forEach(h => {
-                    registers.forEach(r => {
-                        if (r.role === role) {
-                            this._env.registerRegister(role, r.register)
-                        }
-                    })
-                    events.forEach(e => {
-                        if (e.role === role) {
-                            this._env.registerEvent(role, e.event)
-                        }
-                    })
-                })
-            })
-        )
-        this.mount(
-            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
-                console.log(`role removed`, { role })
-                const service = this.roleManager.getService(role)
-                this._env.serviceChanged(role, service, false)
-            })
-        )
+        // data structures for running program
         this._env = new VMEnvironment()
+        this._handlers = this._program.handlers.map(
+            (h, index) => new IT4HandlerRunner(this, index, this._env, h)
+        )
+        this._waitQueue = this._handlers.slice(0)
+        // run on any change to environment
         this._env.subscribe(CHANGE, () => {
             try {
                 this.run()
@@ -422,10 +403,41 @@ export class IT4ProgramRunner extends JDClient {
                 this.emit(ERROR, e)
             }
         })
-        this._handlers = this._program.handlers.map(
-            (h, index) => new IT4HandlerRunner(this, index, this._env, h)
+
+        const addRoleService = (role: string) => {
+            const service = this.roleManager.getService(role)
+            if (service) {
+                this._env.serviceChanged(role, service)
+                registers.forEach(r => {
+                    if (r.role === role) {
+                        this._env.registerRegister(role, r.register)
+                    }
+                })
+                events.forEach(e => {
+                    if (e.role === role) {
+                        this._env.registerEvent(role, e.event)
+                    }
+                })
+            }
+        } 
+
+        this.roleManager.roles.forEach(r => {
+            addRoleService(r.role)
+        })
+
+        // deal with bind/unbind
+        this.mount(
+            this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
+                console.log(`role added`, { role })
+                addRoleService(role)
+            })
         )
-        this._waitQueue = this._handlers.slice(0)
+        this.mount(
+            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                console.log(`role removed`, { role })
+                this._env.serviceChanged(role, undefined)
+            })
+        )
     }
 
     get status() {
