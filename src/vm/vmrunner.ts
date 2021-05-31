@@ -383,7 +383,7 @@ export class IT4ProgramRunner extends JDClient {
     ) {
         super()
         this._program = compileProgram(prog)
-        const [regs, events] = checkProgram(this._program)
+        const { registers, events } = checkProgram(this._program)
         if (this._program.errors.length > 0) {
             console.debug(this._program.errors)
         }
@@ -393,7 +393,7 @@ export class IT4ProgramRunner extends JDClient {
                 const service = this.roleManager.getService(role)
                 this._env.serviceChanged(role, service, true)
                 this._program.handlers.forEach(h => {
-                    regs.forEach(r => {
+                    registers.forEach(r => {
                         if (r.role === role) {
                             this._env.registerRegister(role, r.register)
                         }

@@ -180,7 +180,10 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
     return newSequence
 }
 
-export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
+export function checkProgram(prog: IT4Program): {
+    registers: RoleRegister[]
+    events: RoleEvent[]
+} {
     const allErrors: jdspec.Diagnostic[] = []
     const goodHandlers: IT4Handler[] = []
     const errorFun = (e: string) => {
@@ -212,16 +215,16 @@ export function checkProgram(prog: IT4Program): [RoleRegister[], RoleEvent[]] {
     prog.handlers = goodHandlers
     prog.errors = allErrors
 
-    return [
-        symbolResolver.registers.map(s => {
+    return {
+        registers: symbolResolver.registers.map(s => {
             const [root, fld] = s.split(".")
             return { role: root, register: fld }
         }),
-        symbolResolver.events.map(e => {
+        events: symbolResolver.events.map(e => {
             const [root, fld] = e.split(".")
             return { role: root, event: fld }
         }),
-    ]
+    }
 }
 
 export type JDIT4Functions =
