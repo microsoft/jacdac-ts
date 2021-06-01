@@ -384,7 +384,6 @@ export class IT4ProgramRunner extends JDClient {
         super()
         this._program = compileProgram(prog)
         const { registers, events } = checkProgram(this._program)
-        console.log(registers, events)
         if (this._program.errors.length > 0) {
             console.debug(this._program.errors)
         }
@@ -403,7 +402,7 @@ export class IT4ProgramRunner extends JDClient {
                 this.emit(ERROR, e)
             }
         })
-
+        // adding a (role,service) binding 
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
             if (service) {
