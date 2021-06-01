@@ -105,11 +105,13 @@ export class RoleManager extends JDEventSource {
 
     public addRoleService(role: string, serviceShortId: string) {
         let binding = this._roles.find(r => r.role === role)
-        if (!binding) {
-            binding = { role, serviceShortId }
-            this._roles.push(binding)
-        }
-        if (binding.service) return
+
+        // check if we already have this role
+        if (binding && serviceShortId === binding.serviceShortId) return
+
+        // new role
+        binding = { role, serviceShortId }
+        this._roles.push(binding)
 
         const ret = this.bus
             .services({ ignoreSelf: true, serviceName: serviceShortId })
