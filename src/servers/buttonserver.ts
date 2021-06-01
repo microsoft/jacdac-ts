@@ -7,6 +7,7 @@ import {
 } from "../jdom/constants"
 import SensorServer from "./sensorserver"
 import RegisterServer from "../jdom/registerserver"
+import { jdpack } from "../jdom/pack"
 
 const HOLD_TIME = 500
 const INACTIVE_VALUE = 0
@@ -50,23 +51,32 @@ export default class ButtonServer extends SensorServer<[number]> {
     }
 
     private async handleRefresh() {
+        const now = this.device.bus.timestamp
         if (this.isActive()) {
             // down event
             if (this._downTime === undefined) {
-                this._downTime = this.device.bus.timestamp
+                this._downTime = now
                 this._nextHold = this._downTime + HOLD_TIME
                 await this.sendEvent(ButtonEvent.Down)
                 // hold
-            } else if (this.device.bus.timestamp > this._nextHold) {
+            } else if (now > this._nextHold) {
+                const time = now - this._downTime
                 this._nextHold = this.device.bus.timestamp + HOLD_TIME
-                await this.sendEvent(ButtonEvent.Hold)
+                await this.sendEvent(
+                    ButtonEvent.Hold,
+                    jdpack<[number]>("u32", [time])
+                )
             }
         } else {
             // up event
             if (this._downTime !== undefined) {
+                const time = now - this._downTime
                 this._downTime = undefined
                 this._nextHold = undefined
-                await this.sendEvent(ButtonEvent.Up)
+                await this.sendEvent(
+                    ButtonEvent.Up,
+                    jdpack<[number]>("u32", [time])
+                )
             }
         }
     }
