@@ -6,13 +6,15 @@ import { JDService } from "../jdom/service"
 import { ROLE_BOUND, ROLE_UNBOUND } from "./utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
 
+export interface RoleBinding {
+    role: string
+    serviceShortId: string
+    service?: JDService
+}
+
 // TODO: replicate MakeCode role manager logic
 export class RoleManager extends JDEventSource {
-    private readonly _roles: {
-        role: string
-        serviceShortId: string
-        service?: JDService
-    }[] = []
+    private readonly _roles: RoleBinding[] = []
 
     constructor(private readonly bus: JDBus) {
         super()
