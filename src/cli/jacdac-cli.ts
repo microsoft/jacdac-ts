@@ -110,4 +110,5 @@ if (options.parse) {
 
     const text = fs.readFileSync(options.parse, "utf8")
     replayLog(jd, parseLogicLog(text), Number.POSITIVE_INFINITY);
+    setTimeout(() => process.exit(0), 500)
 }
