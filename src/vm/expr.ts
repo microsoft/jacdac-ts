@@ -158,6 +158,9 @@ export class JDExprEvaluator {
                 this.visitExpression(ue.argument)
                 const top = this.exprStack.pop()
                 switch (ue.operator) {
+                    case "ABS":
+                        this.exprStack.push(Math.abs(top))
+                        return
                     case "!":
                         this.exprStack.push(!top)
                         return
@@ -194,8 +197,9 @@ export class JDExprEvaluator {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
-                if (val === undefined)
+                if (val === undefined) {
                     throw new JDVMError(`lookup of ${unparse(e)} failed`)
+                }
                 this.exprStack.push(val)
                 return
             }

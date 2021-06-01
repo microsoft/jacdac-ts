@@ -43,7 +43,10 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public async sendCommandAsync(command: jsep.Identifier, values: PackedValues) {
+    public async sendCommandAsync(
+        command: jsep.Identifier,
+        values: PackedValues
+    ) {
         const commandName = command?.name
         const pkt = this.service.specification.packets.find(
             p => isCommand(p) && p.name === commandName
@@ -60,7 +63,11 @@ export class VMServiceEnvironment extends JDServiceClient {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async writeRegisterAsync(regName: string, ev: any) {
         const jdreg = this._registers[regName]
-        await jdreg?.sendSetPackedAsync(jdreg.specification?.packFormat, [ev], true)
+        await jdreg?.sendSetPackedAsync(
+            jdreg.specification?.packFormat,
+            [ev],
+            true
+        )
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,12 +116,12 @@ export class VMEnvironment extends JDEventSource {
         super()
     }
 
-    public serviceChanged(role: string, service: JDService, added: boolean) {
+    public serviceChanged(role: string, service: JDService) {
         if (this._envs[role]) {
             this._envs[role].unmount()
             this._envs[role] = undefined
         }
-        if (added) {
+        if (service) {
             this._envs[role] = new VMServiceEnvironment(service)
         }
     }
@@ -122,7 +129,9 @@ export class VMEnvironment extends JDEventSource {
     public registerRegister(role: string, reg: string) {
         const serviceEnv = this.getService(role)
         if (serviceEnv) {
-            serviceEnv.registerRegister(reg, () => { this.emit(CHANGE)})
+            serviceEnv.registerRegister(reg, () => {
+                this.emit(CHANGE)
+            })
         }
     }
 
@@ -155,15 +164,21 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public async refreshRegistersAsync() {
-        for(const s of Object.values(this._envs)) {
+        for (const s of Object.values(this._envs)) {
             await s?.refreshRegistersAsync()
         }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async sendCommandAsync(e: jsep.MemberExpression, values: PackedValues) {
+    public async sendCommandAsync(
+        e: jsep.MemberExpression,
+        values: PackedValues
+    ) {
         const serviceEnv = this.getService(e)
-        await serviceEnv?.sendCommandAsync(e.property as jsep.Identifier, values)
+        await serviceEnv?.sendCommandAsync(
+            e.property as jsep.Identifier,
+            values
+        )
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -182,14 +197,15 @@ export class VMEnvironment extends JDEventSource {
             return undefined
         }
         const me = e as jsep.MemberExpression
-        if (serviceEnv && me.property.type === "Identifier") {
-            const reg = (me.property as jsep.Identifier).name
-            return serviceEnv.lookup(reg)
-        }
-        return undefined
+        return serviceEnv.lookup(
+            me.property as jsep.Identifier | jsep.MemberExpression
+        )
     }
 
-    public async writeRegisterAsync(e: jsep.MemberExpression | string, ev: any) {
+    public async writeRegisterAsync(
+        e: jsep.MemberExpression | string,
+        ev: any
+    ) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
         if (serviceEnv && me.property.type === "Identifier") {
@@ -227,8 +243,8 @@ export class VMEnvironment extends JDEventSource {
     }
 
     public unsubscribe() {
-        for(const vs of Object.values(this._envs)) {
+        for (const vs of Object.values(this._envs)) {
             vs.unmount()
-         }
+        }
     }
 }
