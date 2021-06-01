@@ -8,6 +8,7 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 import { ROLE_HAS_NO_SERVICE } from "./utils"
+import { RoleRegister, RoleEvent } from "./ir"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
@@ -112,7 +113,7 @@ export class VMEnvironment extends JDEventSource {
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor() {
+    constructor(private registers: RoleRegister[], private events: RoleEvent[]) {
         super()
     }
 
@@ -123,6 +124,16 @@ export class VMEnvironment extends JDEventSource {
         }
         if (service) {
             this._envs[role] = new VMServiceEnvironment(service)
+            this.registers.forEach(r => {
+                if (r.role === role) {
+                    this.registerRegister(role, r.register)
+                }
+            })
+            this.events.forEach(e => {
+                if (e.role === role) {
+                    this.registerEvent(role, e.event)
+                }
+            })
         }
     }
 

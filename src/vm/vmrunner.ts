@@ -383,12 +383,12 @@ export class IT4ProgramRunner extends JDClient {
     ) {
         super()
         this._program = compileProgram(prog)
-        const { registers, events } = checkProgram(this._program)
+        const {registers, events} = checkProgram(this._program)
         if (this._program.errors.length > 0) {
             console.debug(this._program.errors)
         }
         // data structures for running program
-        this._env = new VMEnvironment()
+        this._env = new VMEnvironment(registers, events)
         this._handlers = this._program.handlers.map(
             (h, index) => new IT4HandlerRunner(this, index, this._env, h)
         )
@@ -407,23 +407,12 @@ export class IT4ProgramRunner extends JDClient {
             const service = this.roleManager.getService(role)
             if (service) {
                 this._env.serviceChanged(role, service)
-                registers.forEach(r => {
-                    if (r.role === role) {
-                        this._env.registerRegister(role, r.register)
-                    }
-                })
-                events.forEach(e => {
-                    if (e.role === role) {
-                        this._env.registerEvent(role, e.event)
-                    }
-                })
             }
         } 
-
+        // initialize
         this.roleManager.roles.forEach(r => {
             addRoleService(r.role)
         })
-
         // deal with bind/unbind
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
