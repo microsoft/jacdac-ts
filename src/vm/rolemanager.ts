@@ -4,6 +4,7 @@ import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
 import { ROLE_BOUND, ROLE_UNBOUND } from "./utils"
+import { serviceSpecificationFromName } from "../jdom/spec"
 
 // TODO: replicate MakeCode role manager logic
 export class RoleManager extends JDEventSource {
@@ -46,10 +47,16 @@ export class RoleManager extends JDEventSource {
         }[]
     ) {
         const roles = this.roles
-        console.debug(`set roles`, { roles, newRoles })
+
+        // remove unknown roles
+
+        const supportedNewRoles = newRoles.filter(({ serviceShortId }) =>
+            serviceSpecificationFromName(serviceShortId)
+        )
+        console.debug(`set roles`, { roles, newRoles, supportedNewRoles })
 
         // removed roles
-        for (const newRole of newRoles) {
+        for (const newRole of supportedNewRoles) {
             const existingRole = roles.find(r => r.role === newRole.role)
             if (!existingRole) {
                 // added role
@@ -104,6 +111,8 @@ export class RoleManager extends JDEventSource {
     }
 
     public addRoleService(role: string, serviceShortId: string) {
+        if (!serviceSpecificationFromName(serviceShortId)) return // unknown role type
+
         let binding = this._roles.find(r => r.role === role)
 
         // check if we already have this role
