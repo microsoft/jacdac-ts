@@ -161,7 +161,7 @@ export function decodeMember(
     let humanValue: string = undefined
     let size = Math.abs(member.storage)
 
-    const enumInfo = service.enums[member.type]
+    const enumInfo = service?.enums[member.type]
     const isInt = isIntegerType(member.type) || !!enumInfo
 
     if (member.isFloat && (size == 4 || size == 8)) {
@@ -196,7 +196,7 @@ export function decodeMember(
                 const trg = pkt.device.bus.device(devid, true)
                 if (trg)
                     trg.port(port).pipeType =
-                        service.shortId + "." + pktInfo.pipeType + ".report"
+                        service?.shortId + "." + pktInfo.pipeType + ".report"
             }
         } else {
             value = buf
@@ -209,7 +209,7 @@ export function decodeMember(
         value = scaledValue = scaleIntToFloat(numValue, member)
         if (pkt.device && member.type == "pipe_port")
             pkt.device.port(value).pipeType =
-                service.shortId + "." + pktInfo.pipeType + ".command"
+                service?.shortId + "." + pktInfo.pipeType + ".command"
         if (enumInfo) {
             if (enumInfo.isFlags) {
                 humanValue = ""
@@ -353,7 +353,7 @@ function decodeRegister(
 
     const addr = pkt.serviceCommand & CMD_REG_MASK
     const regInfo =
-        service.packets.find(p => isRegister(p) && p.identifier == addr) ||
+        service?.packets.find(p => isRegister(p) && p.identifier == addr) ||
         syntheticPktInfo("rw", addr)
 
     const decoded = decodeMembers(service, regInfo, pkt)
@@ -380,7 +380,7 @@ function decodeEvent(service: jdspec.ServiceSpec, pkt: Packet): DecodedPacket {
 
     const evCode = pkt.eventCode
     const evInfo =
-        service.packets.find(
+        service?.packets.find(
             p => p.kind == "event" && p.identifier == evCode
         ) || syntheticPktInfo("event", evCode)
 
@@ -403,7 +403,7 @@ function decodeCommand(
 ): DecodedPacket {
     const kind = pkt.isCommand ? "command" : "report"
     const cmdInfo =
-        service.packets.find(
+        service?.packets.find(
             p => p.kind == kind && p.identifier == pkt.serviceCommand
         ) || syntheticPktInfo(kind, pkt.serviceCommand)
 
@@ -479,7 +479,6 @@ export function decodePacketData(pkt: Packet): DecodedPacket {
 
     const srv_class = pkt?.serviceClass
     const service = serviceSpecificationFromClassIdentifier(srv_class)
-    if (!service) return null
 
     return decodePacket(service, pkt)
 }
