@@ -9,7 +9,7 @@ async function patchDocs() {
     await patch({
         files: "./*.html",
         from: `/dist/${fn}`,
-        to: `https://cdn.jsdelivr.net/npm/jacdac-ts@${version}/dist/${fn}`,
+        to: `https://unpkg.com/jacdac-ts@${version}/dist/${fn}`,
     })
 }
 
