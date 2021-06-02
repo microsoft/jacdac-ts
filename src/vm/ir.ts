@@ -7,6 +7,7 @@ import { assert } from "../jdom/utils"
 
 export interface IT4Error {
     sourceId?: string
+    code?: number
     message: string
 }
 
