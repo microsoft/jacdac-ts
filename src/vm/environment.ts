@@ -9,6 +9,7 @@ import { CHANGE, EVENT } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 import { ROLE_HAS_NO_SERVICE } from "./utils"
 import { RoleRegister, RoleEvent } from "./ir"
+import { VMEnvironmentInterface } from "./vmrunner"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
@@ -108,7 +109,7 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 }
 
-export class VMEnvironment extends JDEventSource {
+export class VMEnvironment extends JDEventSource implements VMEnvironmentInterface {
     private _currentEvent: string = undefined
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}

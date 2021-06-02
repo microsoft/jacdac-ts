@@ -10,13 +10,13 @@ suite("vm", () => {
             test(match, function (done) {
                 const base = basename(match)
                 const jsonpath = join(dir, match)
-                const it4path = join(dir, base + ".it4")
+                const vmpath = join(dir, base + ".vm")
 
                 console.log(`test ${match}`)
                 const blocks = JSON.parse(readFileSync(jsonpath, "utf8"))
-                const it4 = JSON.parse(readFileSync(it4path, "utf8"))
+                const vm = JSON.parse(readFileSync(vmpath, "utf8"))
 
-                // TODO compile blocks and compare that it match it4
+                // TODO compile blocks and compare that it match vm
 
                 done()
             })
