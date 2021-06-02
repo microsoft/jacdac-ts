@@ -383,9 +383,9 @@ export class IT4ProgramRunner extends JDClient {
     ) {
         super()
         this._program = compileProgram(prog)
-        const {registers, events} = checkProgram(this._program)
-        if (this._program.errors.length > 0) {
-            console.debug(this._program.errors)
+        const { registers, events, errors } = checkProgram(this._program)
+        if (errors.length) {
+            console.warn("ERRORS", errors)
         }
         // data structures for running program
         this._env = new VMEnvironment(registers, events)
