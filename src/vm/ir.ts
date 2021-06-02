@@ -245,7 +245,7 @@ export type JDVMFunctions =
     | "label"
     | "jump"
     | "branchOnCondition"
-    | "role"
+    | "watch"
 
 export const VMFunctions: jdtest.TestFunctionDescription[] = [
     {
@@ -285,9 +285,9 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
-        id: "role",
-        args: ["Identifier", "Identifier"],
-        prompt: `role variable {1} of service type {2}`,
+        id: "watch",
+        args: ["number"],
+        prompt: `watch expression {1}`,
         context: "command",
     },
     {
