@@ -1,11 +1,11 @@
-import { isEvent, isRegister, isCommand } from "../jdom/spec"
+import { isEvent, isRegister, isCommand, isIntensity } from "../jdom/spec"
 import { JDEvent } from "../jdom/event"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { JDRegister } from "../jdom/register"
 import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, EVENT } from "../jdom/constants"
+import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 import { ROLE_HAS_NO_SERVICE } from "./utils"
 import { RoleRegister, RoleEvent } from "./ir"
@@ -64,12 +64,24 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async writeRegisterAsync(regName: string, ev: any) {
-        const jdreg = this._registers[regName]
+        await this.setEnabled()
+        await this.writeRegAsync(this._registers[regName], ev)
+    }
+
+    private async writeRegAsync(jdreg: JDRegister, ev: any) {
         await jdreg?.sendSetPackedAsync(
             jdreg.specification?.packFormat,
             [ev],
             true
         )
+    }
+
+    private async setEnabled() {
+        let pkt = this.service.specification.packets.find(isIntensity)
+        if (pkt && pkt.fields[0].type === "bool") {
+            let jdreg = this.service.register(SystemReg.Intensity)
+            await this.writeRegAsync(jdreg, true)
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,12 +121,18 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 }
 
-export class VMEnvironment extends JDEventSource implements VMEnvironmentInterface {
+export class VMEnvironment
+    extends JDEventSource
+    implements VMEnvironmentInterface
+{
     private _currentEvent: string = undefined
     private _envs: SMap<VMServiceEnvironment> = {}
     private _locals: SMap<string> = {}
 
-    constructor(private registers: RoleRegister[], private events: RoleEvent[]) {
+    constructor(
+        private registers: RoleRegister[],
+        private events: RoleEvent[]
+    ) {
         super()
     }
 
