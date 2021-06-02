@@ -116,6 +116,10 @@ export class Packet {
         return this._header[3]
     }
 
+    set frameFlags(v: number) {
+        this._header[3] = v
+    }
+
     get isMultiCommand() {
         return !!(this.frameFlags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
     }

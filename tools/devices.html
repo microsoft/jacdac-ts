@@ -28,7 +28,7 @@
 
 <body>
     <h1>Jacdac/Devices</h1>
-    <div>
+    <div id="topbtn">
         <button id="connect">connect</button>
         <button id="disconnect">disconnect</button>
     </div>
@@ -50,6 +50,13 @@
         jd.on(jacdac.DEVICE_ANNOUNCE, render)
         jd.on(jacdac.ERROR, (evt) => log(`${evt.context} ${evt.exception.message}`))
 
+        if (/pwr/.test(document.location.search)) {
+            const sht = document.createElement("button")
+            sht.innerText = "PWR Shutdown"
+            sht.onclick = sendShutdown
+            document.getElementById("topbtn").appendChild(sht)
+        }
+
         async function scan() {
             log('starting')
             await jd.disconnect();
@@ -57,7 +64,6 @@
             render()
             log('started')
         }
-
 
         function printServices(device) {
             let srv = ""
@@ -116,6 +122,14 @@
         function render() {
             const devices = jd.devices();
             devices.forEach(device => connect(device));
+        }
+
+        function sendShutdown() {
+            const pkt = jacdac.Packet.onlyHeader(0x80)
+            pkt.deviceIdentifier = "5AC9A41FAAAAAAAA"
+            pkt.frameFlags = 0x05
+            pkt.serviceIndex = 0x3D
+            pkt.sendCoreAsync(jd)
         }
 
         const connect = document.getElementById("connect");
