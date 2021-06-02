@@ -209,8 +209,10 @@ export function checkProgram(prog: IT4Program): {
         handlerVisitor(h, undefined, c =>
             checker.checkCommand(c.command, IT4Functions)
         )
-        if (allErrors.length === errorCount) {
+        if (h?.errors.length === 0 && allErrors.length === errorCount) {
             goodHandlers.push(h)
+        } else {
+            h?.errors.forEach(e => allErrors.push(e))
         }
     })
     prog.handlers = goodHandlers
