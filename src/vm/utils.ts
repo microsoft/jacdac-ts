@@ -1,5 +1,5 @@
 export const VM_ERROR = "JacdacVMError"
-
+export const VM_WATCH = "JacdacVMWatch"
 export const ROLE_BOUND = "roleBound"
 export const ROLE_UNBOUND = "roleUnbound"
 export const ROLE_HAS_NO_SERVICE = "roleHasNoService"

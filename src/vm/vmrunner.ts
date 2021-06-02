@@ -11,6 +11,7 @@ import {
     ROLE_UNBOUND,
     VM_COMMAND_ATTEMPTED,
     VM_COMMAND_COMPLETED,
+    VM_WATCH,
     JDVMError,
 } from "./utils"
 import { unparse } from "./expr"
@@ -185,6 +186,16 @@ class VMCommandEvaluator {
                 this._status = VMStatus.Completed
                 break
             }
+            case "watch": {
+                const expr = new JDExprEvaluator(
+                    e => this.env.lookup(e),
+                    undefined
+                )
+                const ev = expr.eval(args[0])
+                this._status = VMStatus.Completed
+                this.parent.watch(this.gc?.sourceId, ev)
+                break
+            }
             case "halt": {
                 this._status = VMStatus.Stopped
                 break
@@ -209,6 +220,10 @@ class VMCommandRunner {
 
     trace(msg: string, context: VMTraceContext = {}) {
         this.parent.trace(msg, { handler: this.handlerId, ...context })
+    }
+
+    watch(id: string, val: any) {
+        this.parent.watch(id, val)
     }
 
     get status() {
@@ -276,6 +291,10 @@ class VMHandlerRunner extends JDEventSource {
 
     trace(msg: string, context: VMTraceContext = {}) {
         this.parent.trace(msg, { id: this.id, ...context })
+    }
+
+    watch(id: string, val: any) {
+        this.parent.watch(id, val)
     }
 
     get status() {
@@ -371,10 +390,7 @@ export class VMProgramRunner extends JDClient {
     private _running = false
     private _in_run = false
     private _program: VMProgram
-
-    trace(message: string, context: VMTraceContext = {}) {
-        this.emit(TRACE, { message, context })
-    }
+    private _watch: SMap<any> = {}
 
     constructor(
         readonly bus: JDBus,
@@ -426,6 +442,19 @@ export class VMProgramRunner extends JDClient {
                 this._env.serviceChanged(role, undefined)
             })
         )
+    }
+
+    trace(message: string, context: VMTraceContext = {}) {
+        this.emit(TRACE, { message, context })
+    }
+
+    watch(id: string, val: any) {
+        this._watch[id] = val;
+        this.emit(VM_WATCH, id)
+    }
+
+    get watchMap() {
+        return this._watch;
     }
 
     get status() {
