@@ -5,6 +5,11 @@ import {
 } from "../../jacdac-spec/spectool/jdutils"
 import { assert } from "../jdom/utils"
 
+export interface IT4Error {
+    sourceId?: string
+    message: string
+}
+
 export interface IT4Base {
     type: "ite" | "cmd"
     sourceId?: string
@@ -24,6 +29,7 @@ export interface IT4Command extends IT4Base {
 
 export interface IT4Handler {
     commands: IT4Base[]
+    errors?: IT4Error[]
 }
 
 export interface IT4Role {
@@ -34,7 +40,6 @@ export interface IT4Role {
 export interface IT4Program {
     roles: IT4Role[]
     handlers: IT4Handler[]
-    errors?: jdspec.Diagnostic[]
 }
 
 export const getServiceFromRole = (info: IT4Program) => (role: string) => {
@@ -108,7 +113,7 @@ function handlerVisitor(
 export function compileProgram(prog: IT4Program) {
     let newProgram: IT4Program = { roles: prog.roles.slice(0), handlers: [] }
     newProgram.handlers = prog.handlers.map(h => {
-        return { commands: removeIfThenElse(h) }
+        return { commands: removeIfThenElse(h), errors: h?.errors }
     })
     return newProgram
 }
@@ -182,12 +187,14 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
 
 export function checkProgram(prog: IT4Program): {
     registers: RoleRegister[]
-    events: RoleEvent[]
+    events: RoleEvent[],
+    errors: IT4Error[]
 } {
-    const allErrors: jdspec.Diagnostic[] = []
+    const allErrors: IT4Error[] = []
     const goodHandlers: IT4Handler[] = []
+    let currentId: string = undefined
     const errorFun = (e: string) => {
-        prog.errors.push({ file: "", line: undefined, message: e })
+        allErrors.push({ sourceId: currentId, message: e })
     }
     const symbolResolver = new SpecSymbolResolver(
         undefined,
@@ -196,24 +203,17 @@ export function checkProgram(prog: IT4Program): {
     )
     const checker = new IT4Checker(symbolResolver, _ => true, errorFun)
     prog.handlers.forEach((h, index) => {
-        prog.errors = []
+        if (h?.errors.length)
+            return
+        const errorCount = allErrors.length
         handlerVisitor(h, undefined, c =>
             checker.checkCommand(c.command, IT4Functions)
         )
-        if (prog.errors.length) {
-            prog.errors.forEach(e =>
-                allErrors.push({
-                    file: `handler ${index}`,
-                    line: undefined,
-                    message: e.message,
-                })
-            )
-        } else {
+        if (allErrors.length === errorCount) {
             goodHandlers.push(h)
         }
     })
     prog.handlers = goodHandlers
-    prog.errors = allErrors
 
     return {
         registers: symbolResolver.registers.map(s => {
@@ -224,6 +224,7 @@ export function checkProgram(prog: IT4Program): {
             const [root, fld] = e.split(".")
             return { role: root, event: fld }
         }),
+        errors: allErrors
     }
 }
 
