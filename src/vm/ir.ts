@@ -1,49 +1,49 @@
 import { serviceSpecificationFromName } from "../jdom/spec"
 import {
-    IT4Checker,
+    VMChecker,
     SpecSymbolResolver,
 } from "../../jacdac-spec/spectool/jdutils"
 import { assert } from "../jdom/utils"
 
-export interface IT4Error {
+export interface VMError {
     sourceId?: string
     code?: number
     message: string
 }
 
-export interface IT4Base {
+export interface VMBase {
     type: "ite" | "cmd"
     sourceId?: string
 }
 
-export interface IT4IfThenElse extends IT4Base {
+export interface VMIfThenElse extends VMBase {
     type: "ite"
     expr: jsep.Expression
-    then?: IT4Base[]
-    else?: IT4Base[]
+    then?: VMBase[]
+    else?: VMBase[]
 }
 
-export interface IT4Command extends IT4Base {
+export interface VMCommand extends VMBase {
     type: "cmd"
     command: jsep.CallExpression
 }
 
-export interface IT4Handler {
-    commands: IT4Base[]
-    errors?: IT4Error[]
+export interface VMHandler {
+    commands: VMBase[]
+    errors?: VMError[]
 }
 
-export interface IT4Role {
+export interface VMRole {
     role: string
     serviceShortId: string
 }
 
-export interface IT4Program {
-    roles: IT4Role[]
-    handlers: IT4Handler[]
+export interface VMProgram {
+    roles: VMRole[]
+    handlers: VMHandler[]
 }
 
-export const getServiceFromRole = (info: IT4Program) => (role: string) => {
+export const getServiceFromRole = (info: VMProgram) => (role: string) => {
     // lookup in roles first
     const shortId = info.roles.find(pair => pair.role === role)
     if (shortId) {
@@ -87,20 +87,20 @@ export function toMemberExpression(
 }
 
 function handlerVisitor(
-    handler: IT4Handler,
-    visitITE: (ite: IT4IfThenElse, time: number) => void,
-    visitCommand: (c: IT4Command) => void
+    handler: VMHandler,
+    visitITE: (ite: VMIfThenElse, time: number) => void,
+    visitCommand: (c: VMCommand) => void
 ) {
     handler.commands.forEach(visitBase)
 
-    function visitBase(base: IT4Base) {
+    function visitBase(base: VMBase) {
         switch (base.type) {
             case "cmd": {
-                if (visitCommand) visitCommand(base as IT4Command)
+                if (visitCommand) visitCommand(base as VMCommand)
                 break
             }
             case "ite": {
-                const ite = base as IT4IfThenElse
+                const ite = base as VMIfThenElse
                 if (visitITE) visitITE(ite, 0)
                 ite?.else?.forEach(visitBase)
                 if (visitITE) visitITE(ite, 1)
@@ -111,16 +111,16 @@ function handlerVisitor(
     }
 }
 
-export function compileProgram(prog: IT4Program) {
-    let newProgram: IT4Program = { roles: prog.roles.slice(0), handlers: [] }
+export function compileProgram(prog: VMProgram) {
+    let newProgram: VMProgram = { roles: prog.roles.slice(0), handlers: [] }
     newProgram.handlers = prog.handlers.map(h => {
         return { commands: removeIfThenElse(h), errors: h?.errors }
     })
     return newProgram
 }
 
-function removeIfThenElse(handler: IT4Handler): IT4Base[] {
-    const newSequence: IT4Command[] = []
+function removeIfThenElse(handler: VMHandler): VMBase[] {
+    const newSequence: VMCommand[] = []
     const labels: { then: string; end: string }[] = []
     let labelId = 1
     handlerVisitor(
@@ -186,13 +186,13 @@ function removeIfThenElse(handler: IT4Handler): IT4Base[] {
     return newSequence
 }
 
-export function checkProgram(prog: IT4Program): {
+export function checkProgram(prog: VMProgram): {
     registers: RoleRegister[]
     events: RoleEvent[],
-    errors: IT4Error[]
+    errors: VMError[]
 } {
-    const allErrors: IT4Error[] = []
-    const goodHandlers: IT4Handler[] = []
+    const allErrors: VMError[] = []
+    const goodHandlers: VMHandler[] = []
     let currentId: string = undefined
     const errorFun = (e: string) => {
         allErrors.push({ sourceId: currentId, message: e })
@@ -202,7 +202,7 @@ export function checkProgram(prog: IT4Program): {
         getServiceFromRole(prog),
         errorFun
     )
-    const checker = new IT4Checker(symbolResolver, _ => true, errorFun)
+    const checker = new VMChecker(symbolResolver, _ => true, errorFun)
     prog.handlers.forEach((h) => {
         if (h?.errors.length) {
             h?.errors.forEach(e => allErrors.push(e))
@@ -210,7 +210,7 @@ export function checkProgram(prog: IT4Program): {
         }
         const errorCount = allErrors.length
         handlerVisitor(h, undefined, c =>
-            checker.checkCommand(c.command, IT4Functions)
+            checker.checkCommand(c.command, VMFunctions)
         )
         if (h?.errors.length === 0 && allErrors.length === errorCount) {
             goodHandlers.push(h)
@@ -233,7 +233,7 @@ export function checkProgram(prog: IT4Program): {
     }
 }
 
-export type JDIT4Functions =
+export type JDVMFunctions =
     | "awaitEvent"
     | "awaitRegister"
     | "awaitChange"
@@ -247,7 +247,7 @@ export type JDIT4Functions =
     | "branchOnCondition"
     | "role"
 
-export const IT4Functions: jdtest.TestFunctionDescription[] = [
+export const VMFunctions: jdtest.TestFunctionDescription[] = [
     {
         id: "label",
         args: ["Identifier"],

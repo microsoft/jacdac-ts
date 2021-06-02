@@ -1,4 +1,4 @@
-import { IT4Program, IT4Handler, IT4Command } from "./ir"
+import { VMProgram, VMHandler, VMCommand } from "./ir"
 import { RoleManager } from "./rolemanager"
 import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
@@ -18,7 +18,7 @@ import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TraceContext = any
+export type VMTraceContext = any
 
 export enum VMStatus {
     ProgramError = "programerror",
@@ -28,7 +28,7 @@ export enum VMStatus {
     Stopped = "stopped",
 }
 
-interface Environment {
+export interface VMEnvironmentInterface {
     writeRegisterAsync: (
         e: jsep.MemberExpression | string,
         v: any
@@ -44,22 +44,22 @@ interface Environment {
     unsubscribe: () => void
 }
 
-class JumpException {
+class VMJumpException {
     constructor(public label: string) {}
 }
 
-class IT4CommandEvaluator {
+class VMCommandEvaluator {
     private _status: VMStatus
     private _regSaved: number = undefined
     private _changeSaved: number = undefined
     private _started = false
     constructor(
-        public parent: IT4CommandRunner,
-        private readonly env: Environment,
-        private readonly gc: IT4Command
+        public parent: VMCommandRunner,
+        private readonly env: VMEnvironment,
+        private readonly gc: VMCommand
     ) {}
 
-    trace(msg: string, context: TraceContext = {}) {
+    trace(msg: string, context: VMTraceContext = {}) {
         this.parent.trace(msg, { command: this.gc.command.type, ...context })
     }
 
@@ -118,14 +118,14 @@ class IT4CommandEvaluator {
             case "branchOnCondition": {
                 const expr = this.checkExpression(args[0])
                 if (expr) {
-                    throw new JumpException((args[1] as jsep.Identifier).name)
+                    throw new VMJumpException((args[1] as jsep.Identifier).name)
                 }
                 this._status = VMStatus.Completed
                 break
             }
             case "jump": {
                 this._status = VMStatus.Completed
-                throw new JumpException((args[0] as jsep.Identifier).name)
+                throw new VMJumpException((args[0] as jsep.Identifier).name)
             }
             case "label": {
                 this._status = VMStatus.Completed
@@ -195,19 +195,19 @@ class IT4CommandEvaluator {
     }
 }
 
-class IT4CommandRunner {
+class VMCommandRunner {
     private _status = VMStatus.Running
-    private _eval: IT4CommandEvaluator
+    private _eval: VMCommandEvaluator
     constructor(
-        public readonly parent: IT4HandlerRunner,
+        public readonly parent: VMHandlerRunner,
         private handlerId: number,
-        env: Environment,
-        public gc: IT4Command
+        env: VMEnvironment,
+        public gc: VMCommand
     ) {
-        this._eval = new IT4CommandEvaluator(this, env, gc)
+        this._eval = new VMCommandEvaluator(this, env, gc)
     }
 
-    trace(msg: string, context: TraceContext = {}) {
+    trace(msg: string, context: VMTraceContext = {}) {
         this.parent.trace(msg, { handler: this.handlerId, ...context })
     }
 
@@ -249,22 +249,22 @@ class IT4CommandRunner {
     }
 }
 
-class IT4HandlerRunner extends JDEventSource {
+class VMHandlerRunner extends JDEventSource {
     private _commandIndex: number
-    private _currentCommand: IT4CommandRunner
+    private _currentCommand: VMCommandRunner
     private stopped = false
     private _labelToIndex: SMap<number> = {}
 
     constructor(
-        public readonly parent: IT4ProgramRunner,
+        public readonly parent: VMProgramRunner,
         public readonly id: number,
-        public readonly env: Environment,
-        private readonly handler: IT4Handler
+        public readonly env: VMEnvironment,
+        private readonly handler: VMHandler
     ) {
         super()
         // find the label commands (targets of jumps)
         this.handler.commands.forEach((c, index) => {
-            const cmd = c as IT4Command
+            const cmd = c as VMCommand
             const id = cmd.command?.callee as jsep.Identifier
             if (id?.name === "label") {
                 const label = cmd.command.arguments[0] as jsep.Identifier
@@ -274,7 +274,7 @@ class IT4HandlerRunner extends JDEventSource {
         this.reset()
     }
 
-    trace(msg: string, context: TraceContext = {}) {
+    trace(msg: string, context: VMTraceContext = {}) {
         this.parent.trace(msg, { id: this.id, ...context })
     }
 
@@ -301,7 +301,7 @@ class IT4HandlerRunner extends JDEventSource {
         if (cmd.type === "ite") {
             throw new JDVMError("ite not compiled away")
         }
-        return cmd as IT4Command
+        return cmd as VMCommand
     }
 
     private async executeCommandAsync() {
@@ -309,8 +309,8 @@ class IT4HandlerRunner extends JDEventSource {
         try {
             await this._currentCommand.step()
         } catch (e) {
-            if (e instanceof JumpException) {
-                const { label } = e as JumpException
+            if (e instanceof VMJumpException) {
+                const { label } = e as VMJumpException
                 const index = this._labelToIndex[label]
                 this.commandIndex = index
                 // since it's a label it executes successfully
@@ -331,7 +331,7 @@ class IT4HandlerRunner extends JDEventSource {
             this._currentCommand = undefined
         } else if (index !== this._commandIndex) {
             this._commandIndex = index
-            this._currentCommand = new IT4CommandRunner(
+            this._currentCommand = new VMCommandRunner(
                 this,
                 this.id,
                 this.env,
@@ -364,22 +364,22 @@ class IT4HandlerRunner extends JDEventSource {
     }
 }
 
-export class IT4ProgramRunner extends JDClient {
-    private _handlers: IT4HandlerRunner[] = []
+export class VMProgramRunner extends JDClient {
+    private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
-    private _waitQueue: IT4HandlerRunner[] = []
+    private _waitQueue: VMHandlerRunner[] = []
     private _running = false
     private _in_run = false
-    private _program: IT4Program
+    private _program: VMProgram
 
-    trace(message: string, context: TraceContext = {}) {
+    trace(message: string, context: VMTraceContext = {}) {
         this.emit(TRACE, { message, context })
     }
 
     constructor(
         readonly bus: JDBus,
         readonly roleManager: RoleManager,
-        prog: IT4Program
+        prog: VMProgram
     ) {
         super()
         this._program = compileProgram(prog)
@@ -390,7 +390,7 @@ export class IT4ProgramRunner extends JDClient {
         // data structures for running program
         this._env = new VMEnvironment(registers, events)
         this._handlers = this._program.handlers.map(
-            (h, index) => new IT4HandlerRunner(this, index, this._env, h)
+            (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
         this._waitQueue = this._handlers.slice(0)
         // run on any change to environment
@@ -473,7 +473,7 @@ export class IT4ProgramRunner extends JDClient {
         try {
             await this._env.refreshRegistersAsync()
             if (this._waitQueue.length > 0) {
-                const nextTime: IT4HandlerRunner[] = []
+                const nextTime: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
                     await h.step()
                     if (h.status !== VMStatus.Stopped) {
