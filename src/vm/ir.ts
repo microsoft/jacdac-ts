@@ -202,9 +202,11 @@ export function checkProgram(prog: IT4Program): {
         errorFun
     )
     const checker = new IT4Checker(symbolResolver, _ => true, errorFun)
-    prog.handlers.forEach((h, index) => {
-        if (h?.errors.length)
+    prog.handlers.forEach((h) => {
+        if (h?.errors.length) {
+            h?.errors.forEach(e => allErrors.push(e))
             return
+        }
         const errorCount = allErrors.length
         handlerVisitor(h, undefined, c =>
             checker.checkCommand(c.command, IT4Functions)
