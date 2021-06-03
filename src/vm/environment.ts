@@ -7,9 +7,9 @@ import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
-import { ROLE_HAS_NO_SERVICE } from "./utils"
 import { RoleRegister, RoleEvent } from "./ir"
 import { VMEnvironmentInterface } from "./vmrunner"
+import { ROLE_HAS_NO_SERVICE } from "./rolemanager"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
@@ -77,22 +77,22 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 
     private async setEnabled() {
-        let pkt = this.service.specification.packets.find(isIntensity)
+        const pkt = this.service.specification.packets.find(isIntensity)
         if (pkt && pkt.fields[0].type === "bool") {
-            let jdreg = this.service.register(SystemReg.Intensity)
+            const jdreg = this.service.register(SystemReg.Intensity)
             await this.writeRegAsync(jdreg, true)
         }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | jsep.Identifier | string): any {
-        let root =
+        const root =
             typeof e === "string"
                 ? e
                 : e.type === "Identifier"
                 ? e.name
                 : (e.object as jsep.Identifier).name
-        let fld =
+        const fld =
             typeof e === "string"
                 ? undefined
                 : e.type === "Identifier"
@@ -215,7 +215,7 @@ export class VMEnvironment
     public lookup(e: jsep.MemberExpression | string): any {
         const roleName = this.getRootName(e)
         if (roleName === "$") {
-            let me = e as jsep.MemberExpression
+            const me = e as jsep.MemberExpression
             if (me.property.type === "Identifier") {
                 const local = (me.property as jsep.Identifier).name
                 return this._locals[local]

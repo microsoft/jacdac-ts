@@ -3,8 +3,11 @@ import { CHANGE, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../jdom/constants"
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
-import { ROLE_BOUND, ROLE_UNBOUND } from "./utils"
 import { serviceSpecificationFromName } from "../jdom/spec"
+
+export const ROLE_BOUND = "roleBound"
+export const ROLE_UNBOUND = "roleUnbound"
+export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
 
 export interface RoleBinding {
     role: string
