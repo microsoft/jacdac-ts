@@ -263,8 +263,8 @@ class VMCommandRunner {
 }
 
 class VMHandlerRunner extends JDEventSource {
-    private _commandIndex: number
-    private _currentCommand: VMCommandRunner
+    private _commandIndex: number = undefined
+    private _currentCommand: VMCommandRunner = undefined
     private stopped = false
     private _labelToIndex: SMap<number> = {}
     private _breakRequested = false
@@ -326,11 +326,27 @@ class VMHandlerRunner extends JDEventSource {
     // run-to-completion semantics (true if breakpoint)
     async runToCompletion() {
         if (this.stopped || !this.handler.commands.length) return undefined
+        if (this.commandIndex === undefined) {
+            this.commandIndex = 0
+        }
+        if ((await this.singleStepCheckBreakAsync()) || this._singleStep)
+            return this._currentCommand
         while (this.next()) {
             if ((await this.singleStepCheckBreakAsync()) || this._singleStep)
                 return this._currentCommand
         }
         return undefined
+    }
+
+    private next() {
+        if (
+            this._currentCommand.status === VMStatus.Completed &&
+            this.commandIndex < this.handler.commands.length - 1
+        ) {
+            this.commandIndex++
+            return true
+        }
+        return false
     }
 
     private getCommand() {
@@ -343,8 +359,8 @@ class VMHandlerRunner extends JDEventSource {
 
     private async singleStepCheckBreakAsync() {
         this.trace("step begin")
-        const sid = this._currentCommand.gc.sourceId
-        if (this.parent.breakPointOn(sid) || this._breakRequested) {
+        const sid = this._currentCommand.gc?.sourceId
+        if (this.parent.breakpointOn(sid) || this._breakRequested) {
             this._singleStep = true
             this._breakRequested = false
             return true
@@ -375,20 +391,6 @@ class VMHandlerRunner extends JDEventSource {
             this.emit(VM_COMMAND_COMPLETED, this._currentCommand.gc.sourceId)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
-    }
-
-    private next() {
-        if (this.commandIndex === undefined) {
-            this.commandIndex = 0
-            return true
-        } else if (
-            this._currentCommand.status === VMStatus.Completed &&
-            this.commandIndex < this.handler.commands.length - 1
-        ) {
-            this.commandIndex++
-            return true
-        }
-        return false
     }
 
     private set commandIndex(index: number) {
@@ -443,30 +445,24 @@ export class VMProgramRunner extends JDClient {
         )
         this._waitQueue = this._handlers.slice(0)
         // run on any change to environment
-        this._env.subscribe(CHANGE, () => {
-            try {
-                this.run()
-            } catch (e) {
-                console.debug(e)
-                this.emit(ERROR, e)
-            }
-        })
+        this._env.subscribe(CHANGE, () => { this.runWithTry() } )
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
             if (service) {
+                console.log(`role added`, { role })
                 this._env.serviceChanged(role, service)
             }
         }
         // initialize
-        this.roleManager.setRoles(this._roles)
-        //this.roleManager.roles.forEach(r => {
-        //    addRoleService(r.role)
-        //})
-        // deal with bind/unbind
+        this.roleManager.roles.forEach(r => {
+            if (this._roles.find(rv => rv.role === r.role)) {
+                addRoleService(r.role)
+            }
+        })
+
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
-                console.log(`role added`, { role })
                 addRoleService(role)
             })
         )
@@ -508,8 +504,8 @@ export class VMProgramRunner extends JDClient {
         this._breaks = {}
     }
 
-    breakPointOn(id: string) {
-        return id in this._breaks
+    breakpointOn(id: string) {
+        return !!this._breaks?.[id]
     }
 
     // control of VM
@@ -552,12 +548,41 @@ export class VMProgramRunner extends JDClient {
         this.trace("resume")
         this._handlerAtBreak = undefined
         this._handlers.forEach(h => h.resume())
+        this.runWithTry();
+    }
+
+    step() {
+        if (!this._running || !this._handlerAtBreak) return
+        this.trace("step")
+        this.runWithTry()
+    }
+
+    private runWithTry() {
         try {
             this.run()
         } catch (e) {
             console.debug(e)
             this.emit(ERROR, e)
+        }  
+    }
+
+    private async runHandler(h: VMHandlerRunner) {
+        if (!this._handlerAtBreak || this._handlerAtBreak === h) {
+            let brkCommand = await h.runToCompletion()
+            if (brkCommand) {
+                this._handlerAtBreak = h
+                this.emit(VM_BREAKPOINT, {
+                    handler: h,
+                    sourceId: brkCommand.gc?.sourceId,
+                })
+            }
+            if (h.status !== VMStatus.Stopped) {
+                if (h.status === VMStatus.Completed) h.reset()
+                return true
+            } else
+                return false
         }
+        return true
     }
 
     private async run() {
@@ -572,20 +597,7 @@ export class VMProgramRunner extends JDClient {
                 const nextTime: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
                     currentHandler = h
-                    if (!this._handlerAtBreak || this._handlerAtBreak === h) {
-                        let brkCommand = await h.runToCompletion()
-                        if (brkCommand) {
-                            this._handlerAtBreak = h
-                            this.emit(VM_BREAKPOINT, {
-                                handler: h,
-                                sourceId: brkCommand.gc?.sourceId,
-                            })
-                        }
-                    }
-                    if (h.status !== VMStatus.Stopped) {
-                        if (h.status === VMStatus.Completed) h.reset()
-                        nextTime.push(h)
-                    }
+                    if (this.runHandler(h)) nextTime.push(h)
                     currentHandler = undefined
                 }
                 this._waitQueue = nextTime
