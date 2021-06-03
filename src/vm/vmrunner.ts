@@ -449,8 +449,11 @@ export class VMProgramRunner extends JDClient {
     }
 
     watch(sourceId: string, value: WatchValueType) {
-        this._watch[sourceId] = value
-        this.emit(VM_WATCH_CHANGE, sourceId)
+        const oldValue = this._watch[sourceId]
+        if (oldValue !== value) {
+            this._watch[sourceId] = value
+            this.emit(VM_WATCH_CHANGE, sourceId)
+        }
     }
 
     lookupWatch(sourceId: string) {
