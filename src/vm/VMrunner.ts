@@ -11,6 +11,7 @@ import {
     VM_COMMAND_COMPLETED,
     VM_WATCH_CHANGE,
     VMError,
+    VM_BREAKPOINT,
 } from "./VMutils"
 import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
@@ -19,9 +20,8 @@ import { JDClient } from "../jdom/client"
 export type VMTraceContext = any
 
 export enum VMStatus {
-    DebuggerBreak = "breakpoint", // breakpoint encountered
     Ready = "ready", // the pc is at this instruction, but pre-condition not met
-    Enabled = "enabled", // the instruction pre-conditions are met
+    Enabled = "enabled", // the instruction pre-conditions are met (is this needed?)
     Running = "running", // the instruction has started running (may need retries)
     Completed = "completed", // the instruction completed successfully
     Stopped = "stopped", // halt instruction encountered, handler stopped
@@ -267,6 +267,8 @@ class VMHandlerRunner extends JDEventSource {
     private _currentCommand: VMCommandRunner
     private stopped = false
     private _labelToIndex: SMap<number> = {}
+    private _breakRequested = false
+    private _singleStep = false
 
     constructor(
         public readonly parent: VMProgramRunner,
@@ -284,7 +286,6 @@ class VMHandlerRunner extends JDEventSource {
                 this._labelToIndex[label.name] = index
             }
         })
-        // TODO: find all the roles needed by this handler
         this.reset()
     }
 
@@ -304,7 +305,7 @@ class VMHandlerRunner extends JDEventSource {
             : this._currentCommand.status
     }
 
-    public reset() {
+    reset() {
         this.commandIndex = undefined
         this.stopped = false
     }
@@ -314,12 +315,43 @@ class VMHandlerRunner extends JDEventSource {
         this.env.unsubscribe()
     }
 
+    requestBreak() {
+        this._breakRequested = true
+    }
+
+    resume() {
+        this._singleStep = false
+    }
+
+    // run-to-completion semantics (true if breakpoint)
+    async runToCompletion() {
+        if (this.stopped || !this.handler.commands.length) return undefined
+        while (this.next()) {
+            if ((await this.singleStepCheckBreakAsync()) || this._singleStep)
+                return this._currentCommand
+        }
+        return undefined
+    }
+
     private getCommand() {
         const cmd = this.handler.commands[this._commandIndex]
         if (cmd.type === "ite") {
             throw new VMError("ite not compiled away")
         }
         return cmd as VMCommand
+    }
+
+    private async singleStepCheckBreakAsync() {
+        this.trace("step begin")
+        const sid = this._currentCommand.gc.sourceId
+        if (this.parent.breakPointOn(sid) || this._breakRequested) {
+            this._singleStep = true
+            this._breakRequested = false
+            return true
+        }
+        await this.singleStepAsync()
+        this.trace("step end")
+        return false
     }
 
     private async singleStepAsync() {
@@ -335,33 +367,28 @@ class VMHandlerRunner extends JDEventSource {
                 // since it's a label it executes successfully
                 this._currentCommand.status = VMStatus.Completed
             } else {
-                throw e
+                if (e instanceof VMError) throw e
+                else throw new VMError(e.message)
             }
         }
         if (this._currentCommand.status === VMStatus.Completed)
             this.emit(VM_COMMAND_COMPLETED, this._currentCommand.gc.sourceId)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
-        return false
     }
 
-    private async singleStepBreakAsync() {
-        const sid = this._currentCommand.gc.sourceId
-        if (this.parent.breakPointOn(sid)) {
-            // PROBLEM:
-            this._currentCommand.status = VMStatus.DebuggerBreak
+    private next() {
+        if (this.commandIndex === undefined) {
+            this.commandIndex = 0
+            return true
+        } else if (
+            this._currentCommand.status === VMStatus.Completed &&
+            this.commandIndex < this.handler.commands.length - 1
+        ) {
+            this.commandIndex++
             return true
         }
-        return await this.singleStepAsync()
-    }
-
-    async step() {
-        if (this.status === VMStatus.DebuggerBreak) {
-            await this.singleStepAsync()
-            if (this.next()) {
-            } else {
-            }
-        }
+        return false
     }
 
     private set commandIndex(index: number) {
@@ -381,32 +408,6 @@ class VMHandlerRunner extends JDEventSource {
 
     private get commandIndex() {
         return this._commandIndex
-    }
-
-    private next() {
-        if (
-            this._currentCommand.status === VMStatus.Completed &&
-            this.commandIndex < this.handler.commands.length - 1
-        ) {
-            this.commandIndex++
-            return true
-        }
-        return false
-    }
-
-    // run-to-completion semantics
-    async runToCompletion() {
-        // handler stopped or/ empty
-        if (this.stopped || !this.handler.commands.length) return
-        this.trace("step begin")
-        if (this.commandIndex === undefined) {
-            this.commandIndex = 0
-        }
-        if (await this.singleStepBreakAsync()) return
-        while (this.next()) {
-            if (await this.singleStepBreakAsync()) return
-        }
-        this.trace("step end")
     }
 }
 
@@ -497,19 +498,14 @@ export class VMProgramRunner extends JDClient {
 
     // breakpoints
     setBreakpoints(breaks: string[]) {
+        this.clearBreakpoints()
         breaks.forEach(b => {
             this._breaks[b] = true
         })
     }
 
-    clearBreakpoints(breaks: string[]) {
-        if (breaks === undefined) {
-            this._breaks = {}
-        } else {
-            breaks.forEach(b => {
-                delete this._breaks[b]
-            })
-        }
+    clearBreakpoints() {
+        this._breaks = {}
     }
 
     breakPointOn(id: string) {
@@ -551,8 +547,17 @@ export class VMProgramRunner extends JDClient {
         this.trace("cancelled")
     }
 
-    step() {
-        // TODO
+    resume() {
+        if (!this._running) return
+        this.trace("resume")
+        this._handlerAtBreak = undefined
+        this._handlers.forEach(h => h.resume())
+        try {
+            this.run()
+        } catch (e) {
+            console.debug(e)
+            this.emit(ERROR, e)
+        }
     }
 
     private async run() {
@@ -567,12 +572,17 @@ export class VMProgramRunner extends JDClient {
                 const nextTime: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
                     currentHandler = h
-                    await h.runToCompletion()
-                    if (h.status === VMStatus.DebuggerBreak) {
-                        this._handlerAtBreak = h
-                        // TODO: what about other handlers?
-                        // TODO: put breaks in them as well?
-                    } else if (h.status !== VMStatus.Stopped) {
+                    if (!this._handlerAtBreak || this._handlerAtBreak === h) {
+                        let brkCommand = await h.runToCompletion()
+                        if (brkCommand) {
+                            this._handlerAtBreak = h
+                            this.emit(VM_BREAKPOINT, {
+                                handler: h,
+                                sourceId: brkCommand.gc?.sourceId,
+                            })
+                        }
+                    }
+                    if (h.status !== VMStatus.Stopped) {
                         if (h.status === VMStatus.Completed) h.reset()
                         nextTime.push(h)
                     }
