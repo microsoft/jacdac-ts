@@ -1,5 +1,5 @@
 import { VMProgram, VMHandler, VMCommand } from "./ir"
-import { RoleManager } from "./rolemanager"
+import { RoleManager, ROLE_BOUND, ROLE_UNBOUND } from "./rolemanager"
 import { VMEnvironment } from "./environment"
 import { JDExprEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
@@ -7,11 +7,9 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./ir"
 import {
-    ROLE_BOUND,
-    ROLE_UNBOUND,
     VM_COMMAND_ATTEMPTED,
     VM_COMMAND_COMPLETED,
-    VM_WATCH,
+    VM_WATCH_CHANGE,
     JDVMError,
 } from "./utils"
 import { unparse } from "./expr"
@@ -383,6 +381,8 @@ class VMHandlerRunner extends JDEventSource {
     }
 }
 
+export type WatchValueType = boolean | string | number
+
 export class VMProgramRunner extends JDClient {
     private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
@@ -418,13 +418,13 @@ export class VMProgramRunner extends JDClient {
                 this.emit(ERROR, e)
             }
         })
-        // adding a (role,service) binding 
+        // adding a (role,service) binding
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
             if (service) {
                 this._env.serviceChanged(role, service)
             }
-        } 
+        }
         // initialize
         this.roleManager.roles.forEach(r => {
             addRoleService(r.role)
@@ -448,13 +448,13 @@ export class VMProgramRunner extends JDClient {
         this.emit(TRACE, { message, context })
     }
 
-    watch(id: string, val: any) {
-        this._watch[id] = val;
-        this.emit(VM_WATCH, id)
+    watch(sourceId: string, value: WatchValueType) {
+        this._watch[sourceId] = value
+        this.emit(VM_WATCH_CHANGE, sourceId)
     }
 
-    get watchMap() {
-        return this._watch;
+    lookupWatch(sourceId: string) {
+        return this._watch?.[sourceId]
     }
 
     get status() {
