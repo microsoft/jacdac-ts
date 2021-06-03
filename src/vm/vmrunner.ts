@@ -324,11 +324,8 @@ class VMHandlerRunner extends JDEventSource {
         return cmd as VMCommand
     }
 
-    private async executeCommandAsync() {
+    private async singleStepAsync() {
         const sid = this._currentCommand.gc.sourceId
-        if (this.parent.breakPointOn(sid)) {
-
-        }
         this.emit(VM_COMMAND_ATTEMPTED, sid)
         try {
             await this._currentCommand.step()
@@ -348,6 +345,28 @@ class VMHandlerRunner extends JDEventSource {
             this.emit(VM_COMMAND_COMPLETED, this._currentCommand.gc.sourceId)
         if (this._currentCommand.status === VMStatus.Stopped)
             this.stopped = true
+        return false
+    }
+
+    private async singleStepBreakAsync() {
+        const sid = this._currentCommand.gc.sourceId
+        if (this.parent.breakPointOn(sid)) {
+            // PROBLEM:
+            this._currentCommand.status = VMStatus.DebuggerBreak
+            return true
+        }
+        return await this.singleStepAsync()
+    }
+
+    async step() {
+        if (this.status === VMStatus.DebuggerBreak) {
+            await this.singleStepAsync()
+            if (this.next()) {
+
+            } else {
+                
+            }
+        }
     }
 
     private set commandIndex(index: number) {
@@ -369,21 +388,28 @@ class VMHandlerRunner extends JDEventSource {
         return this._commandIndex
     }
 
+    private next() {
+        if (
+            this._currentCommand.status === VMStatus.Completed &&
+            this.commandIndex < this.handler.commands.length - 1
+        ) {
+            this.commandIndex++
+            return true
+        }
+        return false
+    }
+
     // run-to-completion semantics
-    async step() {
+    async runToCompletion() {
         // handler stopped or/ empty
         if (this.stopped || !this.handler.commands.length) return
         this.trace("step begin")
         if (this.commandIndex === undefined) {
             this.commandIndex = 0
         }
-        await this.executeCommandAsync()
-        while (
-            this._currentCommand.status === VMStatus.Completed &&
-            this.commandIndex < this.handler.commands.length - 1
-        ) {
-            this.commandIndex++
-            await this.executeCommandAsync()
+        if (await this.singleStepBreakAsync()) return
+        while (this.next()) {
+            if (await this.singleStepBreakAsync()) return
         }
         this.trace("step end")
     }
@@ -398,6 +424,7 @@ export class VMProgramRunner extends JDClient {
     private _program: VMProgram
     private _watch: SMap<any> = {}
     private _breaks: SMap<boolean> = {}
+    private _handlerAtBreak: VMHandlerRunner = undefined
 
     constructor(
         readonly bus: JDBus,
@@ -425,13 +452,13 @@ export class VMProgramRunner extends JDClient {
                 this.emit(ERROR, e)
             }
         })
-        // adding a (role,service) binding 
+        // adding a (role,service) binding
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
             if (service) {
                 this._env.serviceChanged(role, service)
             }
-        } 
+        }
         // initialize
         this.roleManager.roles.forEach(r => {
             addRoleService(r.role)
@@ -457,15 +484,15 @@ export class VMProgramRunner extends JDClient {
     }
 
     watch(id: string, val: any) {
-        this._watch[id] = val;
+        this._watch[id] = val
         this.emit(VM_WATCH, id)
     }
 
     get watchMap() {
-        return this._watch;
+        return this._watch
     }
 
-    setBreakpoints(breaks: string []) {
+    setBreakpoints(breaks: string[]) {
         breaks.forEach(b => {
             this._breaks[b] = true
         })
@@ -522,6 +549,10 @@ export class VMProgramRunner extends JDClient {
         this.trace("cancelled")
     }
 
+    step() {
+        // TODO
+    }
+
     private async run() {
         if (!this._program) return
         if (!this._running) return
@@ -535,8 +566,12 @@ export class VMProgramRunner extends JDClient {
                 const nextTime: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
                     currentHandler = h
-                    await h.step()
-                    if (h.status !== VMStatus.Stopped) {
+                    await h.runToCompletion()
+                    if (h.status === VMStatus.DebuggerBreak) {
+                        this._handlerAtBreak = h
+                        // TODO: what about other handlers?
+                        // TODO: put breaks in them as well?
+                    } else if (h.status !== VMStatus.Stopped) {
                         if (h.status === VMStatus.Completed) h.reset()
                         nextTime.push(h)
                     }
