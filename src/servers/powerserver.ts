@@ -9,9 +9,8 @@ export default class PowerServer extends JDServiceServer {
 
     constructor(options?: ServerOptions) {
         super(SRV_POWER, options)
-
-        this.enabled = this.addRegister<[boolean]>(PowerReg.Enabled, [false])
+        this.enabled = this.addRegister<[boolean]>(PowerReg.Allowed, [false])
         this.maxPower = this.addRegister<[number]>(PowerReg.MaxPower, [500])
-        this.overload = this.addRegister<[boolean]>(PowerReg.Overload, [false])
+        this.overload = this.addRegister<[boolean]>(PowerReg.PowerStatus, [false])
     }
 }
