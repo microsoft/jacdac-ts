@@ -483,6 +483,7 @@ export class VMProgramRunner extends JDClient {
         this.emit(TRACE, { message, context })
     }
 
+    // watch statement - watch an expression
     watch(sourceId: string, value: WatchValueType) {
         const oldValue = this._watch[sourceId]
         if (oldValue !== value) {
@@ -495,6 +496,7 @@ export class VMProgramRunner extends JDClient {
         return this._watch?.[sourceId]
     }
 
+    // breakpoints
     setBreakpoints(breaks: string[]) {
         breaks.forEach(b => {
             this._breaks[b] = true
