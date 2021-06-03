@@ -239,7 +239,7 @@ class VMCommandRunner {
         return this.status === VMStatus.Running
     }
 
-    async step() {
+    async stepAsync() {
         if (this.isWaiting) {
             this.trace(unparse(this.gc.command))
             await this._eval.evaluate()
@@ -324,7 +324,7 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     // run-to-completion semantics (true if breakpoint)
-    async runToCompletion() {
+    async runToCompletionAsync() {
         if (this.stopped || !this.handler.commands.length) return undefined
         if (this.commandIndex === undefined) {
             this.commandIndex = 0
@@ -374,7 +374,7 @@ class VMHandlerRunner extends JDEventSource {
         const sid = this._currentCommand.gc.sourceId
         this.emit(VM_COMMAND_ATTEMPTED, sid)
         try {
-            await this._currentCommand.step()
+            await this._currentCommand.stepAsync()
         } catch (e) {
             if (e instanceof VMJumpException) {
                 const { label } = e as VMJumpException
@@ -568,7 +568,7 @@ export class VMProgramRunner extends JDClient {
 
     private async runHandler(h: VMHandlerRunner) {
         if (!this._handlerAtBreak || this._handlerAtBreak === h) {
-            let brkCommand = await h.runToCompletion()
+            let brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
                 this._handlerAtBreak = h
                 this.emit(VM_BREAKPOINT, {
@@ -577,12 +577,16 @@ export class VMProgramRunner extends JDClient {
                 })
             }
             if (h.status !== VMStatus.Stopped) {
-                if (h.status === VMStatus.Completed) h.reset()
+                if (h.status === VMStatus.Completed) {
+                    h.reset()
+                }
                 return true
             } else
                 return false
+        } else {
+            // skip execution of handler h
+            return true
         }
-        return true
     }
 
     private async run() {
