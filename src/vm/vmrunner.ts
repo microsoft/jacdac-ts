@@ -457,7 +457,7 @@ export class VMProgramRunner extends JDClient {
     }
 
     lookupWatch(sourceId: string) {
-        return this._watch?.[sourceId]
+        return this._watch[sourceId]
     }
 
     get status() {
