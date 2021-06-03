@@ -1,10 +1,8 @@
 export const VM_ERROR = "JacdacVMError"
-export const VM_WATCH = "JacdacVMWatch"
-export const ROLE_BOUND = "roleBound"
-export const ROLE_UNBOUND = "roleUnbound"
-export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
-export const VM_COMMAND_ATTEMPTED = "commandAttempted"
-export const VM_COMMAND_COMPLETED = "commandCompleted"
+export const VM_WATCH_CHANGE = "vmWatchChange"
+export const VM_COMMAND_ATTEMPTED = "vmCommandAttempted"
+export const VM_COMMAND_COMPLETED = "vmCommandCompleted"
+
 
 export class JDVMError extends Error {
     constructor(message: string, readonly jacdacName?: string) {
