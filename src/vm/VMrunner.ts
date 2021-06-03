@@ -198,6 +198,10 @@ class VMCommandEvaluator {
                 this._status = VMStatus.Stopped
                 break
             }
+            case "nop": {
+                this._status = VMStatus.Completed
+                break
+            }
             default:
                 throw new VMError(`Unknown instruction ${this.inst}`)
         }

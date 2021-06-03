@@ -320,4 +320,10 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         prompt: `terminates the current handler`,
         context: "command",
     },
+    {
+        id: "nop",
+        args: [],
+        prompt: `no operation`,
+        context: "command",
+    },
 ]
