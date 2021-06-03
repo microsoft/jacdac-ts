@@ -9,8 +9,8 @@ import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { roundWithPrecision } from "../jdom/utils"
-import { unparse, JDExprEvaluator, CallEvaluator, StartMap } from "../vm/expr"
-import { VMServiceEnvironment } from "../vm/environment"
+import { unparse, VMExprEvaluator, CallEvaluator, StartMap } from "../vm/VMexpr"
+import { VMServiceEnvironment } from "../vm/VMenvironment"
 
 export enum JDTestStatus {
     NotReady,
@@ -77,7 +77,7 @@ class JDCommandEvaluator {
     }
 
     private callEval(start: StartMap) : CallEvaluator {
-        return (caller: jsep.CallExpression, ee: JDExprEvaluator) => { 
+        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => { 
             function getStartVal(e: jsep.Expression) {
                 return start.find(r => r.e === e).v
             }
@@ -156,7 +156,7 @@ class JDCommandEvaluator {
         // evaluate the start expressions and store the results
         startExprs.forEach(child => {
             if (this._startExpressions.findIndex(r => r.e === child) < 0) {
-                const exprEval = new JDExprEvaluator(this.env, this.callEval([]))
+                const exprEval = new VMExprEvaluator(this.env, this.callEval([]))
                 this._startExpressions.push({
                     e: child,
                     v: exprEval.eval(child),
@@ -195,7 +195,7 @@ class JDCommandEvaluator {
     public setEvent(ev: string) {}
 
     private checkExpression(e: jsep.Expression) {
-        const expr = new JDExprEvaluator(this.env, this.callEval(this._startExpressions))
+        const expr = new VMExprEvaluator(this.env, this.callEval(this._startExpressions))
         return expr.eval(e)
             ? JDTestCommandStatus.Passed
             : JDTestCommandStatus.Active
@@ -222,7 +222,7 @@ class JDCommandEvaluator {
             case "closeTo": {
                 const goal = this.getStart(args[1])
                 const error = this.getStart(args[2])
-                const expr = new JDExprEvaluator(
+                const expr = new VMExprEvaluator(
                     this.env,
                     this.callEval(this._startExpressions)
                 )
@@ -358,7 +358,7 @@ class JDCommandEvaluator {
                 break
             }
             case "assign": {
-                const expr = new JDExprEvaluator(
+                const expr = new VMExprEvaluator(
                     this.env,
                     this.callEval(this._startExpressions)
                 )

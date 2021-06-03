@@ -1,4 +1,4 @@
-import { JDVMError } from "./utils"
+import { VMError } from "./VMutils"
 
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
@@ -7,7 +7,7 @@ export type StartMap = { e: jsep.Expression; v: any }[]
 
 export type CallEvaluator = (
     ce: jsep.CallExpression,
-    ee: JDExprEvaluator
+    ee: VMExprEvaluator
 ) => any
 
 export function unparse(e: jsep.Expression): string {
@@ -48,7 +48,7 @@ export function unparse(e: jsep.Expression): string {
     }
 }
 
-export class JDExprEvaluator {
+export class VMExprEvaluator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exprStack: any[] = []
 
@@ -198,7 +198,7 @@ export class JDExprEvaluator {
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
                 if (val === undefined) {
-                    throw new JDVMError(`lookup of ${unparse(e)} failed`)
+                    throw new VMError(`lookup of ${unparse(e)} failed`)
                 }
                 this.exprStack.push(val)
                 return
@@ -207,7 +207,7 @@ export class JDExprEvaluator {
                 const id = <jsep.Identifier>e
                 const val = this.env(id.name)
                 if (val === undefined)
-                    throw new JDVMError(`lookup of ${id.name} failed`)
+                    throw new VMError(`lookup of ${id.name} failed`)
                 this.exprStack.push(val)
                 return
             }
