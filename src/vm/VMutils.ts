@@ -6,13 +6,13 @@ export const VM_BREAKPOINT = "vmBreakpoint"
 export const VM_COMMAND_ATTEMPTED = "vmCommandAttempted"
 export const VM_COMMAND_COMPLETED = "vmCommandCompleted"
 
-export class JDVMError extends Error {
+export class VMError extends Error {
     constructor(message: string, readonly jacdacName?: string) {
         super(message)
         this.name = VM_ERROR
     }
 }
 
-export default function errorPath(e: JDVMError): string {
-    return (e as JDVMError)?.jacdacName
+export default function errorPath(e: VMError): string {
+    return (e as VMError)?.jacdacName
 }

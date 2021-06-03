@@ -1,18 +1,17 @@
-import { VMProgram, VMHandler, VMCommand } from "./ir"
+import { VMProgram, VMHandler, VMCommand } from "./VMir"
 import { RoleManager, ROLE_BOUND, ROLE_UNBOUND } from "./rolemanager"
-import { VMEnvironment } from "./environment"
-import { JDExprEvaluator } from "./expr"
+import { VMEnvironment } from "./VMenvironment"
+import { VMExprEvaluator, unparse } from "./VMexpr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
-import { checkProgram, compileProgram } from "./ir"
+import { checkProgram, compileProgram } from "./VMir"
 import {
     VM_COMMAND_ATTEMPTED,
     VM_COMMAND_COMPLETED,
     VM_WATCH_CHANGE,
-    JDVMError,
-} from "./utils"
-import { unparse } from "./expr"
+    VMError,
+} from "./VMutils"
 import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 
@@ -72,7 +71,7 @@ class VMCommandEvaluator {
     }
 
     private evalExpression(e: jsep.Expression) {
-        const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
+        const expr = new VMExprEvaluator(e => this.env.lookup(e), undefined)
         return expr.eval(e)
     }
 
@@ -105,7 +104,7 @@ class VMCommandEvaluator {
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
-            const expr = new JDExprEvaluator(e => this.env.lookup(e), undefined)
+            const expr = new VMExprEvaluator(e => this.env.lookup(e), undefined)
             const values = this.gc.command.arguments.map(a => expr.eval(a))
             await this.env.sendCommandAsync(
                 this.gc.command.callee as jsep.MemberExpression,
@@ -168,7 +167,7 @@ class VMCommandEvaluator {
             }
             case "writeRegister":
             case "writeLocal": {
-                const expr = new JDExprEvaluator(
+                const expr = new VMExprEvaluator(
                     e => this.env.lookup(e),
                     undefined
                 )
@@ -186,7 +185,7 @@ class VMCommandEvaluator {
                 break
             }
             case "watch": {
-                const expr = new JDExprEvaluator(
+                const expr = new VMExprEvaluator(
                     e => this.env.lookup(e),
                     undefined
                 )
@@ -200,7 +199,7 @@ class VMCommandEvaluator {
                 break
             }
             default:
-                throw new JDVMError(`Unknown instruction ${this.inst}`)
+                throw new VMError(`Unknown instruction ${this.inst}`)
         }
     }
 }
@@ -317,7 +316,7 @@ class VMHandlerRunner extends JDEventSource {
     private getCommand() {
         const cmd = this.handler.commands[this._commandIndex]
         if (cmd.type === "ite") {
-            throw new JDVMError("ite not compiled away")
+            throw new VMError("ite not compiled away")
         }
         return cmd as VMCommand
     }
