@@ -23,6 +23,7 @@ export type VMTraceContext = any
 
 export enum VMStatus {
     ProgramError = "programerror",
+    DebuggerBreak = "breakpoint",
     Ready = "ready",
     Running = "running",
     Completed = "completed",
@@ -324,7 +325,11 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     private async executeCommandAsync() {
-        this.emit(VM_COMMAND_ATTEMPTED, this._currentCommand.gc.sourceId)
+        const sid = this._currentCommand.gc.sourceId
+        if (this.parent.breakPointOn(sid)) {
+
+        }
+        this.emit(VM_COMMAND_ATTEMPTED, sid)
         try {
             await this._currentCommand.step()
         } catch (e) {
@@ -335,6 +340,7 @@ class VMHandlerRunner extends JDEventSource {
                 // since it's a label it executes successfully
                 this._currentCommand.status = VMStatus.Completed
             } else {
+                this._currentCommand.status = VMStatus.ProgramError
                 throw e
             }
         }
@@ -391,6 +397,7 @@ export class VMProgramRunner extends JDClient {
     private _in_run = false
     private _program: VMProgram
     private _watch: SMap<any> = {}
+    private _breaks: SMap<boolean> = {}
 
     constructor(
         readonly bus: JDBus,
@@ -444,6 +451,7 @@ export class VMProgramRunner extends JDClient {
         )
     }
 
+    // debugging
     trace(message: string, context: VMTraceContext = {}) {
         this.emit(TRACE, { message, context })
     }
@@ -457,6 +465,27 @@ export class VMProgramRunner extends JDClient {
         return this._watch;
     }
 
+    setBreakpoints(breaks: string []) {
+        breaks.forEach(b => {
+            this._breaks[b] = true
+        })
+    }
+
+    clearBreakpoints(breaks: string[]) {
+        if (breaks === undefined) {
+            this._breaks = {}
+        } else {
+            breaks.forEach(b => {
+                delete this._breaks[b]
+            })
+        }
+    }
+
+    breakPointOn(id: string) {
+        return id in this._breaks
+    }
+
+    // control of VM
     get status() {
         const ret =
             this._program === undefined
@@ -467,16 +496,6 @@ export class VMProgramRunner extends JDClient {
                 ? VMStatus.Running
                 : VMStatus.Completed
         return ret
-    }
-
-    cancel() {
-        if (!this._program || !this._running) return // nothing to cancel
-
-        this._running = false
-        this._waitQueue = this._handlers.slice(0)
-        this._waitQueue.forEach(h => h.reset())
-        this.emit(CHANGE)
-        this.trace("cancelled")
     }
 
     start() {
@@ -493,22 +512,35 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
-    async run() {
+    cancel() {
+        if (!this._program || !this._running) return // nothing to cancel
+
+        this._running = false
+        this._waitQueue = this._handlers.slice(0)
+        this._waitQueue.forEach(h => h.reset())
+        this.emit(CHANGE)
+        this.trace("cancelled")
+    }
+
+    private async run() {
         if (!this._program) return
         if (!this._running) return
         if (this._in_run) return
         this.trace("run")
         this._in_run = true
+        let currentHandler: VMHandlerRunner = undefined
         try {
             await this._env.refreshRegistersAsync()
             if (this._waitQueue.length > 0) {
                 const nextTime: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
+                    currentHandler = h
                     await h.step()
                     if (h.status !== VMStatus.Stopped) {
                         if (h.status === VMStatus.Completed) h.reset()
                         nextTime.push(h)
                     }
+                    currentHandler = undefined
                 }
                 this._waitQueue = nextTime
                 this._env.consumeEvent()
@@ -516,6 +548,9 @@ export class VMProgramRunner extends JDClient {
                 this.emit(CHANGE)
             }
         } catch (e) {
+            if (currentHandler) {
+                // program error in handler?
+            }
             console.debug(e)
             this.emit(ERROR, e)
         }
