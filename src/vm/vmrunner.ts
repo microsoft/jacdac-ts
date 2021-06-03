@@ -1,4 +1,4 @@
-import { VMProgram, VMHandler, VMCommand } from "./VMir"
+import { VMProgram, VMHandler, VMCommand, VMRole } from "./VMir"
 import { RoleManager, ROLE_BOUND, ROLE_UNBOUND } from "./rolemanager"
 import { VMEnvironment } from "./VMenvironment"
 import { VMExprEvaluator, unparse } from "./VMexpr"
@@ -19,12 +19,12 @@ import { JDClient } from "../jdom/client"
 export type VMTraceContext = any
 
 export enum VMStatus {
-    ProgramError = "programerror",
-    DebuggerBreak = "breakpoint",
-    Ready = "ready",
-    Running = "running",
-    Completed = "completed",
-    Stopped = "stopped",
+    DebuggerBreak = "breakpoint", // breakpoint encountered
+    Ready = "ready", // the pc is at this instruction, but pre-condition not met
+    Enabled = "enabled", // the instruction pre-conditions are met
+    Running = "running", // the instruction has started running (may need retries)
+    Completed = "completed", // the instruction completed successfully
+    Stopped = "stopped", // halt instruction encountered, handler stopped
 }
 
 export interface VMEnvironmentInterface {
@@ -284,6 +284,7 @@ class VMHandlerRunner extends JDEventSource {
                 this._labelToIndex[label.name] = index
             }
         })
+        // TODO: find all the roles needed by this handler
         this.reset()
     }
 
@@ -334,7 +335,6 @@ class VMHandlerRunner extends JDEventSource {
                 // since it's a label it executes successfully
                 this._currentCommand.status = VMStatus.Completed
             } else {
-                this._currentCommand.status = VMStatus.ProgramError
                 throw e
             }
         }
@@ -359,9 +359,7 @@ class VMHandlerRunner extends JDEventSource {
         if (this.status === VMStatus.DebuggerBreak) {
             await this.singleStepAsync()
             if (this.next()) {
-
             } else {
-                
             }
         }
     }
@@ -420,9 +418,9 @@ export class VMProgramRunner extends JDClient {
     private _waitQueue: VMHandlerRunner[] = []
     private _running = false
     private _in_run = false
-    private _program: VMProgram
     private _watch: SMap<any> = {}
     private _breaks: SMap<boolean> = {}
+    private _roles: VMRole[] = []
     private _handlerAtBreak: VMHandlerRunner = undefined
 
     constructor(
@@ -431,14 +429,15 @@ export class VMProgramRunner extends JDClient {
         prog: VMProgram
     ) {
         super()
-        this._program = compileProgram(prog)
-        const { registers, events, errors } = checkProgram(this._program)
+        const compiled = compileProgram(prog)
+        const { registers, events, errors } = checkProgram(compiled)
+        this._roles = compiled.roles
         if (errors.length) {
             console.warn("ERRORS", errors)
         }
         // data structures for running program
         this._env = new VMEnvironment(registers, events)
-        this._handlers = this._program.handlers.map(
+        this._handlers = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
         this._waitQueue = this._handlers.slice(0)
@@ -459,9 +458,10 @@ export class VMProgramRunner extends JDClient {
             }
         }
         // initialize
-        this.roleManager.roles.forEach(r => {
-            addRoleService(r.role)
-        })
+        this.roleManager.setRoles(this._roles)
+        //this.roleManager.roles.forEach(r => {
+        //    addRoleService(r.role)
+        //})
         // deal with bind/unbind
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
@@ -519,9 +519,7 @@ export class VMProgramRunner extends JDClient {
     // control of VM
     get status() {
         const ret =
-            this._program === undefined
-                ? VMStatus.ProgramError
-                : this._running === false
+            this._running === false
                 ? VMStatus.Stopped
                 : this._waitQueue.length > 0
                 ? VMStatus.Running
@@ -530,10 +528,10 @@ export class VMProgramRunner extends JDClient {
     }
 
     start() {
-        if (!this._program || this._running) return // already running
+        if (this._running) return // already running
         this.trace("start")
         try {
-            this.roleManager.setRoles(this._program.roles)
+            this.roleManager.setRoles(this._roles)
             this._running = true
             this._in_run = false
             this.run()
@@ -544,7 +542,7 @@ export class VMProgramRunner extends JDClient {
     }
 
     cancel() {
-        if (!this._program || !this._running) return // nothing to cancel
+        if (!this._running) return // nothing to cancel
 
         this._running = false
         this._waitQueue = this._handlers.slice(0)
@@ -558,7 +556,6 @@ export class VMProgramRunner extends JDClient {
     }
 
     private async run() {
-        if (!this._program) return
         if (!this._running) return
         if (this._in_run) return
         this.trace("run")
