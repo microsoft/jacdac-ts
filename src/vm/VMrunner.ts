@@ -13,7 +13,7 @@ import {
     VMError,
     VM_BREAKPOINT,
     VM_WAKE_SLEEPER,
-    VM_MISSING_ROLE_WARNING
+    Mutex
 } from "./VMutils"
 import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
@@ -442,7 +442,7 @@ export class VMProgramRunner extends JDClient {
     private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
     private _waitQueue: VMHandlerRunner[] = []
-    private _sleepQueue: VMHandlerRunner[] = []
+    private _waitMutex: Mutex
     private _running = false
     private _in_run = false
     private _watch: SMap<any> = {}
@@ -467,14 +467,14 @@ export class VMProgramRunner extends JDClient {
         this._handlers = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
-        this._waitQueue = this._handlers.slice(0)
+        this._waitMutex = new Mutex()
         // run on any change to environment
         this._env.subscribe(CHANGE, () => {
             this.runWithTry()
         })
         this.subscribe(VM_WAKE_SLEEPER, (h: VMHandlerRunner) => {
-            // ugh, concurrent execution with runWithTry
-            // contention for sleepqueue and waitqueue
+            // 1. resume the handler
+            // 2. put on the wait queue
         })
         this.initializeRoleManagement();
     }
@@ -543,30 +543,37 @@ export class VMProgramRunner extends JDClient {
     
     // timers
     wakeSleeper(handler: VMHandlerRunner, ms: number) {
-        this._sleepQueue.push(handler)
         setTimeout(() => {
             this.emit(VM_WAKE_SLEEPER, handler)
         }, ms)
     }
 
     // control of VM
-    get status() {
+    async statusAsync() {
+        let len = 0
+        await this._waitMutex.acquire(async () => {
+            len = this._waitQueue.length
+        });
         const ret =
             this._running === false
                 ? VMStatus.Stopped
-                : this._waitQueue.length > 0
+                : len > 0
                 ? VMStatus.Running
                 : VMStatus.Completed
         return ret
     }
 
-    start() {
+    async startAsync() {
         if (this._running) return // already running
         this.trace("start")
         try {
             this.roleManager.setRoles(this._roles)
             this._running = true
             this._in_run = false
+            await this._waitMutex.acquire(async () => {
+                this._waitQueue = this._handlers.slice(0)
+                this._waitQueue.forEach(h => h.reset())
+            });
             this.run()
         } catch (e) {
             console.debug(e)
@@ -576,19 +583,18 @@ export class VMProgramRunner extends JDClient {
 
     cancel() {
         if (!this._running) return // nothing to cancel
-
         this._running = false
-        this._waitQueue = this._handlers.slice(0)
-        this._waitQueue.forEach(h => h.reset())
         this.emit(CHANGE)
         this.trace("cancelled")
     }
 
-    resume() {
+    async resumeAsync() {
         if (!this._running) return
         this.trace("resume")
         this._handlerAtBreak = undefined
-        this._handlers.forEach(h => h.resume())
+        await this._waitMutex.acquire(async () => {
+            this._waitQueue.forEach(h => h.resume())
+        })
         this.runWithTry()
     }
 
@@ -637,15 +643,22 @@ export class VMProgramRunner extends JDClient {
         let currentHandler: VMHandlerRunner = undefined
         try {
             await this._env.refreshRegistersAsync()
-            if (this._waitQueue.length > 0) {
+            let waitCopy: VMHandlerRunner[] = []
+            await this._waitMutex.acquire(async () => {
+                waitCopy = this._waitQueue.slice()
+                this._waitQueue = []
+            })
+            if (waitCopy.length > 0) {
                 const nextTime: VMHandlerRunner[] = []
-                for (const h of this._waitQueue) {
+                for (const h of waitCopy) {
                     currentHandler = h
                     const result = await this.runHandler(h)
                     if (result) nextTime.push(h)
                     currentHandler = undefined
                 }
-                this._waitQueue = nextTime
+                await this._waitMutex.acquire(async () => {
+                    nextTime.forEach(h => this._waitQueue.push(h))
+                })
                 this._env.consumeEvent()
             } else {
                 this.emit(CHANGE)
