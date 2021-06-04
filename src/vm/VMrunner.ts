@@ -12,6 +12,8 @@ import {
     VM_WATCH_CHANGE,
     VMError,
     VM_BREAKPOINT,
+    VM_WAKE_SLEEPER,
+    VM_MISSING_ROLE_WARNING
 } from "./VMutils"
 import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
@@ -23,6 +25,7 @@ export enum VMStatus {
     Ready = "ready", // the pc is at this instruction, but pre-condition not met
     Enabled = "enabled", // the instruction pre-conditions are met (is this needed?)
     Running = "running", // the instruction has started running (may need retries)
+    Sleeping = "yield", // waiting to be woken by timer
     Completed = "completed", // the instruction completed successfully
     Stopped = "stopped", // halt instruction encountered, handler stopped
 }
@@ -47,8 +50,8 @@ class VMJumpException {
     constructor(public label: string) {}
 }
 
-function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+class VMTimerException {
+    constructor(public ms: number) {}
 }
 
 class VMCommandEvaluator {
@@ -212,9 +215,8 @@ class VMCommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[0])
-                await delay(ev * 1000)
-                this._status = VMStatus.Completed
-                break
+                this._status = VMStatus.Sleeping
+                throw new VMTimerException(ev * 1000)
             }
             default:
                 throw new VMError(`Unknown instruction ${this.inst}`)
@@ -400,6 +402,9 @@ class VMHandlerRunner extends JDEventSource {
                 this.commandIndex = index
                 // since it's a label it executes successfully
                 this._currentCommand.status = VMStatus.Completed
+            } else if (e instanceof VMTimerException) {
+                let vmt = e as VMTimerException
+                this.parent.wakeSleeper(this, vmt.ms)
             } else {
                 if (e instanceof VMError) throw e
                 else throw new VMError(e.message)
@@ -437,6 +442,7 @@ export class VMProgramRunner extends JDClient {
     private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
     private _waitQueue: VMHandlerRunner[] = []
+    private _sleepQueue: VMHandlerRunner[] = []
     private _running = false
     private _in_run = false
     private _watch: SMap<any> = {}
@@ -466,6 +472,14 @@ export class VMProgramRunner extends JDClient {
         this._env.subscribe(CHANGE, () => {
             this.runWithTry()
         })
+        this.subscribe(VM_WAKE_SLEEPER, (h: VMHandlerRunner) => {
+            // ugh, concurrent execution with runWithTry
+            // contention for sleepqueue and waitqueue
+        })
+        this.initializeRoleManagement();
+    }
+
+    private initializeRoleManagement() {
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
@@ -480,7 +494,6 @@ export class VMProgramRunner extends JDClient {
                 addRoleService(r.role)
             }
         })
-
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
                 addRoleService(role)
@@ -526,6 +539,14 @@ export class VMProgramRunner extends JDClient {
 
     breakpointOn(id: string) {
         return !!this._breaks?.[id]
+    }
+    
+    // timers
+    wakeSleeper(handler: VMHandlerRunner, ms: number) {
+        this._sleepQueue.push(handler)
+        setTimeout(() => {
+            this.emit(VM_WAKE_SLEEPER, handler)
+        }, ms)
     }
 
     // control of VM
@@ -600,7 +621,7 @@ export class VMProgramRunner extends JDClient {
                 if (h.status === VMStatus.Completed) {
                     h.reset()
                 }
-                return true
+                return h.status !== VMStatus.Sleeping
             } else return false
         } else {
             // skip execution of handler h
