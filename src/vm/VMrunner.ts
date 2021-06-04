@@ -604,6 +604,7 @@ export class VMProgramRunner extends JDClient {
     }
 
     private async runHandler(h: VMHandlerRunner) {
+        if (!this._running) return false
         if (!this._handlerAtBreak || this._handlerAtBreak === h) {
             const brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
