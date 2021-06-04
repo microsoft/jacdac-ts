@@ -563,10 +563,6 @@ export class VMProgramRunner extends JDClient {
         this.trace("cancelled")
     }
 
-    pause() {
-        // TODO
-    }
-
     resume() {
         if (!this._running) return
         this.trace("resume")
@@ -595,10 +591,7 @@ export class VMProgramRunner extends JDClient {
             const brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
                 this._handlerAtBreak = h
-                this.emit(VM_BREAKPOINT, {
-                    handler: h,
-                    sourceId: brkCommand.gc?.sourceId,
-                })
+                this.emit(VM_BREAKPOINT, h, brkCommand.gc?.sourceId)
             }
             if (h.status !== VMStatus.Stopped) {
                 if (h.status === VMStatus.Completed) {
