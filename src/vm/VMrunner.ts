@@ -410,7 +410,7 @@ class VMHandlerRunner extends JDEventSource {
                 this._currentCommand.status = VMStatus.Completed
             } else if (e instanceof VMTimerException) {
                 let vmt = e as VMTimerException
-                this.parent.wakeSleeper(this, vmt.ms)
+                await this.parent.wakeSleeperAsync(this, vmt.ms)
             } else {
                 if (e instanceof VMError) throw e
                 else throw new VMError(e.message)
@@ -444,18 +444,26 @@ class VMHandlerRunner extends JDEventSource {
 
 export type WatchValueType = boolean | string | number
 
+interface SleepingHandler {
+    handler: VMHandlerRunner
+    id: NodeJS.Timeout
+}
+
 export class VMProgramRunner extends JDClient {
     private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
-    private _waitQueue: VMHandlerRunner[] = []
-    private _waitMutex: Mutex
     private _running = false
     private _in_run = false
     private _watch: SMap<any> = {}
-    private _breaks: SMap<boolean> = {}
-    private _breaksMutex: Mutex
     private _roles: VMRole[] = []
     private _handlerAtBreak: VMHandlerRunner = undefined
+    // stated accessed concurrently
+    private _waitQueue: VMHandlerRunner[] = []
+    private _waitMutex: Mutex
+    private _breaks: SMap<boolean> = {}
+    private _breaksMutex: Mutex
+    private _sleepQueue: SleepingHandler[] = []
+    private _sleepMutex: Mutex
 
     constructor(
         readonly bus: JDBus,
@@ -475,7 +483,8 @@ export class VMProgramRunner extends JDClient {
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
         this._waitMutex = new Mutex()
-        this._breaksMutex = new Mutex
+        this._breaksMutex = new Mutex()
+        this._sleepMutex= new Mutex()
         // run on any change to environment
         this.mount(
             this._env.subscribe(CHANGE, () => {
@@ -486,6 +495,10 @@ export class VMProgramRunner extends JDClient {
             this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
                 try {
                     console.log("WAKING", h)
+                    await this._sleepMutex.acquire(async () => {
+                        const { id } = this._sleepQueue.find(p => p.handler === h)
+                        clearTimeout(id)
+                    })
                     h.wake()
                     const result = await this.runHandler(h)
                     if (result)
@@ -542,11 +555,15 @@ export class VMProgramRunner extends JDClient {
     }
     
     // timers
-    wakeSleeper(handler: VMHandlerRunner, ms: number) {
+    async wakeSleeperAsync(handler: VMHandlerRunner, ms: number) {
         console.log("wakeSleeper")
-        setTimeout(() => {
-            this.emit(VM_WAKE_SLEEPER, handler)
-        }, ms)
+        await this._sleepMutex.acquire(async () => {
+            let fireOnce = () => { 
+                this.emit(VM_WAKE_SLEEPER, handler)
+            }
+            let id = setTimeout(fireOnce, ms)
+            this._sleepQueue.push({handler, id})
+        })
     }
 
     // control of VM
