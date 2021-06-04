@@ -453,10 +453,10 @@ export class VMProgramRunner extends JDClient {
     constructor(
         readonly bus: JDBus,
         readonly roleManager: RoleManager,
-        prog: VMProgram
+        readonly program: VMProgram
     ) {
         super()
-        const compiled = compileProgram(prog)
+        const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
         if (errors.length) {
@@ -618,10 +618,7 @@ export class VMProgramRunner extends JDClient {
             const brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
                 this._handlerAtBreak = h
-                this.emit(VM_BREAKPOINT, {
-                    handler: h,
-                    sourceId: brkCommand.gc?.sourceId,
-                })
+                this.emit(VM_BREAKPOINT, h, brkCommand.gc?.sourceId)
             }
             if (h.status !== VMStatus.Stopped) {
                 if (h.status === VMStatus.Completed) {
