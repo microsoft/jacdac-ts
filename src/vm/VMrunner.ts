@@ -447,10 +447,10 @@ export class VMProgramRunner extends JDClient {
     constructor(
         readonly bus: JDBus,
         readonly roleManager: RoleManager,
-        prog: VMProgram
+        readonly program: VMProgram
     ) {
         super()
-        const compiled = compileProgram(prog)
+        const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
         if (errors.length) {
@@ -561,6 +561,10 @@ export class VMProgramRunner extends JDClient {
         this._waitQueue.forEach(h => h.reset())
         this.emit(CHANGE)
         this.trace("cancelled")
+    }
+
+    pause() {
+        // TODO
     }
 
     resume() {
