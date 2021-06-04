@@ -345,7 +345,8 @@ class VMHandlerRunner extends JDEventSource {
 
     wake() {
         if (this._currentCommand) {
-            this._currentCommand.status = VMStatus.Running
+            console.log(this._currentCommand)
+            this._currentCommand.status = VMStatus.Completed
         }
     }
 
@@ -410,7 +411,7 @@ class VMHandlerRunner extends JDEventSource {
                 this._currentCommand.status = VMStatus.Completed
             } else if (e instanceof VMTimerException) {
                 let vmt = e as VMTimerException
-                await this.parent.wakeSleeperAsync(this, vmt.ms)
+                await this.parent.sleepAsync(this, vmt.ms)
             } else {
                 if (e instanceof VMError) throw e
                 else throw new VMError(e.message)
@@ -555,13 +556,11 @@ export class VMProgramRunner extends JDClient {
     }
     
     // timers
-    async wakeSleeperAsync(handler: VMHandlerRunner, ms: number) {
-        console.log("wakeSleeper")
+    async sleepAsync(handler: VMHandlerRunner, ms: number) {  
         await this._sleepMutex.acquire(async () => {
-            let fireOnce = () => { 
+            let id = setTimeout(() => { 
                 this.emit(VM_WAKE_SLEEPER, handler)
-            }
-            let id = setTimeout(fireOnce, ms)
+            }, ms)
             this._sleepQueue.push({handler, id})
         })
     }
