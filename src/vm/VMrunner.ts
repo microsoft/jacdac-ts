@@ -343,6 +343,12 @@ class VMHandlerRunner extends JDEventSource {
         this._singleStep = false
     }
 
+    wake() {
+        if (this._currentCommand) {
+            this._currentCommand.status = VMStatus.Running
+        }
+    }
+
     // run-to-completion semantics (true if breakpoint)
     async runToCompletionAsync() {
         if (this.stopped || !this.handler.commands.length) return undefined
@@ -472,41 +478,21 @@ export class VMProgramRunner extends JDClient {
         this._env.subscribe(CHANGE, () => {
             this.runWithTry()
         })
-        this.subscribe(VM_WAKE_SLEEPER, (h: VMHandlerRunner) => {
-            // 1. resume the handler
-            // 2. put on the wait queue
+        this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
+            try {
+                console.log("WAKING", h)
+                h.wake()
+                const result = await this.runHandler(h)
+                if (result)
+                    await this._waitMutex.acquire(async () => {
+                        this._waitQueue.push(h)
+                    })
+            } catch (e) {
+                // TODO
+            }
         })
         this.initializeRoleManagement();
     }
-
-    private initializeRoleManagement() {
-        // adding a (role,service) binding
-        const addRoleService = (role: string) => {
-            const service = this.roleManager.getService(role)
-            if (service) {
-                //console.log(`role added`, { role })
-                this._env.serviceChanged(role, service)
-            }
-        }
-        // initialize
-        this.roleManager.roles.forEach(r => {
-            if (this._roles.find(rv => rv.role === r.role)) {
-                addRoleService(r.role)
-            }
-        })
-        this.mount(
-            this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
-                addRoleService(role)
-            })
-        )
-        this.mount(
-            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
-                //console.log(`role removed`, { role })
-                this._env.serviceChanged(role, undefined)
-            })
-        )
-    }
-
     // debugging
     trace(message: string, context: VMTraceContext = {}) {
         this.emit(TRACE, { message, context })
@@ -543,6 +529,7 @@ export class VMProgramRunner extends JDClient {
     
     // timers
     wakeSleeper(handler: VMHandlerRunner, ms: number) {
+        console.log("wakeSleeper")
         setTimeout(() => {
             this.emit(VM_WAKE_SLEEPER, handler)
         }, ms)
@@ -670,4 +657,33 @@ export class VMProgramRunner extends JDClient {
         this._in_run = false
         this.trace("run end")
     }
+
+    private initializeRoleManagement() {
+        // adding a (role,service) binding
+        const addRoleService = (role: string) => {
+            const service = this.roleManager.getService(role)
+            if (service) {
+                //console.log(`role added`, { role })
+                this._env.serviceChanged(role, service)
+            }
+        }
+        // initialize
+        this.roleManager.roles.forEach(r => {
+            if (this._roles.find(rv => rv.role === r.role)) {
+                addRoleService(r.role)
+            }
+        })
+        this.mount(
+            this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
+                addRoleService(role)
+            })
+        )
+        this.mount(
+            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                //console.log(`role removed`, { role })
+                this._env.serviceChanged(role, undefined)
+            })
+        )
+    }
+
 }
