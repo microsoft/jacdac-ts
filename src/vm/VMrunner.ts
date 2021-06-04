@@ -15,7 +15,7 @@ import {
     VM_WAKE_SLEEPER,
     Mutex
 } from "./VMutils"
-import { assert, SMap } from "../jdom/utils"
+import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -256,7 +256,7 @@ class VMHandlerRunner extends JDEventSource {
         public readonly parent: VMProgramRunner,
         public readonly id: number,
         public readonly env: VMEnvironment,
-        private readonly handler: VMHandler
+        public readonly handler: VMHandler
     ) {
         super()
         // find the label commands (targets of jumps)
@@ -411,6 +411,14 @@ interface SleepingHandler {
     id: NodeJS.Timeout
 }
 
+function isEveryHandler(h: VMHandlerRunner) {
+    if (h.handler.commands.length) {
+        const cmd = (h.handler.commands[0] as VMCommand).command.callee  as jsep.Identifier
+        return cmd.name === "wait"
+    }
+    return false
+}
+
 export class VMProgramRunner extends JDClient {
     private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
@@ -466,7 +474,8 @@ export class VMProgramRunner extends JDClient {
                     })
                     h.wake()
                     const result = await this.runHandler(h)
-                    if (result) {
+                    if (result && !isEveryHandler(h)) {
+                        console.log("PUSH")
                         await this._waitMutex.acquire(async () => {
                             this._waitQueue.push(h)
                         })
@@ -605,6 +614,9 @@ export class VMProgramRunner extends JDClient {
             if (h.status !== VMStatus.Stopped) {
                 if (h.status === VMStatus.Completed) {
                     h.reset()
+                    if (isEveryHandler(h)) {
+                        this.sleepAsync(h, 1)
+                    }
                 }
                 return h.status !== VMStatus.Sleeping
             } else return false
