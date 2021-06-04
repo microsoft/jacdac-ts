@@ -47,6 +47,10 @@ class VMJumpException {
     constructor(public label: string) {}
 }
 
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
 class VMCommandEvaluator {
     private _status: VMStatus
     private _regSaved: number = undefined
@@ -199,6 +203,16 @@ class VMCommandEvaluator {
                 break
             }
             case "nop": {
+                this._status = VMStatus.Completed
+                break
+            }
+            case "wait": {
+                const expr = new VMExprEvaluator(
+                    e => this.env.lookup(e),
+                    undefined
+                )
+                const ev = expr.eval(args[0])
+                await delay(ev*1000);
                 this._status = VMStatus.Completed
                 break
             }
