@@ -48,8 +48,8 @@ class VMJumpException {
 }
 
 function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 class VMCommandEvaluator {
     private _status: VMStatus
@@ -212,7 +212,7 @@ class VMCommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[0])
-                await delay(ev*1000);
+                await delay(ev * 1000)
                 this._status = VMStatus.Completed
                 break
             }
@@ -463,7 +463,9 @@ export class VMProgramRunner extends JDClient {
         )
         this._waitQueue = this._handlers.slice(0)
         // run on any change to environment
-        this._env.subscribe(CHANGE, () => { this.runWithTry() } )
+        this._env.subscribe(CHANGE, () => {
+            this.runWithTry()
+        })
         // adding a (role,service) binding
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
@@ -566,7 +568,7 @@ export class VMProgramRunner extends JDClient {
         this.trace("resume")
         this._handlerAtBreak = undefined
         this._handlers.forEach(h => h.resume())
-        this.runWithTry();
+        this.runWithTry()
     }
 
     step() {
@@ -581,12 +583,12 @@ export class VMProgramRunner extends JDClient {
         } catch (e) {
             console.debug(e)
             this.emit(ERROR, e)
-        }  
+        }
     }
 
     private async runHandler(h: VMHandlerRunner) {
         if (!this._handlerAtBreak || this._handlerAtBreak === h) {
-            let brkCommand = await h.runToCompletionAsync()
+            const brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
                 this._handlerAtBreak = h
                 this.emit(VM_BREAKPOINT, {
@@ -599,8 +601,7 @@ export class VMProgramRunner extends JDClient {
                     h.reset()
                 }
                 return true
-            } else
-                return false
+            } else return false
         } else {
             // skip execution of handler h
             return true
@@ -619,7 +620,8 @@ export class VMProgramRunner extends JDClient {
                 const nextTime: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
                     currentHandler = h
-                    if (this.runHandler(h)) nextTime.push(h)
+                    const result = await this.runHandler(h)
+                    if (result) nextTime.push(h)
                     currentHandler = undefined
                 }
                 this._waitQueue = nextTime
