@@ -25,7 +25,7 @@ export enum VMStatus {
     Ready = "ready", // the pc is at this instruction, but pre-condition not met
     Enabled = "enabled", // the instruction pre-conditions are met (is this needed?)
     Running = "running", // the instruction has started running (may need retries)
-    Sleeping = "yield", // waiting to be woken by timer
+    Sleeping = "sleep", // waiting to be woken by timer
     Completed = "completed", // the instruction completed successfully
     Stopped = "stopped", // halt instruction encountered, handler stopped
 }
@@ -236,12 +236,8 @@ class VMCommandRunner {
         this._status = s
     }
 
-    get isWaiting(): boolean {
-        return this.status === VMStatus.Running
-    }
-
     async stepAsync() {
-        if (this.isWaiting) {
+        if (this.status === VMStatus.Running) {
             this.trace(unparse(this.gc.command))
             this.status = await this._eval.evaluate()
         }
@@ -311,8 +307,6 @@ class VMHandlerRunner extends JDEventSource {
 
     wake() {
         if (this._currentCommand) {
-            assert(this._currentCommand.status === VMStatus.Sleeping)
-            assert((this._currentCommand.gc.command.callee as jsep.Identifier).name === "wait")
             this._currentCommand.status = VMStatus.Completed
         }
     }
@@ -462,7 +456,6 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
                 try {
-                    console.log("WAKING", h)
                     await this._sleepMutex.acquire(async () => {
                         const index = this._sleepQueue.findIndex(p => p.handler === h)
                         if (index >= 0) {
@@ -474,7 +467,6 @@ export class VMProgramRunner extends JDClient {
                     h.wake()
                     const result = await this.runHandler(h)
                     if (result) {
-                        console.log("PUSH")
                         await this._waitMutex.acquire(async () => {
                             this._waitQueue.push(h)
                         })
@@ -531,7 +523,6 @@ export class VMProgramRunner extends JDClient {
     // timers
     async sleepAsync(handler: VMHandlerRunner, ms: number) {  
         await this._sleepMutex.acquire(async () => {
-            console.log("SLEEP")
             let id = setTimeout(() => { 
                 this.emit(VM_WAKE_SLEEPER, handler)
             }, ms)
@@ -605,8 +596,6 @@ export class VMProgramRunner extends JDClient {
     }
 
     private async runHandler(h: VMHandlerRunner) {
-        console.log(h.status)
-        assert(h.status === VMStatus.Ready || h.status === VMStatus.Running)
         if (!this._handlerAtBreak || this._handlerAtBreak === h) {
             const brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
@@ -649,7 +638,6 @@ export class VMProgramRunner extends JDClient {
                 await this._waitMutex.acquire(async () => {
                     nextTime.forEach(h => this._waitQueue.push(h))
                 })
-                console.log("CONSUME")
                 this._env.consumeEvent()
             } else {
                 this.emit(CHANGE)
