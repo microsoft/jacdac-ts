@@ -484,7 +484,7 @@ export class VMProgramRunner extends JDClient {
         const addRoleService = (role: string) => {
             const service = this.roleManager.getService(role)
             if (service) {
-                console.log(`role added`, { role })
+                //console.log(`role added`, { role })
                 this._env.serviceChanged(role, service)
             }
         }
@@ -501,7 +501,7 @@ export class VMProgramRunner extends JDClient {
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
-                console.log(`role removed`, { role })
+                //console.log(`role removed`, { role })
                 this._env.serviceChanged(role, undefined)
             })
         )
