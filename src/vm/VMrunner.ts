@@ -15,7 +15,7 @@ import {
     VM_WAKE_SLEEPER,
     Mutex
 } from "./VMutils"
-import { SMap } from "../jdom/utils"
+import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,7 +55,6 @@ class VMTimerException {
 }
 
 class VMCommandEvaluator {
-    private _status: VMStatus
     private _regSaved: number = undefined
     private _changeSaved: number = undefined
     private _started = false
@@ -67,10 +66,6 @@ class VMCommandEvaluator {
 
     trace(msg: string, context: VMTraceContext = {}) {
         this.parent.trace(msg, { command: this.gc.command.type, ...context })
-    }
-
-    get status() {
-        return this._status
     }
 
     private get inst() {
@@ -101,12 +96,11 @@ class VMCommandEvaluator {
         return false
     }
 
-    public async evaluate() {
-        this._status = VMStatus.Running
+    public async evaluate(): Promise<VMStatus> {
         if (!this._started) {
             const neededStart = this.start()
             this._started = true
-            if (neededStart) return
+            if (neededStart) return VMStatus.Running
         }
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
@@ -117,8 +111,7 @@ class VMCommandEvaluator {
                 this.gc.command.callee as jsep.MemberExpression,
                 values
             )
-            this._status = VMStatus.Completed
-            return
+            return VMStatus.Completed
         }
         switch (this.inst) {
             case "branchOnCondition": {
@@ -126,31 +119,27 @@ class VMCommandEvaluator {
                 if (expr) {
                     throw new VMJumpException((args[1] as jsep.Identifier).name)
                 }
-                this._status = VMStatus.Completed
-                break
+                return VMStatus.Completed
             }
             case "jump": {
-                this._status = VMStatus.Completed
                 throw new VMJumpException((args[0] as jsep.Identifier).name)
             }
             case "label": {
-                this._status = VMStatus.Completed
-                break
+                return VMStatus.Completed
             }
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
-                    this._status = this.checkExpression(args[1])
+                    return this.checkExpression(args[1])
                         ? VMStatus.Completed
                         : VMStatus.Running
                 }
-                break
+                return VMStatus.Running
             }
             case "awaitCondition": {
-                this._status = this.checkExpression(args[0])
+                return this.checkExpression(args[0])
                     ? VMStatus.Completed
                     : VMStatus.Running
-                break
             }
             case "awaitChange":
             case "awaitRegister": {
@@ -168,9 +157,9 @@ class VMCommandEvaluator {
                                 regValue >=
                                     this._regSaved + this._changeSaved)))
                 ) {
-                    this._status = VMStatus.Completed
+                    return VMStatus.Completed
                 }
-                break
+                return VMStatus.Running
             }
             case "writeRegister":
             case "writeLocal": {
@@ -188,8 +177,7 @@ class VMCommandEvaluator {
                         expr: ev,
                     })
                 } else this.env.writeLocal(reg, ev)
-                this._status = VMStatus.Completed
-                break
+                return VMStatus.Completed
             }
             case "watch": {
                 const expr = new VMExprEvaluator(
@@ -197,17 +185,14 @@ class VMCommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[0])
-                this._status = VMStatus.Completed
                 this.parent.watch(this.gc?.sourceId, ev)
-                break
+                return VMStatus.Completed
             }
             case "halt": {
-                this._status = VMStatus.Stopped
-                break
+                return VMStatus.Stopped
             }
             case "nop": {
-                this._status = VMStatus.Completed
-                break
+                return VMStatus.Completed
             }
             case "wait": {
                 const expr = new VMExprEvaluator(
@@ -215,7 +200,6 @@ class VMCommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[0])
-                this._status = VMStatus.Sleeping
                 throw new VMTimerException(ev * 1000)
             }
             default:
@@ -225,8 +209,8 @@ class VMCommandEvaluator {
 }
 
 class VMCommandRunner {
-    private _status = VMStatus.Running
     private _eval: VMCommandEvaluator
+    private _status: VMStatus = VMStatus.Running
     constructor(
         public readonly parent: VMHandlerRunner,
         private handlerId: number,
@@ -249,10 +233,7 @@ class VMCommandRunner {
     }
 
     set status(s: VMStatus) {
-        if (s != this._status) {
-            this._status = s
-            // TODO: emit event
-        }
+        this._status = s
     }
 
     get isWaiting(): boolean {
@@ -262,22 +243,7 @@ class VMCommandRunner {
     async stepAsync() {
         if (this.isWaiting) {
             this.trace(unparse(this.gc.command))
-            await this._eval.evaluate()
-            this.finish(this._eval.status)
-        }
-    }
-
-    cancel() {
-        this.finish(VMStatus.Stopped)
-    }
-
-    private finish(s: VMStatus) {
-        this.trace(s)
-        if (
-            (this.isWaiting && s === VMStatus.Completed) ||
-            s === VMStatus.Stopped
-        ) {
-            this.status = s
+            this.status = await this._eval.evaluate()
         }
     }
 }
@@ -345,7 +311,8 @@ class VMHandlerRunner extends JDEventSource {
 
     wake() {
         if (this._currentCommand) {
-            console.log(this._currentCommand)
+            assert(this._currentCommand.status === VMStatus.Sleeping)
+            assert((this._currentCommand.gc.command.callee as jsep.Identifier).name === "wait")
             this._currentCommand.status = VMStatus.Completed
         }
     }
@@ -407,10 +374,10 @@ class VMHandlerRunner extends JDEventSource {
                 const { label } = e as VMJumpException
                 const index = this._labelToIndex[label]
                 this.commandIndex = index
-                // since it's a label it executes successfully
                 this._currentCommand.status = VMStatus.Completed
             } else if (e instanceof VMTimerException) {
                 let vmt = e as VMTimerException
+                this._currentCommand.status = VMStatus.Sleeping
                 await this.parent.sleepAsync(this, vmt.ms)
             } else {
                 if (e instanceof VMError) throw e
@@ -497,17 +464,23 @@ export class VMProgramRunner extends JDClient {
                 try {
                     console.log("WAKING", h)
                     await this._sleepMutex.acquire(async () => {
-                        const { id } = this._sleepQueue.find(p => p.handler === h)
-                        clearTimeout(id)
+                        const index = this._sleepQueue.findIndex(p => p.handler === h)
+                        if (index >= 0) {
+                            const { id } = this._sleepQueue[index]
+                            this._sleepQueue.splice(index)
+                            clearTimeout(id)
+                        }
                     })
                     h.wake()
                     const result = await this.runHandler(h)
-                    if (result)
+                    if (result) {
+                        console.log("PUSH")
                         await this._waitMutex.acquire(async () => {
                             this._waitQueue.push(h)
                         })
+                    }
                 } catch (e) {
-                    // TODO
+                    console.log(e)
                 }
             })
         )
@@ -558,6 +531,7 @@ export class VMProgramRunner extends JDClient {
     // timers
     async sleepAsync(handler: VMHandlerRunner, ms: number) {  
         await this._sleepMutex.acquire(async () => {
+            console.log("SLEEP")
             let id = setTimeout(() => { 
                 this.emit(VM_WAKE_SLEEPER, handler)
             }, ms)
@@ -631,6 +605,8 @@ export class VMProgramRunner extends JDClient {
     }
 
     private async runHandler(h: VMHandlerRunner) {
+        console.log(h.status)
+        assert(h.status === VMStatus.Ready || h.status === VMStatus.Running)
         if (!this._handlerAtBreak || this._handlerAtBreak === h) {
             const brkCommand = await h.runToCompletionAsync()
             if (brkCommand) {
@@ -673,6 +649,7 @@ export class VMProgramRunner extends JDClient {
                 await this._waitMutex.acquire(async () => {
                     nextTime.forEach(h => this._waitQueue.push(h))
                 })
+                console.log("CONSUME")
                 this._env.consumeEvent()
             } else {
                 this.emit(CHANGE)
