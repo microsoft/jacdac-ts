@@ -386,7 +386,7 @@ class VMHandlerRunner extends JDEventSource {
     private async singleStepCheckBreakAsync() {
         this.trace("step begin")
         const sid = this._currentCommand.gc?.sourceId
-        if (this.parent.breakpointOn(sid) || this._breakRequested) {
+        if (await this.parent.breakpointOnAsync(sid) || this._breakRequested) {
             this._singleStep = true
             this._breakRequested = false
             return true
@@ -453,6 +453,7 @@ export class VMProgramRunner extends JDClient {
     private _in_run = false
     private _watch: SMap<any> = {}
     private _breaks: SMap<boolean> = {}
+    private _breaksMutex: Mutex
     private _roles: VMRole[] = []
     private _handlerAtBreak: VMHandlerRunner = undefined
 
@@ -474,23 +475,28 @@ export class VMProgramRunner extends JDClient {
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
         this._waitMutex = new Mutex()
+        this._breaksMutex = new Mutex
         // run on any change to environment
-        this._env.subscribe(CHANGE, () => {
-            this.runWithTry()
-        })
-        this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
-            try {
-                console.log("WAKING", h)
-                h.wake()
-                const result = await this.runHandler(h)
-                if (result)
-                    await this._waitMutex.acquire(async () => {
-                        this._waitQueue.push(h)
-                    })
-            } catch (e) {
-                // TODO
-            }
-        })
+        this.mount(
+            this._env.subscribe(CHANGE, () => {
+                this.runWithTry()
+            })
+        )
+        this.mount(
+            this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
+                try {
+                    console.log("WAKING", h)
+                    h.wake()
+                    const result = await this.runHandler(h)
+                    if (result)
+                        await this._waitMutex.acquire(async () => {
+                            this._waitQueue.push(h)
+                        })
+                } catch (e) {
+                    // TODO
+                }
+            })
+        )
         this.initializeRoleManagement();
     }
     // debugging
@@ -512,19 +518,27 @@ export class VMProgramRunner extends JDClient {
     }
 
     // breakpoints
-    setBreakpoints(breaks: string[]) {
-        this.clearBreakpoints()
-        breaks.forEach(b => {
-            this._breaks[b] = true
+    async setBreakpointsAsync(breaks: string[]) {
+        await this._breaksMutex.acquire(async () => {
+            this._breaks = {}
+            breaks.forEach(b => {
+                this._breaks[b] = true
+            })
         })
     }
 
-    clearBreakpoints() {
-        this._breaks = {}
+    async clearBreakpointsAsync() {
+        await this._breaksMutex.acquire(async () => {
+            this._breaks = {}
+        })
     }
 
-    breakpointOn(id: string) {
-        return !!this._breaks?.[id]
+    async breakpointOnAsync(id: string) {
+        let ret = false
+        await this._breaksMutex.acquire(async () => {
+            ret = !!this._breaks?.[id]
+        })
+        return ret
     }
     
     // timers
