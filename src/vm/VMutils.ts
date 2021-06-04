@@ -5,6 +5,7 @@ export const VM_MISSING_DEVICE_WARNING = "vmMissingDevice"
 export const VM_BREAKPOINT = "vmBreakpoint"
 export const VM_COMMAND_ATTEMPTED = "vmCommandAttempted"
 export const VM_COMMAND_COMPLETED = "vmCommandCompleted"
+export const VM_WAKE_SLEEPER = "vmWakeSleeper"
 
 export class VMError extends Error {
     constructor(message: string, readonly jacdacName?: string) {
