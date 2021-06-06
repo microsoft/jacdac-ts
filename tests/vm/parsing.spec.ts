@@ -1,7 +1,7 @@
 import { suite, test } from "mocha"
 import { readdirSync, readFileSync } from "fs"
 import { join } from "path"
-import VMFile from "../../src/vm/vmfile"
+import VMFile from "../../src/vm/file"
 
 suite("vm", () => {
     suite("json baselines", () => {
