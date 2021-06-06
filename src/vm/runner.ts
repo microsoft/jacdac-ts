@@ -497,6 +497,7 @@ export class VMProgramRunner extends JDClient {
                     h.wake()
                     const result = await this.runHandler(h)
                     if (result && !isEveryHandler(h)) {
+                        // TODO: disabledness check
                         await this._waitMutex.acquire(async () => {
                             this._waitQueue.push(h)
                         })
@@ -561,26 +562,15 @@ export class VMProgramRunner extends JDClient {
     }
 
     // control of VM
-    async statusAsync() {
-        let waitLen = 0
-        await this._waitMutex.acquire(async () => {
-            waitLen = this._waitQueue.length
-        })
-        let sleepLen = 0
-        await this._sleepMutex.acquire(async () => {
-            waitLen = this._sleepQueue.length
-        })
-        let disabledLen = 0
-        await this._disabledMutex.acquire(async () => {
-            disabledLen = this._disabledHandlers.length
-        })
-        const ret =
-            this._running === false
-                ? VMStatus.Stopped
-                : (waitLen + sleepLen + disabledLen > 0)
-                ? VMStatus.Running
-                : VMStatus.Completed
-        return ret
+    get status() {
+        let waitLen = this._waitQueue.length
+        let sleepLen = this._sleepQueue.length
+        let disabledLen = this._disabledHandlers.length
+        return this._running === false
+            ? VMStatus.Stopped
+            : (waitLen + sleepLen + disabledLen > 0)
+            ? VMStatus.Running
+            : VMStatus.Completed
     }
 
     async startAsync() {
@@ -745,6 +735,7 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
                 this._env.serviceChanged(role, undefined)
+                // TODO: some handlers may become disabled.
             })
         )
     }
