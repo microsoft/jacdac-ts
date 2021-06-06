@@ -7,7 +7,8 @@ import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
-import { RoleRegister, RoleEvent } from "./ir"
+
+import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
 import { ROLE_HAS_NO_SERVICE } from "./rolemanager"
 
