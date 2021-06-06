@@ -7,8 +7,8 @@ import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
-import { RoleRegister, RoleEvent } from "./VMir"
-import { VMEnvironmentInterface } from "./VMrunner"
+import { RoleRegister, RoleEvent } from "./vmir"
+import { VMEnvironmentInterface } from "./vmrunner"
 import { ROLE_HAS_NO_SERVICE } from "./rolemanager"
 
 export class VMServiceEnvironment extends JDServiceClient {

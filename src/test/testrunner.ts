@@ -9,8 +9,8 @@ import { JDEventSource } from "../jdom/eventsource"
 import { JDService } from "../jdom/service"
 import { JDServiceClient } from "../jdom/serviceclient"
 import { roundWithPrecision } from "../jdom/utils"
-import { unparse, VMExprEvaluator, CallEvaluator, StartMap } from "../vm/VMexpr"
-import { VMServiceEnvironment } from "../vm/VMenvironment"
+import { unparse, VMExprEvaluator, CallEvaluator, StartMap } from "../vm/vmexpr"
+import { VMServiceEnvironment } from "../vm/vmenvironment"
 
 export enum JDTestStatus {
     NotReady,
