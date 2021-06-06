@@ -12,6 +12,12 @@ import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
 import { ROLE_HAS_NO_SERVICE } from "./rolemanager"
 
+export class VMRoleNoServiceException extends Error {
+    constructor() {
+        super()
+    }
+}
+
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
     private _events: SMap<JDEvent> = {}
@@ -158,21 +164,25 @@ export class VMEnvironment
     }
 
     public registerRegister(role: string, reg: string) {
-        const serviceEnv = this.getService(role)
-        if (serviceEnv) {
+        try {
+            const serviceEnv = this.getService(role)
             serviceEnv.registerRegister(reg, () => {
                 this.emit(CHANGE)
             })
+        } catch (e) {
+            // nothing
         }
     }
 
     public registerEvent(role: string, ev: string) {
-        const serviceEnv = this.getService(role)
-        if (serviceEnv) {
+        try {
+            const serviceEnv = this.getService(role)
             serviceEnv.registerEvent(ev, () => {
                 this._currentEvent = `${role}.${ev}`
                 this.emit(CHANGE)
             })
+        } catch (e) {
+            // nothing
         }
     }
 
@@ -190,6 +200,7 @@ export class VMEnvironment
         let s = this._envs[root]
         if (!s) {
             this.emit(ROLE_HAS_NO_SERVICE, root)
+            throw new VMRoleNoServiceException()
         }
         return s
     }
@@ -206,6 +217,7 @@ export class VMEnvironment
         values: PackedValues
     ) {
         const serviceEnv = this.getService(e)
+        // TODO: need to raise alert if service undefined
         await serviceEnv?.sendCommandAsync(
             e.property as jsep.Identifier,
             values
@@ -224,9 +236,6 @@ export class VMEnvironment
             return undefined
         }
         const serviceEnv = this.getService(e)
-        if (!serviceEnv) {
-            return undefined
-        }
         const me = e as jsep.MemberExpression
         return serviceEnv.lookup(
             me.property as jsep.Identifier | jsep.MemberExpression
@@ -239,7 +248,7 @@ export class VMEnvironment
     ) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
-        if (serviceEnv && me.property.type === "Identifier") {
+        if (me.property.type === "Identifier") {
             const reg = (me.property as jsep.Identifier).name
             await serviceEnv.writeRegisterAsync(reg, ev)
         }
@@ -263,8 +272,6 @@ export class VMEnvironment
 
     public hasEvent(e: jsep.MemberExpression | string) {
         const roleName = this.getRootName(e)
-        const serviceEnv = this.getService(e)
-        if (!serviceEnv) return false
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const event = (me.property as jsep.Identifier).name

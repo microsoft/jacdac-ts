@@ -46,12 +46,12 @@ export interface VMEnvironmentInterface {
     unsubscribe: () => void
 }
 
-class VMJumpException {
-    constructor(public label: string) {}
+class VMJumpException extends Error {
+    constructor(public label: string) { super() }
 }
 
-class VMTimerException {
-    constructor(public ms: number) {}
+class VMTimerException extends Error {
+    constructor(public ms: number) { super() }
 }
 
 class VMCommandEvaluator {
@@ -375,6 +375,7 @@ class VMHandlerRunner extends JDEventSource {
         const sid = this._currentCommand.gc.sourceId
         this.emit(VM_COMMAND_ATTEMPTED, sid)
         try {
+            console.log("singleStep", this._currentCommand.gc)
             await this._currentCommand.stepAsync()
         } catch (e) {
             if (e instanceof VMJumpException) {
@@ -556,14 +557,22 @@ export class VMProgramRunner extends JDClient {
 
     // control of VM
     async statusAsync() {
-        let len = 0
+        let waitLen = 0
         await this._waitMutex.acquire(async () => {
-            len = this._waitQueue.length
+            waitLen = this._waitQueue.length
+        })
+        let sleepLen = 0
+        await this._sleepMutex.acquire(async () => {
+            waitLen = this._sleepQueue.length
+        })
+        let disabledLen = 0
+        await this._disabledMutex.acquire(async () => {
+            disabledLen = this._disabledHandlers.length
         })
         const ret =
             this._running === false
                 ? VMStatus.Stopped
-                : len > 0
+                : (waitLen + sleepLen + disabledLen > 0)
                 ? VMStatus.Running
                 : VMStatus.Completed
         return ret
@@ -647,8 +656,8 @@ export class VMProgramRunner extends JDClient {
         } catch (e) {
             // if the handler failed because a role is absent then
             // we retire the handler until its roles are present again
+            console.log("HERE", e)
             if (!this.handlerEnabled(h)) {
-                console.log("disabling handler", h)
                 await this._disabledMutex.acquire(async () => {
                     this._disabledHandlers.push(h)
                 })
@@ -658,7 +667,8 @@ export class VMProgramRunner extends JDClient {
 
     private handlerEnabled(h: VMHandlerRunner) {
         return h.handler.roles.every(role => {
-            return !!this.roleManager.boundRoles.find(binding => binding.role === role)
+            let gotIt = this.roleManager.boundRoles.find(binding => binding.role === role)
+            return gotIt
         })
     }
 
