@@ -7,7 +7,7 @@ import { createNodeUSBOptions } from "../jdom/transport/nodewebusb"
 import {
     deviceSpecificationToDTDL,
     serviceSpecificationToDTDL,
-} from "../azure-iot/dtdl"
+} from "../azure-iot/dtdlspec"
 import { deviceSpecifications, serviceSpecifications } from "../jdom/spec"
 import { JDBus } from "../jdom/bus"
 import { printPacket } from "../jdom/pretty"
