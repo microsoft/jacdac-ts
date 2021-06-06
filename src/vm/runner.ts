@@ -647,16 +647,18 @@ export class VMProgramRunner extends JDClient {
         } catch (e) {
             // if the handler failed because a role is absent then
             // we retire the handler until its roles are present again
-            console.log("HERE", e)
-            await this._disabledMutex.acquire(async () => {
-                this._disabledHandlers.push(h)
-            })
+            if (!this.handlerEnabled(h)) {
+                console.log("disabling handler", h)
+                await this._disabledMutex.acquire(async () => {
+                    this._disabledHandlers.push(h)
+                })
+            }
         }
     }
 
     private handlerEnabled(h: VMHandlerRunner) {
         return h.handler.roles.every(role => {
-            this.roleManager.boundRoles.find(binding => binding.role === role)
+            return !!this.roleManager.boundRoles.find(binding => binding.role === role)
         })
     }
 
