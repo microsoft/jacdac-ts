@@ -5,7 +5,7 @@ import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
-import { checkProgram, compileProgram } from "./ir"
+import { checkProgram, compileProgram } from "./compile"
 import {
     VM_COMMAND_ATTEMPTED,
     VM_COMMAND_COMPLETED,
@@ -202,6 +202,16 @@ class VMCommandEvaluator {
                 const ev = expr.eval(args[0])
                 throw new VMTimerException(ev * 1000)
             }
+            case "onRoleConnected": {
+                // first time fires based on state
+                // after that, only on transitions
+                return VMStatus.Completed
+            }
+            case "onRoleDisonnected": {
+                // first time fires based on state
+                // after that, only on transitions
+                return VMStatus.Completed
+            }
             default:
                 throw new VMError(`Unknown instruction ${this.inst}`)
         }
@@ -373,10 +383,8 @@ class VMHandlerRunner extends JDEventSource {
                 let vmt = e as VMTimerException
                 this._currentCommand.status = VMStatus.Sleeping
                 await this.parent.sleepAsync(this, vmt.ms)
-            } else {
-                if (e instanceof VMError) throw e
-                else throw new VMError(e.message)
-            }
+            } else 
+                throw e
         }
         if (this._currentCommand.status === VMStatus.Completed)
             this.emit(VM_COMMAND_COMPLETED, this._currentCommand.gc.sourceId)
@@ -605,25 +613,31 @@ export class VMProgramRunner extends JDClient {
 
     private async runHandler(h: VMHandlerRunner) {
         if (!this._running) return false
-        if (!this._handlerAtBreak || this._handlerAtBreak === h) {
-            const brkCommand = await h.runToCompletionAsync()
-            if (brkCommand) {
-                this._handlerAtBreak = h
-                this.emit(VM_BREAKPOINT, h, brkCommand.gc?.sourceId)
-            }
-            if (h.status !== VMStatus.Stopped) {
-                if (h.status === VMStatus.Completed) {
-                    h.reset()
-                    if (isEveryHandler(h)) {
-                        this.sleepAsync(h, 1)
-                    }
+        try {
+            if (!this._handlerAtBreak || this._handlerAtBreak === h) {
+                const brkCommand = await h.runToCompletionAsync()
+                if (brkCommand) {
+                    this._handlerAtBreak = h
+                    this.emit(VM_BREAKPOINT, h, brkCommand.gc?.sourceId)
                 }
-                return h.status !== VMStatus.Sleeping
-            } else return false
-        } else {
-            // skip execution of handler h
-            return true
-        }
+                if (h.status !== VMStatus.Stopped) {
+                    if (h.status === VMStatus.Completed) {
+                        h.reset()
+                        if (isEveryHandler(h)) {
+                            this.sleepAsync(h, 1)
+                        }
+                    }
+                    return h.status !== VMStatus.Sleeping
+                } else return false
+            } else {
+                // skip execution of handler h
+                return true
+            }
+        } catch (e) {
+            // if the handler failed because a role is absent then 
+            // we retire the handler until its roles are present again
+
+        } 
     }
 
     private async run() {
