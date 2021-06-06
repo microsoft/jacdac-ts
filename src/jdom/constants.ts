@@ -192,4 +192,8 @@ export const ERROR_MICROBIT_UNKNOWN = "microbit/unknown-hardware-revision"
 export const ERROR_MICROBIT_JACDAC_MISSING = "microbit/jacdac-missing"
 export const ERROR_MICROBIT_INVALID_MEMORY = "microbit/invalid-memory"
 
+export const ROLE_BOUND = "roleBound"
+export const ROLE_UNBOUND = "roleUnbound"
+export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
+
 export * from "../../jacdac-spec/dist/specconstants"

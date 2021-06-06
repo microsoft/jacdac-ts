@@ -5,12 +5,16 @@ import { JDRegister } from "../jdom/register"
 import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
+import {
+    CHANGE,
+    EVENT,
+    ROLE_HAS_NO_SERVICE,
+    SystemReg,
+} from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 
 import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
-import { ROLE_HAS_NO_SERVICE } from "./rolemanager"
 
 export class VMServiceEnvironment extends JDServiceClient {
     private _registers: SMap<JDRegister> = {}
