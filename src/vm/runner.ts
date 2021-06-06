@@ -1,11 +1,11 @@
-import { VMProgram, VMHandler, VMCommand, VMRole } from "./vmir"
+import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
 import { RoleManager, ROLE_BOUND, ROLE_UNBOUND } from "./rolemanager"
-import { VMEnvironment } from "./vmenvironment"
-import { VMExprEvaluator, unparse } from "./vmexpr"
+import { VMEnvironment } from "./environment"
+import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ERROR, TRACE } from "../jdom/constants"
-import { checkProgram, compileProgram } from "./vmir"
+import { checkProgram, compileProgram } from "./ir"
 import {
     VM_COMMAND_ATTEMPTED,
     VM_COMMAND_COMPLETED,
@@ -14,7 +14,7 @@ import {
     VM_BREAKPOINT,
     VM_WAKE_SLEEPER,
     Mutex
-} from "./vmutils"
+} from "./utils"
 import { SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 

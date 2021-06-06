@@ -1,4 +1,4 @@
-import { VMError } from "./vmutils"
+import { VMError } from "./utils"
 
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
