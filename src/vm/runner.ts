@@ -266,7 +266,6 @@ class VMHandlerRunner extends JDEventSource {
     private stopped = false
     private _labelToIndex: SMap<number> = {}
     private _breakRequested = false
-    private _singleStep = false
 
     constructor(
         public readonly parent: VMProgramRunner,
@@ -317,10 +316,6 @@ class VMHandlerRunner extends JDEventSource {
         this._breakRequested = true
     }
 
-    resume() {
-        this._singleStep = false
-    }
-
     wake() {
         if (this._currentCommand) {
             this._currentCommand.status = VMStatus.Completed
@@ -328,15 +323,15 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     // run-to-completion semantics (true if breakpoint)
-    async runToCompletionAsync() {
+    async runToCompletionAsync(singleStep = false) {
         if (this.stopped || !this.handler.commands.length) return undefined
         if (this.commandIndex === undefined) {
             this.commandIndex = 0
         }
-        if ((await this.singleStepCheckBreakAsync()) || this._singleStep)
+        if (await this.singleStepCheckBreakAsync(singleStep))
             return this._currentCommand
         while (this.next()) {
-            if ((await this.singleStepCheckBreakAsync()) || this._singleStep)
+            if (singleStep || await this.singleStepCheckBreakAsync(singleStep))
                 return this._currentCommand
         }
         return undefined
@@ -361,14 +356,13 @@ class VMHandlerRunner extends JDEventSource {
         return cmd as VMCommand
     }
 
-    private async singleStepCheckBreakAsync() {
+    private async singleStepCheckBreakAsync(singleStep = false) {
         this.trace("step begin")
         const sid = this._currentCommand.gc?.sourceId
-        if (
-            (await this.parent.breakpointOnAsync(sid)) ||
-            this._breakRequested
+        if (!singleStep &&
+            ((await this.parent.breakpointOnAsync(sid)) ||
+            this._breakRequested)
         ) {
-            this._singleStep = true
             this._breakRequested = false
             return true
         }
@@ -437,12 +431,15 @@ function isEveryHandler(h: VMHandlerRunner) {
 }
 
 export class VMProgramRunner extends JDClient {
+    // program, environment
     private _handlers: VMHandlerRunner[] = []
     private _env: VMEnvironment
+    private _roles: VMRole[] = []
+    // running
     private _running = false
     private _in_run = false
+    // debugging
     private _watch: SMap<any> = {}
-    private _roles: VMRole[] = []
     private _handlerAtBreak: VMHandlerRunner = undefined
     // stated accessed concurrently
     private _waitQueue: VMHandlerRunner[] = []
@@ -580,6 +577,7 @@ export class VMProgramRunner extends JDClient {
             this.roleManager.setRoles(this._roles)
             this._running = true
             this._in_run = false
+            this._handlerAtBreak = undefined
             await this._waitMutex.acquire(async () => {
                 this._waitQueue = this._handlers.slice(0)
                 this._waitQueue.forEach(h => h.reset())
@@ -605,9 +603,6 @@ export class VMProgramRunner extends JDClient {
         if (!this._running) return
         this.trace("resume")
         this._handlerAtBreak = undefined
-        await this._waitMutex.acquire(async () => {
-            this._waitQueue.forEach(h => h.resume())
-        })
         this.runWithTry()
     }
 
@@ -629,8 +624,9 @@ export class VMProgramRunner extends JDClient {
     private async runHandler(h: VMHandlerRunner) {
         if (!this._running) return false
         try {
-            if (!this._handlerAtBreak || this._handlerAtBreak === h) {
-                const brkCommand = await h.runToCompletionAsync()
+            const singleStepping = this._handlerAtBreak === h
+            if (!this._handlerAtBreak || singleStepping) {
+                const brkCommand = await h.runToCompletionAsync(singleStepping)
                 if (brkCommand) {
                     this._handlerAtBreak = h
                     this.emit(VM_BREAKPOINT, h, brkCommand.gc?.sourceId)
