@@ -381,7 +381,6 @@ class VMHandlerRunner extends JDEventSource {
         const sid = this._currentCommand.gc.sourceId
         this.emit(VM_COMMAND_ATTEMPTED, sid)
         try {
-            console.log("singleStep", this._currentCommand.gc)
             await this._currentCommand.stepAsync()
         } catch (e) {
             if (e instanceof VMJumpException) {
@@ -726,7 +725,6 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
                 addRoleService(role)
-                console.log(`role ${role} bound`)
                 await this._disabledMutex.acquire(async () => {
                     const enabled = this._disabledHandlers.filter(h =>
                         this.handlerEnabled(h)
@@ -746,7 +744,6 @@ export class VMProgramRunner extends JDClient {
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
-                console.log(`role ${role} unbound`)
                 this._env.serviceChanged(role, undefined)
             })
         )
