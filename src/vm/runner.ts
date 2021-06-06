@@ -1,10 +1,16 @@
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
-import { RoleManager, ROLE_BOUND, ROLE_UNBOUND } from "./rolemanager"
+import RoleManager from "../servers/rolemanager"
 import { VMEnvironment } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, ERROR, TRACE } from "../jdom/constants"
+import {
+    CHANGE,
+    ERROR,
+    ROLE_BOUND,
+    ROLE_UNBOUND,
+    TRACE,
+} from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
 import {
     VM_COMMAND_ATTEMPTED,
@@ -384,7 +390,7 @@ class VMHandlerRunner extends JDEventSource {
                 this.commandIndex = index
                 this._currentCommand.status = VMStatus.Completed
             } else if (e instanceof VMTimerException) {
-                let vmt = e as VMTimerException
+                const vmt = e as VMTimerException
                 this._currentCommand.status = VMStatus.Sleeping
                 await this.parent.sleepAsync(this, vmt.ms)
             } else throw e
@@ -548,7 +554,7 @@ export class VMProgramRunner extends JDClient {
     // timers
     async sleepAsync(handler: VMHandlerRunner, ms: number) {
         await this._sleepMutex.acquire(async () => {
-            let id = setTimeout(() => {
+            const id = setTimeout(() => {
                 this.emit(VM_WAKE_SLEEPER, handler)
             }, ms)
             this._sleepQueue.push({ handler, id })
@@ -656,7 +662,6 @@ export class VMProgramRunner extends JDClient {
         } catch (e) {
             // if the handler failed because a role is absent then
             // we retire the handler until its roles are present again
-            console.log("HERE", e)
             if (!this.handlerEnabled(h)) {
                 await this._disabledMutex.acquire(async () => {
                     this._disabledHandlers.push(h)
@@ -667,8 +672,7 @@ export class VMProgramRunner extends JDClient {
 
     private handlerEnabled(h: VMHandlerRunner) {
         return h.handler.roles.every(role => {
-            let gotIt = this.roleManager.boundRoles.find(binding => binding.role === role)
-            return gotIt
+            return this.roleManager.boundRoles.find(binding => binding.role === role)
         })
     }
 
@@ -724,7 +728,7 @@ export class VMProgramRunner extends JDClient {
                 addRoleService(role)
                 console.log(`role ${role} bound`)
                 await this._disabledMutex.acquire(async () => {
-                    let enabled = this._disabledHandlers.filter(h =>
+                    const enabled = this._disabledHandlers.filter(h =>
                         this.handlerEnabled(h)
                     )
                     if (enabled.length) {
