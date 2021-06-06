@@ -1,4 +1,4 @@
-import { VMProgram } from "./VMir";
+import { VMProgram } from "./ir";
 
 export default interface VMFile {
     xml: string
