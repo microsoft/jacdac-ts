@@ -23,6 +23,7 @@ export interface VMCommand extends VMBase {
 
 export interface VMHandler {
     commands: VMBase[]
+    roles?: string[]
     errors?: VMError[]
 }
 

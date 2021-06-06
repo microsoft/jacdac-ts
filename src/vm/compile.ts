@@ -180,10 +180,12 @@ export function checkProgram(prog: VMProgram): {
             return
         }
         const errorCount = allErrors.length
+        symbolResolver.roles = []
         handlerVisitor(h, undefined, c =>
             checker.checkCommand(c.command, VMFunctions)
         )
         if (h?.errors.length === 0 && allErrors.length === errorCount) {
+            h.roles = symbolResolver.roles
             goodHandlers.push(h)
         } else {
             h?.errors.forEach(e => allErrors.push(e))
