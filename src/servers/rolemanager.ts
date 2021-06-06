@@ -1,13 +1,9 @@
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, DEVICE_ANNOUNCE, DEVICE_DISCONNECT } from "../jdom/constants"
+import { CHANGE, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, ROLE_BOUND, ROLE_UNBOUND } from "../jdom/constants"
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
 import { serviceSpecificationFromName } from "../jdom/spec"
-
-export const ROLE_BOUND = "roleBound"
-export const ROLE_UNBOUND = "roleUnbound"
-export const ROLE_HAS_NO_SERVICE = "roleHasNoService"
 
 export interface RoleBinding {
     role: string
@@ -16,7 +12,7 @@ export interface RoleBinding {
 }
 
 // TODO: replicate MakeCode role manager logic
-export class RoleManager extends JDEventSource {
+export default class RoleManager extends JDEventSource {
     private readonly _roles: RoleBinding[] = []
 
     constructor(private readonly bus: JDBus) {
