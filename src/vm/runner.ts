@@ -52,12 +52,12 @@ export interface VMEnvironmentInterface {
     unsubscribe: () => void
 }
 
-class VMJumpException {
-    constructor(public label: string) {}
+class VMJumpException extends Error {
+    constructor(public label: string) { super() }
 }
 
-class VMTimerException {
-    constructor(public ms: number) {}
+class VMTimerException extends Error {
+    constructor(public ms: number) { super() }
 }
 
 class VMCommandEvaluator {
@@ -451,6 +451,8 @@ export class VMProgramRunner extends JDClient {
     private _breaksMutex: Mutex
     private _sleepQueue: SleepingHandler[] = []
     private _sleepMutex: Mutex
+    private _disabledHandlers: VMHandlerRunner[] = []
+    private _disabledMutex: Mutex
 
     constructor(
         readonly bus: JDBus,
@@ -472,6 +474,7 @@ export class VMProgramRunner extends JDClient {
         this._waitMutex = new Mutex()
         this._breaksMutex = new Mutex()
         this._sleepMutex = new Mutex()
+        this._disabledMutex = new Mutex()
         // run on any change to environment
         this.mount(
             this._env.subscribe(CHANGE, () => {
@@ -559,14 +562,22 @@ export class VMProgramRunner extends JDClient {
 
     // control of VM
     async statusAsync() {
-        let len = 0
+        let waitLen = 0
         await this._waitMutex.acquire(async () => {
-            len = this._waitQueue.length
+            waitLen = this._waitQueue.length
+        })
+        let sleepLen = 0
+        await this._sleepMutex.acquire(async () => {
+            waitLen = this._sleepQueue.length
+        })
+        let disabledLen = 0
+        await this._disabledMutex.acquire(async () => {
+            disabledLen = this._disabledHandlers.length
         })
         const ret =
             this._running === false
                 ? VMStatus.Stopped
-                : len > 0
+                : (waitLen + sleepLen + disabledLen > 0)
                 ? VMStatus.Running
                 : VMStatus.Completed
         return ret
@@ -582,6 +593,9 @@ export class VMProgramRunner extends JDClient {
             await this._waitMutex.acquire(async () => {
                 this._waitQueue = this._handlers.slice(0)
                 this._waitQueue.forEach(h => h.reset())
+            })
+            await this._disabledMutex.acquire(async () => {
+                this._disabledHandlers = []
             })
             this.run()
         } catch (e) {
@@ -647,7 +661,18 @@ export class VMProgramRunner extends JDClient {
         } catch (e) {
             // if the handler failed because a role is absent then
             // we retire the handler until its roles are present again
+            if (!this.handlerEnabled(h)) {
+                await this._disabledMutex.acquire(async () => {
+                    this._disabledHandlers.push(h)
+                })
+            }
         }
+    }
+
+    private handlerEnabled(h: VMHandlerRunner) {
+        return h.handler.roles.every(role => {
+            return this.roleManager.boundRoles.find(binding => binding.role === role)
+        })
     }
 
     private async run() {
@@ -655,7 +680,6 @@ export class VMProgramRunner extends JDClient {
         if (this._in_run) return
         this.trace("run")
         this._in_run = true
-        let currentHandler: VMHandlerRunner = undefined
         try {
             await this._env.refreshRegistersAsync()
             let waitCopy: VMHandlerRunner[] = []
@@ -666,10 +690,8 @@ export class VMProgramRunner extends JDClient {
             if (waitCopy.length > 0) {
                 const nextTime: VMHandlerRunner[] = []
                 for (const h of waitCopy) {
-                    currentHandler = h
                     const result = await this.runHandler(h)
                     if (result) nextTime.push(h)
-                    currentHandler = undefined
                 }
                 await this._waitMutex.acquire(async () => {
                     nextTime.forEach(h => this._waitQueue.push(h))
@@ -679,9 +701,6 @@ export class VMProgramRunner extends JDClient {
                 this.emit(CHANGE)
             }
         } catch (e) {
-            if (currentHandler) {
-                // program error in handler?
-            }
             console.debug(e)
             this.emit(ERROR, e)
         }
@@ -704,8 +723,23 @@ export class VMProgramRunner extends JDClient {
             }
         })
         this.mount(
-            this.roleManager.subscribe(ROLE_BOUND, (role: string) => {
+            this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
                 addRoleService(role)
+                await this._disabledMutex.acquire(async () => {
+                    const enabled = this._disabledHandlers.filter(h =>
+                        this.handlerEnabled(h)
+                    )
+                    if (enabled.length) {
+                        await this._waitMutex.acquire(async () => {
+                            enabled.forEach(h => {
+                                this._waitQueue.push(h)
+                            })
+                        })
+                        this._disabledHandlers = this._disabledHandlers.filter(
+                            h => enabled.indexOf(h) === -1
+                        )
+                    }
+                })
             })
         )
         this.mount(
