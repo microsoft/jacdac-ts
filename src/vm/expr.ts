@@ -1,3 +1,4 @@
+import { VMCode } from "./events"
 import { VMError } from "./utils"
 
 export type GetValue = (e: jsep.MemberExpression | string) => any
@@ -78,7 +79,7 @@ export class VMExprEvaluator {
 
             case "CallExpression": {
                 if (this.callEval) {
-                    let ret = this.callEval(<jsep.CallExpression>e, this)
+                    const ret = this.callEval(<jsep.CallExpression>e, this)
                     this.exprStack.push(ret)
                 } else this.exprStack.push(undefined)
                 break
@@ -198,7 +199,7 @@ export class VMExprEvaluator {
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
                 if (val === undefined) {
-                    throw new VMError(`lookup of ${unparse(e)} failed`)
+                    throw new VMError(VMCode.InternalError, `lookup of ${unparse(e)} failed`)
                 }
                 this.exprStack.push(val)
                 return
@@ -207,7 +208,7 @@ export class VMExprEvaluator {
                 const id = <jsep.Identifier>e
                 const val = this.env(id.name)
                 if (val === undefined)
-                    throw new VMError(`lookup of ${id.name} failed`)
+                    throw new VMError(VMCode.InternalError, `lookup of ${id.name} failed`)
                 this.exprStack.push(val)
                 return
             }

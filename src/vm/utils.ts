@@ -1,21 +1,19 @@
-export const VM_ERROR = "vmError"
-export const VM_WATCH_CHANGE = "vmWatchChange"
-export const VM_BREAKPOINT = "vmBreakpoint"
-export const VM_COMMAND_ATTEMPTED = "vmCommandAttempted"
-export const VM_COMMAND_COMPLETED = "vmCommandCompleted"
-export const VM_WAKE_SLEEPER = "vmWakeSleeper"
+import { VMCode } from "./events"
 
 export class VMError extends Error {
-    constructor(message: string, readonly jacdacName?: string) {
+    constructor(
+        name: VMCode,
+        readonly message: string,
+        readonly jacdacName?: string
+    ) {
         super(message)
-        this.name = VM_ERROR
+        this.name = name
     }
 }
 
 export default function errorPath(e: VMError): string {
     return (e as VMError)?.jacdacName
 }
-
 
 export class Mutex {
     private promises: (() => Promise<any>)[] = []

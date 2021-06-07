@@ -8,7 +8,6 @@ import { JDEventSource } from "../jdom/eventsource"
 import {
     CHANGE,
     EVENT,
-    ROLE_HAS_NO_SERVICE,
     SystemReg,
 } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
@@ -17,7 +16,7 @@ import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
 
 export class VMRoleNoServiceException extends Error {
-    constructor() {
+    constructor(readonly role: string) {
         super()
     }
 }
@@ -203,8 +202,7 @@ export class VMEnvironment
         if (!root) return undefined
         const s = this._envs[root]
         if (!s) {
-            this.emit(ROLE_HAS_NO_SERVICE, root)
-            throw new VMRoleNoServiceException()
+            throw new VMRoleNoServiceException(root)
         }
         return s
     }
