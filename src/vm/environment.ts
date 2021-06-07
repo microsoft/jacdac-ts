@@ -75,7 +75,8 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async writeRegisterAsync(regName: string, ev: any) {
-        await this.setEnabled()
+        const register = this._registers[regName]
+        if (register.code === SystemReg.Value) await this.setEnabled()
         await this.writeRegAsync(this._registers[regName], ev)
     }
 
@@ -201,7 +202,7 @@ export class VMEnvironment
     private getService(e: jsep.MemberExpression | string) {
         const root = this.getRootName(e)
         if (!root) return undefined
-        let s = this._envs[root]
+        const s = this._envs[root]
         if (!s) {
             this.emit(ROLE_HAS_NO_SERVICE, root)
             throw new VMRoleNoServiceException()
