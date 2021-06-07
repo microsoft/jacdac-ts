@@ -201,7 +201,7 @@ export class VMEnvironment
     private getService(e: jsep.MemberExpression | string) {
         const root = this.getRootName(e)
         if (!root) return undefined
-        let s = this._envs[root]
+        const s = this._envs[root]
         if (!s) {
             this.emit(ROLE_HAS_NO_SERVICE, root)
             throw new VMRoleNoServiceException()

@@ -59,7 +59,7 @@ function handlerVisitor(
 }
 
 export function compileProgram(prog: VMProgram) {
-    let newProgram: VMProgram = { roles: prog.roles.slice(0), handlers: [] }
+    const newProgram: VMProgram = { roles: prog.roles.slice(0), handlers: [] }
     newProgram.handlers = prog.handlers.map(h => {
         return { commands: removeIfThenElse(h), errors: h?.errors }
     })
@@ -164,9 +164,8 @@ export function checkProgram(prog: VMProgram): {
 } {
     const allErrors: VMError[] = []
     const goodHandlers: VMHandler[] = []
-    let currentId: string = undefined
     const errorFun = (e: string) => {
-        allErrors.push({ sourceId: currentId, message: e })
+        allErrors.push({ sourceId: undefined, message: e })
     }
     const symbolResolver = new SpecSymbolResolver(
         undefined,

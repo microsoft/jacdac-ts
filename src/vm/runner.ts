@@ -560,9 +560,9 @@ export class VMProgramRunner extends JDClient {
 
     // control of VM
     get status() {
-        let waitLen = this._waitQueue.length
-        let sleepLen = this._sleepQueue.length
-        let disabledLen = this._disabledHandlers.length
+        const waitLen = this._waitQueue.length
+        const sleepLen = this._sleepQueue.length
+        const disabledLen = this._disabledHandlers.length
         return this._running === false
             ? VMStatus.Stopped
             : (waitLen + sleepLen + disabledLen > 0)
