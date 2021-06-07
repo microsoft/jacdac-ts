@@ -375,7 +375,7 @@ class VMHandlerRunner extends JDEventSource {
 
     private async singleStepAsync() {
         const sid = this._currentCommand.gc.sourceId
-        this.emit(VM_EVENT, VMCode.CommandStarted, sid)
+        this.parent.emit(VM_EVENT, VMCode.CommandStarted, sid)
         try {
             await this._currentCommand.stepAsync()
         } catch (e) {
@@ -398,7 +398,7 @@ class VMHandlerRunner extends JDEventSource {
             }
         }
         if (this._currentCommand.status === VMStatus.Completed)
-            this.emit(
+            this.parent.emit(
                 VM_EVENT,
                 VMCode.CommandCompleted,
                 this._currentCommand.gc.sourceId
