@@ -270,5 +270,5 @@ export function DTDLUnits() {
         "millilitrePerSecond",
         "litrePerHour",
         "millilitrePerHour",
-    ]
+    ].sort()
 }
