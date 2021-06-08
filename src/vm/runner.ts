@@ -524,7 +524,6 @@ export class VMProgramRunner extends JDClient {
     private setStatus(s: VMStatus) {
         if (s !== this._status) {
             this._status = s
-            console.log("newStatus", s)
             this.emit(CHANGE)
         }
     }
@@ -689,7 +688,7 @@ export class VMProgramRunner extends JDClient {
     private async runHandlerAsync(h: VMHandlerRunner, oneStep = false) {
         try {
             const brkCommand = await h.runToCompletionAsync(oneStep)
-            if (brkCommand || this.status === VMStatus.Paused) {
+            if (brkCommand && !oneStep || this.status === VMStatus.Paused) {
                 this.setStatus(VMStatus.Paused)
                 this.emit(
                     VM_EVENT,
@@ -719,7 +718,6 @@ export class VMProgramRunner extends JDClient {
     }
 
     private async postProcessHandler(h: VMHandlerRunner) {
-        console.log("postProcess", h)
         if (
             h.status === VMInternalStatus.Ready ||
             h.status === VMInternalStatus.Sleeping
@@ -737,9 +735,6 @@ export class VMProgramRunner extends JDClient {
                 }
             })
         }
-        console.log("wait", this._waitQueue)
-        console.log("run", this._runQueue)
-        console.log("every", this._everyQueue)
     }
 
     private _in_run = false
@@ -770,7 +765,6 @@ export class VMProgramRunner extends JDClient {
     private async waitingToRunning() {
         if (this.status !== VMStatus.Stopped) {
             await this._waitRunMutex.acquire(async () => {
-                console.log("waitingRunning")
                 if (this.status === VMStatus.Paused && this._runQueue.length) {
                     return
                 }
