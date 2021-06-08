@@ -707,7 +707,7 @@ export class VMProgramRunner extends JDClient {
 
     // call this whenever some event/change arises
     private async waitingToRunning() {
-        if (this.status !== VMStatus.Stopped)
+        if (this.status === VMStatus.Running)
             await this._waitRunMutex.acquire(async () => {
                 const handlersStarted: VMHandler[] = []
                 const newRunners: number[] = []
