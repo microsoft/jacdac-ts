@@ -74,7 +74,8 @@ export class VMServiceEnvironment extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async writeRegisterAsync(regName: string, ev: any) {
-        await this.setEnabled()
+        const register = this._registers[regName]
+        if (register.code === SystemReg.Value) await this.setEnabled()
         await this.writeRegAsync(this._registers[regName], ev)
     }
 
