@@ -513,7 +513,7 @@ export class VMProgramRunner extends JDClient {
             })
         )
         this.mount(
-            this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
+            this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner | VMHandler) => {
                 await this.wakeSleeper(h)
             })
         )
@@ -628,8 +628,10 @@ export class VMProgramRunner extends JDClient {
             }
             const theHandler = handlerRunner?.handler || handler
             if (isEveryHandler(theHandler)) {
-                this.sleepAsync(undefined, handlerMs, theHandler) // HERE
+                this.sleepAsync(undefined, handlerMs, theHandler)
             }
+            if (handlerRunner) 
+                this.runAsync()
         } catch (e) {
             this.emit(VM_EVENT, VMCode.InternalError, e)
         }
@@ -660,6 +662,7 @@ export class VMProgramRunner extends JDClient {
             })
             this.clearBreakpointsAsync()
             this.setStatus(VMStatus.Running)
+            this.waitingToRunning()
             this.runAsync()
         } catch (e) {
             this.emit(VM_EVENT, VMCode.InternalError, e)
