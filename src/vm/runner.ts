@@ -338,8 +338,8 @@ class VMHandlerRunner extends JDEventSource {
         }
         if (await this.singleStepCheckBreakAsync(singleStep) && !singleStep)
             return this._currentCommand
-        while (this.next() && !singleStep) {
-            if (await this.singleStepCheckBreakAsync(singleStep))
+        while (this.next()) {
+            if (singleStep || await this.singleStepCheckBreakAsync())
                 return this._currentCommand
         }
         return undefined
@@ -523,7 +523,8 @@ export class VMProgramRunner extends JDClient {
     private setStatus(s: VMStatus) {
         if (s !== this._status) {
             this._status = s
-            this.emit(VM_EVENT, VMCode.StatusChanged, s)
+            console.log("newStatus", s)
+            this.emit(CHANGE)
         }
     }
 
@@ -676,15 +677,13 @@ export class VMProgramRunner extends JDClient {
         if (h) {
             await this.runHandlerAsync(h, true)
             await this.postProcessHandler(h)
-        } else {
-            this.setStatus(VMStatus.Running)
         }
     }
 
     private async runHandlerAsync(h: VMHandlerRunner, oneStep = false) {
         try {
             const brkCommand = await h.runToCompletionAsync(oneStep)
-            if (brkCommand) {
+            if (brkCommand || this.status === VMStatus.Paused) {
                 this.setStatus(VMStatus.Paused)
                 this.emit(
                     VM_EVENT,
@@ -729,11 +728,11 @@ export class VMProgramRunner extends JDClient {
                             this._waitQueue.push(done)
                     }
                 }
-                console.log("wait", this._waitQueue)
-                console.log("run", this._runQueue)
-                console.log("every", this._everyQueue)
             })
         }
+        console.log("wait", this._waitQueue)
+        console.log("run", this._runQueue)
+        console.log("every", this._everyQueue)
     }
 
     private _in_run = false
@@ -762,9 +761,12 @@ export class VMProgramRunner extends JDClient {
 
     // call this whenever some event/change arises
     private async waitingToRunning() {
-        if (this.status === VMStatus.Running) {
+        if (this.status !== VMStatus.Stopped) {
             await this._waitRunMutex.acquire(async () => {
                 console.log("waitingRunning")
+                if (this.status === VMStatus.Paused && this._runQueue.length) {
+                    return
+                }
                 const handlersStarted: VMHandler[] = []
                 const newRunners: VMHandlerRunner[] = []
                 for (const h of this._waitQueue) {
