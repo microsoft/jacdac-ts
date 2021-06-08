@@ -8,5 +8,6 @@ export enum VMCode {
     CommandCompleted = "vmCommandCompleted",
     CommandFailed = "vmCommandFailed",
     RoleMissing = "vmRoleMissing",
+    StatusChanged = "vmStatusChanged",
     InternalError = "vmInternalError",
 }
