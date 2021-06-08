@@ -460,16 +460,17 @@ export class VMProgramRunner extends JDClient {
     private _roles: VMRole[] = []
     // running
     private _status: VMStatus
-    // debugging
-    private _watch: SMap<any> = {}
-    private _breaks: SMap<boolean> = {}
-    private _breaksMutex: Mutex
     private _waitQueue: VMHandlerRunner[] = []
     private _everyQueue: VMHandlerRunner[] = []
     private _runQueue: VMHandlerRunner[] = []
     private _waitRunMutex: Mutex
     private _sleepQueue: SleepingHandler[] = []
     private _sleepMutex: Mutex
+    // debugging
+    private _watch: SMap<any> = {}
+    private _breaks: SMap<boolean> = {}
+    private _breaksMutex: Mutex
+
 
     constructor(
         readonly bus: JDBus,
@@ -654,6 +655,7 @@ export class VMProgramRunner extends JDClient {
                     }
                 }
             })
+            this.clearBreakpointsAsync()
             this.setStatus(VMStatus.Running)
             this.runAsync()
         } catch (e) {
