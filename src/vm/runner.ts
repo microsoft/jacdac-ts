@@ -299,6 +299,10 @@ class VMHandlerRunner extends JDEventSource {
             : this._currentCommand.status
     }
 
+    get command() {
+        return this._currentCommand
+    }
+
     get atTop() {
         return (
             this.status === VMInternalStatus.Running && this._commandIndex === 0
@@ -682,7 +686,22 @@ export class VMProgramRunner extends JDClient {
         if (h) {
             await this.runHandlerAsync(h, true)
             await this.postProcessHandler(h)
+            const newHead = await this.getCurrentRunner()
+            if (newHead && newHead !== h) {
+                this.emitBreakpoint(newHead)
+            }
         }
+    }
+
+    private emitBreakpoint(h: VMHandlerRunner) {
+        this.emit(
+            VM_EVENT,
+            VMCode.Breakpoint,
+            h,
+            h.status === VMInternalStatus.Completed
+                ? ""
+                : h.command.gc?.sourceId
+        )
     }
 
     private async runHandlerAsync(h: VMHandlerRunner, oneStep = false) {
@@ -690,14 +709,7 @@ export class VMProgramRunner extends JDClient {
             const brkCommand = await h.runToCompletionAsync(oneStep)
             if (brkCommand && !oneStep || this.status === VMStatus.Paused) {
                 this.setStatus(VMStatus.Paused)
-                this.emit(
-                    VM_EVENT,
-                    VMCode.Breakpoint,
-                    h,
-                    h.status === VMInternalStatus.Completed
-                        ? ""
-                        : brkCommand.gc?.sourceId
-                )
+                this.emitBreakpoint(h)
             }
             if (h.status === VMInternalStatus.Completed) {
                 h.reset()
