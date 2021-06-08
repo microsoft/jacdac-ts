@@ -300,7 +300,14 @@ class VMHandlerRunner extends JDEventSource {
     }
 
     get atTop() {
-        return this.status === VMInternalStatus.Running && this._commandIndex === 0
+        return (
+            this.status === VMInternalStatus.Running && this._commandIndex === 0
+        )
+    }
+
+    gotoTop() {
+        if (this.status === VMInternalStatus.Ready && this.handler.commands.length)
+            this.commandIndex = 0
     }
 
     reset() {
@@ -316,6 +323,7 @@ class VMHandlerRunner extends JDEventSource {
     wake() {
         if (this._currentCommand) {
             this._currentCommand.status = VMInternalStatus.Completed
+            this.next()
         }
     }
 
@@ -421,13 +429,15 @@ class VMHandlerRunner extends JDEventSource {
 export type WatchValueType = boolean | string | number
 
 interface SleepingHandler {
-    handler: VMHandlerRunner
+    ms: number
+    handlerRunner: VMHandlerRunner
+    handler?: VMHandler
     id: NodeJS.Timeout
 }
 
-function isEveryHandler(h: VMHandlerRunner) {
-    if (h.handler.commands.length) {
-        const cmd = (h.handler.commands[0] as VMCommand).command
+function isEveryHandler(h: VMHandler) {
+    if (h.commands.length) {
+        const cmd = (h.commands[0] as VMCommand).command
             .callee as jsep.Identifier
         return cmd.name === "wait"
     }
@@ -435,14 +445,14 @@ function isEveryHandler(h: VMHandlerRunner) {
 }
 
 export enum VMStatus {
-    Stopped="stopped",
-    Running="running",
-    Paused="paused",
+    Stopped = "stopped",
+    Running = "running",
+    Paused = "paused",
 }
 
 export class VMProgramRunner extends JDClient {
     // program, environment
-    private _handlers: VMHandlerRunner[] = []
+    private _handlerRunners: VMHandlerRunner[] = []
     private _env: VMEnvironment
     private _roles: VMRole[] = []
     // running
@@ -472,9 +482,17 @@ export class VMProgramRunner extends JDClient {
         // data structures for running program
         this._status = VMStatus.Stopped
         this._env = new VMEnvironment(registers, events)
-        this._handlers = compiled.handlers.map(
+        this._handlerRunners = compiled.handlers.map(
             (h, index) => new VMHandlerRunner(this, index, this._env, h)
         )
+        // now, add a second runner for each one
+        const len = this._handlerRunners.length
+        compiled.handlers.forEach((h, index) =>
+            this._handlerRunners.push(
+                new VMHandlerRunner(this, len + index, this._env, h)
+            )
+        )
+
         this._waitRunMutex = new Mutex()
         this._breaksMutex = new Mutex()
         this._sleepMutex = new Mutex()
@@ -486,29 +504,7 @@ export class VMProgramRunner extends JDClient {
         )
         this.mount(
             this.subscribe(VM_WAKE_SLEEPER, async (h: VMHandlerRunner) => {
-                try {
-                    await this._sleepMutex.acquire(async () => {
-                        const index = this._sleepQueue.findIndex(
-                            p => p.handler === h
-                        )
-                        if (index >= 0) {
-                            const { id } = this._sleepQueue[index]
-                            this._sleepQueue.splice(index)
-                            clearTimeout(id)
-                        }
-                    })
-                    h.wake()
-                    // TODO: put on the run queue
-                    await this.runHandlerAsync(h)
-                    if (!isEveryHandler(h)) {
-                        // TODO: disabledness check
-                        await this._waitRunMutex.acquire(async () => {
-                            this._runQueue.push(h)
-                        })
-                    }
-                } catch (e) {
-                    this.emit(VM_EVENT, VMCode.InternalError, e)
-                }
+                await this.wakeSleeper(h)
             })
         )
         this.initializeRoleManagement()
@@ -556,13 +552,55 @@ export class VMProgramRunner extends JDClient {
     }
 
     // timers
-    async sleepAsync(handler: VMHandlerRunner, ms: number) {
+    async sleepAsync(handlerRunner: VMHandlerRunner, ms: number, handler: VMHandler = undefined) {
         await this._sleepMutex.acquire(async () => {
             const id = setTimeout(() => {
-                this.emit(VM_WAKE_SLEEPER, handler)
+                this.emit(VM_WAKE_SLEEPER, handlerRunner ? handlerRunner : handler)
             }, ms)
-            this._sleepQueue.push({ handler, id })
+            this._sleepQueue.push({ ms, handlerRunner, id, handler })
         })
+    }
+
+    private async wakeSleeper(h: VMHandlerRunner | VMHandler) {
+        try {
+            let handlerMs: number = undefined
+            let handlerRunner: VMHandlerRunner = undefined
+            let handler: VMHandler = undefined
+            await this._sleepMutex.acquire(async () => {
+                const index = this._sleepQueue.findIndex(p =>
+                    p?.handlerRunner === h || p?.handler === h
+                )
+                if (index >= 0) {
+                    const p = this._sleepQueue[index]
+                    handlerMs = p.ms
+                    handlerRunner = p.handlerRunner
+                    handler = p?.handler
+                    this._sleepQueue.splice(index)
+                    clearTimeout(p.id)
+                }
+            })
+            if (this.status === VMStatus.Stopped) return
+            if (!handlerRunner && isEveryHandler(handler)) {
+                await this._waitRunMutex.acquire(async () => {
+                    handlerRunner = this._waitQueue.find(h => h.handler === handler)
+                })
+                if (handlerRunner) {
+                    handlerRunner.gotoTop()
+                }
+            }
+            if (handlerRunner) {
+                handlerRunner.wake()
+                await this._waitRunMutex.acquire(async () => {
+                    this._runQueue.push(handlerRunner)
+                })
+            }
+            const theHandler = handlerRunner?.handler || handler
+            if (isEveryHandler(theHandler)) {
+                this.sleepAsync(undefined, handlerMs, theHandler)  // HERE
+            }
+        } catch (e) {
+            this.emit(VM_EVENT, VMCode.InternalError, e)
+        }
     }
 
     // control of VM
@@ -577,7 +615,7 @@ export class VMProgramRunner extends JDClient {
             this.roleManager.setRoles(this._roles)
             this._status = VMStatus.Running
             await this._waitRunMutex.acquire(async () => {
-                this._waitQueue = this._handlers.slice(0)
+                this._waitQueue = this._handlerRunners.slice(0)
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
             })
@@ -636,7 +674,10 @@ export class VMProgramRunner extends JDClient {
             // on handler error, reset the handler
             h.reset()
         } finally {
-            if (h.status === VMInternalStatus.Ready || h.status === VMInternalStatus.Sleeping) {
+            if (
+                h.status === VMInternalStatus.Ready ||
+                h.status === VMInternalStatus.Sleeping
+            ) {
                 await this.runToWait(h.status === VMInternalStatus.Ready)
             }
         }
@@ -644,7 +685,7 @@ export class VMProgramRunner extends JDClient {
 
     private _in_run = false
     private async runAsync() {
-        if (this._in_run) return
+        if (this.status !== VMStatus.Stopped) if (this._in_run) return
         this.trace("run")
         this._in_run = true
         try {
@@ -666,23 +707,27 @@ export class VMProgramRunner extends JDClient {
 
     // call this whenever some event/change arises
     private async waitingToRunning() {
-        await this._waitRunMutex.acquire(async () => {
-            const handlersStarted: VMHandler[] = []
-            const newRunners: number[] = []
-            let index = 0
-            for (const h of this._waitQueue) {
-                await this.runHandlerAsync(h, true)
-                if (!h.atTop && handlersStarted.findIndex(hs => hs === h.handler) === -1) {
-                    newRunners.push(index)
-                    handlersStarted.push(h.handler)
+        if (this.status !== VMStatus.Stopped)
+            await this._waitRunMutex.acquire(async () => {
+                const handlersStarted: VMHandler[] = []
+                const newRunners: number[] = []
+                let index = 0
+                for (const h of this._waitQueue) {
+                    await this.runHandlerAsync(h, true)
+                    if (
+                        !h.atTop &&
+                        handlersStarted.findIndex(hs => hs === h.handler) === -1
+                    ) {
+                        newRunners.push(index)
+                        handlersStarted.push(h.handler)
+                    }
+                    index++
                 }
-                index++
-            }
-            newRunners.forEach(i => {
-                this._runQueue.push(this._waitQueue[i])
-                this._waitQueue.splice(i)
+                newRunners.forEach(i => {
+                    this._runQueue.push(this._waitQueue[i])
+                    this._waitQueue.splice(i)
+                })
             })
-        })
         this._env.consumeEvent()
         this.runAsync()
     }
@@ -700,7 +745,7 @@ export class VMProgramRunner extends JDClient {
                 const done = this._runQueue.shift()
                 if (moveToWait) this._waitQueue.push(done)
             }
-        })   
+        })
     }
 
     private initializeRoleManagement() {
