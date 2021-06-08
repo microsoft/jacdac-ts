@@ -336,10 +336,10 @@ class VMHandlerRunner extends JDEventSource {
         if (this.commandIndex === undefined) {
             this.commandIndex = 0
         }
-        if (await this.singleStepCheckBreakAsync(singleStep) && !singleStep)
+        if ((await this.singleStepCheckBreakAsync(singleStep)) && !singleStep)
             return this._currentCommand
         while (this.next()) {
-            if (singleStep || await this.singleStepCheckBreakAsync())
+            if (singleStep || (await this.singleStepCheckBreakAsync()))
                 return this._currentCommand
         }
         return undefined
@@ -641,14 +641,18 @@ export class VMProgramRunner extends JDClient {
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
                 this._everyQueue = []
-                // make sure to have another handler for every 
-                for(const h of this._waitQueue) {
+                // make sure to have another handler for every
+                for (const h of this._waitQueue) {
                     if (isEveryHandler(h.handler)) {
-                        const dup = new VMHandlerRunner(this, undefined, this._env, h.handler)
+                        const dup = new VMHandlerRunner(
+                            this,
+                            undefined,
+                            this._env,
+                            h.handler
+                        )
                         this._everyQueue.push(dup)
                     }
                 }
-
             })
             this.setStatus(VMStatus.Running)
             this.runAsync()
@@ -689,7 +693,9 @@ export class VMProgramRunner extends JDClient {
                     VM_EVENT,
                     VMCode.Breakpoint,
                     h,
-                    brkCommand.gc?.sourceId
+                    h.status === VMInternalStatus.Completed
+                        ? ""
+                        : brkCommand.gc?.sourceId
                 )
             }
             if (h.status === VMInternalStatus.Completed) {
@@ -721,11 +727,10 @@ export class VMProgramRunner extends JDClient {
                 if (this._runQueue.length) {
                     assert(h === this._runQueue[0])
                     const done = this._runQueue.shift()
-                    if (moveToWait) { 
+                    if (moveToWait) {
                         if (isEveryHandler(done.handler))
                             this._everyQueue.push(done)
-                        else
-                            this._waitQueue.push(done)
+                        else this._waitQueue.push(done)
                     }
                 }
             })
@@ -782,7 +787,7 @@ export class VMProgramRunner extends JDClient {
                 newRunners.forEach(h => {
                     const index = this._waitQueue.indexOf(h)
                     this._runQueue.push(h)
-                    this._waitQueue.splice(index,1)
+                    this._waitQueue.splice(index, 1)
                 })
             })
             this._env.consumeEvent()
