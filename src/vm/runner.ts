@@ -603,18 +603,20 @@ export class VMProgramRunner extends JDClient {
                 const index = this._sleepQueue.findIndex(
                     p => p?.handlerRunner === h || p?.handler === h
                 )
+                assert(index>=0)
                 if (index >= 0) {
                     const p = this._sleepQueue[index]
                     handlerMs = p.ms
                     handlerRunner = p.handlerRunner
                     handler = p?.handler
                     this._sleepQueue.splice(index, 1)
-                    clearTimeout(p.id)
+                    // clearTimeout(p.id)
                 }
             })
             if (this.status === VMStatus.Stopped) return
             // this logic is to deal with starting a handler rather than a runner
             await this._waitRunMutex.acquire(async () => {
+                /*
                 if (!handlerRunner && isEveryHandler(handler)) {
                     const index = this._everyQueue.findIndex(
                         h => h.handler === handler
@@ -622,22 +624,21 @@ export class VMProgramRunner extends JDClient {
                     if (index >= 0) {
                         handlerRunner = this._everyQueue[index]
                         this._everyQueue.splice(index, 1)
-                    }
-                    if (handlerRunner) {
                         handlerRunner.gotoTop()
                     }
-                }
+                }*/
                 if (handlerRunner) {
                     // transition to the run queue
                     handlerRunner.wake()
                     this._runQueue.push(handlerRunner)
                 }
             })
+            /*
             const theHandler = handlerRunner?.handler || handler
             if (isEveryHandler(theHandler)) {
                 // setup next
                 this.sleepAsync(undefined, handlerMs, theHandler)
-            }
+            }*/
             if (handlerRunner) this.runAsync()
         } catch (e) {
             this.emit(VM_EVENT, VMCode.InternalError, e)
@@ -751,9 +752,10 @@ export class VMProgramRunner extends JDClient {
                     assert(h === this._runQueue[0])
                     const done = this._runQueue.shift()
                     if (moveToWait) {
-                        if (isEveryHandler(done.handler))
-                            this._everyQueue.push(done)
-                        else this._waitQueue.push(done)
+                        if (isEveryHandler(done.handler)) {
+                            await this.runHandlerAsync(done, true)
+                            // this._everyQueue.push(done)
+                        } else this._waitQueue.push(done)
                     }
                 }
             })
