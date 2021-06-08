@@ -788,9 +788,10 @@ export class VMProgramRunner extends JDClient {
 
     // call this whenever some event/change arises
     private async waitingToRunning() {
-        console.log("VM status: ", this.status)
+        // console.log("VM status: ", this.status)
         if (this.status !== VMStatus.Stopped) {
             await this._waitRunMutex.acquire(async () => {
+                /*
                 console.log("wait", this._waitQueue.length)
                 console.log("run", this._runQueue.length)
                 console.log("sleep", this._sleepQueue.length)
@@ -800,7 +801,7 @@ export class VMProgramRunner extends JDClient {
                     this._waitQueue.length +
                         this._runQueue.length + this._sleepQueue.length +
                         this._everyQueue.length
-                )
+                )*/
                 if (this.status === VMStatus.Paused && this._runQueue.length) {
                     return
                 }
