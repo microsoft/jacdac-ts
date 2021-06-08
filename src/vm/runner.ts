@@ -637,7 +637,7 @@ export class VMProgramRunner extends JDClient {
             h.reset()
         } finally {
             if (h.status === VMStatus.Ready || h.status === VMStatus.Sleeping) {
-                this.runToWait(h.status === VMStatus.Sleeping)
+                await this.runToWait(h.status === VMStatus.Ready)
             }
         }
     }
@@ -688,11 +688,10 @@ export class VMProgramRunner extends JDClient {
     }
 
     private async getCurrentRunner() {
-        let ret: VMHandlerRunner = undefined
-        await this._waitRunMutex.acquire(async () => {
-            if (this._runQueue.length) ret = this._runQueue[0]
+        return await this._waitRunMutex.acquire(async () => {
+            if (this._runQueue.length) return this._runQueue[0]
+            return undefined
         })
-        return ret
     }
 
     private async runToWait(moveToWait = true) {
