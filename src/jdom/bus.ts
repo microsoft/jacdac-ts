@@ -294,7 +294,7 @@ export class JDBus extends JDNode {
         return this._transports.every(t => t.disconnected)
     }
 
-    clear() {
+    clear(timestamp?: number) {
         // clear hosts
         if (this._serviceProviders?.length) {
             this._serviceProviders.forEach(host => (host.bus = undefined))
@@ -311,7 +311,7 @@ export class JDBus extends JDNode {
                 this.emit(DEVICE_CHANGE, dev)
             })
         }
-        this.resetTime()
+        this.resetTime(timestamp || 0)
     }
 
     /**
@@ -402,8 +402,8 @@ export class JDBus extends JDNode {
         return node
     }
 
-    private resetTime() {
-        this._startTime = Date.now()
+    private resetTime(delta = 0) {
+        this._startTime = Date.now() - delta
         this.emit(CHANGE)
     }
 
