@@ -751,7 +751,7 @@ export class VMProgramRunner extends JDClient {
                 if (this._runQueue.length) {
                     assert(h === this._runQueue[0])
                     done = this._runQueue.shift()
-                    if (moveToWait) {
+                    if (moveToWait && !isEveryHandler(h.handler)) {
                         this._waitQueue.push(done)
                         done = undefined
                     }
@@ -826,17 +826,6 @@ export class VMProgramRunner extends JDClient {
                         this._waitQueue.splice(index, 1)
                 })
             })
-            /*
-            console.log("wait", this._waitQueue.length)
-            console.log("run", this._runQueue.length)
-            console.log("sleep", this._sleepQueue.length)
-            console.log("every", this._everyQueue.length)
-            console.log(
-                "TOTAL",
-                this._waitQueue.length +
-                    this._runQueue.length + this._sleepQueue.length +
-                    this._everyQueue.length
-            )*/
             this._env.consumeEvent()
             this.runAsync()
         }
