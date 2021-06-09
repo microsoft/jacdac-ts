@@ -294,8 +294,6 @@ class VMHandlerRunner extends JDEventSource {
             ? VMInternalStatus.Stopped
             : this._commandIndex === undefined
             ? VMInternalStatus.Ready
-            : this._commandIndex < this.handler.commands.length - 1
-            ? VMInternalStatus.Running
             : this._currentCommand.status
     }
 
@@ -601,7 +599,7 @@ export class VMProgramRunner extends JDClient {
             // let handler: VMHandler = undefined
             await this._sleepMutex.acquire(async () => {
                 const index = this._sleepQueue.findIndex(
-                    p => p?.handlerRunner === h || p?.handler === h
+                    p => p?.handlerRunner === h // || p?.handler === h
                 )
                 assert(index>=0)
                 if (index >= 0) {
@@ -791,48 +789,54 @@ export class VMProgramRunner extends JDClient {
 
     // call this whenever some event/change arises
     private async waitingToRunning() {
-        console.log("VM status: ", this.status)
         if (this.status !== VMStatus.Stopped) {
+            let waitCopy: VMHandlerRunner[] = undefined
             await this._waitRunMutex.acquire(async () => {
-                if (this.status === VMStatus.Paused && this._runQueue.length) {
+                if (this.status === VMStatus.Paused && this._runQueue.length)
                     return
+                waitCopy = this._waitQueue.slice(0)
+            })
+            if (!waitCopy)
+                return
+            const handlersStarted: VMHandler[] = []
+            const newRunners: VMHandlerRunner[] = []
+            const sleepingRunners: VMHandlerRunner[] = []
+            for (const h of waitCopy) {
+                await this.runHandlerAsync(h, true)
+                if (h.status === VMInternalStatus.Sleeping) {
+                    sleepingRunners.push(h)
+                } else if (
+                    !h.atTop &&
+                    handlersStarted.findIndex(hs => hs === h.handler) === -1
+                ) {
+                    newRunners.push(h)
+                    handlersStarted.push(h.handler)
                 }
-                const handlersStarted: VMHandler[] = []
-                const newRunners: VMHandlerRunner[] = []
-                const sleepingRunners: VMHandlerRunner[] = []
-                for (const h of this._waitQueue) {
-                    await this.runHandlerAsync(h, true)
-                    console.log("h.status", h.status)
-                    if (h.status === VMInternalStatus.Sleeping) {
-                        sleepingRunners.push(h)
-                    } else if (
-                        !h.atTop &&
-                        handlersStarted.findIndex(hs => hs === h.handler) === -1
-                    ) {
-                        newRunners.push(h)
-                        handlersStarted.push(h.handler)
-                    }
-                }
+            }
+            await this._waitRunMutex.acquire(async () => {
                 newRunners.forEach(h => {
-                    const index = this._waitQueue.indexOf(h)
                     this._runQueue.push(h)
-                    this._waitQueue.splice(index, 1)
+                    const index = this._waitQueue.indexOf(h)
+                    if (index >= 0)
+                        this._waitQueue.splice(index, 1)
                 })
                 sleepingRunners.forEach(h => {
                     const index = this._waitQueue.indexOf(h)
-                    this._waitQueue.splice(index, 1)
+                    if (index >= 0)
+                        this._waitQueue.splice(index, 1)
                 })
-                console.log("wait", this._waitQueue.length)
-                console.log("run", this._runQueue.length)
-                console.log("sleep", this._sleepQueue.length)
-                console.log("every", this._everyQueue.length)
-                console.log(
-                    "TOTAL",
-                    this._waitQueue.length +
-                        this._runQueue.length + this._sleepQueue.length +
-                        this._everyQueue.length
-                )
             })
+            /*
+            console.log("wait", this._waitQueue.length)
+            console.log("run", this._runQueue.length)
+            console.log("sleep", this._sleepQueue.length)
+            console.log("every", this._everyQueue.length)
+            console.log(
+                "TOTAL",
+                this._waitQueue.length +
+                    this._runQueue.length + this._sleepQueue.length +
+                    this._everyQueue.length
+            )*/
             this._env.consumeEvent()
             this.runAsync()
         }
