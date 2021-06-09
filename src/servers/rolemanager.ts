@@ -1,5 +1,11 @@
 import { JDEventSource } from "../jdom/eventsource"
-import { CHANGE, DEVICE_ANNOUNCE, DEVICE_DISCONNECT, ROLE_BOUND, ROLE_UNBOUND } from "../jdom/constants"
+import {
+    CHANGE,
+    DEVICE_ANNOUNCE,
+    DEVICE_DISCONNECT,
+    ROLE_BOUND,
+    ROLE_UNBOUND,
+} from "../jdom/constants"
 import { JDBus } from "../jdom/bus"
 import { JDDevice } from "../jdom/device"
 import { JDService } from "../jdom/service"
@@ -123,6 +129,7 @@ export default class RoleManager extends JDEventSource {
                 this.emit(ROLE_UNBOUND, r.role)
                 changed = true
             })
+        this.bindServices()
         if (changed) this.emit(CHANGE)
     }
 
