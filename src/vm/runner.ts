@@ -641,6 +641,7 @@ export class VMProgramRunner extends JDClient {
             }*/
             if (handlerRunner) this.runAsync()
         } catch (e) {
+            console.debug(e)
             this.emit(VM_EVENT, VMCode.InternalError, e)
         }
     }
@@ -674,6 +675,7 @@ export class VMProgramRunner extends JDClient {
             this.waitingToRunning()
             this.runAsync()
         } catch (e) {
+            console.debug(e)
             this.emit(VM_EVENT, VMCode.InternalError, e)
         }
     }
@@ -734,6 +736,7 @@ export class VMProgramRunner extends JDClient {
                     (e as VMRoleNoServiceException).role
                 )
             } else {
+                console.debug(e)
                 this.emit(VM_EVENT, VMCode.InternalError, e)
             }
             // on handler error, reset the handler
@@ -780,6 +783,7 @@ export class VMProgramRunner extends JDClient {
                 await this.postProcessHandler(h)
             }
         } catch (e) {
+            console.debug(e)
             this.emit(VM_EVENT, VMCode.InternalError, e)
         }
         this._in_run = false
