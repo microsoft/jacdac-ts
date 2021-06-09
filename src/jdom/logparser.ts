@@ -112,5 +112,6 @@ export function replayLog(bus: JDBus, frames: Frame[], speed?: number): void {
     )
     const player = new TracePlayer(bus, speed)
     player.trace = new Trace(packets)
+    bus.clear(packets[0].timestamp)
     player.start()
 }
