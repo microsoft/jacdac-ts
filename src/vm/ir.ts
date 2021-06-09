@@ -25,6 +25,9 @@ export interface VMHandler {
     commands: VMBase[]
     roles?: string[]
     errors?: VMError[]
+    // this handler support the editing experience but
+    // should not be compiled down or debugged
+    meta?: boolean
 }
 
 export interface VMRole {
