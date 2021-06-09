@@ -463,7 +463,7 @@ function frameToPackets(frame: Uint8Array, timestamp: number) {
                 frame.slice(0, 12),
                 frame.slice(ptr, ptr + psz)
             )
-            if (ptr + sz > 12 + frame[2])
+            if (ptr + psz > 12 + frame[2])
                 warn(
                     `${timestamp}ms: invalid frame compression, res len=${res.length}`
                 )
