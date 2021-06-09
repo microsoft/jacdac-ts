@@ -67,13 +67,16 @@ export default class AzureIoTHubServer extends JDServiceServer {
     }
 
     handleSendMessage(pkt: Packet) {
-        const [body] = pkt.jdunpack<[string]>("s")
-        this.messages.push({
-            timestamp: this.device.bus.timestamp,
-            body,
-        })
-        while (this.messages.length > this.maxMessages) this.messages.shift
-
-        this.emit(CHANGE)
+        const [state] = this.connectionStatus.values()
+        if (state === "ok") {
+            const [body] = pkt.jdunpack<[string]>("s")
+            this.messages.push({
+                timestamp: this.device.bus.timestamp,
+                body,
+            })
+            while (this.messages.length > this.maxMessages) this.messages.shift
+            this.emit(CHANGE)
+        }
+        // todo send report
     }
 }
