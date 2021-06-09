@@ -592,6 +592,15 @@ export class VMProgramRunner extends JDClient {
         })
     }
 
+    private async stopSleepers() {
+        await this._sleepMutex.acquire(async () => {
+            for (const s of this._sleepQueue) {
+                clearTimeout(s.id)
+            }
+            this._sleepQueue = []
+        })
+    }
+
     private async wakeSleeper(h: VMHandlerRunner | VMHandler) {
         try {
             // let handlerMs: number = undefined
@@ -601,7 +610,7 @@ export class VMProgramRunner extends JDClient {
                 const index = this._sleepQueue.findIndex(
                     p => p?.handlerRunner === h // || p?.handler === h
                 )
-                assert(index>=0)
+                assert(index >= 0)
                 if (index >= 0) {
                     const p = this._sleepQueue[index]
                     //  handlerMs = p.ms
@@ -654,6 +663,7 @@ export class VMProgramRunner extends JDClient {
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
                 this._everyQueue = []
+                this.stopSleepers()
                 // make sure to have another handler for every
                 /*
                 for (const h of this._waitQueue) {
@@ -760,7 +770,11 @@ export class VMProgramRunner extends JDClient {
                     }
                 }
             })
-            if (done && h.status === VMInternalStatus.Ready && isEveryHandler(h.handler)) {
+            if (
+                done &&
+                h.status === VMInternalStatus.Ready &&
+                isEveryHandler(h.handler)
+            ) {
                 await this.runHandlerAsync(h)
             }
         }
@@ -800,8 +814,7 @@ export class VMProgramRunner extends JDClient {
                     return
                 waitCopy = this._waitQueue.slice(0)
             })
-            if (!waitCopy)
-                return
+            if (!waitCopy) return
             const handlersStarted: VMHandler[] = []
             const newRunners: VMHandlerRunner[] = []
             const sleepingRunners: VMHandlerRunner[] = []
@@ -821,13 +834,11 @@ export class VMProgramRunner extends JDClient {
                 newRunners.forEach(h => {
                     this._runQueue.push(h)
                     const index = this._waitQueue.indexOf(h)
-                    if (index >= 0)
-                        this._waitQueue.splice(index, 1)
+                    if (index >= 0) this._waitQueue.splice(index, 1)
                 })
                 sleepingRunners.forEach(h => {
                     const index = this._waitQueue.indexOf(h)
-                    if (index >= 0)
-                        this._waitQueue.splice(index, 1)
+                    if (index >= 0) this._waitQueue.splice(index, 1)
                 })
             })
             this._env.consumeEvent()
