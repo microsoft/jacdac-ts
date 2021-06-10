@@ -653,7 +653,6 @@ export class VMProgramRunner extends JDClient {
         this.trace("step")
         const h = await this.getCurrentRunner()
         if (h) {
-            console.log("trying to step")
             await this.runHandlerAsync(h, true)
             await this.postProcessHandler(h)
             const newHead = await this.getCurrentRunner()
@@ -705,7 +704,6 @@ export class VMProgramRunner extends JDClient {
             if ((brkCommand && !oneStep) || this.status === VMStatus.Paused) {
                 this.setStatus(VMStatus.Paused)
                 this.emitBreakpoint(h)
-                console.log("BRK", h.status)
             }
             if (h.status === VMInternalStatus.Completed) {
                 h.reset()
@@ -843,7 +841,6 @@ export class VMProgramRunner extends JDClient {
                     }
                 }*/
                 if (handlerRunner) {
-                    console.log("Wake", handlerRunner.command)
                     // transition to the run queue
                     handlerRunner.wake()
                     this._runQueue.push(handlerRunner)
