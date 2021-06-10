@@ -16,6 +16,7 @@ export interface AzureIoTHubServerOptions extends ServerOptions {
 }
 
 export class AzureIoTHubMessage {
+    counter: number
     timestamp: number
     body: string
 }
@@ -29,6 +30,8 @@ export default class AzureIoTHubServer extends JDServiceServer {
     readonly deviceToCloudMessages: AzureIoTHubMessage[] = []
     readonly cloudToDeviceMessages: AzureIoTHubMessage[] = []
     autoConnect = true
+    private cdCounter = 0
+    private dcCounter = 0
 
     constructor(options?: AzureIoTHubServerOptions) {
         super(SRV_AZURE_IOT_HUB, options)
@@ -82,6 +85,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
         }
 
         this.cloudToDeviceMessages.unshift({
+            counter: this.cdCounter++,
             timestamp: this.device.bus.timestamp,
             body,
         })
@@ -99,6 +103,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
 
         const [body] = pkt.jdunpack<[string]>("s")
         this.deviceToCloudMessages.unshift({
+            counter: this.dcCounter++,
             timestamp: this.device.bus.timestamp,
             body,
         })
