@@ -11,6 +11,7 @@ import {
     SERVICE_CLIENT_REMOVED,
     CHANGE,
     ROLE_CHANGE,
+    COMMAND_RECEIVE,
 } from "./constants"
 import { JDNode } from "./node"
 import {
@@ -21,6 +22,7 @@ import {
     isValue,
     isIntensity,
     isOptionalReadingRegisterCode,
+    isConstRegister,
 } from "./spec"
 import { JDEvent } from "./event"
 import { delay, strcmp } from "./utils"
@@ -348,6 +350,15 @@ export class JDService extends JDNode {
             const id = pkt.registerIdentifier
             const reg = this.register(id)
             if (reg) reg.processPacket(pkt)
+        } else if (pkt.isCommand) {
+            this.emitPropagated(COMMAND_RECEIVE, pkt)
+            // invalidate registers
+            console.log("invalid register get", { service: this })
+            this.registers()
+                .filter(
+                    r => r.specification && !isConstRegister(r.specification)
+                )
+                .forEach(r => r.clearGetTimestamp())
         }
     }
 

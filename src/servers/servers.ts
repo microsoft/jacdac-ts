@@ -85,7 +85,7 @@ import ProtocolTestServer from "../jdom/protocoltestserver"
 import JDServiceServer from "../jdom/serviceserver"
 import ButtonServer from "./buttonserver"
 import BuzzerServer from "./buzzerserver"
-import CharacterScreenServer from "./characterserver"
+import CharacterScreenServer from "./characterscreenserver"
 import HumidityServer from "./humidityserver"
 import JoystickServer, {
     JOYSTICK_ARCADE_BUTTONS,
