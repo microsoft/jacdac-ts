@@ -297,6 +297,9 @@ export class JDService extends JDNode {
         if (pkt.requiresAck) await this.device.sendPktWithAck(pkt)
         else await pkt.sendCmdAsync(this.device)
         this.emit(PACKET_SEND, pkt)
+
+        // invalid register after a command call to refresh their values asap
+        if (pkt.isCommand) this.invalidateRegisterValues()
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
@@ -350,16 +353,14 @@ export class JDService extends JDNode {
             const id = pkt.registerIdentifier
             const reg = this.register(id)
             if (reg) reg.processPacket(pkt)
-        } else if (pkt.isCommand) {
-            this.emitPropagated(COMMAND_RECEIVE, pkt)
-            // invalidate registers
-            console.log("invalid register get", { service: this })
-            this.registers()
-                .filter(
-                    r => r.specification && !isConstRegister(r.specification)
-                )
-                .forEach(r => r.clearGetTimestamp())
         }
+    }
+
+    private invalidateRegisterValues() {
+        console.log(`clearing register get timestamp`)
+        this.registers()
+            .filter(r => r.specification && !isConstRegister(r.specification))
+            .forEach(r => r.clearGetTimestamp())
     }
 
     compareTo(b: JDService): number {
