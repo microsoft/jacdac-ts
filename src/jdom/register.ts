@@ -57,6 +57,10 @@ export class JDRegister extends JDServiceMemberNode {
         return this._lastGetTimestamp
     }
 
+    clearGetTimestamp() {
+        this._lastGetTimestamp = -Infinity
+    }
+
     get lastGetAttempts() {
         return this._lastGetAttempts
     }
@@ -210,7 +214,7 @@ export class JDRegister extends JDServiceMemberNode {
             // another device sent a set packet to this register
             // so most likely it's value changed
             // clear any data caching to force updating the value
-            this._lastGetTimestamp = -Infinity
+            this.clearGetTimestamp()
         }
     }
 

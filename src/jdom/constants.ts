@@ -123,6 +123,7 @@ export const PACKET_DATA_NORMALIZE = "packetDataNormalize"
 
 export const REPORT_RECEIVE = "reportReceive"
 export const REPORT_UPDATE = "reportUpdate"
+export const COMMAND_RECEIVE = "commandReceive"
 
 export const ERROR = "error"
 export const TRACE = "trace"
