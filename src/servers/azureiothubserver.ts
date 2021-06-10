@@ -8,6 +8,7 @@ import {
 import JDServiceServer, { ServerOptions } from "../jdom/serviceserver"
 import RegisterServer from "../jdom/registerserver"
 import Packet from "../jdom/packet"
+import { jdpack } from "../jdom/pack"
 
 export interface AzureIoTHubServerOptions extends ServerOptions {
     hubName?: string
@@ -55,6 +56,13 @@ export default class AzureIoTHubServer extends JDServiceServer {
         // send change event when status changes
         this.connectionStatus.on(CHANGE, () =>
             this.sendEvent(AzureIotHubEvent.Change)
+        )
+    }
+
+    emitMessage(message: string) {
+        this.sendEvent(
+            AzureIotHubEvent.Message,
+            jdpack<[string]>("s", [message])
         )
     }
 
