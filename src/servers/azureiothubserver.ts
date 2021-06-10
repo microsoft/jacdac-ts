@@ -24,7 +24,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
     readonly deviceId: RegisterServer<[string]>
     readonly connectionStatus: RegisterServer<[string]>
 
-    maxMessages = 100
+    maxMessages = 10
     readonly messages: AzureIoTMessage[] = []
 
     constructor(options?: AzureIoTHubServerOptions) {
@@ -70,11 +70,11 @@ export default class AzureIoTHubServer extends JDServiceServer {
         const [state] = this.connectionStatus.values()
         if (state === "ok") {
             const [body] = pkt.jdunpack<[string]>("s")
-            this.messages.push({
+            this.messages.unshift({
                 timestamp: this.device.bus.timestamp,
                 body,
             })
-            while (this.messages.length > this.maxMessages) this.messages.shift
+            while (this.messages.length > this.maxMessages) this.messages.pop()
             this.emit(CHANGE)
         }
         // todo send report
