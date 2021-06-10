@@ -10,7 +10,6 @@ import {
     uint8ArrayToString,
     read16,
     toHex,
-    read32,
     toArray,
     hexNum,
     isSet,
@@ -335,7 +334,6 @@ function syntheticPktInfo(
             {
                 name: "_",
                 type: "bytes",
-                unit: "",
                 storage: 0,
             },
         ],

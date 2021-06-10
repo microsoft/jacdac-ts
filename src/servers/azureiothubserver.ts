@@ -15,7 +15,7 @@ export interface AzureIoTHubServerOptions extends ServerOptions {
     deviceId?: string
 }
 
-export class AzureIoTMessage {
+export class AzureIoTHubMessage {
     timestamp: number
     body: string
 }
@@ -26,7 +26,8 @@ export default class AzureIoTHubServer extends JDServiceServer {
     readonly connectionStatus: RegisterServer<[string]>
 
     maxMessages = 10
-    readonly messages: AzureIoTMessage[] = []
+    readonly deviceToCloudMessages: AzureIoTHubMessage[] = []
+    readonly cloudToDeviceMessages: AzureIoTHubMessage[] = []
 
     constructor(options?: AzureIoTHubServerOptions) {
         super(SRV_AZURE_IOT_HUB, options)
@@ -54,16 +55,29 @@ export default class AzureIoTHubServer extends JDServiceServer {
         )
 
         // send change event when status changes
-        this.connectionStatus.on(CHANGE, () =>
-            this.sendEvent(AzureIotHubEvent.Change)
-        )
+        this.connectionStatus.on(CHANGE, () => {
+            const [status] = this.connectionStatus.values()
+            if (status === "ok") this.sendEvent(AzureIotHubEvent.Connected)
+            else this.sendEvent(AzureIotHubEvent.Disconnected)
+        })
     }
 
-    emitMessage(message: string) {
-        this.sendEvent(
-            AzureIotHubEvent.Message,
-            jdpack<[string]>("s", [message])
-        )
+    emitMessage(body: string) {
+        if (!this.connected) return
+
+        this.cloudToDeviceMessages.unshift({
+            timestamp: this.device.bus.timestamp,
+            body,
+        })
+        while (this.cloudToDeviceMessages.length > this.maxMessages)
+            this.cloudToDeviceMessages.pop()
+        this.emit(CHANGE)
+        this.sendEvent(AzureIotHubEvent.Message, jdpack<[string]>("s", [body]))
+    }
+
+    get connected() {
+        const [state] = this.connectionStatus.values()
+        return state === "ok"
     }
 
     async handleConnect() {
@@ -75,16 +89,16 @@ export default class AzureIoTHubServer extends JDServiceServer {
     }
 
     handleSendMessage(pkt: Packet) {
-        const [state] = this.connectionStatus.values()
-        if (state === "ok") {
-            const [body] = pkt.jdunpack<[string]>("s")
-            this.messages.unshift({
-                timestamp: this.device.bus.timestamp,
-                body,
-            })
-            while (this.messages.length > this.maxMessages) this.messages.pop()
-            this.emit(CHANGE)
-        }
+        if (!this.connected) return
+
+        const [body] = pkt.jdunpack<[string]>("s")
+        this.deviceToCloudMessages.unshift({
+            timestamp: this.device.bus.timestamp,
+            body,
+        })
+        while (this.deviceToCloudMessages.length > this.maxMessages)
+            this.deviceToCloudMessages.pop()
+        this.emit(CHANGE)
         // todo send report
     }
 }
