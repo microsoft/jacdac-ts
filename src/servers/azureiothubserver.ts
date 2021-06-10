@@ -48,7 +48,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
         )
         this.addCommand(AzureIotHubCmd.Connect, this.handleConnect.bind(this))
         this.addCommand(
-            AzureIotHubCmd.Connect,
+            AzureIotHubCmd.Disconnect,
             this.handleDisconnect.bind(this)
         )
 
@@ -58,7 +58,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
         )
     }
 
-    handleConnect() {
+    async handleConnect() {
         this.connectionStatus.setValues(["ok"])
     }
 
