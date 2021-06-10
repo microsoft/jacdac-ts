@@ -25,18 +25,20 @@ enum VMInternalStatus {
 
 const VM_WAKE_SLEEPER = "vmWakeSleeper"
 
+export type atomic = string | boolean | number
+
 export interface VMEnvironmentInterface {
     writeRegisterAsync: (
         e: jsep.MemberExpression | string,
-        v: any
+        v: atomic
     ) => Promise<void>
     sendCommandAsync: (
         command: jsep.MemberExpression,
-        values: any[]
+        values: atomic[]
     ) => Promise<void>
     refreshRegistersAsync: () => Promise<void>
-    lookup: (e: jsep.MemberExpression | string) => any
-    writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
+    lookup: (e: jsep.MemberExpression | string) => atomic
+    writeLocal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     unsubscribe: () => void
 }

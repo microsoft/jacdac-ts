@@ -9,7 +9,7 @@ import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 
 import { RoleRegister, RoleEvent } from "./compile"
-import { VMEnvironmentInterface } from "./runner"
+import { VMEnvironmentInterface, atomic } from "./runner"
 
 export enum VMEnvironmentCode {
     RoleNoService = "vmEnvRoleNoService",
@@ -73,14 +73,13 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public async writeRegisterAsync(regName: string, ev: any) {
+    public async writeRegisterAsync(regName: string, ev: atomic) {
         const register = this._registers[regName]
         if (register.code === SystemReg.Value) await this.setEnabled()
         await this.writeRegAsync(this._registers[regName], ev)
     }
 
-    private async writeRegAsync(jdreg: JDRegister, ev: any) {
+    private async writeRegAsync(jdreg: JDRegister, ev: atomic) {
         await jdreg?.sendSetPackedAsync(
             jdreg.specification?.packFormat,
             [ev],
@@ -96,8 +95,7 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public lookup(e: jsep.MemberExpression | jsep.Identifier | string): any {
+    public lookup(e: jsep.MemberExpression | jsep.Identifier | string): atomic {
         const root =
             typeof e === "string"
                 ? e
@@ -135,7 +133,7 @@ export class VMServiceEnvironment extends JDServiceClient {
 
 interface GlobalVariable {
     type: "number" | "boolean" | "string"
-    value: number | boolean | string
+    value: atomic
 }
 
 export class VMEnvironment
@@ -236,10 +234,9 @@ export class VMEnvironment
         )
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(
         e: jsep.MemberExpression | string
-    ): string | boolean | number {
+    ): atomic {
         const roleName = this.getRootName(e)
         if (roleName === "$") {
             const me = e as jsep.MemberExpression
