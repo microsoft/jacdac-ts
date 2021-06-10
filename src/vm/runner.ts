@@ -335,7 +335,8 @@ class VMHandlerRunner extends JDEventSource {
         }
     }
 
-    // run-to-completion semantics (true if breakpoint)
+    // run-to-completion semantics
+    // returns command if breakpoint encountered when not single stepping
     async runToCompletionAsync(singleStep = false) {
         if (this.stopped || !this.handler.commands.length) return undefined
         if (this.commandIndex === undefined) {
@@ -703,6 +704,7 @@ export class VMProgramRunner extends JDClient {
             if ((brkCommand && !oneStep) || this.status === VMStatus.Paused) {
                 this.setStatus(VMStatus.Paused)
                 this.emitBreakpoint(h)
+                console.log("BRK", h.status)
             }
             if (h.status === VMInternalStatus.Completed) {
                 h.reset()
@@ -730,14 +732,13 @@ export class VMProgramRunner extends JDClient {
         ) {
             let done: VMHandlerRunner = undefined
             await this._waitRunMutex.acquire(async () => {
-                if (this._runQueue.length) {
-                    assert(h === this._runQueue[0])
-                    done = this._runQueue.shift()
-                    const moveToWait = h.status === VMInternalStatus.Ready
-                    if (moveToWait && !isEveryHandler(h.handler)) {
-                        this._waitQueue.push(done)
-                        done = undefined
-                    }
+                assert(!!this._runQueue.length)
+                assert(h === this._runQueue[0])
+                done = this._runQueue.shift()
+                const moveToWait = h.status === VMInternalStatus.Ready
+                if (moveToWait && !isEveryHandler(h.handler)) {
+                    this._waitQueue.push(done)
+                    done = undefined
                 }
             })
             if (
@@ -791,32 +792,6 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
-    private initializeRoleManagement() {
-        // adding a (role,service) binding
-        const addRoleService = (role: string) => {
-            const service = this.roleManager.getService(role)
-            if (service) {
-                this._env.serviceChanged(role, service)
-            }
-        }
-        // initialize
-        this.roleManager.roles.forEach(r => {
-            if (this._roles.find(rv => rv.role === r.role)) {
-                addRoleService(r.role)
-            }
-        })
-        this.mount(
-            this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
-                addRoleService(role)
-            })
-        )
-        this.mount(
-            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
-                this._env.serviceChanged(role, undefined)
-            })
-        )
-    }
-
     private async stopSleepers() {
         await this._sleepMutex.acquire(async () => {
             for (const s of this._sleepQueue) {
@@ -860,6 +835,7 @@ export class VMProgramRunner extends JDClient {
                     }
                 }*/
                 if (handlerRunner) {
+                    console.log("Wake", handlerRunner.command)
                     // transition to the run queue
                     handlerRunner.wake()
                     this._runQueue.push(handlerRunner)
@@ -871,10 +847,42 @@ export class VMProgramRunner extends JDClient {
                 // setup next
                 this.sleepAsync(undefined, handlerMs, theHandler)
             }*/
-            if (handlerRunner) this.runAsync()
+            if (handlerRunner) {
+                if (this.status === VMStatus.Running)
+                    this.runAsync()
+                else if (this.status === VMStatus.Paused) {
+                    this.stepAsync()
+                }
+            }
         } catch (e) {
             console.debug(e)
             this.emit(VM_EVENT, VMCode.InternalError, e)
         }
+    }
+
+    private initializeRoleManagement() {
+        // adding a (role,service) binding
+        const addRoleService = (role: string) => {
+            const service = this.roleManager.getService(role)
+            if (service) {
+                this._env.serviceChanged(role, service)
+            }
+        }
+        // initialize
+        this.roleManager.roles.forEach(r => {
+            if (this._roles.find(rv => rv.role === r.role)) {
+                addRoleService(r.role)
+            }
+        })
+        this.mount(
+            this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
+                addRoleService(role)
+            })
+        )
+        this.mount(
+            this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
+                this._env.serviceChanged(role, undefined)
+            })
+        )
     }
 }
