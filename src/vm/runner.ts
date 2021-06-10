@@ -294,6 +294,9 @@ class VMHandlerRunner extends JDEventSource {
             ? VMInternalStatus.Stopped
             : this._commandIndex === undefined
             ? VMInternalStatus.Ready
+            : this._currentCommand.status === VMInternalStatus.Completed &&
+              this._commandIndex < this.handler.commands.length - 1
+            ? VMInternalStatus.Running
             : this._currentCommand.status
     }
 
@@ -332,7 +335,8 @@ class VMHandlerRunner extends JDEventSource {
         }
     }
 
-    // run-to-completion semantics (true if breakpoint)
+    // run-to-completion semantics
+    // returns command if breakpoint encountered when not single stepping
     async runToCompletionAsync(singleStep = false) {
         if (this.stopped || !this.handler.commands.length) return undefined
         if (this.commandIndex === undefined) {
@@ -538,7 +542,6 @@ export class VMProgramRunner extends JDClient {
         this.emit(TRACE, { message, context })
     }
 
-    // watch statement - watch an expression
     watch(sourceId: string, value: WatchValueType) {
         const oldValue = this._watch[sourceId]
         if (oldValue !== value) {
@@ -551,7 +554,6 @@ export class VMProgramRunner extends JDClient {
         return this._watch[sourceId]
     }
 
-    // breakpoints
     async setBreakpointsAsync(breaks: string[]) {
         await this._breaksMutex.acquire(async () => {
             this._breaks = {}
@@ -575,73 +577,19 @@ export class VMProgramRunner extends JDClient {
         return ret
     }
 
-    // timers
+    // utility called by handlerRunner
     async sleepAsync(
-        handlerRunner: VMHandlerRunner,
+        h: VMHandlerRunner,
         ms: number,
         handler: VMHandler = undefined
     ) {
+        assert(h.status === VMInternalStatus.Sleeping)
         await this._sleepMutex.acquire(async () => {
             const id = setTimeout(() => {
-                this.emit(
-                    VM_WAKE_SLEEPER,
-                    handlerRunner ? handlerRunner : handler
-                )
+                this.emit(VM_WAKE_SLEEPER, h ? h : handler)
             }, ms)
-            this._sleepQueue.push({ ms, handlerRunner, id, handler })
+            this._sleepQueue.push({ ms, handlerRunner: h, id, handler })
         })
-    }
-
-    private async wakeSleeper(h: VMHandlerRunner | VMHandler) {
-        try {
-            // let handlerMs: number = undefined
-            let handlerRunner: VMHandlerRunner = undefined
-            // let handler: VMHandler = undefined
-            await this._sleepMutex.acquire(async () => {
-                const index = this._sleepQueue.findIndex(
-                    p => p?.handlerRunner === h // || p?.handler === h
-                )
-                assert(index>=0)
-                if (index >= 0) {
-                    const p = this._sleepQueue[index]
-                    //  handlerMs = p.ms
-                    handlerRunner = p.handlerRunner
-                    // handler = p?.handler
-                    this._sleepQueue.splice(index, 1)
-                    // clearTimeout(p.id)
-                }
-            })
-            if (this.status === VMStatus.Stopped) return
-            // this logic is to deal with starting a handler rather than a runner
-            await this._waitRunMutex.acquire(async () => {
-                /*
-                if (!handlerRunner && isEveryHandler(handler)) {
-                    const index = this._everyQueue.findIndex(
-                        h => h.handler === handler
-                    )
-                    if (index >= 0) {
-                        handlerRunner = this._everyQueue[index]
-                        this._everyQueue.splice(index, 1)
-                        handlerRunner.gotoTop()
-                    }
-                }*/
-                if (handlerRunner) {
-                    // transition to the run queue
-                    handlerRunner.wake()
-                    this._runQueue.push(handlerRunner)
-                }
-            })
-            /*
-            const theHandler = handlerRunner?.handler || handler
-            if (isEveryHandler(theHandler)) {
-                // setup next
-                this.sleepAsync(undefined, handlerMs, theHandler)
-            }*/
-            if (handlerRunner) this.runAsync()
-        } catch (e) {
-            console.debug(e)
-            this.emit(VM_EVENT, VMCode.InternalError, e)
-        }
     }
 
     async startAsync() {
@@ -654,6 +602,7 @@ export class VMProgramRunner extends JDClient {
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
                 this._everyQueue = []
+                this.stopSleepers()
                 // make sure to have another handler for every
                 /*
                 for (const h of this._waitQueue) {
@@ -692,6 +641,13 @@ export class VMProgramRunner extends JDClient {
         await this.runAsync()
     }
 
+    private async getCurrentRunner() {
+        return await this._waitRunMutex.acquire(async () => {
+            if (this._runQueue.length) return this._runQueue[0]
+            return undefined
+        })
+    }
+
     async stepAsync() {
         if (this.status !== VMStatus.Paused) return
         this.trace("step")
@@ -704,6 +660,31 @@ export class VMProgramRunner extends JDClient {
                 this.emitBreakpoint(newHead)
             }
         }
+    }
+
+    private _in_run = false
+    private async runAsync() {
+        if (this.status === VMStatus.Stopped) return
+        if (this._in_run) return
+        this.trace("run")
+        this._in_run = true
+        try {
+            await this._env.refreshRegistersAsync()
+            let h: VMHandlerRunner = undefined
+            while (
+                this.status === VMStatus.Running &&
+                (h = await this.getCurrentRunner())
+            ) {
+                assert(!h.atTop)
+                await this.runHandlerAsync(h)
+                await this.postProcessHandler(h)
+            }
+        } catch (e) {
+            console.debug(e)
+            this.emit(VM_EVENT, VMCode.InternalError, e)
+        }
+        this._in_run = false
+        this.trace("run end")
     }
 
     private emitBreakpoint(h: VMHandlerRunner) {
@@ -748,47 +729,32 @@ export class VMProgramRunner extends JDClient {
             h.status === VMInternalStatus.Ready ||
             h.status === VMInternalStatus.Sleeping
         ) {
-            const moveToWait = h.status === VMInternalStatus.Ready
             let done: VMHandlerRunner = undefined
             await this._waitRunMutex.acquire(async () => {
-                if (this._runQueue.length) {
-                    assert(h === this._runQueue[0])
-                    done = this._runQueue.shift()
-                    if (moveToWait && !isEveryHandler(h.handler)) {
-                        this._waitQueue.push(done)
-                        done = undefined
-                    }
+                assert(!!this._runQueue.length)
+                assert(h === this._runQueue[0])
+                done = this._runQueue.shift()
+                const moveToWait = h.status === VMInternalStatus.Ready
+                if (moveToWait && !isEveryHandler(h.handler)) {
+                    this._waitQueue.push(done)
+                    done = undefined
                 }
             })
-            if (done && h.status === VMInternalStatus.Ready && isEveryHandler(h.handler)) {
-                await this.runHandlerAsync(h)
-            }
-        }
-    }
-
-    private _in_run = false
-    private async runAsync() {
-        if (this.status === VMStatus.Stopped) return
-        if (this._in_run) return
-        this.trace("run")
-        this._in_run = true
-        try {
-            await this._env.refreshRegistersAsync()
-            let h: VMHandlerRunner = undefined
-            while (
-                this.status === VMStatus.Running &&
-                (h = await this.getCurrentRunner())
+            if (
+                done &&
+                h.status === VMInternalStatus.Ready &&
+                isEveryHandler(h.handler)
             ) {
-                assert(!h.atTop)
-                await this.runHandlerAsync(h)
-                await this.postProcessHandler(h)
+                if (this.status === VMStatus.Running)
+                    await this.runHandlerAsync(h)
+                else if (this.status === VMStatus.Paused) {
+                    await this._waitRunMutex.acquire(async () => {
+                        this._runQueue.unshift(h)
+                        // this.emitBreakpoint(h)
+                    })
+                }
             }
-        } catch (e) {
-            console.debug(e)
-            this.emit(VM_EVENT, VMCode.InternalError, e)
         }
-        this._in_run = false
-        this.trace("run end")
     }
 
     // call this whenever some event/change arises
@@ -800,8 +766,7 @@ export class VMProgramRunner extends JDClient {
                     return
                 waitCopy = this._waitQueue.slice(0)
             })
-            if (!waitCopy)
-                return
+            if (!waitCopy) return
             const handlersStarted: VMHandler[] = []
             const newRunners: VMHandlerRunner[] = []
             const sleepingRunners: VMHandlerRunner[] = []
@@ -821,13 +786,11 @@ export class VMProgramRunner extends JDClient {
                 newRunners.forEach(h => {
                     this._runQueue.push(h)
                     const index = this._waitQueue.indexOf(h)
-                    if (index >= 0)
-                        this._waitQueue.splice(index, 1)
+                    if (index >= 0) this._waitQueue.splice(index, 1)
                 })
                 sleepingRunners.forEach(h => {
                     const index = this._waitQueue.indexOf(h)
-                    if (index >= 0)
-                        this._waitQueue.splice(index, 1)
+                    if (index >= 0) this._waitQueue.splice(index, 1)
                 })
             })
             this._env.consumeEvent()
@@ -835,11 +798,71 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
-    private async getCurrentRunner() {
-        return await this._waitRunMutex.acquire(async () => {
-            if (this._runQueue.length) return this._runQueue[0]
-            return undefined
+    private async stopSleepers() {
+        await this._sleepMutex.acquire(async () => {
+            for (const s of this._sleepQueue) {
+                clearTimeout(s.id)
+            }
+            this._sleepQueue = []
         })
+    }
+
+    private async wakeSleeper(h: VMHandlerRunner | VMHandler) {
+        try {
+            // let handlerMs: number = undefined
+            let handlerRunner: VMHandlerRunner = undefined
+            // let handler: VMHandler = undefined
+            await this._sleepMutex.acquire(async () => {
+                const index = this._sleepQueue.findIndex(
+                    p => p?.handlerRunner === h // || p?.handler === h
+                )
+                assert(index >= 0)
+                if (index >= 0) {
+                    const p = this._sleepQueue[index]
+                    //  handlerMs = p.ms
+                    handlerRunner = p.handlerRunner
+                    // handler = p?.handler
+                    this._sleepQueue.splice(index, 1)
+                    // clearTimeout(p.id)
+                }
+            })
+            if (this.status === VMStatus.Stopped) return
+            // this logic is to deal with starting a handler rather than a runner
+            await this._waitRunMutex.acquire(async () => {
+                /*
+                if (!handlerRunner && isEveryHandler(handler)) {
+                    const index = this._everyQueue.findIndex(
+                        h => h.handler === handler
+                    )
+                    if (index >= 0) {
+                        handlerRunner = this._everyQueue[index]
+                        this._everyQueue.splice(index, 1)
+                        handlerRunner.gotoTop()
+                    }
+                }*/
+                if (handlerRunner) {
+                    // transition to the run queue
+                    handlerRunner.wake()
+                    this._runQueue.push(handlerRunner)
+                }
+            })
+            /*
+            const theHandler = handlerRunner?.handler || handler
+            if (isEveryHandler(theHandler)) {
+                // setup next
+                this.sleepAsync(undefined, handlerMs, theHandler)
+            }*/
+            if (handlerRunner) {
+                if (this.status === VMStatus.Running)
+                    this.runAsync()
+                else if (this.status === VMStatus.Paused) {
+                    this.emitBreakpoint(await this.getCurrentRunner())
+                }
+            }
+        } catch (e) {
+            console.debug(e)
+            this.emit(VM_EVENT, VMCode.InternalError, e)
+        }
     }
 
     private initializeRoleManagement() {
