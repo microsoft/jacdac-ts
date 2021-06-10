@@ -28,6 +28,7 @@ export default class AzureIoTHubServer extends JDServiceServer {
     maxMessages = 10
     readonly deviceToCloudMessages: AzureIoTHubMessage[] = []
     readonly cloudToDeviceMessages: AzureIoTHubMessage[] = []
+    autoConnect = true
 
     constructor(options?: AzureIoTHubServerOptions) {
         super(SRV_AZURE_IOT_HUB, options)
@@ -48,11 +49,8 @@ export default class AzureIoTHubServer extends JDServiceServer {
             AzureIotHubCmd.SendMessage,
             this.handleSendMessage.bind(this)
         )
-        this.addCommand(AzureIotHubCmd.Connect, this.handleConnect.bind(this))
-        this.addCommand(
-            AzureIotHubCmd.Disconnect,
-            this.handleDisconnect.bind(this)
-        )
+        this.addCommand(AzureIotHubCmd.Connect, this.connect.bind(this))
+        this.addCommand(AzureIotHubCmd.Disconnect, this.disconnect.bind(this))
 
         // send change event when status changes
         this.connectionStatus.on(CHANGE, () => {
@@ -62,8 +60,26 @@ export default class AzureIoTHubServer extends JDServiceServer {
         })
     }
 
+    get connected() {
+        const [state] = this.connectionStatus.values()
+        return state === "ok"
+    }
+
+    connect() {
+        this.autoConnect = true
+        this.connectionStatus.setValues(["ok"])
+    }
+
+    disconnect() {
+        this.autoConnect = false
+        this.connectionStatus.setValues([""])
+    }
+
     emitMessage(body: string) {
-        if (!this.connected) return
+        if (!this.connected) {
+            if (this.autoConnect) this.connect()
+            if (!this.connected) return
+        }
 
         this.cloudToDeviceMessages.unshift({
             timestamp: this.device.bus.timestamp,
@@ -75,21 +91,11 @@ export default class AzureIoTHubServer extends JDServiceServer {
         this.sendEvent(AzureIotHubEvent.Message, jdpack<[string]>("s", [body]))
     }
 
-    get connected() {
-        const [state] = this.connectionStatus.values()
-        return state === "ok"
-    }
-
-    async handleConnect() {
-        this.connectionStatus.setValues(["ok"])
-    }
-
-    handleDisconnect() {
-        this.connectionStatus.setValues([""])
-    }
-
     handleSendMessage(pkt: Packet) {
-        if (!this.connected) return
+        if (!this.connected) {
+            if (this.autoConnect) this.connect()
+            if (!this.connected) return
+        }
 
         const [body] = pkt.jdunpack<[string]>("s")
         this.deviceToCloudMessages.unshift({
