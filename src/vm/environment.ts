@@ -5,18 +5,19 @@ import { JDRegister } from "../jdom/register"
 import { SMap } from "../jdom/utils"
 import { JDService } from "../jdom/service"
 import { JDEventSource } from "../jdom/eventsource"
-import {
-    CHANGE,
-    EVENT,
-    SystemReg,
-} from "../jdom/constants"
+import { CHANGE, EVENT, SystemReg } from "../jdom/constants"
 import { jdpack, PackedValues } from "../jdom/pack"
 
 import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface } from "./runner"
 
-export class VMRoleNoServiceException extends Error {
-    constructor(readonly role: string) {
+export enum VMEnvironmentCode {
+    RoleNoService = "vmEnvRoleNoService",
+    TypeMismatch = "vmEnvTypeMismatch",
+}
+
+export class VMEnvironmentException extends Error {
+    constructor(readonly code: VMEnvironmentCode, readonly data: string) {
         super()
     }
 }
@@ -132,13 +133,18 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 }
 
+interface GlobalVariable {
+    type: "number" | "boolean" | "string"
+    value: number | boolean | string
+}
+
 export class VMEnvironment
     extends JDEventSource
     implements VMEnvironmentInterface
 {
     private _currentEvent: string = undefined
     private _envs: SMap<VMServiceEnvironment> = {}
-    private _locals: SMap<string> = {}
+    private _globals: SMap<GlobalVariable> = {}
 
     constructor(
         private registers: RoleRegister[],
@@ -203,7 +209,10 @@ export class VMEnvironment
         if (!root) return undefined
         const s = this._envs[root]
         if (!s) {
-            throw new VMRoleNoServiceException(root)
+            throw new VMEnvironmentException(
+                VMEnvironmentCode.RoleNoService,
+                root
+            )
         }
         return s
     }
@@ -228,13 +237,16 @@ export class VMEnvironment
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public lookup(e: jsep.MemberExpression | string): any {
+    public lookup(
+        e: jsep.MemberExpression | string
+    ): string | boolean | number {
         const roleName = this.getRootName(e)
         if (roleName === "$") {
             const me = e as jsep.MemberExpression
             if (me.property.type === "Identifier") {
                 const local = (me.property as jsep.Identifier).name
-                return this._locals[local]
+                // TODO: type checking?
+                return this._globals[local].value
             }
             return undefined
         }
@@ -247,7 +259,7 @@ export class VMEnvironment
 
     public async writeRegisterAsync(
         e: jsep.MemberExpression | string,
-        ev: any
+        ev: number
     ) {
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
@@ -257,13 +269,38 @@ export class VMEnvironment
         }
     }
 
-    public writeLocal(e: jsep.MemberExpression | string, ev: any) {
+    public writeLocal(
+        e: jsep.MemberExpression | string,
+        value: string | boolean | number
+    ) {
         const roleName = this.getRootName(e)
         if (!roleName || roleName !== "$") return undefined
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const local = (me.property as jsep.Identifier).name
-            this._locals[local] = ev
+            if (this._globals[local]) {
+                const firstType = this._globals[local].type
+                if (firstType !== typeof value) {
+                    throw new VMEnvironmentException(
+                        VMEnvironmentCode.TypeMismatch,
+                        `variable ${local} has first type ${firstType}; trying to assign ${value.toString()}`
+                    )
+                }
+                this._globals[local].value = value
+            } else {
+                const firstType = typeof value
+                if (
+                    firstType !== "string" &&
+                    firstType !== "boolean" &&
+                    firstType !== "number"
+                ) {
+                    throw new VMEnvironmentException(
+                        VMEnvironmentCode.TypeMismatch,
+                        `Value of type ${firstType} not supported`
+                    )
+                }
+                this._globals[local] = { type: firstType, value }
+            }
             return true
         }
         return false

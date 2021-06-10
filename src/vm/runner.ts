@@ -1,6 +1,6 @@
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
 import RoleManager from "../servers/rolemanager"
-import { VMEnvironment, VMRoleNoServiceException } from "./environment"
+import { VMEnvironment, VMEnvironmentException, VMEnvironmentCode } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
@@ -709,11 +709,13 @@ export class VMProgramRunner extends JDClient {
                 h.reset()
             }
         } catch (e) {
-            if (e instanceof VMRoleNoServiceException) {
+            if (e instanceof VMEnvironmentException) {
+                const ex =  e as VMEnvironmentException
+                if (ex.code === VMEnvironmentCode.RoleNoService)
                 this.emit(
                     VM_EVENT,
                     VMCode.RoleMissing,
-                    (e as VMRoleNoServiceException).role
+                    (e as VMEnvironmentException).data
                 )
             } else {
                 console.debug(e)
