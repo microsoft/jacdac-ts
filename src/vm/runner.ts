@@ -653,6 +653,7 @@ export class VMProgramRunner extends JDClient {
         this.trace("step")
         const h = await this.getCurrentRunner()
         if (h) {
+            console.log("trying to step")
             await this.runHandlerAsync(h, true)
             await this.postProcessHandler(h)
             const newHead = await this.getCurrentRunner()
@@ -851,7 +852,8 @@ export class VMProgramRunner extends JDClient {
                 if (this.status === VMStatus.Running)
                     this.runAsync()
                 else if (this.status === VMStatus.Paused) {
-                    this.stepAsync()
+                    // show where we are now
+                    this.emitBreakpoint(await this.getCurrentRunner())
                 }
             }
         } catch (e) {
