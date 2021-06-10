@@ -752,6 +752,7 @@ export class VMProgramRunner extends JDClient {
                 else if (this.status === VMStatus.Paused) {
                     await this._waitRunMutex.acquire(async () => {
                         this._runQueue.unshift(h)
+                        // this.emitBreakpoint(h)
                     })
                 }
             }
