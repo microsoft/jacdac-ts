@@ -198,17 +198,17 @@ export class VMExprEvaluator {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
                 const val = this.env(e as jsep.MemberExpression)
-                if (val === undefined) {
-                    throw new VMError(VMCode.InternalError, `lookup of ${unparse(e)} failed`)
-                }
+                //if (val === undefined) {
+                //    throw new VMError(VMCode.InternalError, `lookup of ${unparse(e)} failed`)
+                //}
                 this.exprStack.push(val)
                 return
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
                 const val = this.env(id.name)
-                if (val === undefined)
-                    throw new VMError(VMCode.InternalError, `lookup of ${id.name} failed`)
+                // if (val === undefined)
+                //    throw new VMError(VMCode.InternalError, `lookup of ${id.name} failed`)
                 this.exprStack.push(val)
                 return
             }
