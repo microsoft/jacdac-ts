@@ -11,7 +11,9 @@ import { jdpack, PackedValues } from "../jdom/pack"
 import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface, atomic } from "./runner"
 
-export const GLOBAL_CHANGE = "vmEnvglobalChange"
+export const GLOBAL_CHANGE = "vmEnvGlobalChange"
+export const REGISTER_CHANGE = "vmEnvRegisterChange"
+export const EVENT_CHANGE = "vmEnvEventChange"
 
 export enum VMExceptionCode {
     RoleNoService = "vmEnvRoleNoService",
@@ -177,7 +179,7 @@ export class VMEnvironment
         try {
             const serviceEnv = this.getService(role)
             serviceEnv.registerRegister(reg, () => {
-                this.emit(CHANGE)
+                this.emit(REGISTER_CHANGE, reg)
             })
         } catch (e) {
             // nothing
@@ -189,7 +191,7 @@ export class VMEnvironment
             const serviceEnv = this.getService(role)
             serviceEnv.registerEvent(ev, () => {
                 this._currentEvent = `${role}.${ev}`
-                this.emit(CHANGE)
+                this.emit(EVENT_CHANGE, this._currentEvent)
             })
         } catch (e) {
             // nothing
