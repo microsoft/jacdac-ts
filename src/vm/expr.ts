@@ -1,6 +1,3 @@
-import { VMCode } from "./events"
-import { VMError } from "./utils"
-
 export type GetValue = (e: jsep.MemberExpression | string) => any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
