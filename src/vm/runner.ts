@@ -5,6 +5,8 @@ import {
     VMException,
     VMExceptionCode,
     GLOBAL_CHANGE,
+    REGISTER_CHANGE,
+    EVENT_CHANGE
 } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
@@ -535,13 +537,19 @@ export class VMProgramRunner extends JDClient {
         this._waitRunMutex = new Mutex()
         this._breaksMutex = new Mutex()
         this._sleepMutex = new Mutex()
-        // run on any change to environment
+        // TODO: only try to wake handlers that are waiting on change to reg or event
         this.mount(
-            this._env.subscribe(CHANGE, () => {
+            this._env.subscribe(REGISTER_CHANGE, (reg: string) => {
                 this.waitingToRunning()
             })
         )
         this.mount(
+            this._env.subscribe(EVENT_CHANGE, (event: string) => {
+                this.waitingToRunning()
+            })
+        )
+        this.mount(
+            // TODO: if a handler is waiting on variable???
             this._env.subscribe(GLOBAL_CHANGE, name =>
                 this.emit(VM_GLOBAL_CHANGE, name)
             )
