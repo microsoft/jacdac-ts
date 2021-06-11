@@ -631,23 +631,23 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.tests = this.testSpec.tests.map(t => new JDTestRunner(this, t))
         this.testSpec.tests.forEach(t => {
             t.events.forEach(s => {
-                let eventName = s.substr(s.indexOf(".")+1)
+                const eventName = s.substr(s.indexOf(".")+1)
                 this._env.registerEvent(eventName, async () => { 
                     try {
                         await this.currentTest?.eventChangeAsync(eventName) 
                     } catch (e)
                     {
-
+                        //
                     }
                 })
             })
             t.registers.forEach(s => {
-                let regName = s.substr(s.indexOf(".")+1)
+                const regName = s.substr(s.indexOf(".")+1)
                 this._env.registerRegister(regName, async () => { 
                     try {
                         await this.currentTest?.envChangeAsync() 
                     } catch(e){
-
+                        //
                     }
                 })
             })
@@ -661,7 +661,7 @@ export class JDServiceTestRunner extends JDServiceClient {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        return this._env.lookup(e)
+        return this._env.lookupRegister(e)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,6 +1,10 @@
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
 import RoleManager from "../servers/rolemanager"
-import { VMEnvironment, VMRoleNoServiceException } from "./environment"
+import {
+    VMEnvironment,
+    VMEnvironmentException,
+    VMEnvironmentCode,
+} from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
@@ -25,18 +29,20 @@ enum VMInternalStatus {
 
 const VM_WAKE_SLEEPER = "vmWakeSleeper"
 
+export type atomic = string | boolean | number
+
 export interface VMEnvironmentInterface {
     writeRegisterAsync: (
         e: jsep.MemberExpression | string,
-        v: any
+        v: atomic
     ) => Promise<void>
     sendCommandAsync: (
         command: jsep.MemberExpression,
-        values: any[]
+        values: atomic[]
     ) => Promise<void>
     refreshRegistersAsync: () => Promise<void>
-    lookup: (e: jsep.MemberExpression | string) => any
-    writeLocal: (e: jsep.MemberExpression | string, v: any) => boolean
+    lookup: (e: jsep.MemberExpression | string) => atomic
+    writeLocal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     unsubscribe: () => void
 }
@@ -709,12 +715,14 @@ export class VMProgramRunner extends JDClient {
                 h.reset()
             }
         } catch (e) {
-            if (e instanceof VMRoleNoServiceException) {
-                this.emit(
-                    VM_EVENT,
-                    VMCode.RoleMissing,
-                    (e as VMRoleNoServiceException).role
-                )
+            if (e instanceof VMEnvironmentException) {
+                const ex = e as VMEnvironmentException
+                if (ex.code === VMEnvironmentCode.RoleNoService)
+                    this.emit(
+                        VM_EVENT,
+                        VMCode.RoleMissing,
+                        (e as VMEnvironmentException).data
+                    )
             } else {
                 console.debug(e)
                 this.emit(VM_EVENT, VMCode.InternalError, e)
@@ -853,8 +861,7 @@ export class VMProgramRunner extends JDClient {
                 this.sleepAsync(undefined, handlerMs, theHandler)
             }*/
             if (handlerRunner) {
-                if (this.status === VMStatus.Running)
-                    this.runAsync()
+                if (this.status === VMStatus.Running) this.runAsync()
                 else if (this.status === VMStatus.Paused) {
                     this.emitBreakpoint(await this.getCurrentRunner())
                 }
