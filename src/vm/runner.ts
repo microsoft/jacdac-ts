@@ -4,6 +4,7 @@ import {
     VMEnvironment,
     VMEnvironmentException,
     VMEnvironmentCode,
+    GlobalVariable,
     GLOBAL_CHANGE,
 } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
@@ -43,7 +44,7 @@ export interface VMEnvironmentInterface {
     ) => Promise<void>
     refreshRegistersAsync: () => Promise<void>
     lookup: (e: jsep.MemberExpression | string) => atomic
-    writeLocal: (e: jsep.MemberExpression | string, v: atomic) => boolean
+    writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     unsubscribe: () => void
 }
@@ -182,7 +183,7 @@ class VMCommandEvaluator {
                         reg: unparse(reg),
                         expr: ev,
                     })
-                } else this.env.writeLocal(reg, ev)
+                } else this.env.writeGlobal(reg, ev)
                 return VMInternalStatus.Completed
             }
             case "watch": {
@@ -564,14 +565,8 @@ export class VMProgramRunner extends JDClient {
         return this._log.slice(0)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    globals(ignoreRoles: boolean): { name: string; value: any }[] {
-        return [
-            {
-                name: "dummy",
-                value: 123,
-            },
-        ]
+    globals(): SMap<GlobalVariable> {
+        return this._env.globals()
     }
 
     private setStatus(s: VMStatus) {
