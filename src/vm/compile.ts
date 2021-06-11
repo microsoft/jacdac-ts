@@ -14,6 +14,7 @@ import {
 } from "../../jacdac-spec/spectool/jdutils"
 import { assert } from "../jdom/utils"
 
+
 export function toIdentifier(id: string) {
     return {
         type: "Identifier",
@@ -60,10 +61,38 @@ function handlerVisitor(
 
 export function compileProgram(prog: VMProgram) {
     const newProgram: VMProgram = { roles: prog.roles.slice(0), handlers: [] }
+    // process start blocks
+    prog.handlers.forEach(startBlock)
+    // remove if-then-else
     newProgram.handlers = prog.handlers.map(h => {
         return { commands: removeIfThenElse(h), errors: h?.errors }
     })
     return newProgram
+}
+
+function checkCall(cmd: VMBase, id: string) {
+    if (cmd.type === "cmd") {
+        const callee = (cmd as VMCommand).command.callee 
+        if (callee.type === "Identifier") {
+            const cid = (callee as jsep.Identifier).name
+            return id === cid 
+        }
+    }
+    return undefined
+}
+
+function startBlock(handler: VMHandler) {
+    if (handler.commands.length && checkCall(handler.commands[0], "start")) {
+        handler.commands.shift()
+        handler.commands.push({
+            type: "cmd",
+            command: {
+                type: "CallExpression",
+                callee: toIdentifier("halt"),
+                arguments: []
+            } 
+        } as VMCommand )
+    }
 }
 
 function removeIfThenElse(handler: VMHandler): VMBase[] {
