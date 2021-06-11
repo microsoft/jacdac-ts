@@ -199,8 +199,9 @@ class VMCommandEvaluator {
                     undefined
                 )
                 const ev = expr.eval(args[0])
-                this.parent.writeLog(this.gc?.sourceId, ev)
-                console.log(`vm log`, { expr, ev })
+                const evString = ev + ""
+                this.parent.writeLog(this.gc?.sourceId, evString)
+                console.log(evString)
                 return VMInternalStatus.Completed
             }
             case "halt": {
