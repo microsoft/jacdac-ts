@@ -2,8 +2,8 @@ import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
 import RoleManager from "../servers/rolemanager"
 import {
     VMEnvironment,
-    VMEnvironmentException,
-    VMEnvironmentCode,
+    VMException,
+    VMExceptionCode,
     GLOBAL_CHANGE,
 } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
@@ -11,8 +11,16 @@ import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
-import { VM_EVENT, VMCode } from "./events"
-import { VMError, Mutex } from "./utils"
+import {
+    VM_GLOBAL_CHANGED,
+    VM_COMMAND_FAILED,
+    VM_WATCH_CHANGE,
+    VM_BREAKPOINT,
+    VM_INTERNAL_ERROR,
+    VM_LOG_ENTRY,
+    VM_ROLE_MISSING
+} from "./events"
+import { Mutex } from "./utils"
 import { assert, SMap } from "../jdom/utils"
 import { JDClient } from "../jdom/client"
 
@@ -230,8 +238,8 @@ class VMCommandEvaluator {
                 return VMInternalStatus.Completed
             }
             default:
-                throw new VMError(
-                    VMCode.InternalError,
+                throw new VMException(
+                    VMExceptionCode.InternalError,
                     `Unknown instruction ${this.inst}`
                 )
         }
@@ -391,7 +399,10 @@ class VMHandlerRunner extends JDEventSource {
     private getCommand() {
         const cmd = this.handler.commands[this._commandIndex]
         if (cmd.type === "ite") {
-            throw new VMError(VMCode.InternalError, "ite not compiled away")
+            throw new VMException(
+                VMExceptionCode.InternalError,
+                "ite not compiled away"
+            )
         }
         return cmd as VMCommand
     }
@@ -409,7 +420,6 @@ class VMHandlerRunner extends JDEventSource {
 
     private async singleStepAsync() {
         const sid = this._currentCommand.gc.sourceId
-        this.parent.emit(VM_EVENT, VMCode.CommandStarted, sid)
         try {
             await this._currentCommand.stepAsync()
         } catch (e) {
@@ -423,20 +433,10 @@ class VMHandlerRunner extends JDEventSource {
                 this._currentCommand.status = VMInternalStatus.Sleeping
                 await this.parent.sleepAsync(this, vmt.ms)
             } else {
-                this.emit(
-                    VM_EVENT,
-                    VMCode.CommandFailed,
-                    this._currentCommand.gc.sourceId
-                )
+                this.emit(VM_COMMAND_FAILED, this._currentCommand.gc.sourceId)
                 throw e
             }
         }
-        if (this._currentCommand.status === VMInternalStatus.Completed)
-            this.parent.emit(
-                VM_EVENT,
-                VMCode.CommandCompleted,
-                this._currentCommand.gc.sourceId
-            )
         if (this._currentCommand.status === VMInternalStatus.Stopped)
             this.stopped = true
     }
@@ -541,7 +541,7 @@ export class VMProgramRunner extends JDClient {
         )
         this.mount(
             this._env.subscribe(GLOBAL_CHANGE, name =>
-                this.emit(VM_EVENT, VMCode.VariableValueChange, name)
+                this.emit(VM_GLOBAL_CHANGED, name)
             )
         )
         this.mount(
@@ -585,7 +585,7 @@ export class VMProgramRunner extends JDClient {
 
     watch(sourceId: string, value: WatchValueType) {
         this._watch[sourceId] = value
-        this.emit(VM_EVENT, VMCode.WatchChange, sourceId)
+        this.emit(VM_WATCH_CHANGE, sourceId)
     }
 
     writeLog(sourceId: string, value: WatchValueType) {
@@ -594,7 +594,7 @@ export class VMProgramRunner extends JDClient {
         if (last?.text === s) last.count++
         else this._log.push({ text: value + "", count: 1 })
         while (this._log.length > MAX_LOG) this._log.shift()
-        this.emit(VM_EVENT, VMCode.LogEntry, sourceId)
+        this.emit(VM_LOG_ENTRY, sourceId)
     }
 
     lookupWatch(sourceId: string) {
@@ -671,7 +671,7 @@ export class VMProgramRunner extends JDClient {
             this.runAsync()
         } catch (e) {
             console.debug(e)
-            this.emit(VM_EVENT, VMCode.InternalError, e)
+            this.emit(VM_INTERNAL_ERROR, e)
         }
     }
 
@@ -728,7 +728,7 @@ export class VMProgramRunner extends JDClient {
             }
         } catch (e) {
             console.debug(e)
-            this.emit(VM_EVENT, VMCode.InternalError, e)
+            this.emit(VM_INTERNAL_ERROR, e)
         }
         this._in_run = false
         this.trace("run end")
@@ -736,8 +736,7 @@ export class VMProgramRunner extends JDClient {
 
     private emitBreakpoint(h: VMHandlerRunner) {
         this.emit(
-            VM_EVENT,
-            VMCode.Breakpoint,
+            VM_BREAKPOINT,
             h,
             h.status === VMInternalStatus.Completed
                 ? ""
@@ -756,17 +755,16 @@ export class VMProgramRunner extends JDClient {
                 h.reset()
             }
         } catch (e) {
-            if (e instanceof VMEnvironmentException) {
-                const ex = e as VMEnvironmentException
-                if (ex.code === VMEnvironmentCode.RoleNoService)
+            if (e instanceof VMException) {
+                const ex = e as VMException
+                if (ex.code === VMExceptionCode.RoleNoService)
                     this.emit(
-                        VM_EVENT,
-                        VMCode.RoleMissing,
-                        (e as VMEnvironmentException).data
+                        VM_ROLE_MISSING,
+                        (e as VMException).data
                     )
             } else {
                 console.debug(e)
-                this.emit(VM_EVENT, VMCode.InternalError, e)
+                this.emit(VM_INTERNAL_ERROR, e)
             }
             // on handler error, reset the handler
             h.reset()
@@ -910,7 +908,7 @@ export class VMProgramRunner extends JDClient {
             }
         } catch (e) {
             console.debug(e)
-            this.emit(VM_EVENT, VMCode.InternalError, e)
+            this.emit(VM_INTERNAL_ERROR, e)
         }
     }
 

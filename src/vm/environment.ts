@@ -13,13 +13,14 @@ import { VMEnvironmentInterface, atomic } from "./runner"
 
 export const GLOBAL_CHANGE = "vmEnvglobalChange"
 
-export enum VMEnvironmentCode {
+export enum VMExceptionCode {
     RoleNoService = "vmEnvRoleNoService",
     TypeMismatch = "vmEnvTypeMismatch",
+    InternalError = "vmInternalError"
 }
 
-export class VMEnvironmentException extends Error {
-    constructor(readonly code: VMEnvironmentCode, readonly data: string) {
+export class VMException extends Error {
+    constructor(readonly code: VMExceptionCode, readonly data: string) {
         super()
     }
 }
@@ -213,8 +214,8 @@ export class VMEnvironment
         if (!root) return undefined
         const s = this._envs[root]
         if (!s) {
-            throw new VMEnvironmentException(
-                VMEnvironmentCode.RoleNoService,
+            throw new VMException(
+                VMExceptionCode.RoleNoService,
                 root
             )
         }
@@ -283,8 +284,8 @@ export class VMEnvironment
             if (this._globals[local]) {
                 const firstType = this._globals[local].type
                 if (firstType !== typeof value) {
-                    throw new VMEnvironmentException(
-                        VMEnvironmentCode.TypeMismatch,
+                    throw new VMException(
+                        VMExceptionCode.TypeMismatch,
                         `variable ${local} has first type ${firstType}; trying to assign ${value.toString()}`
                     )
                 }
@@ -299,8 +300,8 @@ export class VMEnvironment
                     firstType !== "boolean" &&
                     firstType !== "number"
                 ) {
-                    throw new VMEnvironmentException(
-                        VMEnvironmentCode.TypeMismatch,
+                    throw new VMException(
+                        VMExceptionCode.TypeMismatch,
                         `Value of type ${firstType} not supported`
                     )
                 }
