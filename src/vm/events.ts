@@ -11,4 +11,5 @@ export enum VMCode {
     VariableValueChange = "vmVariableChanged",
     DynamicTypeError = "vmDynamicTypeError", 
     InternalError = "vmInternalError",
+    LogEntry = "vmLogEntry"
 }
