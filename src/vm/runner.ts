@@ -565,8 +565,11 @@ export class VMProgramRunner extends JDClient {
         return this._log.slice(0)
     }
 
-    globals(): SMap<GlobalVariable> {
-        return this._env.globals()
+    globals(): { name: string; value: atomic }[] {
+        const g = this._env.globals()
+        return Object.keys(g).map(k => {
+            return { name: k, value: g[k].value }
+        })
     }
 
     private setStatus(s: VMStatus) {
