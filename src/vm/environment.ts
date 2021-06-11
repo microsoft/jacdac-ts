@@ -282,7 +282,10 @@ export class VMEnvironment
                         `variable ${local} has first type ${firstType}; trying to assign ${value.toString()}`
                     )
                 }
-                this._globals[local].value = value
+                if (value !== this._globals[local].value) {
+                    this._globals[local].value = value
+                    this.emit(CHANGE)
+                }
             } else {
                 const firstType = typeof value
                 if (
@@ -296,6 +299,7 @@ export class VMEnvironment
                     )
                 }
                 this._globals[local] = { type: firstType, value }
+                this.emit(CHANGE)
             }
             return true
         }
