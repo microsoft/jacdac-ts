@@ -18,7 +18,7 @@ import {
     VM_BREAKPOINT,
     VM_INTERNAL_ERROR,
     VM_LOG_ENTRY,
-    VM_ROLE_MISSING
+    VM_ROLE_MISSING,
 } from "./events"
 import { Mutex } from "./utils"
 import { assert, SMap } from "../jdom/utils"
@@ -709,6 +709,11 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
+    private async refreshRegistersAsync() {
+        this.trace("refresh registers")
+        await this._env.refreshRegistersAsync()
+    }
+
     private _in_run = false
     private async runAsync() {
         if (this.status === VMStatus.Stopped) return
@@ -716,7 +721,7 @@ export class VMProgramRunner extends JDClient {
         this.trace("run")
         this._in_run = true
         try {
-            await this._env.refreshRegistersAsync()
+            await this.refreshRegistersAsync()
             let h: VMHandlerRunner = undefined
             while (
                 this.status === VMStatus.Running &&
@@ -758,10 +763,7 @@ export class VMProgramRunner extends JDClient {
             if (e instanceof VMException) {
                 const ex = e as VMException
                 if (ex.code === VMExceptionCode.RoleNoService)
-                    this.emit(
-                        VM_ROLE_MISSING,
-                        (e as VMException).data
-                    )
+                    this.emit(VM_ROLE_MISSING, (e as VMException).data)
             } else {
                 console.debug(e)
                 this.emit(VM_INTERNAL_ERROR, e)
@@ -808,6 +810,7 @@ export class VMProgramRunner extends JDClient {
     // call this whenever some event/change arises
     private async waitingToRunning() {
         if (this.status !== VMStatus.Stopped) {
+            this.trace("waiting to running - try")
             let waitCopy: VMHandlerRunner[] = undefined
             await this._waitRunMutex.acquire(async () => {
                 if (this.status === VMStatus.Paused && this._runQueue.length)
@@ -815,6 +818,8 @@ export class VMProgramRunner extends JDClient {
                 waitCopy = this._waitQueue.slice(0)
             })
             if (!waitCopy) return
+
+            this.trace("waiting to running - start")
             const handlersStarted: VMHandler[] = []
             const newRunners: VMHandlerRunner[] = []
             const sleepingRunners: VMHandlerRunner[] = []
@@ -901,8 +906,10 @@ export class VMProgramRunner extends JDClient {
                 this.sleepAsync(undefined, handlerMs, theHandler)
             }*/
             if (handlerRunner) {
-                if (this.status === VMStatus.Running) this.runAsync()
-                else if (this.status === VMStatus.Paused) {
+                if (this.status === VMStatus.Running) {
+                    this.trace("wake sleeper run")
+                    this.runAsync()
+                } else if (this.status === VMStatus.Paused) {
                     this.emitBreakpoint(await this.getCurrentRunner())
                 }
             }
