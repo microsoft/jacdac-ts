@@ -573,11 +573,8 @@ export class VMProgramRunner extends JDClient {
     }
 
     watch(sourceId: string, value: WatchValueType) {
-        const oldValue = this._watch[sourceId]
-        if (oldValue !== value) {
-            this._watch[sourceId] = value
-            this.emit(VM_EVENT, VMCode.WatchChange, sourceId)
-        }
+        this._watch[sourceId] = value
+        this.emit(VM_EVENT, VMCode.WatchChange, sourceId)
     }
 
     writeLog(sourceId: string, value: WatchValueType) {
