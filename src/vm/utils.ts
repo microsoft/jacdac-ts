@@ -1,20 +1,3 @@
-import { VMCode } from "./events"
-
-export class VMError extends Error {
-    constructor(
-        name: VMCode,
-        readonly message: string,
-        readonly jacdacName?: string
-    ) {
-        super(message)
-        this.name = name
-    }
-}
-
-export default function errorPath(e: VMError): string {
-    return (e as VMError)?.jacdacName
-}
-
 export class Mutex {
     private promises: (() => Promise<any>)[] = []
     private shift() {
