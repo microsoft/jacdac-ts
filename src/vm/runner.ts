@@ -781,7 +781,6 @@ export class VMProgramRunner extends JDClient {
                 done = this._runQueue.shift()
                 const moveToWait = h.status === VMInternalStatus.Ready
                 if (moveToWait && !isEveryHandler(h.handler)) {
-                    console.log("WAIT")
                     this._waitQueue.push(done)
                     done = undefined
                 }
@@ -821,14 +820,12 @@ export class VMProgramRunner extends JDClient {
             const sleepingRunners: VMHandlerRunner[] = []
             for (const h of waitCopy) {
                 await this.runHandlerAsync(h, true)
-                console.log("STATUS", h.status, h.atTop )
                 if (h.status === VMInternalStatus.Sleeping) {
                     sleepingRunners.push(h)
                 } else if (
                     !h.atTop &&
                     handlersStarted.findIndex(hs => hs === h.handler) === -1
                 ) {
-                    console.log("PUSH")
                     newRunners.push(h)
                     handlersStarted.push(h.handler)
                 }
