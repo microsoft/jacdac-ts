@@ -120,7 +120,10 @@ class VMCommandEvaluator {
             // interpret as a service command (role.comand)
             const expr = new VMExprEvaluator(async e => await this.env.lookupAsync(e), undefined)
             // TODO
-            const values = this.gc.command.arguments.map(a => expr.evalAsync(a))
+            const values: atomic[] = []
+            for(const a of this.gc.command.arguments) {
+                values.push(await expr.evalAsync(a))
+            }
             await this.env.sendCommandAsync(
                 this.gc.command.callee as jsep.MemberExpression,
                 values
