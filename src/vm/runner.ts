@@ -1,6 +1,10 @@
 import { VMProgram, VMHandler, VMCommand, VMRole } from "./ir"
 import RoleManager from "../servers/rolemanager"
-import { VMEnvironment, VMEnvironmentException, VMEnvironmentCode } from "./environment"
+import {
+    VMEnvironment,
+    VMEnvironmentException,
+    VMEnvironmentCode,
+} from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
@@ -712,13 +716,13 @@ export class VMProgramRunner extends JDClient {
             }
         } catch (e) {
             if (e instanceof VMEnvironmentException) {
-                const ex =  e as VMEnvironmentException
+                const ex = e as VMEnvironmentException
                 if (ex.code === VMEnvironmentCode.RoleNoService)
-                this.emit(
-                    VM_EVENT,
-                    VMCode.RoleMissing,
-                    (e as VMEnvironmentException).data
-                )
+                    this.emit(
+                        VM_EVENT,
+                        VMCode.RoleMissing,
+                        (e as VMEnvironmentException).data
+                    )
             } else {
                 console.debug(e)
                 this.emit(VM_EVENT, VMCode.InternalError, e)
@@ -857,8 +861,7 @@ export class VMProgramRunner extends JDClient {
                 this.sleepAsync(undefined, handlerMs, theHandler)
             }*/
             if (handlerRunner) {
-                if (this.status === VMStatus.Running)
-                    this.runAsync()
+                if (this.status === VMStatus.Running) this.runAsync()
                 else if (this.status === VMStatus.Paused) {
                     this.emitBreakpoint(await this.getCurrentRunner())
                 }

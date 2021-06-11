@@ -95,7 +95,7 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public lookup(e: jsep.MemberExpression | jsep.Identifier | string): atomic {
+    public lookupRegister(e: jsep.MemberExpression | jsep.Identifier | string): atomic {
         const root =
             typeof e === "string"
                 ? e
@@ -242,14 +242,13 @@ export class VMEnvironment
             const me = e as jsep.MemberExpression
             if (me.property.type === "Identifier") {
                 const local = (me.property as jsep.Identifier).name
-                // TODO: type checking?
-                return this._globals[local].value
+                return this._globals[local]?.value
             }
             return undefined
         }
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
-        return serviceEnv.lookup(
+        return serviceEnv.lookupRegister(
             me.property as jsep.Identifier | jsep.MemberExpression
         )
     }
@@ -275,6 +274,7 @@ export class VMEnvironment
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const local = (me.property as jsep.Identifier).name
+            console.log(local, " := ", value)
             if (this._globals[local]) {
                 const firstType = this._globals[local].type
                 if (firstType !== typeof value) {
