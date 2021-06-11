@@ -177,7 +177,6 @@ export class VMEnvironment
         try {
             const serviceEnv = this.getService(role)
             serviceEnv.registerRegister(reg, () => {
-                console.log("HERE")
                 this.emit(CHANGE)
             })
         } catch (e) {

@@ -213,7 +213,6 @@ class VMCommandEvaluator {
                 const ev = await expr.evalAsync(args[0])
                 const evString = ev + ""
                 this.parent.writeLog(this.gc?.sourceId, evString)
-                console.log(evString)
                 return VMInternalStatus.Completed
             }
             case "halt": {
