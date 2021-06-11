@@ -4,7 +4,6 @@ import {
     VMEnvironment,
     VMEnvironmentException,
     VMEnvironmentCode,
-    GlobalVariable,
     GLOBAL_CHANGE,
 } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
@@ -542,7 +541,7 @@ export class VMProgramRunner extends JDClient {
         )
         this.mount(
             this._env.subscribe(GLOBAL_CHANGE, name =>
-                this.emit(GLOBAL_CHANGE, name)
+                this.emit(VM_EVENT, VMCode.VariableValueChange, name)
             )
         )
         this.mount(
