@@ -114,9 +114,9 @@ export class VMServiceEnvironment extends JDServiceClient {
         if (root in this._registers) {
             const register = this._registers[root]
             await register.refresh()
-            if (!fld) return this._registers[root].unpackedValue?.[0]
+            if (!fld) return register.unpackedValue?.[0]
             else {
-                const field = this._registers[root].fields.find(
+                const field = register.fields.find(
                     f => f.name === fld
                 )
                 return field?.value
