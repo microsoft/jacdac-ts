@@ -765,7 +765,8 @@ export class VMProgramRunner extends JDClient {
     private async postProcessHandler(h: VMHandlerRunner) {
         if (
             h.status === VMInternalStatus.Ready ||
-            h.status === VMInternalStatus.Sleeping
+            h.status === VMInternalStatus.Sleeping ||
+            h.status === VMInternalStatus.Stopped
         ) {
             let done: VMHandlerRunner = undefined
             await this._waitRunMutex.acquire(async () => {
