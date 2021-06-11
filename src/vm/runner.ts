@@ -12,7 +12,7 @@ import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
 import { checkProgram, compileProgram } from "./compile"
 import {
-    VM_GLOBAL_CHANGED,
+    VM_GLOBAL_CHANGE,
     VM_COMMAND_FAILED,
     VM_WATCH_CHANGE,
     VM_BREAKPOINT,
@@ -541,7 +541,7 @@ export class VMProgramRunner extends JDClient {
         )
         this.mount(
             this._env.subscribe(GLOBAL_CHANGE, name =>
-                this.emit(VM_GLOBAL_CHANGED, name)
+                this.emit(VM_GLOBAL_CHANGE, name)
             )
         )
         this.mount(
