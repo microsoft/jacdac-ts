@@ -11,6 +11,8 @@ import { jdpack, PackedValues } from "../jdom/pack"
 import { RoleRegister, RoleEvent } from "./compile"
 import { VMEnvironmentInterface, atomic } from "./runner"
 
+export const GLOBAL_CHANGE = "vmEnvglobalChange"
+
 export enum VMEnvironmentCode {
     RoleNoService = "vmEnvRoleNoService",
     TypeMismatch = "vmEnvTypeMismatch",
@@ -131,7 +133,7 @@ export class VMServiceEnvironment extends JDServiceClient {
     }
 }
 
-interface GlobalVariable {
+export interface GlobalVariable {
     type: "number" | "boolean" | "string"
     value: atomic
 }
@@ -149,6 +151,10 @@ export class VMEnvironment
         private events: RoleEvent[]
     ) {
         super()
+    }
+
+    public globals() {
+        return this._globals;
     }
 
     public serviceChanged(role: string, service: JDService) {
@@ -265,7 +271,7 @@ export class VMEnvironment
         }
     }
 
-    public writeLocal(
+    public writeGlobal(
         e: jsep.MemberExpression | string,
         value: string | boolean | number
     ) {
@@ -284,7 +290,7 @@ export class VMEnvironment
                 }
                 if (value !== this._globals[local].value) {
                     this._globals[local].value = value
-                    this.emit(CHANGE)
+                    this.emit(GLOBAL_CHANGE)
                 }
             } else {
                 const firstType = typeof value
@@ -299,7 +305,7 @@ export class VMEnvironment
                     )
                 }
                 this._globals[local] = { type: firstType, value }
-                this.emit(CHANGE)
+                this.emit(GLOBAL_CHANGE)
             }
             return true
         }
