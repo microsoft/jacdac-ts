@@ -274,7 +274,6 @@ export class VMEnvironment
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const local = (me.property as jsep.Identifier).name
-            console.log(local, " := ", value)
             if (this._globals[local]) {
                 const firstType = this._globals[local].type
                 if (firstType !== typeof value) {
