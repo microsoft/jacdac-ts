@@ -484,7 +484,7 @@ export enum VMStatus {
     Running = "running",
     Paused = "paused",
 }
-const MAX_LOG = 1000
+const MAX_LOG = 100
 export class VMProgramRunner extends JDClient {
     // program, environment
     private _handlerRunners: VMHandlerRunner[] = []
@@ -500,7 +500,7 @@ export class VMProgramRunner extends JDClient {
     private _sleepMutex: Mutex
     // debugging
     private _watch: SMap<any> = {}
-    private _log: string[] = []
+    private _log: { text: string; count: number }[] = []
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
 
@@ -573,15 +573,15 @@ export class VMProgramRunner extends JDClient {
     }
 
     watch(sourceId: string, value: WatchValueType) {
-        const oldValue = this._watch[sourceId]
-        if (oldValue !== value) {
-            this._watch[sourceId] = value
-            this.emit(VM_EVENT, VMCode.WatchChange, sourceId)
-        }
+        this._watch[sourceId] = value
+        this.emit(VM_EVENT, VMCode.WatchChange, sourceId)
     }
 
     writeLog(sourceId: string, value: WatchValueType) {
-        this._log.push(value + "")
+        const s = value + ""
+        const last = this._log[this._log.length - 1]
+        if (last?.text === s) last.count++
+        else this._log.push({ text: value + "", count: 1 })
         while (this._log.length > MAX_LOG) this._log.shift()
         this.emit(VM_EVENT, VMCode.LogEntry, sourceId)
     }

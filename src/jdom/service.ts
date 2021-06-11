@@ -299,7 +299,8 @@ export class JDService extends JDNode {
         this.emit(PACKET_SEND, pkt)
 
         // invalid register after a command call to refresh their values asap
-        if (pkt.isCommand) this.invalidateRegisterValues()
+        if (pkt.isCommand && !pkt.isRegisterGet && !pkt.isRegisterSet)
+            this.invalidateRegisterValues(pkt)
     }
 
     sendCmdAsync(cmd: number, data?: Uint8Array, ack?: boolean) {
@@ -356,8 +357,8 @@ export class JDService extends JDNode {
         }
     }
 
-    private invalidateRegisterValues() {
-        console.log(`clearing register get timestamp`)
+    private invalidateRegisterValues(pkt: Packet) {
+        console.log(`clearing register get timestamp`, pkt)
         this.registers()
             .filter(r => r.specification && !isConstRegister(r.specification))
             .forEach(r => r.clearGetTimestamp())
