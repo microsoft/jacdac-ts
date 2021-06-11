@@ -152,4 +152,10 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         prompt: `fires when a role is disconnected`,
         context: "command",
     },
+    {
+        id: "start",
+        args: [],
+        prompt: `start block`,
+        context: "command",
+    },
 ]
