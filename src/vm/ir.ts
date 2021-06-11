@@ -53,6 +53,7 @@ export type VMFunctionNames =
     | "jump"
     | "branchOnCondition"
     | "watch"
+    | "log"
 
 export const VMFunctions: jdtest.TestFunctionDescription[] = [
     {
@@ -95,6 +96,12 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         id: "watch",
         args: ["number"],
         prompt: `watch expression {1}`,
+        context: "command",
+    },
+    {
+        id: "log",
+        args: ["number"],
+        prompt: `not used`,
         context: "command",
     },
     {

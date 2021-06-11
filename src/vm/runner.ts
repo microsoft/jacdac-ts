@@ -193,6 +193,16 @@ class VMCommandEvaluator {
                 this.parent.watch(this.gc?.sourceId, ev)
                 return VMInternalStatus.Completed
             }
+            case "log": {
+                const expr = new VMExprEvaluator(
+                    e => this.env.lookup(e),
+                    undefined
+                )
+                const ev = expr.eval(args[0])
+                this.parent.writeLog(this.gc?.sourceId, ev)
+                console.log(`vm log`, { expr, ev })
+                return VMInternalStatus.Completed
+            }
             case "halt": {
                 return VMInternalStatus.Stopped
             }
@@ -246,6 +256,10 @@ class VMCommandRunner {
         this.parent.watch(id, val)
     }
 
+    writeLog(id: string, val: any) {
+        this.parent.writeLog(id, val)
+    }
+
     get status() {
         return this._status
     }
@@ -293,6 +307,10 @@ class VMHandlerRunner extends JDEventSource {
 
     watch(id: string, val: any) {
         this.parent.watch(id, val)
+    }
+
+    writeLog(id: string, val: any) {
+        this.parent.writeLog(id, val)
     }
 
     get status() {
@@ -465,7 +483,7 @@ export enum VMStatus {
     Running = "running",
     Paused = "paused",
 }
-
+const MAX_LOG = 1000
 export class VMProgramRunner extends JDClient {
     // program, environment
     private _handlerRunners: VMHandlerRunner[] = []
@@ -481,6 +499,7 @@ export class VMProgramRunner extends JDClient {
     private _sleepMutex: Mutex
     // debugging
     private _watch: SMap<any> = {}
+    private _log: string[] = []
     private _breaks: SMap<boolean> = {}
     private _breaksMutex: Mutex
 
@@ -536,6 +555,10 @@ export class VMProgramRunner extends JDClient {
         return this._status
     }
 
+    get logData() {
+        return this._log.slice(0)
+    }
+
     private setStatus(s: VMStatus) {
         if (s !== this._status) {
             this._status = s
@@ -554,6 +577,12 @@ export class VMProgramRunner extends JDClient {
             this._watch[sourceId] = value
             this.emit(VM_EVENT, VMCode.WatchChange, sourceId)
         }
+    }
+
+    writeLog(sourceId: string, value: WatchValueType) {
+        this._log.push(value + "")
+        while (this._log.length > MAX_LOG) this._log.shift()
+        this.emit(VM_EVENT, VMCode.LogEntry, sourceId)
     }
 
     lookupWatch(sourceId: string) {
