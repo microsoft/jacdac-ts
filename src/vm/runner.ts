@@ -4,6 +4,7 @@ import {
     VMEnvironment,
     VMEnvironmentException,
     VMEnvironmentCode,
+    GLOBAL_CHANGE,
 } from "./environment"
 import { VMExprEvaluator, unparse } from "./expr"
 import { JDBus } from "../jdom/bus"
@@ -513,9 +514,7 @@ export class VMProgramRunner extends JDClient {
         const compiled = compileProgram(program)
         const { registers, events, errors } = checkProgram(compiled)
         this._roles = compiled.roles
-        if (errors.length) {
-            console.warn("ERRORS", errors)
-        }
+        if (errors?.length) console.debug("ERRORS", errors)
         // data structures for running program
         this._status = VMStatus.Stopped
         this._env = new VMEnvironment(registers, events)
@@ -541,6 +540,11 @@ export class VMProgramRunner extends JDClient {
             })
         )
         this.mount(
+            this._env.subscribe(GLOBAL_CHANGE, name =>
+                this.emit(GLOBAL_CHANGE, name)
+            )
+        )
+        this.mount(
             this.subscribe(
                 VM_WAKE_SLEEPER,
                 async (h: VMHandlerRunner | VMHandler) => {
@@ -558,6 +562,16 @@ export class VMProgramRunner extends JDClient {
 
     get logData() {
         return this._log.slice(0)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globals(ignoreRoles: boolean): { name: string; value: any }[] {
+        return [
+            {
+                name: "dummy",
+                value: 123,
+            },
+        ]
     }
 
     private setStatus(s: VMStatus) {
