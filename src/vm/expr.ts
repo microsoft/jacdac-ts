@@ -61,13 +61,13 @@ export class VMExprEvaluator {
         return this.exprStack.pop()
     }
 
-    public eval(e: jsep.Expression) {
+    public async evalAsync(e: jsep.Expression) {
         this.exprStack = []
-        this.visitExpression(e)
+        await this.visitExpressionAsync(e)
         return this.exprStack.pop()
     }
 
-    public visitExpression(e: jsep.Expression) {
+    public async visitExpressionAsync(e: jsep.Expression) {
         switch (e.type) {
             case "ArrayExpression": {
                 // nothing to do here yet (only used for event function)
@@ -84,8 +84,8 @@ export class VMExprEvaluator {
 
             case "BinaryExpression": {
                 const be = <jsep.BinaryExpression>e
-                this.visitExpression(be.left)
-                this.visitExpression(be.right)
+                await this.visitExpressionAsync(be.left)
+                await this.visitExpressionAsync(be.right)
                 const right = this.exprStack.pop()
                 const left = this.exprStack.pop()
                 switch (be.operator) {
@@ -153,7 +153,7 @@ export class VMExprEvaluator {
 
             case "UnaryExpression": {
                 const ue = <jsep.UnaryExpression>e
-                this.visitExpression(ue.argument)
+                await this.visitExpressionAsync(ue.argument)
                 const top = this.exprStack.pop()
                 switch (ue.operator) {
                     case "ABS":
@@ -177,15 +177,15 @@ export class VMExprEvaluator {
 
             case "LogicalExpression": {
                 const le = <jsep.LogicalExpression>e
-                this.visitExpression(le.left)
+                await this.visitExpressionAsync(le.left)
                 switch (le.operator) {
                     case "||":
                         if (this.tos()) return
-                        else this.visitExpression(le.right)
+                        else await this.visitExpressionAsync(le.right)
                         return
                     case "&&":
                         if (!this.tos()) return
-                        else this.visitExpression(le.right)
+                        else await this.visitExpressionAsync(le.right)
                         return
                     default:
                 }
@@ -194,7 +194,7 @@ export class VMExprEvaluator {
             case "MemberExpression": {
                 // for now, we don't support evaluation of obj or prop
                 // of obj.prop
-                const val = this.env(e as jsep.MemberExpression)
+                const val = await this.env(e as jsep.MemberExpression)
                 //if (val === undefined) {
                 //    throw new VMError(VMCode.InternalError, `lookup of ${unparse(e)} failed`)
                 //}
@@ -203,7 +203,7 @@ export class VMExprEvaluator {
             }
             case "Identifier": {
                 const id = <jsep.Identifier>e
-                const val = this.env(id.name)
+                const val = await this.env(id.name)
                 // if (val === undefined)
                 //    throw new VMError(VMCode.InternalError, `lookup of ${id.name} failed`)
                 this.exprStack.push(val)

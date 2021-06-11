@@ -89,7 +89,7 @@ class JDCommandEvaluator {
                     const args = caller.arguments
                     const goal = getStartVal(args[1])
                     const error = getStartVal(args[2])
-                    ee.visitExpression(args[0])
+                    ee.visitExpressionAsync(args[0])
                     const ev = ee.pop()
                     return  ev >= goal - error && ev <= goal + error
                 }
@@ -159,7 +159,7 @@ class JDCommandEvaluator {
                 const exprEval = new VMExprEvaluator(this.env, this.callEval([]))
                 this._startExpressions.push({
                     e: child,
-                    v: exprEval.eval(child),
+                    v: exprEval.evalAsync(child),
                 })
             }
         })
@@ -196,7 +196,7 @@ class JDCommandEvaluator {
 
     private checkExpression(e: jsep.Expression) {
         const expr = new VMExprEvaluator(this.env, this.callEval(this._startExpressions))
-        return expr.eval(e)
+        return expr.evalAsync(e)
             ? JDTestCommandStatus.Passed
             : JDTestCommandStatus.Active
     }
@@ -226,7 +226,7 @@ class JDCommandEvaluator {
                     this.env,
                     this.callEval(this._startExpressions)
                 )
-                const ev = expr.eval(args[0]) as number
+                const ev = await expr.evalAsync(args[0]) as number
                 if (Math.abs(ev - goal.v) <= error.v)
                     this._status = JDTestCommandStatus.Passed
                 this._progress = `current: ${pretify(ev)}; goal: ${pretify(
@@ -362,7 +362,7 @@ class JDCommandEvaluator {
                     this.env,
                     this.callEval(this._startExpressions)
                 )
-                const ev = expr.eval(args[1])
+                const ev = expr.evalAsync(args[1])
                 const reg = args[0] as jsep.Identifier
                 await this.testRunner.serviceTestRunner.writeRegisterAsync(reg.name, ev)
                 this._status = JDTestCommandStatus.Passed
@@ -527,7 +527,6 @@ export class JDTestRunner extends JDEventSource {
         this.reset()
         this.status = JDTestStatus.Active
         this._commandIndex = 0
-        await this.serviceTestRunner.refreshEnvironmentAsync()
     }
 
     next() {
@@ -655,13 +654,9 @@ export class JDServiceTestRunner extends JDServiceClient {
         this.start()
     }
 
-    public async refreshEnvironmentAsync() {
-        await this._env.refreshRegistersAsync();
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public lookup(e: jsep.MemberExpression | string): any {
-        return this._env.lookupRegister(e)
+        return this._env.lookupRegisterAsync(e)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
