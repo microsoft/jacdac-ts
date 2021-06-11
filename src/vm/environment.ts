@@ -98,7 +98,7 @@ export class VMServiceEnvironment extends JDServiceClient {
         }
     }
 
-    public lookupRegister(e: jsep.MemberExpression | jsep.Identifier | string): atomic {
+    public async lookupRegisterAsync(e: jsep.MemberExpression | jsep.Identifier | string) {
         const root =
             typeof e === "string"
                 ? e
@@ -112,6 +112,8 @@ export class VMServiceEnvironment extends JDServiceClient {
                 ? undefined
                 : (e.property as jsep.Identifier).name
         if (root in this._registers) {
+            const register = this._registers[root]
+            await register.refresh()
             if (!fld) return this._registers[root].unpackedValue?.[0]
             else {
                 const field = this._registers[root].fields.find(
@@ -124,13 +126,6 @@ export class VMServiceEnvironment extends JDServiceClient {
             return field?.value
         }
         return undefined
-    }
-
-    public async refreshRegistersAsync() {
-        for (const k in this._registers) {
-            const register = this._registers[k]
-            await register.refresh()
-        }
     }
 }
 
@@ -182,6 +177,7 @@ export class VMEnvironment
         try {
             const serviceEnv = this.getService(role)
             serviceEnv.registerRegister(reg, () => {
+                console.log("HERE")
                 this.emit(CHANGE)
             })
         } catch (e) {
@@ -222,12 +218,6 @@ export class VMEnvironment
         return s
     }
 
-    public async refreshRegistersAsync() {
-        for (const s of Object.values(this._envs)) {
-            await s?.refreshRegistersAsync()
-        }
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async sendCommandAsync(
         e: jsep.MemberExpression,
@@ -241,9 +231,9 @@ export class VMEnvironment
         )
     }
 
-    public lookup(
+    public async lookupAsync(
         e: jsep.MemberExpression | string
-    ): atomic {
+    ) {
         const roleName = this.getRootName(e)
         if (roleName === "$") {
             const me = e as jsep.MemberExpression
@@ -255,7 +245,7 @@ export class VMEnvironment
         }
         const serviceEnv = this.getService(e)
         const me = e as jsep.MemberExpression
-        return serviceEnv.lookupRegister(
+        return await serviceEnv.lookupRegisterAsync(
             me.property as jsep.Identifier | jsep.MemberExpression
         )
     }

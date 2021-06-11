@@ -49,8 +49,7 @@ export interface VMEnvironmentInterface {
         command: jsep.MemberExpression,
         values: atomic[]
     ) => Promise<void>
-    refreshRegistersAsync: () => Promise<void>
-    lookup: (e: jsep.MemberExpression | string) => atomic
+    lookupAsync: (e: jsep.MemberExpression | string) => Promise<atomic>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     unsubscribe: () => void
@@ -86,25 +85,25 @@ class VMCommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
-    private evalExpression(e: jsep.Expression) {
-        const expr = new VMExprEvaluator(e => this.env.lookup(e), undefined)
-        return expr.eval(e)
+    private async evalExpression(e: jsep.Expression) {
+        const expr = new VMExprEvaluator(async e => await this.env.lookupAsync(e), undefined)
+        return await expr.evalAsync(e)
     }
 
-    private checkExpression(e: jsep.Expression) {
-        return this.evalExpression(e) ? true : false
+    private async checkExpression(e: jsep.Expression) {
+        return await this.evalExpression(e) ? true : false
     }
 
-    private start() {
+    private async start() {
         if (
             this.gc.command.callee.type !== "MemberExpression" &&
             (this.inst === "awaitRegister" || this.inst === "awaitChange")
         ) {
             // need to capture register value for awaitChange/awaitRegister
             const args = this.gc.command.arguments
-            this._regSaved = this.evalExpression(args[0])
+            this._regSaved = await this.evalExpression(args[0])
             if (this.inst === "awaitChange")
-                this._changeSaved = this.evalExpression(args[1])
+                this._changeSaved = await this.evalExpression(args[1])
             return true
         }
         return false
@@ -119,8 +118,9 @@ class VMCommandEvaluator {
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
-            const expr = new VMExprEvaluator(e => this.env.lookup(e), undefined)
-            const values = this.gc.command.arguments.map(a => expr.eval(a))
+            const expr = new VMExprEvaluator(async e => await this.env.lookupAsync(e), undefined)
+            // TODO
+            const values = this.gc.command.arguments.map(a => expr.evalAsync(a))
             await this.env.sendCommandAsync(
                 this.gc.command.callee as jsep.MemberExpression,
                 values
@@ -157,7 +157,7 @@ class VMCommandEvaluator {
             }
             case "awaitChange":
             case "awaitRegister": {
-                const regValue = this.evalExpression(args[0])
+                const regValue = await this.evalExpression(args[0])
                 if (
                     (this.inst === "awaitRegister" &&
                         regValue !== this._regSaved) ||
@@ -178,10 +178,10 @@ class VMCommandEvaluator {
             case "writeRegister":
             case "writeLocal": {
                 const expr = new VMExprEvaluator(
-                    e => this.env.lookup(e),
+                    async e => this.env.lookupAsync(e),
                     undefined
                 )
-                const ev = expr.eval(args[1])
+                const ev = await expr.evalAsync(args[1])
                 this.trace("eval-end", { expr: unparse(args[1]) })
                 const reg = args[0] as jsep.MemberExpression
                 if (this.inst === "writeRegister") {
@@ -195,19 +195,19 @@ class VMCommandEvaluator {
             }
             case "watch": {
                 const expr = new VMExprEvaluator(
-                    e => this.env.lookup(e),
+                    e => this.env.lookupAsync(e),
                     undefined
                 )
-                const ev = expr.eval(args[0])
+                const ev = await expr.evalAsync(args[0])
                 this.parent.watch(this.gc?.sourceId, ev)
                 return VMInternalStatus.Completed
             }
             case "log": {
                 const expr = new VMExprEvaluator(
-                    e => this.env.lookup(e),
+                    e => this.env.lookupAsync(e),
                     undefined
                 )
-                const ev = expr.eval(args[0])
+                const ev = await expr.evalAsync(args[0])
                 const evString = ev + ""
                 this.parent.writeLog(this.gc?.sourceId, evString)
                 console.log(evString)
@@ -221,10 +221,10 @@ class VMCommandEvaluator {
             }
             case "wait": {
                 const expr = new VMExprEvaluator(
-                    e => this.env.lookup(e),
+                    e => this.env.lookupAsync(e),
                     undefined
                 )
-                const ev = expr.eval(args[0])
+                const ev = await expr.evalAsync(args[0])
                 throw new VMTimerException(ev * 1000)
             }
             case "onRoleConnected": {
@@ -709,11 +709,6 @@ export class VMProgramRunner extends JDClient {
         }
     }
 
-    private async refreshRegistersAsync() {
-        this.trace("refresh registers")
-        await this._env.refreshRegistersAsync()
-    }
-
     private _in_run = false
     private async runAsync() {
         if (this.status === VMStatus.Stopped) return
@@ -721,7 +716,6 @@ export class VMProgramRunner extends JDClient {
         this.trace("run")
         this._in_run = true
         try {
-            await this.refreshRegistersAsync()
             let h: VMHandlerRunner = undefined
             while (
                 this.status === VMStatus.Running &&
