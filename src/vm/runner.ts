@@ -85,25 +85,25 @@ class VMCommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
-    private async evalExpression(e: jsep.Expression) {
+    private async evalExpressionAsync(e: jsep.Expression) {
         const expr = new VMExprEvaluator(async e => await this.env.lookupAsync(e), undefined)
         return await expr.evalAsync(e)
     }
 
-    private async checkExpression(e: jsep.Expression) {
-        return await this.evalExpression(e) ? true : false
+    private async checkExpressionAsync(e: jsep.Expression) {
+        return await this.evalExpressionAsync(e) ? true : false
     }
 
-    private async start() {
+    private async startAsync() {
         if (
             this.gc.command.callee.type !== "MemberExpression" &&
             (this.inst === "awaitRegister" || this.inst === "awaitChange")
         ) {
             // need to capture register value for awaitChange/awaitRegister
             const args = this.gc.command.arguments
-            this._regSaved = await this.evalExpression(args[0])
+            this._regSaved = await this.evalExpressionAsync(args[0])
             if (this.inst === "awaitChange")
-                this._changeSaved = await this.evalExpression(args[1])
+                this._changeSaved = await this.evalExpressionAsync(args[1])
             return true
         }
         return false
@@ -111,7 +111,7 @@ class VMCommandEvaluator {
 
     public async evaluate(): Promise<VMInternalStatus> {
         if (!this._started) {
-            const neededStart = this.start()
+            const neededStart = await this.startAsync()
             this._started = true
             if (neededStart) return VMInternalStatus.Running
         }
@@ -132,7 +132,7 @@ class VMCommandEvaluator {
         }
         switch (this.inst) {
             case "branchOnCondition": {
-                const expr = this.checkExpression(args[0])
+                const expr = await this.checkExpressionAsync(args[0])
                 if (expr) {
                     throw new VMJumpException((args[1] as jsep.Identifier).name)
                 }
@@ -147,20 +147,20 @@ class VMCommandEvaluator {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
-                    return this.checkExpression(args[1])
+                    return await this.checkExpressionAsync(args[1])
                         ? VMInternalStatus.Completed
                         : VMInternalStatus.Running
                 }
                 return VMInternalStatus.Running
             }
             case "awaitCondition": {
-                return this.checkExpression(args[0])
+                return await this.checkExpressionAsync(args[0])
                     ? VMInternalStatus.Completed
                     : VMInternalStatus.Running
             }
             case "awaitChange":
             case "awaitRegister": {
-                const regValue = await this.evalExpression(args[0])
+                const regValue = await this.evalExpressionAsync(args[0])
                 if (
                     (this.inst === "awaitRegister" &&
                         regValue !== this._regSaved) ||
@@ -670,7 +670,6 @@ export class VMProgramRunner extends JDClient {
             this.clearBreakpointsAsync()
             this.setStatus(VMStatus.Running)
             this.waitingToRunning()
-            this.runAsync()
         } catch (e) {
             console.debug(e)
             this.emit(VM_INTERNAL_ERROR, e)
@@ -782,6 +781,7 @@ export class VMProgramRunner extends JDClient {
                 done = this._runQueue.shift()
                 const moveToWait = h.status === VMInternalStatus.Ready
                 if (moveToWait && !isEveryHandler(h.handler)) {
+                    console.log("WAIT")
                     this._waitQueue.push(done)
                     done = undefined
                 }
@@ -821,12 +821,14 @@ export class VMProgramRunner extends JDClient {
             const sleepingRunners: VMHandlerRunner[] = []
             for (const h of waitCopy) {
                 await this.runHandlerAsync(h, true)
+                console.log("STATUS", h.status, h.atTop )
                 if (h.status === VMInternalStatus.Sleeping) {
                     sleepingRunners.push(h)
                 } else if (
                     !h.atTop &&
                     handlersStarted.findIndex(hs => hs === h.handler) === -1
                 ) {
+                    console.log("PUSH")
                     newRunners.push(h)
                     handlersStarted.push(h.handler)
                 }
@@ -842,8 +844,8 @@ export class VMProgramRunner extends JDClient {
                     if (index >= 0) this._waitQueue.splice(index, 1)
                 })
             })
+            await this.runAsync()
             this._env.consumeEvent()
-            this.runAsync()
         }
     }
 
