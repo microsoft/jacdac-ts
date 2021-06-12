@@ -814,31 +814,25 @@ export class VMProgramRunner extends JDClient {
     private async waitingToRunning() {
         if (this.status !== VMStatus.Stopped) {
             this.trace("waiting to running - try")
-            let waitCopy: VMHandlerRunner[] = undefined
             await this._waitRunMutex.acquire(async () => {
                 if (this.status === VMStatus.Paused && this._runQueue.length)
                     return
-                waitCopy = this._waitQueue.slice(0)
-            })
-            if (!waitCopy) return
-
-            this.trace("waiting to running - start")
-            const handlersStarted: VMHandler[] = []
-            const newRunners: VMHandlerRunner[] = []
-            const sleepingRunners: VMHandlerRunner[] = []
-            for (const h of waitCopy) {
-                await this.runHandlerAsync(h, true)
-                if (h.status === VMInternalStatus.Sleeping) {
-                    sleepingRunners.push(h)
-                } else if (
-                    !h.atTop &&
-                    handlersStarted.findIndex(hs => hs === h.handler) === -1
-                ) {
-                    newRunners.push(h)
-                    handlersStarted.push(h.handler)
+                this.trace("waiting to running - start")
+                const handlersStarted: VMHandler[] = []
+                const newRunners: VMHandlerRunner[] = []
+                const sleepingRunners: VMHandlerRunner[] = []
+                for (const h of this._waitQueue) {
+                    await this.runHandlerAsync(h, true)
+                    if (h.status === VMInternalStatus.Sleeping) {
+                        sleepingRunners.push(h)
+                    } else if (
+                        !h.atTop &&
+                        handlersStarted.findIndex(hs => hs === h.handler) === -1
+                    ) {
+                        newRunners.push(h)
+                        handlersStarted.push(h.handler)
+                    }
                 }
-            }
-            await this._waitRunMutex.acquire(async () => {
                 newRunners.forEach(h => {
                     this._runQueue.push(h)
                     const index = this._waitQueue.indexOf(h)
