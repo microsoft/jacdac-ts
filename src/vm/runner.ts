@@ -549,10 +549,10 @@ export class VMProgramRunner extends JDClient {
             })
         )
         this.mount(
-            // TODO: if a handler is waiting on variable???
-            this._env.subscribe(GLOBAL_CHANGE, name =>
+            this._env.subscribe(GLOBAL_CHANGE, name => {
                 this.emit(VM_GLOBAL_CHANGE, name)
-            )
+                this.waitingToRunning()   
+            })
         )
         this.mount(
             this.subscribe(
