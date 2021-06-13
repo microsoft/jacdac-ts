@@ -1,4 +1,5 @@
 export interface TransportMessage {
+    jacdac: true
     type: "connect" | "disconnect" | "send" | "packet" | "frame" | "error"
     id?: string
     background?: boolean

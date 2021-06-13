@@ -21,19 +21,22 @@ export class USBTransportProxy implements TransportProxy {
         io.onError = e => {
             debug(`jdsw: error`, e)
             postMessage({
+                jacdac: true,
                 type: "error",
                 error: {
                     message: e.message,
                     stack: e.stack,
                     name: e.name,
                     jacdacName:
-                        e.name === JACDAC_ERROR ? (e as JDError).jacdacName : undefined,
+                        e.name === JACDAC_ERROR
+                            ? (e as JDError).jacdacName
+                            : undefined,
                 },
             })
         }
         const onJDMessage = (buf: Uint8Array) => {
-            //debug(`jdsw: frame`, buf)
             postMessage({
+                jacdac: true,
                 type: "frame",
                 payload: buf,
             })

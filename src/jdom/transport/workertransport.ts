@@ -30,7 +30,7 @@ class WorkerTransport extends JDTransport {
         } & JDTransportOptions
     ) {
         super(type, options)
-        this.worker.onmessage = this.handleMessage.bind(this)
+        this.worker.addEventListener("message", this.handleMessage.bind(this))
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,7 +45,8 @@ class WorkerTransport extends JDTransport {
 
     private handleMessage(ev: MessageEvent) {
         const data: TransportMessage = ev.data
-        const { type } = data || {}
+        const { jacdac, type } = data || {}
+        if (!jacdac) return // not our message
         switch (type) {
             case "packet": {
                 const { payload } = data as TransportPacketMessage
@@ -81,10 +82,11 @@ class WorkerTransport extends JDTransport {
     protected async transportSendPacketAsync(p: Packet): Promise<void> {
         // don't wait
         const buf = p.toBuffer()
-        this.worker.postMessage({
+        this.worker.postMessage(<TransportPacketMessage>{
+            jacdac: true,
             type: "packet",
             payload: buf,
-        } as TransportPacketMessage)
+        })
     }
 
     protected async transportConnectAsync(background?: boolean) {
@@ -95,15 +97,17 @@ class WorkerTransport extends JDTransport {
         }
 
         // try connect
-        await this.postMessageAsync<void>({
+        await this.postMessageAsync<void>(<TransportConnectMessage>{
+            jacdac: true,
             type: "connect",
             deviceId,
             background,
-        } as TransportConnectMessage)
+        })
     }
 
     protected transportDisconnectAsync(background?: boolean): Promise<void> {
-        return this.postMessageAsync<void>({
+        return this.postMessageAsync<void>(<TransportMessage>{
+            jacdac: true,
             type: "disconnect",
             background,
         })
