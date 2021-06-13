@@ -54,6 +54,8 @@ export interface VMEnvironmentInterface {
     lookupAsync: (e: jsep.MemberExpression | string) => Promise<atomic>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
+    roleTransition: (role: string, direction: string) => boolean
+    roleState: (role: string) => boolean
     unsubscribe: () => void
 }
 
@@ -164,7 +166,7 @@ class VMCommandEvaluator {
             case "roleBound": {
                 const role = (args[0] as jsep.Identifier).name
                 const event = (args[1] as jsep.Identifier).name
-                return this.parent.roleTransition(role, event)
+                return this.env.roleTransition(role, event)
                     ? VMInternalStatus.Completed
                     : VMInternalStatus.Running
             }
@@ -287,10 +289,6 @@ class VMCommandRunner {
         this.parent.writeLog(id, val)
     }
 
-    roleTransition(role: string, event: string): boolean {
-        return this.parent.roleTransition(role, event)
-    }
-
     get status() {
         return this._status
     }
@@ -342,10 +340,6 @@ class VMHandlerRunner extends JDEventSource {
 
     writeLog(id: string, val: any) {
         this.parent.writeLog(id, val)
-    }
-
-    roleTransition(role: string, event: string): boolean {
-        return this.parent.roleTransition(role, event)
     }
 
     get status() {
@@ -524,9 +518,6 @@ export class VMProgramRunner extends JDClient {
     private _waitRunMutex: Mutex
     private _sleepQueue: SleepingHandler[] = []
     private _sleepMutex: Mutex
-    // role events
-    private _rolesBound: string[] = []
-    private _rolesUnbound: string[] = []
     // debugging
     private _watch: SMap<any> = {}
     private _log: { text: string; count: number }[] = []
@@ -658,14 +649,6 @@ export class VMProgramRunner extends JDClient {
         return ret
     }
 
-    roleTransition(role: string, event: string): boolean {
-        if (event === "bound") {
-            return !!this._rolesBound.find(r => role === "any" || r === role)
-        } else {
-            return !!this._rolesUnbound.find(r => role === "any" || r === role)
-        }
-    }
-
     // utility called by handlerRunner
     async sleepAsync(
         h: VMHandlerRunner,
@@ -691,13 +674,8 @@ export class VMProgramRunner extends JDClient {
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
                 this._everyQueue = []
-                this._rolesBound = []
-                this.roleManager.roles.forEach(r => {
-                    if (this._roles.find(rv => rv.role === r.role)) {
-                        this._rolesBound.push(r.role)
-                    }
-                })
-                this._rolesUnbound = []
+                this._env.clearEvents()
+                this._env.initRoles()
                 this.stopSleepers()
                 // make sure to have another handler for every
                 /*
@@ -883,14 +861,8 @@ export class VMProgramRunner extends JDClient {
                 })
             })
             await this.runAsync()
-            this.consumeEvents()
+            this._env.clearEvents()
         }
-    }
-
-    private consumeEvents() {
-        this._env.consumeEvent()
-        this._rolesBound = []
-        this._rolesUnbound = []
     }
 
     private async stopSleepers() {
@@ -978,14 +950,12 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
                 addRoleService(role)
-                this._rolesBound.push(role)
                 this.waitingToRunning()
             })
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
                 this._env.serviceChanged(role, undefined)
-                this._rolesUnbound.push(role)
                 this.waitingToRunning()
             })
         )
