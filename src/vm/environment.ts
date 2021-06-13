@@ -179,7 +179,7 @@ export class VMEnvironment
         }
     }
 
-    public roleState(role: string) {
+    public roleBound(role: string) {
         return !!this._envs[role]
     }
 

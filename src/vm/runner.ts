@@ -8,7 +8,7 @@ import {
     REGISTER_CHANGE,
     EVENT_CHANGE,
 } from "./environment"
-import { VMExprEvaluator, unparse } from "./expr"
+import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
@@ -55,7 +55,7 @@ export interface VMEnvironmentInterface {
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
     roleTransition: (role: string, direction: string) => boolean
-    roleState: (role: string) => boolean
+    roleBound: (role: string) => boolean
     unsubscribe: () => void
 }
 
@@ -89,11 +89,30 @@ class VMCommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
-    private async evalExpressionAsync(e: jsep.Expression) {
-        const expr = new VMExprEvaluator(
+    private callEval() : CallEvaluator {
+        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => { 
+            const callee = <jsep.Identifier>caller.callee
+            const args = caller.arguments
+            switch (callee.name) {
+                case "roleBoundExpression":  {
+                    const role = (args[0] as jsep.Identifier).name
+                    return this.env.roleBound(role)
+                }
+                default: // ERROR
+            }
+            return undefined;
+        }
+    }
+
+    private newEval() {
+        return new VMExprEvaluator(
             async e => await this.env.lookupAsync(e),
-            undefined
+            this.callEval()  // TODO: call expression for bound
         )
+    }    
+    
+    private async evalExpressionAsync(e: jsep.Expression) {
+        const expr = this.newEval()
         return await expr.evalAsync(e)
     }
 
@@ -125,10 +144,7 @@ class VMCommandEvaluator {
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
-            const expr = new VMExprEvaluator(
-                async e => await this.env.lookupAsync(e),
-                undefined
-            )
+            const expr = this.newEval()
             // TODO
             const values: atomic[] = []
             for (const a of this.gc.command.arguments) {
@@ -197,10 +213,7 @@ class VMCommandEvaluator {
             }
             case "writeRegister":
             case "writeLocal": {
-                const expr = new VMExprEvaluator(
-                    async e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[1])
                 this.trace("eval-end", { expr: unparse(args[1]) })
                 const reg = args[0] as jsep.MemberExpression
@@ -214,19 +227,13 @@ class VMCommandEvaluator {
                 return VMInternalStatus.Completed
             }
             case "watch": {
-                const expr = new VMExprEvaluator(
-                    e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 this.parent.watch(this.gc?.sourceId, ev)
                 return VMInternalStatus.Completed
             }
             case "log": {
-                const expr = new VMExprEvaluator(
-                    e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 const evString = ev + ""
                 this.parent.writeLog(this.gc?.sourceId, evString)
@@ -239,22 +246,9 @@ class VMCommandEvaluator {
                 return VMInternalStatus.Completed
             }
             case "wait": {
-                const expr = new VMExprEvaluator(
-                    e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 throw new VMTimerException(ev * 1000)
-            }
-            case "onRoleConnected": {
-                // first time fires based on state
-                // after that, only on transitions
-                return VMInternalStatus.Completed
-            }
-            case "onRoleDisonnected": {
-                // first time fires based on state
-                // after that, only on transitions
-                return VMInternalStatus.Completed
             }
             default:
                 throw new VMException(
