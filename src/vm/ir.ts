@@ -118,8 +118,8 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
     },
     {
         id: "roleBoundExpression",
-        args: ["Identifier", "Identifier" ],
-        prompt: `role {1} {2}`,
+        args: ["Identifier" ],
+        prompt: `is role {1} bound?`,
         context: "expression",
     },
     {

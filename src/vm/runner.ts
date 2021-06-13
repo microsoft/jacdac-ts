@@ -91,16 +91,21 @@ class VMCommandEvaluator {
 
     private callEval() : CallEvaluator {
         return (caller: jsep.CallExpression, ee: VMExprEvaluator) => { 
-            const callee = <jsep.Identifier>caller.callee
+            const callee = <jsep.MemberExpression>caller.callee
+            const namespace = (callee.object as jsep.Identifier).name
+            const funName = (callee.property as jsep.Identifier).name
             const args = caller.arguments
-            switch (callee.name) {
-                case "roleBoundExpression":  {
-                    const role = (args[0] as jsep.Identifier).name
-                    return this.env.roleBound(role)
+            if (namespace === "$fun") {
+                switch (funName) {
+                    case "roleBoundExpression":  {
+                        const role = (args[0] as jsep.Identifier).name
+                        return this.env.roleBound(role)
+                    }
+                    default: // ERROR
                 }
-                default: // ERROR
-            }
-            return undefined;
+                throw new VMException(VMExceptionCode.InternalError, `unknown function ${namespace}.${funName}`)
+            } else
+               throw new VMException(VMExceptionCode.InternalError, `unknown namespace ${namespace}`)
         }
     }
 
