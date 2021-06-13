@@ -978,12 +978,14 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
                 addRoleService(role)
+                this._rolesBound.push(role)
                 this.waitingToRunning()
             })
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
                 this._env.serviceChanged(role, undefined)
+                this._rolesUnbound.push(role)
                 this.waitingToRunning()
             })
         )
