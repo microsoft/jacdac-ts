@@ -111,6 +111,12 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
+        id: "roleBound",
+        args: ["Identifier", "Identifier" ],
+        prompt: `role {1} {2}`,
+        context: "command",
+    },
+    {
         id: "awaitCondition",
         args: ["boolean"],
         prompt: `wait for condition {1}`,
