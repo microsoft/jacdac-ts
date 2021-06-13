@@ -33,8 +33,8 @@ async function handleCommand(resp: any, handler: () => Promise<void>) {
 
 async function handleMessage(event: MessageEvent) {
     const { data } = event
-    const { type, payload } = data
-    //console.debug(`jdsw, onmessage ${type}`, data)
+    const { jacdac, type, payload } = data
+    if (!jacdac) return; // someone else's message
     switch (type) {
         case "connect": {
             if (proxy) await proxy.disconnect()
