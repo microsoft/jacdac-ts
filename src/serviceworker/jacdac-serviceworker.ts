@@ -31,7 +31,7 @@ async function handleCommand(resp: any, handler: () => Promise<void>) {
     }
 }
 
-onmessage = async event => {
+async function handleMessage(event: MessageEvent) {
     const { data } = event
     const { type, payload } = data
     //console.debug(`jdsw, onmessage ${type}`, data)
@@ -60,5 +60,7 @@ onmessage = async event => {
             break
     }
 }
+
+self.addEventListener("message", handleMessage)
 
 debug(`jdsw: ready...`)
