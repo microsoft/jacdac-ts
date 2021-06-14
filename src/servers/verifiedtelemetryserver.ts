@@ -1,6 +1,8 @@
 import {
+    CHANGE,
     SRV_VERIFIED_TELEMETRY,
     VerifiedTelemetryCmd,
+    VerifiedTelemetryEvent,
     VerifiedTelemetryFingerprintType,
     VerifiedTelemetryReg,
     VerifiedTelemetryStatus,
@@ -52,6 +54,17 @@ export default class VerifiedTelemetryServer extends JDServiceServer {
         this.addCommand(
             VerifiedTelemetryCmd.RetrainFingerprintTemplate,
             this.handleRetrainTelemetryTemplate.bind(this)
+        )
+
+        // events
+        this.telemetryStatus.on(CHANGE, () =>
+            this.sendEvent(
+                VerifiedTelemetryEvent.TelemetryStatusChange,
+                this.telemetryStatus.data
+            )
+        )
+        this.fingerprintTemplate.on(CHANGE, () =>
+            this.sendEvent(VerifiedTelemetryEvent.FingerprintTemplateChange)
         )
     }
 
