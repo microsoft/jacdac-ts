@@ -159,8 +159,12 @@ export class VMEnvironment
         if (this._envs[role]) {
             this._envs[role].unmount()
             this._envs[role] = undefined
+            
         }
-        if (service) {
+        if (!service) 
+            this._rolesUnbound.push(role)
+        else {
+            this._rolesBound.push(role)
             this._envs[role] = new VMServiceEnvironment(service)
             this.registers.forEach(r => {
                 if (r.role === role) {
@@ -173,6 +177,10 @@ export class VMEnvironment
                 }
             })
         }
+    }
+
+    public roleBound(role: string) {
+        return !!this._envs[role]
     }
 
     public registerRegister(role: string, reg: string) {
@@ -236,7 +244,7 @@ export class VMEnvironment
         e: jsep.MemberExpression | string
     ) {
         const roleName = this.getRootName(e)
-        if (roleName === "$") {
+        if (roleName.startsWith("$var")) {
             const me = e as jsep.MemberExpression
             if (me.property.type === "Identifier") {
                 const local = (me.property as jsep.Identifier).name
@@ -304,8 +312,9 @@ export class VMEnvironment
         return false
     }
 
-    public consumeEvent() {
+    public clearEvents() {
         this._currentEvent = undefined
+        this.rolesReset()
     }
 
     public hasEvent(e: jsep.MemberExpression | string) {
@@ -316,6 +325,24 @@ export class VMEnvironment
             return this._currentEvent === `${roleName}.${event}`
         }
         return false
+    }
+    
+    // role events
+    private _rolesBound: string[] = []
+    private _rolesUnbound: string[] = []
+    private rolesReset() {
+        this._rolesBound = []
+        this._rolesUnbound = []
+    }
+    public initRoles() {
+        this._rolesBound = Object.keys(this._envs).slice(0)
+    }
+    public roleTransition(role: string, event: string): boolean {
+        if (event === "bound") {
+            return !!this._rolesBound.find(r => role === "any" || r === role)
+        } else {
+            return !!this._rolesUnbound.find(r => role === "any" || r === role)
+        }
     }
 
     public unsubscribe() {

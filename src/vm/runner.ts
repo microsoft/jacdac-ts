@@ -6,9 +6,9 @@ import {
     VMExceptionCode,
     GLOBAL_CHANGE,
     REGISTER_CHANGE,
-    EVENT_CHANGE
+    EVENT_CHANGE,
 } from "./environment"
-import { VMExprEvaluator, unparse } from "./expr"
+import { VMExprEvaluator, unparse, CallEvaluator } from "./expr"
 import { JDBus } from "../jdom/bus"
 import { JDEventSource } from "../jdom/eventsource"
 import { CHANGE, ROLE_BOUND, ROLE_UNBOUND, TRACE } from "../jdom/constants"
@@ -54,6 +54,8 @@ export interface VMEnvironmentInterface {
     lookupAsync: (e: jsep.MemberExpression | string) => Promise<atomic>
     writeGlobal: (e: jsep.MemberExpression | string, v: atomic) => boolean
     hasEvent: (e: jsep.MemberExpression | string) => boolean
+    roleTransition: (role: string, direction: string) => boolean
+    roleBound: (role: string) => boolean
     unsubscribe: () => void
 }
 
@@ -87,13 +89,40 @@ class VMCommandEvaluator {
         return (this.gc.command.callee as jsep.Identifier)?.name
     }
 
+    private callEval() : CallEvaluator {
+        return (caller: jsep.CallExpression, ee: VMExprEvaluator) => { 
+            const callee = <jsep.MemberExpression>caller.callee
+            const namespace = (callee.object as jsep.Identifier).name
+            const funName = (callee.property as jsep.Identifier).name
+            const args = caller.arguments
+            if (namespace === "$fun") {
+                switch (funName) {
+                    case "roleBoundExpression":  {
+                        const role = (args[0] as jsep.Identifier).name
+                        return this.env.roleBound(role)
+                    }
+                    default: // ERROR
+                }
+                throw new VMException(VMExceptionCode.InternalError, `unknown function ${namespace}.${funName}`)
+            } else
+               throw new VMException(VMExceptionCode.InternalError, `unknown namespace ${namespace}`)
+        }
+    }
+
+    private newEval() {
+        return new VMExprEvaluator(
+            async e => await this.env.lookupAsync(e),
+            this.callEval()  // TODO: call expression for bound
+        )
+    }    
+    
     private async evalExpressionAsync(e: jsep.Expression) {
-        const expr = new VMExprEvaluator(async e => await this.env.lookupAsync(e), undefined)
+        const expr = this.newEval()
         return await expr.evalAsync(e)
     }
 
     private async checkExpressionAsync(e: jsep.Expression) {
-        return await this.evalExpressionAsync(e) ? true : false
+        return (await this.evalExpressionAsync(e)) ? true : false
     }
 
     private async startAsync() {
@@ -120,10 +149,10 @@ class VMCommandEvaluator {
         const args = this.gc.command.arguments
         if (this.gc.command.callee.type === "MemberExpression") {
             // interpret as a service command (role.comand)
-            const expr = new VMExprEvaluator(async e => await this.env.lookupAsync(e), undefined)
+            const expr = this.newEval()
             // TODO
             const values: atomic[] = []
-            for(const a of this.gc.command.arguments) {
+            for (const a of this.gc.command.arguments) {
                 values.push(await expr.evalAsync(a))
             }
             await this.env.sendCommandAsync(
@@ -149,14 +178,21 @@ class VMCommandEvaluator {
             case "awaitEvent": {
                 const event = args[0] as jsep.MemberExpression
                 if (this.env.hasEvent(event)) {
-                    return await this.checkExpressionAsync(args[1])
+                    return (await this.checkExpressionAsync(args[1]))
                         ? VMInternalStatus.Completed
                         : VMInternalStatus.Running
                 }
                 return VMInternalStatus.Running
             }
+            case "roleBound": {
+                const role = (args[0] as jsep.Identifier).name
+                const event = (args[1] as jsep.Identifier).name
+                return this.env.roleTransition(role, event)
+                    ? VMInternalStatus.Completed
+                    : VMInternalStatus.Running
+            }
             case "awaitCondition": {
-                return await this.checkExpressionAsync(args[0])
+                return (await this.checkExpressionAsync(args[0]))
                     ? VMInternalStatus.Completed
                     : VMInternalStatus.Running
             }
@@ -182,10 +218,7 @@ class VMCommandEvaluator {
             }
             case "writeRegister":
             case "writeLocal": {
-                const expr = new VMExprEvaluator(
-                    async e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[1])
                 this.trace("eval-end", { expr: unparse(args[1]) })
                 const reg = args[0] as jsep.MemberExpression
@@ -199,19 +232,13 @@ class VMCommandEvaluator {
                 return VMInternalStatus.Completed
             }
             case "watch": {
-                const expr = new VMExprEvaluator(
-                    e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 this.parent.watch(this.gc?.sourceId, ev)
                 return VMInternalStatus.Completed
             }
             case "log": {
-                const expr = new VMExprEvaluator(
-                    e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 const evString = ev + ""
                 this.parent.writeLog(this.gc?.sourceId, evString)
@@ -224,22 +251,9 @@ class VMCommandEvaluator {
                 return VMInternalStatus.Completed
             }
             case "wait": {
-                const expr = new VMExprEvaluator(
-                    e => this.env.lookupAsync(e),
-                    undefined
-                )
+                const expr = this.newEval()
                 const ev = await expr.evalAsync(args[0])
                 throw new VMTimerException(ev * 1000)
-            }
-            case "onRoleConnected": {
-                // first time fires based on state
-                // after that, only on transitions
-                return VMInternalStatus.Completed
-            }
-            case "onRoleDisonnected": {
-                // first time fires based on state
-                // after that, only on transitions
-                return VMInternalStatus.Completed
             }
             default:
                 throw new VMException(
@@ -549,10 +563,10 @@ export class VMProgramRunner extends JDClient {
             })
         )
         this.mount(
-            // TODO: if a handler is waiting on variable???
-            this._env.subscribe(GLOBAL_CHANGE, name =>
+            this._env.subscribe(GLOBAL_CHANGE, name => {
                 this.emit(VM_GLOBAL_CHANGE, name)
-            )
+                this.waitingToRunning()
+            })
         )
         this.mount(
             this.subscribe(
@@ -659,6 +673,8 @@ export class VMProgramRunner extends JDClient {
                 this._waitQueue.forEach(h => h.reset())
                 this._runQueue = []
                 this._everyQueue = []
+                this._env.clearEvents()
+                this._env.initRoles()
                 this.stopSleepers()
                 // make sure to have another handler for every
                 /*
@@ -814,31 +830,25 @@ export class VMProgramRunner extends JDClient {
     private async waitingToRunning() {
         if (this.status !== VMStatus.Stopped) {
             this.trace("waiting to running - try")
-            let waitCopy: VMHandlerRunner[] = undefined
             await this._waitRunMutex.acquire(async () => {
                 if (this.status === VMStatus.Paused && this._runQueue.length)
                     return
-                waitCopy = this._waitQueue.slice(0)
-            })
-            if (!waitCopy) return
-
-            this.trace("waiting to running - start")
-            const handlersStarted: VMHandler[] = []
-            const newRunners: VMHandlerRunner[] = []
-            const sleepingRunners: VMHandlerRunner[] = []
-            for (const h of waitCopy) {
-                await this.runHandlerAsync(h, true)
-                if (h.status === VMInternalStatus.Sleeping) {
-                    sleepingRunners.push(h)
-                } else if (
-                    !h.atTop &&
-                    handlersStarted.findIndex(hs => hs === h.handler) === -1
-                ) {
-                    newRunners.push(h)
-                    handlersStarted.push(h.handler)
+                this.trace("waiting to running - start")
+                const handlersStarted: VMHandler[] = []
+                const newRunners: VMHandlerRunner[] = []
+                const sleepingRunners: VMHandlerRunner[] = []
+                for (const h of this._waitQueue) {
+                    await this.runHandlerAsync(h, true)
+                    if (h.status === VMInternalStatus.Sleeping) {
+                        sleepingRunners.push(h)
+                    } else if (
+                        !h.atTop &&
+                        handlersStarted.findIndex(hs => hs === h.handler) === -1
+                    ) {
+                        newRunners.push(h)
+                        handlersStarted.push(h.handler)
+                    }
                 }
-            }
-            await this._waitRunMutex.acquire(async () => {
                 newRunners.forEach(h => {
                     this._runQueue.push(h)
                     const index = this._waitQueue.indexOf(h)
@@ -850,7 +860,7 @@ export class VMProgramRunner extends JDClient {
                 })
             })
             await this.runAsync()
-            this._env.consumeEvent()
+            this._env.clearEvents()
         }
     }
 
@@ -939,11 +949,13 @@ export class VMProgramRunner extends JDClient {
         this.mount(
             this.roleManager.subscribe(ROLE_BOUND, async (role: string) => {
                 addRoleService(role)
+                this.waitingToRunning()
             })
         )
         this.mount(
             this.roleManager.subscribe(ROLE_UNBOUND, (role: string) => {
                 this._env.serviceChanged(role, undefined)
+                this.waitingToRunning()
             })
         )
     }
