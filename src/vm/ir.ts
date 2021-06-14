@@ -129,6 +129,12 @@ export const VMFunctions: jdtest.TestFunctionDescription[] = [
         context: "command",
     },
     {
+        id: "setStatus",
+        args: ["number"],
+        prompt: `set status to {0}`,
+        context: "command",
+    },
+    {
         id: "writeRegister",
         args: ["register", "number"],
         prompt: `write value {2:val} to {1}`,

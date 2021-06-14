@@ -183,6 +183,23 @@ export class VMEnvironment
         return !!this._envs[role]
     }
 
+    public async setStatusAsync(color: number) {
+        for(const role of Object.keys(this._envs)) {
+            const serv = this._envs[role]
+            if (serv) {
+                const device = serv.service?.device
+                if (device) {
+                    const ledController = device.statusLight
+                    // const vals = inputs.map(i => parseInt(i.value))
+                    // if (vals.some(isNaN))
+                    //    throw new Error("wrong!")
+                    //jd.device(fw.deviceId).sendCtrlCommand(jacdac.ControlCmd.SetStatusLight,
+                    //    jacdac.jdpack("u8 u8 u8 u8", vals))
+                }
+            }
+        }
+    }
+
     public registerRegister(role: string, reg: string) {
         try {
             const serviceEnv = this.getService(role)
