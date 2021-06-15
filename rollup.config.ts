@@ -29,13 +29,13 @@ export default [
         watch: "src/**",
     },
     {
-        libraryName: "jacdac-serviceworker",
-        dir: "serviceworker",
+        libraryName: "jacdac-worker",
+        dir: "worker",
         watch: "src/**",
         external: [],
         umd: false,
         cjs: false,
-        tsconfig: "src/serviceworker/tsconfig.json",
+        tsconfig: "src/worker/tsconfig.json",
     },
 ].map(({ libraryName, dir, external, watch, tsconfig, cjs }) => {
     return {
