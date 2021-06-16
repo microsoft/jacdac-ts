@@ -158,8 +158,9 @@ export function lightEncode(format: string, args: (number | number[])[]) {
             if (token.length == 1) {
                 if (args.length == 0) throw new Error("out of args, #")
                 const v = args.shift()
-                if (typeof v == "number") colors.push(v)
-                else for (const vv of v) colors.push(vv)
+                if (typeof v === "number") colors.push(v)
+                else if (Array.isArray(v)) for (const vv of v) colors.push(vv)
+                else throw Error("invalid number " + v)
             } else {
                 if (token.length == 7) {
                     const b = fromHex(token.slice(1))
