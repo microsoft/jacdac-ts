@@ -1,6 +1,6 @@
 # Jacdac TypeScript
 
-**Jacdac** is a bus-based plug-and-play hardware/software stack 
+**Jacdac** is a plug-and-play hardware/software stack 
 for **microcontrollers** and their peripherals (sensors/actuators), 
 with applications to rapid prototyping, making, and physical computing. 
 
