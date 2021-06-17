@@ -165,6 +165,7 @@ export const STREAMING_DEFAULT_INTERVAL = 50
 
 export const PING_LOGGERS_POLL = 2400
 export const ROLE_MANAGER_POLL = 1500
+export const REFRESH_REGISTER_POLL = 50
 
 export const USB_TRANSPORT = "USB"
 export const BLUETOOTH_TRANSPORT = "Bluetooth"
