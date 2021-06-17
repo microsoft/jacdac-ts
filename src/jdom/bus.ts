@@ -47,6 +47,7 @@ import {
     CMD_SET_REG,
     PING_LOGGERS_POLL,
     RESET_IN_TIME_US,
+    REFRESH_REGISTER_POLL,
 } from "./constants"
 import { serviceClass } from "./pretty"
 import { JDNode } from "./node"
@@ -232,11 +233,7 @@ export class JDBus extends JDNode {
                 () => this.emit(SELF_ANNOUNCE),
                 499
             )
-        if (!this._refreshRegistersInterval)
-            this._refreshRegistersInterval = setInterval(
-                this.refreshRegisters.bind(this),
-                50
-            )
+        this.backgroundRefreshRegisters = true
         if (!this._gcInterval)
             this._gcInterval = setInterval(
                 () => this.gcDevices(),
@@ -251,10 +248,7 @@ export class JDBus extends JDNode {
             this._announceInterval = undefined
         }
         this.safeBoot = false
-        if (this._refreshRegistersInterval) {
-            clearInterval(this._refreshRegistersInterval)
-            this._refreshRegistersInterval = undefined
-        }
+        this.backgroundRefreshRegisters = false
         if (this._gcInterval) {
             clearInterval(this._gcInterval)
             this._gcInterval = undefined
@@ -761,10 +755,29 @@ export class JDBus extends JDNode {
         rst.sendAsMultiCommandAsync(this, SRV_CONTROL)
     }
 
+    get backgroundRefreshRegisters() {
+        return !!this._refreshRegistersInterval
+    }
+
+    set backgroundRefreshRegisters(value: boolean) {
+        if (!!value !== this.backgroundRefreshRegisters) {
+            if (!value) {
+                if (this._refreshRegistersInterval)
+                    clearInterval(this._refreshRegistersInterval)
+                this._refreshRegistersInterval = undefined
+            } else {
+                this._refreshRegistersInterval = setInterval(
+                    this.handleRefreshRegisters.bind(this),
+                    REFRESH_REGISTER_POLL
+                )
+            }
+        }
+    }
+
     /**
      * Cycles through all known registers and refreshes the once that have REPORT_UPDATE registered
      */
-    private refreshRegisters() {
+    private handleRefreshRegisters() {
         const devices = this._devices.filter(
             device => device.announced && !device.lost
         ) // don't try lost devices or devices flashing
