@@ -276,7 +276,7 @@ export class VMEnvironment
         value: string | boolean | number
     ) {
         const roleName = this.getRootName(e)
-        if (!roleName || roleName !== "$") return undefined
+        if (!roleName || !roleName.startsWith("$var")) return undefined
         const me = e as jsep.MemberExpression
         if (me.property.type === "Identifier") {
             const local = (me.property as jsep.Identifier).name
