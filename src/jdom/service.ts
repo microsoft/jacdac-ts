@@ -11,7 +11,6 @@ import {
     SERVICE_CLIENT_REMOVED,
     CHANGE,
     ROLE_CHANGE,
-    COMMAND_RECEIVE,
 } from "./constants"
 import { JDNode } from "./node"
 import {
@@ -357,6 +356,7 @@ export class JDService extends JDNode {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private invalidateRegisterValues(pkt: Packet) {
         //console.log(`clearing register get timestamp`, pkt)
         this.registers()

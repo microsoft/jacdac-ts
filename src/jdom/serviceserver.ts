@@ -143,6 +143,11 @@ export default class JDServiceServer extends JDEventSource {
         return this._registers.slice(0)
     }
 
+    get timestamp() {
+        const bus = this.device?.bus || this._twin?.device?.bus
+        return bus?.timestamp
+    }
+
     register<TValues extends PackedValues = PackedValues>(
         code: number
     ): JDRegisterServer<TValues> {

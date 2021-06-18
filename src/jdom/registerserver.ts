@@ -202,7 +202,7 @@ export default class JDRegisterServer<
                 this.data = d
                 changed = true
             }
-            this.lastSetTime = this.service.device.bus.timestamp
+            this.lastSetTime = this.service.timestamp
             this.emit(REPORT_RECEIVE)
             if (changed) this.emit(CHANGE)
         }
