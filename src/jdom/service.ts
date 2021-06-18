@@ -358,7 +358,7 @@ export class JDService extends JDNode {
     }
 
     private invalidateRegisterValues(pkt: Packet) {
-        console.log(`clearing register get timestamp`, pkt)
+        //console.log(`clearing register get timestamp`, pkt)
         this.registers()
             .filter(r => r.specification && !isConstRegister(r.specification))
             .forEach(r => r.clearGetTimestamp())
